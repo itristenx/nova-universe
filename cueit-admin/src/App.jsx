@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import './App.css';
 
+const urgencyPriority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
+
 function App() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,32 +32,39 @@ function App() {
         return new Date(b.timestamp) - new Date(a.timestamp);
       }
       if (sortField === 'urgency') {
-        const priority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
-        return (priority[b.urgency] || 0) - (priority[a.urgency] || 0);
+        return (urgencyPriority[b.urgency] || 0) - (urgencyPriority[a.urgency] || 0);
       }
       return (a[sortField] || '').localeCompare(b[sortField] || '');
     });
   }, [logs, search, sortField, urgencyFilter, systemFilter]);
 
+  const uniqueSystems = useMemo(
+    () => [...new Set(logs.map((log) => log.system))],
+    [logs]
+  );
+
   useEffect(() => {
-    axios.get("http://localhost:3000/api/logs")
-      .then((res) => {
-        setLogs(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
+    const fetchLogs = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:3000/api/logs");
+        setLogs(data);
+      } catch (err) {
         console.error("Failed to fetch logs:", err);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchLogs();
   }, []);
 
   return (
     <>
-      <nav className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+      <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between relative">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
-            <h1 className="text-lg font-semibold text-gray-800 tracking-tight">CueIT Admin</h1>
+            <img src="/logo.png" alt="Logo" className="h-[50px] w-[50px] object-contain" />
+            <h1 className="text-xl font-semibold text-gray-800 tracking-tight">CueIT Admin</h1>
           </div>
           <div className="relative">
             <button
@@ -69,7 +78,7 @@ function App() {
               <input
                 type="text"
                 placeholder="Search..."
-                className="absolute right-0 mt-2 w-56 px-3 py-2 border rounded-md text-sm shadow bg-white"
+                className="absolute right-0 top-full mt-2 w-56 px-4 py-2 border rounded-full text-sm shadow-lg bg-white"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -105,7 +114,7 @@ function App() {
                       className="px-4 py-2 border rounded-md text-sm"
                     >
                       <option value="">All Systems</option>
-                      {[...new Set(logs.map((log) => log.system))].map((system) => (
+                      {uniqueSystems.map((system) => (
                         <option key={system} value={system}>{system}</option>
                       ))}
                     </select>
@@ -172,3 +181,4 @@ function App() {
 }
 
 export default App;
+
