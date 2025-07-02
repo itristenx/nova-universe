@@ -60,13 +60,13 @@ function App() {
 
   return (
     <>
-      <nav className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between relative">
-          <div className="flex items-center gap-3">
+      <nav className="bg-blue-600 text-white shadow-md border-b border-blue-700 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between relative">
+          <div className="flex items-center gap-5">
             <img src="/logo.png" alt="Logo" className="h-[50px] w-[50px] object-contain" />
-            <h1 className="text-xl font-semibold text-gray-800 tracking-tight">CueIT Admin</h1>
+            <h1 className="text-xl font-semibold tracking-tight">CueIT Admin</h1>
           </div>
-          <div className="relative">
+          <div className="relative flex items-center">
             <button
               onClick={() => setShowSearch(!showSearch)}
               className="text-gray-700 hover:text-black transition p-1"
@@ -78,7 +78,7 @@ function App() {
               <input
                 type="text"
                 placeholder="Search..."
-                className="absolute right-0 top-full mt-2 w-56 px-4 py-2 border rounded-full text-sm shadow-lg bg-white"
+                className="ml-2 w-56 px-4 py-1 border rounded-full text-sm shadow bg-white"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -134,14 +134,14 @@ function App() {
                 <table className="min-w-full text-sm table-auto border-collapse rounded-lg overflow-hidden shadow-md">
                   <thead className="bg-gray-100 sticky top-0 z-10 text-sm font-semibold text-gray-900 tracking-wide">
                     <tr className="border-b border-gray-300">
-                      <th className="px-4 py-2 text-left">Ticket ID</th>
-                      <th className="px-4 py-2 text-left">Name</th>
-                      <th className="px-4 py-2 text-left">Email</th>
-                      <th className="px-4 py-2 text-left">Title</th>
-                      <th className="px-4 py-2 text-left">System</th>
-                      <th className="px-4 py-2 text-left">Urgency</th>
-                      <th className="px-4 py-2 text-left">Email Status</th>
-                      <th className="px-4 py-2 text-left">Submitted At</th>
+                      <th className="px-6 py-3 text-left whitespace-nowrap">Ticket ID</th>
+                      <th className="px-6 py-3 text-left whitespace-nowrap">Name</th>
+                      <th className="px-6 py-3 text-left whitespace-nowrap">Email</th>
+                      <th className="px-6 py-3 text-left whitespace-nowrap">Title</th>
+                      <th className="px-6 py-3 text-left whitespace-nowrap">System</th>
+                      <th className="px-6 py-3 text-left whitespace-nowrap">Urgency</th>
+                      <th className="px-6 py-3 text-left whitespace-nowrap">Email Status</th>
+                      <th className="px-6 py-3 text-left whitespace-nowrap">Submitted At</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -153,10 +153,13 @@ function App() {
                         <td className="px-4 py-2 text-left">{log.title}</td>
                         <td className="px-4 py-2 text-left">{log.system}</td>
                         <td className="px-4 py-2 text-left">
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold
-                            ${['High', 'Urgent'].includes(log.urgency) ? 'bg-red-600 text-white' :
-                              log.urgency === 'Medium' ? 'bg-yellow-300 text-black' :
-                              'bg-green-300 text-black'}`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-semibold
+                              ${log.urgency === 'Urgent' ? 'bg-red-600 text-white' :
+                                log.urgency === 'High' ? 'bg-orange-400 text-black' :
+                                log.urgency === 'Medium' ? 'bg-yellow-300 text-black' :
+                                'bg-green-300 text-black'}`}
+                          >
                             {log.urgency}
                           </span>
                         </td>
