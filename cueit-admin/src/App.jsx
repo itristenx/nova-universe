@@ -51,21 +51,30 @@ function App() {
 
   return (
     <>
-      <div className="bg-white py-2 flex justify-center shadow-sm">
-        <img src="/logo.png" alt="Logo" className="h-[60px] w-[60px] object-contain" />
-      </div>
-      <nav className="bg-white/70 backdrop-blur-md shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center relative">
-          <div className="flex-1 flex justify-center">
-            <h1 className="text-lg font-semibold text-gray-800 tracking-tight text-center w-full">CueIT Admin Dashboard</h1>
+      <nav className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between relative">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
+            <h1 className="text-lg font-semibold text-gray-800 tracking-tight">CueIT Admin</h1>
           </div>
-          <button
-            onClick={() => setShowSearch(!showSearch)}
-            className="text-gray-700 hover:text-black transition"
-            aria-label="Toggle Search"
-          >
-            🔍
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className="text-gray-700 hover:text-black transition p-1"
+              aria-label="Toggle Search"
+            >
+              🔍
+            </button>
+            {showSearch && (
+              <input
+                type="text"
+                placeholder="Search..."
+                className="absolute right-0 mt-2 w-56 px-3 py-2 border rounded-md text-sm shadow bg-white"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            )}
+          </div>
         </div>
       </nav>
       <div className="min-h-screen bg-gray-900 text-white pb-8">
@@ -78,15 +87,6 @@ function App() {
             <div className="bg-white text-black shadow-xl rounded-lg overflow-hidden p-6">
               <div className="mb-12 px-4 space-y-4">
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
-                  {showSearch && (
-                    <input
-                      type="text"
-                      placeholder="Search by name, email, system..."
-                      className="px-4 py-2 border rounded-md text-sm w-full sm:w-80"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  )}
                   <div className="flex gap-3 justify-end w-full flex-wrap sm:flex-nowrap mb-4">
                     <select
                       value={urgencyFilter}
