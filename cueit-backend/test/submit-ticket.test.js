@@ -9,7 +9,6 @@ function resetDb(done) {
     faviconUrl: '/vite.svg',
     welcomeMessage: 'Welcome to the Help Desk',
     helpMessage: 'Need to report an issue?',
-    adminPassword: 'admin',
   };
   db.serialize(() => {
     db.run('DELETE FROM logs');
@@ -18,6 +17,7 @@ function resetDb(done) {
     for (const [k, v] of Object.entries(defaults)) {
       stmt.run(k, v);
     }
+    stmt.run('adminPassword', require('bcryptjs').hashSync('admin', 10));
     stmt.finalize(done);
   });
 }
