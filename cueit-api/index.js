@@ -19,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
+const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
 
 if (!DISABLE_AUTH) {
   app.use(
@@ -108,6 +109,15 @@ const ensureAuth = DISABLE_AUTH
       if (req.isAuthenticated()) return next();
       res.status(401).json({ error: 'unauthenticated' });
     };
+
+const ensureScimAuth = (req, res, next) => {
+  const header = req.headers.authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '');
+  if (!SCIM_TOKEN || token !== SCIM_TOKEN) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  next();
+};
 
 if (!DISABLE_AUTH) {
   app.get('/login', passport.authenticate('saml'));
@@ -358,6 +368,78 @@ app.delete("/api/users/:id", ensureAuth, (req, res) => {
     res.json({ message: "deleted" });
   });
 });
+
+// SCIM 2.0 user management
+const scim = express.Router();
+scim.use(express.json());
+scim.use(ensureScimAuth);
+
+function formatUser(row) {
+  return { id: String(row.id), userName: row.email, displayName: row.name };
+}
+
+scim.get('/Users', (req, res) => {
+  let sql = 'SELECT * FROM users';
+  const params = [];
+  if (req.query.filter) {
+    const m = req.query.filter.match(/userName eq \"([^\"]+)\"/);
+    if (m) {
+      sql += ' WHERE email=?';
+      params.push(m[1]);
+    }
+  }
+  db.all(sql, params, (err, rows) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    res.json({ Resources: rows.map(formatUser), totalResults: rows.length });
+  });
+});
+
+scim.get('/Users/:id', (req, res) => {
+  db.get('SELECT * FROM users WHERE id=?', [req.params.id], (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    if (!row) return res.status(404).json({ error: 'not found' });
+    res.json(formatUser(row));
+  });
+});
+
+scim.post('/Users', (req, res) => {
+  const name = req.body.displayName || '';
+  const email = req.body.userName || '';
+  db.run(
+    'INSERT INTO users (name, email) VALUES (?, ?)',
+    [name, email],
+    function (err) {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.status(201).json(formatUser({ id: this.lastID, name, email }));
+    }
+  );
+});
+
+scim.put('/Users/:id', (req, res) => {
+  const { id } = req.params;
+  const name = req.body.displayName;
+  const email = req.body.userName;
+  db.run(
+    'UPDATE users SET name=?, email=? WHERE id=?',
+    [name, email, id],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      db.get('SELECT * FROM users WHERE id=?', [id], (err2, row) => {
+        if (err2) return res.status(500).json({ error: 'DB error' });
+        res.json(formatUser(row));
+      });
+    }
+  );
+});
+
+scim.delete('/Users/:id', (req, res) => {
+  db.run('DELETE FROM users WHERE id=?', [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    res.status(204).end();
+  });
+});
+
+app.use('/scim/v2', scim);
 
 app.get('/api/me', ensureAuth, (req, res) => {
   res.json(req.user || {});

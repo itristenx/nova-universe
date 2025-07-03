@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 
 process.env.DISABLE_AUTH = 'true';
+process.env.SCIM_TOKEN = 'testtoken';
 let app;
 let sendBehavior = async () => {};
 const originalCreate = nodemailer.createTransport;

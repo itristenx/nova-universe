@@ -71,3 +71,19 @@ To enable SAML configure these variables in `.env`:
 - `SAML_CALLBACK_URL` – URL on this service that the IdP
   redirects to after authentication (e.g. `http://localhost:3000/login/callback`).
 - `ADMIN_URL` – URL of the admin frontend to redirect to after login.
+
+## SCIM Provisioning
+
+Set `SCIM_TOKEN` in your `.env` file to enable the SCIM 2.0 endpoints under
+`/scim/v2`. Identity providers must supply this token as a bearer token in the
+`Authorization` header when creating, updating or deleting users.
+
+Example user creation request:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $SCIM_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"userName":"john@example.com","displayName":"John"}' \
+  http://localhost:3000/scim/v2/Users
+```
