@@ -2,7 +2,7 @@
 
 CueIT is an internal help desk application used to submit and track IT tickets. The repository contains several apps:
 
-- **cueit-backend** – Express/SQLite API
+- **cueit-api** – Express/SQLite API
 - **cueit-admin** – React admin interface
 - **cueit-kiosk** – iPad kiosk for ticket submission
 - **cueit-activate** – small React app for activating kiosks
@@ -25,7 +25,7 @@ Run `./setup.sh` to install Node.js, SQLite and all project dependencies in one 
 You can also follow the manual instructions below.
 
 ### Backend
-1. Navigate to `cueit-backend`.
+1. Navigate to `cueit-api`.
 2. Run `npm install` to install dependencies.
 3. Create a `.env` file with your SMTP configuration and `HELPDESK_EMAIL`.
    You can also customize `API_PORT`, `LOGO_URL` and other defaults.
@@ -43,7 +43,7 @@ You can also follow the manual instructions below.
 3. Create a `.env` file with `VITE_API_URL`.
 4. Start the dev server with `npm run dev` and open the page to activate kiosks.
 
-The backend stores ticket logs in a local SQLite database (`cueit-backend/log.sqlite`).
+The backend stores ticket logs in a local SQLite database (`cueit-api/log.sqlite`).
 Configuration values are stored in the same database and can be edited from the admin UI.
 
 ### Slack Service
@@ -98,7 +98,7 @@ curl -X POST http://localhost:3000/submit-ticket \
 ```
 
 For a complete description of all endpoints see
-[cueit-backend/README.md](cueit-backend/README.md#api-endpoints).
+[cueit-api/README.md](cueit-api/README.md#api-endpoints).
 
 ## Kiosk Activation
 
@@ -124,7 +124,7 @@ check detects the change.
 
 ## Components
 
-- **cueit-backend** – Express API with an SQLite database. It exposes endpoints
+- **cueit-api** – Express API with an SQLite database. It exposes endpoints
   for submitting tickets, viewing logs, managing configuration and controlling
   kiosk devices.
 - **cueit-admin** – React SPA that consumes the backend API to display logs and
