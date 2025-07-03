@@ -1,6 +1,18 @@
 import React from 'react';
+import axios from 'axios';
 
-export default function ConfigPanel({ open, onClose, config, setConfig, save }) {
+export default function ConfigPanel({ open, onClose, config, setConfig }) {
+  const api = import.meta.env.VITE_API_URL;
+
+  const saveConfig = async () => {
+    try {
+      await axios.put(`${api}/api/config`, config);
+      alert('Saved');
+    } catch (err) {
+      alert('Failed to save configuration');
+    }
+  };
+
   return (
     <div
       className={`fixed inset-0 bg-black/50 z-60 transition-opacity ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
@@ -49,7 +61,7 @@ export default function ConfigPanel({ open, onClose, config, setConfig, save }) 
               className="mt-1 w-full px-2 py-1 rounded text-black"
             />
           </label>
-          <button onClick={save} className="px-4 py-2 bg-blue-600 text-white rounded mt-2">
+          <button onClick={saveConfig} className="px-4 py-2 bg-blue-600 text-white rounded mt-2">
             Save
           </button>
           <div className="pt-4 border-t border-gray-700 text-gray-300 text-xs space-y-2">
