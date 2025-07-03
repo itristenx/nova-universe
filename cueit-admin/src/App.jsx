@@ -48,7 +48,10 @@ function App() {
     [logs]
   );
 
-  const [config, setConfig] = useState({ logoUrl: import.meta.env.VITE_LOGO_URL });
+  const [config, setConfig] = useState({
+    logoUrl: import.meta.env.VITE_LOGO_URL,
+    faviconUrl: import.meta.env.VITE_FAVICON_URL,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,6 +72,13 @@ function App() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const link = document.getElementById('favicon');
+    if (link && config.faviconUrl) {
+      link.href = config.faviconUrl;
+    }
+  }, [config.faviconUrl]);
+
   return (
     <>
       <Navbar
@@ -80,7 +90,7 @@ function App() {
         openConfig={() => setShowConfig(true)}
         openKiosks={() => setShowKiosks(true)}
       />
-      <div className="min-h-screen bg-gray-900 text-white pb-8">
+      <div className="min-h-screen bg-gray-900 text-white pb-8 flex flex-col">
         <div className="max-w-7xl mx-auto">
           {loading ? (
             <p className="text-gray-400 text-center">Loading logs...</p>
@@ -128,14 +138,14 @@ function App() {
                 <table className="min-w-full text-sm table-auto border-collapse rounded-lg overflow-hidden shadow-md">
                   <thead className="bg-gray-100 sticky top-0 z-10 text-sm font-semibold text-gray-900 tracking-wide">
                     <tr className="border-b border-gray-300">
-                      <th className="px-6 py-3 text-left whitespace-nowrap">Ticket ID</th>
-                      <th className="px-6 py-3 text-left whitespace-nowrap">Name</th>
-                      <th className="px-6 py-3 text-left whitespace-nowrap">Email</th>
-                      <th className="px-6 py-3 text-left whitespace-nowrap">Title</th>
-                      <th className="px-6 py-3 text-left whitespace-nowrap">System</th>
-                      <th className="px-6 py-3 text-left whitespace-nowrap">Urgency</th>
-                      <th className="px-6 py-3 text-left whitespace-nowrap">Email Status</th>
-                      <th className="px-6 py-3 text-left whitespace-nowrap">Submitted At</th>
+                      <th className="px-4 py-2 text-left whitespace-nowrap">Ticket ID</th>
+                      <th className="px-4 py-2 text-left whitespace-nowrap">Name</th>
+                      <th className="px-4 py-2 text-left whitespace-nowrap">Email</th>
+                      <th className="px-4 py-2 text-left whitespace-nowrap">Title</th>
+                      <th className="px-4 py-2 text-left whitespace-nowrap">System</th>
+                      <th className="px-4 py-2 text-left whitespace-nowrap">Urgency</th>
+                      <th className="px-4 py-2 text-left whitespace-nowrap">Email Status</th>
+                      <th className="px-4 py-2 text-left whitespace-nowrap">Submitted At</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -173,6 +183,7 @@ function App() {
           )}
         </div>
       </div>
+      <footer className="text-center text-gray-400 py-4">CueIT Admin</footer>
       <ConfigPanel
         open={showConfig}
         onClose={() => setShowConfig(false)}
