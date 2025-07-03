@@ -4,13 +4,18 @@ import SwiftUI
 struct AppConfig: Codable {
     var logoUrl: String
     var backgroundUrl: String?
+    var primaryColor: String?
     var welcomeMessage: String
     var helpMessage: String
     var adminPassword: String
 }
 
 class ConfigService: ObservableObject {
-    @Published var config: AppConfig = AppConfig(logoUrl: "/logo.png", backgroundUrl: nil, welcomeMessage: "Welcome", helpMessage: "Need help?", adminPassword: "admin")
+    @Published var config: AppConfig = AppConfig(logoUrl: "/logo.png", backgroundUrl: nil, primaryColor: nil, welcomeMessage: "Welcome", helpMessage: "Need help?", adminPassword: "admin")
+
+    var primaryColor: Color {
+        Color(hex: config.primaryColor ?? "#0066CC")
+    }
 
     func load() {
         if let data = UserDefaults.standard.data(forKey: "config"),

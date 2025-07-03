@@ -17,16 +17,17 @@ struct AdminLoginView: View {
         NavigationView {
             VStack(spacing: 20) {
                 Text("Admin Access")
-                    .font(.title).bold()
+                    .font(Theme.titleFont)
 
                 SecureField("Enter Password", text: $password)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal)
+                    .font(Theme.bodyFont)
 
                 if showError {
                     Text("Incorrect password")
                         .foregroundColor(.red)
-                        .font(.subheadline)
+                        .font(Theme.bodyFont)
                 }
 
                 Button("Login") {
@@ -37,6 +38,11 @@ struct AdminLoginView: View {
                     }
                 }
                 .padding()
+                .frame(maxWidth: .infinity)
+                .font(Theme.buttonFont)
+                .foregroundColor(.white)
+                .background(configService.primaryColor)
+                .cornerRadius(Theme.cornerRadius)
             }
             .padding()
             .navigationTitle("Admin Login")

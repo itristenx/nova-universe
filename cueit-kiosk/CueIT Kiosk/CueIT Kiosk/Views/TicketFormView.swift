@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SubmissionErrorView: View {
     var onDismiss: () -> Void
+    @ObservedObject var configService: ConfigService
 
     var body: some View {
         VStack(spacing: 20) {
@@ -17,8 +18,7 @@ struct SubmissionErrorView: View {
                 .font(.system(size: 64))
                 .foregroundColor(.red)
             Text("Submission Failed")
-                .font(.title)
-                .fontWeight(.semibold)
+                .font(Theme.titleFont)
             Text("There was a problem sending your request. Please try again.")
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
@@ -32,7 +32,7 @@ struct SubmissionErrorView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Color(.systemGray6))
-                        .cornerRadius(10)
+                        .cornerRadius(Theme.cornerRadius)
                 }
 
                 Button(action: {
@@ -42,8 +42,8 @@ struct SubmissionErrorView: View {
                         .foregroundColor(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .cornerRadius(10)
+                        .background(configService.primaryColor)
+                        .cornerRadius(Theme.cornerRadius)
                 }
             }
             .padding(.top)
@@ -56,6 +56,7 @@ struct SubmissionErrorView: View {
 
 struct TicketFormView: View {
     @Environment(\.dismiss) var dismiss
+    @ObservedObject var configService: ConfigService
     @State private var name = ""
     @State private var email = ""
     @State private var title = ""
@@ -68,9 +69,13 @@ struct TicketFormView: View {
             Form {
                 Section(header: Text("Details")) {
                     TextField("Name", text: $name)
+                        .font(Theme.bodyFont)
                     TextField("Email", text: $email)
+                        .font(Theme.bodyFont)
                     TextField("Title", text: $title)
+                        .font(Theme.bodyFont)
                     TextField("System", text: $system)
+                        .font(Theme.bodyFont)
                     Picker("Urgency", selection: $urgency) {
                         Text("Low").tag("Low")
                         Text("Medium").tag("Medium")
@@ -81,6 +86,12 @@ struct TicketFormView: View {
                 Button("Submit") {
                     submit()
                 }
+                .font(Theme.buttonFont)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(8)
+                .background(configService.primaryColor)
+                .cornerRadius(Theme.cornerRadius)
             }
             .navigationTitle("New Ticket")
             .alert("Failed to submit", isPresented: $showError) {

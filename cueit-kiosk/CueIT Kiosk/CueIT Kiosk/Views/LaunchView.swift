@@ -40,12 +40,13 @@ struct LaunchView: View {
 
             VStack(spacing: 10) {
                 Text(configService.config.welcomeMessage)
-                    .font(.largeTitle).bold()
+                    .font(Theme.titleFont)
                 Text(configService.config.helpMessage)
-                    .font(.title2)
+                    .font(Theme.bodyFont)
                     .foregroundColor(.gray)
                 Text("Tap anywhere to begin")
                     .foregroundColor(.gray)
+                    .font(Theme.bodyFont)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -53,7 +54,7 @@ struct LaunchView: View {
             showForm = true
         }
         .fullScreenCover(isPresented: $showForm) {
-            TicketFormView()
+            TicketFormView(configService: configService)
         }
         .sheet(isPresented: $showAdmin) {
             AdminLoginView(configService: configService)
@@ -70,7 +71,7 @@ struct LaunchView: View {
                     }) {
                         Image(systemName: "gearshape.fill")
                             .font(.title2)
-                            .foregroundColor(.black)
+                            .foregroundColor(configService.primaryColor)
                             .padding(.top, 20)
                             .padding(.trailing, 20)
                     }

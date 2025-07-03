@@ -70,6 +70,7 @@ db.serialize(() => {
   const defaults = {
     logoUrl: process.env.LOGO_URL || '/logo.png',
     faviconUrl: process.env.FAVICON_URL || '/vite.svg',
+    primaryColor: process.env.PRIMARY_COLOR || '#0066CC',
     welcomeMessage: 'Welcome to the Help Desk',
     helpMessage: 'Need to report an issue?',
     adminPassword: 'admin'

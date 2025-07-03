@@ -6,6 +6,7 @@ const app = global.app;
 const defaults = {
   logoUrl: '/logo.png',
   faviconUrl: '/vite.svg',
+  primaryColor: '#0066CC',
   welcomeMessage: 'Welcome to the Help Desk',
   helpMessage: 'Need to report an issue?',
   adminPassword: 'admin',
