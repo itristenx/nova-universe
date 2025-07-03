@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function Navbar({
   logo,
@@ -9,20 +9,34 @@ export default function Navbar({
   openConfig,
   openKiosks,
 }) {
+  const [showMenu, setShowMenu] = useState(false);
   return (
     <nav className="bg-blue-600 text-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {logo && <img src={logo} alt="Logo" className="h-8 w-8 object-contain" />}
-          <h1 className="text-lg font-semibold tracking-tight">CueIT Admin</h1>
+          {logo && <img src={logo} alt="Logo" className="h-[50px] w-[50px] object-contain" />}
+          <span className="text-xl font-semibold tracking-tight">CueIT Admin</span>
         </div>
-        <div className="flex items-center gap-4">
-          <button onClick={openKiosks} className="hover:text-gray-200 text-sm">Kiosks</button>
-          <button onClick={openConfig} className="hover:text-gray-200 text-sm">Config</button>
+        <div className="flex items-center gap-4 pr-2">
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-2 hover:text-gray-200"
+              aria-label="Settings"
+            >
+              ⚙️
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 mt-2 w-36 bg-white text-black rounded shadow-md">
+                <button onClick={() => { setShowMenu(false); openKiosks(); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100">Kiosk Settings</button>
+                <button onClick={() => { setShowMenu(false); openConfig(); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100 border-t">Config</button>
+              </div>
+            )}
+          </div>
           <div className="relative">
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className="p-1 hover:text-gray-200"
+              className="p-2 hover:text-gray-200"
               aria-label="Toggle Search"
             >
               🔍

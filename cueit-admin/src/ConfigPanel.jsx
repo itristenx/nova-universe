@@ -3,7 +3,7 @@ import React from 'react';
 export default function ConfigPanel({ open, onClose, config, setConfig, save }) {
   return (
     <div
-      className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      className={`fixed inset-0 bg-black/50 z-60 transition-opacity ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
     >
       <div
         className={`absolute right-0 top-0 bottom-0 w-80 bg-gray-800 text-white p-6 transform transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
