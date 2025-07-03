@@ -8,6 +8,10 @@ CueIT is an internal help desk application used to submit and track IT tickets. 
 - **cueit-activate** – small React app for activating kiosks
 - **cueit-slack** – Slack slash command integration
 
+The `design/theme.js` file defines shared colors, fonts and spacing. Frontends
+import these tokens so styles remain consistent across the admin UI, activation
+page and SwiftUI kiosk app.
+
 ## Requirements
 - [Node.js](https://nodejs.org/) 18 or higher
 - npm
@@ -48,8 +52,13 @@ Configuration values are stored in the same database and can be edited from the 
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
    - `BACKEND_URL`
-   - optional `SLACK_PORT`
-4. Start the service with `node index.js`.
+   - optional `SLACK_PORT` (defaults to `3001`)
+ 4. Start the service with `node index.js`. It listens on `SLACK_PORT`.
+ 5. For local testing expose the port with `ngrok` and use the HTTPS URL in your Slack command:
+
+```bash
+npx ngrok http $SLACK_PORT
+```
 
 ## Testing the API
 
@@ -70,3 +79,77 @@ curl -X POST http://localhost:3000/submit-ticket \
 
 For a complete description of all endpoints see
 [cueit-backend/README.md](cueit-backend/README.md#api-endpoints).
+
+## Kiosk Activation
+
+When the iPad kiosk application launches it sends a `POST` request to
+`/api/register-kiosk` with a unique identifier. The backend stores the kiosk in
+the `kiosks` table with `active` set to `0` (inactive). A kiosk cannot submit
+tickets until it is activated.
+
+An administrator can toggle the `active` flag from the **Kiosks** tab in the
+admin UI or by visiting the separate activation page provided by the
+`cueit-activate` app. Both interfaces call
+`PUT /api/kiosks/:id/active` to update the flag. The iPad app periodically
+fetches its configuration from `/api/kiosks/:id`; if `active` is `0` it shows an
+activation required message instead of the ticket form.
+
+To remotely disable a kiosk open the **Kiosks** tab in the admin UI and toggle
+the active switch to the off position. You can also send a `PUT` request to
+`/api/kiosks/{id}/active` with `{ "active": false }` to deactivate a kiosk via
+the API. The kiosk will stop displaying the ticket form once its next activation
+check detects the change.
+
+## Components
+
+- **cueit-backend** – Express API with an SQLite database. It exposes endpoints
+  for submitting tickets, viewing logs, managing configuration and controlling
+  kiosk devices.
+- **cueit-admin** – React SPA that consumes the backend API to display logs and
+  edit configuration. It also manages kiosk activation and branding.
+- **cueit-kiosk** – SwiftUI iPad app used by end users to submit tickets. It
+  registers itself with the backend and displays the ticket form only when its
+  `active` flag is enabled.
+- **cueit-activate** – Tiny React app that lets you quickly activate a kiosk by
+  ID without using the full admin interface.
+- **cueit-slack** – Service handling the `/new-ticket` Slack slash command. It
+  opens a modal and forwards submissions to the backend.
+
+## Environment Variables
+
+Each app relies on a few environment variables:
+
+### Backend
+
+- `HELPDESK_EMAIL` – destination address for ticket emails.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` – SMTP credentials used by
+  Nodemailer.
+- Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.
+
+### Admin UI
+
+- `VITE_API_URL` – base URL of the backend API.
+- `VITE_LOGO_URL` – default logo shown before configuration is loaded.
+- `VITE_FAVICON_URL` – default favicon for the page.
+
+### Activation App
+
+- `VITE_API_URL` – backend URL used for the activation request.
+
+### Slack Service
+
+- `SLACK_SIGNING_SECRET` – Slack app signing secret.
+- `SLACK_BOT_TOKEN` – bot token with permissions to open modals and post
+  messages.
+- `BACKEND_URL` – base URL of the backend API for ticket submission.
+- Optional: `SLACK_PORT` (default `3001`).
+
+## Future Improvements
+
+Several security and usability features are planned for a future version of the API and frontends:
+
+- **Authentication** – add JWT based auth to protect admin and Slack endpoints and store hashed admin passwords instead of plaintext.
+- **Log filtering** – allow filtering ticket logs by date range or email status when querying the `/api/logs` endpoint.
+- **HTTPS** – enable TLS so the backend, admin UI and kiosk all communicate over HTTPS.
+- **Kiosk registration tokens** – require a token when calling `/api/register-kiosk` to prevent unauthorized devices from spoofing a kiosk ID.
+

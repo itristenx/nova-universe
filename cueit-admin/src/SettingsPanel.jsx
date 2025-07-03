@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import UsersPanel from './UsersPanel.jsx';
+import { useToast } from './Toast.jsx';
 
 export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const [tab, setTab] = useState('general');
   const [kiosks, setKiosks] = useState([]);
   const api = import.meta.env.VITE_API_URL;
+  const toast = useToast();
 
   useEffect(() => {
     if (open && tab === 'kiosks') {
@@ -14,7 +16,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
           const res = await axios.get(`${api}/api/kiosks`);
           setKiosks(res.data);
         } catch (err) {
-          alert('Failed to load kiosks');
+          toast('Failed to load kiosks', 'error');
         }
       })();
     }
@@ -23,9 +25,9 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const saveConfig = async () => {
     try {
       await axios.put(`${api}/api/config`, config);
-      alert('Saved');
+      toast('Configuration saved');
     } catch (err) {
-      alert('Failed to save configuration');
+      toast('Failed to save configuration', 'error');
     }
   };
 
@@ -34,7 +36,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
       await axios.put(`${api}/api/kiosks/${id}/active`, { active: !active });
       setKiosks((k) => k.map((x) => (x.id === id ? { ...x, active: !active } : x)));
     } catch (err) {
-      alert('Failed to toggle kiosk');
+      toast('Failed to toggle kiosk', 'error');
     }
   };
 
@@ -45,7 +47,25 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
         bgUrl: kiosk.bgUrl,
       });
     } catch (err) {
-      alert('Failed to save kiosk');
+      toast('Failed to save kiosk', 'error');
+    }
+  };
+
+  const deleteKiosk = async (id) => {
+    try {
+      await axios.delete(`${api}/api/kiosks/${id}`);
+      setKiosks((ks) => ks.filter((x) => x.id !== id));
+    } catch (err) {
+      toast('Failed to delete kiosk', 'error');
+    }
+  };
+
+  const clearKiosks = async () => {
+    try {
+      await axios.delete(`${api}/api/kiosks`);
+      setKiosks([]);
+    } catch (err) {
+      toast('Failed to clear kiosks', 'error');
     }
   };
 
@@ -131,6 +151,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
         )}
         {tab === 'kiosks' && (
           <div className="overflow-y-auto text-sm h-full">
+            <button onClick={clearKiosks} className="mb-2 px-2 py-1 bg-red-600 rounded">Clear Kiosks</button>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left">
@@ -140,6 +161,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
                   <th className="pb-2">Logo URL</th>
                   <th className="pb-2">Background</th>
                   <th className="pb-2">Active</th>
+                  <th className="pb-2"></th>
                   <th className="pb-2"></th>
                 </tr>
               </thead>
@@ -175,6 +197,9 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
                     </td>
                     <td className="py-1 pl-2">
                       <button onClick={() => saveKiosk(k)} className="px-2 py-1 rounded text-xs bg-blue-600">Save</button>
+                    </td>
+                    <td className="py-1 pl-2">
+                      <button onClick={() => deleteKiosk(k.id)} className="px-2 py-1 rounded text-xs bg-red-600">Delete</button>
                     </td>
                   </tr>
                 ))}

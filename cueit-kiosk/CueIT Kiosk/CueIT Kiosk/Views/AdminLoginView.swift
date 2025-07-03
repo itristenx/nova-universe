@@ -25,7 +25,7 @@ struct AdminLoginView: View {
 
                 if showError {
                     Text("Incorrect password")
-                        .foregroundColor(.red)
+                        .foregroundColor(Theme.Colors.accent)
                         .font(.subheadline)
                 }
 
@@ -36,9 +36,12 @@ struct AdminLoginView: View {
                         showError = true
                     }
                 }
-                .padding()
+                .padding(Theme.Spacing.sm)
+                .background(Theme.Colors.primary)
+                .foregroundColor(Theme.Colors.base)
+                .cornerRadius(8)
             }
-            .padding()
+            .padding(Theme.Spacing.md)
             .navigationTitle("Admin Login")
         }
     }

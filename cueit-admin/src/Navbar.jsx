@@ -7,6 +7,7 @@ export default function Navbar({
   showSearch,
   setShowSearch,
   openSettings,
+  apiConnected,
 }) {
   const [showMenu, setShowMenu] = useState(false);
   return (
@@ -15,6 +16,10 @@ export default function Navbar({
         <div className="flex items-center gap-3">
           {logo && <img src={logo} alt="Logo" className="h-[60px] w-[60px] object-contain" />}
           <span className="text-2xl font-bold tracking-tight">CueIT Admin</span>
+          <span
+            className={`ml-2 h-3 w-3 rounded-full ${apiConnected ? 'bg-green-500' : 'bg-red-500'}`}
+            aria-label={apiConnected ? 'API connected' : 'API disconnected'}
+          />
         </div>
         <div className="flex items-center gap-4 pr-2">
           <div className="relative">

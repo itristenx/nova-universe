@@ -28,6 +28,8 @@ settings from `.env` and listens on `API_PORT` (default `3000`).
 ### Logs and Configuration
 
 - `GET /api/logs` – return all ticket logs sorted by timestamp.
+- `DELETE /api/logs/:id` – delete a log entry by numeric id.
+- `DELETE /api/logs` – remove all log entries.
 - `GET /api/config` – return configuration key/value pairs.
 - `PUT /api/config` – insert or update configuration values.
 
@@ -38,6 +40,8 @@ settings from `.env` and listens on `API_PORT` (default `3000`).
 - `PUT /api/kiosks/:id` – update kiosk branding and active state.
 - `GET /api/kiosks` – list all kiosks.
 - `PUT /api/kiosks/:id/active` – toggle its active flag.
+- `DELETE /api/kiosks/:id` – delete a kiosk by id.
+- `DELETE /api/kiosks` – remove all kiosks.
 
 ### Database Schema
 

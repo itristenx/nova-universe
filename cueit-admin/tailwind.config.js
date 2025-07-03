@@ -1,15 +1,35 @@
 import daisyui from 'daisyui';
+import theme from '../design/theme.js';
+
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: theme.fonts.sans,
+      },
+      spacing: theme.spacing,
+      colors: {
+        primary: theme.colors.primary,
+        secondary: theme.colors.secondary,
+        accent: theme.colors.accent,
       },
     },
   },
   plugins: [daisyui],
   daisyui: {
-    themes: ['light', 'dark'],
+    themes: [
+      {
+        cueit: {
+          primary: theme.colors.primary,
+          secondary: theme.colors.secondary,
+          accent: theme.colors.accent,
+          'base-100': theme.colors.base,
+          'base-content': theme.colors.content,
+        },
+      },
+      'light',
+      'dark',
+    ],
   },
 };

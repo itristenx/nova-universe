@@ -11,41 +11,49 @@ struct LaunchView: View {
     @State private var showForm = false
     @State private var showAdmin = false
     @StateObject private var configService = ConfigService()
+    @StateObject private var kioskService = KioskService.shared
 
     var body: some View {
         ZStack {
-            if let bg = configService.config.backgroundUrl,
-               let url = URL(string: bg) {
-                AsyncImage(url: url) { img in
-                    img.resizable().scaledToFill()
-                } placeholder: {
-                    Color.white
+            switch kioskService.state {
+            case .inactive:
+                PendingActivationView()
+            case .error:
+                ActivationErrorView { kioskService.checkActive() }
+            default:
+                if let bg = configService.config.backgroundUrl,
+                   let url = URL(string: bg) {
+                    AsyncImage(url: url) { img in
+                        img.resizable().scaledToFill()
+                    } placeholder: {
+                        Theme.Colors.base
+                    }
+                    .ignoresSafeArea()
+                } else {
+                    Theme.Colors.base.ignoresSafeArea()
                 }
-                .ignoresSafeArea()
-            } else {
-                Color.white.ignoresSafeArea()
-            }
-            VStack {
-                AsyncImage(url: URL(string: configService.config.logoUrl)) { img in
-                    img.resizable()
-                } placeholder: {
-                    Image("logo").resizable()
+                VStack {
+                    AsyncImage(url: URL(string: configService.config.logoUrl)) { img in
+                        img.resizable()
+                    } placeholder: {
+                        Image("logo").resizable()
+                    }
+                        .scaledToFit()
+                        .frame(width: 120, height: 120)
+                        .padding(.top, Theme.Spacing.lg)
+
+                    Spacer()
                 }
-                    .scaledToFit()
-                    .frame(width: 120, height: 120)
-                    .padding(.top, 60)
 
-                Spacer()
-            }
-
-            VStack(spacing: 10) {
-                Text(configService.config.welcomeMessage)
-                    .font(.largeTitle).bold()
-                Text(configService.config.helpMessage)
-                    .font(.title2)
-                    .foregroundColor(.gray)
-                Text("Tap anywhere to begin")
-                    .foregroundColor(.gray)
+                VStack(spacing: 10) {
+                    Text(configService.config.welcomeMessage)
+                        .font(.largeTitle).bold()
+                    Text(configService.config.helpMessage)
+                        .font(.title2)
+                        .foregroundColor(.gray)
+                    Text("Tap anywhere to begin")
+                        .foregroundColor(.gray)
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -71,8 +79,8 @@ struct LaunchView: View {
                         Image(systemName: "gearshape.fill")
                             .font(.title2)
                             .foregroundColor(.black)
-                            .padding(.top, 20)
-                            .padding(.trailing, 20)
+                            .padding(.top, Theme.Spacing.md)
+                            .padding(.trailing, Theme.Spacing.md)
                     }
                     Spacer()
                 }

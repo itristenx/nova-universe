@@ -2,6 +2,8 @@ require('dotenv').config();
 const { App } = require('@slack/bolt');
 const axios = require('axios');
 
+const PORT = process.env.SLACK_PORT || 3001;
+
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   token: process.env.SLACK_BOT_TOKEN,
@@ -102,7 +104,6 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
 });
 
 (async () => {
-  const port = process.env.SLACK_PORT || 3001;
-  await app.start(port);
-  console.log(`✅ CueIT Slack service running on port ${port}`);
+  await app.start(PORT);
+  console.log(`✅ CueIT Slack service running on port ${PORT}`);
 })();
