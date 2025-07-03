@@ -23,18 +23,39 @@ export default function Navbar({
               className="p-2 hover:text-gray-200"
               aria-label="Settings"
             >
-              ⚙️
+              <i className="fa-solid fa-gear" />
             </button>
             {showMenu && (
-              <div className="absolute right-0 mt-2 w-36 bg-white text-black rounded shadow-md">
+              <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-md py-1 space-y-1">
                 <button
                   onClick={() => {
                     setShowMenu(false);
                     openSettings();
                   }}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
                 >
+                  <i className="fa-solid fa-gear" />
                   Settings
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    window.alert('CueIT Admin v1.0');
+                  }}
+                  className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
+                >
+                  <i className="fa-solid fa-circle-info" />
+                  About
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    window.alert('For assistance contact IT.');
+                  }}
+                  className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
+                >
+                  <i className="fa-solid fa-question-circle" />
+                  Help
                 </button>
               </div>
             )}
@@ -45,7 +66,7 @@ export default function Navbar({
               className="p-2 hover:text-gray-200"
               aria-label="Toggle Search"
             >
-              🔍
+              <i className="fa-solid fa-magnifying-glass" />
             </button>
             <input
               type="text"

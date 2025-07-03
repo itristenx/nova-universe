@@ -8,3 +8,5 @@ React based interface for viewing help desk tickets and managing system settings
 3. Start the dev server with `npm run dev`.
 
 The admin UI lets you search tickets, edit configuration values and activate kiosk devices.
+
+Font Awesome is loaded via CDN in `index.html` to provide icons throughout the interface.

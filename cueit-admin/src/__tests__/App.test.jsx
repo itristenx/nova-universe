@@ -39,6 +39,7 @@ describe('App filtering and config', () => {
     render(<App />);
     await screen.findByText('Alice');
     await userEvent.click(screen.getByLabelText('Settings'));
+    await userEvent.click(screen.getByText('Settings'));
     const logoInput = screen.getByLabelText('Logo URL');
     await userEvent.clear(logoInput);
     await userEvent.type(logoInput, 'newlogo.png');
