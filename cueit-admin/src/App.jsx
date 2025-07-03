@@ -189,14 +189,6 @@ function App() {
         onClose={() => setShowConfig(false)}
         config={config}
         setConfig={setConfig}
-        save={async () => {
-          try {
-            await axios.put(`${import.meta.env.VITE_API_URL}/api/config`, config);
-            alert('Saved');
-          } catch {
-            alert('Failed');
-          }
-        }}
       />
       <KiosksPanel open={showKiosks} onClose={() => setShowKiosks(false)} />
     </>

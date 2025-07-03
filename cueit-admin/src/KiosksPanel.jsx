@@ -7,20 +7,37 @@ export default function KiosksPanel({ open, onClose }) {
 
   useEffect(() => {
     if (open) {
-      axios.get(`${api}/api/kiosks`).then((res) => setKiosks(res.data));
+      (async () => {
+        try {
+          const res = await axios.get(`${api}/api/kiosks`);
+          setKiosks(res.data);
+        } catch (err) {
+          alert('Failed to load kiosks');
+        }
+      })();
     }
   }, [open, api]);
 
   const toggle = async (id, active) => {
-    await axios.put(`${api}/api/kiosks/${id}/active`, { active: !active });
-    setKiosks((k) => k.map((x) => (x.id === id ? { ...x, active: !active } : x)));
+    try {
+      await axios.put(`${api}/api/kiosks/${id}/active`, { active: !active });
+      setKiosks((k) =>
+        k.map((x) => (x.id === id ? { ...x, active: !active } : x))
+      );
+    } catch (err) {
+      alert('Failed to toggle kiosk');
+    }
   };
 
   const save = async (kiosk) => {
-    await axios.put(`${api}/api/kiosks/${kiosk.id}`, {
-      logoUrl: kiosk.logoUrl,
-      bgUrl: kiosk.bgUrl,
-    });
+    try {
+      await axios.put(`${api}/api/kiosks/${kiosk.id}`, {
+        logoUrl: kiosk.logoUrl,
+        bgUrl: kiosk.bgUrl,
+      });
+    } catch (err) {
+      alert('Failed to save kiosk');
+    }
   };
 
   return (
