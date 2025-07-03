@@ -89,7 +89,7 @@ function App() {
         setShowSearch={setShowSearch}
         openSettings={() => setShowSettings(true)}
       />
-      <div className="min-h-screen bg-gray-900 text-white pb-8 flex flex-col">
+      <div className="min-h-screen bg-base-200 text-base-content pb-8 flex flex-col transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           {loading ? (
             <p className="text-gray-400 text-center">Loading logs...</p>
@@ -98,7 +98,7 @@ function App() {
           ) : logs.length === 0 ? (
             <p className="text-gray-400 text-center">No tickets found.</p>
           ) : (
-            <div className="bg-white text-black shadow-xl rounded-lg overflow-hidden p-6">
+            <div className="bg-base-100 text-base-content shadow-xl rounded-lg overflow-hidden p-6 transition-colors duration-300">
               <div className="mb-12 px-4 space-y-4">
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex gap-3 justify-end w-full flex-wrap sm:flex-nowrap mb-4">
@@ -135,9 +135,9 @@ function App() {
                   </div>
                 </div>
               </div>
-              <div className="overflow-x-auto mt-6 bg-gray-100 rounded-xl p-4">
+              <div className="overflow-x-auto mt-6 bg-base-100 rounded-xl p-4 transition-colors">
                 <table className="min-w-full text-sm table-auto border-collapse rounded-lg overflow-hidden shadow-md">
-                  <thead className="bg-gray-100 sticky top-0 z-10 text-sm font-semibold text-gray-900 tracking-wide">
+                  <thead className="bg-base-100 sticky top-0 z-10 text-sm font-semibold text-base-content tracking-wide">
                     <tr className="border-b border-gray-300">
                       <th className="px-4 py-2 text-left whitespace-nowrap">Ticket ID</th>
                       <th className="px-4 py-2 text-left whitespace-nowrap">Name</th>
@@ -151,7 +151,7 @@ function App() {
                   </thead>
                   <tbody>
                     {filteredLogs.map((log) => (
-                      <tr key={log.ticket_id} className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition divide-x divide-gray-200">
+                      <tr key={log.ticket_id} className="odd:bg-base-100 even:bg-base-200 hover:bg-primary/10 transition-colors divide-x divide-gray-200">
                         <td className="px-4 py-2 text-left font-mono">{log.ticket_id}</td>
                         <td className="px-4 py-2 text-left">{log.name}</td>
                         <td className="px-4 py-2 text-left">{log.email}</td>

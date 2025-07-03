@@ -50,10 +50,10 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
   };
 
   return (
-    <div className={`fixed inset-0 bg-black/50 z-50 transition-opacity ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-      <div className={`absolute right-0 top-0 bottom-0 w-96 bg-gray-800 text-white p-6 transform transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+    <div className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`absolute right-0 top-0 bottom-0 w-96 bg-base-100 text-base-content p-6 shadow-lg transform transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         <button onClick={onClose} className="mb-4 text-right w-full hover:text-gray-300">✖</button>
-        <div className="flex mb-4 border-b border-gray-700 text-sm">
+        <div className="flex mb-4 border-b border-base-300 text-sm">
           <button className={`mr-4 pb-2 ${tab === 'general' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('general')}>General</button>
           <button className={`mr-4 pb-2 ${tab === 'kiosks' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('kiosks')}>Kiosks</button>
           <button className={`pb-2 ${tab === 'users' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('users')}>Users</button>
@@ -96,8 +96,8 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
                 className="mt-1 w-full px-2 py-1 rounded text-black"
               />
             </label>
-            <button onClick={saveConfig} className="px-4 py-2 bg-blue-600 text-white rounded mt-2">Save</button>
-            <div className="pt-4 border-t border-gray-700 text-gray-300 text-xs space-y-2">
+            <button onClick={saveConfig} className="px-4 py-2 bg-primary text-primary-content rounded mt-2 transition-colors">Save</button>
+            <div className="pt-4 border-t border-base-300 text-gray-500 text-xs space-y-2">
               <div>Environment</div>
               <label className="block">
                 API URL
@@ -105,7 +105,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
                   type="text"
                   value={import.meta.env.VITE_API_URL}
                   readOnly
-                  className="mt-1 w-full px-2 py-1 rounded bg-gray-700 text-gray-400"
+                  className="mt-1 w-full px-2 py-1 rounded bg-base-200 text-base-content/60"
                 />
               </label>
               <label className="block">
@@ -114,7 +114,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
                   type="text"
                   value={import.meta.env.VITE_LOGO_URL}
                   readOnly
-                  className="mt-1 w-full px-2 py-1 rounded bg-gray-700 text-gray-400"
+                  className="mt-1 w-full px-2 py-1 rounded bg-base-200 text-base-content/60"
                 />
               </label>
               <label className="block">
@@ -123,7 +123,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
                   type="text"
                   value={import.meta.env.VITE_FAVICON_URL}
                   readOnly
-                  className="mt-1 w-full px-2 py-1 rounded bg-gray-700 text-gray-400"
+                  className="mt-1 w-full px-2 py-1 rounded bg-base-200 text-base-content/60"
                 />
               </label>
             </div>
@@ -145,7 +145,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
               </thead>
               <tbody>
                 {kiosks.map((k) => (
-                  <tr key={k.id} className="border-t border-gray-700">
+                  <tr key={k.id} className="border-t border-base-300">
                     <td className="py-1 pr-2 font-mono break-all">{k.id}</td>
                     <td className="py-1 pr-2">{k.version}</td>
                     <td className="py-1 pr-2 text-xs">{new Date(k.last_seen).toLocaleString()}</td>
@@ -168,13 +168,13 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
                     <td className="py-1">
                       <button
                         onClick={() => toggle(k.id, k.active)}
-                        className={`px-2 py-1 rounded text-xs ${k.active ? 'bg-green-600' : 'bg-red-600'}`}
+                        className={`px-2 py-1 rounded text-xs ${k.active ? 'bg-success text-success-content' : 'bg-error text-error-content'} transition-colors`}
                       >
                         {k.active ? 'Disable' : 'Activate'}
                       </button>
                     </td>
                     <td className="py-1 pl-2">
-                      <button onClick={() => saveKiosk(k)} className="px-2 py-1 rounded text-xs bg-blue-600">Save</button>
+                      <button onClick={() => saveKiosk(k)} className="px-2 py-1 rounded text-xs bg-primary text-primary-content transition-colors">Save</button>
                     </td>
                   </tr>
                 ))}

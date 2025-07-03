@@ -49,7 +49,7 @@ export default function UsersPanel({ open }) {
 
   return (
     <div className="overflow-y-auto text-sm h-full">
-      <button onClick={addUser} className="mb-2 px-2 py-1 bg-blue-600 rounded">
+      <button onClick={addUser} className="mb-2 px-2 py-1 bg-primary text-primary-content rounded transition-colors">
         Add User
       </button>
       <table className="w-full text-sm">
@@ -62,7 +62,7 @@ export default function UsersPanel({ open }) {
         </thead>
         <tbody>
           {users.map((u) => (
-            <tr key={u.id} className="border-t border-gray-700">
+            <tr key={u.id} className="border-t border-base-300">
               <td className="py-1 pr-2">
                 <input
                   type="text"
@@ -94,13 +94,13 @@ export default function UsersPanel({ open }) {
               <td className="py-1 space-x-1">
                 <button
                   onClick={() => saveUser(u)}
-                  className="px-2 py-1 bg-blue-600 rounded text-xs"
+                  className="px-2 py-1 bg-primary text-primary-content rounded text-xs transition-colors"
                 >
                   Save
                 </button>
                 <button
                   onClick={() => deleteUser(u.id)}
-                  className="px-2 py-1 bg-red-600 rounded text-xs"
+                  className="px-2 py-1 bg-error text-error-content rounded text-xs transition-colors"
                 >
                   Delete
                 </button>
