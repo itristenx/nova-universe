@@ -34,13 +34,13 @@ You can also follow the manual instructions below.
 ### Admin Frontend
 1. Navigate to `cueit-admin`.
 2. Run `npm install` to install dependencies.
-3. Create a `.env` file and set `VITE_API_URL` and `VITE_LOGO_URL`.
+3. Copy `.env.example` to `.env` and set `VITE_API_URL`. You can also set `VITE_LOGO_URL` and `VITE_ACTIVATE_URL`.
 4. Start the development server with `npm run dev` and open `http://localhost:5173`.
 
 ### Activation Page
 1. Navigate to `cueit-activate`.
 2. Run `npm install` to install dependencies.
-3. Create a `.env` file with `VITE_API_URL`.
+3. Copy `.env.example` to `.env` and set `VITE_API_URL`. Optionally set `VITE_ADMIN_URL`.
 4. Start the dev server with `npm run dev` and open the page to activate kiosks.
 
 The backend stores ticket logs in a local SQLite database (`cueit-api/log.sqlite`).
@@ -49,7 +49,7 @@ Configuration values are stored in the same database and can be edited from the 
 ### Slack Service
 1. Create a Slack app following [Slack's app setup guide](https://api.slack.com/apps) and add a `/new-ticket` slash command (see [Slash commands documentation](https://api.slack.com/interactivity/slash-commands)). Set its request URL to this service.
 2. Navigate to `cueit-slack` and run `npm install`.
-3. Create a `.env` file with:
+3. Copy `.env.example` to `.env` and set:
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
    - `API_URL`

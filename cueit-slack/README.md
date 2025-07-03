@@ -5,7 +5,7 @@ Slack slash command integration that lets users submit tickets directly from Sla
 ## Setup
 1. Create a Slack app (see [Slack's app setup docs](https://api.slack.com/apps)) and add a `/new-ticket` slash command. The [slash command guide](https://api.slack.com/interactivity/slash-commands) explains how to configure the command and obtain your tokens.
 2. Run `npm install` in this directory.
-3. Create a `.env` file with the following variables:
+3. Copy `.env.example` to `.env` and set:
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
    - `API_URL`
