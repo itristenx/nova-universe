@@ -14,7 +14,17 @@ struct LaunchView: View {
 
     var body: some View {
         ZStack {
-            Color.white.edgesIgnoringSafeArea(.all)
+            if let bg = configService.config.backgroundUrl,
+               let url = URL(string: bg) {
+                AsyncImage(url: url) { img in
+                    img.resizable().scaledToFill()
+                } placeholder: {
+                    Color.white
+                }
+                .ignoresSafeArea()
+            } else {
+                Color.white.ignoresSafeArea()
+            }
             VStack {
                 AsyncImage(url: URL(string: configService.config.logoUrl)) { img in
                     img.resizable()

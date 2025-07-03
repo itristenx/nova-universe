@@ -29,16 +29,21 @@ db.serialize(() => {
       id TEXT PRIMARY KEY,
       last_seen TEXT,
       version TEXT,
-      active INTEGER DEFAULT 0
+      active INTEGER DEFAULT 0,
+      logoUrl TEXT,
+      bgUrl TEXT
     )
   `);
 
   // add active column if database was created with an older schema
   db.run(`ALTER TABLE kiosks ADD COLUMN active INTEGER DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE kiosks ADD COLUMN logoUrl TEXT`, () => {});
+  db.run(`ALTER TABLE kiosks ADD COLUMN bgUrl TEXT`, () => {});
 
   // insert default config if not present
   const defaults = {
     logoUrl: process.env.LOGO_URL || '/logo.png',
+    faviconUrl: process.env.FAVICON_URL || '/vite.svg',
     welcomeMessage: 'Welcome to the Help Desk',
     helpMessage: 'Need to report an issue?',
     adminPassword: 'admin'
