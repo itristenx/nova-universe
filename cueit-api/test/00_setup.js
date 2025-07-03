@@ -1,4 +1,6 @@
 import nodemailer from 'nodemailer';
+
+process.env.DISABLE_AUTH = 'true';
 let app;
 let sendBehavior = async () => {};
 const originalCreate = nodemailer.createTransport;

@@ -6,6 +6,13 @@ export default function UsersPanel({ open }) {
   const [users, setUsers] = useState([]);
   const api = import.meta.env.VITE_API_URL;
   const toast = useToast();
+  const handleApiError = (err, msg) => {
+    if (err.response && err.response.status === 401) {
+      window.location.href = `${api}/login`;
+    } else {
+      toast(msg, 'error');
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -14,7 +21,7 @@ export default function UsersPanel({ open }) {
           const res = await axios.get(`${api}/api/users`);
           setUsers(res.data);
         } catch (err) {
-          toast('Failed to load users', 'error');
+          handleApiError(err, 'Failed to load users');
         }
       })();
     }
@@ -25,7 +32,7 @@ export default function UsersPanel({ open }) {
       const res = await axios.post(`${api}/api/users`, { name: '', email: '' });
       setUsers(prev => [...prev, { id: res.data.id, name: '', email: '' }]);
     } catch (err) {
-      toast('Failed to add user', 'error');
+      handleApiError(err, 'Failed to add user');
     }
   };
 
@@ -36,7 +43,7 @@ export default function UsersPanel({ open }) {
         email: u.email,
       });
     } catch (err) {
-      toast('Failed to save user', 'error');
+      handleApiError(err, 'Failed to save user');
     }
   };
 
@@ -45,7 +52,7 @@ export default function UsersPanel({ open }) {
       await axios.delete(`${api}/api/users/${id}`);
       setUsers((us) => us.filter((x) => x.id !== id));
     } catch (err) {
-      toast('Failed to delete user', 'error');
+      handleApiError(err, 'Failed to delete user');
     }
   };
 
