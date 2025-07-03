@@ -223,6 +223,10 @@ app.delete("/api/users/:id", (req, res) => {
   });
 });
 
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true });
+});
+
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`✅ CueIT Backend running at http://localhost:${PORT}`);

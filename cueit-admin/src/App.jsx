@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import SettingsPanel from './SettingsPanel';
@@ -18,6 +18,8 @@ function App() {
   const [urgencyFilter, setUrgencyFilter] = useState('');
   const [systemFilter, setSystemFilter] = useState('');
   const toast = useToast();
+  const [apiConnected, setApiConnected] = useState(true);
+  const prevConnectedRef = useRef(true);
 
   const filteredLogs = useMemo(() => {
     const searchLower = search.toLowerCase();
@@ -93,6 +95,31 @@ function App() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+    const checkApi = async () => {
+      try {
+        await axios.get(`${api}/api/health`);
+        if (isMounted) setApiConnected(true);
+      } catch {
+        if (isMounted) setApiConnected(false);
+      }
+    };
+    checkApi();
+    const id = setInterval(checkApi, 5000);
+    return () => {
+      isMounted = false;
+      clearInterval(id);
+    };
+  }, [api]);
+
+  useEffect(() => {
+    if (prevConnectedRef.current && !apiConnected) {
+      toast('API unreachable', 'error');
+    }
+    prevConnectedRef.current = apiConnected;
+  }, [apiConnected, toast]);
+
+  useEffect(() => {
     const link = document.getElementById('favicon');
     if (link && config.faviconUrl) {
       link.href = config.faviconUrl;
@@ -103,6 +130,7 @@ function App() {
     <>
       <Navbar
         logo={config.logoUrl}
+        apiConnected={apiConnected}
         search={search}
         setSearch={setSearch}
         showSearch={showSearch}
