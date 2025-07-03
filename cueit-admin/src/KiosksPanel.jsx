@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export default function KiosksPanel({ open, onClose }) {
   const [kiosks, setKiosks] = useState([]);
-  const api = import.meta.env.VITE_API_URL;
+  const api = process.env.VITE_API_URL;
 
   useEffect(() => {
     if (open) {

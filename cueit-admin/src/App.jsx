@@ -48,12 +48,13 @@ function App() {
     [logs]
   );
 
-  const [config, setConfig] = useState({ logoUrl: import.meta.env.VITE_LOGO_URL });
+  const env = process.env;
+  const [config, setConfig] = useState({ logoUrl: env.VITE_LOGO_URL });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const api = import.meta.env.VITE_API_URL;
+        const api = env.VITE_API_URL;
         const [logsRes, configRes] = await Promise.all([
           axios.get(`${api}/api/logs`),
           axios.get(`${api}/api/config`)
@@ -180,7 +181,7 @@ function App() {
         setConfig={setConfig}
         save={async () => {
           try {
-            await axios.put(`${import.meta.env.VITE_API_URL}/api/config`, config);
+            await axios.put(`${env.VITE_API_URL}/api/config`, config);
             alert('Saved');
           } catch {
             alert('Failed');
