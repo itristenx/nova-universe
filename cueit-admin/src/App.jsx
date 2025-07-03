@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import SettingsPanel from './SettingsPanel';
+import { useToast } from './Toast.jsx';
 import './App.css';
 
 const urgencyPriority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
@@ -16,6 +17,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [urgencyFilter, setUrgencyFilter] = useState('');
   const [systemFilter, setSystemFilter] = useState('');
+  const toast = useToast();
 
   const filteredLogs = useMemo(() => {
     const searchLower = search.toLowerCase();
@@ -51,11 +53,29 @@ function App() {
     logoUrl: import.meta.env.VITE_LOGO_URL,
     faviconUrl: import.meta.env.VITE_FAVICON_URL,
   });
+  const api = import.meta.env.VITE_API_URL;
+
+  const deleteLog = async (id) => {
+    try {
+      await axios.delete(`${api}/api/logs/${id}`);
+      setLogs((ls) => ls.filter((l) => l.id !== id));
+    } catch (err) {
+      toast('Failed to delete log', 'error');
+    }
+  };
+
+  const clearLogs = async () => {
+    try {
+      await axios.delete(`${api}/api/logs`);
+      setLogs([]);
+    } catch (err) {
+      toast('Failed to clear logs', 'error');
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const api = import.meta.env.VITE_API_URL;
         const [logsRes, configRes] = await Promise.all([
           axios.get(`${api}/api/logs`),
           axios.get(`${api}/api/config`)
@@ -132,6 +152,7 @@ function App() {
                       <option value="urgency">Sort by Urgency</option>
                       <option value="name">Sort by Name</option>
                     </select>
+                    <button onClick={clearLogs} className="px-2 py-1 bg-red-600 rounded text-xs">Clear Logs</button>
                   </div>
                 </div>
               </div>
@@ -147,6 +168,7 @@ function App() {
                       <th className="px-4 py-2 text-left whitespace-nowrap">Urgency</th>
                       <th className="px-4 py-2 text-left whitespace-nowrap">Email Status</th>
                       <th className="px-4 py-2 text-left whitespace-nowrap">Submitted At</th>
+                      <th className="px-4 py-2 text-left"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -175,6 +197,9 @@ function App() {
                           </span>
                         </td>
                         <td className="px-4 py-2 text-left text-xs">{new Date(log.timestamp).toLocaleString()}</td>
+                        <td className="px-4 py-2 text-left">
+                          <button onClick={() => deleteLog(log.id)} className="text-red-600 text-xs hover:underline">Delete</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
