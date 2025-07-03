@@ -14,6 +14,9 @@ CueIT is an internal help desk application used to submit and track IT tickets. 
 
 ## Setup
 
+Run `./setup.sh` to install Node.js, SQLite and all project dependencies in one step.
+You can also follow the manual instructions below.
+
 ### Backend
 1. Navigate to `cueit-backend`.
 2. Run `npm install` to install dependencies.
