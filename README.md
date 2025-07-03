@@ -94,6 +94,12 @@ admin UI or by visiting the separate activation page provided by the
 fetches its configuration from `/api/kiosks/:id`; if `active` is `0` it shows an
 activation required message instead of the ticket form.
 
+To remotely disable a kiosk open the **Kiosks** tab in the admin UI and toggle
+the active switch to the off position. You can also send a `PUT` request to
+`/api/kiosks/{id}/active` with `{ "active": false }` to deactivate a kiosk via
+the API. The kiosk will stop displaying the ticket form once its next activation
+check detects the change.
+
 ## Components
 
 - **cueit-backend** – Express API with an SQLite database. It exposes endpoints
