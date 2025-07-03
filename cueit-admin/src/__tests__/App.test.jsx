@@ -29,7 +29,9 @@ describe('App filtering and config', () => {
     await userEvent.type(searchInput, 'Bob');
     expect(screen.getByText('Bob')).toBeInTheDocument();
     expect(screen.queryByText('Alice')).toBeNull();
-    await userEvent.clear(searchInput);
+    const clearBtn = within(searchInput.parentElement).getByLabelText('Clear search');
+    await userEvent.click(clearBtn);
+    expect(searchInput).toHaveValue('');
     await userEvent.selectOptions(screen.getByDisplayValue('Sort by Date'), 'name');
     const rows = screen.getAllByRole('row');
     expect(within(rows[1]).getByText('Alice')).toBeInTheDocument();
