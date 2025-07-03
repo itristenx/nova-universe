@@ -1,11 +1,11 @@
 # CueIT
 
-CueIT is an internal help desk application used to submit and track IT tickets. The repository contains four apps:
+CueIT is an internal help desk application used to submit and track IT tickets. The repository contains several apps:
 
 - **cueit-backend** – Express/SQLite API
 - **cueit-admin** – React admin interface
 - **cueit-kiosk** – iPad kiosk for ticket submission
-
+- **cueit-activate** – small React app for activating kiosks
 - **cueit-slack** – Slack slash command integration
 
 ## Requirements
@@ -31,6 +31,12 @@ You can also follow the manual instructions below.
 2. Run `npm install` to install dependencies.
 3. Create a `.env` file and set `VITE_API_URL` and `VITE_LOGO_URL`.
 4. Start the development server with `npm run dev` and open `http://localhost:5173`.
+
+### Activation Page
+1. Navigate to `cueit-activate`.
+2. Run `npm install` to install dependencies.
+3. Create a `.env` file with `VITE_API_URL`.
+4. Start the dev server with `npm run dev` and open the page to activate kiosks.
 
 The backend stores ticket logs in a local SQLite database (`cueit-backend/log.sqlite`).
 Configuration values are stored in the same database and can be edited from the admin UI.

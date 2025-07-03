@@ -20,7 +20,7 @@ if ! command -v mailpit >/dev/null 2>&1; then
   echo "Mailpit not found – install from https://github.com/axllent/mailpit if needed."
 fi
 
-# Install Node dependencies for backend, admin and Slack service
+# Install Node dependencies for backend, admin, activate page and Slack service
 pushd cueit-backend >/dev/null
 npm ci
 popd >/dev/null
@@ -28,6 +28,12 @@ popd >/dev/null
 pushd cueit-admin >/dev/null
 npm ci
 popd >/dev/null
+
+if [ -d cueit-activate ]; then
+  pushd cueit-activate >/dev/null
+  npm ci
+  popd >/dev/null
+fi
 
 if [ -d cueit-slack ]; then
   pushd cueit-slack >/dev/null
