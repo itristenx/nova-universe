@@ -21,7 +21,7 @@ export default function UsersPanel({ open }) {
   const addUser = async () => {
     try {
       const res = await axios.post(`${api}/api/users`, { name: '', email: '' });
-      setUsers([...users, { id: res.data.id, name: '', email: '' }]);
+      setUsers((prev) => [...prev, { id: res.data.id, name: '', email: '' }]);
     } catch (err) {
       alert('Failed to add user');
     }
