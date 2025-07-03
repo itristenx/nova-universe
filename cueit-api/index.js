@@ -6,7 +6,7 @@ const axios = require("axios");
 const bcrypt = require('bcryptjs');
 const db = require("./db");
 const { v4: uuidv4 } = require("uuid");
-const events = require("../cueit-api/events");
+const events = require("./events");
 
 const app = express();
 app.use(cors());

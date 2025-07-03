@@ -21,7 +21,7 @@ if ! command -v mailpit >/dev/null 2>&1; then
 fi
 
 # Install Node dependencies for backend, admin, activate page and Slack service
-pushd cueit-backend >/dev/null
+pushd cueit-api >/dev/null
 npm ci
 popd >/dev/null
 
