@@ -21,10 +21,15 @@ app.use(express.json());
 const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
 const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
 
+if (!DISABLE_AUTH && !process.env.SESSION_SECRET) {
+  console.error('SESSION_SECRET environment variable is required');
+  process.exit(1);
+}
+
 if (!DISABLE_AUTH) {
   app.use(
     session({
-      secret: process.env.SESSION_SECRET || 'secret',
+      secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
     })
