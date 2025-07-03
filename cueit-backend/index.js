@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 const axios = require("axios");
+const bcrypt = require('bcryptjs');
 const db = require("./db");
 const { v4: uuidv4 } = require("uuid");
 const events = require("../cueit-api/events");
@@ -122,6 +123,7 @@ app.get("/api/config", (req, res) => {
   db.all(`SELECT key, value FROM config`, (err, rows) => {
     if (err) return res.status(500).json({ error: "DB error" });
     const config = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+    delete config.adminPassword;
     res.json(config);
   });
 });
@@ -139,6 +141,32 @@ app.put("/api/config", (req, res) => {
       res.json({ message: "Config updated" });
     });
   });
+});
+
+app.post('/api/verify-password', (req, res) => {
+  const { password } = req.body;
+  if (!password) return res.status(400).json({ error: 'Missing password' });
+  db.get(`SELECT value FROM config WHERE key='adminPassword'`, (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    const hash = row ? row.value : '';
+    const valid = bcrypt.compareSync(password, hash);
+    res.json({ valid });
+  });
+});
+
+app.put('/api/admin-password', (req, res) => {
+  const { password } = req.body;
+  if (!password) return res.status(400).json({ error: 'Missing password' });
+  const hash = bcrypt.hashSync(password, 10);
+  db.run(
+    `INSERT INTO config (key, value) VALUES ('adminPassword', ?)
+     ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
+    [hash],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ message: 'Password updated' });
+    }
+  );
 });
 
 app.post("/api/register-kiosk", (req, res) => {

@@ -1,6 +1,7 @@
 const request = require('supertest');
 const assert = require('assert');
 const db = require('../db');
+const bcrypt = require('bcryptjs');
 const app = global.app;
 
 const defaults = {
@@ -8,8 +9,8 @@ const defaults = {
   faviconUrl: '/vite.svg',
   welcomeMessage: 'Welcome to the Help Desk',
   helpMessage: 'Need to report an issue?',
-  adminPassword: 'admin',
 };
+const adminHash = bcrypt.hashSync('admin', 10);
 
 function resetDb(done) {
   db.serialize(() => {
@@ -19,6 +20,7 @@ function resetDb(done) {
     for (const [k, v] of Object.entries(defaults)) {
       stmt.run(k, v);
     }
+    stmt.run('adminPassword', adminHash);
     stmt.finalize(done);
   });
 }
@@ -36,6 +38,7 @@ describe('Config endpoints', function () {
         for (const [k, v] of Object.entries(defaults)) {
           assert.strictEqual(res.body[k], v);
         }
+        assert.strictEqual(typeof res.body.adminPassword, 'undefined');
       });
   });
 
@@ -46,5 +49,32 @@ describe('Config endpoints', function () {
     const res = await request(app).get('/api/config').expect(200);
     assert.strictEqual(res.body.logoUrl, 'new.png');
     assert.strictEqual(res.body.welcomeMessage, 'Hi');
+  });
+
+  it('POST /api/verify-password validates stored hash', async function () {
+    const res = await request(app)
+      .post('/api/verify-password')
+      .send({ password: 'admin' })
+      .expect(200);
+    assert.strictEqual(res.body.valid, true);
+  });
+
+  it('PUT /api/admin-password updates the password hash', async function () {
+    await request(app)
+      .put('/api/admin-password')
+      .send({ password: 'secret' })
+      .expect(200);
+
+    const okRes = await request(app)
+      .post('/api/verify-password')
+      .send({ password: 'secret' })
+      .expect(200);
+    assert.strictEqual(okRes.body.valid, true);
+
+    const badRes = await request(app)
+      .post('/api/verify-password')
+      .send({ password: 'admin' })
+      .expect(200);
+    assert.strictEqual(badRes.body.valid, false);
   });
 });

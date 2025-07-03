@@ -1,5 +1,6 @@
 // db.js
 const sqlite3 = require("sqlite3").verbose();
+const bcrypt = require('bcryptjs');
 const db = new sqlite3.Database("log.sqlite");
 
 db.serialize(() => {
@@ -72,7 +73,7 @@ db.serialize(() => {
     faviconUrl: process.env.FAVICON_URL || '/vite.svg',
     welcomeMessage: 'Welcome to the Help Desk',
     helpMessage: 'Need to report an issue?',
-    adminPassword: 'admin'
+    adminPassword: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 10)
   };
   const stmt = db.prepare(`INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)`);
   for (const [key, value] of Object.entries(defaults)) {
