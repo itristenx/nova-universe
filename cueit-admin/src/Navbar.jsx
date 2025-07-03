@@ -23,18 +23,39 @@ export default function Navbar({
               className="p-2 hover:text-gray-200"
               aria-label="Settings"
             >
-              ⚙️
+              <i className="fa-solid fa-gear" />
             </button>
             {showMenu && (
-              <div className="absolute right-0 mt-2 w-36 bg-white text-black rounded shadow-md">
+              <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-md py-1 space-y-1">
                 <button
                   onClick={() => {
                     setShowMenu(false);
                     openSettings();
                   }}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
                 >
+                  <i className="fa-solid fa-gear" />
                   Settings
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    window.alert('CueIT Admin v1.0');
+                  }}
+                  className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
+                >
+                  <i className="fa-solid fa-circle-info" />
+                  About
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    window.alert('For assistance contact IT.');
+                  }}
+                  className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
+                >
+                  <i className="fa-solid fa-question-circle" />
+                  Help
                 </button>
               </div>
             )}
@@ -45,15 +66,27 @@ export default function Navbar({
               className="p-2 hover:text-gray-200"
               aria-label="Toggle Search"
             >
-              🔍
+              <i className="fa-solid fa-magnifying-glass" />
             </button>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={`absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-gray-100 text-black px-4 py-1 rounded-full w-56 border border-gray-300 shadow transition-all duration-300 z-20 ${showSearch ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
-            />
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={`pl-3 pr-6 absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-gray-100 text-black py-1 rounded-full w-56 border border-gray-300 shadow transition-all duration-300 z-20 ${showSearch ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'} sm:static sm:opacity-100 sm:translate-y-0 sm:pointer-events-auto sm:mt-0 sm:ml-2`}
+              />
+              {search && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => setSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
