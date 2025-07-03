@@ -9,6 +9,7 @@ const urgencyPriority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
 function App() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState('timestamp');
   const [showSearch, setShowSearch] = useState(false);
@@ -63,6 +64,7 @@ function App() {
         setConfig((c) => ({ ...c, ...configRes.data }));
       } catch (err) {
         console.error('Failed to fetch data:', err);
+        setError(err.message || 'Failed to fetch data');
       } finally {
         setLoading(false);
       }
@@ -91,6 +93,8 @@ function App() {
         <div className="max-w-7xl mx-auto">
           {loading ? (
             <p className="text-gray-400 text-center">Loading logs...</p>
+          ) : error ? (
+            <p className="text-red-500 text-center">{error}</p>
           ) : logs.length === 0 ? (
             <p className="text-gray-400 text-center">No tickets found.</p>
           ) : (
