@@ -48,8 +48,13 @@ Configuration values are stored in the same database and can be edited from the 
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
    - `BACKEND_URL`
-   - optional `SLACK_PORT`
-4. Start the service with `node index.js`.
+   - optional `SLACK_PORT` (defaults to `3001`)
+ 4. Start the service with `node index.js`. It listens on `SLACK_PORT`.
+ 5. For local testing expose the port with `ngrok` and use the HTTPS URL in your Slack command:
+
+```bash
+npx ngrok http $SLACK_PORT
+```
 
 ## Testing the API
 
