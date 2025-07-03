@@ -17,7 +17,7 @@ class ConfigService: ObservableObject {
            let cfg = try? JSONDecoder().decode(AppConfig.self, from: data) {
             self.config = cfg
         }
-        guard let url = URL(string: "http://localhost:3000/api/config") else { return }
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/config") else { return }
         URLSession.shared.dataTask(with: url) { data, _, _ in
             if let data = data, let cfg = try? JSONDecoder().decode(AppConfig.self, from: data) {
                 DispatchQueue.main.async {
@@ -31,7 +31,7 @@ class ConfigService: ObservableObject {
 
         // kiosk specific overrides
         if let kioskId = UserDefaults.standard.string(forKey: "kioskId"),
-           let kurl = URL(string: "http://localhost:3000/api/kiosks/\(kioskId)") {
+           let kurl = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(kioskId)") {
             struct KioskConfig: Codable { var logoUrl: String?; var bgUrl: String? }
             URLSession.shared.dataTask(with: kurl) { data, _, _ in
                 if let data = data, let row = try? JSONDecoder().decode(KioskConfig.self, from: data) {

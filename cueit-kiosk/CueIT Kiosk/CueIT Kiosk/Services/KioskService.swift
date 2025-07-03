@@ -27,7 +27,7 @@ class KioskService: ObservableObject {
     }()
 
     func register(version: String) {
-        guard let url = URL(string: "http://localhost:3000/api/register-kiosk") else { return }
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/register-kiosk") else { return }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -37,7 +37,7 @@ class KioskService: ObservableObject {
     }
 
     func checkActive() {
-        guard let url = URL(string: "http://localhost:3000/api/kiosks/\(id)") else { return }
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(id)") else { return }
         struct KioskRow: Codable { var active: Int }
         URLSession.shared.dataTask(with: url) { data, _, _ in
             DispatchQueue.main.async {

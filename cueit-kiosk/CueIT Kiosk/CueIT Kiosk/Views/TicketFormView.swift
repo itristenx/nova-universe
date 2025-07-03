@@ -90,7 +90,7 @@ struct TicketFormView: View {
     }
 
     func submit() {
-        guard let url = URL(string: "http://localhost:3000/submit-ticket") else { return }
+        guard let url = URL(string: "\(APIConfig.baseURL)/submit-ticket") else { return }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
