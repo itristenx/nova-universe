@@ -156,6 +156,45 @@ app.put("/api/kiosks/:id/active", (req, res) => {
   );
 });
 
+app.get("/api/users", (req, res) => {
+  db.all(`SELECT * FROM users`, (err, rows) => {
+    if (err) return res.status(500).json({ error: "DB error" });
+    res.json(rows);
+  });
+});
+
+app.post("/api/users", (req, res) => {
+  const { name, email } = req.body;
+  db.run(
+    `INSERT INTO users (name, email) VALUES (?, ?)`,
+    [name || "", email || ""],
+    function (err) {
+      if (err) return res.status(500).json({ error: "DB error" });
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
+app.put("/api/users/:id", (req, res) => {
+  const { id } = req.params;
+  const { name, email } = req.body;
+  db.run(
+    `UPDATE users SET name=?, email=? WHERE id=?`,
+    [name, email, id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      res.json({ message: "updated" });
+    }
+  );
+});
+
+app.delete("/api/users/:id", (req, res) => {
+  db.run(`DELETE FROM users WHERE id=?`, [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: "DB error" });
+    res.json({ message: "deleted" });
+  });
+});
+
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`✅ CueIT Backend running at http://localhost:${PORT}`);
