@@ -1,14 +1,19 @@
 import nodemailer from 'nodemailer';
+import axios from 'axios';
 
 process.env.DISABLE_AUTH = 'true';
 process.env.SCIM_TOKEN = 'testtoken';
 let app;
 let sendBehavior = async () => {};
+let axiosBehavior = async () => ({});
 const originalCreate = nodemailer.createTransport;
 
 nodemailer.createTransport = () => ({
   sendMail: (opts) => sendBehavior(opts),
 });
+
+const originalPost = axios.post;
+axios.post = (...args) => axiosBehavior(...args);
 
 const mod = await import('../index.js');
 app = mod.default;
@@ -18,6 +23,11 @@ globalThis.setSendBehavior = (fn) => {
   sendBehavior = fn;
 };
 
+globalThis.setAxiosBehavior = (fn) => {
+  axiosBehavior = fn;
+};
+
 after(() => {
   nodemailer.createTransport = originalCreate;
+  axios.post = originalPost;
 });
