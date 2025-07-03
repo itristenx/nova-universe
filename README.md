@@ -149,6 +149,8 @@ Each app relies on a few environment variables:
 - `HELPDESK_EMAIL` – destination address for ticket emails.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` – SMTP credentials used by
   Nodemailer.
+- `SESSION_SECRET`, `SAML_ENTRY_POINT`, `SAML_ISSUER`, `SAML_CERT`,
+  `SAML_CALLBACK_URL`, `ADMIN_URL` – required for SAML login.
 - Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.
 - `DISABLE_AUTH` – set to `true` to bypass SAML authentication and
   access the admin UI before SSO is configured.
