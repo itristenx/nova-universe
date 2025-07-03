@@ -1,6 +1,7 @@
 // db.js
 const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database("log.sqlite");
+const dbFile = process.env.DB_FILE || "log.sqlite";
+const db = new sqlite3.Database(dbFile);
 
 db.serialize(() => {
   db.run(`
