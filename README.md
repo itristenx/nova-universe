@@ -113,6 +113,8 @@ admin UI or by visiting the separate activation page provided by the
 `PUT /api/kiosks/:id/active` to update the flag. The iPad app periodically
 fetches its configuration from `/api/kiosks/:id`; if `active` is `0` it shows an
 activation required message instead of the ticket form.
+When `VITE_ADMIN_URL` is set, the activation page shows a link back to the admin
+UI for convenience.
 
 To remotely disable a kiosk open the **Kiosks** tab in the admin UI and toggle
 the active switch to the off position. You can also send a `PUT` request to
@@ -151,10 +153,12 @@ Each app relies on a few environment variables:
 - `VITE_API_URL` – base URL of the backend API.
 - `VITE_LOGO_URL` – default logo shown before configuration is loaded.
 - `VITE_FAVICON_URL` – default favicon for the page.
+- `VITE_ACTIVATE_URL` – optional URL of the activation page for linking.
 
 ### Activation App
 
 - `VITE_API_URL` – backend URL used for the activation request.
+- `VITE_ADMIN_URL` – optional link back to the admin UI shown on the page.
 
 ### Slack Service
 

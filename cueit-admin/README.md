@@ -5,6 +5,8 @@ React based interface for viewing help desk tickets and managing system settings
 ## Setup
 1. Run `npm install` in this directory.
 2. Create a `.env` file with `VITE_API_URL` and optional `VITE_LOGO_URL`.
+   You can also set `VITE_ACTIVATE_URL` to display a link to the kiosk
+   activation page.
 3. Start the dev server with `npm run dev`.
 
 The admin UI lets you search tickets, edit configuration values, activate kiosk devices and manage users from the new **Users** tab in Settings.
