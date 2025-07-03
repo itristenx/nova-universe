@@ -6,7 +6,7 @@ When launched the kiosk registers itself with the backend using `/api/register-k
 
 ## Building
 1. Open `CueIT Kiosk.xcodeproj` in Xcode 15 or later.
-2. Ensure the backend is running locally on the port defined in `cueit-backend/.env` (`API_PORT`).
+2. Ensure the backend is running locally on the port defined in `cueit-api/.env` (`API_PORT`).
 3. Run the app on an iPad or simulator.
 
 If the build fails complaining about `TicketFormView` it means the project was previously incomplete. This repository now includes that view and the app should compile.

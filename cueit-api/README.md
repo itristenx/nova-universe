@@ -1,4 +1,4 @@
-# CueIT Backend
+# CueIT API
 
 An Express and SQLite API that receives help desk tickets and stores configuration.
 
