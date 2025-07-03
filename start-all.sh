@@ -34,7 +34,7 @@ for APP in "${SELECTED[@]}"; do
   DIR=$(get_dir "$APP") || { echo "Unknown app: $APP" >&2; exit 1; }
   CMD=$(get_cmd "$APP") || { echo "Unknown app: $APP" >&2; exit 1; }
   if [[ ! -f $DIR/.env ]]; then
-    echo "Error: $DIR/.env not found. Copy $DIR/.env.example first." >&2
+    echo "Error: $DIR/.env not found. Copy $DIR/.env.example to $DIR/.env." >&2
     exit 1
   fi
   if [[ ! -d $DIR/node_modules ]]; then

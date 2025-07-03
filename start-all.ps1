@@ -21,7 +21,7 @@ foreach ($app in $selected) {
   }
   $dir = $apps[$app].dir
   if (-not (Test-Path "$dir/.env")) {
-    Write-Host "Error: $dir/.env not found. Copy $dir/.env.example first." -ForegroundColor Red
+    Write-Host "Error: $dir/.env not found. Copy $dir/.env.example to $dir/.env." -ForegroundColor Red
     exit 1
   }
   if (-not (Test-Path "$dir/node_modules")) {
