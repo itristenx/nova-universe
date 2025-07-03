@@ -2,6 +2,8 @@
 
 A basic SwiftUI iPad kiosk application for submitting help desk tickets. The app fetches branding and text strings from the backend via the `/api/config` endpoint. These values are cached locally so the app can operate offline.
 
+When launched the kiosk registers itself with the backend using `/api/register-kiosk`. An administrator must activate the kiosk from the admin UI before it can be used in production.
+
 ## Building
 1. Open `CueIT Kiosk.xcodeproj` in Xcode 15 or later.
 2. Ensure the backend is running locally on the port defined in `cueit-backend/.env` (`API_PORT`).

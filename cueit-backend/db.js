@@ -28,9 +28,13 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS kiosks (
       id TEXT PRIMARY KEY,
       last_seen TEXT,
-      version TEXT
+      version TEXT,
+      active INTEGER DEFAULT 0
     )
   `);
+
+  // add active column if database was created with an older schema
+  db.run(`ALTER TABLE kiosks ADD COLUMN active INTEGER DEFAULT 0`, () => {});
 
   // insert default config if not present
   const defaults = {

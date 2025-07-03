@@ -123,6 +123,19 @@ app.get("/api/kiosks", (req, res) => {
   });
 });
 
+app.put("/api/kiosks/:id/active", (req, res) => {
+  const { id } = req.params;
+  const { active } = req.body;
+  db.run(
+    `UPDATE kiosks SET active=? WHERE id=?`,
+    [active ? 1 : 0, id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      res.json({ message: "updated" });
+    }
+  );
+});
+
 app.listen(PORT, () => {
   console.log(`✅ CueIT Backend running at http://localhost:${PORT}`);
 });
