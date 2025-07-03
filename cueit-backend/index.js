@@ -78,6 +78,20 @@ app.get("/api/logs", (req, res) => {
   });
 });
 
+app.delete("/api/logs/:id", (req, res) => {
+  db.deleteLog(req.params.id, (err) => {
+    if (err) return res.status(500).json({ error: "DB error" });
+    res.json({ message: "deleted" });
+  });
+});
+
+app.delete("/api/logs", (req, res) => {
+  db.deleteAllLogs((err) => {
+    if (err) return res.status(500).json({ error: "DB error" });
+    res.json({ message: "cleared" });
+  });
+});
+
 app.get("/api/config", (req, res) => {
   db.all(`SELECT key, value FROM config`, (err, rows) => {
     if (err) return res.status(500).json({ error: "DB error" });
@@ -140,6 +154,20 @@ app.get("/api/kiosks", (req, res) => {
   db.all(`SELECT * FROM kiosks`, (err, rows) => {
     if (err) return res.status(500).json({ error: "DB error" });
     res.json(rows);
+  });
+});
+
+app.delete("/api/kiosks/:id", (req, res) => {
+  db.deleteKiosk(req.params.id, (err) => {
+    if (err) return res.status(500).json({ error: "DB error" });
+    res.json({ message: "deleted" });
+  });
+});
+
+app.delete("/api/kiosks", (req, res) => {
+  db.deleteAllKiosks((err) => {
+    if (err) return res.status(500).json({ error: "DB error" });
+    res.json({ message: "cleared" });
   });
 });
 

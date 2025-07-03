@@ -81,4 +81,21 @@ db.serialize(() => {
   stmt.finalize();
 });
 
+// helpers for deleting records
+db.deleteLog = (id, cb) => {
+  db.run(`DELETE FROM logs WHERE id=?`, [id], cb);
+};
+
+db.deleteAllLogs = (cb) => {
+  db.run(`DELETE FROM logs`, cb);
+};
+
+db.deleteKiosk = (id, cb) => {
+  db.run(`DELETE FROM kiosks WHERE id=?`, [id], cb);
+};
+
+db.deleteAllKiosks = (cb) => {
+  db.run(`DELETE FROM kiosks`, cb);
+};
+
 module.exports = db;

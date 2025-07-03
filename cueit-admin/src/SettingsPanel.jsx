@@ -51,6 +51,24 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
     }
   };
 
+  const deleteKiosk = async (id) => {
+    try {
+      await axios.delete(`${api}/api/kiosks/${id}`);
+      setKiosks((ks) => ks.filter((x) => x.id !== id));
+    } catch (err) {
+      toast('Failed to delete kiosk', 'error');
+    }
+  };
+
+  const clearKiosks = async () => {
+    try {
+      await axios.delete(`${api}/api/kiosks`);
+      setKiosks([]);
+    } catch (err) {
+      toast('Failed to clear kiosks', 'error');
+    }
+  };
+
   return (
     <div className={`fixed inset-0 bg-black/50 z-50 transition-opacity ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
       <div className={`absolute right-0 top-0 bottom-0 w-96 bg-gray-800 text-white p-6 transform transition-all duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -133,6 +151,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
         )}
         {tab === 'kiosks' && (
           <div className="overflow-y-auto text-sm h-full">
+            <button onClick={clearKiosks} className="mb-2 px-2 py-1 bg-red-600 rounded">Clear Kiosks</button>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left">
@@ -142,6 +161,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
                   <th className="pb-2">Logo URL</th>
                   <th className="pb-2">Background</th>
                   <th className="pb-2">Active</th>
+                  <th className="pb-2"></th>
                   <th className="pb-2"></th>
                 </tr>
               </thead>
@@ -177,6 +197,9 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
                     </td>
                     <td className="py-1 pl-2">
                       <button onClick={() => saveKiosk(k)} className="px-2 py-1 rounded text-xs bg-blue-600">Save</button>
+                    </td>
+                    <td className="py-1 pl-2">
+                      <button onClick={() => deleteKiosk(k.id)} className="px-2 py-1 rounded text-xs bg-red-600">Delete</button>
                     </td>
                   </tr>
                 ))}
