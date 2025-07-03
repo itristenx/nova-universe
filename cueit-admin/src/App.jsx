@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
+import Navbar from './Navbar';
 import './App.css';
 
 const urgencyPriority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
@@ -43,49 +44,50 @@ function App() {
     [logs]
   );
 
+  const [config, setConfig] = useState({ logoUrl: import.meta.env.VITE_LOGO_URL });
+
   useEffect(() => {
-    const fetchLogs = async () => {
+    const fetchData = async () => {
       try {
-        const { data } = await axios.get("http://localhost:3000/api/logs");
-        setLogs(data);
+        const api = import.meta.env.VITE_API_URL;
+        const [logsRes, configRes] = await Promise.all([
+          axios.get(`${api}/api/logs`),
+          axios.get(`${api}/api/config`)
+        ]);
+        setLogs(logsRes.data);
+        setConfig((c) => ({ ...c, ...configRes.data }));
       } catch (err) {
-        console.error("Failed to fetch logs:", err);
+        console.error('Failed to fetch data:', err);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchLogs();
+    fetchData();
   }, []);
 
   return (
     <>
-      <nav className="bg-blue-600 text-white shadow-md border-b border-blue-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between relative">
-          <div className="flex items-center gap-5">
-            <img src="/logo.png" alt="Logo" className="h-[50px] w-[50px] object-contain" />
-            <h1 className="text-xl font-semibold tracking-tight">CueIT Admin</h1>
-          </div>
-          <div className="relative flex items-center">
-            <button
-              onClick={() => setShowSearch(!showSearch)}
-              className="text-gray-700 hover:text-black transition p-1"
-              aria-label="Toggle Search"
-            >
-              🔍
-            </button>
-            {showSearch && (
-              <input
-                type="text"
-                placeholder="Search..."
-                className="ml-2 w-56 px-4 py-1 border rounded-full text-sm shadow bg-white"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            )}
-          </div>
+      <Navbar logo={config.logoUrl} />
+      <div className="bg-blue-100 text-black py-2 flex justify-center">
+        <div className="relative">
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            className="text-gray-700 hover:text-black transition p-1"
+            aria-label="Toggle Search"
+          >
+            🔍
+          </button>
+          {showSearch && (
+            <input
+              type="text"
+              placeholder="Search..."
+              className="ml-2 w-56 px-4 py-1 border rounded-full text-sm shadow bg-white"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          )}
         </div>
-      </nav>
+      </div>
       <div className="min-h-screen bg-gray-900 text-white pb-8">
         <div className="max-w-7xl mx-auto">
           {loading ? (
@@ -177,6 +179,51 @@ function App() {
               </div>
             </div>
           )}
+          <div className="bg-gray-800 mt-10 p-6 rounded text-sm">
+            <h2 className="text-lg mb-4">Configuration</h2>
+            <div className="space-y-3">
+              <label className="block">
+                Logo URL
+                <input
+                  type="text"
+                  value={config.logoUrl || ''}
+                  onChange={(e) => setConfig({ ...config, logoUrl: e.target.value })}
+                  className="mt-1 w-full px-2 py-1 rounded text-black"
+                />
+              </label>
+              <label className="block">
+                Welcome Message
+                <input
+                  type="text"
+                  value={config.welcomeMessage || ''}
+                  onChange={(e) => setConfig({ ...config, welcomeMessage: e.target.value })}
+                  className="mt-1 w-full px-2 py-1 rounded text-black"
+                />
+              </label>
+              <label className="block">
+                Help Message
+                <input
+                  type="text"
+                  value={config.helpMessage || ''}
+                  onChange={(e) => setConfig({ ...config, helpMessage: e.target.value })}
+                  className="mt-1 w-full px-2 py-1 rounded text-black"
+                />
+              </label>
+              <button
+                onClick={async () => {
+                  try {
+                    await axios.put(`${import.meta.env.VITE_API_URL}/api/config`, config);
+                    alert('Saved');
+                  } catch (err) {
+                    alert('Failed');
+                  }
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded mt-2"
+              >
+                Save
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </>

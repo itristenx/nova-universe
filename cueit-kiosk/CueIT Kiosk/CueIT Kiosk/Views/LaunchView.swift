@@ -10,29 +10,28 @@ import SwiftUI
 struct LaunchView: View {
     @State private var showForm = false
     @State private var showAdmin = false
+    @StateObject private var configService = ConfigService()
 
     var body: some View {
         ZStack {
+            Color.white.edgesIgnoringSafeArea(.all)
             VStack {
-                Image("logo")
-                    .resizable()
+                AsyncImage(url: URL(string: configService.config.logoUrl)) { img in
+                    img.resizable()
+                } placeholder: {
+                    Image("logo").resizable()
+                }
                     .scaledToFit()
                     .frame(width: 120, height: 120)
                     .padding(.top, 60)
 
                 Spacer()
-
-                Image(systemName: "photo") // Placeholder logo
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 100, height: 50)
-                    .padding(.bottom, 30)
             }
 
             VStack(spacing: 10) {
-                Text("Welcome to the Help Desk")
+                Text(configService.config.welcomeMessage)
                     .font(.largeTitle).bold()
-                Text("Need to report an issue?")
+                Text(configService.config.helpMessage)
                     .font(.title2)
                     .foregroundColor(.gray)
                 Text("Tap anywhere to begin")
@@ -40,7 +39,6 @@ struct LaunchView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white)
         .onTapGesture {
             showForm = true
         }
@@ -48,7 +46,10 @@ struct LaunchView: View {
             TicketFormView()
         }
         .sheet(isPresented: $showAdmin) {
-            AdminLoginView()
+            AdminLoginView(configService: configService)
+        }
+        .onAppear {
+            configService.load()
         }
         .overlay(
             HStack {
