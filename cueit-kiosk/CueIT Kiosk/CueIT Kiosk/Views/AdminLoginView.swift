@@ -30,10 +30,12 @@ struct AdminLoginView: View {
                 }
 
                 Button("Login") {
-                    if password == configService.config.adminPassword {
-                        dismiss()
-                    } else {
-                        showError = true
+                    configService.verifyPassword(password) { ok in
+                        if ok {
+                            dismiss()
+                        } else {
+                            showError = true
+                        }
                     }
                 }
                 .padding(Theme.Spacing.sm)
