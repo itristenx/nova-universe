@@ -35,10 +35,28 @@ db.serialize(() => {
     )
   `);
 
-  // add active column if database was created with an older schema
-  db.run(`ALTER TABLE kiosks ADD COLUMN active INTEGER DEFAULT 0`, () => {});
-  db.run(`ALTER TABLE kiosks ADD COLUMN logoUrl TEXT`, () => {});
-  db.run(`ALTER TABLE kiosks ADD COLUMN bgUrl TEXT`, () => {});
+  // add columns if database was created with an older schema
+  function addColumnIfMissing(table, columnDef) {
+    const columnName = columnDef.split(" ")[0];
+    db.all(`PRAGMA table_info(${table})`, (err, rows) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      const exists = rows.some((r) => r.name === columnName);
+      if (!exists) {
+        db.run(`ALTER TABLE ${table} ADD COLUMN ${columnDef}`, (err2) => {
+          if (err2 && !/duplicate column name/i.test(err2.message)) {
+            console.error(err2);
+          }
+        });
+      }
+    });
+  }
+
+  addColumnIfMissing('kiosks', 'active INTEGER DEFAULT 0');
+  addColumnIfMissing('kiosks', 'logoUrl TEXT');
+  addColumnIfMissing('kiosks', 'bgUrl TEXT');
 
   // insert default config if not present
   const defaults = {
