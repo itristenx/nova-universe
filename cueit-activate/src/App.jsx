@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import theme from '../../design/theme.js';
 
 export default function App() {
   const [kioskId, setKioskId] = useState('');
@@ -17,17 +18,43 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '2rem' }}>
-      <h1>Kiosk Activation</h1>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginTop: theme.spacing.lg,
+        fontFamily: theme.fonts.sans.join(','),
+        color: theme.colors.content,
+      }}
+    >
+      <h1 style={{ marginBottom: theme.spacing.md }}>Kiosk Activation</h1>
       <input
         type="text"
         value={kioskId}
         onChange={(e) => setKioskId(e.target.value)}
         placeholder="Enter kiosk ID"
-        style={{ padding: '0.5rem', marginBottom: '1rem', width: '200px' }}
+        style={{
+          padding: theme.spacing.sm,
+          marginBottom: theme.spacing.md,
+          width: '200px',
+          border: `1px solid ${theme.colors.secondary}`,
+          borderRadius: '4px',
+        }}
       />
-      <button onClick={activate} style={{ padding: '0.5rem 1rem' }}>Activate</button>
-      {message && <p>{message}</p>}
+      <button
+        onClick={activate}
+        style={{
+          padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+          backgroundColor: theme.colors.primary,
+          color: theme.colors.base,
+          border: 'none',
+          borderRadius: '4px',
+        }}
+      >
+        Activate
+      </button>
+      {message && <p style={{ marginTop: theme.spacing.md }}>{message}</p>}
     </div>
   );
 }

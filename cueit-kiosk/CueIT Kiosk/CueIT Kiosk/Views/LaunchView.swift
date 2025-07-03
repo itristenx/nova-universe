@@ -19,11 +19,11 @@ struct LaunchView: View {
                 AsyncImage(url: url) { img in
                     img.resizable().scaledToFill()
                 } placeholder: {
-                    Color.white
+                    Theme.Colors.base
                 }
                 .ignoresSafeArea()
             } else {
-                Color.white.ignoresSafeArea()
+                Theme.Colors.base.ignoresSafeArea()
             }
             VStack {
                 AsyncImage(url: URL(string: configService.config.logoUrl)) { img in
@@ -33,7 +33,7 @@ struct LaunchView: View {
                 }
                     .scaledToFit()
                     .frame(width: 120, height: 120)
-                    .padding(.top, 60)
+                    .padding(.top, Theme.Spacing.lg)
 
                 Spacer()
             }
@@ -71,8 +71,8 @@ struct LaunchView: View {
                         Image(systemName: "gearshape.fill")
                             .font(.title2)
                             .foregroundColor(.black)
-                            .padding(.top, 20)
-                            .padding(.trailing, 20)
+                            .padding(.top, Theme.Spacing.md)
+                            .padding(.trailing, Theme.Spacing.md)
                     }
                     Spacer()
                 }

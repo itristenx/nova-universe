@@ -15,21 +15,21 @@ struct SubmissionErrorView: View {
             Spacer()
             Image(systemName: "xmark.octagon.fill")
                 .font(.system(size: 64))
-                .foregroundColor(.red)
+                .foregroundColor(Theme.Colors.accent)
             Text("Submission Failed")
                 .font(.title)
                 .fontWeight(.semibold)
             Text("There was a problem sending your request. Please try again.")
                 .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                .padding(.horizontal, Theme.Spacing.md)
 
             HStack(spacing: 20) {
                 Button(action: {
                     onDismiss()
                 }) {
                     Text("Cancel")
-                        .foregroundColor(.red)
-                        .padding()
+                        .foregroundColor(Theme.Colors.accent)
+                        .padding(Theme.Spacing.sm)
                         .frame(maxWidth: .infinity)
                         .background(Color(.systemGray6))
                         .cornerRadius(10)
@@ -39,18 +39,18 @@ struct SubmissionErrorView: View {
                     onDismiss()
                 }) {
                     Text("Try Again")
-                        .foregroundColor(.white)
-                        .padding()
+                        .foregroundColor(Theme.Colors.base)
+                        .padding(Theme.Spacing.sm)
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue)
+                        .background(Theme.Colors.primary)
                         .cornerRadius(10)
                 }
             }
-            .padding(.top)
+            .padding(.top, Theme.Spacing.md)
 
             Spacer()
         }
-        .padding()
+        .padding(Theme.Spacing.md)
     }
 }
 

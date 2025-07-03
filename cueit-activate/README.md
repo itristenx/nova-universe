@@ -6,3 +6,9 @@ A minimal React page for activating kiosks.
 1. Run `npm install` in this folder.
 2. Create a `.env` with `VITE_API_URL` pointing to the backend.
 3. Start the dev server with `npm run dev`.
+
+### Theme
+
+This page also consumes the shared design tokens in `../../design/theme.js` via
+`src/theme.js`. Use these values when styling new components so colors and
+spacing stay consistent with the rest of the project.

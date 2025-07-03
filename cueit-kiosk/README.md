@@ -10,3 +10,9 @@ When launched the kiosk registers itself with the backend using `/api/register-k
 3. Run the app on an iPad or simulator.
 
 If the build fails complaining about `TicketFormView` it means the project was previously incomplete. This repository now includes that view and the app should compile.
+
+### Theme
+
+SwiftUI views use color and spacing constants defined in `CueIT Kiosk/CueIT Kiosk/Theme.swift`.
+These values mirror the tokens in `../../design/theme.js` so the iPad app
+matches the web interfaces.
