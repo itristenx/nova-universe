@@ -1,10 +1,12 @@
 # CueIT
 
-CueIT is an internal help desk application used to submit and track IT tickets. The repository contains three apps:
+CueIT is an internal help desk application used to submit and track IT tickets. The repository contains four apps:
 
 - **cueit-backend** – Express/SQLite API
 - **cueit-admin** – React admin interface
 - **cueit-kiosk** – iPad kiosk for ticket submission
+
+- **cueit-slack** – Slack slash command integration
 
 ## Requirements
 - [Node.js](https://nodejs.org/) 18 or higher
@@ -32,6 +34,16 @@ You can also follow the manual instructions below.
 
 The backend stores ticket logs in a local SQLite database (`cueit-backend/log.sqlite`).
 Configuration values are stored in the same database and can be edited from the admin UI.
+
+### Slack Service
+1. Create a Slack app and define a `/new-ticket` slash command. Set its request URL to this service.
+2. Navigate to `cueit-slack` and run `npm install`.
+3. Create a `.env` file with:
+   - `SLACK_SIGNING_SECRET`
+   - `SLACK_BOT_TOKEN`
+   - `BACKEND_URL`
+   - optional `SLACK_PORT`
+4. Start the service with `node index.js`.
 
 ## Testing the API
 
