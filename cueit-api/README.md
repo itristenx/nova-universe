@@ -1,4 +1,4 @@
-# CueIT Backend
+# CueIT API
 
 An Express and SQLite API that receives help desk tickets and stores configuration.
 
@@ -12,7 +12,7 @@ Kiosk devices register with `/api/register-kiosk` and can be activated through t
 
 ## API Endpoints
 
-The backend exposes a small REST API over Express. It loads SMTP and other
+The API exposes a small REST API over Express. It loads SMTP and other
 settings from `.env` and listens on `API_PORT` (default `3000`).
 
 ### Ticket Submission
