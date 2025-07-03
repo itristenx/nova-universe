@@ -2,14 +2,39 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
+const axios = require("axios");
 const db = require("./db");
 const { v4: uuidv4 } = require("uuid");
+const events = require("../cueit-api/events");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.API_PORT || 3000;
+const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
+
+if (SLACK_URL) {
+  events.on('kiosk-registered', ({ id, version }) => {
+    const verText = version ? ` v${version}` : '';
+    axios
+      .post(SLACK_URL, { text: `Kiosk ${id} registered${verText}` })
+      .catch((err) => console.error('Slack webhook failed:', err.message));
+  });
+
+  events.on('kiosk-deleted', (data) => {
+    const text = data.all ? 'All kiosks deleted' : `Kiosk ${data.id} deleted`;
+    axios
+      .post(SLACK_URL, { text })
+      .catch((err) => console.error('Slack webhook failed:', err.message));
+  });
+
+  events.on('mail-error', (err) => {
+    axios
+      .post(SLACK_URL, { text: `Email send failed: ${err.message}` })
+      .catch((err2) => console.error('Slack webhook failed:', err2.message));
+  });
+}
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -53,6 +78,7 @@ ${description || "(No description provided)"}
     await transporter.sendMail(mailOptions);
   } catch (err) {
     console.error("❌ Failed to send email:", err.message);
+    events.emit('mail-error', err);
     emailStatus = "fail";
   }
 
@@ -125,6 +151,7 @@ app.post("/api/register-kiosk", (req, res) => {
     [id, lastSeen, version || ""],
     (err) => {
       if (err) return res.status(500).json({ error: "DB error" });
+      events.emit('kiosk-registered', { id, version });
       res.json({ message: "registered" });
     }
   );
@@ -160,6 +187,7 @@ app.get("/api/kiosks", (req, res) => {
 app.delete("/api/kiosks/:id", (req, res) => {
   db.deleteKiosk(req.params.id, (err) => {
     if (err) return res.status(500).json({ error: "DB error" });
+    events.emit('kiosk-deleted', { id: req.params.id });
     res.json({ message: "deleted" });
   });
 });
@@ -167,6 +195,7 @@ app.delete("/api/kiosks/:id", (req, res) => {
 app.delete("/api/kiosks", (req, res) => {
   db.deleteAllKiosks((err) => {
     if (err) return res.status(500).json({ error: "DB error" });
+    events.emit('kiosk-deleted', { all: true });
     res.json({ message: "cleared" });
   });
 });
