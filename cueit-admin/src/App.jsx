@@ -1,6 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
+import ConfigPanel from './ConfigPanel';
+import KiosksPanel from './KiosksPanel';
 import './App.css';
 
 const urgencyPriority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
@@ -11,6 +13,8 @@ function App() {
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState('timestamp');
   const [showSearch, setShowSearch] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
+  const [showKiosks, setShowKiosks] = useState(false);
   const [urgencyFilter, setUrgencyFilter] = useState('');
   const [systemFilter, setSystemFilter] = useState('');
 
@@ -67,27 +71,15 @@ function App() {
 
   return (
     <>
-      <Navbar logo={config.logoUrl} />
-      <div className="bg-blue-100 text-black py-2 flex justify-center">
-        <div className="relative">
-          <button
-            onClick={() => setShowSearch(!showSearch)}
-            className="text-gray-700 hover:text-black transition p-1"
-            aria-label="Toggle Search"
-          >
-            🔍
-          </button>
-          {showSearch && (
-            <input
-              type="text"
-              placeholder="Search..."
-              className="ml-2 w-56 px-4 py-1 border rounded-full text-sm shadow bg-white"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          )}
-        </div>
-      </div>
+      <Navbar
+        logo={config.logoUrl}
+        search={search}
+        setSearch={setSearch}
+        showSearch={showSearch}
+        setShowSearch={setShowSearch}
+        openConfig={() => setShowConfig(true)}
+        openKiosks={() => setShowKiosks(true)}
+      />
       <div className="min-h-screen bg-gray-900 text-white pb-8">
         <div className="max-w-7xl mx-auto">
           {loading ? (
@@ -179,53 +171,23 @@ function App() {
               </div>
             </div>
           )}
-          <div className="bg-gray-800 mt-10 p-6 rounded text-sm">
-            <h2 className="text-lg mb-4">Configuration</h2>
-            <div className="space-y-3">
-              <label className="block">
-                Logo URL
-                <input
-                  type="text"
-                  value={config.logoUrl || ''}
-                  onChange={(e) => setConfig({ ...config, logoUrl: e.target.value })}
-                  className="mt-1 w-full px-2 py-1 rounded text-black"
-                />
-              </label>
-              <label className="block">
-                Welcome Message
-                <input
-                  type="text"
-                  value={config.welcomeMessage || ''}
-                  onChange={(e) => setConfig({ ...config, welcomeMessage: e.target.value })}
-                  className="mt-1 w-full px-2 py-1 rounded text-black"
-                />
-              </label>
-              <label className="block">
-                Help Message
-                <input
-                  type="text"
-                  value={config.helpMessage || ''}
-                  onChange={(e) => setConfig({ ...config, helpMessage: e.target.value })}
-                  className="mt-1 w-full px-2 py-1 rounded text-black"
-                />
-              </label>
-              <button
-                onClick={async () => {
-                  try {
-                    await axios.put(`${import.meta.env.VITE_API_URL}/api/config`, config);
-                    alert('Saved');
-                  } catch (err) {
-                    alert('Failed');
-                  }
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded mt-2"
-              >
-                Save
-              </button>
-            </div>
-          </div>
         </div>
       </div>
+      <ConfigPanel
+        open={showConfig}
+        onClose={() => setShowConfig(false)}
+        config={config}
+        setConfig={setConfig}
+        save={async () => {
+          try {
+            await axios.put(`${import.meta.env.VITE_API_URL}/api/config`, config);
+            alert('Saved');
+          } catch {
+            alert('Failed');
+          }
+        }}
+      />
+      <KiosksPanel open={showKiosks} onClose={() => setShowKiosks(false)} />
     </>
   );
 }
