@@ -180,3 +180,7 @@ Several security and usability features are planned for a future version of the 
 - **HTTPS** – enable TLS so the backend, admin UI and kiosk all communicate over HTTPS.
 - **Kiosk registration tokens** – require a token when calling `/api/register-kiosk` to prevent unauthorized devices from spoofing a kiosk ID.
 
+## License
+
+CueIT is released under the [MIT license](LICENSE).
+
