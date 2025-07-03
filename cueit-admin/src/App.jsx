@@ -64,7 +64,7 @@ function App() {
         setConfig((c) => ({ ...c, ...configRes.data }));
       } catch (err) {
         console.error('Failed to fetch data:', err);
-        setError(err.message || 'Failed to fetch data');
+        setError('Failed to load data');
       } finally {
         setLoading(false);
       }
