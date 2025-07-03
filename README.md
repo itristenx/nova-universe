@@ -28,7 +28,10 @@ You can also follow the manual instructions below.
 1. Navigate to `cueit-api`.
 2. Run `npm install` to install dependencies.
 3. Create a `.env` file with your SMTP configuration and `HELPDESK_EMAIL`.
-   You can also customize `API_PORT`, `LOGO_URL` and other defaults.
+   To send tickets directly to HelpScout instead, provide
+   `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` (optionally set
+   `HELPSCOUT_SMTP_FALLBACK=true` to also send email). You can also
+   customize `API_PORT`, `LOGO_URL` and other defaults.
 4. Start the server with `node index.js` (uses `API_PORT`, default `3000`).
 
 ### Admin Frontend
@@ -103,6 +106,13 @@ curl -X POST http://localhost:3000/submit-ticket \
 For a complete description of all endpoints see
 [cueit-api/README.md](cueit-api/README.md#api-endpoints).
 
+## HelpScout Integration
+
+When `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` are defined in
+`cueit-api/.env`, the API creates a new HelpScout conversation for each ticket
+submitted to `POST /submit-ticket`. Set `HELPSCOUT_SMTP_FALLBACK=true` if you
+want the server to also send the ticket email using your SMTP configuration.
+
 ## Kiosk Activation
 
 When the iPad kiosk application launches it sends a `POST` request to
@@ -149,6 +159,9 @@ Each app relies on a few environment variables:
 - `HELPDESK_EMAIL` – destination address for ticket emails.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` – SMTP credentials used by
   Nodemailer.
+- `HELPSCOUT_API_KEY`, `HELPSCOUT_MAILBOX_ID` – enable HelpScout integration
+  for ticket submissions.
+- `HELPSCOUT_SMTP_FALLBACK` – set to `true` to also send email via SMTP.
 - `SESSION_SECRET`, `SAML_ENTRY_POINT`, `SAML_ISSUER`, `SAML_CERT`,
   `SAML_CALLBACK_URL`, `ADMIN_URL` – required for SAML login.
 - Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.
