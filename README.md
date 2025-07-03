@@ -34,7 +34,9 @@ You can also follow the manual instructions below.
 
 ### Activation Page
 1. Navigate to `cueit-activate`.
-2. Run `npm install` to install dependencies.
+2. Run `npm install` to install dependencies. The activation page now reuses the
+   Tailwind/DaisyUI setup from the admin app, so the same design system will be
+   installed.
 3. Create a `.env` file with `VITE_API_URL`.
 4. Start the dev server with `npm run dev` and open the page to activate kiosks.
 
@@ -70,3 +72,4 @@ curl -X POST http://localhost:3000/submit-ticket \
 
 For a complete description of all endpoints see
 [cueit-backend/README.md](cueit-backend/README.md#api-endpoints).
+
