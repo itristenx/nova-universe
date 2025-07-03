@@ -12,7 +12,9 @@ An Express and SQLite API that receives help desk tickets and stores configurati
   `SAML_ISSUER`, `SAML_CERT`, `SAML_CALLBACK_URL` and optional
   `ADMIN_URL` used for the post-login redirect. The server will
   refuse to start if `SESSION_SECRET` is not set when authentication
-  is enabled.
+  is enabled. Set `ADMIN_PASSWORD` to seed the initial admin password
+  used for kiosk login and the `/api/admin-password` management
+  endpoints.
 3. Start the server with `node index.js`.
 
 Kiosk devices register with `/api/register-kiosk` and can be activated through the admin UI.
