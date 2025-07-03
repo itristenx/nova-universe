@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import SettingsPanel from './SettingsPanel';
@@ -58,13 +58,16 @@ function App() {
   });
   const api = import.meta.env.VITE_API_URL;
 
-  const handleApiError = (err, msg) => {
-    if (err.response && err.response.status === 401) {
-      window.location.href = `${api}/login`;
-    } else if (msg) {
-      toast(msg, 'error');
-    }
-  };
+  const handleApiError = useCallback(
+    (err, msg) => {
+      if (err.response && err.response.status === 401) {
+        window.location.href = `${api}/login`;
+      } else if (msg) {
+        toast(msg, 'error');
+      }
+    },
+    [api, toast]
+  );
 
   const deleteLog = async (id) => {
     try {
@@ -103,7 +106,7 @@ function App() {
       }
     };
     fetchData();
-  }, []);
+  }, [api, handleApiError]);
 
   useEffect(() => {
     let isMounted = true;
