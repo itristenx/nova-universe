@@ -5,6 +5,7 @@ import theme from '../../design/theme.js';
 export default function App() {
   const [kioskId, setKioskId] = useState('');
   const [message, setMessage] = useState('');
+  const adminUrl = import.meta.env.VITE_ADMIN_URL;
 
   const activate = async () => {
     if (!kioskId) return;
@@ -55,6 +56,18 @@ export default function App() {
         Activate
       </button>
       {message && <p style={{ marginTop: theme.spacing.md }}>{message}</p>}
+      {adminUrl && (
+        <a
+          href={adminUrl}
+          style={{
+            marginTop: theme.spacing.md,
+            color: theme.colors.primary,
+            textDecoration: 'underline',
+          }}
+        >
+          Go to Admin UI
+        </a>
+      )}
     </div>
   );
 }

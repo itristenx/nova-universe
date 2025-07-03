@@ -8,6 +8,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const [tab, setTab] = useState('general');
   const [kiosks, setKiosks] = useState([]);
   const api = import.meta.env.VITE_API_URL;
+  const activateUrl = import.meta.env.VITE_ACTIVATE_URL;
   const toast = useToast();
 
   useEffect(() => {
@@ -154,7 +155,14 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
         )}
         {tab === 'kiosks' && (
           <div className="overflow-y-auto text-sm h-full">
-            <button onClick={clearKiosks} className="mb-2 px-2 py-1 bg-red-600 rounded">Clear Kiosks</button>
+            <div className="flex items-center justify-between mb-2">
+              <button onClick={clearKiosks} className="px-2 py-1 bg-red-600 rounded">Clear Kiosks</button>
+              {activateUrl && (
+                <a href={activateUrl} target="_blank" rel="noopener" className="text-primary underline text-xs">
+                  Open Activation Page
+                </a>
+              )}
+            </div>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left">
