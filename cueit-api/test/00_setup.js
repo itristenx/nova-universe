@@ -1,4 +1,5 @@
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
+let app;
 let sendBehavior = async () => {};
 const originalCreate = nodemailer.createTransport;
 
@@ -6,11 +7,11 @@ nodemailer.createTransport = () => ({
   sendMail: (opts) => sendBehavior(opts),
 });
 
-const app = require('../index');
+const mod = await import('../index.js');
+app = mod.default;
+globalThis.app = app;
 
-global.app = app;
-
-global.setSendBehavior = (fn) => {
+globalThis.setSendBehavior = (fn) => {
   sendBehavior = fn;
 };
 

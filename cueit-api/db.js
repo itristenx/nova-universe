@@ -1,6 +1,7 @@
 // db.js
-const sqlite3 = require("sqlite3").verbose();
-const bcrypt = require('bcryptjs');
+import sqlite3pkg from 'sqlite3';
+import bcrypt from 'bcryptjs';
+const sqlite3 = sqlite3pkg.verbose();
 const db = new sqlite3.Database("log.sqlite");
 
 db.serialize(() => {
@@ -99,4 +100,4 @@ db.deleteAllKiosks = (cb) => {
   db.run(`DELETE FROM kiosks`, cb);
 };
 
-module.exports = db;
+export default db;
