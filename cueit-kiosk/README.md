@@ -16,3 +16,11 @@ If the build fails complaining about `TicketFormView` it means the project was p
 SwiftUI views use color and spacing constants defined in `CueIT Kiosk/CueIT Kiosk/Theme.swift`.
 These values mirror the tokens in `../../design/theme.js` so the iPad app
 matches the web interfaces.
+
+### Directory Lookup
+
+To automatically populate the ticket form with a user's job title and manager
+the app queries your identity provider's SCIM API. Add `SCIM_TOKEN` and
+`SCIM_URL` entries to `CueIT Kiosk/CueIT Kiosk/Info.plist`. `SCIM_TOKEN` should
+be a bearer token authorized for the directory service. `SCIM_URL` defaults to
+`\(API_BASE_URL)/scim/v2` when left blank.
