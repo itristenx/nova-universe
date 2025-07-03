@@ -8,7 +8,7 @@ Slack slash command integration that lets users submit tickets directly from Sla
 3. Create a `.env` file with the following variables:
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
-   - `BACKEND_URL`
+   - `API_URL`
    - optional `SLACK_PORT` (defaults to `3001`)
 4. Start the service with `node index.js`.
 
