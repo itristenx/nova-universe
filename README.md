@@ -75,3 +75,61 @@ curl -X POST http://localhost:3000/submit-ticket \
 
 For a complete description of all endpoints see
 [cueit-backend/README.md](cueit-backend/README.md#api-endpoints).
+
+## Kiosk Activation
+
+When the iPad kiosk application launches it sends a `POST` request to
+`/api/register-kiosk` with a unique identifier. The backend stores the kiosk in
+the `kiosks` table with `active` set to `0` (inactive). A kiosk cannot submit
+tickets until it is activated.
+
+An administrator can toggle the `active` flag from the **Kiosks** tab in the
+admin UI or by visiting the separate activation page provided by the
+`cueit-activate` app. Both interfaces call
+`PUT /api/kiosks/:id/active` to update the flag. The iPad app periodically
+fetches its configuration from `/api/kiosks/:id`; if `active` is `0` it shows an
+activation required message instead of the ticket form.
+
+## Components
+
+- **cueit-backend** – Express API with an SQLite database. It exposes endpoints
+  for submitting tickets, viewing logs, managing configuration and controlling
+  kiosk devices.
+- **cueit-admin** – React SPA that consumes the backend API to display logs and
+  edit configuration. It also manages kiosk activation and branding.
+- **cueit-kiosk** – SwiftUI iPad app used by end users to submit tickets. It
+  registers itself with the backend and displays the ticket form only when its
+  `active` flag is enabled.
+- **cueit-activate** – Tiny React app that lets you quickly activate a kiosk by
+  ID without using the full admin interface.
+- **cueit-slack** – Service handling the `/new-ticket` Slack slash command. It
+  opens a modal and forwards submissions to the backend.
+
+## Environment Variables
+
+Each app relies on a few environment variables:
+
+### Backend
+
+- `HELPDESK_EMAIL` – destination address for ticket emails.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` – SMTP credentials used by
+  Nodemailer.
+- Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.
+
+### Admin UI
+
+- `VITE_API_URL` – base URL of the backend API.
+- `VITE_LOGO_URL` – default logo shown before configuration is loaded.
+- `VITE_FAVICON_URL` – default favicon for the page.
+
+### Activation App
+
+- `VITE_API_URL` – backend URL used for the activation request.
+
+### Slack Service
+
+- `SLACK_SIGNING_SECRET` – Slack app signing secret.
+- `SLACK_BOT_TOKEN` – bot token with permissions to open modals and post
+  messages.
+- `BACKEND_URL` – base URL of the backend API for ticket submission.
+- Optional: `SLACK_PORT` (default `3001`).
