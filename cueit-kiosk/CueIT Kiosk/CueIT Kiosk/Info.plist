@@ -4,5 +4,9 @@
 <dict>
     <key>API_BASE_URL</key>
     <string>http://localhost:3000</string>
+    <key>SCIM_TOKEN</key>
+    <string></string>
+    <key>SCIM_URL</key>
+    <string></string>
 </dict>
 </plist>

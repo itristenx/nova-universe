@@ -59,9 +59,11 @@ struct TicketFormView: View {
     @State private var name = ""
     @State private var email = ""
     @State private var title = ""
+    @State private var manager = ""
     @State private var system = ""
     @State private var urgency = "Low"
     @State private var showError = false
+    @StateObject private var dir = DirectoryService.shared
 
     var body: some View {
         NavigationView {
@@ -69,13 +71,31 @@ struct TicketFormView: View {
                 Section(header: Text("Details")) {
                     TextField("Name", text: $name)
                     TextField("Email", text: $email)
+                        .onChange(of: email) { new in
+                            dir.search(email: new)
+                        }
                     TextField("Title", text: $title)
+                    TextField("Manager", text: $manager)
                     TextField("System", text: $system)
                     Picker("Urgency", selection: $urgency) {
                         Text("Low").tag("Low")
                         Text("Medium").tag("Medium")
                         Text("High").tag("High")
                         Text("Urgent").tag("Urgent")
+                    }
+                }
+                if !dir.suggestions.isEmpty {
+                    Section(header: Text("Directory Results")) {
+                        ForEach(dir.suggestions) { user in
+                            Button(action: { apply(user) }) {
+                                VStack(alignment: .leading) {
+                                    Text(user.displayName)
+                                    Text(user.userName)
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                        }
                     }
                 }
                 Button("Submit") {
@@ -94,7 +114,7 @@ struct TicketFormView: View {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = ["name": name, "email": email, "title": title, "system": system, "urgency": urgency]
+        let body = ["name": name, "email": email, "title": title, "manager": manager, "system": system, "urgency": urgency]
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
         URLSession.shared.dataTask(with: req) { _, res, err in
             DispatchQueue.main.async {
@@ -105,5 +125,13 @@ struct TicketFormView: View {
                 }
             }
         }.resume()
+    }
+
+    func apply(_ user: DirectoryUser) {
+        name = user.displayName
+        email = user.userName
+        if let t = user.title { title = t }
+        if let m = user.manager { manager = m }
+        dir.suggestions = []
     }
 }
