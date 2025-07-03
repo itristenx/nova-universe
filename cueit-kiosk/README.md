@@ -24,3 +24,10 @@ the app queries your identity provider's SCIM API. Add `SCIM_TOKEN` and
 `SCIM_URL` entries to `CueIT Kiosk/CueIT Kiosk/Info.plist`. `SCIM_TOKEN` should
 be a bearer token authorized for the directory service. `SCIM_URL` defaults to
 `\(API_BASE_URL)/scim/v2` when left blank.
+
+### Admin Login
+
+Tapping the gear icon on the welcome screen opens the admin login sheet. The
+entered password is sent to the backend via the `/api/verify-password` endpoint
+and never stored on the device. If the server verifies the password the sheet
+is dismissed, otherwise an error message is shown.

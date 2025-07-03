@@ -6,11 +6,10 @@ struct AppConfig: Codable {
     var backgroundUrl: String?
     var welcomeMessage: String
     var helpMessage: String
-    var adminPassword: String
 }
 
 class ConfigService: ObservableObject {
-    @Published var config: AppConfig = AppConfig(logoUrl: "/logo.png", backgroundUrl: nil, welcomeMessage: "Welcome", helpMessage: "Need help?", adminPassword: "admin")
+    @Published var config: AppConfig = AppConfig(logoUrl: "/logo.png", backgroundUrl: nil, welcomeMessage: "Welcome", helpMessage: "Need help?")
 
     func load() {
         if let data = UserDefaults.standard.data(forKey: "config"),
@@ -42,5 +41,27 @@ class ConfigService: ObservableObject {
                 }
             }.resume()
         }
+    }
+
+    struct VerifyResponse: Decodable { let valid: Bool }
+
+    func verifyPassword(_ password: String, completion: @escaping (Bool) -> Void) {
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/verify-password") else {
+            completion(false)
+            return
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body = ["password": password]
+        req.httpBody = try? JSONEncoder().encode(body)
+        URLSession.shared.dataTask(with: req) { data, _, _ in
+            var ok = false
+            if let data = data,
+               let resp = try? JSONDecoder().decode(VerifyResponse.self, from: data) {
+                ok = resp.valid
+            }
+            DispatchQueue.main.async { completion(ok) }
+        }.resume()
     }
 }
