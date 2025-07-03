@@ -49,3 +49,6 @@ curl -X POST http://localhost:3000/submit-ticket \
     "description": "This is an example of a description"
 }'
 ```
+
+For a complete description of all endpoints see
+[cueit-backend/README.md](cueit-backend/README.md#api-endpoints).
