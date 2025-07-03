@@ -88,7 +88,7 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
   };
 
   try {
-    const res = await axios.post(`${process.env.BACKEND_URL}/submit-ticket`, payload);
+    const res = await axios.post(`${process.env.API_URL}/submit-ticket`, payload);
     const { ticketId, emailStatus } = res.data;
     await client.chat.postMessage({
       channel: body.user.id,

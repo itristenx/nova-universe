@@ -52,7 +52,7 @@ Configuration values are stored in the same database and can be edited from the 
 3. Create a `.env` file with:
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
-   - `BACKEND_URL`
+   - `API_URL`
    - optional `SLACK_PORT` (defaults to `3001`)
  4. Start the service with `node index.js`. It listens on `SLACK_PORT`.
  5. For local testing expose the port with `ngrok` and use the HTTPS URL in your Slack command:
@@ -165,7 +165,7 @@ Each app relies on a few environment variables:
 - `SLACK_SIGNING_SECRET` – Slack app signing secret.
 - `SLACK_BOT_TOKEN` – bot token with permissions to open modals and post
   messages.
-- `BACKEND_URL` – base URL of the backend API for ticket submission.
+- `API_URL` – base URL of the backend API for ticket submission.
 - Optional: `SLACK_PORT` (default `3001`).
 
 ## Future Improvements
