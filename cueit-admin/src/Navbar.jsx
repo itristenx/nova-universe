@@ -6,8 +6,7 @@ export default function Navbar({
   setSearch,
   showSearch,
   setShowSearch,
-  openConfig,
-  openKiosks,
+  openSettings,
 }) {
   const [showMenu, setShowMenu] = useState(false);
   return (
@@ -28,8 +27,15 @@ export default function Navbar({
             </button>
             {showMenu && (
               <div className="absolute right-0 mt-2 w-36 bg-white text-black rounded shadow-md">
-                <button onClick={() => { setShowMenu(false); openKiosks(); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100">Kiosk Settings</button>
-                <button onClick={() => { setShowMenu(false); openConfig(); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100 border-t">Config</button>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    openSettings();
+                  }}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  Settings
+                </button>
               </div>
             )}
           </div>

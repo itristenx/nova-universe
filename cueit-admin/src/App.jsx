@@ -1,8 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
-import ConfigPanel from './ConfigPanel';
-import KiosksPanel from './KiosksPanel';
+import SettingsPanel from './SettingsPanel';
 import './App.css';
 
 const urgencyPriority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
@@ -13,8 +12,7 @@ function App() {
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState('timestamp');
   const [showSearch, setShowSearch] = useState(false);
-  const [showConfig, setShowConfig] = useState(false);
-  const [showKiosks, setShowKiosks] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [urgencyFilter, setUrgencyFilter] = useState('');
   const [systemFilter, setSystemFilter] = useState('');
 
@@ -87,8 +85,7 @@ function App() {
         setSearch={setSearch}
         showSearch={showSearch}
         setShowSearch={setShowSearch}
-        openConfig={() => setShowConfig(true)}
-        openKiosks={() => setShowKiosks(true)}
+        openSettings={() => setShowSettings(true)}
       />
       <div className="min-h-screen bg-gray-900 text-white pb-8 flex flex-col">
         <div className="max-w-7xl mx-auto">
@@ -184,12 +181,12 @@ function App() {
         </div>
       </div>
       <footer className="text-center text-gray-400 py-4">CueIT Admin</footer>
-      <ConfigPanel
-        open={showConfig}
-        onClose={() => setShowConfig(false)}
+      <SettingsPanel
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
         config={config}
         setConfig={setConfig}
-        save={async () => {
+        saveConfig={async () => {
           try {
             await axios.put(`${import.meta.env.VITE_API_URL}/api/config`, config);
             alert('Saved');
@@ -198,7 +195,6 @@ function App() {
           }
         }}
       />
-      <KiosksPanel open={showKiosks} onClose={() => setShowKiosks(false)} />
     </>
   );
 }
