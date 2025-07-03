@@ -152,6 +152,8 @@ Each app relies on a few environment variables:
 - `SESSION_SECRET`, `SAML_ENTRY_POINT`, `SAML_ISSUER`, `SAML_CERT`,
   `SAML_CALLBACK_URL`, `ADMIN_URL` – required for SAML login.
 - Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.
+- `ADMIN_PASSWORD` – seeds the initial admin password for kiosk login and the
+  password management endpoints.
 - `DISABLE_AUTH` – set to `true` to bypass SAML authentication and
   access the admin UI before SSO is configured.
 
