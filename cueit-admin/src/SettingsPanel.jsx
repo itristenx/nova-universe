@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import UsersPanel from './UsersPanel.jsx';
+import { useToast } from './Toast.jsx';
 
 export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const [tab, setTab] = useState('general');
   const [kiosks, setKiosks] = useState([]);
   const api = import.meta.env.VITE_API_URL;
+  const toast = useToast();
 
   useEffect(() => {
     if (open && tab === 'kiosks') {
@@ -14,7 +16,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
           const res = await axios.get(`${api}/api/kiosks`);
           setKiosks(res.data);
         } catch (err) {
-          alert('Failed to load kiosks');
+          toast('Failed to load kiosks', 'error');
         }
       })();
     }
@@ -23,9 +25,9 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const saveConfig = async () => {
     try {
       await axios.put(`${api}/api/config`, config);
-      alert('Saved');
+      toast('Configuration saved');
     } catch (err) {
-      alert('Failed to save configuration');
+      toast('Failed to save configuration', 'error');
     }
   };
 
@@ -34,7 +36,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
       await axios.put(`${api}/api/kiosks/${id}/active`, { active: !active });
       setKiosks((k) => k.map((x) => (x.id === id ? { ...x, active: !active } : x)));
     } catch (err) {
-      alert('Failed to toggle kiosk');
+      toast('Failed to toggle kiosk', 'error');
     }
   };
 
@@ -45,7 +47,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
         bgUrl: kiosk.bgUrl,
       });
     } catch (err) {
-      alert('Failed to save kiosk');
+      toast('Failed to save kiosk', 'error');
     }
   };
 
