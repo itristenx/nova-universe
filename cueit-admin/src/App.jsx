@@ -98,7 +98,7 @@ function App() {
           ) : logs.length === 0 ? (
             <p className="text-gray-400 text-center">No tickets found.</p>
           ) : (
-            <div className="bg-white text-black shadow-xl rounded-lg overflow-hidden p-6">
+            <div className="panel overflow-hidden">
               <div className="mb-12 px-4 space-y-4">
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex gap-3 justify-end w-full flex-wrap sm:flex-nowrap mb-4">
@@ -151,7 +151,7 @@ function App() {
                   </thead>
                   <tbody>
                     {filteredLogs.map((log) => (
-                      <tr key={log.ticket_id} className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition divide-x divide-gray-200">
+                      <tr key={log.ticket_id} className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition-colors divide-x divide-gray-200">
                         <td className="px-4 py-2 text-left font-mono">{log.ticket_id}</td>
                         <td className="px-4 py-2 text-left">{log.name}</td>
                         <td className="px-4 py-2 text-left">{log.email}</td>
