@@ -286,7 +286,7 @@ app.get("/api/health", (req, res) => {
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`✅ CueIT Backend running at http://localhost:${PORT}`);
+    console.log(`✅ CueIT API running at http://localhost:${PORT}`);
   });
 }
 
