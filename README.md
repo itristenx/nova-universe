@@ -17,6 +17,7 @@ page and SwiftUI kiosk app.
 - npm
 - sqlite3
 - [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
+- Xcode on macOS if you plan to build the SwiftUI kiosk
 
 ## Setup
 
@@ -59,6 +60,25 @@ Configuration values are stored in the same database and can be edited from the 
 ```bash
 npx ngrok http $SLACK_PORT
 ```
+
+### Running All Services
+
+Scripts are provided to launch the API, admin UI, activation page and Slack
+service together using `concurrently`.
+
+#### macOS / Linux
+
+```bash
+./start-all.sh
+```
+
+#### Windows
+
+```powershell
+./start-all.ps1
+```
+
+The SwiftUI kiosk can only be built and run on macOS with Xcode installed.
 
 ## Testing the API
 
