@@ -23,6 +23,15 @@ export default function ConfigPanel({ open, onClose, config, setConfig, save }) 
             />
           </label>
           <label className="block">
+            Favicon URL
+            <input
+              type="text"
+              value={config.faviconUrl || ''}
+              onChange={(e) => setConfig({ ...config, faviconUrl: e.target.value })}
+              className="mt-1 w-full px-2 py-1 rounded text-black"
+            />
+          </label>
+          <label className="block">
             Welcome Message
             <input
               type="text"
@@ -43,6 +52,36 @@ export default function ConfigPanel({ open, onClose, config, setConfig, save }) 
           <button onClick={save} className="px-4 py-2 bg-blue-600 text-white rounded mt-2">
             Save
           </button>
+          <div className="pt-4 border-t border-gray-700 text-gray-300 text-xs space-y-2">
+            <div>Environment</div>
+            <label className="block">
+              API URL
+              <input
+                type="text"
+                value={import.meta.env.VITE_API_URL}
+                readOnly
+                className="mt-1 w-full px-2 py-1 rounded bg-gray-700 text-gray-400"
+              />
+            </label>
+            <label className="block">
+              Default Logo
+              <input
+                type="text"
+                value={import.meta.env.VITE_LOGO_URL}
+                readOnly
+                className="mt-1 w-full px-2 py-1 rounded bg-gray-700 text-gray-400"
+              />
+            </label>
+            <label className="block">
+              Default Favicon
+              <input
+                type="text"
+                value={import.meta.env.VITE_FAVICON_URL}
+                readOnly
+                className="mt-1 w-full px-2 py-1 rounded bg-gray-700 text-gray-400"
+              />
+            </label>
+          </div>
         </div>
       </div>
     </div>

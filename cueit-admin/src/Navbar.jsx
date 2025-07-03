@@ -14,8 +14,8 @@ export default function Navbar({
     <nav className="bg-blue-600 text-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {logo && <img src={logo} alt="Logo" className="h-[50px] w-[50px] object-contain" />}
-          <span className="text-xl font-semibold tracking-tight">CueIT Admin</span>
+          {logo && <img src={logo} alt="Logo" className="h-[60px] w-[60px] object-contain" />}
+          <span className="text-2xl font-bold tracking-tight">CueIT Admin</span>
         </div>
         <div className="flex items-center gap-4 pr-2">
           <div className="relative">
@@ -46,7 +46,7 @@ export default function Navbar({
               placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`absolute right-0 top-1/2 -translate-y-1/2 bg-white text-black px-4 py-1 rounded-full w-56 transition-all duration-300 shadow ${showSearch ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}
+              className={`absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-white text-black px-4 py-1 rounded-full w-56 transition-all duration-300 shadow ${showSearch ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
             />
           </div>
         </div>
