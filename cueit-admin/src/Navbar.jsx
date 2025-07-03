@@ -46,7 +46,7 @@ export default function Navbar({
               placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-white text-black px-4 py-1 rounded-full w-56 transition-all duration-300 shadow ${showSearch ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
+              className={`absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-gray-100 text-black px-4 py-1 rounded-full w-56 border border-gray-300 shadow transition-all duration-300 z-20 ${showSearch ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
             />
           </div>
         </div>
