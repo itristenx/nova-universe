@@ -50,7 +50,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
   };
 
   return (
-    <div className={`fixed inset-0 bg-black/50 z-60 transition-opacity ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+    <div className={`fixed inset-0 bg-black/50 z-50 transition-opacity ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
       <div className={`absolute right-0 top-0 bottom-0 w-96 bg-gray-800 text-white p-6 transform transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         <button onClick={onClose} className="mb-4 text-right w-full hover:text-gray-300">✖</button>
         <div className="flex mb-4 border-b border-gray-700 text-sm">
