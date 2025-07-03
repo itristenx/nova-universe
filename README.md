@@ -150,6 +150,8 @@ Each app relies on a few environment variables:
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` – SMTP credentials used by
   Nodemailer.
 - Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.
+- `DISABLE_AUTH` – set to `true` to bypass SAML authentication and
+  access the admin UI before SSO is configured.
 
 ### Admin UI
 
