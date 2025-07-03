@@ -1,7 +1,8 @@
-const request = require('supertest');
-const assert = require('assert');
-const db = require('../db');
-const app = global.app;
+import request from 'supertest';
+import assert from 'assert';
+import db from '../db.js';
+import bcrypt from 'bcryptjs';
+const app = globalThis.app;
 
 function resetDb(done) {
   const defaults = {
@@ -17,7 +18,7 @@ function resetDb(done) {
     for (const [k, v] of Object.entries(defaults)) {
       stmt.run(k, v);
     }
-    stmt.run('adminPassword', require('bcryptjs').hashSync('admin', 10));
+    stmt.run('adminPassword', bcrypt.hashSync('admin', 10));
     stmt.finalize(done);
   });
 }

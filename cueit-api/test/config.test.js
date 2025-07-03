@@ -1,8 +1,8 @@
-const request = require('supertest');
-const assert = require('assert');
-const db = require('../db');
-const bcrypt = require('bcryptjs');
-const app = global.app;
+import request from 'supertest';
+import assert from 'assert';
+import db from '../db.js';
+import bcrypt from 'bcryptjs';
+const app = globalThis.app;
 
 const defaults = {
   logoUrl: '/logo.png',

@@ -1,4 +1,4 @@
-const { EventEmitter } = require('events');
+import { EventEmitter } from 'events';
 
 // Singleton event bus used by the backend to broadcast state changes
-module.exports = new EventEmitter();
+export default new EventEmitter();

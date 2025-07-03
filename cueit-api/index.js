@@ -1,12 +1,15 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const nodemailer = require("nodemailer");
-const axios = require("axios");
-const bcrypt = require('bcryptjs');
-const db = require("./db");
-const { v4: uuidv4 } = require("uuid");
-const events = require("./events");
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import nodemailer from 'nodemailer';
+import axios from 'axios';
+import bcrypt from 'bcryptjs';
+import db from './db.js';
+import { v4 as uuidv4 } from 'uuid';
+import events from './events.js';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
@@ -284,10 +287,11 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
 
-if (require.main === module) {
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) {
   app.listen(PORT, () => {
     console.log(`✅ CueIT API running at http://localhost:${PORT}`);
   });
 }
 
-module.exports = app;
+export default app;

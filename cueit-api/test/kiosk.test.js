@@ -1,7 +1,7 @@
-const request = require('supertest');
-const assert = require('assert');
-const app = global.app || require('../index');
-const db = require('../db');
+import request from 'supertest';
+import assert from 'assert';
+import db from '../db.js';
+const app = globalThis.app || (await import('../index.js')).default;
 
 beforeEach((done) => {
   db.run('DELETE FROM kiosks', done);
