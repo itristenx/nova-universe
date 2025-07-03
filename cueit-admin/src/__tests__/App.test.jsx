@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import App from '../App.jsx';
@@ -17,30 +17,27 @@ beforeEach(() => {
     if (url.endsWith('/api/config')) return Promise.resolve({ data: {} });
   });
   axios.put.mockResolvedValue({});
+  window.alert = jest.fn();
 });
 
-describe('App filtering and config', () => {
+describe('App routing and config', () => {
   test('filters logs by search and sorts by name', async () => {
     render(<App />);
     await screen.findByText('Alice');
-    const searchBtn = screen.getByLabelText('Toggle Search');
-    await userEvent.click(searchBtn);
-    const searchInput = screen.getByPlaceholderText('Search...');
+    const searchInput = screen.getByPlaceholderText('Search');
     await userEvent.type(searchInput, 'Bob');
     expect(screen.getByText('Bob')).toBeInTheDocument();
     expect(screen.queryByText('Alice')).toBeNull();
-    const clearBtn = within(searchInput.parentElement).getByLabelText('Clear search');
-    await userEvent.click(clearBtn);
-    expect(searchInput).toHaveValue('');
+    await userEvent.clear(searchInput);
     await userEvent.selectOptions(screen.getByDisplayValue('Sort by Date'), 'name');
     const rows = screen.getAllByRole('row');
-    expect(within(rows[1]).getByText('Alice')).toBeInTheDocument();
+    expect(rows[1]).toHaveTextContent('Alice');
   });
 
   test('saves config via axios and updates logo url', async () => {
     render(<App />);
     await screen.findByText('Alice');
-    await userEvent.click(screen.getByLabelText('Settings'));
+    await userEvent.click(screen.getByRole('button', { name: /menu/i }));
     await userEvent.click(screen.getByText('Settings'));
     const logoInput = screen.getByLabelText('Logo URL');
     await userEvent.clear(logoInput);
