@@ -116,6 +116,26 @@ app.post("/api/register-kiosk", (req, res) => {
   );
 });
 
+app.get("/api/kiosks/:id", (req, res) => {
+  db.get(`SELECT * FROM kiosks WHERE id=?`, [req.params.id], (err, row) => {
+    if (err) return res.status(500).json({ error: "DB error" });
+    res.json(row || {});
+  });
+});
+
+app.put("/api/kiosks/:id", (req, res) => {
+  const { id } = req.params;
+  const { logoUrl, bgUrl, active } = req.body;
+  db.run(
+    `UPDATE kiosks SET logoUrl=?, bgUrl=?, active=COALESCE(?, active) WHERE id=?`,
+    [logoUrl, bgUrl, active !== undefined ? (active ? 1 : 0) : null, id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      res.json({ message: "updated" });
+    }
+  );
+});
+
 app.get("/api/kiosks", (req, res) => {
   db.all(`SELECT * FROM kiosks`, (err, rows) => {
     if (err) return res.status(500).json({ error: "DB error" });
