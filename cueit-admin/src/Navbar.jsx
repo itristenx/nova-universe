@@ -75,7 +75,7 @@ export default function Navbar({
                 aria-label="Search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className={`pl-3 pr-6 absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-gray-100 text-black py-1 rounded-full w-56 border border-gray-300 shadow transition-all duration-300 z-20 ${showSearch ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'} sm:static sm:opacity-100 sm:translate-y-0 sm:pointer-events-auto sm:mt-0 sm:ml-2`}
+                className={`pl-3 pr-6 absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-gray-100 text-black py-1 rounded-full w-56 border border-gray-300 shadow transition-all duration-300 z-20 ${showSearch ? 'block opacity-100 translate-y-0' : 'hidden opacity-0 -translate-y-2 pointer-events-none'} sm:static sm:block sm:opacity-100 sm:translate-y-0 sm:pointer-events-auto sm:mt-0 sm:ml-2`}
               />
               {search && (
                 <button
