@@ -8,6 +8,10 @@ CueIT is an internal help desk application used to submit and track IT tickets. 
 - **cueit-activate** – small React app for activating kiosks
 - **cueit-slack** – Slack slash command integration
 
+The `design/theme.js` file defines shared colors, fonts and spacing. Frontends
+import these tokens so styles remain consistent across the admin UI, activation
+page and SwiftUI kiosk app.
+
 ## Requirements
 - [Node.js](https://nodejs.org/) 18 or higher
 - npm
