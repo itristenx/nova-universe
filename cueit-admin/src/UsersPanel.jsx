@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useToast } from './Toast.jsx';
 
 export default function UsersPanel({ open }) {
   const [users, setUsers] = useState([]);
   const api = import.meta.env.VITE_API_URL;
+  const toast = useToast();
 
   useEffect(() => {
     if (open) {
@@ -12,7 +14,7 @@ export default function UsersPanel({ open }) {
           const res = await axios.get(`${api}/api/users`);
           setUsers(res.data);
         } catch (err) {
-          alert('Failed to load users');
+          toast('Failed to load users', 'error');
         }
       })();
     }
@@ -23,7 +25,7 @@ export default function UsersPanel({ open }) {
       const res = await axios.post(`${api}/api/users`, { name: '', email: '' });
       setUsers(prev => [...prev, { id: res.data.id, name: '', email: '' }]);
     } catch (err) {
-      alert('Failed to add user');
+      toast('Failed to add user', 'error');
     }
   };
 
@@ -34,7 +36,7 @@ export default function UsersPanel({ open }) {
         email: u.email,
       });
     } catch (err) {
-      alert('Failed to save user');
+      toast('Failed to save user', 'error');
     }
   };
 
@@ -43,7 +45,7 @@ export default function UsersPanel({ open }) {
       await axios.delete(`${api}/api/users/${id}`);
       setUsers((us) => us.filter((x) => x.id !== id));
     } catch (err) {
-      alert('Failed to delete user');
+      toast('Failed to delete user', 'error');
     }
   };
 
