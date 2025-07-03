@@ -35,6 +35,14 @@ db.serialize(() => {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      email TEXT
+    )
+  `);
+
   // add columns if database was created with an older schema
   function addColumnIfMissing(table, columnDef) {
     const columnName = columnDef.split(" ")[0];

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import UsersPanel from './UsersPanel.jsx';
 
 export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const [tab, setTab] = useState('general');
@@ -54,7 +55,8 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
         <button onClick={onClose} className="mb-4 text-right w-full hover:text-gray-300">✖</button>
         <div className="flex mb-4 border-b border-gray-700 text-sm">
           <button className={`mr-4 pb-2 ${tab === 'general' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('general')}>General</button>
-          <button className={`pb-2 ${tab === 'kiosks' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('kiosks')}>Kiosks</button>
+          <button className={`mr-4 pb-2 ${tab === 'kiosks' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('kiosks')}>Kiosks</button>
+          <button className={`pb-2 ${tab === 'users' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('users')}>Users</button>
         </div>
         {tab === 'general' && (
           <div className="space-y-3 text-sm overflow-y-auto">
@@ -180,6 +182,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
             </table>
           </div>
         )}
+        {tab === 'users' && <UsersPanel open={open && tab === 'users'} />}
       </div>
     </div>
   );
