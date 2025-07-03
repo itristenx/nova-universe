@@ -6,6 +6,9 @@ An Express and SQLite API that receives help desk tickets and stores configurati
 1. Run `npm install` in this folder.
 2. Create a `.env` file with your SMTP details and set `HELPDESK_EMAIL`.
    Optional variables are `API_PORT` and `LOGO_URL`.
+   For SAML login also provide `SESSION_SECRET`, `SAML_ENTRY_POINT`,
+   `SAML_ISSUER`, `SAML_CERT`, `SAML_CALLBACK_URL` and optional
+   `ADMIN_URL` used for the post-login redirect.
 3. Start the server with `node index.js`.
 
 Kiosk devices register with `/api/register-kiosk` and can be activated through the admin UI.
@@ -50,3 +53,21 @@ SQLite tables are created in `log.sqlite`:
 - `logs` – ticket information and email status.
 - `config` – configuration values.
 - `kiosks` – registered kiosks with branding URLs and active state.
+
+## Authentication
+
+Admin endpoints require SAML authentication. Browsers are
+redirected to `/login` which initiates the SAML flow. After the IdP
+authenticates the user it sends them back to `/login/callback` and a
+session is established. The logged‑in user information can be
+retrieved from `/api/me`.
+
+To enable SAML configure these variables in `.env`:
+
+- `SESSION_SECRET` – secret used to sign the Express session cookie.
+- `SAML_ENTRY_POINT` – Identity Provider login URL.
+- `SAML_ISSUER` – the SP entity ID/issuer string.
+- `SAML_CERT` – IdP certificate used to validate responses.
+- `SAML_CALLBACK_URL` – URL on this service that the IdP
+  redirects to after authentication (e.g. `http://localhost:3000/login/callback`).
+- `ADMIN_URL` – URL of the admin frontend to redirect to after login.

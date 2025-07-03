@@ -20,6 +20,7 @@ function App() {
   const toast = useToast();
   const [apiConnected, setApiConnected] = useState(true);
   const prevConnectedRef = useRef(true);
+  const [user, setUser] = useState(null);
 
   const filteredLogs = useMemo(() => {
     const searchLower = search.toLowerCase();
@@ -57,12 +58,20 @@ function App() {
   });
   const api = import.meta.env.VITE_API_URL;
 
+  const handleApiError = (err, msg) => {
+    if (err.response && err.response.status === 401) {
+      window.location.href = `${api}/login`;
+    } else if (msg) {
+      toast(msg, 'error');
+    }
+  };
+
   const deleteLog = async (id) => {
     try {
       await axios.delete(`${api}/api/logs/${id}`);
       setLogs((ls) => ls.filter((l) => l.id !== id));
     } catch (err) {
-      toast('Failed to delete log', 'error');
+      handleApiError(err, 'Failed to delete log');
     }
   };
 
@@ -71,21 +80,23 @@ function App() {
       await axios.delete(`${api}/api/logs`);
       setLogs([]);
     } catch (err) {
-      toast('Failed to clear logs', 'error');
+      handleApiError(err, 'Failed to clear logs');
     }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [logsRes, configRes] = await Promise.all([
+        const [logsRes, configRes, meRes] = await Promise.all([
           axios.get(`${api}/api/logs`),
-          axios.get(`${api}/api/config`)
+          axios.get(`${api}/api/config`),
+          axios.get(`${api}/api/me`)
         ]);
         setLogs(logsRes.data);
         setConfig((c) => ({ ...c, ...configRes.data }));
+        setUser(meRes.data);
       } catch (err) {
-        console.error('Failed to fetch data:', err);
+        handleApiError(err);
         setError('Failed to load data');
       } finally {
         setLoading(false);
@@ -136,6 +147,8 @@ function App() {
         showSearch={showSearch}
         setShowSearch={setShowSearch}
         openSettings={() => setShowSettings(true)}
+        user={user}
+        api={api}
       />
       <div className="min-h-screen bg-gray-900 text-white pb-8 flex flex-col">
         <div className="max-w-7xl mx-auto">

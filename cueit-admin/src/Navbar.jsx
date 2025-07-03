@@ -14,6 +14,8 @@ export default function Navbar({
   setShowSearch,
   openSettings,
   apiConnected,
+  user,
+  api,
 }) {
   const [showMenu, setShowMenu] = useState(false);
   return (
@@ -28,6 +30,7 @@ export default function Navbar({
           />
         </div>
         <div className="flex items-center gap-4 pr-2">
+          {user && <span className="text-sm hidden sm:block">{user.name || user.email}</span>}
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
@@ -68,6 +71,13 @@ export default function Navbar({
                   <QuestionMarkCircleIcon className="h-5 w-5" />
                   Help
                 </button>
+                <a
+                  href={`${api}/logout`}
+                  onClick={() => setShowMenu(false)}
+                  className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
+                >
+                  Logout
+                </a>
               </div>
             )}
           </div>

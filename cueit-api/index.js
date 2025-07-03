@@ -4,6 +4,9 @@ import cors from 'cors';
 import nodemailer from 'nodemailer';
 import axios from 'axios';
 import bcrypt from 'bcryptjs';
+import session from 'express-session';
+import passport from 'passport';
+import { Strategy as SamlStrategy } from 'passport-saml';
 import db from './db.js';
 import { v4 as uuidv4 } from 'uuid';
 import events from './events.js';
@@ -14,6 +17,55 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
+
+if (!DISABLE_AUTH) {
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || 'secret',
+      resave: false,
+      saveUninitialized: false,
+    })
+  );
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  passport.serializeUser((u, d) => d(null, u));
+  passport.deserializeUser((u, d) => d(null, u));
+
+  passport.use(
+    new SamlStrategy(
+      {
+        entryPoint: process.env.SAML_ENTRY_POINT,
+        issuer: process.env.SAML_ISSUER,
+        callbackUrl: process.env.SAML_CALLBACK_URL,
+        cert: process.env.SAML_CERT && process.env.SAML_CERT.replace(/\\n/g, '\n'),
+      },
+      (profile, done) => {
+        const email =
+          profile.email ||
+          profile.mail ||
+          profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'];
+        const name = profile.displayName || profile.cn || profile.givenName || email;
+        db.get(`SELECT id FROM users WHERE email=?`, [email], (err, row) => {
+          if (err) return done(err);
+          if (row) {
+            db.run(`UPDATE users SET name=? WHERE id=?`, [name, row.id], (e) => {
+              if (e) return done(e);
+              done(null, { id: row.id, name, email });
+            });
+          } else {
+            db.run(`INSERT INTO users (name, email) VALUES (?, ?)`, [name, email], function (e) {
+              if (e) return done(e);
+              done(null, { id: this.lastID, name, email });
+            });
+          }
+        });
+      }
+    )
+  );
+}
 
 const PORT = process.env.API_PORT || 3000;
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
@@ -49,6 +101,30 @@ const transporter = nodemailer.createTransport({
   },
   secure: false,
 });
+
+const ensureAuth = DISABLE_AUTH
+  ? (req, res, next) => next()
+  : (req, res, next) => {
+      if (req.isAuthenticated()) return next();
+      res.status(401).json({ error: 'unauthenticated' });
+    };
+
+if (!DISABLE_AUTH) {
+  app.get('/login', passport.authenticate('saml'));
+  app.post(
+    '/login/callback',
+    passport.authenticate('saml', { failureRedirect: '/login' }),
+    (req, res) => {
+      res.redirect(process.env.ADMIN_URL || '/');
+    }
+  );
+  app.get('/logout', (req, res, next) => {
+    req.logout((err) => {
+      if (err) return next(err);
+      res.redirect(process.env.ADMIN_URL || '/');
+    });
+  });
+}
 
 app.post("/submit-ticket", async (req, res) => {
   const { name, email, title, system, urgency, description } = req.body;
@@ -98,7 +174,7 @@ ${description || "(No description provided)"}
   );
 });
 
-app.get("/api/logs", (req, res) => {
+app.get("/api/logs", ensureAuth, (req, res) => {
   db.all(`SELECT * FROM logs ORDER BY timestamp DESC`, (err, rows) => {
     if (err) {
       console.error("❌ Failed to fetch logs:", err.message);
@@ -108,21 +184,21 @@ app.get("/api/logs", (req, res) => {
   });
 });
 
-app.delete("/api/logs/:id", (req, res) => {
+app.delete("/api/logs/:id", ensureAuth, (req, res) => {
   db.deleteLog(req.params.id, (err) => {
     if (err) return res.status(500).json({ error: "DB error" });
     res.json({ message: "deleted" });
   });
 });
 
-app.delete("/api/logs", (req, res) => {
+app.delete("/api/logs", ensureAuth, (req, res) => {
   db.deleteAllLogs((err) => {
     if (err) return res.status(500).json({ error: "DB error" });
     res.json({ message: "cleared" });
   });
 });
 
-app.get("/api/config", (req, res) => {
+app.get("/api/config", ensureAuth, (req, res) => {
   db.all(`SELECT key, value FROM config`, (err, rows) => {
     if (err) return res.status(500).json({ error: "DB error" });
     const config = Object.fromEntries(rows.map((r) => [r.key, r.value]));
@@ -131,7 +207,7 @@ app.get("/api/config", (req, res) => {
   });
 });
 
-app.put("/api/config", (req, res) => {
+app.put("/api/config", ensureAuth, (req, res) => {
   const updates = req.body;
   const stmt = db.prepare(`INSERT INTO config (key, value) VALUES (?, ?)
     ON CONFLICT(key) DO UPDATE SET value=excluded.value`);
@@ -146,7 +222,7 @@ app.put("/api/config", (req, res) => {
   });
 });
 
-app.post('/api/verify-password', (req, res) => {
+app.post('/api/verify-password', ensureAuth, (req, res) => {
   const { password } = req.body;
   if (!password) return res.status(400).json({ error: 'Missing password' });
   db.get(`SELECT value FROM config WHERE key='adminPassword'`, (err, row) => {
@@ -157,7 +233,7 @@ app.post('/api/verify-password', (req, res) => {
   });
 });
 
-app.put('/api/admin-password', (req, res) => {
+app.put('/api/admin-password', ensureAuth, (req, res) => {
   const { password } = req.body;
   if (!password) return res.status(400).json({ error: 'Missing password' });
   const hash = bcrypt.hashSync(password, 10);
@@ -195,7 +271,7 @@ app.get("/api/kiosks/:id", (req, res) => {
   });
 });
 
-app.put("/api/kiosks/:id", (req, res) => {
+app.put("/api/kiosks/:id", ensureAuth, (req, res) => {
   const { id } = req.params;
   const { logoUrl, bgUrl, active } = req.body;
   db.run(
@@ -208,14 +284,14 @@ app.put("/api/kiosks/:id", (req, res) => {
   );
 });
 
-app.get("/api/kiosks", (req, res) => {
+app.get("/api/kiosks", ensureAuth, (req, res) => {
   db.all(`SELECT * FROM kiosks`, (err, rows) => {
     if (err) return res.status(500).json({ error: "DB error" });
     res.json(rows);
   });
 });
 
-app.delete("/api/kiosks/:id", (req, res) => {
+app.delete("/api/kiosks/:id", ensureAuth, (req, res) => {
   db.deleteKiosk(req.params.id, (err) => {
     if (err) return res.status(500).json({ error: "DB error" });
     events.emit('kiosk-deleted', { id: req.params.id });
@@ -223,7 +299,7 @@ app.delete("/api/kiosks/:id", (req, res) => {
   });
 });
 
-app.delete("/api/kiosks", (req, res) => {
+app.delete("/api/kiosks", ensureAuth, (req, res) => {
   db.deleteAllKiosks((err) => {
     if (err) return res.status(500).json({ error: "DB error" });
     events.emit('kiosk-deleted', { all: true });
@@ -231,7 +307,7 @@ app.delete("/api/kiosks", (req, res) => {
   });
 });
 
-app.put("/api/kiosks/:id/active", (req, res) => {
+app.put("/api/kiosks/:id/active", ensureAuth, (req, res) => {
   const { id } = req.params;
   const { active } = req.body;
   db.run(
@@ -244,14 +320,14 @@ app.put("/api/kiosks/:id/active", (req, res) => {
   );
 });
 
-app.get("/api/users", (req, res) => {
+app.get("/api/users", ensureAuth, (req, res) => {
   db.all(`SELECT * FROM users`, (err, rows) => {
     if (err) return res.status(500).json({ error: "DB error" });
     res.json(rows);
   });
 });
 
-app.post("/api/users", (req, res) => {
+app.post("/api/users", ensureAuth, (req, res) => {
   const { name, email } = req.body;
   db.run(
     `INSERT INTO users (name, email) VALUES (?, ?)`,
@@ -263,7 +339,7 @@ app.post("/api/users", (req, res) => {
   );
 });
 
-app.put("/api/users/:id", (req, res) => {
+app.put("/api/users/:id", ensureAuth, (req, res) => {
   const { id } = req.params;
   const { name, email } = req.body;
   db.run(
@@ -276,11 +352,15 @@ app.put("/api/users/:id", (req, res) => {
   );
 });
 
-app.delete("/api/users/:id", (req, res) => {
+app.delete("/api/users/:id", ensureAuth, (req, res) => {
   db.run(`DELETE FROM users WHERE id=?`, [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: "DB error" });
     res.json({ message: "deleted" });
   });
+});
+
+app.get('/api/me', ensureAuth, (req, res) => {
+  res.json(req.user || {});
 });
 
 app.get("/api/health", (req, res) => {

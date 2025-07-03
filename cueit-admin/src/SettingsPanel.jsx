@@ -10,6 +10,13 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const api = import.meta.env.VITE_API_URL;
   const activateUrl = import.meta.env.VITE_ACTIVATE_URL;
   const toast = useToast();
+  const handleApiError = (err, msg) => {
+    if (err.response && err.response.status === 401) {
+      window.location.href = `${api}/login`;
+    } else {
+      toast(msg, 'error');
+    }
+  };
 
   useEffect(() => {
     if (open && tab === 'kiosks') {
@@ -18,7 +25,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
           const res = await axios.get(`${api}/api/kiosks`);
           setKiosks(res.data);
         } catch (err) {
-          toast('Failed to load kiosks', 'error');
+          handleApiError(err, 'Failed to load kiosks');
         }
       })();
     }
@@ -29,7 +36,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
       await axios.put(`${api}/api/config`, config);
       toast('Configuration saved');
     } catch (err) {
-      toast('Failed to save configuration', 'error');
+      handleApiError(err, 'Failed to save configuration');
     }
   };
 
@@ -38,7 +45,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
       await axios.put(`${api}/api/kiosks/${id}/active`, { active: !active });
       setKiosks((k) => k.map((x) => (x.id === id ? { ...x, active: !active } : x)));
     } catch (err) {
-      toast('Failed to toggle kiosk', 'error');
+      handleApiError(err, 'Failed to toggle kiosk');
     }
   };
 
@@ -49,7 +56,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
         bgUrl: kiosk.bgUrl,
       });
     } catch (err) {
-      toast('Failed to save kiosk', 'error');
+      handleApiError(err, 'Failed to save kiosk');
     }
   };
 
@@ -58,7 +65,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
       await axios.delete(`${api}/api/kiosks/${id}`);
       setKiosks((ks) => ks.filter((x) => x.id !== id));
     } catch (err) {
-      toast('Failed to delete kiosk', 'error');
+      handleApiError(err, 'Failed to delete kiosk');
     }
   };
 
@@ -67,7 +74,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
       await axios.delete(`${api}/api/kiosks`);
       setKiosks([]);
     } catch (err) {
-      toast('Failed to clear kiosks', 'error');
+      handleApiError(err, 'Failed to clear kiosks');
     }
   };
 
