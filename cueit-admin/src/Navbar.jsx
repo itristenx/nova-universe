@@ -1,4 +1,10 @@
 import React, { useState } from 'react';
+import {
+  Cog6ToothIcon,
+  InformationCircleIcon,
+  MagnifyingGlassIcon,
+  QuestionMarkCircleIcon,
+} from '@heroicons/react/24/outline';
 
 export default function Navbar({
   logo,
@@ -28,7 +34,7 @@ export default function Navbar({
               className="p-2 hover:text-gray-200"
               aria-label="Settings"
             >
-              <i className="fa-solid fa-gear" />
+              <Cog6ToothIcon className="h-5 w-5" />
             </button>
             {showMenu && (
               <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-md py-1 space-y-1">
@@ -39,7 +45,7 @@ export default function Navbar({
                   }}
                   className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
                 >
-                  <i className="fa-solid fa-gear" />
+                  <Cog6ToothIcon className="h-5 w-5" />
                   Settings
                 </button>
                 <button
@@ -49,7 +55,7 @@ export default function Navbar({
                   }}
                   className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
                 >
-                  <i className="fa-solid fa-circle-info" />
+                  <InformationCircleIcon className="h-5 w-5" />
                   About
                 </button>
                 <button
@@ -59,7 +65,7 @@ export default function Navbar({
                   }}
                   className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
                 >
-                  <i className="fa-solid fa-question-circle" />
+                  <QuestionMarkCircleIcon className="h-5 w-5" />
                   Help
                 </button>
               </div>
@@ -71,7 +77,7 @@ export default function Navbar({
               className="p-2 hover:text-gray-200"
               aria-label="Toggle Search"
             >
-              <i className="fa-solid fa-magnifying-glass" />
+              <MagnifyingGlassIcon className="h-5 w-5" />
             </button>
             <div className="relative">
               <input
