@@ -1,8 +1,21 @@
 import Foundation
+import Combine
 
-class KioskService {
+enum ActivationState {
+    case checking
+    case active
+    case inactive
+    case error
+}
+
+class KioskService: ObservableObject {
     static let shared = KioskService()
-    private init() {}
+    private init() {
+        startPolling()
+    }
+
+    @Published var state: ActivationState = .checking
+    private var timer: Timer?
 
     let id: String = {
         if let saved = UserDefaults.standard.string(forKey: "kioskId") {
@@ -21,5 +34,27 @@ class KioskService {
         let body = ["id": id, "version": version]
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
         URLSession.shared.dataTask(with: req).resume()
+    }
+
+    func checkActive() {
+        guard let url = URL(string: "http://localhost:3000/api/kiosks/\(id)") else { return }
+        struct KioskRow: Codable { var active: Int }
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            DispatchQueue.main.async {
+                if let data = data,
+                   let row = try? JSONDecoder().decode(KioskRow.self, from: data) {
+                    self.state = row.active == 1 ? .active : .inactive
+                } else {
+                    self.state = .error
+                }
+            }
+        }.resume()
+    }
+
+    private func startPolling() {
+        checkActive()
+        timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in
+            self.checkActive()
+        }
     }
 }
