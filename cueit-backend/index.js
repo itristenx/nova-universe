@@ -136,6 +136,10 @@ app.put("/api/kiosks/:id/active", (req, res) => {
   );
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ CueIT Backend running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`✅ CueIT Backend running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
