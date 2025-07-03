@@ -1,6 +1,6 @@
 const request = require('supertest');
 const assert = require('assert');
-const app = require('../index');
+const app = global.app || require('../index');
 const db = require('../db');
 
 beforeEach((done) => {
