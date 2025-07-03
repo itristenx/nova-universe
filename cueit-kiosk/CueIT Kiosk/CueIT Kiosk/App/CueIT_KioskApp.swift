@@ -6,9 +6,14 @@
 //
 
 import SwiftUI
+import Foundation
 
 @main
 struct CueITKioskApp: App {
+    init() {
+        KioskService.shared.register(version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
+    }
+
     var body: some Scene {
         WindowGroup {
             LaunchView()

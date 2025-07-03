@@ -9,6 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const PORT = process.env.API_PORT || 3000;
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
@@ -76,6 +78,51 @@ app.get("/api/logs", (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("✅ CueIT Backend running at http://localhost:3000");
+app.get("/api/config", (req, res) => {
+  db.all(`SELECT key, value FROM config`, (err, rows) => {
+    if (err) return res.status(500).json({ error: "DB error" });
+    const config = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+    res.json(config);
+  });
+});
+
+app.put("/api/config", (req, res) => {
+  const updates = req.body;
+  const stmt = db.prepare(`INSERT INTO config (key, value) VALUES (?, ?)
+    ON CONFLICT(key) DO UPDATE SET value=excluded.value`);
+  db.serialize(() => {
+    for (const [key, value] of Object.entries(updates)) {
+      stmt.run(key, String(value));
+    }
+    stmt.finalize((err) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      res.json({ message: "Config updated" });
+    });
+  });
+});
+
+app.post("/api/register-kiosk", (req, res) => {
+  const { id, version } = req.body;
+  if (!id) return res.status(400).json({ error: "Missing id" });
+  const lastSeen = new Date().toISOString();
+  db.run(
+    `INSERT INTO kiosks (id, last_seen, version) VALUES (?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET last_seen=excluded.last_seen, version=excluded.version`,
+    [id, lastSeen, version || ""],
+    (err) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      res.json({ message: "registered" });
+    }
+  );
+});
+
+app.get("/api/kiosks", (req, res) => {
+  db.all(`SELECT * FROM kiosks`, (err, rows) => {
+    if (err) return res.status(500).json({ error: "DB error" });
+    res.json(rows);
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`✅ CueIT Backend running at http://localhost:${PORT}`);
 });

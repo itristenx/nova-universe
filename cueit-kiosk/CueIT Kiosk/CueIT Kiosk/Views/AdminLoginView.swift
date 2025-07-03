@@ -9,10 +9,9 @@ import SwiftUI
 
 struct AdminLoginView: View {
     @Environment(\.dismiss) var dismiss
+    @ObservedObject var configService: ConfigService
     @State private var password = ""
     @State private var showError = false
-
-    let correctPassword = "admin"
 
     var body: some View {
         NavigationView {
@@ -31,7 +30,7 @@ struct AdminLoginView: View {
                 }
 
                 Button("Login") {
-                    if password == correctPassword {
+                    if password == configService.config.adminPassword {
                         dismiss()
                     } else {
                         showError = true

@@ -53,3 +53,57 @@ struct SubmissionErrorView: View {
         .padding()
     }
 }
+
+struct TicketFormView: View {
+    @Environment(\.dismiss) var dismiss
+    @State private var name = ""
+    @State private var email = ""
+    @State private var title = ""
+    @State private var system = ""
+    @State private var urgency = "Low"
+    @State private var showError = false
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Details")) {
+                    TextField("Name", text: $name)
+                    TextField("Email", text: $email)
+                    TextField("Title", text: $title)
+                    TextField("System", text: $system)
+                    Picker("Urgency", selection: $urgency) {
+                        Text("Low").tag("Low")
+                        Text("Medium").tag("Medium")
+                        Text("High").tag("High")
+                        Text("Urgent").tag("Urgent")
+                    }
+                }
+                Button("Submit") {
+                    submit()
+                }
+            }
+            .navigationTitle("New Ticket")
+            .alert("Failed to submit", isPresented: $showError) {
+                Button("OK", role: .cancel) {}
+            }
+        }
+    }
+
+    func submit() {
+        guard let url = URL(string: "http://localhost:3000/submit-ticket") else { return }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body = ["name": name, "email": email, "title": title, "system": system, "urgency": urgency]
+        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        URLSession.shared.dataTask(with: req) { _, res, err in
+            DispatchQueue.main.async {
+                if err != nil {
+                    showError = true
+                } else {
+                    dismiss()
+                }
+            }
+        }.resume()
+    }
+}

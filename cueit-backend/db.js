@@ -16,6 +16,34 @@ db.serialize(() => {
       email_status TEXT
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS config (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS kiosks (
+      id TEXT PRIMARY KEY,
+      last_seen TEXT,
+      version TEXT
+    )
+  `);
+
+  // insert default config if not present
+  const defaults = {
+    logoUrl: process.env.LOGO_URL || '/logo.png',
+    welcomeMessage: 'Welcome to the Help Desk',
+    helpMessage: 'Need to report an issue?',
+    adminPassword: 'admin'
+  };
+  const stmt = db.prepare(`INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)`);
+  for (const [key, value] of Object.entries(defaults)) {
+    stmt.run(key, value);
+  }
+  stmt.finalize();
 });
 
 module.exports = db;
