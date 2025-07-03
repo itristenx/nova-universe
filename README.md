@@ -46,7 +46,7 @@ The backend stores ticket logs in a local SQLite database (`cueit-backend/log.sq
 Configuration values are stored in the same database and can be edited from the admin UI.
 
 ### Slack Service
-1. Create a Slack app and define a `/new-ticket` slash command. Set its request URL to this service.
+1. Create a Slack app following [Slack's app setup guide](https://api.slack.com/apps) and add a `/new-ticket` slash command (see [Slash commands documentation](https://api.slack.com/interactivity/slash-commands)). Set its request URL to this service.
 2. Navigate to `cueit-slack` and run `npm install`.
 3. Create a `.env` file with:
    - `SLACK_SIGNING_SECRET`
