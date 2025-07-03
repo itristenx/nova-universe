@@ -5,7 +5,9 @@ An Express and SQLite API that receives help desk tickets and stores configurati
 ## Setup
 1. Run `npm install` in this folder.
 2. Create a `.env` file with your SMTP details and set `HELPDESK_EMAIL`.
-   Optional variables are `API_PORT` and `LOGO_URL`.
+   To use HelpScout instead, provide `HELPSCOUT_API_KEY` and
+   `HELPSCOUT_MAILBOX_ID` (optionally `HELPSCOUT_SMTP_FALLBACK=true` to also
+   send email). Optional variables are `API_PORT` and `LOGO_URL`.
    For SAML login also provide `SESSION_SECRET`, `SAML_ENTRY_POINT`,
    `SAML_ISSUER`, `SAML_CERT`, `SAML_CALLBACK_URL` and optional
    `ADMIN_URL` used for the post-login redirect.
@@ -71,6 +73,9 @@ To enable SAML configure these variables in `.env`:
 - `SAML_CALLBACK_URL` – URL on this service that the IdP
   redirects to after authentication (e.g. `http://localhost:3000/login/callback`).
 - `ADMIN_URL` – URL of the admin frontend to redirect to after login.
+- `HELPSCOUT_API_KEY` – API key used to create HelpScout conversations.
+- `HELPSCOUT_MAILBOX_ID` – ID of the HelpScout mailbox.
+- `HELPSCOUT_SMTP_FALLBACK` – set to `true` to also send email via SMTP.
 
 ## SCIM Provisioning
 

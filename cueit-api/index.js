@@ -71,6 +71,7 @@ if (!DISABLE_AUTH) {
 const PORT = process.env.API_PORT || 3000;
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
 
+
 if (SLACK_URL) {
   events.on('kiosk-registered', ({ id, version }) => {
     const verText = version ? ` v${version}` : '';
@@ -163,9 +164,39 @@ ${description || "(No description provided)"}
     `,
   };
 
+  const HS_KEY = process.env.HELPSCOUT_API_KEY || '';
+  const HS_MAILBOX = process.env.HELPSCOUT_MAILBOX_ID || '';
+  const HS_FALLBACK = process.env.HELPSCOUT_SMTP_FALLBACK === 'true';
+
+  const sendViaHelpScout = !!HS_KEY;
+  const sendViaSmtp = !sendViaHelpScout || HS_FALLBACK;
+
   let emailStatus = "success";
   try {
-    await transporter.sendMail(mailOptions);
+    if (sendViaHelpScout) {
+      await axios.post(
+        "https://api.helpscout.net/v2/conversations",
+        {
+          type: "email",
+          subject: mailOptions.subject,
+          mailboxId: Number(HS_MAILBOX),
+          customer: { email, firstName: name },
+          threads: [
+            {
+              type: "customer",
+              status: "active",
+              body: mailOptions.text,
+            },
+          ],
+        },
+        {
+          headers: { Authorization: `Bearer ${HS_KEY}` },
+        }
+      );
+    }
+    if (sendViaSmtp) {
+      await transporter.sendMail(mailOptions);
+    }
   } catch (err) {
     console.error("❌ Failed to send email:", err.message);
     events.emit('mail-error', err);

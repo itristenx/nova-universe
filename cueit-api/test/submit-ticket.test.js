@@ -87,4 +87,56 @@ describe('POST /submit-ticket', function () {
     assert(row, 'log row missing');
     assert.strictEqual(row.email_status, 'fail');
   });
+
+  it('uses HelpScout when API key is set', async function () {
+    process.env.HELPSCOUT_API_KEY = 'key';
+    process.env.HELPSCOUT_MAILBOX_ID = '1';
+    let hsCalled = false;
+    let mailCalled = false;
+    global.setAxiosBehavior(async () => { hsCalled = true; });
+    global.setSendBehavior(async () => { mailCalled = true; });
+
+    const payload = {
+      name: 'HS',
+      email: 'hs@example.com',
+      title: 'Test',
+      system: 'Sys',
+      urgency: 'High',
+    };
+
+    const res = await request(app).post('/submit-ticket').send(payload).expect(200);
+    assert.strictEqual(hsCalled, true, 'HelpScout not called');
+    assert.strictEqual(mailCalled, false, 'sendMail called');
+    assert.strictEqual(res.body.emailStatus, 'success');
+
+    delete process.env.HELPSCOUT_API_KEY;
+    delete process.env.HELPSCOUT_MAILBOX_ID;
+  });
+
+  it('falls back to SMTP when HELPSCOUT_SMTP_FALLBACK is true', async function () {
+    process.env.HELPSCOUT_API_KEY = 'key';
+    process.env.HELPSCOUT_MAILBOX_ID = '1';
+    process.env.HELPSCOUT_SMTP_FALLBACK = 'true';
+    let hsCalled = false;
+    let mailCalled = false;
+    global.setAxiosBehavior(async () => { hsCalled = true; });
+    global.setSendBehavior(async () => { mailCalled = true; });
+
+    const payload = {
+      name: 'HS',
+      email: 'hs@example.com',
+      title: 'Both',
+      system: 'Sys',
+      urgency: 'Low',
+    };
+
+    const res = await request(app).post('/submit-ticket').send(payload).expect(200);
+    assert.strictEqual(hsCalled, true, 'HelpScout not called');
+    assert.strictEqual(mailCalled, true, 'sendMail not called');
+    assert.strictEqual(res.body.emailStatus, 'success');
+
+    delete process.env.HELPSCOUT_API_KEY;
+    delete process.env.HELPSCOUT_MAILBOX_ID;
+    delete process.env.HELPSCOUT_SMTP_FALLBACK;
+  });
 });
