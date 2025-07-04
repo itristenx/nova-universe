@@ -3,6 +3,6 @@ import XCTest
 
 final class APIConfigTests: XCTestCase {
     func testDefaultBaseURL() {
-        XCTAssertEqual(APIConfig.baseURL, "http://localhost:3000")
+        XCTAssertEqual(APIConfig.baseURL, "https://localhost:3000")
     }
 }

@@ -5,6 +5,6 @@ enum APIConfig {
         if let url = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String {
             return url
         }
-        return "http://localhost:3000"
+        return "https://localhost:3000"
     }
 }
