@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import CryptoKit
 
 struct QueuedTicket: Codable, Identifiable {
   let id: UUID
@@ -27,12 +28,22 @@ class TicketQueue: ObservableObject {
 
   private let fileURL: URL
   private let monitor = NWPathMonitor()
+  private let key: SymmetricKey
 
   private init() {
     let fm = FileManager.default
     let dir = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
     try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
     fileURL = dir.appendingPathComponent("queued-tickets.json")
+    if let saved = KeychainService.string(for: "ticketEncryptionKey"),
+       let data = Data(base64Encoded: saved) {
+      key = SymmetricKey(data: data)
+    } else {
+      let newKey = SymmetricKey(size: .bits256)
+      key = newKey
+      let keyData = newKey.withUnsafeBytes { Data($0) }
+      KeychainService.set(keyData.base64EncodedString(), for: "ticketEncryptionKey")
+    }
     load()
     monitor.pathUpdateHandler = { path in
       if path.status == .satisfied {
@@ -42,16 +53,27 @@ class TicketQueue: ObservableObject {
     monitor.start(queue: DispatchQueue.global(qos: .background))
   }
 
+  private func encrypt(_ data: Data) -> Data? {
+    try? AES.GCM.seal(data, using: key).combined
+  }
+
+  private func decrypt(_ data: Data) -> Data? {
+    guard let box = try? AES.GCM.SealedBox(combined: data) else { return nil }
+    return try? AES.GCM.open(box, using: key)
+  }
+
   private func load() {
-    if let data = try? Data(contentsOf: fileURL),
-       let decoded = try? JSONDecoder().decode([QueuedTicket].self, from: data) {
+    guard let stored = try? Data(contentsOf: fileURL) else { return }
+    let jsonData = decrypt(stored) ?? stored
+    if let decoded = try? JSONDecoder().decode([QueuedTicket].self, from: jsonData) {
       tickets = decoded
     }
   }
 
   private func save() {
-    if let data = try? JSONEncoder().encode(tickets) {
-      try? data.write(to: fileURL)
+    if let data = try? JSONEncoder().encode(tickets),
+       let encrypted = encrypt(data) {
+      try? encrypted.write(to: fileURL, options: .completeFileProtection)
     }
   }
 
