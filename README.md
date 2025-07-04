@@ -24,6 +24,7 @@ page and SwiftUI kiosk app.
 
 Run `./setup.sh` to install Node.js, SQLite and all project dependencies in one step.
 You can also follow the manual instructions below.
+See [Local vs Production Setup](docs/environments.md) for details on configuring the environment variables used by each service.
 
 ### Backend
 1. Navigate to `cueit-api`.
