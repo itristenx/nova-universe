@@ -21,6 +21,7 @@ app.use(express.json());
 
 const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
 const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
+const KIOSK_TOKEN = process.env.KIOSK_TOKEN || '';
 
 if (!DISABLE_AUTH && !process.env.SESSION_SECRET) {
   console.error('SESSION_SECRET environment variable is required');
@@ -312,9 +313,14 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-app.post("/api/register-kiosk", (req, res) => {
-  const { id, version } = req.body;
-  if (!id) return res.status(400).json({ error: "Missing id" });
+app.post('/api/register-kiosk', (req, res) => {
+  const { id, version, token } = req.body;
+  const header = req.headers.authorization || '';
+  const auth = header.replace(/^Bearer\s+/i, '');
+  if (KIOSK_TOKEN && token !== KIOSK_TOKEN && auth !== KIOSK_TOKEN) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  if (!id) return res.status(400).json({ error: 'Missing id' });
   const lastSeen = new Date().toISOString();
   db.run(
     `INSERT INTO kiosks (id, last_seen, version) VALUES (?, ?, ?)

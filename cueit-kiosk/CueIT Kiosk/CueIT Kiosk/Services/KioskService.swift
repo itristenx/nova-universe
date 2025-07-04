@@ -10,7 +10,9 @@ enum ActivationState {
 
 class KioskService: ObservableObject {
     static let shared = KioskService()
+    private let token: String
     private init() {
+        token = Bundle.main.object(forInfoDictionaryKey: "KIOSK_TOKEN") as? String ?? ""
         startPolling()
     }
 
@@ -40,7 +42,10 @@ class KioskService: ObservableObject {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = ["id": id, "version": version]
+        var body: [String: Any] = ["id": id, "version": version]
+        if !token.isEmpty {
+            body["token"] = token
+        }
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
         _ = try? await URLSession.shared.data(for: req)
     }

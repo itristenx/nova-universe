@@ -6,7 +6,9 @@
     <string>http://localhost:3000</string>
     <key>SCIM_TOKEN</key>
     <string></string>
-    <key>SCIM_URL</key>
-    <string></string>
+<key>SCIM_URL</key>
+<string></string>
+<key>KIOSK_TOKEN</key>
+<string></string>
 </dict>
 </plist>
