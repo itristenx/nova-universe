@@ -12,7 +12,8 @@ class ConfigService: ObservableObject {
     @Published var config: AppConfig = AppConfig(logoUrl: "/logo.png", backgroundUrl: nil, welcomeMessage: "Welcome", helpMessage: "Need help?")
     @Published var errorMessage: String?
 
-    func load() {
+    @MainActor
+    func load() async {
         if let data = UserDefaults.standard.data(forKey: "config") {
             do {
                 let cfg = try JSONDecoder().decode(AppConfig.self, from: data)
@@ -27,40 +28,34 @@ class ConfigService: ObservableObject {
             return
         }
 
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            DispatchQueue.main.async {
-                guard let data = data else {
-                    self.errorMessage = "Unable to load configuration"
-                    return
-                }
-                do {
-                    let cfg = try JSONDecoder().decode(AppConfig.self, from: data)
-                    self.config = cfg
-                    self.errorMessage = nil
-                    if let d = try? JSONEncoder().encode(cfg) {
-                        UserDefaults.standard.set(d, forKey: "config")
-                    }
-                } catch {
-                    self.errorMessage = "Unable to load configuration"
-                }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let cfg = try JSONDecoder().decode(AppConfig.self, from: data)
+            self.config = cfg
+            self.errorMessage = nil
+            if let d = try? JSONEncoder().encode(cfg) {
+                UserDefaults.standard.set(d, forKey: "config")
             }
-        }.resume()
+        } catch {
+            self.errorMessage = "Unable to load configuration"
+        }
 
         // kiosk specific overrides
         if let kioskId = UserDefaults.standard.string(forKey: "kioskId"),
            let kurl = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(kioskId)") {
             struct KioskConfig: Codable { var logoUrl: String?; var bgUrl: String? }
-            URLSession.shared.dataTask(with: kurl) { data, _, _ in
-                DispatchQueue.main.async {
-                    if let data = data, let row = try? JSONDecoder().decode(KioskConfig.self, from: data) {
-                        if let bg = row.bgUrl { self.config.backgroundUrl = bg }
-                        if let l = row.logoUrl { self.config.logoUrl = l }
-                        self.errorMessage = nil
-                    } else {
-                        self.errorMessage = "Unable to load configuration"
-                    }
+            do {
+                let (data, _) = try await URLSession.shared.data(from: kurl)
+                if let row = try? JSONDecoder().decode(KioskConfig.self, from: data) {
+                    if let bg = row.bgUrl { self.config.backgroundUrl = bg }
+                    if let l = row.logoUrl { self.config.logoUrl = l }
+                    self.errorMessage = nil
+                } else {
+                    self.errorMessage = "Unable to load configuration"
                 }
-            }.resume()
+            } catch {
+                self.errorMessage = "Unable to load configuration"
+            }
         }
     }
 

@@ -99,7 +99,7 @@ struct TicketFormView: View {
                     }
                 }
                 Button("Submit") {
-                    submit()
+                    Task { await submit() }
                 }
             }
             .navigationTitle("New Ticket")
@@ -109,7 +109,8 @@ struct TicketFormView: View {
         }
     }
 
-  func submit() {
+  @MainActor
+  func submit() async {
     let ticket = QueuedTicket(name: name, email: email, title: title, manager: manager, system: system, urgency: urgency)
     guard let url = URL(string: "\(APIConfig.baseURL)/submit-ticket") else { return }
     var req = URLRequest(url: url)
@@ -117,18 +118,15 @@ struct TicketFormView: View {
     req.setValue("application/json", forHTTPHeaderField: "Content-Type")
     let body = ["name": ticket.name, "email": ticket.email, "title": ticket.title, "manager": ticket.manager, "system": ticket.system, "urgency": ticket.urgency]
     req.httpBody = try? JSONSerialization.data(withJSONObject: body)
-    URLSession.shared.dataTask(with: req) { _, _, err in
-      DispatchQueue.main.async {
-        if err != nil {
-          TicketQueue.shared.enqueue(ticket)
-          showError = true
-        } else {
-          dismiss()
-          TicketQueue.shared.retry()
-        }
-      }
-    }.resume()
+    do {
+      _ = try await URLSession.shared.data(for: req)
+      dismiss()
+      TicketQueue.shared.retry()
+    } catch {
+      TicketQueue.shared.enqueue(ticket)
+      showError = true
     }
+  }
 
     func apply(_ user: DirectoryUser) {
         name = user.displayName
