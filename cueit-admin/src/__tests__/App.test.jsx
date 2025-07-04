@@ -13,7 +13,7 @@ const logs = [
 beforeEach(() => {
   process.env.VITE_API_URL = 'http://localhost';
   axios.get.mockImplementation((url) => {
-    if (url.endsWith('/api/logs')) return Promise.resolve({ data: logs });
+    if (url.includes('/api/logs')) return Promise.resolve({ data: logs });
     if (url.endsWith('/api/config')) return Promise.resolve({ data: {} });
     if (url.endsWith('/api/me')) return Promise.resolve({ data: { name: 'Admin' } });
   });

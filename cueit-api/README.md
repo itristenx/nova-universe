@@ -39,7 +39,11 @@ settings from `.env` and listens on `API_PORT` (default `3000`).
 
 ### Logs and Configuration
 
-- `GET /api/logs` – return all ticket logs sorted by timestamp.
+- `GET /api/logs` – return ticket logs sorted by timestamp. Optional query
+  parameters:
+  - `start` – ISO timestamp to filter logs on or after this time.
+  - `end` – ISO timestamp to filter logs on or before this time.
+  - `status` – filter by `email_status` value (`success` or `fail`).
 - `DELETE /api/logs/:id` – delete a log entry by numeric id.
 - `DELETE /api/logs` – remove all log entries.
 - `GET /api/config` – return configuration key/value pairs.
