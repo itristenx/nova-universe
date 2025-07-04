@@ -47,6 +47,13 @@ for APP in "${SELECTED[@]}"; do
   COMMANDS+=("$CMD")
 done
 
+if [[ -z "$TLS_CERT_PATH" && -f cert.pem ]]; then
+  export TLS_CERT_PATH="$(pwd)/cert.pem"
+fi
+if [[ -z "$TLS_KEY_PATH" && -f key.pem ]]; then
+  export TLS_KEY_PATH="$(pwd)/key.pem"
+fi
+
 NAME_STR=$(IFS=','; echo "${NAMES[*]}")
 npx concurrently -k -n "$NAME_STR" "${COMMANDS[@]}"
 

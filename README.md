@@ -71,6 +71,18 @@ Configuration values are stored in the same database and can be edited from the 
 npx ngrok http $SLACK_PORT
 ```
 
+### HTTPS Setup
+
+1. Generate a self-signed certificate:
+
+   ```bash
+   openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365
+   ```
+
+2. Set `TLS_CERT_PATH` and `TLS_KEY_PATH` in `cueit-api/.env` to the certificate paths.
+3. Update the URLs in all `.env` files to use `https://localhost` as shown in the examples.
+4. Place `cert.pem` and `key.pem` in the project root before running the installer scripts so the files are bundled.
+
 ### Running All Services
 
 Scripts are provided to launch the API, admin UI, activation page and Slack
@@ -227,6 +239,7 @@ Each app relies on a few environment variables:
 - `SESSION_SECRET`, `SAML_ENTRY_POINT`, `SAML_ISSUER`, `SAML_CERT`,
   `SAML_CALLBACK_URL`, `ADMIN_URL` – required for SAML login.
 - Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.
+- Optional: set `TLS_CERT_PATH` and `TLS_KEY_PATH` to enable HTTPS.
 - `ADMIN_PASSWORD` – seeds the initial admin password for kiosk login and the
   password management endpoints.
 - `DISABLE_AUTH` – set to `true` to bypass SAML authentication and
@@ -258,7 +271,7 @@ Several security and usability features are planned for a future version of the 
 
 - **Authentication** – current admin login uses SAML. Add JWT based auth to protect API and Slack endpoints.
 - **Log filtering** – allow filtering ticket logs by date range or email status when querying the `/api/logs` endpoint.
-- **HTTPS** – enable TLS so the backend, admin UI and kiosk all communicate over HTTPS.
+- **HTTPS** – TLS support for local development is available via `TLS_CERT_PATH` and `TLS_KEY_PATH`.
 - **Kiosk registration tokens** – require a token when calling `/api/register-kiosk` to prevent unauthorized devices from spoofing a kiosk ID.
 
 ## License

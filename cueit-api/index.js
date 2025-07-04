@@ -12,6 +12,8 @@ import { v4 as uuidv4 } from 'uuid';
 import events from './events.js';
 import { sign, verify } from './jwt.js';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
+import https from 'https';
 
 dotenv.config();
 
@@ -77,6 +79,8 @@ if (!DISABLE_AUTH) {
 
 const PORT = process.env.API_PORT || 3000;
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
+const CERT_PATH = process.env.TLS_CERT_PATH;
+const KEY_PATH = process.env.TLS_KEY_PATH;
 
 
 if (SLACK_URL) {
@@ -511,9 +515,19 @@ app.get("/api/health", (req, res) => {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  app.listen(PORT, () => {
-    console.log(`✅ CueIT API running at http://localhost:${PORT}`);
-  });
+  if (CERT_PATH && KEY_PATH) {
+    const options = {
+      cert: fs.readFileSync(CERT_PATH),
+      key: fs.readFileSync(KEY_PATH),
+    };
+    https.createServer(options, app).listen(PORT, () => {
+      console.log(`✅ CueIT API running at https://localhost:${PORT}`);
+    });
+  } else {
+    app.listen(PORT, () => {
+      console.log(`✅ CueIT API running at http://localhost:${PORT}`);
+    });
+  }
 }
 
 export default app;
