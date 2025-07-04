@@ -7,17 +7,31 @@ This project ships with sample environment files for each app. Copy these files 
 1. `cueit-api/.env.example`
    - Use the default `SMTP_HOST=localhost` and `SMTP_PORT=1025` with [Mailpit](https://github.com/axllent/mailpit).
    - Set `HELPDESK_EMAIL` to any address for testing.
-   - Keep `ADMIN_URL` and all other URLs as `http://localhost` values.
+   - Set `TLS_CERT_PATH` and `TLS_KEY_PATH` to local certificate files if you want to enable HTTPS.
+   - Keep `ADMIN_URL` and other URLs as `https://localhost` when TLS is enabled, otherwise `http://localhost`.
    - `SESSION_SECRET` can be any string during local development.
 2. `cueit-admin/.env.example`
    - `VITE_API_URL` should match your local API URL.
    - Leave `VITE_LOGO_URL` and `VITE_ACTIVATE_URL` as provided or point to local resources.
 3. `cueit-activate/.env.example`
    - `VITE_API_URL` should point to the local backend.
-   - `VITE_ADMIN_URL` can stay on `http://localhost:5173` if the admin UI runs locally.
+   - `VITE_ADMIN_URL` can stay on `https://localhost:5173` if the admin UI runs locally with TLS.
 4. `cueit-slack/.env.example`
    - Use dummy values for `SLACK_SIGNING_SECRET` and `SLACK_BOT_TOKEN`.
    - `API_URL` should match the local API URL.
+
+## HTTPS Setup
+
+To run all services over HTTPS during development:
+
+1. Generate a self-signed certificate:
+
+   ```bash
+   openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365
+   ```
+
+2. Set `TLS_CERT_PATH` and `TLS_KEY_PATH` in `cueit-api/.env` to the paths of `cert.pem` and `key.pem`.
+3. Update the URLs in the other `.env` files to use `https://localhost` as shown in the examples.
 
 ## Production Deployment
 

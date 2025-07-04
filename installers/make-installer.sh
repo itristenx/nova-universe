@@ -14,6 +14,9 @@ APP_PATH="$APP_DIR/dist/CueIT-darwin-x64/CueIT.app"
 
 mkdir -p "$APP_DIR/dist/CueIT-darwin-x64/resources"
 cp -R cueit-api cueit-admin cueit-activate cueit-slack installers/start-all.sh "$APP_DIR/dist/CueIT-darwin-x64/resources/"
+if [[ -f cert.pem && -f key.pem ]]; then
+  cp cert.pem key.pem "$APP_DIR/dist/CueIT-darwin-x64/resources/"
+fi
 
 pkgbuild --root "$APP_PATH" --identifier com.cueit.launcher \
   --version "$VERSION" "$APP_DIR/CueIT.pkg"

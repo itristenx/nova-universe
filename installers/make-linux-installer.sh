@@ -11,6 +11,9 @@ npx --prefix "$APP_DIR" electron-packager "$APP_DIR" CueIT \
   --platform=linux --out "$APP_DIR/dist" --overwrite
 
 APP_PATH="$APP_DIR/dist/CueIT-linux-x64"
+if [[ -f cert.pem && -f key.pem ]]; then
+  cp cert.pem key.pem "$APP_PATH"/
+fi
 
 if ! command -v electron-installer-appimage >/dev/null 2>&1; then
   echo "Installing electron-installer-appimage..."

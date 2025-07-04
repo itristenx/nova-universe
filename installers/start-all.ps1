@@ -30,7 +30,14 @@ foreach ($app in $selected) {
     npm --prefix $dir install
   }
   $names += $app
-  $commands += $apps[$app].cmd
+$commands += $apps[$app].cmd
+}
+
+if (-not $Env:TLS_CERT_PATH -and (Test-Path cert.pem)) {
+  $Env:TLS_CERT_PATH = Join-Path (Get-Location) 'cert.pem'
+}
+if (-not $Env:TLS_KEY_PATH -and (Test-Path key.pem)) {
+  $Env:TLS_KEY_PATH = Join-Path (Get-Location) 'key.pem'
 }
 
 $nameStr = [string]::Join(',', $names)
