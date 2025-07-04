@@ -14,3 +14,9 @@ Run `../installers/make-installer.sh` to create `CueIT-<version>.pkg`. Install t
 4. After saving the files the regular launcher window appears.
 
 Use the checkboxes to choose which services to start and click **Start**.
+
+## Tests
+
+Install dependencies with `npm install` and run `npm test` to execute the Jest
+suite. Tests verify that configuration files are created on first launch and
+that the correct page loads based on startup state.
