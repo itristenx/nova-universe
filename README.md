@@ -27,13 +27,14 @@ page and SwiftUI kiosk app.
 ## Setup
 
 Run `./installers/setup.sh` to install Node.js, SQLite and all project dependencies in one step.
+Next run `./scripts/init-env.sh` to create the `.env` files for each app (edit them before launching).
 You can also follow the manual instructions below.
 See [Local vs Production Setup](docs/environments.md) for details on configuring the environment variables used by each service.
 
 ### Backend
 1. Navigate to `cueit-api`.
 2. Run `npm install` to install dependencies.
-3. Create a `.env` file with your SMTP configuration and `HELPDESK_EMAIL`.
+3. Edit the `.env` file with your SMTP configuration and `HELPDESK_EMAIL`.
    To send tickets directly to HelpScout instead, provide
    `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` (optionally set
    `HELPSCOUT_SMTP_FALLBACK=true` to also send email). You can also
@@ -43,13 +44,13 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
 ### Admin Frontend
 1. Navigate to `cueit-admin`.
 2. Run `npm install` to install dependencies.
-3. Copy `.env.example` to `.env` and set `VITE_API_URL`. You can also set `VITE_LOGO_URL` and `VITE_ACTIVATE_URL`.
+3. Edit the `.env` file and set `VITE_API_URL`. You can also set `VITE_LOGO_URL` and `VITE_ACTIVATE_URL`.
 4. Start the development server with `npm run dev` and open `http://localhost:5173`.
 
 ### Activation Page
 1. Navigate to `cueit-activate`.
 2. Run `npm install` to install dependencies.
-3. Copy `.env.example` to `.env` and set `VITE_API_URL`. Optionally set `VITE_ADMIN_URL`.
+3. Edit the `.env` file and set `VITE_API_URL`. Optionally set `VITE_ADMIN_URL`.
 4. Start the dev server with `npm run dev` and open the page to activate kiosks.
 
 The backend stores ticket logs in a local SQLite database (`cueit-api/log.sqlite`).
@@ -58,7 +59,7 @@ Configuration values are stored in the same database and can be edited from the 
 ### Slack Service
 1. Create a Slack app following [Slack's app setup guide](https://api.slack.com/apps) and add a `/new-ticket` slash command (see [Slash commands documentation](https://api.slack.com/interactivity/slash-commands)). Set its request URL to this service.
 2. Navigate to `cueit-slack` and run `npm install`.
-3. Copy `.env.example` to `.env` and set:
+3. Edit the `.env` file and set:
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
    - `API_URL`
