@@ -13,6 +13,7 @@ struct AdminLoginView: View {
     @State private var password = ""
     @State private var errorText: String?
     @State private var loading = false
+    @State private var showPolicy = false
 
     var body: some View {
         NavigationView {
@@ -55,6 +56,14 @@ struct AdminLoginView: View {
             }
             .padding(Theme.Spacing.md)
             .navigationTitle("Admin Login")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Privacy") { showPolicy = true }
+                }
+            }
+        }
+        .sheet(isPresented: $showPolicy) {
+            PrivacyPolicyView()
         }
     }
 }
