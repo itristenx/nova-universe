@@ -1,6 +1,10 @@
 # CueIT
 
-CueIT is an internal help desk application used to submit and track IT tickets. The repository contains several apps:
+CueIT is an internal help desk application used to submit and track IT tickets.
+
+[→ Quickstart Guide](docs/quickstart.md)
+
+The repository contains several apps:
 
 - **cueit-api** – Express/SQLite API
 - **cueit-admin** – React admin interface
