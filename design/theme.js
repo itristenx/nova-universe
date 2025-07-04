@@ -3,7 +3,11 @@ export const colors = {
   secondary: '#9333EA',
   accent: '#F97316',
   base: '#ffffff',
-  content: '#1f2937'
+  content: '#1f2937',
+  surface: '#f9fafb',
+  logoShadow: '#646cffaa',
+  reactShadow: '#61dafbaa',
+  muted: '#888'
 };
 
 export const fonts = {
