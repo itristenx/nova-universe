@@ -13,11 +13,11 @@ const packages = {
 };
 let win;
 
-async function ensureEnvFiles() {
+async function ensureEnvFiles(baseDir = path.join(__dirname, '..')) {
   let created = false;
   for (const dir of Object.values(packages)) {
-    const envPath = path.join(__dirname, '..', dir, '.env');
-    const example = path.join(__dirname, '..', dir, '.env.example');
+    const envPath = path.join(baseDir, dir, '.env');
+    const example = path.join(baseDir, dir, '.env.example');
     try {
       await fs.access(envPath);
     } catch {
@@ -37,10 +37,14 @@ function createWindow(showSetup) {
   win.loadFile(showSetup ? 'setup.html' : 'index.html');
 }
 
-app.whenReady().then(async () => {
+async function start() {
   const firstRun = await ensureEnvFiles();
   createWindow(firstRun);
-});
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  app.whenReady().then(start);
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
@@ -71,3 +75,5 @@ ipcMain.handle('write-envs', async (_e, envs) => {
     await fs.writeFile(envPath, content);
   }
 });
+
+export { ensureEnvFiles, createWindow, start };

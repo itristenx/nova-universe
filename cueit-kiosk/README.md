@@ -31,3 +31,9 @@ Tapping the gear icon on the welcome screen opens the admin login sheet. The
 entered password is sent to the backend via the `/api/verify-password` endpoint
 and never stored on the device. If the server verifies the password the sheet
 is dismissed, otherwise an error message is shown.
+
+## Tests
+
+Unit tests live in `CueIT KioskTests`. Open the project in Xcode and select
+**Product → Test** or press `⌘U` to run them. The suite verifies configuration
+loading and kiosk startup behavior.
