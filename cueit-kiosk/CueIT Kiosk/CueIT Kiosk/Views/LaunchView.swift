@@ -70,6 +70,7 @@ struct LaunchView: View {
         }
         .onAppear {
             configService.load()
+          TicketQueue.shared.retry()
         }
         .onReceive(configService.$errorMessage) { msg in
             if let m = msg {
