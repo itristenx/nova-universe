@@ -47,7 +47,7 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.handle('start', (_e, apps) => {
-  const child = spawn(path.join(__dirname, '..', 'start-all.sh'), [], { shell: true });
+  const child = spawn(path.join(__dirname, '..', 'installers', 'start-all.sh'), [], { shell: true });
   child.stdin.write(`${apps}\n`);
   child.stdin.end();
   child.stdout.on('data', d => win.webContents.send('log', d.toString()));
