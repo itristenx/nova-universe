@@ -7,7 +7,8 @@
 - Share design tokens from `design/theme.js` when styling frontends.
 
 ## Testing
-- Each package contains its own test suite. Navigate to the package and run `npm test`.
+- Run `./setup.sh` to install Node.js, SQLite and all project dependencies if needed.
+- Each package contains its own test suite. Navigate to the package, run `npm install` (or `npm ci`) and then execute `npm test`.
 
 ## Linting
 - Run the linter before committing changes: `npm run lint` inside each package that defines the script.

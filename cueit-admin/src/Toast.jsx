@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
-
-const ToastContext = createContext(() => {});
+import React, { useState } from 'react';
+import ToastContext from './ToastContext.js';
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
@@ -32,5 +31,4 @@ export function ToastProvider({ children }) {
   );
 }
 
-export const useToast = () => useContext(ToastContext);
 

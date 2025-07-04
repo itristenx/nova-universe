@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { useToast } from './Toast.jsx';
+import useToast from './useToast.js';
 
 export default function UsersPanel({ open }) {
   const [users, setUsers] = useState([]);

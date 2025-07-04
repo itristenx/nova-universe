@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import UsersPanel from './UsersPanel.jsx';
-import { useToast } from './Toast.jsx';
+import useToast from './useToast.js';
 
 export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const [tab, setTab] = useState('general');

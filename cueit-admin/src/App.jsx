@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import SettingsPanel from './SettingsPanel';
-import { useToast } from './Toast.jsx';
+import useToast from './useToast.js';
 import './App.css';
 
 const urgencyPriority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
