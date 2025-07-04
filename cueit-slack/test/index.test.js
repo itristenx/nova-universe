@@ -1,6 +1,25 @@
-jest.mock('@slack/bolt');
-const { __commandRegistry } = require('@slack/bolt');
-require('..');
+import { jest } from '@jest/globals';
+
+jest.unstable_mockModule('@slack/bolt', () => {
+  const commandRegistry = {};
+  const startMock = jest.fn().mockResolvedValue();
+
+  class App {
+    constructor() {}
+    command(name, handler) {
+      commandRegistry[name] = handler;
+    }
+    view() {}
+    start() {
+      return startMock();
+    }
+  }
+
+  return { App, __commandRegistry: commandRegistry, __startMock: startMock };
+});
+
+const { __commandRegistry } = await import('@slack/bolt');
+await import('..');
 
 describe('Slack command handler', () => {
   it('opens modal when /new-ticket is invoked', async () => {

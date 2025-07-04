@@ -1,6 +1,8 @@
-require('dotenv').config();
-const { App } = require('@slack/bolt');
-const axios = require('axios');
+import dotenv from 'dotenv';
+import { App } from '@slack/bolt';
+import axios from 'axios';
+
+dotenv.config();
 
 const PORT = process.env.SLACK_PORT || 3001;
 

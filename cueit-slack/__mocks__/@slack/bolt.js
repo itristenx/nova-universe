@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 const commandRegistry = {};
 const startMock = jest.fn().mockResolvedValue();
 
@@ -12,4 +14,4 @@ class App {
   }
 }
 
-module.exports = { App, __commandRegistry: commandRegistry, __startMock: startMock };
+export { App, commandRegistry as __commandRegistry, startMock as __startMock };
