@@ -1,21 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import useToast from './useToast.js';
+import useApiError from './useApiError.js';
 
 export default function UsersPanel({ open }) {
   const [users, setUsers] = useState([]);
   const api = import.meta.env.VITE_API_URL;
-  const toast = useToast();
-  const handleApiError = useCallback(
-    (err, msg) => {
-      if (err.response && err.response.status === 401) {
-        window.location.href = `${api}/login`;
-      } else {
-        toast(msg, 'error');
-      }
-    },
-    [api, toast]
-  );
+  const handleApiError = useApiError();
 
   useEffect(() => {
     if (open) {
