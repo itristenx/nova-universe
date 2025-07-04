@@ -15,6 +15,7 @@ class KioskService: ObservableObject {
     }
 
     @Published var state: ActivationState = .checking
+    @Published var activationError: Bool = false
     private var timer: Timer?
 
     let id: String = {
@@ -44,8 +45,10 @@ class KioskService: ObservableObject {
                 if let data = data,
                    let row = try? JSONDecoder().decode(KioskRow.self, from: data) {
                     self.state = row.active == 1 ? .active : .inactive
+                    self.activationError = false
                 } else {
                     self.state = .error
+                    self.activationError = true
                 }
             }
         }.resume()

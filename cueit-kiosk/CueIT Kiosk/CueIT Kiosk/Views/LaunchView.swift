@@ -12,6 +12,8 @@ struct LaunchView: View {
     @State private var showAdmin = false
     @StateObject private var configService = ConfigService()
     @StateObject private var kioskService = KioskService.shared
+    @State private var showAlert = false
+    @State private var alertMessage = ""
 
     var body: some View {
         ZStack {
@@ -69,6 +71,22 @@ struct LaunchView: View {
         .onAppear {
             configService.load()
         }
+        .onReceive(configService.$errorMessage) { msg in
+            if let m = msg {
+                alertMessage = m
+                showAlert = true
+            } else if showAlert && alertMessage == "Unable to load configuration" {
+                showAlert = false
+            }
+        }
+        .onReceive(kioskService.$activationError) { failed in
+            if failed {
+                alertMessage = "Unable to verify kiosk status"
+                showAlert = true
+            } else if showAlert && alertMessage == "Unable to verify kiosk status" {
+                showAlert = false
+            }
+        }
         .overlay(
             HStack {
                 Spacer()
@@ -87,5 +105,8 @@ struct LaunchView: View {
             },
             alignment: .topTrailing
         )
+        .alert(alertMessage, isPresented: $showAlert) {
+            Button("OK", role: .cancel) {}
+        }
     }
 }
