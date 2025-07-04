@@ -93,6 +93,33 @@ During development you can run `npm start` inside the folder to launch Electron 
 
 The SwiftUI kiosk can only be built and run on macOS with Xcode installed.
 
+### Windows Installer
+
+Install [Inno Setup](https://jrsoftware.org/isinfo.php) along with Node.js and npm.
+Run the following command to generate `CueIT-<version>.exe`:
+
+```powershell
+./installers/make-windows-installer.ps1 -Version 1.0.0
+```
+
+Run the generated `.exe` to install CueIT.
+
+### Linux Installer
+
+Install `electron-installer-appimage` globally with:
+
+```bash
+npm install -g electron-installer-appimage
+```
+
+Then build the AppImage:
+
+```bash
+./installers/make-linux-installer.sh 1.0.0
+```
+
+Mark the output file executable and run it to start the application.
+
 ## Running Tests
 
 CueIT includes automated test suites for the backend API and the admin UI.
