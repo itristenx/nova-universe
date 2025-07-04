@@ -1,7 +1,9 @@
 import nodemailer from 'nodemailer';
 import axios from 'axios';
 
-process.env.DISABLE_AUTH = 'true';
+if (!process.env.DISABLE_AUTH) {
+  process.env.DISABLE_AUTH = 'true';
+}
 process.env.SCIM_TOKEN = 'testtoken';
 let app;
 let sendBehavior = async () => {};
