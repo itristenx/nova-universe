@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_DIR="cueit-macos"
+VERSION="${1:-1.0.0}"
+
+npm --prefix "$APP_DIR" install
+npx --prefix "$APP_DIR" electron-packager "$APP_DIR" CueIT \
+  --platform=darwin --out "$APP_DIR/dist" --overwrite
+
+APP_PATH="$APP_DIR/dist/CueIT-darwin-x64/CueIT.app"
+
+mkdir -p "$APP_DIR/dist/CueIT-darwin-x64/resources"
+cp -R cueit-api cueit-admin cueit-activate cueit-slack start-all.sh "$APP_DIR/dist/CueIT-darwin-x64/resources/"
+
+pkgbuild --root "$APP_PATH" --identifier com.cueit.launcher \
+  --version "$VERSION" "$APP_DIR/CueIT.pkg"
+productbuild --package "$APP_DIR/CueIT.pkg" "$APP_DIR/CueIT-$VERSION.pkg"
+
+echo "Installer created at $APP_DIR/CueIT-$VERSION.pkg"

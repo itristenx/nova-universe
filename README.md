@@ -7,6 +7,7 @@ CueIT is an internal help desk application used to submit and track IT tickets. 
 - **cueit-kiosk** – iPad kiosk for ticket submission
 - **cueit-activate** – small React app for activating kiosks
 - **cueit-slack** – Slack slash command integration
+- **cueit-macos** – Electron launcher for macOS
 
 The `design/theme.js` file defines shared colors, fonts and spacing. Frontends
 import these tokens so styles remain consistent across the admin UI, activation
@@ -84,6 +85,11 @@ dependencies if the `node_modules` directory is missing.
 ./start-all.ps1
 ```
 
+### macOS Launcher
+
+Use the Electron launcher in `cueit-macos` to start the services with a single click. Run `./make-installer.sh` to build a `.pkg` installer, install it and launch **CueIT** from Applications.
+During development you can run `npm start` inside the folder to launch Electron without packaging.
+
 The SwiftUI kiosk can only be built and run on macOS with Xcode installed.
 
 ## Testing the API
@@ -147,6 +153,7 @@ check detects the change.
   `active` flag is enabled.
 - **cueit-activate** – Tiny React app that lets you quickly activate a kiosk by
   ID without using the full admin interface.
+- **cueit-macos** – Electron launcher for macOS
 - **cueit-slack** – Service handling the `/new-ticket` Slack slash command. It
   opens a modal and forwards submissions to the backend.
 
