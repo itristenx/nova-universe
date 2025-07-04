@@ -61,7 +61,7 @@ class ConfigService: ObservableObject {
 
     struct VerifyResponse: Decodable { let valid: Bool }
 
-    func verifyPassword(_ password: String, completion: @escaping (Bool) -> Void) {
+    func verifyPassword(_ password: String, completion: @escaping (Bool, Error?) -> Void) {
         guard let url = URL(string: "\(APIConfig.baseURL)/api/verify-password") else {
             completion(false)
             return
@@ -71,13 +71,17 @@ class ConfigService: ObservableObject {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = ["password": password]
         req.httpBody = try? JSONEncoder().encode(body)
-        URLSession.shared.dataTask(with: req) { data, _, _ in
-            var ok = false
-            if let data = data,
-               let resp = try? JSONDecoder().decode(VerifyResponse.self, from: data) {
-                ok = resp.valid
+        URLSession.shared.dataTask(with: req) { data, _, error in
+            if let error = error {
+                DispatchQueue.main.async { completion(false, error) }
+                return
             }
-            DispatchQueue.main.async { completion(ok) }
+            guard let data = data,
+                  let resp = try? JSONDecoder().decode(VerifyResponse.self, from: data) else {
+                DispatchQueue.main.async { completion(false, URLError(.badServerResponse)) }
+                return
+            }
+            DispatchQueue.main.async { completion(resp.valid, nil) }
         }.resume()
     }
 }

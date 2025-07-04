@@ -11,7 +11,8 @@ struct AdminLoginView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var configService: ConfigService
     @State private var password = ""
-    @State private var showError = false
+    @State private var errorText: String?
+    @State private var loading = false
 
     var body: some View {
         NavigationView {
@@ -23,18 +24,27 @@ struct AdminLoginView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal)
 
-                if showError {
-                    Text("Incorrect password")
+                if let msg = errorText {
+                    Text(msg)
                         .foregroundColor(Theme.Colors.accent)
                         .font(.subheadline)
                 }
 
+                if loading {
+                    ProgressView()
+                }
+
                 Button("Login") {
-                    configService.verifyPassword(password) { ok in
+                    loading = true
+                    errorText = nil
+                    configService.verifyPassword(password) { ok, error in
+                        loading = false
                         if ok {
                             dismiss()
+                        } else if error != nil {
+                            errorText = "Server unreachable"
                         } else {
-                            showError = true
+                            errorText = "Incorrect password"
                         }
                     }
                 }
