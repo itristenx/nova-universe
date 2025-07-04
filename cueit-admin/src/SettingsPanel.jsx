@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import UsersPanel from './UsersPanel.jsx';
 import useToast from './useToast.js';
+import useApiError from './useApiError.js';
 
 export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const [tab, setTab] = useState('general');
@@ -10,16 +11,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const api = import.meta.env.VITE_API_URL;
   const activateUrl = import.meta.env.VITE_ACTIVATE_URL;
   const toast = useToast();
-  const handleApiError = useCallback(
-    (err, msg) => {
-      if (err.response && err.response.status === 401) {
-        window.location.href = `${api}/login`;
-      } else {
-        toast(msg, 'error');
-      }
-    },
-    [api, toast]
-  );
+  const handleApiError = useApiError();
 
   useEffect(() => {
     if (open && tab === 'kiosks') {

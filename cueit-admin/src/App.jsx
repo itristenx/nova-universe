@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import SettingsPanel from './SettingsPanel';
 import useToast from './useToast.js';
+import useApiError from './useApiError.js';
 import './App.css';
 
 const urgencyPriority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
@@ -58,16 +59,7 @@ function App() {
   });
   const api = import.meta.env.VITE_API_URL;
 
-  const handleApiError = useCallback(
-    (err, msg) => {
-      if (err.response && err.response.status === 401) {
-        window.location.href = `${api}/login`;
-      } else if (msg) {
-        toast(msg, 'error');
-      }
-    },
-    [api, toast]
-  );
+  const handleApiError = useApiError();
 
   const deleteLog = async (id) => {
     try {
