@@ -101,6 +101,7 @@ struct LaunchView: View {
                             .padding(.top, Theme.Spacing.md)
                             .padding(.trailing, Theme.Spacing.md)
                     }
+                    .accessibilityLabel("Settings")
                     Spacer()
                 }
             },
