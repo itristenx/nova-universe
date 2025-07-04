@@ -3,10 +3,10 @@ import XCTest
 
 final class KioskServiceTests: XCTestCase {
     func testIdPersistsAcrossInstances() {
-        let defaults = UserDefaults.standard
-        defaults.removeObject(forKey: "kioskId")
+        KeychainService.delete("kioskId")
+        UserDefaults.standard.removeObject(forKey: "kioskId")
         let id = KioskService.shared.id
-        XCTAssertEqual(defaults.string(forKey: "kioskId"), id)
+        XCTAssertEqual(KeychainService.string(for: "kioskId"), id)
         XCTAssertEqual(KioskService.shared.id, id)
     }
 }

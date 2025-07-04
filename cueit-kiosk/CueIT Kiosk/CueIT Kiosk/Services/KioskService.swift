@@ -19,11 +19,16 @@ class KioskService: ObservableObject {
     private var timer: Timer?
 
     let id: String = {
-        if let saved = UserDefaults.standard.string(forKey: "kioskId") {
+        if let saved = KeychainService.string(for: "kioskId") {
             return saved
         }
+        if let migrated = UserDefaults.standard.string(forKey: "kioskId") {
+            KeychainService.set(migrated, for: "kioskId")
+            UserDefaults.standard.removeObject(forKey: "kioskId")
+            return migrated
+        }
         let new = UUID().uuidString
-        UserDefaults.standard.set(new, forKey: "kioskId")
+        KeychainService.set(new, for: "kioskId")
         return new
     }()
 
