@@ -17,6 +17,9 @@ class KioskService: ObservableObject {
     @Published var state: ActivationState = .checking
     @Published var activationError: Bool = false
     private var timer: Timer?
+    private static let minInterval: TimeInterval = 30
+    private static let maxInterval: TimeInterval = 300
+    private var pollInterval: TimeInterval = minInterval
 
     let id: String = {
         if let saved = KeychainService.string(for: "kioskId") {
@@ -46,11 +49,13 @@ class KioskService: ObservableObject {
     func checkActive() async {
         guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(id)") else { return }
         struct KioskRow: Codable { var active: Int }
+        var success = false
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             if let row = try? JSONDecoder().decode(KioskRow.self, from: data) {
                 self.state = row.active == 1 ? .active : .inactive
                 self.activationError = false
+                success = true
             } else {
                 self.state = .error
                 self.activationError = true
@@ -59,12 +64,27 @@ class KioskService: ObservableObject {
             self.state = .error
             self.activationError = true
         }
+
+        if success {
+            pollInterval = Self.minInterval
+        } else {
+            pollInterval = min(pollInterval * 2, Self.maxInterval)
+        }
+    }
+
+    private func pollAndScheduleNext() async {
+        await checkActive()
+        scheduleNextPoll()
+    }
+
+    private func scheduleNextPoll() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: pollInterval, repeats: false) { _ in
+            Task { await self.pollAndScheduleNext() }
+        }
     }
 
     private func startPolling() {
-        Task { await checkActive() }
-        timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in
-            Task { await self.checkActive() }
-        }
+        Task { await pollAndScheduleNext() }
     }
 }
