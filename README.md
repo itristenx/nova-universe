@@ -92,6 +92,28 @@ During development you can run `npm start` inside the folder to launch Electron 
 
 The SwiftUI kiosk can only be built and run on macOS with Xcode installed.
 
+## Running Tests
+
+CueIT includes automated test suites for the backend API and the admin UI.
+
+### cueit-api
+
+1. `cd cueit-api`
+2. `npm install`
+3. `npm test`
+
+The API tests are written with Mocha and exercise the main Express endpoints.
+
+### cueit-admin
+
+1. `cd cueit-admin`
+2. `npm install`
+3. `npm test`
+
+This suite uses Jest and React Testing Library to validate the UI.
+
+See the [contributor guide](AGENTS.md) for additional details.
+
 ## Testing the API
 
 To manually submit a ticket you can use `curl`:
