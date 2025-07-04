@@ -40,3 +40,7 @@ is dismissed, otherwise an error message is shown.
 Unit tests live in `CueIT KioskTests`. Open the project in Xcode and select
 **Product → Test** or press `⌘U` to run them. The suite verifies configuration
 loading and kiosk startup behavior.
+
+## Privacy
+
+See [docs/privacy-policy.md](../docs/privacy-policy.md) for details about the data collected by the kiosk and how it is retained.
