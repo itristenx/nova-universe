@@ -43,4 +43,5 @@ if [ -d cueit-slack ]; then
   popd >/dev/null
 fi
 
+echo "Run ./scripts/init-env.sh to create .env files, then edit them before starting the services."
 echo "Setup complete."
