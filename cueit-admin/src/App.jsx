@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import SettingsPanel from './SettingsPanel';
@@ -18,6 +18,9 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [urgencyFilter, setUrgencyFilter] = useState('');
   const [systemFilter, setSystemFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const toast = useToast();
   const [apiConnected, setApiConnected] = useState(true);
   const prevConnectedRef = useRef(true);
@@ -61,6 +64,19 @@ function App() {
 
   const handleApiError = useApiError();
 
+  const fetchLogs = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('start', startDate);
+      if (endDate) params.append('end', endDate);
+      if (statusFilter) params.append('status', statusFilter);
+      const res = await axios.get(`${api}/api/logs?${params.toString()}`);
+      setLogs(res.data);
+    } catch (err) {
+      handleApiError(err, 'Failed to load logs');
+    }
+  }, [api, startDate, endDate, statusFilter, handleApiError]);
+
   const deleteLog = async (id) => {
     try {
       await axios.delete(`${api}/api/logs/${id}`);
@@ -82,14 +98,13 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [logsRes, configRes, meRes] = await Promise.all([
-          axios.get(`${api}/api/logs`),
+        const [configRes, meRes] = await Promise.all([
           axios.get(`${api}/api/config`),
           axios.get(`${api}/api/me`)
         ]);
-        setLogs(logsRes.data);
         setConfig((c) => ({ ...c, ...configRes.data }));
         setUser(meRes.data);
+        await fetchLogs();
       } catch (err) {
         handleApiError(err);
         setError('Failed to load data');
@@ -98,7 +113,11 @@ function App() {
       }
     };
     fetchData();
-  }, [api, handleApiError]);
+  }, [api, handleApiError, fetchLogs]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   useEffect(() => {
     let isMounted = true;
@@ -178,6 +197,27 @@ function App() {
                       {uniqueSystems.map((system) => (
                         <option key={system} value={system}>{system}</option>
                       ))}
+                    </select>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="px-2 py-1 border rounded-md text-sm"
+                    />
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="px-2 py-1 border rounded-md text-sm"
+                    />
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="px-4 py-2 border rounded-md text-sm"
+                    >
+                      <option value="">All Statuses</option>
+                      <option value="success">success</option>
+                      <option value="fail">fail</option>
                     </select>
                     <select
                       value={sortField}

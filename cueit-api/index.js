@@ -224,11 +224,31 @@ ${description || "(No description provided)"}
   );
 });
 
-app.get("/api/logs", ensureAuth, (req, res) => {
-  db.all(`SELECT * FROM logs ORDER BY timestamp DESC`, (err, rows) => {
+app.get('/api/logs', ensureAuth, (req, res) => {
+  const { start, end, status } = req.query;
+  const clauses = [];
+  const params = [];
+
+  if (start) {
+    clauses.push('timestamp >= ?');
+    params.push(start);
+  }
+  if (end) {
+    clauses.push('timestamp <= ?');
+    params.push(end);
+  }
+  if (status) {
+    clauses.push('email_status = ?');
+    params.push(status);
+  }
+
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const sql = `SELECT * FROM logs ${where} ORDER BY timestamp DESC`;
+
+  db.all(sql, params, (err, rows) => {
     if (err) {
-      console.error("❌ Failed to fetch logs:", err.message);
-      return res.status(500).json({ error: "DB error" });
+      console.error('❌ Failed to fetch logs:', err.message);
+      return res.status(500).json({ error: 'DB error' });
     }
     res.json(rows);
   });
