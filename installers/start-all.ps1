@@ -1,3 +1,4 @@
+Set-Location (Join-Path $PSScriptRoot "..")
 $apps = @{
   api      = @{ dir = 'cueit-api';      cmd = 'node cueit-api/index.js' }
   admin    = @{ dir = 'cueit-admin';    cmd = 'npm --prefix cueit-admin run dev' }

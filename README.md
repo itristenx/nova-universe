@@ -22,7 +22,7 @@ page and SwiftUI kiosk app.
 
 ## Setup
 
-Run `./setup.sh` to install Node.js, SQLite and all project dependencies in one step.
+Run `./installers/setup.sh` to install Node.js, SQLite and all project dependencies in one step.
 You can also follow the manual instructions below.
 See [Local vs Production Setup](docs/environments.md) for details on configuring the environment variables used by each service.
 
@@ -77,18 +77,18 @@ dependencies if the `node_modules` directory is missing.
 #### macOS / Linux
 
 ```bash
-./start-all.sh
+./installers/start-all.sh
 ```
 
 #### Windows
 
 ```powershell
-./start-all.ps1
+./installers/start-all.ps1
 ```
 
 ### macOS Launcher
 
-Use the Electron launcher in `cueit-macos` to start the services with a single click. Run `./make-installer.sh` to build a `.pkg` installer, install it and launch **CueIT** from Applications.
+Use the Electron launcher in `cueit-macos` to start the services with a single click. Run `./installers/make-installer.sh` to build a `.pkg` installer, install it and launch **CueIT** from Applications.
 During development you can run `npm start` inside the folder to launch Electron without packaging.
 
 The SwiftUI kiosk can only be built and run on macOS with Xcode installed.

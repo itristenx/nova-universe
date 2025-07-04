@@ -4,7 +4,7 @@ Electron launcher packaged for macOS.
 
 ## Building
 
-Run `../make-installer.sh` to create `CueIT-<version>.pkg`. Install the package to `/Applications`.
+Run `../installers/make-installer.sh` to create `CueIT-<version>.pkg`. Install the package to `/Applications`.
 
 ## Setup
 
