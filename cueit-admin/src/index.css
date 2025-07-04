@@ -6,12 +6,15 @@
 
 :root {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #f9fafb;
-  color: #1f2937;
+  background-color: theme('colors.surface');
+  color: theme('colors.content');
   line-height: 1.5;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --logo-shadow: theme('colors.logoShadow');
+  --react-shadow: theme('colors.reactShadow');
+  --muted: theme('colors.muted');
 }
 
 body {
