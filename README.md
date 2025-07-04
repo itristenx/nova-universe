@@ -242,6 +242,9 @@ Each app relies on a few environment variables:
 - Optional: set `TLS_CERT_PATH` and `TLS_KEY_PATH` to enable HTTPS.
 - `ADMIN_PASSWORD` – seeds the initial admin password for kiosk login and the
   password management endpoints.
+- `JWT_SECRET` – secret used to sign JSON Web Tokens.
+- `JWT_EXPIRES_IN` – token expiration (e.g., `1h`).
+- `SCIM_TOKEN` – bearer token required for SCIM provisioning endpoints.
 - `DISABLE_AUTH` – set to `true` to bypass SAML authentication and
   access the admin UI before SSO is configured.
 
