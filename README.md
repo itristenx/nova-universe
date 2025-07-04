@@ -256,7 +256,7 @@ Each app relies on a few environment variables:
 
 Several security and usability features are planned for a future version of the API and frontends:
 
-- **Authentication** – add JWT based auth to protect admin and Slack endpoints and store hashed admin passwords instead of plaintext.
+- **Authentication** – current admin login uses SAML. Add JWT based auth to protect API and Slack endpoints.
 - **Log filtering** – allow filtering ticket logs by date range or email status when querying the `/api/logs` endpoint.
 - **HTTPS** – enable TLS so the backend, admin UI and kiosk all communicate over HTTPS.
 - **Kiosk registration tokens** – require a token when calling `/api/register-kiosk` to prevent unauthorized devices from spoofing a kiosk ID.
