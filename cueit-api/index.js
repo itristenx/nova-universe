@@ -10,6 +10,7 @@ import { Strategy as SamlStrategy } from 'passport-saml';
 import db from './db.js';
 import { v4 as uuidv4 } from 'uuid';
 import events from './events.js';
+import { sign, verify } from './jwt.js';
 import { fileURLToPath } from 'url';
 
 dotenv.config();
@@ -113,6 +114,9 @@ const ensureAuth = DISABLE_AUTH
   ? (req, res, next) => next()
   : (req, res, next) => {
       if (req.isAuthenticated()) return next();
+      const header = req.headers.authorization || '';
+      const token = header.replace(/^Bearer\s+/i, '');
+      if (token && verify(token)) return next();
       res.status(401).json({ error: 'unauthenticated' });
     };
 
@@ -292,6 +296,20 @@ app.put('/api/admin-password', ensureAuth, (req, res) => {
       res.json({ message: 'Password updated' });
     }
   );
+});
+
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  if (!password) return res.status(400).json({ error: 'Missing password' });
+  db.get(`SELECT value FROM config WHERE key='adminPassword'`, (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    const hash = row ? row.value : '';
+    if (!bcrypt.compareSync(password, hash)) {
+      return res.status(401).json({ error: 'invalid' });
+    }
+    const token = sign({ type: 'admin' });
+    res.json({ token });
+  });
 });
 
 app.post("/api/register-kiosk", (req, res) => {

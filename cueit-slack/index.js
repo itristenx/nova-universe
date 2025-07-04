@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { App } from '@slack/bolt';
 import axios from 'axios';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -90,7 +91,16 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
   };
 
   try {
-    const res = await axios.post(`${process.env.API_URL}/submit-ticket`, payload);
+    const token = jwt.sign(
+      { type: 'slack' },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+    );
+    const res = await axios.post(
+      `${process.env.API_URL}/submit-ticket`,
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
     const { ticketId, emailStatus } = res.data;
     await client.chat.postMessage({
       channel: body.user.id,

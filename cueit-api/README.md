@@ -68,6 +68,11 @@ authenticates the user it sends them back to `/login/callback` and a
 session is established. The logged‑in user information can be
 retrieved from `/api/me`.
 
+You can also obtain a JSON Web Token by POSTing an admin password to
+`/api/login`. Set `JWT_SECRET` (and optional `JWT_EXPIRES_IN`) in your
+environment. Include `Authorization: Bearer <token>` when calling
+protected endpoints.
+
 To enable SAML configure these variables in `.env`:
 
 - `SESSION_SECRET` – secret used to sign the Express session cookie. The API
@@ -82,6 +87,8 @@ To enable SAML configure these variables in `.env`:
 - `HELPSCOUT_API_KEY` – API key used to create HelpScout conversations.
 - `HELPSCOUT_MAILBOX_ID` – ID of the HelpScout mailbox.
 - `HELPSCOUT_SMTP_FALLBACK` – set to `true` to also send email via SMTP.
+- `JWT_SECRET` – secret key used to sign JSON Web Tokens.
+- `JWT_EXPIRES_IN` – optional token expiry like `1h`.
 
 ## SCIM Provisioning
 
