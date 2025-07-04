@@ -11,7 +11,9 @@ import Foundation
 @main
 struct CueITKioskApp: App {
     init() {
-        KioskService.shared.register(version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
+        Task {
+            await KioskService.shared.register(version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
+        }
     }
 
     var body: some Scene {

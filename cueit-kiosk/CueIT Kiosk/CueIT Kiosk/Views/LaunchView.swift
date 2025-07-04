@@ -21,7 +21,7 @@ struct LaunchView: View {
             case .inactive:
                 PendingActivationView()
             case .error:
-                ActivationErrorView { kioskService.checkActive() }
+                ActivationErrorView { Task { await kioskService.checkActive() } }
             default:
                 if let bg = configService.config.backgroundUrl,
                    let url = URL(string: bg) {
@@ -69,8 +69,8 @@ struct LaunchView: View {
             AdminLoginView(configService: configService)
         }
         .onAppear {
-            configService.load()
-          TicketQueue.shared.retry()
+            Task { await configService.load() }
+            TicketQueue.shared.retry()
         }
         .onReceive(configService.$errorMessage) { msg in
             if let m = msg {

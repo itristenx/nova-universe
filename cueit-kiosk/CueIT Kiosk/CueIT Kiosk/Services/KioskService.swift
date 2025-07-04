@@ -27,37 +27,39 @@ class KioskService: ObservableObject {
         return new
     }()
 
-    func register(version: String) {
+    func register(version: String) async {
         guard let url = URL(string: "\(APIConfig.baseURL)/api/register-kiosk") else { return }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = ["id": id, "version": version]
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        URLSession.shared.dataTask(with: req).resume()
+        _ = try? await URLSession.shared.data(for: req)
     }
 
-    func checkActive() {
+    @MainActor
+    func checkActive() async {
         guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(id)") else { return }
         struct KioskRow: Codable { var active: Int }
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            DispatchQueue.main.async {
-                if let data = data,
-                   let row = try? JSONDecoder().decode(KioskRow.self, from: data) {
-                    self.state = row.active == 1 ? .active : .inactive
-                    self.activationError = false
-                } else {
-                    self.state = .error
-                    self.activationError = true
-                }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let row = try? JSONDecoder().decode(KioskRow.self, from: data) {
+                self.state = row.active == 1 ? .active : .inactive
+                self.activationError = false
+            } else {
+                self.state = .error
+                self.activationError = true
             }
-        }.resume()
+        } catch {
+            self.state = .error
+            self.activationError = true
+        }
     }
 
     private func startPolling() {
-        checkActive()
+        Task { await checkActive() }
         timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in
-            self.checkActive()
+            Task { await self.checkActive() }
         }
     }
 }
