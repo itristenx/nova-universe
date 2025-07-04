@@ -21,11 +21,12 @@ matches the web interfaces.
 
 ### Directory Lookup
 
-To automatically populate the ticket form with a user's job title and manager
-the app queries your identity provider's SCIM API. Add `SCIM_TOKEN` and
-`SCIM_URL` entries to `CueIT Kiosk/CueIT Kiosk/Info.plist`. `SCIM_TOKEN` should
-be a bearer token authorized for the directory service. `SCIM_URL` defaults to
-`\(API_BASE_URL)/scim/v2` when left blank.
+To automatically populate the ticket form with a user's job title and manager,
+the app queries your identity provider's SCIM API. The token for this request is
+retrieved at runtime from the backend (or entered in settings) and stored
+securely in the keychain. Add a `SCIM_URL` entry to
+`CueIT Kiosk/CueIT Kiosk/Info.plist` if the directory endpoint differs from the
+default of `\(API_BASE_URL)/scim/v2`.
 
 ### Admin Login
 

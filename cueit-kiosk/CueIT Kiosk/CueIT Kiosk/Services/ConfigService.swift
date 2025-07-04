@@ -6,6 +6,7 @@ struct AppConfig: Codable {
     var backgroundUrl: String?
     var welcomeMessage: String
     var helpMessage: String
+    var scimToken: String?
 }
 
 class ConfigService: ObservableObject {
@@ -16,7 +17,8 @@ class ConfigService: ObservableObject {
     func load() async {
         if let data = UserDefaults.standard.data(forKey: "config") {
             do {
-                let cfg = try JSONDecoder().decode(AppConfig.self, from: data)
+                var cfg = try JSONDecoder().decode(AppConfig.self, from: data)
+                cfg.scimToken = nil
                 self.config = cfg
             } catch {
                 self.errorMessage = "Unable to load configuration"
@@ -30,7 +32,9 @@ class ConfigService: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let cfg = try JSONDecoder().decode(AppConfig.self, from: data)
+            var cfg = try JSONDecoder().decode(AppConfig.self, from: data)
+            if let token = cfg.scimToken { DirectoryService.shared.updateToken(token) }
+            cfg.scimToken = nil
             self.config = cfg
             self.errorMessage = nil
             if let d = try? JSONEncoder().encode(cfg) {
