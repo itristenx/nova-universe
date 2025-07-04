@@ -109,22 +109,25 @@ struct TicketFormView: View {
         }
     }
 
-    func submit() {
-        guard let url = URL(string: "\(APIConfig.baseURL)/submit-ticket") else { return }
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = ["name": name, "email": email, "title": title, "manager": manager, "system": system, "urgency": urgency]
-        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        URLSession.shared.dataTask(with: req) { _, res, err in
-            DispatchQueue.main.async {
-                if err != nil {
-                    showError = true
-                } else {
-                    dismiss()
-                }
-            }
-        }.resume()
+  func submit() {
+    let ticket = QueuedTicket(name: name, email: email, title: title, manager: manager, system: system, urgency: urgency)
+    guard let url = URL(string: "\(APIConfig.baseURL)/submit-ticket") else { return }
+    var req = URLRequest(url: url)
+    req.httpMethod = "POST"
+    req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    let body = ["name": ticket.name, "email": ticket.email, "title": ticket.title, "manager": ticket.manager, "system": ticket.system, "urgency": ticket.urgency]
+    req.httpBody = try? JSONSerialization.data(withJSONObject: body)
+    URLSession.shared.dataTask(with: req) { _, _, err in
+      DispatchQueue.main.async {
+        if err != nil {
+          TicketQueue.shared.enqueue(ticket)
+          showError = true
+        } else {
+          dismiss()
+          TicketQueue.shared.retry()
+        }
+      }
+    }.resume()
     }
 
     func apply(_ user: DirectoryUser) {
