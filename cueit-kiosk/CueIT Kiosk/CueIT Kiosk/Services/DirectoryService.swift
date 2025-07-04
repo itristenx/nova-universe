@@ -12,16 +12,22 @@ class DirectoryService: ObservableObject {
     static let shared = DirectoryService()
     @Published var suggestions: [DirectoryUser] = []
 
-    private let token: String
     private let baseURL: String
 
     private init() {
-        token = Bundle.main.object(forInfoDictionaryKey: "SCIM_TOKEN") as? String ?? ""
         if let url = Bundle.main.object(forInfoDictionaryKey: "SCIM_URL") as? String {
             baseURL = url
         } else {
             baseURL = "\(APIConfig.baseURL)/scim/v2"
         }
+    }
+
+    var token: String {
+        KeychainService.string(for: "scimToken") ?? ""
+    }
+
+    func updateToken(_ value: String) {
+        KeychainService.set(value, for: "scimToken")
     }
 
     func search(email: String) {

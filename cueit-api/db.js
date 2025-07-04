@@ -74,7 +74,8 @@ db.serialize(() => {
     faviconUrl: process.env.FAVICON_URL || '/vite.svg',
     welcomeMessage: 'Welcome to the Help Desk',
     helpMessage: 'Need to report an issue?',
-    adminPassword: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 10)
+    adminPassword: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 10),
+    scimToken: process.env.SCIM_TOKEN || ''
   };
   const stmt = db.prepare(`INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)`);
   for (const [key, value] of Object.entries(defaults)) {
