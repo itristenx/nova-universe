@@ -28,4 +28,7 @@ You can start all services from the command line:
 ./installers/start-all.sh
 ```
 
+Each service launches via `npm start`, ensuring its `.env` file is loaded
+correctly.
+
 On Windows use `start-all.ps1` instead. The packaged Electron app created above also runs the same script in the background so you can start everything with a single click.

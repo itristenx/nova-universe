@@ -92,7 +92,8 @@ Scripts are provided to launch the API, admin UI, activation page and Slack
 service together using `concurrently`. When running the script you will be
 prompted to choose which apps to start (press **Enter** for all). For each
 selected app the script verifies that a `.env` file exists and installs
-dependencies if the `node_modules` directory is missing.
+dependencies if the `node_modules` directory is missing. Each service is
+started with `npm start` so its environment file loads correctly.
 
 #### macOS / Linux
 
