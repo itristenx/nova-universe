@@ -33,7 +33,13 @@ db.serialize(() => {
       version TEXT,
       active INTEGER DEFAULT 0,
       logoUrl TEXT,
-      bgUrl TEXT
+      bgUrl TEXT,
+      statusEnabled INTEGER DEFAULT 0,
+      currentStatus TEXT,
+      openMsg TEXT,
+      closedMsg TEXT,
+      errorMsg TEXT,
+      schedule TEXT
     )
   `);
 
@@ -76,6 +82,12 @@ db.serialize(() => {
   addColumnIfMissing('kiosks', 'active INTEGER DEFAULT 0');
   addColumnIfMissing('kiosks', 'logoUrl TEXT');
   addColumnIfMissing('kiosks', 'bgUrl TEXT');
+  addColumnIfMissing('kiosks', 'statusEnabled INTEGER DEFAULT 0');
+  addColumnIfMissing('kiosks', 'currentStatus TEXT');
+  addColumnIfMissing('kiosks', 'openMsg TEXT');
+  addColumnIfMissing('kiosks', 'closedMsg TEXT');
+  addColumnIfMissing('kiosks', 'errorMsg TEXT');
+  addColumnIfMissing('kiosks', 'schedule TEXT');
 
   // insert default config if not present
   const defaults = {
@@ -83,6 +95,9 @@ db.serialize(() => {
     faviconUrl: process.env.FAVICON_URL || '/vite.svg',
     welcomeMessage: 'Welcome to the Help Desk',
     helpMessage: 'Need to report an issue?',
+    statusOpenMsg: 'Open',
+    statusClosedMsg: 'Closed',
+    statusErrorMsg: 'Error',
     adminPassword: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 10),
     scimToken: process.env.SCIM_TOKEN || ''
   };
