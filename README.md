@@ -106,6 +106,9 @@ dependencies if the `node_modules` directory is missing.
 ### macOS Launcher
 
 Use the Electron launcher in `cueit-macos` to start the services with a single click. Run `./installers/make-installer.sh` to build a `.pkg` installer, install it and launch **CueIT** from Applications.
+All installer scripts reside in the `installers/` directory.
+See [docs/installers.md](docs/installers.md) for detailed instructions.
+Run `./installers/uninstall-macos.sh` to remove the app and `./installers/upgrade-macos.sh` to rebuild and reinstall.
 During development you can run `npm start` inside the folder to launch Electron without packaging.
 
 The SwiftUI kiosk can only be built and run on macOS with Xcode installed.

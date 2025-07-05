@@ -10,6 +10,7 @@ Use the installer script for your operating system:
 - **Windows** – run `./installers/make-windows-installer.ps1 -Version <version>` to build `CueIT-<version>.exe` and execute it.
 - **Linux** – run `./installers/make-linux-installer.sh <version>` to build an AppImage and launch it.
 
+All installer scripts are located under the `installers/` directory. On macOS you can remove the application with `./installers/uninstall-macos.sh` and upgrade it with `./installers/upgrade-macos.sh`. See [installers.md](installers.md) for more options.
 These scripts package the Electron launcher along with the API and web apps.
 
 ## 2. Configure

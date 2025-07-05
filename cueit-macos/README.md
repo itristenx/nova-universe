@@ -5,6 +5,7 @@ Electron launcher packaged for macOS.
 ## Building
 
 Run `../installers/make-installer.sh` to create `CueIT-<version>.pkg`. Install the package to `/Applications`.
+All installer scripts live in the repository's `installers/` directory. Use `../installers/uninstall-macos.sh` to remove the application. The helper script `../installers/upgrade-macos.sh` rebuilds a new package and reinstalls it.
 
 ## Setup
 
