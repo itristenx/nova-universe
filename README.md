@@ -200,13 +200,13 @@ the `kiosks` table with `active` set to `0` (inactive). A kiosk cannot submit
 tickets until it is activated.
 
 An administrator can toggle the `active` flag from the **Kiosks** tab in the
-admin UI or by visiting the separate activation page provided by the
-`cueit-activate` app. Both interfaces call
-`PUT /api/kiosks/:id/active` to update the flag. The iPad app periodically
-fetches its configuration from `/api/kiosks/:id`; if `active` is `0` it shows an
-activation required message instead of the ticket form.
-When `VITE_ADMIN_URL` is set, the activation page shows a link back to the admin
-UI for convenience.
+admin UI, from the separate activation page provided by the
+`cueit-activate` app, or directly from the iPad kiosk. All three interfaces call
+`PUT /api/kiosks/:id/active` to update the flag. When a kiosk is inactive the
+app displays an activation screen showing the API URL and kiosk ID. Tapping the
+**Activate** button sends the request to enable the kiosk.
+When `VITE_ADMIN_URL` is set, the web activation page shows a link back to the
+admin UI for convenience.
 
 To remotely disable a kiosk open the **Kiosks** tab in the admin UI and toggle
 the active switch to the off position. You can also send a `PUT` request to

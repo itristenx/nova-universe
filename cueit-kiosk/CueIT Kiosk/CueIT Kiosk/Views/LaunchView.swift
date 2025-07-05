@@ -22,7 +22,7 @@ struct LaunchView: View {
         ZStack {
             switch kioskService.state {
             case .inactive:
-                PendingActivationView()
+                ActivationView()
             case .error:
                 ActivationErrorView { Task { await kioskService.checkActive() } }
             default:

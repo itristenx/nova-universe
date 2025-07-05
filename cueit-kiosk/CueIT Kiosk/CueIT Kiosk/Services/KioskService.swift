@@ -77,6 +77,24 @@ class KioskService: ObservableObject {
         }
     }
 
+    @MainActor
+    func activate() async -> Bool {
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(id)/active") else { return false }
+        var req = URLRequest(url: url)
+        req.httpMethod = "PUT"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try? JSONEncoder().encode(["active": true])
+        do {
+            _ = try await URLSession.shared.data(for: req)
+            state = .active
+            activationError = false
+            return true
+        } catch {
+            activationError = true
+            return false
+        }
+    }
+
     private func pollAndScheduleNext() async {
         await checkActive()
         scheduleNextPoll()
