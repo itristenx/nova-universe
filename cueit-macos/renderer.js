@@ -19,8 +19,12 @@ document.getElementById('start').addEventListener('click', () => {
     .map(id => `${id}: ${urls[id]}`);
   status.textContent = `Servers starting...\n${lines.join('\n')}`;
   if (selected.includes('admin')) {
-    window.electronAPI.openExternal(urls.admin);
+    window.electronAPI.openAdmin();
   }
+});
+
+document.getElementById('launch-admin').addEventListener('click', () => {
+  window.electronAPI.openAdmin();
 });
 
 const log = document.getElementById('log');

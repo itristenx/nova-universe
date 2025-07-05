@@ -20,5 +20,6 @@ saveButton.addEventListener('click', async () => {
   const data = {};
   envsDiv.querySelectorAll('textarea').forEach(t => { data[t.id] = t.value; });
   await window.electronAPI.writeEnvs(data);
+  await window.electronAPI.openAdmin();
   window.location = 'index.html';
 });

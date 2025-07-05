@@ -9,6 +9,8 @@ VERSION="${1:-1.0.0}"
 arch="universal"
 
 npm --prefix "$APP_DIR" install
+npm --prefix cueit-admin install
+npm --prefix cueit-admin run build
 npx --prefix "$APP_DIR" electron-packager "$APP_DIR" CueIT \
   --platform=darwin --arch="$arch" --out "$APP_DIR/dist" --overwrite
 
