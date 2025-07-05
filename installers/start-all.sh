@@ -15,10 +15,10 @@ get_dir() {
 
 get_cmd() {
   case "$1" in
-    api) echo "node cueit-api/index.js" ;;
+    api) echo "npm --prefix cueit-api start" ;;
     admin) echo "npm --prefix cueit-admin run dev" ;;
     activate) echo "npm --prefix cueit-activate run dev" ;;
-    slack) echo "node cueit-slack/index.js" ;;
+    slack) echo "npm --prefix cueit-slack start" ;;
     *) return 1 ;;
   esac
 }
