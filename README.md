@@ -271,8 +271,19 @@ Each app relies on a few environment variables:
 - `SLACK_SIGNING_SECRET` – Slack app signing secret.
 - `SLACK_BOT_TOKEN` – bot token with permissions to open modals and post
   messages.
-- `API_URL` – base URL of the backend API for ticket submission.
-- Optional: `SLACK_PORT` (default `3001`).
+  - `API_URL` – base URL of the backend API for ticket submission.
+  - Optional: `SLACK_PORT` (default `3001`).
+
+## Development
+
+Before committing any changes, navigate into each package you modified and run:
+
+```bash
+npm run lint
+npm test
+```
+
+For details on the workflow see [AGENTS.md](AGENTS.md).
 
 ## Future Improvements
 
