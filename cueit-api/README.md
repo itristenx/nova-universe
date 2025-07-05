@@ -15,7 +15,9 @@ An Express and SQLite API that receives help desk tickets and stores configurati
   refuse to start if `SESSION_SECRET` is not set when authentication
   is enabled. Set `ADMIN_PASSWORD` to seed the initial admin password
   used for kiosk login and the `/api/admin-password` management
-  endpoints.
+  endpoints. You may also set `ADMIN_EMAIL` and `ADMIN_NAME` to
+  customise the seeded admin user. By default the credentials are
+  `admin@example.com` / `admin` with the name `Admin`.
 3. Start the server with `node index.js`.
 
 Kiosk devices register with `/api/register-kiosk` and can be activated through the admin UI.
