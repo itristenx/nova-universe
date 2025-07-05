@@ -335,6 +335,35 @@ app.put("/api/config", ensureAuth, (req, res) => {
   });
 });
 
+app.get('/api/status-config', ensureAuth, (req, res) => {
+  db.all(
+    "SELECT key, value FROM config WHERE key IN ('statusOpenMsg','statusClosedMsg','statusErrorMsg')",
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      const out = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+      res.json(out);
+    }
+  );
+});
+
+app.put('/api/status-config', ensureAuth, (req, res) => {
+  const updates = req.body;
+  const stmt = db.prepare(
+    `INSERT INTO config (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value=excluded.value`
+  );
+  db.serialize(() => {
+    for (const [k, v] of Object.entries(updates)) {
+      stmt.run(k, String(v));
+    }
+    stmt.finalize((err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      events.emit('status-config-updated', updates);
+      res.json({ message: 'updated' });
+    });
+  });
+});
+
 app.post('/api/feedback', (req, res) => {
   const { name = '', message } = req.body;
   if (!message) return res.status(400).json({ error: 'Missing message' });
@@ -473,6 +502,48 @@ app.put("/api/kiosks/:id/active", ensureAuth, (req, res) => {
   );
 });
 
+app.get('/api/kiosks/:id/status', (req, res) => {
+  const { id } = req.params;
+  db.get(
+    `SELECT statusEnabled, currentStatus, openMsg, closedMsg, errorMsg, schedule FROM kiosks WHERE id=?`,
+    [id],
+    (err, row) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json(row || {});
+    }
+  );
+});
+
+app.put('/api/kiosks/:id/status', ensureAuth, (req, res) => {
+  const { id } = req.params;
+  const { statusEnabled, currentStatus, openMsg, closedMsg, errorMsg, schedule } = req.body;
+  const sched = schedule === undefined ? null : typeof schedule === 'object' ? JSON.stringify(schedule) : String(schedule);
+  db.run(
+    `UPDATE kiosks SET
+      statusEnabled=COALESCE(?, statusEnabled),
+      currentStatus=COALESCE(?, currentStatus),
+      openMsg=COALESCE(?, openMsg),
+      closedMsg=COALESCE(?, closedMsg),
+      errorMsg=COALESCE(?, errorMsg),
+      schedule=COALESCE(?, schedule)
+     WHERE id=?`,
+    [
+      statusEnabled !== undefined ? (statusEnabled ? 1 : 0) : null,
+      currentStatus,
+      openMsg,
+      closedMsg,
+      errorMsg,
+      sched,
+      id,
+    ],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      events.emit('kiosk-status-updated', { id });
+      res.json({ message: 'updated' });
+    }
+  );
+});
+
 app.get("/api/users", ensureAuth, (req, res) => {
   db.all(`SELECT * FROM users`, (err, rows) => {
     if (err) return res.status(500).json({ error: "DB error" });
@@ -586,6 +657,26 @@ app.use('/scim/v2', scim);
 
 app.get('/api/me', ensureAuth, (req, res) => {
   res.json(req.user || {});
+});
+
+app.get('/api/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  if (res.flushHeaders) res.flushHeaders();
+  const send = (ev, data) => {
+    res.write(`event: ${ev}\n`);
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+  const names = ['kiosk-registered', 'kiosk-deleted', 'kiosk-status-updated', 'status-config-updated'];
+  const handlers = {};
+  for (const n of names) {
+    handlers[n] = (d) => send(n, d);
+    events.on(n, handlers[n]);
+  }
+  req.on('close', () => {
+    for (const n of names) events.off(n, handlers[n]);
+  });
 });
 
 app.get("/api/health", (req, res) => {
