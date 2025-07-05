@@ -46,6 +46,7 @@ settings from `.env` and listens on `API_PORT` (default `3000`).
   - `status` – filter by `email_status` value (`success` or `fail`).
 - `DELETE /api/logs/:id` – delete a log entry by numeric id.
 - `DELETE /api/logs` – remove all log entries.
+- Old logs older than 30 days are purged automatically (set `LOG_RETENTION_DAYS` to adjust).
 - `GET /api/config` – return configuration key/value pairs.
 - `PUT /api/config` – insert or update configuration values.
 

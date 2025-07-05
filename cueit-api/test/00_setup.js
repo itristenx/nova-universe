@@ -4,6 +4,7 @@ import axios from 'axios';
 if (!process.env.DISABLE_AUTH) {
   process.env.DISABLE_AUTH = 'true';
 }
+process.env.DISABLE_CLEANUP = 'true';
 process.env.SCIM_TOKEN = 'testtoken';
 process.env.KIOSK_TOKEN = 'kiosktoken';
 let app;

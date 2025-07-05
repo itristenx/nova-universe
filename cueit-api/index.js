@@ -89,6 +89,19 @@ const PORT = process.env.API_PORT || 3000;
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
 const CERT_PATH = process.env.TLS_CERT_PATH;
 const KEY_PATH = process.env.TLS_KEY_PATH;
+const LOG_RETENTION_DAYS = Number(process.env.LOG_RETENTION_DAYS || 30);
+
+if (process.env.DISABLE_CLEANUP !== 'true') {
+  const purge = () => {
+    db.purgeOldLogs(LOG_RETENTION_DAYS, (err) => {
+      if (err) {
+        console.error('Failed to purge old logs:', err.message);
+      }
+    });
+  };
+  purge();
+  setInterval(purge, 24 * 60 * 60 * 1000);
+}
 
 
 if (SLACK_URL) {
