@@ -6,10 +6,7 @@ cd "$SCRIPT_DIR/.."
 APP_DIR="cueit-macos"
 VERSION="${1:-1.0.0}"
 
-arch=$(uname -m)
-if [[ "$arch" == "x86_64" ]]; then
-  arch="x64"
-fi
+arch="universal"
 
 npm --prefix "$APP_DIR" install
 npx --prefix "$APP_DIR" electron-packager "$APP_DIR" CueIT \
