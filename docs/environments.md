@@ -6,6 +6,7 @@ This project ships with sample environment files for each app. Copy these files 
 
 1. `cueit-api/.env.example`
    - Use the default `SMTP_HOST=localhost` and `SMTP_PORT=1025` with [Mailpit](https://github.com/axllent/mailpit).
+   - Set `SMTP_SECURE` to `true` when your SMTP server requires TLS.
    - Set `HELPDESK_EMAIL` to any address for testing.
    - Set `TLS_CERT_PATH` and `TLS_KEY_PATH` to local certificate files if you want to enable HTTPS.
    - Keep `ADMIN_URL` and other URLs as `https://localhost` when TLS is enabled, otherwise `http://localhost`.
@@ -39,6 +40,7 @@ To run all services over HTTPS during development:
 When deploying to a live environment you must update each `.env` file with real values:
 
 - Provide your actual SMTP server credentials so ticket emails are delivered.
+- Set `SMTP_SECURE` to `true` when using TLS in production.
 - Use HTTPS URLs for all services and SAML configuration.
 - Set a strong random `SESSION_SECRET` for the API.
 - Replace Slack tokens and signing secret with the real app credentials.
