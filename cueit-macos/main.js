@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -74,6 +74,10 @@ ipcMain.handle('write-envs', async (_e, envs) => {
     const envPath = path.join(__dirname, '..', dir, '.env');
     await fs.writeFile(envPath, content);
   }
+});
+
+ipcMain.handle('open-external', (_e, url) => {
+  shell.openExternal(url);
 });
 
 export { ensureEnvFiles, createWindow, start };
