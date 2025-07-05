@@ -120,7 +120,7 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
-  secure: false,
+  secure: process.env.SMTP_SECURE === 'true',
 });
 
 const ensureAuth = DISABLE_AUTH
