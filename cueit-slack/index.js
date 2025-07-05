@@ -12,69 +12,113 @@ const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
 });
 
-const modalView = {
-  type: 'modal',
-  callback_id: 'ticket_submit',
-  title: { type: 'plain_text', text: 'New Ticket' },
-  submit: { type: 'plain_text', text: 'Submit' },
-  close: { type: 'plain_text', text: 'Cancel' },
-  blocks: [
-    {
-      type: 'input',
-      block_id: 'name',
-      label: { type: 'plain_text', text: 'Name' },
-      element: { type: 'plain_text_input', action_id: 'value' },
-    },
-    {
-      type: 'input',
-      block_id: 'email',
-      label: { type: 'plain_text', text: 'Email' },
-      element: { type: 'plain_text_input', action_id: 'value' },
-    },
-    {
-      type: 'input',
-      block_id: 'title',
-      label: { type: 'plain_text', text: 'Title' },
-      element: { type: 'plain_text_input', action_id: 'value' },
-    },
-    {
-      type: 'input',
-      block_id: 'system',
-      label: { type: 'plain_text', text: 'System' },
-      element: { type: 'plain_text_input', action_id: 'value' },
-    },
-    {
-      type: 'input',
-      block_id: 'urgency',
-      label: { type: 'plain_text', text: 'Urgency' },
-      element: {
-        type: 'static_select',
-        action_id: 'value',
-        options: [
-          { text: { type: 'plain_text', text: 'Urgent' }, value: 'Urgent' },
-          { text: { type: 'plain_text', text: 'High' }, value: 'High' },
-          { text: { type: 'plain_text', text: 'Medium' }, value: 'Medium' },
-          { text: { type: 'plain_text', text: 'Low' }, value: 'Low' },
-        ],
+function buildModal(systems = [], urgencies = [], channel) {
+  const systemOptions = systems.map((s) => ({
+    text: { type: 'plain_text', text: s },
+    value: s,
+  }));
+  const urgencyOptions = urgencies.length
+    ? urgencies
+    : ['Urgent', 'High', 'Medium', 'Low'];
+
+  return {
+    type: 'modal',
+    callback_id: 'ticket_submit',
+    private_metadata: channel || '',
+    title: { type: 'plain_text', text: 'New Ticket' },
+    submit: { type: 'plain_text', text: 'Submit' },
+    close: { type: 'plain_text', text: 'Cancel' },
+    blocks: [
+      {
+        type: 'input',
+        block_id: 'name',
+        label: { type: 'plain_text', text: 'Name' },
+        element: { type: 'plain_text_input', action_id: 'value' },
       },
-    },
-    {
-      type: 'input',
-      block_id: 'description',
-      label: { type: 'plain_text', text: 'Description' },
-      element: {
-        type: 'plain_text_input',
-        multiline: true,
-        action_id: 'value',
+      {
+        type: 'input',
+        block_id: 'email',
+        label: { type: 'plain_text', text: 'Email' },
+        element: { type: 'plain_text_input', action_id: 'value' },
       },
-      optional: true,
-    },
-  ],
-};
+      {
+        type: 'input',
+        block_id: 'title',
+        label: { type: 'plain_text', text: 'Title' },
+        element: { type: 'plain_text_input', action_id: 'value' },
+      },
+      {
+        type: 'input',
+        block_id: 'system',
+        label: { type: 'plain_text', text: 'System' },
+        element:
+          systemOptions.length > 0
+            ? {
+                type: 'static_select',
+                action_id: 'value',
+                options: systemOptions,
+              }
+            : { type: 'plain_text_input', action_id: 'value' },
+      },
+      {
+        type: 'input',
+        block_id: 'urgency',
+        label: { type: 'plain_text', text: 'Urgency' },
+        element: {
+          type: 'static_select',
+          action_id: 'value',
+          options: urgencyOptions.map((u) => ({
+            text: { type: 'plain_text', text: u },
+            value: u,
+          })),
+        },
+      },
+      {
+        type: 'input',
+        block_id: 'description',
+        label: { type: 'plain_text', text: 'Description' },
+        element: {
+          type: 'plain_text_input',
+          multiline: true,
+          action_id: 'value',
+        },
+        optional: true,
+      },
+    ],
+  };
+}
 
 app.command('/new-ticket', async ({ ack, body, client }) => {
   await ack();
-  await client.views.open({ trigger_id: body.trigger_id, view: modalView });
+  try {
+    const token = jwt.sign(
+      { type: 'slack' },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+    );
+    const res = await axios.get(`${process.env.API_URL}/api/config`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const systems = Array.isArray(res.data.systems)
+      ? res.data.systems
+      : String(res.data.systems || '')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+    const urgencies = Array.isArray(res.data.urgencyLevels)
+      ? res.data.urgencyLevels
+      : String(res.data.urgencyLevels || '')
+          .split(',')
+          .map((u) => u.trim())
+          .filter(Boolean);
+
+    const view = buildModal(systems, urgencies, body.channel_id);
+    await client.views.open({ trigger_id: body.trigger_id, view });
+  } catch (err) {
+    console.error('Failed to fetch config:', err.message);
+    const view = buildModal([], [], body.channel_id);
+    await client.views.open({ trigger_id: body.trigger_id, view });
+  }
 });
 
 app.view('ticket_submit', async ({ ack, body, view, client }) => {
@@ -85,7 +129,8 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
     name: state.name.value.value,
     email: state.email.value.value,
     title: state.title.value.value,
-    system: state.system.value.value,
+    system:
+      state.system.value.selected_option?.value || state.system.value.value,
     urgency: state.urgency.value.selected_option.value,
     description: state.description?.value?.value || '',
   };
@@ -102,14 +147,38 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const { ticketId, emailStatus } = res.data;
-    await client.chat.postMessage({
-      channel: body.user.id,
-      text: `Ticket ${ticketId} submitted (email ${emailStatus}).`,
+    const adminUrl = process.env.VITE_ADMIN_URL;
+    const blocks = [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:white_check_mark: Ticket *${ticketId}* submitted (email ${emailStatus}).`,
+        },
+      },
+    ];
+    if (adminUrl) {
+      blocks.push({
+        type: 'context',
+        elements: [
+          {
+            type: 'mrkdwn',
+            text: `<${adminUrl}|Open Admin UI>`,
+          },
+        ],
+      });
+    }
+    await client.chat.postEphemeral({
+      channel: view.private_metadata || body.user.id,
+      user: body.user.id,
+      text: `Ticket ${ticketId} submitted`,
+      blocks,
     });
   } catch (err) {
     console.error('Failed to submit ticket:', err.message);
-    await client.chat.postMessage({
-      channel: body.user.id,
+    await client.chat.postEphemeral({
+      channel: view.private_metadata || body.user.id,
+      user: body.user.id,
       text: 'Failed to submit ticket.',
     });
   }
