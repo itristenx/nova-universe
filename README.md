@@ -27,6 +27,7 @@ page and SwiftUI kiosk app.
 ## Setup
 
 Run `./installers/setup.sh` to install Node.js, SQLite and all project dependencies in one step.
+Copy `.env.local.example` to `.env.local` and adjust any values for your machine.
 Next run `./scripts/init-env.sh` to create the `.env` files for each app (edit them before launching).
 You can also follow the manual instructions below.
 See [Local vs Production Setup](docs/environments.md) for details on configuring the environment variables used by each service.
