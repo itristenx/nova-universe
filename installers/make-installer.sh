@@ -5,8 +5,14 @@ cd "$SCRIPT_DIR/.."
 
 APP_DIR="cueit-macos"
 VERSION="${1:-1.0.0}"
-
-arch="universal"
+arch="${2:-universal}"
+case "$arch" in
+  arm64|x64|universal) ;;
+  *)
+    echo "Usage: $0 <version> [arm64|x64|universal]"
+    exit 1
+    ;;
+esac
 
 npm --prefix "$APP_DIR" install
 npm --prefix cueit-admin install

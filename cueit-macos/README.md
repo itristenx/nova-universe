@@ -4,7 +4,7 @@ Electron launcher packaged for macOS.
 
 ## Building
 
-Run `../installers/make-installer.sh <version>` on an Apple Silicon Mac to generate an **arm64** installer. Pass `universal` after the version to create a combined package for Intel and Apple Silicon Macs. Install the package to `/Applications`. The minimum supported macOS version is **12**.
+Run `../installers/make-installer.sh <version> [arch]` on macOS to build the installer. The optional `arch` value may be `arm64`, `x64` or `universal` (default). Install the resulting package to `/Applications`. The minimum supported macOS version is **12**.
 All installer scripts live in the repository's `installers/` directory. Use `../installers/uninstall-macos.sh` to remove the application. The helper script `../installers/upgrade-macos.sh` rebuilds a new package and reinstalls it.
 
 ## Setup

@@ -107,7 +107,7 @@ dependencies if the `node_modules` directory is missing.
 
 ### macOS Launcher
 
-Use the Electron launcher in `cueit-macos` to start the services with a single click. Run `./installers/make-installer.sh` to build a `.pkg` installer, install it and launch **CueIT** from Applications.
+Use the Electron launcher in `cueit-macos` to start the services with a single click. Run `./installers/make-installer.sh <version> [arch]` to build a `.pkg` installer and launch **CueIT** from Applications. Pass `arm64`, `x64` or `universal` as the optional architecture.
 All installer scripts reside in the `installers/` directory.
 See [docs/installers.md](docs/installers.md) for detailed instructions.
 Run `./installers/uninstall-macos.sh` to remove the app and `./installers/upgrade-macos.sh` to rebuild and reinstall.
