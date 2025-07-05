@@ -101,6 +101,7 @@ db.serialize(() => {
 
   addColumnIfMissing('notifications', 'active INTEGER DEFAULT 1');
   addColumnIfMissing('notifications', 'created_at TEXT');
+  addColumnIfMissing('users', 'passwordHash TEXT');
 
   // insert default config if not present
   const defaults = {

@@ -13,14 +13,13 @@ const nodeBin = process.execPath;
 const sqlite3 = sqlite3pkg.verbose();
 const dbFile = path.join(__dirname, '..', 'log.sqlite');
 
-function setAdminPassword(pwd) {
+function createUser(email, name, password) {
   return new Promise((resolve) => {
     const db = new sqlite3.Database(dbFile);
-    const hash = bcrypt.hashSync(pwd, 10);
+    const hash = bcrypt.hashSync(password, 10);
     db.run(
-      `INSERT INTO config (key, value) VALUES ('adminPassword', ?)
-       ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
-      [hash],
+      `INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)`,
+      [name, email, hash],
       () => {
         db.close();
         resolve();
@@ -30,17 +29,18 @@ function setAdminPassword(pwd) {
 }
 
 function startServer(done) {
-  setAdminPassword('admin').then(() => {
+  createUser('admin@example.com', 'Admin', 'admin').then(() => {
     proc = spawn(nodeBin, [apiPath], {
       cwd: path.join(__dirname, '..'),
       env: {
         ...process.env,
         API_PORT: String(port),
-      DISABLE_AUTH: 'false',
-      SESSION_SECRET: 'test',
-      SAML_ENTRY_POINT: 'http://localhost/saml',
-      SAML_ISSUER: 'cueit',
-      SAML_CALLBACK_URL: 'http://localhost/callback',
+        NODE_ENV: 'development',
+        DISABLE_AUTH: 'false',
+        SESSION_SECRET: 'test',
+        SAML_ENTRY_POINT: 'http://localhost/saml',
+        SAML_ISSUER: 'cueit',
+        SAML_CALLBACK_URL: 'http://localhost/callback',
       SAML_CERT: 'dummy',
       JWT_SECRET: 'jwtsecret',
     },
@@ -64,7 +64,7 @@ describe('JWT authentication', function () {
     const res = await fetch(`http://localhost:${port}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: 'admin' }),
+      body: JSON.stringify({ email: 'admin@example.com', password: 'admin' }),
     });
     const loginData = await res.json();
     assert(loginData.token, 'token missing');
