@@ -10,7 +10,7 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 const script = path.join(repoRoot, 'installers', 'make-installer.sh');
 
 async function setupRepo(tmp) {
-  const dirs = ['cueit-macos', 'cueit-admin', 'cueit-api', 'cueit-activate', 'cueit-slack', 'design', 'installers'];
+  const dirs = ['cueit-macos-swift', 'cueit-admin', 'cueit-api', 'cueit-activate', 'cueit-slack', 'design', 'installers'];
   for (const d of dirs) {
     await fs.mkdir(path.join(tmp, d), { recursive: true });
   }
@@ -18,7 +18,7 @@ async function setupRepo(tmp) {
     await fs.writeFile(path.join(tmp, p, '.env.example'), '');
   }
   await fs.writeFile(path.join(tmp, 'installers', 'start-all.sh'), '');
-  await fs.mkdir(path.join(tmp, 'cueit-macos', 'dist', 'CueIT-darwin-universal', 'CueIT.app'), { recursive: true });
+  await fs.mkdir(path.join(tmp, 'cueit-macos-swift', 'build', 'Build', 'Products', 'Release', 'CueITLauncher.app'), { recursive: true });
   await fs.copyFile(script, path.join(tmp, 'installers', 'make-installer.sh'));
 }
 
@@ -27,7 +27,7 @@ async function setupBin(tmp) {
   await fs.mkdir(bin);
   const scripts = {
     npm: '#!/usr/bin/env bash\nexit 0',
-    npx: '#!/usr/bin/env bash\nexit 0',
+    xcodebuild: '#!/usr/bin/env bash\nexit 0',
     pkgbuild: '#!/usr/bin/env bash\nout="${@: -1}"\ntouch "$out"',
     productbuild: '#!/usr/bin/env bash\nout="${@: -1}"\ntouch "$out"'
   };
@@ -55,7 +55,7 @@ describe('make-installer.sh', () => {
     const version = '1.2.3';
     const env = { PATH: `${bin}:${process.env.PATH}` };
     await exec(path.join(tmp, 'installers', 'make-installer.sh'), [version], { cwd: tmp, env });
-    const pkgPath = path.join(tmp, 'cueit-macos', `CueIT-${version}.pkg`);
+    const pkgPath = path.join(tmp, 'cueit-macos-swift', `CueIT-${version}.pkg`);
     await fs.access(pkgPath);
   });
 });

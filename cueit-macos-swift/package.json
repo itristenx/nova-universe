@@ -1,15 +1,10 @@
 {
-  "name": "cueit-macos",
+  "name": "cueit-macos-swift",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "main": "main.js",
   "scripts": {
-    "start": "electron .",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js test"
-  },
-  "dependencies": {
-    "electron": "^30.0.0"
   },
   "devDependencies": {
     "jest": "^30.0.4"

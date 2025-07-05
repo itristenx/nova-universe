@@ -1,10 +1,10 @@
 # Installer Scripts
 
-All installation utilities are kept in the `installers/` directory. They package the Electron launcher together with the API and web apps for each operating system.
+All installation utilities are kept in the `installers/` directory. They package the SwiftUI launcher together with the API and web apps for each operating system.
 
 ## macOS
 
-1. `./installers/make-installer.sh <version> [arch]` builds `CueIT-<version>.pkg` for the specified architecture (`arm64`, `x64` or `universal`). The script stages `CueIT.app` under `cueit-macos/pkgroot/Applications` before invoking `pkgbuild`.
+1. `./installers/make-installer.sh <version>` builds `CueIT-<version>.pkg`. The script stages `CueITLauncher.app` under `cueit-macos-swift/pkgroot/Applications` before invoking `pkgbuild`.
 2. `./installers/uninstall-macos.sh` removes the application from `/Applications`.
 3. `./installers/upgrade-macos.sh <version>` rebuilds the package (or accepts a `.pkg` path) and reinstalls it.
 
