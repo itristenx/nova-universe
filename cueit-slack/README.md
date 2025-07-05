@@ -10,7 +10,12 @@ Slack slash command integration that lets users submit tickets directly from Sla
    - `SLACK_BOT_TOKEN`
    - `API_URL`
    - optional `SLACK_PORT` (defaults to `3001`)
+   - optional `VITE_ADMIN_URL` for a link in confirmation messages
 4. Start the service with `node index.js`.
+
+The modal fetches available systems and urgency levels from your backend via
+`/api/config`. Ensure `JWT_SECRET` matches the backend so this request is
+authorized.
 
 ## Local Testing
 Slack slash commands require a public HTTPS endpoint. While developing you can expose your local service using [ngrok](https://ngrok.com/):
