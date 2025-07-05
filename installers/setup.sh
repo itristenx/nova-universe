@@ -43,5 +43,14 @@ if [ -d cueit-slack ]; then
   popd >/dev/null
 fi
 
-echo "Run ./scripts/init-env.sh to create .env files, then edit them before starting the services."
-echo "Setup complete."
+# Automatically create .env files if they do not exist
+missing_env=false
+for dir in cueit-api cueit-admin cueit-activate cueit-slack; do
+  [ -f "$dir/.env" ] || missing_env=true
+done
+if [ "$missing_env" = true ]; then
+  echo "Initializing .env files..."
+  ./scripts/init-env.sh
+fi
+
+echo "Setup complete. Edit the .env files before starting the services."

@@ -17,7 +17,7 @@ These scripts package the Electron launcher along with the API and web apps.
 
 ## 2. Configure
 
-After installing or cloning the repository, copy each `.env.example` file to `.env` and edit the values for your environment. See [Local vs Production Setup](environments.md) for details on every variable.
+After installing or cloning the repository, copy `.env.local.example` to `.env.local` and run `./scripts/init-env.sh` to generate the `.env` files for each service. Edit them as needed. See [Local vs Production Setup](environments.md) for details on every variable.
 Set `SLACK_WEBHOOK_URL` in `cueit-api/.env` if you want notification events posted to Slack.
 
 ## 3. Launch Services

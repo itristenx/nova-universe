@@ -1,6 +1,6 @@
 # Local vs Production Setup
 
-This project ships with sample environment files for each app. Copy these files to `.env` and adjust the values for your environment.
+This project ships with sample environment files for each app. A unified example is provided at `.env.local.example` in the repository root. Copy that file to `.env.local` for reference, then copy each example file to `.env` and adjust the values for your environment.
 
 ## Local Development
 
@@ -52,4 +52,4 @@ When deploying to a live environment you must update each `.env` file with real 
   `sameSite=lax` and `secure` enabled.
 - Do not set `DISABLE_AUTH=true` when `NODE_ENV` is `production`.
 
-Copy the respective `.env.example` file to `.env` in each folder, then edit the settings above before starting the services.
+Copy the respective `.env.example` file to `.env` in each folder (or start from the combined `.env.local.example`), then edit the settings above before starting the services.
