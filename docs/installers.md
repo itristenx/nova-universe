@@ -4,7 +4,7 @@ All installation utilities are kept in the `installers/` directory. They package
 
 ## macOS
 
-1. `./installers/make-installer.sh <version>` builds `CueIT-<version>.pkg` and installs it.
+1. `./installers/make-installer.sh <version> [arch]` builds `CueIT-<version>.pkg` for the specified architecture (`arm64`, `x64` or `universal`).
 2. `./installers/uninstall-macos.sh` removes the application from `/Applications`.
 3. `./installers/upgrade-macos.sh <version>` rebuilds the package (or accepts a `.pkg` path) and reinstalls it.
 
