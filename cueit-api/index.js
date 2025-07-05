@@ -199,6 +199,29 @@ app.post("/submit-ticket", ticketLimiter, async (req, res) => {
   const ticketId = uuidv4().split("-")[0];
   const timestamp = new Date().toISOString();
 
+  const SN_INSTANCE = process.env.SERVICENOW_INSTANCE;
+  const SN_USER = process.env.SERVICENOW_USER;
+  const SN_PASS = process.env.SERVICENOW_PASS;
+  let serviceNowId = '';
+  if (SN_INSTANCE && SN_USER && SN_PASS) {
+    try {
+      const resp = await axios.post(
+        `${SN_INSTANCE}/api/now/table/incident`,
+        {
+          short_description: title,
+          urgency,
+          description: `Name: ${name}\nEmail: ${email}\nSystem: ${system}\n\n${description || ''}`,
+        },
+        {
+          auth: { username: SN_USER, password: SN_PASS },
+        }
+      );
+      serviceNowId = resp.data?.result?.sys_id || '';
+    } catch (err) {
+      console.error('❌ ServiceNow request failed:', err.message);
+    }
+  }
+
   const mailOptions = {
     from: email,
     to: process.env.HELPDESK_EMAIL,
@@ -256,9 +279,9 @@ ${description || "(No description provided)"}
   }
 
   db.run(
-    `INSERT INTO logs (ticket_id, name, email, title, system, urgency, timestamp, email_status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [ticketId, name, email, title, system, urgency, timestamp, emailStatus],
+    `INSERT INTO logs (ticket_id, name, email, title, system, urgency, timestamp, email_status, servicenow_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [ticketId, name, email, title, system, urgency, timestamp, emailStatus, serviceNowId],
     (err) => {
       if (err) return res.status(500).json({ error: "DB error" });
 
@@ -451,7 +474,7 @@ app.post('/api/login', apiLoginLimiter, (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
-  db.get('SELECT * FROM users WHERE email=?', [email], (err, row) => {
+  db.get('SELECT * FROM users WHERE email=? ORDER BY id DESC', [email], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     if (!row || !row.passwordHash) {
       return res.status(401).json({ error: 'invalid' });
