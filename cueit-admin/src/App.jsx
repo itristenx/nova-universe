@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import SettingsPanel from './SettingsPanel';
+import LoginPage from './LoginPage.jsx';
 import useToast from './useToast.js';
 import useApiError from './useApiError.js';
 import './App.css';
@@ -10,6 +11,9 @@ const urgencyPriority = { Urgent: 3, High: 2, Medium: 1, Low: 0 };
 
 function App() {
   const [logs, setLogs] = useState([]);
+  const [page, setPage] = useState(
+    window.location.hash === '#/login' ? 'login' : 'app'
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
@@ -25,6 +29,29 @@ function App() {
   const [apiConnected, setApiConnected] = useState(true);
   const prevConnectedRef = useRef(true);
   const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const onHash = () => {
+      setPage(window.location.hash === '#/login' ? 'login' : 'app');
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+
+  useEffect(() => {
+    const t = localStorage.getItem('token');
+    if (t) {
+      axios.defaults.headers.common.Authorization = `Bearer ${t}`;
+    }
+  }, []);
+
+  const handleLogin = (token) => {
+    localStorage.setItem('token', token);
+    axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+    window.location.hash = '';
+    window.location.reload();
+  };
+
 
   const filteredLogs = useMemo(() => {
     const searchLower = search.toLowerCase();
@@ -150,6 +177,10 @@ function App() {
       link.href = config.faviconUrl;
     }
   }, [config.faviconUrl]);
+
+  if (page === 'login') {
+    return <LoginPage onSuccess={handleLogin} />;
+  }
 
   return (
     <>

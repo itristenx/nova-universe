@@ -90,8 +90,12 @@ export default function Navbar({
                   Send Feedback
                 </button>
                 <a
-                  href={`${api}/logout`}
-                  onClick={() => setShowMenu(false)}
+                  href="#/login"
+                  onClick={() => {
+                    setShowMenu(false);
+                    localStorage.removeItem('token');
+                    delete axios.defaults.headers.common.Authorization;
+                  }}
                   className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
                 >
                   Logout

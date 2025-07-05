@@ -12,7 +12,7 @@ export default function UsersPanel({ open }) {
       (async () => {
         try {
           const res = await axios.get(`${api}/api/users`);
-          setUsers(res.data);
+          setUsers(res.data.map((u) => ({ ...u, password: '' })));
         } catch (err) {
           handleApiError(err, 'Failed to load users');
         }
@@ -23,7 +23,7 @@ export default function UsersPanel({ open }) {
   const addUser = async () => {
     try {
       const res = await axios.post(`${api}/api/users`, { name: '', email: '' });
-      setUsers(prev => [...prev, { id: res.data.id, name: '', email: '' }]);
+      setUsers((prev) => [...prev, { id: res.data.id, name: '', email: '', password: '' }]);
     } catch (err) {
       handleApiError(err, 'Failed to add user');
     }
@@ -34,7 +34,9 @@ export default function UsersPanel({ open }) {
       await axios.put(`${api}/api/users/${u.id}`, {
         name: u.name,
         email: u.email,
+        password: u.password || undefined,
       });
+      setUsers((us) => us.map((x) => (x.id === u.id ? { ...x, password: '' } : x)));
     } catch (err) {
       handleApiError(err, 'Failed to save user');
     }
@@ -59,6 +61,7 @@ export default function UsersPanel({ open }) {
           <tr className="text-left">
             <th className="pb-2">Name</th>
             <th className="pb-2">Email</th>
+            <th className="pb-2">Password</th>
             <th className="pb-2"></th>
           </tr>
         </thead>
@@ -91,6 +94,21 @@ export default function UsersPanel({ open }) {
                     )
                   }
                   className="w-40 px-1 text-black rounded"
+                />
+              </td>
+              <td className="py-1 pr-2">
+                <input
+                  type="password"
+                  placeholder="new password"
+                  value={u.password || ''}
+                  onChange={(e) =>
+                    setUsers((us) =>
+                      us.map((x) =>
+                        x.id === u.id ? { ...x, password: e.target.value } : x
+                      )
+                    )
+                  }
+                  className="w-32 px-1 text-black rounded"
                 />
               </td>
               <td className="py-1 space-x-1">
