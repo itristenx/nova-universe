@@ -3,6 +3,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import UsersPanel from './UsersPanel.jsx';
 import FeedbackPanel from './FeedbackPanel.jsx';
+import NotificationsPanel from './NotificationsPanel.jsx';
 import useToast from './useToast.js';
 import useApiError from './useApiError.js';
 
@@ -84,6 +85,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
           <button className={`mr-4 pb-2 ${tab === 'general' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('general')}>General</button>
           <button className={`mr-4 pb-2 ${tab === 'kiosks' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('kiosks')}>Kiosks</button>
           <button className={`mr-4 pb-2 ${tab === 'users' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('users')}>Users</button>
+          <button className={`mr-4 pb-2 ${tab === 'notifications' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('notifications')}>Notifications</button>
           <button className={`pb-2 ${tab === 'feedback' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('feedback')}>Feedback</button>
         </div>
         {tab === 'general' && (
@@ -223,6 +225,9 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
           </div>
         )}
         {tab === 'users' && <UsersPanel open={open && tab === 'users'} />}
+        {tab === 'notifications' && (
+          <NotificationsPanel open={open && tab === 'notifications'} />
+        )}
         {tab === 'feedback' && <FeedbackPanel open={open && tab === 'feedback'} />}
       </div>
     </div>

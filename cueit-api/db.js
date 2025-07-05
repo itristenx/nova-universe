@@ -60,6 +60,16 @@ db.serialize(() => {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      message TEXT,
+      level TEXT,
+      active INTEGER DEFAULT 1,
+      created_at TEXT
+    )
+  `);
+
   // add columns if database was created with an older schema
   function addColumnIfMissing(table, columnDef) {
     const columnName = columnDef.split(" ")[0];
@@ -88,6 +98,9 @@ db.serialize(() => {
   addColumnIfMissing('kiosks', 'closedMsg TEXT');
   addColumnIfMissing('kiosks', 'errorMsg TEXT');
   addColumnIfMissing('kiosks', 'schedule TEXT');
+
+  addColumnIfMissing('notifications', 'active INTEGER DEFAULT 1');
+  addColumnIfMissing('notifications', 'created_at TEXT');
 
   // insert default config if not present
   const defaults = {

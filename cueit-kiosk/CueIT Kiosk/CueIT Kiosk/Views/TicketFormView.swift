@@ -64,6 +64,7 @@ struct TicketFormView: View {
     @State private var urgency = "Low"
     @State private var showError = false
     @StateObject private var dir = DirectoryService.shared
+    @StateObject private var notificationService = NotificationService.shared
 
     var body: some View {
         NavigationView {
@@ -106,6 +107,18 @@ struct TicketFormView: View {
             .alert("Failed to submit", isPresented: $showError) {
                 Button("OK", role: .cancel) {}
             }
+            .overlay(
+                Group {
+                    if let note = notificationService.latest {
+                        Text(note.message)
+                            .padding(8)
+                            .frame(maxWidth: .infinity)
+                            .background(color(for: note.level))
+                            .foregroundColor(.black)
+                    }
+                },
+                alignment: .top
+            )
         }
     }
 
@@ -134,5 +147,13 @@ struct TicketFormView: View {
         if let t = user.title { title = t }
         if let m = user.manager { manager = m }
         dir.suggestions = []
+    }
+}
+
+func color(for level: String) -> Color {
+    switch level {
+    case "warning": return .yellow
+    case "error": return .red
+    default: return .green
     }
 }
