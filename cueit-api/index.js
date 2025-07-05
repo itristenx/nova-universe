@@ -447,15 +447,19 @@ app.put('/api/admin-password', ensureAuth, (req, res) => {
 });
 
 app.post('/api/login', apiLoginLimiter, (req, res) => {
-  const { password } = req.body;
-  if (!password) return res.status(400).json({ error: 'Missing password' });
-  db.get(`SELECT value FROM config WHERE key='adminPassword'`, (err, row) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
+  db.get('SELECT * FROM users WHERE email=?', [email], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
-    const hash = row ? row.value : '';
-    if (!bcrypt.compareSync(password, hash)) {
+    if (!row || !row.passwordHash) {
       return res.status(401).json({ error: 'invalid' });
     }
-    const token = sign({ type: 'admin' });
+    if (!bcrypt.compareSync(password, row.passwordHash)) {
+      return res.status(401).json({ error: 'invalid' });
+    }
+    const token = sign({ id: row.id, name: row.name, email: row.email });
     res.json({ token });
   });
 });
@@ -586,27 +590,29 @@ app.get("/api/users", ensureAuth, (req, res) => {
   });
 });
 
-app.post("/api/users", ensureAuth, (req, res) => {
-  const { name, email } = req.body;
+app.post('/api/users', ensureAuth, (req, res) => {
+  const { name, email, password } = req.body;
+  const hash = password ? bcrypt.hashSync(password, 10) : null;
   db.run(
-    `INSERT INTO users (name, email) VALUES (?, ?)`,
-    [name || "", email || ""],
+    `INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)`,
+    [name || '', email || '', hash],
     function (err) {
-      if (err) return res.status(500).json({ error: "DB error" });
+      if (err) return res.status(500).json({ error: 'DB error' });
       res.json({ id: this.lastID });
     }
   );
 });
 
-app.put("/api/users/:id", ensureAuth, (req, res) => {
+app.put('/api/users/:id', ensureAuth, (req, res) => {
   const { id } = req.params;
-  const { name, email } = req.body;
+  const { name, email, password } = req.body;
+  const hash = password ? bcrypt.hashSync(password, 10) : null;
   db.run(
-    `UPDATE users SET name=?, email=? WHERE id=?`,
-    [name, email, id],
+    `UPDATE users SET name=?, email=?, passwordHash=COALESCE(?, passwordHash) WHERE id=?`,
+    [name, email, hash, id],
     (err) => {
-      if (err) return res.status(500).json({ error: "DB error" });
-      res.json({ message: "updated" });
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ message: 'updated' });
     }
   );
 });
