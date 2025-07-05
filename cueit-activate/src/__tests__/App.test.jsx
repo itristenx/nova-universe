@@ -28,6 +28,21 @@ test('shows error message when activation fails', async () => {
   expect(await screen.findByText('Activation failed')).toBeInTheDocument();
 });
 
+test('shows loading indicator while request is pending', async () => {
+  let resolveApi;
+  axios.put.mockImplementation(
+    () => new Promise((res) => {
+      resolveApi = res;
+    })
+  );
+  render(<App />);
+  await userEvent.type(screen.getByPlaceholderText('Enter kiosk ID'), '7');
+  userEvent.click(screen.getByText('Activate'));
+  expect(await screen.findByRole('status')).toHaveTextContent('Loading...');
+  resolveApi({});
+  expect(await screen.findByText('Kiosk activated')).toBeInTheDocument();
+});
+
 test('renders admin link when env var is set', () => {
   process.env.VITE_ADMIN_URL = 'http://admin';
   render(<App />);
