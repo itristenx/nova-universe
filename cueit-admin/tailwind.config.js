@@ -1,4 +1,5 @@
 import daisyui from 'daisyui';
+import colors from 'tailwindcss/colors';
 import theme from '../design/theme.js';
 
 export default {
@@ -10,6 +11,7 @@ export default {
       },
       spacing: theme.spacing,
       colors: {
+        ...colors,
         primary: theme.colors.primary,
         secondary: theme.colors.secondary,
         accent: theme.colors.accent,
@@ -18,6 +20,7 @@ export default {
         logoShadow: theme.colors.logoShadow,
         reactShadow: theme.colors.reactShadow,
         muted: theme.colors.muted,
+        base: theme.colors.base,
       },
     },
   },
