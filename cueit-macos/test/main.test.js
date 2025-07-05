@@ -7,7 +7,8 @@ jest.unstable_mockModule('electron', () => {
   return {
     BrowserWindow: jest.fn().mockImplementation(() => ({ loadFile: jest.fn() })),
     ipcMain: { handle: jest.fn() },
-    app: { whenReady: () => Promise.resolve(), on: jest.fn() }
+    app: { whenReady: () => Promise.resolve(), on: jest.fn() },
+    shell: { openExternal: jest.fn() }
   };
 });
 
