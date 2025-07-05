@@ -39,6 +39,11 @@ if (!DISABLE_AUTH) {
       secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: 'lax',
+      },
     })
   );
   app.use(passport.initialize());
