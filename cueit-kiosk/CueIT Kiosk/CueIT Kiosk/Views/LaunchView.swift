@@ -14,6 +14,7 @@ struct LaunchView: View {
     @StateObject private var configService = ConfigService()
     @StateObject private var kioskService = KioskService.shared
     @StateObject private var notificationService = NotificationService.shared
+    @StateObject private var statusService = StatusService.shared
     @State private var showAlert = false
     @State private var alertMessage = ""
 
@@ -130,7 +131,14 @@ struct LaunchView: View {
             alignment: .bottomLeading
         )
         .overlay(
-            Group {
+            VStack(spacing: 0) {
+                if let status = statusService.latest {
+                    Text(status.message)
+                        .padding(8)
+                        .frame(maxWidth: .infinity)
+                        .background(color(for: status.status))
+                        .foregroundColor(.black)
+                }
                 if let note = notificationService.latest {
                     Text(note.message)
                         .padding(8)
@@ -149,8 +157,8 @@ struct LaunchView: View {
 
 func color(for level: String) -> Color {
     switch level {
-    case "warning": return .yellow
-    case "error": return .red
-    default: return .green
+    case "warning": return Theme.Colors.yellow
+    case "error": return Theme.Colors.red
+    default: return Theme.Colors.green
     }
 }

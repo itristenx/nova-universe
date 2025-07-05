@@ -7,6 +7,9 @@ struct Theme {
         static let accent = Color(hex: "#F97316")
         static let base = Color(hex: "#ffffff")
         static let content = Color(hex: "#1f2937")
+        static let green = Color.green
+        static let red = Color.red
+        static let yellow = Color.yellow
     }
 
     struct Spacing {
