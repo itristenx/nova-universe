@@ -5,16 +5,21 @@ import theme from '../../design/theme.js';
 export default function App() {
   const [kioskId, setKioskId] = useState('');
   const [message, setMessage] = useState('');
+  const [status, setStatus] = useState('idle');
   const adminUrl = import.meta.env.VITE_ADMIN_URL;
 
   const activate = async () => {
     if (!kioskId) return;
+    setStatus('loading');
+    setMessage('');
     try {
       const api = import.meta.env.VITE_API_URL;
       await axios.put(`${api}/api/kiosks/${kioskId}/active`, { active: true });
       setMessage('Kiosk activated');
+      setStatus('success');
     } catch (err) {
       setMessage('Activation failed');
+      setStatus('error');
     }
   };
 
@@ -55,7 +60,29 @@ export default function App() {
       >
         Activate
       </button>
-      {message && <p style={{ marginTop: theme.spacing.md }}>{message}</p>}
+      {status === 'loading' && (
+        <p
+          role="status"
+          style={{ color: theme.colors.yellow, marginTop: theme.spacing.md }}
+        >
+          Loading...
+        </p>
+      )}
+      {message && status !== 'loading' && (
+        <p
+          style={{
+            marginTop: theme.spacing.md,
+            color:
+              status === 'success'
+                ? theme.colors.green
+                : status === 'error'
+                  ? theme.colors.red
+                  : theme.colors.content,
+          }}
+        >
+          {message}
+        </p>
+      )}
       {adminUrl && (
         <a
           href={adminUrl}
