@@ -5,14 +5,17 @@ import path from 'path';
 
 jest.unstable_mockModule('electron', () => {
   return {
-    BrowserWindow: jest.fn().mockImplementation(() => ({ loadFile: jest.fn() })),
+    BrowserWindow: jest.fn().mockImplementation(() => ({
+      loadFile: jest.fn(),
+      on: jest.fn()
+    })),
     ipcMain: { handle: jest.fn() },
     app: { whenReady: () => Promise.resolve(), on: jest.fn() },
     shell: { openExternal: jest.fn() }
   };
 });
 
-const { ensureEnvFiles, createWindow } = await import('../main.js');
+const { ensureEnvFiles, createWindow, createAdminWindow } = await import('../main.js');
 const { BrowserWindow } = await import('electron');
 
 function makePkgDir(base, name) {
@@ -58,6 +61,16 @@ describe('createWindow', () => {
     createWindow(false);
     const win = BrowserWindow.mock.results[1].value;
     expect(win.loadFile).toHaveBeenCalledWith('index.html');
+  });
+});
+
+describe('createAdminWindow', () => {
+  test('loads admin ui', () => {
+    const callCount = BrowserWindow.mock.results.length;
+    createAdminWindow();
+    const win = BrowserWindow.mock.results[callCount].value;
+    const arg = win.loadFile.mock.calls[0][0];
+    expect(arg).toMatch(/cueit-admin\/dist\/index\.html$/);
   });
 });
 

@@ -7,6 +7,8 @@ APP_DIR="cueit-macos"
 VERSION="${1:-1.0.0}"
 
 npm --prefix "$APP_DIR" install
+npm --prefix cueit-admin install
+npm --prefix cueit-admin run build
 npx --prefix "$APP_DIR" electron-packager "$APP_DIR" CueIT \
   --platform=linux --out "$APP_DIR/dist" --overwrite
 

@@ -12,6 +12,7 @@ const packages = {
   slack: 'cueit-slack'
 };
 let win;
+let adminWin;
 
 async function ensureEnvFiles(baseDir = path.join(__dirname, '..')) {
   let created = false;
@@ -35,6 +36,20 @@ function createWindow(showSetup) {
     webPreferences: { preload: path.join(__dirname, 'preload.js') }
   });
   win.loadFile(showSetup ? 'setup.html' : 'index.html');
+}
+
+function createAdminWindow() {
+  if (adminWin) {
+    adminWin.focus();
+    return;
+  }
+  adminWin = new BrowserWindow({
+    width: 1000,
+    height: 700,
+    webPreferences: { preload: path.join(__dirname, 'preload.js') }
+  });
+  adminWin.loadFile(path.join(__dirname, '..', 'cueit-admin', 'dist', 'index.html'));
+  adminWin.on('closed', () => { adminWin = null; });
 }
 
 async function start() {
@@ -80,4 +95,8 @@ ipcMain.handle('open-external', (_e, url) => {
   shell.openExternal(url);
 });
 
-export { ensureEnvFiles, createWindow, start };
+ipcMain.handle('open-admin', () => {
+  createAdminWindow();
+});
+
+export { ensureEnvFiles, createWindow, start, createAdminWindow };

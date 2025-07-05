@@ -8,6 +8,8 @@ Set-Location (Join-Path $PSScriptRoot '..')
 $AppDir = 'cueit-macos'
 
 npm --prefix $AppDir install
+npm --prefix cueit-admin install
+npm --prefix cueit-admin run build
 npx --prefix $AppDir electron-packager $AppDir CueIT `
   --platform=win32 --arch=x64 --out "$AppDir/dist" --overwrite
 

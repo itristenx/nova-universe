@@ -5,5 +5,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onLog: handler => ipcRenderer.on('log', (_e, data) => handler(data)),
   readEnvs: () => ipcRenderer.invoke('read-envs'),
   writeEnvs: envs => ipcRenderer.invoke('write-envs', envs),
-  openExternal: url => ipcRenderer.invoke('open-external', url)
+  openExternal: url => ipcRenderer.invoke('open-external', url),
+  openAdmin: () => ipcRenderer.invoke('open-admin')
 });
