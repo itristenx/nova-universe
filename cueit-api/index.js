@@ -335,6 +335,27 @@ app.put("/api/config", ensureAuth, (req, res) => {
   });
 });
 
+app.post('/api/feedback', (req, res) => {
+  const { name = '', message } = req.body;
+  if (!message) return res.status(400).json({ error: 'Missing message' });
+  const timestamp = new Date().toISOString();
+  db.run(
+    `INSERT INTO feedback (name, message, timestamp) VALUES (?, ?, ?)`,
+    [name, message, timestamp],
+    function (err) {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
+app.get('/api/feedback', ensureAuth, (req, res) => {
+  db.all(`SELECT * FROM feedback ORDER BY timestamp DESC`, (err, rows) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    res.json(rows);
+  });
+});
+
 app.post('/api/verify-password', ensureAuth, (req, res) => {
   const { password } = req.body;
   if (!password) return res.status(400).json({ error: 'Missing password' });

@@ -10,6 +10,7 @@ import SwiftUI
 struct LaunchView: View {
     @State private var showForm = false
     @State private var showAdmin = false
+    @State private var showFeedback = false
     @StateObject private var configService = ConfigService()
     @StateObject private var kioskService = KioskService.shared
     @State private var showAlert = false
@@ -68,6 +69,9 @@ struct LaunchView: View {
         .sheet(isPresented: $showAdmin) {
             AdminLoginView(configService: configService)
         }
+        .sheet(isPresented: $showFeedback) {
+            FeedbackFormView()
+        }
         .onAppear {
             Task { await configService.load() }
             TicketQueue.shared.retry()
@@ -106,6 +110,23 @@ struct LaunchView: View {
                 }
             },
             alignment: .topTrailing
+        )
+        .overlay(
+            HStack {
+                VStack {
+                    Spacer()
+                    Button(action: { showFeedback = true }) {
+                        Image(systemName: "ellipsis.bubble")
+                            .font(.title2)
+                            .foregroundColor(.black)
+                            .padding(.leading, Theme.Spacing.md)
+                            .padding(.bottom, Theme.Spacing.md)
+                    }
+                    .accessibilityLabel("Feedback")
+                }
+                Spacer()
+            },
+            alignment: .bottomLeading
         )
         .alert(alertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
