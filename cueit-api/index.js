@@ -34,7 +34,13 @@ const ticketLimiter = rateLimit({ windowMs: RATE_WINDOW, max: SUBMIT_TICKET_LIMI
 const apiLoginLimiter = rateLimit({ windowMs: RATE_WINDOW, max: API_LOGIN_LIMIT });
 const authLimiter = rateLimit({ windowMs: RATE_WINDOW, max: AUTH_LIMIT });
 
-const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
+if (process.env.DISABLE_AUTH === 'true' && process.env.NODE_ENV === 'production') {
+  console.error('DISABLE_AUTH cannot be true when NODE_ENV is production');
+  process.exit(1);
+}
+
+const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' ||
+  process.env.NODE_ENV === 'test';
 const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
 const KIOSK_TOKEN = process.env.KIOSK_TOKEN || '';
 
