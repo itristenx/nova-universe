@@ -6,10 +6,12 @@ import FeedbackPanel from './FeedbackPanel.jsx';
 import NotificationsPanel from './NotificationsPanel.jsx';
 import useToast from './useToast.js';
 import useApiError from './useApiError.js';
+import { colors } from './theme.js';
 
 export default function SettingsPanel({ open, onClose, config, setConfig }) {
   const [tab, setTab] = useState('general');
   const [kiosks, setKiosks] = useState([]);
+  const [statusItems, setStatusItems] = useState([]);
   const api = import.meta.env.VITE_API_URL;
   const activateUrl = import.meta.env.VITE_ACTIVATE_URL;
   const toast = useToast();
@@ -23,6 +25,25 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
           setKiosks(res.data);
         } catch (err) {
           handleApiError(err, 'Failed to load kiosks');
+        }
+      })();
+    }
+    if (open && tab === 'status') {
+      (async () => {
+        try {
+          const res = await axios.get(`${api}/api/kiosks`);
+          const rows = res.data.map((k) => ({
+            id: k.id,
+            statusEnabled: !!k.statusEnabled,
+            currentStatus: k.currentStatus || 'open',
+            openMsg: k.openMsg || '',
+            closedMsg: k.closedMsg || '',
+            errorMsg: k.errorMsg || '',
+            schedule: k.schedule ? JSON.parse(k.schedule) : {},
+          }));
+          setStatusItems(rows);
+        } catch (err) {
+          handleApiError(err, 'Failed to load status');
         }
       })();
     }
@@ -75,6 +96,21 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
     }
   };
 
+  const saveStatus = async (s) => {
+    try {
+      await axios.put(`${api}/api/kiosks/${s.id}/status`, {
+        statusEnabled: s.statusEnabled,
+        currentStatus: s.currentStatus,
+        openMsg: s.openMsg,
+        closedMsg: s.closedMsg,
+        errorMsg: s.errorMsg,
+        schedule: s.schedule,
+      });
+    } catch (err) {
+      handleApiError(err, 'Failed to save status');
+    }
+  };
+
   return (
     <div className={`fixed inset-0 bg-black/50 z-50 transition-opacity ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
       <div className={`absolute right-0 top-0 bottom-0 w-96 bg-gray-800 text-white p-6 transform transition-all duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -86,6 +122,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
           <button className={`mr-4 pb-2 ${tab === 'kiosks' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('kiosks')}>Kiosks</button>
           <button className={`mr-4 pb-2 ${tab === 'users' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('users')}>Users</button>
           <button className={`mr-4 pb-2 ${tab === 'notifications' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('notifications')}>Notifications</button>
+          <button className={`mr-4 pb-2 ${tab === 'status' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('status')}>Status</button>
           <button className={`pb-2 ${tab === 'feedback' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('feedback')}>Feedback</button>
         </div>
         {tab === 'general' && (
@@ -227,6 +264,114 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
         {tab === 'users' && <UsersPanel open={open && tab === 'users'} />}
         {tab === 'notifications' && (
           <NotificationsPanel open={open && tab === 'notifications'} />
+        )}
+        {tab === 'status' && (
+          <div className="overflow-y-auto text-sm h-full space-y-4 pr-1">
+            {statusItems.map((s) => (
+              <div key={s.id} className="border-b border-gray-700 pb-2">
+                <div className="font-mono break-all mb-1">{s.id}</div>
+                <label className="block mb-1">
+                  <input
+                    type="checkbox"
+                    checked={s.statusEnabled}
+                    onChange={(e) =>
+                      setStatusItems((items) =>
+                        items.map((x) =>
+                          x.id === s.id ? { ...x, statusEnabled: e.target.checked } : x
+                        )
+                      )
+                    }
+                    className="mr-1"
+                  />
+                  Enable Status
+                </label>
+                <label className="block mb-1">
+                  Current Status
+                  <select
+                    value={s.currentStatus}
+                    onChange={(e) =>
+                      setStatusItems((items) =>
+                        items.map((x) =>
+                          x.id === s.id ? { ...x, currentStatus: e.target.value } : x
+                        )
+                      )
+                    }
+                    className="ml-2 px-1 text-black rounded"
+                  >
+                    <option value="open">open</option>
+                    <option value="closed">closed</option>
+                    <option value="error">error</option>
+                  </select>
+                </label>
+                <label className="block mb-1">
+                  Open Message
+                  <input
+                    type="text"
+                    value={s.openMsg}
+                    onChange={(e) =>
+                      setStatusItems((items) =>
+                        items.map((x) => (x.id === s.id ? { ...x, openMsg: e.target.value } : x))
+                      )
+                    }
+                    className="mt-1 w-full px-1 text-black rounded"
+                  />
+                </label>
+                <label className="block mb-1">
+                  Closed Message
+                  <input
+                    type="text"
+                    value={s.closedMsg}
+                    onChange={(e) =>
+                      setStatusItems((items) =>
+                        items.map((x) => (x.id === s.id ? { ...x, closedMsg: e.target.value } : x))
+                      )
+                    }
+                    className="mt-1 w-full px-1 text-black rounded"
+                  />
+                </label>
+                <label className="block mb-1">
+                  Error Message
+                  <input
+                    type="text"
+                    value={s.errorMsg}
+                    onChange={(e) =>
+                      setStatusItems((items) =>
+                        items.map((x) => (x.id === s.id ? { ...x, errorMsg: e.target.value } : x))
+                      )
+                    }
+                    className="mt-1 w-full px-1 text-black rounded"
+                  />
+                </label>
+                <div className="mb-1 grid grid-cols-2 gap-1">
+                  {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((d) => (
+                    <input
+                      key={d}
+                      type="text"
+                      placeholder={d}
+                      value={s.schedule[d] || ''}
+                      onChange={(e) =>
+                        setStatusItems((items) =>
+                          items.map((x) =>
+                            x.id === s.id
+                              ? { ...x, schedule: { ...x.schedule, [d]: e.target.value } }
+                              : x
+                          )
+                        )
+                      }
+                      className="px-1 text-black rounded"
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={() => saveStatus(s)}
+                  style={{ backgroundColor: colors.primary, color: '#fff' }}
+                  className="px-2 py-1 rounded text-xs"
+                >
+                  Save
+                </button>
+              </div>
+            ))}
+          </div>
         )}
         {tab === 'feedback' && <FeedbackPanel open={open && tab === 'feedback'} />}
       </div>
