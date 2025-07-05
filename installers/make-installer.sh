@@ -32,5 +32,6 @@ fi
 pkgbuild --root "$APP_PATH" --install-location /Applications \
   --identifier com.cueit.launcher --version "$VERSION" "$APP_DIR/CueIT.pkg"
 productbuild --package "$APP_DIR/CueIT.pkg" "$APP_DIR/CueIT-$VERSION.pkg"
+rm "$APP_DIR/CueIT.pkg"
 
 echo "Installer created at $APP_DIR/CueIT-$VERSION.pkg"
