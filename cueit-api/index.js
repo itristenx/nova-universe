@@ -18,7 +18,10 @@ import https from 'https';
 dotenv.config();
 
 const app = express();
-app.use(cors());
+const originList = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+  : undefined;
+app.use(cors(originList ? { origin: originList } : undefined));
 app.use(express.json());
 
 const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
