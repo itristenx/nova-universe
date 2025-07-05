@@ -97,6 +97,10 @@ To enable SAML configure these variables in `.env`:
 - `HELPSCOUT_SMTP_FALLBACK` – set to `true` to also send email via SMTP.
 - `JWT_SECRET` – secret key used to sign JSON Web Tokens.
 - `JWT_EXPIRES_IN` – optional token expiry like `1h`.
+- `RATE_LIMIT_WINDOW` – rate limit window in milliseconds (default `60000`).
+- `SUBMIT_TICKET_LIMIT` – max requests per window to `/submit-ticket` (default `10`).
+- `API_LOGIN_LIMIT` – max requests per window to `/api/login` (default `5`).
+- `AUTH_LIMIT` – max requests per window to `/login` routes (default `5`).
 
 ## SCIM Provisioning
 
