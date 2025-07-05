@@ -71,6 +71,23 @@ export default function Navbar({
                   <QuestionMarkCircleIcon className="h-5 w-5" />
                   Help
                 </button>
+                <button
+                  onClick={async () => {
+                    setShowMenu(false);
+                    const msg = window.prompt('Send feedback');
+                    if (msg) {
+                      try {
+                        await axios.post(`${api}/api/feedback`, { message: msg });
+                        window.alert('Feedback sent');
+                      } catch {
+                        window.alert('Failed to send');
+                      }
+                    }
+                  }}
+                  className="block w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100"
+                >
+                  Send Feedback
+                </button>
                 <a
                   href={`${api}/logout`}
                   onClick={() => setShowMenu(false)}

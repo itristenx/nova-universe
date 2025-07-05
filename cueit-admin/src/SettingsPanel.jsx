@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import UsersPanel from './UsersPanel.jsx';
+import FeedbackPanel from './FeedbackPanel.jsx';
 import useToast from './useToast.js';
 import useApiError from './useApiError.js';
 
@@ -82,7 +83,8 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
         <div className="flex mb-4 border-b border-gray-700 text-sm">
           <button className={`mr-4 pb-2 ${tab === 'general' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('general')}>General</button>
           <button className={`mr-4 pb-2 ${tab === 'kiosks' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('kiosks')}>Kiosks</button>
-          <button className={`pb-2 ${tab === 'users' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('users')}>Users</button>
+          <button className={`mr-4 pb-2 ${tab === 'users' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('users')}>Users</button>
+          <button className={`pb-2 ${tab === 'feedback' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('feedback')}>Feedback</button>
         </div>
         {tab === 'general' && (
           <div className="space-y-3 text-sm overflow-y-auto">
@@ -221,6 +223,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
           </div>
         )}
         {tab === 'users' && <UsersPanel open={open && tab === 'users'} />}
+        {tab === 'feedback' && <FeedbackPanel open={open && tab === 'feedback'} />}
       </div>
     </div>
   );
