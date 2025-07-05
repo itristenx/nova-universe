@@ -21,7 +21,10 @@ npx --prefix "$APP_DIR" electron-packager "$APP_DIR" CueIT \
   --platform=darwin --arch="$arch" --out "$APP_DIR/dist" --overwrite
 
 APP_PATH="$APP_DIR/dist/CueIT-darwin-$arch/CueIT.app"
+PKG_ROOT="$APP_DIR/pkgroot"
+mkdir -p "$PKG_ROOT/Applications"
 
+# Copy backend and frontends into the packaged resources directory
 RES_DIR="$APP_DIR/dist/CueIT-darwin-$arch/resources"
 mkdir -p "$RES_DIR/installers"
 cp -R cueit-api cueit-admin cueit-activate cueit-slack design "$RES_DIR/"
@@ -31,13 +34,16 @@ cp installers/start-all.sh "$RES_DIR/installers/"
 for pkg in cueit-api cueit-admin cueit-activate cueit-slack; do
   cp "$pkg/.env.example" "$RES_DIR/$pkg/.env"
 done
+# Include certificates if present
 if [[ -f cert.pem && -f key.pem ]]; then
   cp cert.pem key.pem "$RES_DIR/"
 fi
 
-pkgbuild --root "$APP_PATH" --install-location /Applications \
+# Create a temporary packaging root so pkgbuild installs to /Applications
+cp -R "$APP_PATH" "$PKG_ROOT/Applications/"
+pkgbuild --root "$PKG_ROOT" --install-location / \
   --identifier com.cueit.launcher --version "$VERSION" "$APP_DIR/CueIT.pkg"
 productbuild --package "$APP_DIR/CueIT.pkg" "$APP_DIR/CueIT-$VERSION.pkg"
-rm "$APP_DIR/CueIT.pkg"
+rm -rf "$PKG_ROOT" "$APP_DIR/CueIT.pkg"
 
 echo "Installer created at $APP_DIR/CueIT-$VERSION.pkg"
