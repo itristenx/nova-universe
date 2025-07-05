@@ -7,7 +7,10 @@ export const colors = {
   surface: '#f9fafb',
   logoShadow: '#646cffaa',
   reactShadow: '#61dafbaa',
-  muted: '#888'
+  muted: '#888',
+  green: '#22c55e',
+  red: '#ef4444',
+  yellow: '#facc15'
 };
 
 export const fonts = {
