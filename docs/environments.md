@@ -12,6 +12,10 @@ This project ships with sample environment files for each app. Copy these files 
    - Keep `ADMIN_URL` and other URLs as `https://localhost` when TLS is enabled, otherwise `http://localhost`.
    - `SESSION_SECRET` can be any string during local development.
    - `CORS_ORIGINS` lists allowed origins as a comma-separated string.
+   - `RATE_LIMIT_WINDOW` controls the window for rate limiting (ms).
+   - `SUBMIT_TICKET_LIMIT` sets max submissions per window.
+   - `API_LOGIN_LIMIT` limits `/api/login` requests per window.
+   - `AUTH_LIMIT` limits `/login` routes per window.
 2. `cueit-admin/.env.example`
    - `VITE_API_URL` should match your local API URL.
    - Leave `VITE_LOGO_URL` and `VITE_ACTIVATE_URL` as provided or point to local resources.

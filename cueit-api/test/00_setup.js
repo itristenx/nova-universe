@@ -7,6 +7,10 @@ if (!process.env.DISABLE_AUTH) {
 process.env.DISABLE_CLEANUP = 'true';
 process.env.SCIM_TOKEN = 'testtoken';
 process.env.KIOSK_TOKEN = 'kiosktoken';
+process.env.RATE_LIMIT_WINDOW = '60000';
+process.env.SUBMIT_TICKET_LIMIT = '100';
+process.env.API_LOGIN_LIMIT = '50';
+process.env.AUTH_LIMIT = '50';
 let app;
 let sendBehavior = async () => {};
 let axiosBehavior = async () => ({});

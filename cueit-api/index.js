@@ -6,6 +6,7 @@ import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import session from 'express-session';
 import passport from 'passport';
+import rateLimit from 'express-rate-limit';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import db from './db.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,6 +24,15 @@ const originList = process.env.CORS_ORIGINS
   : undefined;
 app.use(cors(originList ? { origin: originList } : undefined));
 app.use(express.json());
+
+const RATE_WINDOW = Number(process.env.RATE_LIMIT_WINDOW || 60_000);
+const SUBMIT_TICKET_LIMIT = Number(process.env.SUBMIT_TICKET_LIMIT || 10);
+const API_LOGIN_LIMIT = Number(process.env.API_LOGIN_LIMIT || 5);
+const AUTH_LIMIT = Number(process.env.AUTH_LIMIT || 5);
+
+const ticketLimiter = rateLimit({ windowMs: RATE_WINDOW, max: SUBMIT_TICKET_LIMIT });
+const apiLoginLimiter = rateLimit({ windowMs: RATE_WINDOW, max: API_LOGIN_LIMIT });
+const authLimiter = rateLimit({ windowMs: RATE_WINDOW, max: AUTH_LIMIT });
 
 const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
 const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
@@ -156,9 +166,10 @@ const ensureScimAuth = (req, res, next) => {
 };
 
 if (!DISABLE_AUTH) {
-  app.get('/login', passport.authenticate('saml'));
+  app.get('/login', authLimiter, passport.authenticate('saml'));
   app.post(
     '/login/callback',
+    authLimiter,
     passport.authenticate('saml', { failureRedirect: '/login' }),
     (req, res) => {
       res.redirect(process.env.ADMIN_URL || '/');
@@ -172,7 +183,7 @@ if (!DISABLE_AUTH) {
   });
 }
 
-app.post("/submit-ticket", async (req, res) => {
+app.post("/submit-ticket", ticketLimiter, async (req, res) => {
   const { name, email, title, system, urgency, description } = req.body;
 
   if (!name || !email || !title || !system || !urgency) {
@@ -344,7 +355,7 @@ app.put('/api/admin-password', ensureAuth, (req, res) => {
   );
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', apiLoginLimiter, (req, res) => {
   const { password } = req.body;
   if (!password) return res.status(400).json({ error: 'Missing password' });
   db.get(`SELECT value FROM config WHERE key='adminPassword'`, (err, row) => {
