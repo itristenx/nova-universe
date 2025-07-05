@@ -17,6 +17,11 @@ esac
 npm --prefix "$APP_DIR" install
 npm --prefix cueit-admin install
 npm --prefix cueit-admin run build
+# Install production dependencies so the packaged app works
+# without running npm install after copying to /Applications
+npm --prefix cueit-api ci --production
+npm --prefix cueit-activate ci --production
+npm --prefix cueit-slack ci --production
 npx --prefix "$APP_DIR" electron-packager "$APP_DIR" CueIT \
   --platform=darwin --arch="$arch" --out "$APP_DIR/dist" --overwrite
 
