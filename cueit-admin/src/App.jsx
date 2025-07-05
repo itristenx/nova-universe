@@ -204,7 +204,7 @@ function App() {
           ) : logs.length === 0 ? (
             <p className="text-gray-400 text-center">No tickets found.</p>
           ) : (
-            <div className="panel overflow-hidden">
+            <div className="bg-white text-gray-900 rounded-lg shadow p-6 transition-all overflow-hidden">
               <div className="mb-12 px-4 space-y-4">
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex gap-3 justify-end w-full flex-wrap sm:flex-nowrap mb-4">
