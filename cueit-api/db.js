@@ -101,4 +101,9 @@ db.deleteAllKiosks = (cb) => {
   db.run(`DELETE FROM kiosks`, cb);
 };
 
+db.purgeOldLogs = (days = 30, cb = () => {}) => {
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  db.run(`DELETE FROM logs WHERE timestamp < ?`, [cutoff], cb);
+};
+
 export default db;
