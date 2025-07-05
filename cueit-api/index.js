@@ -6,7 +6,7 @@ import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import session from 'express-session';
 import passport from 'passport';
-import { Strategy as SamlStrategy } from 'passport-saml';
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import db from './db.js';
 import { v4 as uuidv4 } from 'uuid';
 import events from './events.js';
@@ -50,7 +50,7 @@ if (!DISABLE_AUTH) {
         entryPoint: process.env.SAML_ENTRY_POINT,
         issuer: process.env.SAML_ISSUER,
         callbackUrl: process.env.SAML_CALLBACK_URL,
-        cert: process.env.SAML_CERT && process.env.SAML_CERT.replace(/\\n/g, '\n'),
+        idpCert: process.env.SAML_CERT && process.env.SAML_CERT.replace(/\\n/g, '\n'),
       },
       (profile, done) => {
         const email =
