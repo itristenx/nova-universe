@@ -22,6 +22,8 @@ Kiosk devices register with `/api/register-kiosk` and can be activated through t
 If `KIOSK_TOKEN` is set the request must include this value in a `token` field
 or `Authorization` header.
 
+When `SLACK_WEBHOOK_URL` is provided the backend posts notification events to the given Slack Incoming Webhook.
+
 ## API Endpoints
 
 The API exposes a small REST API over Express. It loads SMTP and other
@@ -60,6 +62,13 @@ settings from `.env` and listens on `API_PORT` (default `3000`).
 - `DELETE /api/kiosks/:id` – delete a kiosk by id.
 - `DELETE /api/kiosks` – remove all kiosks.
 
+### Notifications
+
+- `GET /api/notifications` – list all notifications.
+- `POST /api/notifications` – create a notification with `message` and `level`.
+- `DELETE /api/notifications/:id` – delete a notification.
+- `GET /api/notifications/stream` – Server-Sent Events stream of active notifications.
+
 ### Database Schema
 
 SQLite tables are created in `log.sqlite`:
@@ -67,6 +76,7 @@ SQLite tables are created in `log.sqlite`:
 - `logs` – ticket information and email status.
 - `config` – configuration values.
 - `kiosks` – registered kiosks with branding URLs and active state.
+- `notifications` – messages broadcast to kiosks via SSE.
 
 ## Authentication
 

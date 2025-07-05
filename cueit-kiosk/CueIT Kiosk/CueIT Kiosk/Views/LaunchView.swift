@@ -13,6 +13,7 @@ struct LaunchView: View {
     @State private var showFeedback = false
     @StateObject private var configService = ConfigService()
     @StateObject private var kioskService = KioskService.shared
+    @StateObject private var notificationService = NotificationService.shared
     @State private var showAlert = false
     @State private var alertMessage = ""
 
@@ -128,8 +129,28 @@ struct LaunchView: View {
             },
             alignment: .bottomLeading
         )
+        .overlay(
+            Group {
+                if let note = notificationService.latest {
+                    Text(note.message)
+                        .padding(8)
+                        .frame(maxWidth: .infinity)
+                        .background(color(for: note.level))
+                        .foregroundColor(.black)
+                }
+            },
+            alignment: .top
+        )
         .alert(alertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
         }
+    }
+}
+
+func color(for level: String) -> Color {
+    switch level {
+    case "warning": return .yellow
+    case "error": return .red
+    default: return .green
     }
 }

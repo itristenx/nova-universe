@@ -385,6 +385,41 @@ app.get('/api/feedback', ensureAuth, (req, res) => {
   });
 });
 
+app.get('/api/notifications', ensureAuth, (req, res) => {
+  db.all(
+    `SELECT * FROM notifications ORDER BY created_at DESC`,
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json(rows);
+    }
+  );
+});
+
+app.post('/api/notifications', ensureAuth, (req, res) => {
+  const { message, level } = req.body;
+  if (!message || !level) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
+  const createdAt = new Date().toISOString();
+  db.run(
+    `INSERT INTO notifications (message, level, created_at) VALUES (?, ?, ?)`,
+    [message, level, createdAt],
+    function (err) {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      events.emit('notifications-updated');
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
+app.delete('/api/notifications/:id', ensureAuth, (req, res) => {
+  db.run(`DELETE FROM notifications WHERE id=?`, [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    events.emit('notifications-updated');
+    res.json({ message: 'deleted' });
+  });
+});
+
 app.post('/api/verify-password', ensureAuth, (req, res) => {
   const { password } = req.body;
   if (!password) return res.status(400).json({ error: 'Missing password' });
@@ -668,7 +703,13 @@ app.get('/api/events', (req, res) => {
     res.write(`event: ${ev}\n`);
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
-  const names = ['kiosk-registered', 'kiosk-deleted', 'kiosk-status-updated', 'status-config-updated'];
+  const names = [
+    'kiosk-registered',
+    'kiosk-deleted',
+    'kiosk-status-updated',
+    'status-config-updated',
+    'notifications-updated'
+  ];
   const handlers = {};
   for (const n of names) {
     handlers[n] = (d) => send(n, d);
@@ -677,6 +718,26 @@ app.get('/api/events', (req, res) => {
   req.on('close', () => {
     for (const n of names) events.off(n, handlers[n]);
   });
+});
+
+app.get('/api/notifications/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  if (res.flushHeaders) res.flushHeaders();
+  const send = () => {
+    db.all(
+      `SELECT * FROM notifications WHERE active=1 ORDER BY created_at DESC`,
+      (err, rows) => {
+        if (err) return;
+        res.write(`data: ${JSON.stringify(rows)}\n\n`);
+      }
+    );
+  };
+  const handler = () => send();
+  events.on('notifications-updated', handler);
+  req.on('close', () => events.off('notifications-updated', handler));
+  send();
 });
 
 app.get("/api/health", (req, res) => {
