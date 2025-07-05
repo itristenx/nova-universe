@@ -6,15 +6,15 @@
 
 :root {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: theme('colors.surface');
-  color: theme('colors.content');
+  background-color: theme('colors.surface', '#f9fafb');
+  color: theme('colors.content', '#1f2937');
   line-height: 1.5;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --logo-shadow: theme('colors.logoShadow');
-  --react-shadow: theme('colors.reactShadow');
-  --muted: theme('colors.muted');
+  --logo-shadow: theme('colors.logoShadow', '#646cffaa');
+  --react-shadow: theme('colors.reactShadow', '#61dafbaa');
+  --muted: theme('colors.muted', '#888');
 }
 
 body {

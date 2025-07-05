@@ -14,6 +14,7 @@ export default {
         secondary: theme.colors.secondary,
         accent: theme.colors.accent,
         surface: theme.colors.surface,
+        content: theme.colors.content,
         logoShadow: theme.colors.logoShadow,
         reactShadow: theme.colors.reactShadow,
         muted: theme.colors.muted,
