@@ -137,6 +137,8 @@ Then build the AppImage:
 
 Mark the output file executable and run it to start the application.
 
+All installer and upgrade scripts live in `installers/` and should include basic tests to verify they work.
+
 ## Running Tests
 
 CueIT includes automated test suites for the backend API and the admin UI.
@@ -158,6 +160,7 @@ The API tests are written with Mocha and exercise the main Express endpoints.
 This suite uses Jest and React Testing Library to validate the UI.
 
 See the [contributor guide](AGENTS.md) for additional details.
+When adding JavaScript tests for installer scripts be sure to run `npm run lint` in the package you updated.
 
 ## Testing the API
 
