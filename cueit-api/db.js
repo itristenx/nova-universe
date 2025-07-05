@@ -15,7 +15,8 @@ db.serialize(() => {
       system TEXT,
       urgency TEXT,
       timestamp TEXT,
-      email_status TEXT
+      email_status TEXT,
+      servicenow_id TEXT
     )
   `);
 
@@ -102,6 +103,7 @@ db.serialize(() => {
   addColumnIfMissing('notifications', 'active INTEGER DEFAULT 1');
   addColumnIfMissing('notifications', 'created_at TEXT');
   addColumnIfMissing('users', 'passwordHash TEXT');
+  addColumnIfMissing('logs', 'servicenow_id TEXT');
 
   // insert default config if not present
   const defaults = {
