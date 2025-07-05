@@ -50,5 +50,6 @@ When deploying to a live environment you must update each `.env` file with real 
 - Replace Slack tokens and signing secret with the real app credentials.
 - Set `NODE_ENV` to `production` so session cookies are sent with `httpOnly`,
   `sameSite=lax` and `secure` enabled.
+- Do not set `DISABLE_AUTH=true` when `NODE_ENV` is `production`.
 
 Copy the respective `.env.example` file to `.env` in each folder, then edit the settings above before starting the services.
