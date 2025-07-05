@@ -122,6 +122,21 @@ db.serialize(() => {
     stmt.run(key, value);
   }
   stmt.finalize();
+
+  // insert default admin user if not present
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+  const adminName = process.env.ADMIN_NAME || 'Admin';
+  const adminPass = process.env.ADMIN_PASSWORD || 'admin';
+  const adminHash = bcrypt.hashSync(adminPass, 10);
+  db.get('SELECT id FROM users WHERE email=?', [adminEmail], (err, row) => {
+    if (err) return console.error(err);
+    if (!row) {
+      db.run(
+        'INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)',
+        [adminName, adminEmail, adminHash]
+      );
+    }
+  });
 });
 
 // helpers for deleting records
