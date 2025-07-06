@@ -71,6 +71,42 @@ db.serialize(() => {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS roles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS permissions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS role_permissions (
+      role_id INTEGER,
+      permission_id INTEGER
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS user_roles (
+      user_id INTEGER,
+      role_id INTEGER
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS directory_integrations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      provider TEXT,
+      settings TEXT
+    )
+  `);
+
   // add columns if database was created with an older schema
   function addColumnIfMissing(table, columnDef) {
     const columnName = columnDef.split(" ")[0];
@@ -105,6 +141,14 @@ db.serialize(() => {
   addColumnIfMissing('users', 'passwordHash TEXT');
   addColumnIfMissing('logs', 'servicenow_id TEXT');
 
+  // seed role/permission tables
+  db.run("INSERT OR IGNORE INTO roles (id, name) VALUES (1, 'admin')");
+  db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (1, 'manage_users')");
+  db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (2, 'manage_roles')");
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 1)");
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 2)");
+  db.run("INSERT OR IGNORE INTO directory_integrations (id, provider, settings) VALUES (1, 'mock', '[]')");
+
   // insert default config if not present
   const defaults = {
     logoUrl: process.env.LOGO_URL || '/logo.png',
@@ -130,11 +174,22 @@ db.serialize(() => {
   const adminHash = bcrypt.hashSync(adminPass, 10);
   db.get('SELECT id FROM users WHERE email=?', [adminEmail], (err, row) => {
     if (err) return console.error(err);
+    const assign = (uid) => {
+      db.run(
+        'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, 1)',
+        [uid]
+      );
+    };
     if (!row) {
       db.run(
         'INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)',
-        [adminName, adminEmail, adminHash]
+        [adminName, adminEmail, adminHash],
+        function (e) {
+          if (!e) assign(this.lastID);
+        }
       );
+    } else {
+      assign(row.id);
     }
   });
 });

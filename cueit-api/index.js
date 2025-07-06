@@ -155,12 +155,57 @@ const transporter = nodemailer.createTransport({
 const ensureAuth = DISABLE_AUTH
   ? (req, res, next) => next()
   : (req, res, next) => {
-      if (req.isAuthenticated()) return next();
+      const finalize = (user) => {
+        db.all(
+          `SELECT r.name AS role, p.name AS perm
+             FROM user_roles ur
+             JOIN roles r ON ur.role_id=r.id
+             LEFT JOIN role_permissions rp ON r.id=rp.role_id
+             LEFT JOIN permissions p ON rp.permission_id=p.id
+            WHERE ur.user_id=?`,
+          [user.id],
+          (e, rows) => {
+            if (e) return res.status(500).json({ error: 'DB error' });
+            user.roles = Array.from(new Set(rows.map((r) => r.role)));
+            user.permissions = Array.from(
+              new Set(rows.map((r) => r.perm).filter(Boolean))
+            );
+            req.user = user;
+            next();
+          }
+        );
+      };
+
+      if (req.isAuthenticated && req.isAuthenticated()) {
+        return finalize(req.user);
+      }
       const header = req.headers.authorization || '';
       const token = header.replace(/^Bearer\s+/i, '');
-      if (token && verify(token)) return next();
-      res.status(401).json({ error: 'unauthenticated' });
+      const payload = token && verify(token);
+      if (payload) {
+        db.get(
+          'SELECT id, name, email FROM users WHERE id=?',
+          [payload.id],
+          (err, row) => {
+            if (err || !row) {
+              return res.status(401).json({ error: 'unauthenticated' });
+            }
+            finalize(row);
+          }
+        );
+      } else {
+        res.status(401).json({ error: 'unauthenticated' });
+      }
     };
+
+const requirePermission = (perm) =>
+  DISABLE_AUTH
+    ? (req, res, next) => next()
+    : (req, res, next) => {
+        const perms = req.user?.permissions || [];
+        if (perms.includes(perm)) return next();
+        res.status(403).json({ error: 'forbidden' });
+      };
 
 const ensureScimAuth = (req, res, next) => {
   const header = req.headers.authorization || '';
@@ -606,46 +651,176 @@ app.put('/api/kiosks/:id/status', ensureAuth, (req, res) => {
   );
 });
 
-app.get("/api/users", ensureAuth, (req, res) => {
-  db.all(`SELECT * FROM users`, (err, rows) => {
-    if (err) return res.status(500).json({ error: "DB error" });
-    res.json(rows);
-  });
-});
+app.get(
+  "/api/users",
+  ensureAuth,
+  requirePermission('manage_users'),
+  (req, res) => {
+    db.all(`SELECT * FROM users`, (err, rows) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      res.json(rows);
+    });
+  }
+);
 
-app.post('/api/users', ensureAuth, (req, res) => {
-  const { name, email, password } = req.body;
-  const hash = password ? bcrypt.hashSync(password, 10) : null;
-  db.run(
-    `INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)`,
-    [name || '', email || '', hash],
-    function (err) {
+app.post(
+  '/api/users',
+  ensureAuth,
+  requirePermission('manage_users'),
+  (req, res) => {
+    const { name, email, password } = req.body;
+    const hash = password ? bcrypt.hashSync(password, 10) : null;
+    db.run(
+      `INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)`,
+      [name || '', email || '', hash],
+      function (err) {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        res.json({ id: this.lastID });
+      }
+    );
+  }
+);
+
+app.put(
+  '/api/users/:id',
+  ensureAuth,
+  requirePermission('manage_users'),
+  (req, res) => {
+    const { id } = req.params;
+    const { name, email, password } = req.body;
+    const hash = password ? bcrypt.hashSync(password, 10) : null;
+    db.run(
+      `UPDATE users SET name=?, email=?, passwordHash=COALESCE(?, passwordHash) WHERE id=?`,
+      [name, email, hash, id],
+      (err) => {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        res.json({ message: 'updated' });
+      }
+    );
+  }
+);
+
+app.delete(
+  "/api/users/:id",
+  ensureAuth,
+  requirePermission('manage_users'),
+  (req, res) => {
+    db.run(`DELETE FROM users WHERE id=?`, [req.params.id], (err) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      res.json({ message: "deleted" });
+    });
+  }
+);
+
+app.get(
+  '/api/users/:id/roles',
+  ensureAuth,
+  requirePermission('manage_users'),
+  (req, res) => {
+    db.all(
+      `SELECT r.name FROM roles r JOIN user_roles ur ON r.id=ur.role_id WHERE ur.user_id=?`,
+      [req.params.id],
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        res.json(rows.map((r) => r.name));
+      }
+    );
+  }
+);
+
+app.put(
+  '/api/users/:id/roles',
+  ensureAuth,
+  requirePermission('manage_users'),
+  (req, res) => {
+    const { roles } = req.body;
+    if (!Array.isArray(roles)) return res.status(400).json({ error: 'bad roles' });
+    const { id } = req.params;
+    db.serialize(() => {
+      db.run('DELETE FROM user_roles WHERE user_id=?', [id]);
+      const stmt = db.prepare(
+        'INSERT INTO user_roles (user_id, role_id) VALUES (?, (SELECT id FROM roles WHERE name=?))'
+      );
+      for (const r of roles) stmt.run(id, r);
+      stmt.finalize((err) => {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        res.json({ message: 'updated' });
+      });
+    });
+  }
+);
+
+app.get(
+  '/api/roles',
+  ensureAuth,
+  requirePermission('manage_roles'),
+  (req, res) => {
+    db.all('SELECT * FROM roles', (err, rows) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json(rows);
+    });
+  }
+);
+
+app.post(
+  '/api/roles',
+  ensureAuth,
+  requirePermission('manage_roles'),
+  (req, res) => {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'missing name' });
+    db.run('INSERT INTO roles (name) VALUES (?)', [name], function (err) {
       if (err) return res.status(500).json({ error: 'DB error' });
       res.json({ id: this.lastID });
-    }
-  );
-});
+    });
+  }
+);
 
-app.put('/api/users/:id', ensureAuth, (req, res) => {
-  const { id } = req.params;
-  const { name, email, password } = req.body;
-  const hash = password ? bcrypt.hashSync(password, 10) : null;
-  db.run(
-    `UPDATE users SET name=?, email=?, passwordHash=COALESCE(?, passwordHash) WHERE id=?`,
-    [name, email, hash, id],
-    (err) => {
+app.put(
+  '/api/roles/:id/permissions',
+  ensureAuth,
+  requirePermission('manage_roles'),
+  (req, res) => {
+    const { id } = req.params;
+    const { permissions } = req.body;
+    if (!Array.isArray(permissions))
+      return res.status(400).json({ error: 'bad permissions' });
+    db.serialize(() => {
+      db.run('DELETE FROM role_permissions WHERE role_id=?', [id]);
+      const stmt = db.prepare(
+        'INSERT INTO role_permissions (role_id, permission_id) VALUES (?, (SELECT id FROM permissions WHERE name=?))'
+      );
+      for (const p of permissions) stmt.run(id, p);
+      stmt.finalize((err) => {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        res.json({ message: 'updated' });
+      });
+    });
+  }
+);
+
+app.get(
+  '/api/directory-search',
+  ensureAuth,
+  requirePermission('manage_users'),
+  (req, res) => {
+    const q = String(req.query.q || '').toLowerCase();
+    db.get('SELECT provider, settings FROM directory_integrations LIMIT 1', (err, row) => {
       if (err) return res.status(500).json({ error: 'DB error' });
-      res.json({ message: 'updated' });
-    }
-  );
-});
-
-app.delete("/api/users/:id", ensureAuth, (req, res) => {
-  db.run(`DELETE FROM users WHERE id=?`, [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: "DB error" });
-    res.json({ message: "deleted" });
-  });
-});
+      if (!row) return res.json([]);
+      let data = [];
+      try {
+        data = JSON.parse(row.settings || '[]');
+      } catch {}
+      const out = data.filter(
+        (u) =>
+          u.name.toLowerCase().includes(q) ||
+          (u.email && u.email.toLowerCase().includes(q))
+      );
+      res.json(out);
+    });
+  }
+);
 
 // SCIM 2.0 user management
 const scim = express.Router();
