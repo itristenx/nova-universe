@@ -11,6 +11,7 @@ import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import db from './db.js';
 import { v4 as uuidv4 } from 'uuid';
 import events from './events.js';
+import * as directory from './directory.js';
 import { sign, verify } from './jwt.js';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -432,6 +433,34 @@ app.put('/api/status-config', ensureAuth, (req, res) => {
   });
 });
 
+app.get('/api/directory-config', ensureAuth, (req, res) => {
+  db.all(
+    "SELECT key, value FROM config WHERE key LIKE 'directory%'",
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      const out = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+      res.json(out);
+    }
+  );
+});
+
+app.put('/api/directory-config', ensureAuth, (req, res) => {
+  const updates = req.body;
+  const stmt = db.prepare(
+    `INSERT INTO config (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value=excluded.value`
+  );
+  db.serialize(() => {
+    for (const [k, v] of Object.entries(updates)) {
+      stmt.run(k, String(v));
+    }
+    stmt.finalize((err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ message: 'updated' });
+    });
+  });
+});
+
 app.post('/api/feedback', (req, res) => {
   const { name = '', message } = req.body;
   if (!message) return res.status(400).json({ error: 'Missing message' });
@@ -553,10 +582,22 @@ app.post('/api/register-kiosk', (req, res) => {
   );
 });
 
-app.get("/api/kiosks/:id", (req, res) => {
-  db.get(`SELECT * FROM kiosks WHERE id=?`, [req.params.id], (err, row) => {
-    if (err) return res.status(500).json({ error: "DB error" });
-    res.json(row || {});
+app.get('/api/kiosks/:id', (req, res) => {
+  db.get('SELECT * FROM kiosks WHERE id=?', [req.params.id], (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    if (!row) return res.json({});
+    db.all(
+      "SELECT key, value FROM config WHERE key LIKE 'directory%'",
+      (e, rows) => {
+        if (e) return res.status(500).json({ error: 'DB error' });
+        const cfg = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+        res.json({
+          ...row,
+          directoryEnabled: cfg.directoryEnabled === '1',
+          directoryProvider: cfg.directoryProvider || 'mock',
+        });
+      }
+    );
   });
 });
 
@@ -649,6 +690,26 @@ app.put('/api/kiosks/:id/status', ensureAuth, (req, res) => {
       res.json({ message: 'updated' });
     }
   );
+});
+
+app.get('/api/kiosks/:id/users', async (req, res) => {
+  try {
+    const users = await directory.searchDirectory(String(req.query.q || ''));
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'lookup-failed' });
+  }
+});
+
+app.post('/api/kiosks/:id/users', async (req, res) => {
+  const { name, email } = req.body || {};
+  if (!name || !email) return res.status(400).json({ error: 'missing fields' });
+  try {
+    const id = await directory.createUser(name, email);
+    res.json({ id });
+  } catch (err) {
+    res.status(500).json({ error: 'create-failed' });
+  }
 });
 
 app.get(
@@ -803,22 +864,13 @@ app.get(
   '/api/directory-search',
   ensureAuth,
   requirePermission('manage_users'),
-  (req, res) => {
-    const q = String(req.query.q || '').toLowerCase();
-    db.get('SELECT provider, settings FROM directory_integrations LIMIT 1', (err, row) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
-      if (!row) return res.json([]);
-      let data = [];
-      try {
-        data = JSON.parse(row.settings || '[]');
-      } catch {}
-      const out = data.filter(
-        (u) =>
-          u.name.toLowerCase().includes(q) ||
-          (u.email && u.email.toLowerCase().includes(q))
-      );
-      res.json(out);
-    });
+  async (req, res) => {
+    try {
+      const users = await directory.searchDirectory(String(req.query.q || ''));
+      res.json(users);
+    } catch (err) {
+      res.status(500).json({ error: 'lookup-failed' });
+    }
   }
 );
 

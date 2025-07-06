@@ -4,6 +4,7 @@ import axios from 'axios';
 import UsersPanel from './UsersPanel.jsx';
 import FeedbackPanel from './FeedbackPanel.jsx';
 import NotificationsPanel from './NotificationsPanel.jsx';
+import DirectoryPanel from './DirectoryPanel.jsx';
 import useToast from './useToast.js';
 import useApiError from './useApiError.js';
 import { colors } from './theme.js';
@@ -123,6 +124,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
           <button className={`mr-4 pb-2 ${tab === 'users' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('users')}>Users</button>
           <button className={`mr-4 pb-2 ${tab === 'notifications' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('notifications')}>Notifications</button>
           <button className={`mr-4 pb-2 ${tab === 'status' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('status')}>Status</button>
+          <button className={`mr-4 pb-2 ${tab === 'directory' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('directory')}>Directory</button>
           <button className={`pb-2 ${tab === 'feedback' ? 'border-b-2 border-white' : 'text-gray-400'}`} onClick={() => setTab('feedback')}>Feedback</button>
         </div>
         {tab === 'general' && (
@@ -373,6 +375,7 @@ export default function SettingsPanel({ open, onClose, config, setConfig }) {
             ))}
           </div>
         )}
+        {tab === 'directory' && <DirectoryPanel />}
         {tab === 'feedback' && <FeedbackPanel open={open && tab === 'feedback'} />}
       </div>
     </div>
