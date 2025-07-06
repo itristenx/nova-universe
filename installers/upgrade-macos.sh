@@ -11,7 +11,7 @@ if [[ -n "$PKG_ARG" && "$PKG_ARG" == *.pkg ]]; then
 else
   VERSION="${PKG_ARG:-1.0.0}"
   ./make-installer.sh "$VERSION"
-  PKG_PATH="../cueit-macos/CueIT-$VERSION.pkg"
+  PKG_PATH="../cueit-macos-swift/CueIT-$VERSION.pkg"
 fi
 
 ./uninstall-macos.sh

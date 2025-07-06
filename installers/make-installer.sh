@@ -3,34 +3,18 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
-APP_DIR="cueit-macos"
+APP_DIR="cueit-macos-swift"
 VERSION="${1:-1.0.0}"
-arch="${2:-universal}"
-case "$arch" in
-  arm64|x64|universal) ;;
-  *)
-    echo "Usage: $0 <version> [arm64|x64|universal]"
-    exit 1
-    ;;
-esac
 
-npm --prefix "$APP_DIR" install
-npm --prefix cueit-admin install
-npm --prefix cueit-admin run build
-# Install production dependencies so the packaged app works
-# without running npm install after copying to /Applications
-npm --prefix cueit-api ci --production
-npm --prefix cueit-activate ci --production
-npm --prefix cueit-slack ci --production
-npx --prefix "$APP_DIR" electron-packager "$APP_DIR" CueIT \
-  --platform=darwin --arch="$arch" --out "$APP_DIR/dist" --overwrite
+echo "Building SwiftUI app..."
+xcodebuild -project "$APP_DIR/CueIT.xcodeproj" -scheme CueITApp -configuration Release -derivedDataPath "$APP_DIR/build" >/dev/null
 
-APP_PATH="$APP_DIR/dist/CueIT-darwin-$arch/CueIT.app"
+APP_PATH="$APP_DIR/build/Build/Products/Release/CueIT.app"
 PKG_ROOT="$APP_DIR/pkgroot"
 mkdir -p "$PKG_ROOT/Applications"
 
 # Copy backend and frontends into the packaged resources directory
-RES_DIR="$APP_DIR/dist/CueIT-darwin-$arch/resources"
+RES_DIR="$APP_PATH/Contents/Resources"
 mkdir -p "$RES_DIR/installers"
 cp -R cueit-api cueit-admin cueit-activate cueit-slack design "$RES_DIR/"
 cp installers/start-all.sh "$RES_DIR/installers/"
