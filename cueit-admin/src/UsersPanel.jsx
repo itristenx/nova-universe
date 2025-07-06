@@ -4,6 +4,7 @@ import useApiError from './useApiError.js';
 
 export default function UsersPanel({ open }) {
   const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
   const api = import.meta.env.VITE_API_URL;
   const handleApiError = useApiError();
 
@@ -11,8 +12,12 @@ export default function UsersPanel({ open }) {
     if (open) {
       (async () => {
         try {
-          const res = await axios.get(`${api}/api/users`);
-          setUsers(res.data.map((u) => ({ ...u, password: '' })));
+          const [uRes, rRes] = await Promise.all([
+            axios.get(`${api}/api/users`),
+            axios.get(`${api}/api/roles`),
+          ]);
+          setUsers(uRes.data.map((u) => ({ ...u, password: '' })));
+          setRoles(rRes.data.map((r) => r.name));
         } catch (err) {
           handleApiError(err, 'Failed to load users');
         }
@@ -23,7 +28,10 @@ export default function UsersPanel({ open }) {
   const addUser = async () => {
     try {
       const res = await axios.post(`${api}/api/users`, { name: '', email: '' });
-      setUsers((prev) => [...prev, { id: res.data.id, name: '', email: '', password: '' }]);
+      setUsers((prev) => [
+        ...prev,
+        { id: res.data.id, name: '', email: '', password: '', roles: [] },
+      ]);
     } catch (err) {
       handleApiError(err, 'Failed to add user');
     }
@@ -36,6 +44,7 @@ export default function UsersPanel({ open }) {
         email: u.email,
         password: u.password || undefined,
       });
+      await axios.put(`${api}/api/users/${u.id}/roles`, { roles: u.roles || [] });
       setUsers((us) => us.map((x) => (x.id === u.id ? { ...x, password: '' } : x)));
     } catch (err) {
       handleApiError(err, 'Failed to save user');
@@ -62,6 +71,7 @@ export default function UsersPanel({ open }) {
             <th className="pb-2">Name</th>
             <th className="pb-2">Email</th>
             <th className="pb-2">Password</th>
+            <th className="pb-2">Roles</th>
             <th className="pb-2"></th>
           </tr>
         </thead>
@@ -110,6 +120,31 @@ export default function UsersPanel({ open }) {
                   }
                   className="w-32 px-1 text-black rounded"
                 />
+              </td>
+              <td className="py-1 pr-2 space-x-2">
+                {roles.map((r) => (
+                  <label key={r} className="mr-2">
+                    <input
+                      type="checkbox"
+                      checked={u.roles?.includes(r) || false}
+                      onChange={(e) =>
+                        setUsers((us) =>
+                          us.map((x) =>
+                            x.id === u.id
+                              ? {
+                                  ...x,
+                                  roles: e.target.checked
+                                    ? [...(x.roles || []), r]
+                                    : (x.roles || []).filter((y) => y !== r),
+                                }
+                              : x
+                          )
+                        )
+                      }
+                    />
+                    <span className="ml-1">{r}</span>
+                  </label>
+                ))}
               </td>
               <td className="py-1 space-x-1">
                 <button

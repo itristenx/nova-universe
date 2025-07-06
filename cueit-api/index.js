@@ -207,6 +207,15 @@ const requirePermission = (perm) =>
         res.status(403).json({ error: 'forbidden' });
       };
 
+const requireRole = (...roles) =>
+  DISABLE_AUTH
+    ? (req, res, next) => next()
+    : (req, res, next) => {
+        const r = req.user?.roles || [];
+        if (roles.some((role) => r.includes(role))) return next();
+        res.status(403).json({ error: 'forbidden' });
+      };
+
 const ensureScimAuth = (req, res, next) => {
   const header = req.headers.authorization || '';
   const token = header.replace(/^Bearer\s+/i, '');
@@ -654,19 +663,31 @@ app.put('/api/kiosks/:id/status', ensureAuth, (req, res) => {
 app.get(
   "/api/users",
   ensureAuth,
-  requirePermission('manage_users'),
+  requireRole('Admin', 'Super Admin'),
   (req, res) => {
-    db.all(`SELECT * FROM users`, (err, rows) => {
-      if (err) return res.status(500).json({ error: "DB error" });
-      res.json(rows);
-    });
+    db.all(
+      `SELECT u.*, GROUP_CONCAT(r.name) AS roles
+         FROM users u
+         LEFT JOIN user_roles ur ON u.id=ur.user_id
+         LEFT JOIN roles r ON ur.role_id=r.id
+        GROUP BY u.id`,
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: "DB error" });
+        res.json(
+          rows.map((r) => ({
+            ...r,
+            roles: r.roles ? r.roles.split(',') : [],
+          }))
+        );
+      }
+    );
   }
 );
 
 app.post(
   '/api/users',
   ensureAuth,
-  requirePermission('manage_users'),
+  requireRole('Admin', 'Super Admin'),
   (req, res) => {
     const { name, email, password } = req.body;
     const hash = password ? bcrypt.hashSync(password, 10) : null;
@@ -684,7 +705,7 @@ app.post(
 app.put(
   '/api/users/:id',
   ensureAuth,
-  requirePermission('manage_users'),
+  requireRole('Admin', 'Super Admin'),
   (req, res) => {
     const { id } = req.params;
     const { name, email, password } = req.body;
@@ -703,7 +724,7 @@ app.put(
 app.delete(
   "/api/users/:id",
   ensureAuth,
-  requirePermission('manage_users'),
+  requireRole('Admin', 'Super Admin'),
   (req, res) => {
     db.run(`DELETE FROM users WHERE id=?`, [req.params.id], (err) => {
       if (err) return res.status(500).json({ error: "DB error" });
@@ -715,7 +736,7 @@ app.delete(
 app.get(
   '/api/users/:id/roles',
   ensureAuth,
-  requirePermission('manage_users'),
+  requireRole('Admin', 'Super Admin'),
   (req, res) => {
     db.all(
       `SELECT r.name FROM roles r JOIN user_roles ur ON r.id=ur.role_id WHERE ur.user_id=?`,
@@ -731,7 +752,7 @@ app.get(
 app.put(
   '/api/users/:id/roles',
   ensureAuth,
-  requirePermission('manage_users'),
+  requireRole('Admin', 'Super Admin'),
   (req, res) => {
     const { roles } = req.body;
     if (!Array.isArray(roles)) return res.status(400).json({ error: 'bad roles' });
@@ -753,7 +774,7 @@ app.put(
 app.get(
   '/api/roles',
   ensureAuth,
-  requirePermission('manage_roles'),
+  requireRole('Super Admin'),
   (req, res) => {
     db.all('SELECT * FROM roles', (err, rows) => {
       if (err) return res.status(500).json({ error: 'DB error' });
@@ -765,7 +786,7 @@ app.get(
 app.post(
   '/api/roles',
   ensureAuth,
-  requirePermission('manage_roles'),
+  requireRole('Super Admin'),
   (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'missing name' });
@@ -779,7 +800,7 @@ app.post(
 app.put(
   '/api/roles/:id/permissions',
   ensureAuth,
-  requirePermission('manage_roles'),
+  requireRole('Super Admin'),
   (req, res) => {
     const { id } = req.params;
     const { permissions } = req.body;
@@ -802,22 +823,35 @@ app.put(
 app.get(
   '/api/directory-search',
   ensureAuth,
-  requirePermission('manage_users'),
+  requireRole('Admin', 'Super Admin'),
   (req, res) => {
     const q = String(req.query.q || '').toLowerCase();
     db.get('SELECT provider, settings FROM directory_integrations LIMIT 1', (err, row) => {
       if (err) return res.status(500).json({ error: 'DB error' });
-      if (!row) return res.json([]);
       let data = [];
-      try {
-        data = JSON.parse(row.settings || '[]');
-      } catch {}
-      const out = data.filter(
+      if (row) {
+        try {
+          data = JSON.parse(row.settings || '[]');
+        } catch {}
+      }
+      const fromDir = data.filter(
         (u) =>
           u.name.toLowerCase().includes(q) ||
           (u.email && u.email.toLowerCase().includes(q))
       );
-      res.json(out);
+      db.all(
+        `SELECT name, email FROM users
+           WHERE id NOT IN (SELECT user_id FROM user_roles)
+             AND (lower(name) LIKE ? OR lower(email) LIKE ?)`,
+        [`%${q}%`, `%${q}%`],
+        (err2, rows) => {
+          if (err2) return res.status(500).json({ error: 'DB error' });
+          res.json([
+            ...fromDir,
+            ...rows.map((u) => ({ name: u.name, email: u.email })),
+          ]);
+        }
+      );
     });
   }
 );

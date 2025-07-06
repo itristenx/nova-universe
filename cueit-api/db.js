@@ -142,11 +142,19 @@ db.serialize(() => {
   addColumnIfMissing('logs', 'servicenow_id TEXT');
 
   // seed role/permission tables
-  db.run("INSERT OR IGNORE INTO roles (id, name) VALUES (1, 'admin')");
+  db.run("INSERT OR IGNORE INTO roles (id, name) VALUES (1, 'Super Admin')");
+  db.run("INSERT OR IGNORE INTO roles (id, name) VALUES (2, 'Admin')");
   db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (1, 'manage_users')");
   db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (2, 'manage_roles')");
-  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 1)");
-  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 2)");
+  db.run(
+    "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 1)"
+  );
+  db.run(
+    "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 2)"
+  );
+  db.run(
+    "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (2, 1)"
+  );
   db.run("INSERT OR IGNORE INTO directory_integrations (id, provider, settings) VALUES (1, 'mock', '[]')");
 
   // insert default config if not present
