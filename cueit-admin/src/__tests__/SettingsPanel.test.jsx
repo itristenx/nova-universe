@@ -27,4 +27,11 @@ describe('SettingsPanel', () => {
     await userEvent.click(toggleBtn);
     expect(axios.put).toHaveBeenCalledWith(expect.stringContaining('/api/kiosks/k1/active'), { active: true });
   });
+
+  test('opens directory panel', async () => {
+    axios.get.mockResolvedValueOnce({ data: [] });
+    render(<SettingsPanel open={true} onClose={() => {}} config={{}} setConfig={() => {}} />);
+    await userEvent.click(screen.getByText('Directory'));
+    expect(await screen.findByText('Provider')).toBeInTheDocument();
+  });
 });

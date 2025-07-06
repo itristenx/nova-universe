@@ -53,6 +53,8 @@ settings from `.env` and listens on `API_PORT` (default `3000`).
 - Old logs older than 30 days are purged automatically (set `LOG_RETENTION_DAYS` to adjust).
 - `GET /api/config` – return configuration key/value pairs.
 - `PUT /api/config` – insert or update configuration values.
+- `GET /api/directory-config` – retrieve directory integration settings.
+- `PUT /api/directory-config` – update directory integration settings.
 
 ### Kiosk Management
 
@@ -61,6 +63,10 @@ settings from `.env` and listens on `API_PORT` (default `3000`).
 - `PUT /api/kiosks/:id` – update kiosk branding and active state.
 - `GET /api/kiosks` – list all kiosks.
 - `PUT /api/kiosks/:id/active` – toggle its active flag.
+- `GET /api/kiosks/:id/status` – fetch status settings for a kiosk.
+- `PUT /api/kiosks/:id/status` – update status settings.
+- `GET /api/kiosks/:id/users` – search the configured directory.
+- `POST /api/kiosks/:id/users` – create a user when lookup fails.
 - `DELETE /api/kiosks/:id` – delete a kiosk by id.
 - `DELETE /api/kiosks` – remove all kiosks.
 

@@ -159,7 +159,11 @@ db.serialize(() => {
     statusClosedMsg: 'Closed',
     statusErrorMsg: 'Error',
     adminPassword: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 10),
-    scimToken: process.env.SCIM_TOKEN || ''
+    scimToken: process.env.SCIM_TOKEN || '',
+    directoryEnabled: '0',
+    directoryProvider: 'mock',
+    directoryUrl: '',
+    directoryToken: ''
   };
   const stmt = db.prepare(`INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)`);
   for (const [key, value] of Object.entries(defaults)) {
