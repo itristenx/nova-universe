@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import axios from 'axios';
+import db from '../db.js';
 
 if (!process.env.DISABLE_AUTH) {
   process.env.DISABLE_AUTH = 'true';
@@ -26,6 +27,20 @@ axios.post = (...args) => axiosBehavior(...args);
 const mod = await import('../index.js');
 app = mod.default;
 globalThis.app = app;
+
+await new Promise((resolve) => {
+  function check() {
+    db.get(
+      'SELECT id FROM users WHERE email=?',
+      ['admin@example.com'],
+      (err, row) => {
+        if (row) return resolve();
+        setTimeout(check, 10);
+      }
+    );
+  }
+  check();
+});
 
 globalThis.setSendBehavior = (fn) => {
   sendBehavior = fn;
