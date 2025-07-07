@@ -1524,10 +1524,10 @@ app.put('/api/kiosk-config/:id', ensureAuth, requirePermission('manage_system'),
 });
 
 // Admin PIN endpoints for kiosk access
-app.post('/api/verify-admin-pin', ensureAuth, (req, res) => {
+app.post('/api/verify-admin-pin', kioskOrAuth, (req, res) => {
   const { pin } = req.body;
   if (!pin) return res.status(400).json({ error: 'Missing PIN' });
-  
+
   db.get(`SELECT value FROM config WHERE key='adminPin'`, (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     const storedPin = row ? row.value : '123456'; // Default PIN
