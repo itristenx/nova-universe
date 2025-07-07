@@ -1229,7 +1229,7 @@ app.post('/api/kiosks/activation', ensureAuth, async (req, res) => {
       type: 'kiosk_activation',
       id: activationId,
       code: code,
-      server: req.get('host') || 'localhost',
+      server: `${req.protocol}://${req.get('host') || 'localhost'}`,
       expires: expiresAt
     });
     
