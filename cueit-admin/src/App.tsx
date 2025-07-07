@@ -29,7 +29,7 @@ const queryClient = new QueryClient({
 });
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, setUser } = useAuthStore();
+  const { isAuthenticated, login } = useAuthStore();
   const [loading, setLoading] = React.useState(true);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
       if (token) {
         try {
           const user = await api.me();
-          setUser(user);
+          login(token, user);
         } catch (error) {
           localStorage.removeItem('auth_token');
         }
@@ -47,7 +47,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     };
 
     checkAuth();
-  }, [setUser]);
+  }, [login]);
 
   if (loading) {
     return (
