@@ -7,15 +7,16 @@ CueIT is an internal help desk application used to submit and track IT tickets.
 The repository contains several apps:
 
 - **cueit-api** – Express/SQLite API
-- **cueit-admin** – React admin interface
+- **cueit-admin** – React admin interface with integrated kiosk activation management
 - **cueit-kiosk** – iPad kiosk for ticket submission
-- **cueit-activate** – small React app for activating kiosks
 - **cueit-slack** – Slack slash command integration
 - **cueit-macos-swift** – SwiftUI launcher for macOS
 
 The `design/theme.js` file defines shared colors, fonts and spacing. Frontends
-import these tokens so styles remain consistent across the admin UI, activation
-page and SwiftUI kiosk app.
+import these tokens so styles remain consistent across the admin UI and SwiftUI kiosk app.
+
+The admin interface now includes integrated kiosk activation management, eliminating
+the need for a separate activation interface.
 
 ## Requirements
 - [Node.js](https://nodejs.org/) 18 or higher
@@ -47,14 +48,14 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
 ### Admin Frontend
 1. Navigate to `cueit-admin`.
 2. Run `npm install` to install dependencies.
-3. Edit the `.env` file and set `VITE_API_URL`. You can also set `VITE_LOGO_URL` and `VITE_ACTIVATE_URL`.
+3. Edit the `.env` file and set `VITE_API_URL`. You can also set `VITE_LOGO_URL`.
 4. Start the development server with `npm run dev` and open `http://localhost:5173`.
 
-### Activation Page
-1. Navigate to `cueit-activate`.
-2. Run `npm install` to install dependencies.
-3. Edit the `.env` file and set `VITE_API_URL`. Optionally set `VITE_ADMIN_URL`.
-4. Start the dev server with `npm run dev` and open the page to activate kiosks.
+The admin interface includes comprehensive kiosk management functionality, including:
+- Kiosk activation via QR codes or manual entry
+- System configuration management for ticket categories
+- Server management and restart capabilities
+- User management with role-based access control
 
 The backend stores ticket logs in a local SQLite database (`cueit-api/log.sqlite`).
 Configuration values are stored in the same database and can be edited from the admin UI.

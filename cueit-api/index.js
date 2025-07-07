@@ -16,6 +16,12 @@ import { sign, verify } from './jwt.js';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import https from 'https';
+import qrcode from 'qrcode';
+import multer from 'multer';
+import path from 'path';
+import assetsRouter from './routes/assets.js';
+import integrationsRouter from './routes/integrations.js';
+import rolesRouter from './routes/roles.js';
 
 dotenv.config();
 
@@ -725,7 +731,13 @@ app.get(
   ensureAuth,
   requirePermission('manage_users'),
   (req, res) => {
-    db.all(`SELECT * FROM users`, (err, rows) => {
+    db.all(`
+      SELECT u.id, u.name, u.email, u.disabled, u.is_default,
+             r.name as role
+      FROM users u
+      LEFT JOIN user_roles ur ON u.id = ur.user_id
+      LEFT JOIN roles r ON ur.role_id = r.id
+    `, (err, rows) => {
       if (err) return res.status(500).json({ error: "DB error" });
       res.json(rows);
     });
@@ -738,12 +750,20 @@ app.post(
   requirePermission('manage_users'),
   (req, res) => {
     const { name, email, password } = req.body;
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Name and email are required' });
+    }
     const hash = password ? bcrypt.hashSync(password, 10) : null;
     db.run(
-      `INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)`,
-      [name || '', email || '', hash],
+      `INSERT INTO users (name, email, passwordHash, disabled, is_default) VALUES (?, ?, ?, 0, 0)`,
+      [name, email, hash],
       function (err) {
-        if (err) return res.status(500).json({ error: 'DB error' });
+        if (err) {
+          if (err.message.includes('UNIQUE constraint failed')) {
+            return res.status(409).json({ error: 'User with this email already exists' });
+          }
+          return res.status(500).json({ error: 'DB error' });
+        }
         res.json({ id: this.lastID });
       }
     );
@@ -756,16 +776,42 @@ app.put(
   requirePermission('manage_users'),
   (req, res) => {
     const { id } = req.params;
-    const { name, email, password } = req.body;
-    const hash = password ? bcrypt.hashSync(password, 10) : null;
-    db.run(
-      `UPDATE users SET name=?, email=?, passwordHash=COALESCE(?, passwordHash) WHERE id=?`,
-      [name, email, hash, id],
-      (err) => {
-        if (err) return res.status(500).json({ error: 'DB error' });
-        res.json({ message: 'updated' });
+    const { name, email, password, disabled } = req.body;
+    
+    // Check if this is a default user
+    db.get('SELECT is_default FROM users WHERE id = ?', [id], (err, row) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      if (!row) return res.status(404).json({ error: 'User not found' });
+      
+      // Prevent disabling default users
+      if (row.is_default && disabled) {
+        return res.status(403).json({ error: 'Cannot disable default admin users' });
       }
-    );
+      
+      const hash = password ? bcrypt.hashSync(password, 10) : null;
+      const fields = [];
+      const values = [];
+      
+      if (name !== undefined) { fields.push('name=?'); values.push(name); }
+      if (email !== undefined) { fields.push('email=?'); values.push(email); }
+      if (hash) { fields.push('passwordHash=?'); values.push(hash); }
+      if (disabled !== undefined && !row.is_default) { fields.push('disabled=?'); values.push(disabled ? 1 : 0); }
+      
+      if (fields.length === 0) {
+        return res.status(400).json({ error: 'No fields to update' });
+      }
+      
+      values.push(id);
+      
+      db.run(
+        `UPDATE users SET ${fields.join(', ')} WHERE id=?`,
+        values,
+        (err) => {
+          if (err) return res.status(500).json({ error: 'DB error' });
+          res.json({ message: 'updated' });
+        }
+      );
+    });
   }
 );
 
@@ -774,9 +820,29 @@ app.delete(
   ensureAuth,
   requirePermission('manage_users'),
   (req, res) => {
-    db.run(`DELETE FROM users WHERE id=?`, [req.params.id], (err) => {
-      if (err) return res.status(500).json({ error: "DB error" });
-      res.json({ message: "deleted" });
+    const { id } = req.params;
+    
+    // Check if this is a default user
+    db.get('SELECT is_default, email FROM users WHERE id = ?', [id], (err, row) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      if (!row) return res.status(404).json({ error: 'User not found' });
+      
+      // Prevent deletion of default users
+      if (row.is_default) {
+        return res.status(403).json({ 
+          error: 'Cannot delete default admin users. Use disable instead.',
+          canDisable: false
+        });
+      }
+      
+      // Delete the user and their role assignments
+      db.serialize(() => {
+        db.run('DELETE FROM user_roles WHERE user_id = ?', [id]);
+        db.run('DELETE FROM users WHERE id = ?', [id], (err) => {
+          if (err) return res.status(500).json({ error: 'DB error' });
+          res.json({ message: 'deleted' });
+        });
+      });
     });
   }
 );
@@ -786,12 +852,12 @@ app.get(
   ensureAuth,
   requirePermission('manage_users'),
   (req, res) => {
-    db.all(
-      `SELECT r.name FROM roles r JOIN user_roles ur ON r.id=ur.role_id WHERE ur.user_id=?`,
+    db.get(
+      `SELECT r.name FROM roles r JOIN user_roles ur ON r.id=ur.role_id WHERE ur.user_id=? LIMIT 1`,
       [req.params.id],
-      (err, rows) => {
+      (err, row) => {
         if (err) return res.status(500).json({ error: 'DB error' });
-        res.json(rows.map((r) => r.name));
+        res.json({ role: row ? row.name : null });
       }
     );
   }
@@ -802,19 +868,28 @@ app.put(
   ensureAuth,
   requirePermission('manage_users'),
   (req, res) => {
-    const { roles } = req.body;
-    if (!Array.isArray(roles)) return res.status(400).json({ error: 'bad roles' });
+    const { role } = req.body; // Changed from 'roles' array to single 'role'
+    if (!role || typeof role !== 'string') {
+      return res.status(400).json({ error: 'Single role required' });
+    }
     const { id } = req.params;
+    
     db.serialize(() => {
+      // Clear existing roles
       db.run('DELETE FROM user_roles WHERE user_id=?', [id]);
-      const stmt = db.prepare(
-        'INSERT INTO user_roles (user_id, role_id) VALUES (?, (SELECT id FROM roles WHERE name=?))'
+      
+      // Assign the single new role
+      db.run(
+        'INSERT INTO user_roles (user_id, role_id) VALUES (?, (SELECT id FROM roles WHERE name=?))',
+        [id, role],
+        function(err) {
+          if (err) return res.status(500).json({ error: 'DB error' });
+          if (this.changes === 0) {
+            return res.status(400).json({ error: 'Invalid role name' });
+          }
+          res.json({ message: 'updated' });
+        }
       );
-      for (const r of roles) stmt.run(id, r);
-      stmt.finalize((err) => {
-        if (err) return res.status(500).json({ error: 'DB error' });
-        res.json({ message: 'updated' });
-      });
     });
   }
 );
@@ -918,12 +993,45 @@ scim.get('/Users/:id', (req, res) => {
 scim.post('/Users', (req, res) => {
   const name = req.body.displayName || '';
   const email = req.body.userName || '';
+  const groups = req.body.groups || [];
+  
   db.run(
     'INSERT INTO users (name, email) VALUES (?, ?)',
     [name, email],
     function (err) {
       if (err) return res.status(500).json({ error: 'DB error' });
-      res.status(201).json(formatUser({ id: this.lastID, name, email }));
+      const userId = this.lastID;
+      
+      // Map SCIM groups to roles (assign only the first/highest priority role)
+      if (groups.length > 0) {
+        const roleNames = groups.map(g => g.value || g.display).filter(Boolean);
+        
+        // Determine the highest priority role
+        let mappedRole = null;
+        for (const roleName of roleNames) {
+          let role = roleName.toLowerCase();
+          if (role === 'superadmin' || role === 'superadministrator') {
+            mappedRole = 'superadmin';
+            break; // Superadmin is highest priority
+          } else if (role === 'administrator' || role === 'administrators') {
+            mappedRole = 'admin';
+          } else if (!mappedRole && (role === 'users' || role === 'employees' || role === 'user')) {
+            mappedRole = 'user';
+          }
+        }
+        
+        if (mappedRole) {
+          db.run(
+            'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, (SELECT id FROM roles WHERE name=?))',
+            [userId, mappedRole],
+            () => {
+              console.log(`🔗 SCIM: Assigned role '${mappedRole}' to user ${email}`);
+            }
+          );
+        }
+      }
+      
+      res.status(201).json(formatUser({ id: userId, name, email }));
     }
   );
 });
@@ -946,13 +1054,97 @@ scim.put('/Users/:id', (req, res) => {
 });
 
 scim.delete('/Users/:id', (req, res) => {
-  db.run('DELETE FROM users WHERE id=?', [req.params.id], (err) => {
+  const { id } = req.params;
+  
+  // Check if this is a default/admin user before deletion
+  db.get('SELECT is_default, email FROM users WHERE id = ?', [id], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
-    res.status(204).end();
+    if (!row) return res.status(404).json({ error: 'User not found' });
+    
+    // Prevent deletion of default admin users via SCIM
+    if (row.is_default) {
+      console.log(`🛡️  SCIM: Prevented deletion of default admin user: ${row.email}`);
+      return res.status(403).json({ 
+        error: 'Cannot delete default admin users via SCIM',
+        detail: 'Default admin users cannot be removed through directory synchronization'
+      });
+    }
+    
+    // Remove user and their role assignments
+    db.serialize(() => {
+      db.run('DELETE FROM user_roles WHERE user_id = ?', [id]);
+      db.run('DELETE FROM users WHERE id = ?', [id], (err) => {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        console.log(`🗑️  SCIM: Removed user ID ${id} (${row.email}) from directory sync`);
+        res.status(204).end();
+      });
+    });
   });
 });
 
 app.use('/scim/v2', scim);
+
+// Static files
+app.use('/uploads', express.static('uploads'));
+
+// Routes
+app.use('/api/assets', ensureAuth, assetsRouter);
+app.use('/api/integrations', ensureAuth, integrationsRouter);
+app.use('/api/roles', ensureAuth, requirePermission('manage_roles'), rolesRouter);
+
+// Kiosk activation endpoint
+app.post('/api/kiosks/activation', ensureAuth, async (req, res) => {
+  try {
+    const activationId = uuidv4();
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour
+    
+    // Generate QR code
+    const qrData = JSON.stringify({
+      type: 'kiosk_activation',
+      id: activationId,
+      code: code,
+      expires: expiresAt
+    });
+    
+    const qrCodeDataUrl = await qrcode.toDataURL(qrData);
+    
+    db.run(
+      'INSERT INTO kiosk_activations (id, code, qr_code, expires_at) VALUES (?, ?, ?, ?)',
+      [activationId, code, qrCodeDataUrl, expiresAt],
+      function(err) {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        
+        res.json({
+          id: activationId,
+          code: code,
+          qrCode: qrCodeDataUrl,
+          expiresAt: expiresAt,
+          used: false
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Error generating kiosk activation:', error);
+    res.status(500).json({ error: 'Failed to generate activation' });
+  }
+});
+
+// Get kiosk activations
+app.get('/api/kiosks/activations', ensureAuth, (req, res) => {
+  db.all('SELECT * FROM kiosk_activations ORDER BY created_at DESC', (err, rows) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    res.json(rows.map(row => ({
+      id: row.id,
+      code: row.code,
+      qrCode: row.qr_code,
+      expiresAt: row.expires_at,
+      used: Boolean(row.used),
+      usedAt: row.used_at,
+      createdAt: row.created_at
+    })));
+  });
+});
 
 app.get('/api/me', ensureAuth, (req, res) => {
   res.json(req.user || {});
@@ -1008,75 +1200,362 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
 
-// Function to verify admin user exists at startup
-function verifyAdminUser() {
-  return new Promise((resolve) => {
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
-    const adminName = process.env.ADMIN_NAME || 'Admin';
-    const adminPass = process.env.ADMIN_PASSWORD || 'admin';
-    
-    db.get('SELECT id, email FROM users WHERE email=?', [adminEmail], (err, row) => {
-      if (err) {
-        console.error('Error checking admin user:', err);
-        resolve(false);
-        return;
-      }
-      
-      if (!row) {
-        console.log('⚠️  No admin user found at startup, creating one...');
-        const adminHash = bcrypt.hashSync(adminPass, 10);
-        
-        db.run(
-          'INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)',
-          [adminName, adminEmail, adminHash],
-          function (err) {
-            if (err) {
-              console.error('❌ Failed to create admin user:', err);
-              resolve(false);
-            } else {
-              // Assign admin role
-              db.run(
-                'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, 1)',
-                [this.lastID],
-                (err) => {
-                  if (err) {
-                    console.error('❌ Failed to assign admin role:', err);
-                  }
-                  console.log(`✅ Emergency admin user created: ${adminEmail} (password: ${adminPass})`);
-                  resolve(true);
-                }
-              );
-            }
-          }
-        );
-      } else {
-        console.log(`✅ Admin user verified: ${row.email}`);
-        resolve(true);
-      }
-    });
-  });
-}
-
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  // Verify admin user exists before starting server
-  verifyAdminUser().then(() => {
-    if (CERT_PATH && KEY_PATH) {
-      const options = {
-        cert: fs.readFileSync(CERT_PATH),
-        key: fs.readFileSync(KEY_PATH),
-      };
-      https.createServer(options, app).listen(PORT, () => {
-        console.log(`✅ CueIT API running at https://localhost:${PORT}`);
-        console.log(`🔑 Admin login: ${process.env.ADMIN_EMAIL || 'admin@example.com'} / ${process.env.ADMIN_PASSWORD || 'admin'}`);
-      });
-    } else {
-      app.listen(PORT, () => {
-        console.log(`✅ CueIT API running at http://localhost:${PORT}`);
-        console.log(`🔑 Admin login: ${process.env.ADMIN_EMAIL || 'admin@example.com'} / ${process.env.ADMIN_PASSWORD || 'admin'}`);
-      });
-    }
-  });
+  if (CERT_PATH && KEY_PATH) {
+    const options = {
+      cert: fs.readFileSync(CERT_PATH),
+      key: fs.readFileSync(KEY_PATH),
+    };
+    https.createServer(options, app).listen(PORT, () => {
+      console.log(`✅ CueIT API running at https://localhost:${PORT}`);
+      console.log(`🔑 Admin login: ${process.env.ADMIN_EMAIL || 'admin@example.com'} / ${process.env.ADMIN_PASSWORD || 'admin'}`);
+    });
+  } else {
+    app.listen(PORT, () => {
+      console.log(`✅ CueIT API running at http://localhost:${PORT}`);
+      console.log(`🔑 Admin login: ${process.env.ADMIN_EMAIL || 'admin@example.com'} / ${process.env.ADMIN_PASSWORD || 'admin'}`);
+    });
+  }
 }
 
-export default app;
+// Security settings endpoint
+app.get('/api/security-settings', ensureAuth, (req, res) => {
+  db.all(
+    "SELECT key, value FROM config WHERE key LIKE 'security_%' OR key LIKE 'session_%' OR key LIKE 'password_%'",
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      
+      const settings = Object.fromEntries(rows.map(r => [r.key, r.value]));
+      
+      // Add current settings with defaults
+      const securitySettings = {
+        passwordMinLength: settings.password_min_length || '8',
+        passwordRequireSymbols: settings.password_require_symbols === 'true',
+        passwordRequireNumbers: settings.password_require_numbers === 'true',
+        passwordRequireUppercase: settings.password_require_uppercase === 'true',
+        sessionTimeout: settings.session_timeout || '24',
+        maxLoginAttempts: settings.max_login_attempts || '5',
+        lockoutDuration: settings.lockout_duration || '15',
+        twoFactorRequired: settings.two_factor_required === 'true',
+        auditLogging: settings.audit_logging !== 'false'
+      };
+      
+      res.json(securitySettings);
+    }
+  );
+});
+
+app.put('/api/security-settings', ensureAuth, (req, res) => {
+  const settings = req.body;
+  
+  const stmt = db.prepare(
+    'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value'
+  );
+  
+  db.serialize(() => {
+    // Map frontend settings to config keys
+    const configMappings = {
+      passwordMinLength: 'password_min_length',
+      passwordRequireSymbols: 'password_require_symbols',
+      passwordRequireNumbers: 'password_require_numbers',
+      passwordRequireUppercase: 'password_require_uppercase',
+      sessionTimeout: 'session_timeout',
+      maxLoginAttempts: 'max_login_attempts',
+      lockoutDuration: 'lockout_duration',
+      twoFactorRequired: 'two_factor_required',
+      auditLogging: 'audit_logging'
+    };
+    
+    for (const [frontendKey, configKey] of Object.entries(configMappings)) {
+      if (settings[frontendKey] !== undefined) {
+        stmt.run(configKey, String(settings[frontendKey]));
+      }
+    }
+    
+    stmt.finalize((err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ message: 'Security settings updated' });
+    });
+  });
+});
+
+// Notification settings endpoint
+app.get('/api/notification-settings', ensureAuth, (req, res) => {
+  db.all(
+    "SELECT key, value FROM config WHERE key LIKE 'notification_%' OR key LIKE 'email_%'",
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      
+      const settings = Object.fromEntries(rows.map(r => [r.key, r.value]));
+      
+      const notificationSettings = {
+        emailNotifications: settings.email_notifications !== 'false',
+        slackNotifications: settings.slack_notifications === 'true',
+        ticketCreatedNotify: settings.notification_ticket_created !== 'false',
+        kioskOfflineNotify: settings.notification_kiosk_offline !== 'false',
+        systemErrorNotify: settings.notification_system_error !== 'false',
+        dailyReports: settings.notification_daily_reports === 'true',
+        weeklyReports: settings.notification_weekly_reports === 'true',
+        notificationRetention: settings.notification_retention || '30'
+      };
+      
+      res.json(notificationSettings);
+    }
+  );
+});
+
+app.put('/api/notification-settings', ensureAuth, (req, res) => {
+  const settings = req.body;
+  
+  const stmt = db.prepare(
+    'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value'
+  );
+  
+  db.serialize(() => {
+    const configMappings = {
+      emailNotifications: 'email_notifications',
+      slackNotifications: 'slack_notifications',
+      ticketCreatedNotify: 'notification_ticket_created',
+      kioskOfflineNotify: 'notification_kiosk_offline',
+      systemErrorNotify: 'notification_system_error',
+      dailyReports: 'notification_daily_reports',
+      weeklyReports: 'notification_weekly_reports',
+      notificationRetention: 'notification_retention'
+    };
+    
+    for (const [frontendKey, configKey] of Object.entries(configMappings)) {
+      if (settings[frontendKey] !== undefined) {
+        stmt.run(configKey, String(settings[frontendKey]));
+      }
+    }
+    
+    stmt.finalize((err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ message: 'Notification settings updated' });
+    });
+  });
+});
+
+// Dashboard stats endpoint
+app.get('/api/dashboard/stats', ensureAuth, async (req, res) => {
+  try {
+    // Get counts from database
+    const [
+      totalTickets,
+      totalKiosks, 
+      totalUsers,
+      activeKiosks
+    ] = await Promise.all([
+      new Promise((resolve) => {
+        db.get('SELECT COUNT(*) as count FROM logs', (err, row) => {
+          resolve(err ? 0 : row.count);
+        });
+      }),
+      new Promise((resolve) => {
+        db.get('SELECT COUNT(*) as count FROM kiosks', (err, row) => {
+          resolve(err ? 0 : row.count);
+        });
+      }),
+      new Promise((resolve) => {
+        db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
+          resolve(err ? 0 : row.count);
+        });
+      }),
+      new Promise((resolve) => {
+        db.get('SELECT COUNT(*) as count FROM kiosks WHERE active=1', (err, row) => {
+          resolve(err ? 0 : row.count);
+        });
+      })
+    ]);
+
+    // Get recent activity (last 10 logs)
+    const recentActivity = await new Promise((resolve) => {
+      db.all(
+        'SELECT ticket_id, name, timestamp, "ticket_created" as type FROM logs ORDER BY timestamp DESC LIMIT 10',
+        (err, rows) => {
+          if (err) return resolve([]);
+          resolve(rows.map(row => ({
+            id: row.ticket_id,
+            type: row.type,
+            message: `New ticket from ${row.name}`,
+            timestamp: row.timestamp
+          })));
+        }
+      );
+    });
+
+    const stats = {
+      totalTickets,
+      openTickets: 0, // Would need status tracking in logs table
+      resolvedTickets: totalTickets,
+      totalKiosks,
+      activeKiosks,
+      totalUsers,
+      recentActivity
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Error getting dashboard stats:', error);
+    res.status(500).json({ error: 'Failed to get dashboard stats' });
+  }
+});
+
+// Server management endpoints
+app.post('/api/server/restart', ensureAuth, requirePermission('manage_system'), (req, res) => {
+  console.log('🔄 Server restart requested by admin');
+  res.json({ message: 'Server restart initiated' });
+  
+  // Give the response time to send before restarting
+  setTimeout(() => {
+    process.exit(0); // Exit gracefully - process manager should restart
+  }, 1000);
+});
+
+app.get('/api/server/status', ensureAuth, (req, res) => {
+  res.json({ 
+    status: 'running',
+    uptime: process.uptime(),
+    version: process.env.npm_package_version || '1.0.0',
+    nodeVersion: process.version
+  });
+});
+
+// Kiosk systems configuration endpoints
+app.get('/api/kiosk-systems', ensureAuth, (req, res) => {
+  db.get('SELECT value FROM config WHERE key="systems"', (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    const systems = row ? row.value.split(',').map(s => s.trim()).filter(Boolean) : [
+      'Desktop', 'Laptop', 'Mobile', 'Network', 'Printer', 'Software', 'Account Access'
+    ];
+    res.json({ systems });
+  });
+});
+
+app.put('/api/kiosk-systems', ensureAuth, requirePermission('manage_system'), (req, res) => {
+  const { systems } = req.body;
+  if (!Array.isArray(systems)) {
+    return res.status(400).json({ error: 'Systems must be an array' });
+  }
+  
+  const systemsString = systems.filter(s => s && s.trim()).join(',');
+  
+  db.run(
+    'INSERT INTO config (key, value) VALUES ("systems", ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+    [systemsString],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ message: 'Systems updated', systems });
+    }
+  );
+});
+
+// Full kiosk configuration endpoint
+app.get('/api/kiosk-config/:id', ensureAuth, (req, res) => {
+  const { id } = req.params;
+  
+  // Get kiosk specific config
+  db.get('SELECT * FROM kiosks WHERE id=?', [id], (err, kiosk) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    
+    // Get global config
+    db.all('SELECT key, value FROM config', (err2, configRows) => {
+      if (err2) return res.status(500).json({ error: 'DB error' });
+      
+      const config = Object.fromEntries(configRows.map(r => [r.key, r.value]));
+      const systems = config.systems ? config.systems.split(',').map(s => s.trim()) : [
+        'Desktop', 'Laptop', 'Mobile', 'Network', 'Printer', 'Software', 'Account Access'
+      ];
+      
+      res.json({
+        kiosk: kiosk || { id },
+        config: {
+          logoUrl: config.logoUrl || '/logo.png',
+          faviconUrl: config.faviconUrl || '/vite.svg',
+          welcomeMessage: config.welcomeMessage || 'Welcome to the Help Desk',
+          helpMessage: config.helpMessage || 'Need to report an issue?',
+          statusOpenMsg: config.statusOpenMsg || 'Open',
+          statusClosedMsg: config.statusClosedMsg || 'Closed',
+          statusErrorMsg: config.statusErrorMsg || 'Error',
+          systems
+        }
+      });
+    });
+  });
+});
+
+app.put('/api/kiosk-config/:id', ensureAuth, requirePermission('manage_system'), (req, res) => {
+  const { id } = req.params;
+  const { 
+    logoUrl, bgUrl, active, statusEnabled, currentStatus, 
+    openMsg, closedMsg, errorMsg, schedule 
+  } = req.body;
+  
+  const sched = schedule === undefined ? null : 
+    typeof schedule === 'object' ? JSON.stringify(schedule) : String(schedule);
+  
+  db.run(
+    `INSERT INTO kiosks (id, logoUrl, bgUrl, active, statusEnabled, currentStatus, openMsg, closedMsg, errorMsg, schedule)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       logoUrl=COALESCE(?, logoUrl),
+       bgUrl=COALESCE(?, bgUrl), 
+       active=COALESCE(?, active),
+       statusEnabled=COALESCE(?, statusEnabled),
+       currentStatus=COALESCE(?, currentStatus),
+       openMsg=COALESCE(?, openMsg),
+       closedMsg=COALESCE(?, closedMsg),
+       errorMsg=COALESCE(?, errorMsg),
+       schedule=COALESCE(?, schedule)`,
+    [
+      id, logoUrl, bgUrl, active ? 1 : 0, statusEnabled ? 1 : 0, currentStatus,
+      openMsg, closedMsg, errorMsg, sched,
+      logoUrl, bgUrl, active !== undefined ? (active ? 1 : 0) : null,
+      statusEnabled !== undefined ? (statusEnabled ? 1 : 0) : null, currentStatus,
+      openMsg, closedMsg, errorMsg, sched
+    ],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      events.emit('kiosk-config-updated', { id });
+      res.json({ message: 'Kiosk configuration updated' });
+    }
+  );
+});
+
+// Admin PIN endpoints for kiosk access
+app.post('/api/verify-admin-pin', ensureAuth, (req, res) => {
+  const { pin } = req.body;
+  if (!pin) return res.status(400).json({ error: 'Missing PIN' });
+  
+  db.get(`SELECT value FROM config WHERE key='adminPin'`, (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    const storedPin = row ? row.value : '123456'; // Default PIN
+    const valid = pin === storedPin;
+    res.json({ valid });
+  });
+});
+
+app.put('/api/admin-pin', ensureAuth, (req, res) => {
+  const { pin } = req.body;
+  if (!pin) return res.status(400).json({ error: 'Missing PIN' });
+  if (!/^\d{6}$/.test(pin)) return res.status(400).json({ error: 'PIN must be 6 digits' });
+  
+  db.run(
+    `INSERT INTO config (key, value) VALUES ('adminPin', ?)
+     ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
+    [pin],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ message: 'PIN updated' });
+    }
+  );
+});
+
+app.get('/api/admin-pin', ensureAuth, (req, res) => {
+  db.get(`SELECT value FROM config WHERE key='adminPin'`, (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    const pin = row ? row.value : '123456'; // Default PIN
+    res.json({ pin });
+  });
+});

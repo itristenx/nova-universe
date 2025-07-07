@@ -53,36 +53,15 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [ticketsData, kiosksData] = await Promise.all([
-          // For now, we'll calculate stats from existing data since the endpoint might not exist
+        const [statsData, ticketsData, kiosksData] = await Promise.all([
+          api.getDashboardStats(),
           api.getLogs(),
           api.getKiosks(),
         ]);
 
-        // Calculate stats from logs
-        const totalTickets = ticketsData.length;
-        const openTickets = ticketsData.filter((t: Log) => t.emailStatus === 'success').length;
-        const pendingTickets = ticketsData.filter((t: Log) => t.emailStatus === 'fail').length;
-        
-        const calculatedStats: DashboardStats = {
-          totalKiosks: kiosksData.length,
-          activeKiosks: kiosksData.filter((k: Kiosk) => k.active).length,
-          totalTickets,
-          openTickets,
-          pendingTickets,
-          resolvedTickets: openTickets,
-          totalUsers: 0, // Will be updated when we add user count API
-          recentActivity: ticketsData.slice(0, 3).map((ticket: Log) => ({
-            id: ticket.id,
-            type: 'ticket_created',
-            message: `New ticket: ${ticket.title}`,
-            timestamp: ticket.timestamp,
-          })),
-        };
-
-        setStats(calculatedStats);
-        setRecentTickets(ticketsData.slice(0, 5));
-        setKiosks(kiosksData);
+        setStats(statsData);
+        setRecentTickets(ticketsData.slice(0, 10));
+        setKiosks(kiosksData.slice(0, 5));
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
       } finally {

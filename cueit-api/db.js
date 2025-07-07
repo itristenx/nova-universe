@@ -48,7 +48,7 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
-      email TEXT
+      email TEXT UNIQUE
     )
   `);
 
@@ -74,7 +74,8 @@ db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS roles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT UNIQUE
+      name TEXT UNIQUE,
+      description TEXT
     )
   `);
 
@@ -104,6 +105,29 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       provider TEXT,
       settings TEXT
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS assets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      filename TEXT NOT NULL,
+      url TEXT NOT NULL,
+      uploaded_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS kiosk_activations (
+      id TEXT PRIMARY KEY,
+      code TEXT NOT NULL,
+      qr_code TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      used INTEGER DEFAULT 0,
+      used_at TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
@@ -139,14 +163,61 @@ db.serialize(() => {
   addColumnIfMissing('notifications', 'active INTEGER DEFAULT 1');
   addColumnIfMissing('notifications', 'created_at TEXT');
   addColumnIfMissing('users', 'passwordHash TEXT');
+  addColumnIfMissing('users', 'disabled INTEGER DEFAULT 0');
+  addColumnIfMissing('users', 'is_default INTEGER DEFAULT 0');
   addColumnIfMissing('logs', 'servicenow_id TEXT');
+  addColumnIfMissing('roles', 'description TEXT');
 
-  // seed role/permission tables
-  db.run("INSERT OR IGNORE INTO roles (id, name) VALUES (1, 'admin')");
+  // After adding columns, mark default admin users
+  setTimeout(() => {
+    const defaultEmails = [
+      process.env.ADMIN_EMAIL || 'admin@example.com',
+      'admin@localhost.local' // Also mark the localhost admin as default
+    ];
+    
+    defaultEmails.forEach(email => {
+      db.run('UPDATE users SET is_default = 1 WHERE email = ? AND is_default IS NOT NULL', [email], (err) => {
+        if (!err) {
+          if (!process.env.CLI_MODE) console.log(`✅ Marked ${email} as default admin user`);
+        }
+      });
+    });
+
+    // Create unique index on email if it doesn't exist
+    db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)', (err) => {
+      if (err && !err.message.includes('already exists')) {
+        console.error('Warning: Could not create unique index on users.email:', err.message);
+      }
+    });
+  }, 1000); // Wait for schema updates to complete
+
+  // seed role/permission tables with hierarchical roles
+  db.run("INSERT OR IGNORE INTO roles (id, name, description) VALUES (1, 'superadmin', 'Super Administrator - Full System Access')");
+  db.run("INSERT OR IGNORE INTO roles (id, name, description) VALUES (2, 'admin', 'Administrator - User Management Access')");
+  db.run("INSERT OR IGNORE INTO roles (id, name, description) VALUES (3, 'user', 'Regular User - No Admin Access')");
+  
+  // Permissions for different access levels
   db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (1, 'manage_users')");
   db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (2, 'manage_roles')");
-  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 1)");
-  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 2)");
+  db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (3, 'manage_integrations')");
+  db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (4, 'manage_system')");
+  db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (5, 'view_admin_ui')");
+  db.run("INSERT OR IGNORE INTO permissions (id, name) VALUES (6, 'manage_admins')");
+  
+  // Superadmin gets all permissions
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 1)"); // manage_users
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 2)"); // manage_roles
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 3)"); // manage_integrations
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 4)"); // manage_system
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 5)"); // view_admin_ui
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (1, 6)"); // manage_admins
+  
+  // Admin gets limited permissions
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (2, 1)"); // manage_users
+  db.run("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (2, 5)"); // view_admin_ui
+  
+  // Regular users get no admin permissions (only kiosk access)
+  // No permissions assigned to role ID 3
   db.run("INSERT OR IGNORE INTO directory_integrations (id, provider, settings) VALUES (1, 'mock', '[]')");
 
   // insert default config if not present
@@ -185,14 +256,15 @@ db.serialize(() => {
       }
       
       const assignRole = (uid) => {
+        // Assign superadmin role to default admin user
         db.run(
           'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, 1)',
           [uid],
           (err) => {
             if (err) {
-              console.error('Error assigning admin role:', err);
+              console.error('Error assigning superadmin role:', err);
             } else {
-              console.log(`✅ Admin role assigned to user ID ${uid}`);
+              if (!process.env.CLI_MODE) console.log(`✅ Superadmin role assigned to user ID ${uid}`);
             }
           }
         );
@@ -200,20 +272,29 @@ db.serialize(() => {
       
       if (!row) {
         console.log('Creating default admin user...');
+        // Use simpler insert initially, then update after columns are added
         db.run(
           'INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)',
           [adminName, adminEmail, adminHash],
           function (err) {
             if (err) {
-              console.error('Error creating admin user:', err);
+              if (!process.env.CLI_MODE) console.error('Error creating admin user:', err);
             } else {
-              console.log(`✅ Default admin user created: ${adminEmail} (password: ${adminPass})`);
+              if (!process.env.CLI_MODE) console.log(`✅ Default admin user created: ${adminEmail} (password: ${adminPass})`);
+              // Mark as default after creation
+              db.run('UPDATE users SET is_default = 1 WHERE id = ?', [this.lastID], (updateErr) => {
+                if (updateErr && !process.env.CLI_MODE) console.log('Note: Could not mark user as default (column may not exist yet)');
+              });
               assignRole(this.lastID);
             }
           }
         );
       } else {
-        console.log(`✅ Admin user already exists: ${adminEmail}`);
+        if (!process.env.CLI_MODE) console.log(`✅ Admin user already exists: ${adminEmail}`);
+        // Mark existing admin as default if not already marked
+        db.run('UPDATE users SET is_default = 1 WHERE id = ?', [row.id], (updateErr) => {
+          if (updateErr && !process.env.CLI_MODE) console.log('Note: Could not mark user as default (column may not exist yet)');
+        });
         assignRole(row.id);
       }
     });

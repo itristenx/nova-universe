@@ -15,18 +15,24 @@ class ConfigService: ObservableObject {
 
     @MainActor
     func load() async {
+        // Load cached config first
         if let data = UserDefaults.standard.data(forKey: "config") {
             do {
                 var cfg = try JSONDecoder().decode(AppConfig.self, from: data)
                 cfg.scimToken = nil
                 self.config = cfg
+                self.errorMessage = nil // Clear any previous errors since we have cached config
             } catch {
-                self.errorMessage = "Unable to load configuration"
+                print("Failed to load cached config: \(error)")
             }
         }
 
+        // Try to fetch fresh config from server
         guard let url = URL(string: "\(APIConfig.baseURL)/api/config") else {
-            self.errorMessage = "Unable to load configuration"
+            // Only show error if we don't have cached config
+            if UserDefaults.standard.data(forKey: "config") == nil {
+                self.errorMessage = "Unable to load configuration"
+            }
             return
         }
 
@@ -41,7 +47,10 @@ class ConfigService: ObservableObject {
                 UserDefaults.standard.set(d, forKey: "config")
             }
         } catch {
-            self.errorMessage = "Unable to load configuration"
+            // Only show error if we don't have cached config and kiosk is active
+            if UserDefaults.standard.data(forKey: "config") == nil && KioskService.shared.state == .active {
+                self.errorMessage = "Unable to load configuration"
+            }
         }
 
         // kiosk specific overrides
@@ -67,13 +76,37 @@ class ConfigService: ObservableObject {
 
     func verifyPassword(_ password: String, completion: @escaping (Bool, Error?) -> Void) {
         guard let url = URL(string: "\(APIConfig.baseURL)/api/verify-password") else {
-            completion(false)
+            completion(false, nil)
             return
         }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = ["password": password]
+        req.httpBody = try? JSONEncoder().encode(body)
+        URLSession.shared.dataTask(with: req) { data, _, error in
+            if let error = error {
+                DispatchQueue.main.async { completion(false, error) }
+                return
+            }
+            guard let data = data,
+                  let resp = try? JSONDecoder().decode(VerifyResponse.self, from: data) else {
+                DispatchQueue.main.async { completion(false, URLError(.badServerResponse)) }
+                return
+            }
+            DispatchQueue.main.async { completion(resp.valid, nil) }
+        }.resume()
+    }
+    
+    func verifyPin(_ pin: String, completion: @escaping (Bool, Error?) -> Void) {
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/verify-admin-pin") else {
+            completion(false, nil)
+            return
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body = ["pin": pin]
         req.httpBody = try? JSONEncoder().encode(body)
         URLSession.shared.dataTask(with: req) { data, _, error in
             if let error = error {

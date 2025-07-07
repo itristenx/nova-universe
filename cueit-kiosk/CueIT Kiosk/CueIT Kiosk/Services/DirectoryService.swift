@@ -11,6 +11,7 @@ struct DirectoryUser: Identifiable {
 class DirectoryService: ObservableObject {
     static let shared = DirectoryService()
     @Published var suggestions: [DirectoryUser] = []
+    @Published var isSearching = false
 
     private let baseURL: String
 
@@ -32,12 +33,21 @@ class DirectoryService: ObservableObject {
 
     func search(email: String) {
         guard email.count >= 3 else {
-            DispatchQueue.main.async { self.suggestions = [] }
+            DispatchQueue.main.async { 
+                self.suggestions = []
+                self.isSearching = false
+            }
             return
         }
+        
+        DispatchQueue.main.async { self.isSearching = true }
+        
         let filter = "userName co \"\(email)\""
         guard let encoded = filter.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "\(baseURL)/Users?filter=\(encoded)") else { return }
+              let url = URL(string: "\(baseURL)/Users?filter=\(encoded)") else { 
+            DispatchQueue.main.async { self.isSearching = false }
+            return 
+        }
         var req = URLRequest(url: url)
         if !token.isEmpty {
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -51,6 +61,7 @@ class DirectoryService: ObservableObject {
             }
             DispatchQueue.main.async {
                 self.suggestions = results
+                self.isSearching = false
             }
         }.resume()
     }

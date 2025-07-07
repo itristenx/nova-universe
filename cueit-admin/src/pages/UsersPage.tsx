@@ -6,7 +6,8 @@ import {
   TrashIcon, 
   PencilIcon,
   UserGroupIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  PowerIcon
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
@@ -160,6 +161,30 @@ export const UsersPage: React.FC = () => {
     }
   };
 
+  const toggleUserStatus = async (user: User) => {
+    const action = user.disabled ? 'enable' : 'disable';
+    if (confirm(`Are you sure you want to ${action} this user?`)) {
+      try {
+        await api.updateUser(user.id, {
+          disabled: !user.disabled
+        });
+        setUsers(users.map(u => u.id === user.id ? { ...u, disabled: !user.disabled } : u));
+        addToast({
+          type: 'success',
+          title: 'Success',
+          description: `User ${action}d successfully`,
+        });
+      } catch (error: any) {
+        console.error(`Failed to ${action} user:`, error);
+        addToast({
+          type: 'error',
+          title: 'Error',
+          description: error.response?.data?.error || `Failed to ${action} user. Please try again.`,
+        });
+      }
+    }
+  };
+
   const openEditModal = (user: User) => {
     setEditingUser(user);
     setFormData({
@@ -299,6 +324,9 @@ export const UsersPage: React.FC = () => {
                     Email
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Roles
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -311,21 +339,37 @@ export const UsersPage: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                  <tr key={user.id} className={`hover:bg-gray-50 ${user.disabled ? 'opacity-60' : ''}`}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${user.disabled ? 'bg-gray-400' : 'bg-primary-600'}`}>
                           <span className="text-sm font-medium text-white">
                             {user.name?.charAt(0)?.toUpperCase() || 'U'}
                           </span>
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.name}
+                            {user.is_default && (
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Default
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {user.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        user.disabled 
+                          ? 'bg-red-100 text-red-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {user.disabled ? 'Disabled' : 'Active'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-wrap gap-1">
@@ -355,14 +399,31 @@ export const UsersPage: React.FC = () => {
                       >
                         <PencilIcon className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteUser(user.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </Button>
+                      
+                      {/* Disable/Enable button - only show if not default user */}
+                      {!user.is_default && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleUserStatus(user)}
+                          className={user.disabled ? "text-green-600 hover:text-green-900" : "text-orange-600 hover:text-orange-900"}
+                          title={user.disabled ? "Enable user" : "Disable user"}
+                        >
+                          <PowerIcon className="h-4 w-4" />
+                        </Button>
+                      )}
+                      
+                      {/* Delete button - only show if not default user */}
+                      {!user.is_default && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteUser(user.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -11,6 +11,7 @@ struct LaunchView: View {
     @State private var showForm = false
     @State private var showAdmin = false
     @State private var showFeedback = false
+    @State private var showServerConfig = false
     @StateObject private var configService = ConfigService()
     @StateObject private var kioskService = KioskService.shared
     @StateObject private var notificationService = NotificationService.shared
@@ -21,11 +22,41 @@ struct LaunchView: View {
     var body: some View {
         ZStack {
             switch kioskService.state {
+            case .checking:
+                VStack(spacing: 20) {
+                    Spacer()
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text("Connecting to server...")
+                        .font(.title2)
+                        .foregroundColor(.gray)
+                    Text("API: \(APIConfig.baseURL)")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                        .onTapGesture {
+                            showServerConfig = true
+                        }
+                        .onLongPressGesture {
+                            showServerConfig = true
+                        }
+                    if !kioskService.statusMessage.isEmpty {
+                        Text(kioskService.statusMessage)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Theme.Colors.base.ignoresSafeArea())
+            case .needsServerConfig:
+                ServerConfigView()
+            case .waitingForActivation:
+                ActivationView()
             case .inactive:
                 ActivationView()
             case .error:
                 ActivationErrorView { Task { await kioskService.checkActive() } }
-            default:
+            case .active:
                 if let bg = configService.config.backgroundUrl,
                    let url = URL(string: bg) {
                     AsyncImage(url: url) { img in
@@ -58,12 +89,28 @@ struct LaunchView: View {
                         .foregroundColor(.gray)
                     Text("Tap anywhere to begin")
                         .foregroundColor(.gray)
+                    
+                    // Server status indicator - always visible on active screen
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(kioskService.activationError ? Color.red : Color.green)
+                            .frame(width: 6, height: 6)
+                        Text("Connected to: \(APIConfig.serverDisplayName)")
+                            .font(.caption2)
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.top, 4)
+                    .onTapGesture {
+                        showServerConfig = true
+                    }
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onTapGesture {
-            showForm = true
+            if kioskService.state == .active {
+                showForm = true
+            }
         }
         .fullScreenCover(isPresented: $showForm) {
             TicketFormView()
@@ -73,6 +120,9 @@ struct LaunchView: View {
         }
         .sheet(isPresented: $showFeedback) {
             FeedbackFormView()
+        }
+        .sheet(isPresented: $showServerConfig) {
+            ServerConfigView()
         }
         .onAppear {
             Task { await configService.load() }
@@ -131,19 +181,44 @@ struct LaunchView: View {
             alignment: .bottomLeading
         )
         .overlay(
+            HStack {
+                VStack {
+                    Spacer()
+                    Button(action: { showServerConfig = true }) {
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(kioskService.activationError ? Color.red : Color.green)
+                                .frame(width: 8, height: 8)
+                            Text("Server")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .padding(8)
+                        .background(Color.black.opacity(0.1))
+                        .cornerRadius(12)
+                        .padding(.trailing, Theme.Spacing.md)
+                        .padding(.bottom, Theme.Spacing.md)
+                    }
+                    .accessibilityLabel("Server Configuration")
+                }
+                Spacer()
+            },
+            alignment: .bottomTrailing
+        )
+        .overlay(
             VStack(spacing: 0) {
                 if let status = statusService.latest {
                     Text(status.message)
                         .padding(8)
                         .frame(maxWidth: .infinity)
-                        .background(color(for: status.status))
+                        .background(Theme.Colors.color(for: status.status))
                         .foregroundColor(.black)
                 }
                 if let note = notificationService.latest {
                     Text(note.message)
                         .padding(8)
                         .frame(maxWidth: .infinity)
-                        .background(color(for: note.level))
+                        .background(Theme.Colors.color(for: note.level))
                         .foregroundColor(.black)
                 }
             },
@@ -152,13 +227,5 @@ struct LaunchView: View {
         .alert(alertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
         }
-    }
-}
-
-func color(for level: String) -> Color {
-    switch level {
-    case "warning": return Theme.Colors.yellow
-    case "error": return Theme.Colors.red
-    default: return Theme.Colors.green
     }
 }

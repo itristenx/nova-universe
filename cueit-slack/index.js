@@ -1,3 +1,20 @@
+/**
+ * CueIT Slack Integration Service
+ * 
+ * This service provides Slack bot functionality for CueIT, allowing users to:
+ * - Submit tickets via /new-ticket command
+ * - Interact with modals for ticket creation
+ * - Receive confirmations and status updates
+ * 
+ * Environment Variables Required:
+ * - SLACK_SIGNING_SECRET: Slack app signing secret
+ * - SLACK_BOT_TOKEN: Bot User OAuth token  
+ * - API_URL: CueIT API base URL
+ * - JWT_SECRET: Secret for JWT token generation
+ * - JWT_EXPIRES_IN: JWT expiration time (default: 1h)
+ * - VITE_ADMIN_URL: Admin panel URL for ticket links
+ */
+
 import dotenv from 'dotenv';
 import { App } from '@slack/bolt';
 import axios from 'axios';
@@ -6,6 +23,21 @@ import jwt from 'jsonwebtoken';
 dotenv.config();
 
 const PORT = process.env.SLACK_PORT || 3001;
+
+// Validate required environment variables
+const requiredEnvVars = [
+  'SLACK_SIGNING_SECRET',
+  'SLACK_BOT_TOKEN', 
+  'API_URL',
+  'JWT_SECRET'
+];
+
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    console.error(`Missing required environment variable: ${envVar}`);
+    process.exit(1);
+  }
+}
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -116,6 +148,7 @@ app.command('/new-ticket', async ({ ack, body, client }) => {
     await client.views.open({ trigger_id: body.trigger_id, view });
   } catch (err) {
     console.error('Failed to fetch config:', err.message);
+    console.error('Full error:', err);
     const view = buildModal([], [], body.channel_id);
     await client.views.open({ trigger_id: body.trigger_id, view });
   }

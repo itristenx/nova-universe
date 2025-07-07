@@ -10,6 +10,7 @@ import {
   BellIcon,
   ArrowRightOnRectangleIcon,
   Cog6ToothIcon,
+  QrCodeIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/auth';
 
@@ -17,6 +18,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
   { name: 'Tickets', href: '/tickets', icon: DocumentTextIcon },
   { name: 'Kiosks', href: '/kiosks', icon: ComputerDesktopIcon },
+  { name: 'Kiosk Management', href: '/kiosk-activation', icon: QrCodeIcon },
   { name: 'Users', href: '/users', icon: UsersIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: 'Notifications', href: '/notifications', icon: BellIcon },

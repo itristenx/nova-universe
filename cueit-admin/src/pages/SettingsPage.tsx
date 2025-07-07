@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input, FileInput } from '@/components/ui';
-import { CogIcon, PaintBrushIcon, KeyIcon, BellIcon } from '@heroicons/react/24/outline';
+import { Button, Card, Input, FileInput, Checkbox } from '@/components/ui';
+import { CogIcon, PaintBrushIcon, KeyIcon, BellIcon, ServerIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-import type { Config } from '@/types';
+import type { Config, SecuritySettings, NotificationSettings } from '@/types';
 
 export const SettingsPage: React.FC = () => {
   const [config, setConfig] = useState<Config | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [restarting, setRestarting] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [uploadingAsset, setUploadingAsset] = useState<string | null>(null);
   const { addToast } = useToastStore();
@@ -57,6 +58,31 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
+  const restartServer = async () => {
+    if (!confirm('Are you sure you want to restart the server? This will temporarily interrupt service.')) {
+      return;
+    }
+
+    try {
+      setRestarting(true);
+      await api.restartServer();
+      addToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Server restart initiated successfully',
+      });
+    } catch (error) {
+      console.error('Failed to restart server:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to restart server',
+      });
+    } finally {
+      setRestarting(false);
+    }
+  };
+
   const handleAssetUpload = async (file: File | null, type: 'logo' | 'favicon') => {
     if (!file) return;
 
@@ -91,6 +117,7 @@ export const SettingsPage: React.FC = () => {
     { id: 'branding', name: 'Branding', icon: PaintBrushIcon },
     { id: 'security', name: 'Security', icon: KeyIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
+    { id: 'system', name: 'System', icon: ServerIcon },
   ];
 
   if (loading) {
@@ -293,21 +320,7 @@ export const SettingsPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <CogIcon className="h-5 w-5 text-yellow-400" />
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-yellow-800">
-                          Security Features Coming Soon
-                        </h3>
-                        <div className="mt-2 text-sm text-yellow-700">
-                          <p>Advanced security settings including SAML configuration, password policies, and session management will be available here.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <SecuritySettingsForm />
                 </div>
               )}
 
@@ -320,21 +333,33 @@ export const SettingsPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <BellIcon className="h-5 w-5 text-blue-400" />
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-blue-800">
-                          Notification Settings Coming Soon
-                        </h3>
-                        <div className="mt-2 text-sm text-blue-700">
-                          <p>Email templates, notification preferences, and delivery settings will be configurable here.</p>
-                        </div>
-                      </div>
-                    </div>
+                  <NotificationSettingsForm />
+                </div>
+              )}
+
+              {activeTab === 'system' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">System Management</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Manage server operations and system maintenance.
+                    </p>
                   </div>
+
+                  <Card className="p-6">
+                    <h4 className="text-md font-medium text-gray-900 mb-4">Server Control</h4>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Restart the API server to apply configuration changes or resolve issues. This will temporarily interrupt service.
+                    </p>
+                    <Button
+                      variant="danger"
+                      onClick={restartServer}
+                      isLoading={restarting}
+                      className="w-auto"
+                    >
+                      {restarting ? 'Restarting...' : 'Restart Server'}
+                    </Button>
+                  </Card>
                 </div>
               )}
 
@@ -352,6 +377,352 @@ export const SettingsPage: React.FC = () => {
               </div>
             </div>
           </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Security Settings Form Component
+const SecuritySettingsForm: React.FC = () => {
+  const [settings, setSettings] = useState<SecuritySettings | null>(null);
+  const [adminPin, setAdminPin] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const { addToast } = useToastStore();
+
+  useEffect(() => {
+    loadSecuritySettings();
+    loadAdminPin();
+  }, []);
+
+  const loadSecuritySettings = async () => {
+    try {
+      setLoading(true);
+      const data = await api.getSecuritySettings();
+      setSettings(data);
+    } catch (error) {
+      console.error('Failed to load security settings:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to load security settings',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAdminPin = async () => {
+    try {
+      const response = await fetch('/api/admin-pin', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAdminPin(data.pin);
+      }
+    } catch (error) {
+      console.error('Failed to load admin PIN:', error);
+    }
+  };
+
+  const saveSecuritySettings = async () => {
+    if (!settings) return;
+    
+    try {
+      setSaving(true);
+      await api.updateSecuritySettings(settings);
+      await saveAdminPin();
+      addToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Security settings saved successfully',
+      });
+    } catch (error) {
+      console.error('Failed to save security settings:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to save security settings',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveAdminPin = async () => {
+    if (!/^\d{6}$/.test(adminPin)) {
+      throw new Error('PIN must be 6 digits');
+    }
+    
+    const response = await fetch('/api/admin-pin', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ pin: adminPin }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to save admin PIN');
+    }
+  };
+
+  if (loading) {
+    return <div className="animate-pulse h-96 bg-gray-200 rounded"></div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Input
+            label="Minimum Password Length"
+            type="number"
+            value={settings?.passwordMinLength || '8'}
+            onChange={(e) => setSettings(prev => prev ? { ...prev, passwordMinLength: parseInt(e.target.value) || 8 } : null)}
+            min="6"
+            max="128"
+          />
+        </div>
+        <div>
+          <Input
+            label="Session Timeout (hours)"
+            type="number"
+            value={settings?.sessionTimeout || '24'}
+            onChange={(e) => setSettings(prev => prev ? { ...prev, sessionTimeout: parseInt(e.target.value) || 24 } : null)}
+            min="1"
+            max="168"
+          />
+        </div>
+        <div>
+          <Input
+            label="Max Login Attempts"
+            type="number"
+            value={settings?.maxLoginAttempts || '5'}
+            onChange={(e) => setSettings(prev => prev ? { ...prev, maxLoginAttempts: parseInt(e.target.value) || 5 } : null)}
+            min="3"
+            max="20"
+          />
+        </div>
+        <div>
+          <Input
+            label="Lockout Duration (minutes)"
+            type="number"
+            value={settings?.lockoutDuration || '15'}
+            onChange={(e) => setSettings(prev => prev ? { ...prev, lockoutDuration: parseInt(e.target.value) || 15 } : null)}
+            min="5"
+            max="1440"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-gray-900">Password Requirements</h4>
+        <div className="space-y-3">
+          <Checkbox
+            label="Require symbols in passwords"
+            checked={settings?.passwordRequireSymbols || false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, passwordRequireSymbols: checked } : null)}
+          />
+          <Checkbox
+            label="Require numbers in passwords"
+            checked={settings?.passwordRequireNumbers || false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, passwordRequireNumbers: checked } : null)}
+          />
+          <Checkbox
+            label="Require uppercase letters in passwords"
+            checked={settings?.passwordRequireUppercase || false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, passwordRequireUppercase: checked } : null)}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-gray-900">Kiosk Access</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <Input
+              label="Admin PIN (6 digits)"
+              type="text"
+              value={adminPin}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                setAdminPin(value);
+              }}
+              placeholder="123456"
+              maxLength={6}
+              pattern="\d{6}"
+              helperText="6-digit PIN for kiosk admin access"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-gray-900">Advanced Security</h4>
+        <div className="space-y-3">
+          <Checkbox
+            label="Require two-factor authentication"
+            checked={settings?.twoFactorRequired || false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, twoFactorRequired: checked } : null)}
+          />
+          <Checkbox
+            label="Enable audit logging"
+            checked={settings?.auditLogging !== false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, auditLogging: checked } : null)}
+          />
+        </div>
+      </div>
+
+      <div className="pt-6 border-t border-gray-200">
+        <div className="flex justify-end">
+          <Button
+            variant="primary"
+            onClick={saveSecuritySettings}
+            isLoading={saving}
+          >
+            Save Security Settings
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Notification Settings Form Component
+const NotificationSettingsForm: React.FC = () => {
+  const [settings, setSettings] = useState<NotificationSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const { addToast } = useToastStore();
+
+  useEffect(() => {
+    loadNotificationSettings();
+  }, []);
+
+  const loadNotificationSettings = async () => {
+    try {
+      setLoading(true);
+      const data = await api.getNotificationSettings();
+      setSettings(data);
+    } catch (error) {
+      console.error('Failed to load notification settings:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to load notification settings',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveNotificationSettings = async () => {
+    if (!settings) return;
+    
+    try {
+      setSaving(true);
+      await api.updateNotificationSettings(settings);
+      addToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Notification settings saved successfully',
+      });
+    } catch (error) {
+      console.error('Failed to save notification settings:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to save notification settings',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="animate-pulse h-96 bg-gray-200 rounded"></div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-gray-900">General Notifications</h4>
+        <div className="space-y-3">
+          <Checkbox
+            label="Enable email notifications"
+            checked={settings?.emailNotifications !== false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, emailNotifications: checked } : null)}
+          />
+          <Checkbox
+            label="Enable Slack notifications"
+            checked={settings?.slackNotifications || false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, slackNotifications: checked } : null)}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-gray-900">Event Notifications</h4>
+        <div className="space-y-3">
+          <Checkbox
+            label="Notify when tickets are created"
+            checked={settings?.ticketCreatedNotify !== false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, ticketCreatedNotify: checked } : null)}
+          />
+          <Checkbox
+            label="Notify when kiosks go offline"
+            checked={settings?.kioskOfflineNotify !== false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, kioskOfflineNotify: checked } : null)}
+          />
+          <Checkbox
+            label="Notify on system errors"
+            checked={settings?.systemErrorNotify !== false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, systemErrorNotify: checked } : null)}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-gray-900">Reports</h4>
+        <div className="space-y-3">
+          <Checkbox
+            label="Send daily reports"
+            checked={settings?.dailyReports || false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, dailyReports: checked } : null)}
+          />
+          <Checkbox
+            label="Send weekly reports"
+            checked={settings?.weeklyReports || false}
+            onChange={(checked) => setSettings(prev => prev ? { ...prev, weeklyReports: checked } : null)}
+          />
+        </div>
+      </div>
+
+      <div>
+        <Input
+          label="Notification Retention (days)"
+          type="number"
+          value={settings?.notificationRetention || '30'}
+          onChange={(e) => setSettings(prev => prev ? { ...prev, notificationRetention: parseInt(e.target.value) || 30 } : null)}
+          min="1"
+          max="365"
+          helperText="How long to keep notifications before automatic deletion"
+        />
+      </div>
+
+      <div className="pt-6 border-t border-gray-200">
+        <div className="flex justify-end">
+          <Button
+            variant="primary"
+            onClick={saveNotificationSettings}
+            isLoading={saving}
+          >
+            Save Notification Settings
+          </Button>
         </div>
       </div>
     </div>

@@ -2,6 +2,8 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  disabled?: boolean;
+  is_default?: boolean;
   roles?: string[];
   permissions?: string[];
 }
@@ -92,6 +94,8 @@ export interface KioskActivation {
   qrCode: string;
   expiresAt: string;
   used: boolean;
+  usedAt?: string;
+  createdAt: string;
 }
 
 export interface Asset {
@@ -140,4 +144,41 @@ export interface ActivityLog {
   type: string;
   message: string;
   timestamp: string;
+}
+
+export interface SecuritySettings {
+  passwordMinLength: number;
+  sessionTimeout: number;
+  maxLoginAttempts: number;
+  lockoutDuration: number;
+  passwordRequireSymbols: boolean;
+  passwordRequireNumbers: boolean;
+  passwordRequireUppercase: boolean;
+  twoFactorRequired: boolean;
+  auditLogging: boolean;
+}
+
+export interface NotificationSettings {
+  emailNotifications: boolean;
+  slackNotifications: boolean;
+  ticketCreatedNotify: boolean;
+  kioskOfflineNotify: boolean;
+  systemErrorNotify: boolean;
+  dailyReports: boolean;
+  weeklyReports: boolean;
+  notificationRetention: number;
+}
+
+export interface KioskConfig {
+  kiosk: Kiosk;
+  config: {
+    logoUrl: string;
+    faviconUrl: string;
+    welcomeMessage: string;
+    helpMessage: string;
+    statusOpenMsg: string;
+    statusClosedMsg: string;
+    statusErrorMsg: string;
+    systems: string[];
+  };
 }

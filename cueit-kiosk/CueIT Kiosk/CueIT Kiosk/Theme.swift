@@ -10,6 +10,14 @@ struct Theme {
         static let green = Color.green
         static let red = Color.red
         static let yellow = Color.yellow
+        
+        static func color(for level: String) -> Color {
+            switch level {
+            case "warning": return yellow
+            case "error": return red
+            default: return green
+            }
+        }
     }
 
     struct Spacing {

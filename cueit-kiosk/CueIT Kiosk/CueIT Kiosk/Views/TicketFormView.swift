@@ -63,6 +63,7 @@ struct TicketFormView: View {
     @State private var system = ""
     @State private var urgency = "Low"
     @State private var showError = false
+    @State private var isSubmitting = false
     @StateObject private var dir = DirectoryService.shared
     @StateObject private var notificationService = NotificationService.shared
 
@@ -72,7 +73,7 @@ struct TicketFormView: View {
                 Section(header: Text("Details")) {
                     TextField("Name", text: $name)
                     TextField("Email", text: $email)
-                        .onChange(of: email) { new in
+                        .onChange(of: email) { _, new in
                             dir.search(email: new)
                         }
                     TextField("Title", text: $title)
@@ -98,10 +99,24 @@ struct TicketFormView: View {
                             }
                         }
                     }
+                } else if dir.isSearching {
+                    Section(header: Text("Directory Results")) {
+                        HStack {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Searching directory...")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.vertical, 8)
+                    }
                 }
                 Button("Submit") {
-                    Task { await submit() }
+                    if !isSubmitting {
+                        Task { await submit() }
+                    }
                 }
+                .disabled(isSubmitting)
             }
             .navigationTitle("New Ticket")
             .alert("Failed to submit", isPresented: $showError) {
@@ -109,11 +124,28 @@ struct TicketFormView: View {
             }
             .overlay(
                 Group {
+                    if isSubmitting {
+                        VStack(spacing: 12) {
+                            ProgressView()
+                                .scaleEffect(1.2)
+                            Text("Submitting ticket...")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .padding()
+                        .background(Color(.systemBackground).opacity(0.9))
+                        .cornerRadius(12)
+                    }
+                },
+                alignment: .center
+            )
+            .overlay(
+                Group {
                     if let note = notificationService.latest {
                         Text(note.message)
                             .padding(8)
                             .frame(maxWidth: .infinity)
-                            .background(color(for: note.level))
+                            .background(Theme.Colors.color(for: note.level))
                             .foregroundColor(.black)
                     }
                 },
@@ -124,8 +156,12 @@ struct TicketFormView: View {
 
   @MainActor
   func submit() async {
+    isSubmitting = true
     let ticket = QueuedTicket(name: name, email: email, title: title, manager: manager, system: system, urgency: urgency)
-    guard let url = URL(string: "\(APIConfig.baseURL)/submit-ticket") else { return }
+    guard let url = URL(string: "\(APIConfig.baseURL)/submit-ticket") else { 
+        isSubmitting = false
+        return 
+    }
     var req = URLRequest(url: url)
     req.httpMethod = "POST"
     req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -133,9 +169,11 @@ struct TicketFormView: View {
     req.httpBody = try? JSONSerialization.data(withJSONObject: body)
     do {
       _ = try await URLSession.shared.data(for: req)
+      isSubmitting = false
       dismiss()
       TicketQueue.shared.retry()
     } catch {
+      isSubmitting = false
       TicketQueue.shared.enqueue(ticket)
       showError = true
     }
@@ -147,13 +185,6 @@ struct TicketFormView: View {
         if let t = user.title { title = t }
         if let m = user.manager { manager = m }
         dir.suggestions = []
-    }
-}
-
-func color(for level: String) -> Color {
-    switch level {
-    case "warning": return .yellow
-    case "error": return .red
-    default: return .green
+        dir.isSearching = false
     }
 }
