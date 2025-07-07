@@ -8,6 +8,7 @@ struct ActivationView: View {
     @State private var showingServerConfig = false
     @State private var activationCode = ""
     @StateObject private var kioskService = KioskService.shared
+    @StateObject private var configService = ConfigService()
 
     var body: some View {
         VStack(spacing: 20) {

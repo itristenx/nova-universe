@@ -99,7 +99,22 @@ class KioskService: ObservableObject {
             return 
         }
         
-        struct KioskRow: Codable { var active: Int }
+        struct KioskResponse: Codable { 
+            var active: Int
+            var directoryEnabled: Bool?
+            var directoryProvider: String?
+            var id: String?
+            var last_seen: String?
+            var version: String?
+            var logoUrl: String?
+            var bgUrl: String?
+            var statusEnabled: Int?
+            var currentStatus: String?
+            var openMsg: String?
+            var closedMsg: String?
+            var errorMsg: String?
+            var schedule: String?
+        }
         var success = false
         do {
             // Configure URLSession for iOS simulator compatibility
@@ -121,8 +136,13 @@ class KioskService: ObservableObject {
                 }
             }
             
-            if let row = try? JSONDecoder().decode(KioskRow.self, from: data) {
-                if row.active == 1 {
+            // Log the raw response for debugging
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("Raw JSON response: \(jsonString)")
+            }
+            
+            if let kioskData = try? JSONDecoder().decode(KioskResponse.self, from: data) {
+                if kioskData.active == 1 {
                     self.state = .active
                     self.statusMessage = "Kiosk is active"
                 } else {
@@ -132,9 +152,25 @@ class KioskService: ObservableObject {
                 self.activationError = false
                 success = true
             } else {
-                self.state = .error
-                self.activationError = true
-                self.statusMessage = "Failed to parse server response"
+                // Try to parse as a generic dictionary to see what we're getting
+                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    print("Parsed JSON: \(json)")
+                    // Check if it's an empty object (kiosk not found)
+                    if json.isEmpty {
+                        self.state = .waitingForActivation
+                        self.statusMessage = "Kiosk not registered - waiting for activation..."
+                        self.activationError = false
+                        success = true
+                    } else {
+                        self.state = .error
+                        self.activationError = true
+                        self.statusMessage = "Failed to parse server response structure"
+                    }
+                } else {
+                    self.state = .error
+                    self.activationError = true
+                    self.statusMessage = "Failed to parse server response"
+                }
             }
         } catch {
             self.state = .error

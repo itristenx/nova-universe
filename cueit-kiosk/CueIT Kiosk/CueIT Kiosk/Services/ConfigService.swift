@@ -100,24 +100,57 @@ class ConfigService: ObservableObject {
     
     func verifyPin(_ pin: String, completion: @escaping (Bool, Error?) -> Void) {
         guard let url = URL(string: "\(APIConfig.baseURL)/api/verify-admin-pin") else {
-            completion(false, nil)
+            completion(false, URLError(.badURL))
             return
         }
+        
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.timeoutInterval = 10.0 // 10 second timeout
+        
         let body = ["pin": pin]
-        req.httpBody = try? JSONEncoder().encode(body)
-        URLSession.shared.dataTask(with: req) { data, _, error in
+        do {
+            req.httpBody = try JSONEncoder().encode(body)
+        } catch {
+            completion(false, error)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: req) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async { completion(false, error) }
                 return
             }
-            guard let data = data,
-                  let resp = try? JSONDecoder().decode(VerifyResponse.self, from: data) else {
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
                 DispatchQueue.main.async { completion(false, URLError(.badServerResponse)) }
                 return
             }
+            
+            // Check for HTTP error status codes
+            guard httpResponse.statusCode == 200 else {
+                let error: Error
+                switch httpResponse.statusCode {
+                case 401, 403:
+                    error = URLError(.userAuthenticationRequired)
+                case 404:
+                    error = URLError(.fileDoesNotExist)
+                case 500...599:
+                    error = URLError(.badServerResponse)
+                default:
+                    error = URLError(.unknown)
+                }
+                DispatchQueue.main.async { completion(false, error) }
+                return
+            }
+            
+            guard let data = data,
+                  let resp = try? JSONDecoder().decode(VerifyResponse.self, from: data) else {
+                DispatchQueue.main.async { completion(false, URLError(.cannotParseResponse)) }
+                return
+            }
+            
             DispatchQueue.main.async { completion(resp.valid, nil) }
         }.resume()
     }

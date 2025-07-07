@@ -17,16 +17,36 @@ struct AdminLoginView: View {
     @State private var isAuthenticated = false
     @State private var showServerConfig = false
     @FocusState private var isFocused: Bool
+    
+    // Admin session management
+    private static let adminSessionKey = "adminSessionExpiry"
+    private static let sessionDuration: TimeInterval = 14400 // 4 hours
+    
+    private var isSessionValid: Bool {
+        guard let expiry = UserDefaults.standard.object(forKey: Self.adminSessionKey) as? Date else {
+            return false
+        }
+        return expiry > Date()
+    }
+    
+    private func startAdminSession() {
+        let expiry = Date().addingTimeInterval(Self.sessionDuration)
+        UserDefaults.standard.set(expiry, forKey: Self.adminSessionKey)
+    }
+    
+    private func endAdminSession() {
+        UserDefaults.standard.removeObject(forKey: Self.adminSessionKey)
+    }
 
     var body: some View {
         NavigationView {
             if isAuthenticated {
-                AdminPanelView(onDismiss: { dismiss() })
+                AdminPanelView(onDismiss: { 
+                    endAdminSession()
+                    dismiss() 
+                })
             } else {
                 VStack(spacing: 20) {
-                    Text("Admin Access")
-                        .font(.title).bold()
-
                     VStack(spacing: 15) {
                         Text("Enter 6-digit PIN")
                             .font(.headline)
@@ -77,9 +97,14 @@ struct AdminLoginView: View {
                 .disabled(pin.count != 6 || loading)
                 }
                 .padding(Theme.Spacing.md)
-                .navigationTitle("Admin Login")
+                .navigationTitle("CueIT Portal")
                 .onAppear {
-                    isFocused = true
+                    // Check if we have a valid session on appear
+                    if isSessionValid {
+                        isAuthenticated = true
+                    } else {
+                        isFocused = true
+                    }
                 }
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -102,12 +127,30 @@ struct AdminLoginView: View {
         configService.verifyPin(pin) { ok, error in
             loading = false
             if ok {
+                startAdminSession()
                 isAuthenticated = true
                 pin = "" // Clear PIN for security
-            } else if error != nil {
-                errorText = "Server unreachable"
+            } else if let error = error {
+                // More specific error messages based on error types
+                let nsError = error as NSError
+                switch nsError.code {
+                case -1004: // Cannot connect to host
+                    errorText = "Cannot reach server"
+                case -1001: // Request timeout
+                    errorText = "Connection timeout"
+                case -1009: // Internet connection appears to be offline
+                    errorText = "No internet connection"
+                case (-1204)...(-1200): // SSL errors
+                    errorText = "SSL connection error"
+                default:
+                    if nsError.domain == NSURLErrorDomain {
+                        errorText = "Network error"
+                    } else {
+                        errorText = "Connection failed"
+                    }
+                }
             } else {
-                errorText = "Incorrect PIN"
+                errorText = "Invalid PIN"
             }
         }
     }
@@ -179,7 +222,7 @@ struct AdminPanelView: View {
                 .foregroundColor(.red)
             }
         }
-        .navigationTitle("Admin Panel")
+        .navigationTitle("CueIT Portal")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Done") { onDismiss() }

@@ -1,27 +1,142 @@
 import SwiftUI
+import VisionKit
 import AVFoundation
+import AudioToolbox
 
-struct QRScannerView: UIViewControllerRepresentable {
+struct QRScannerView: View {
     let onCodeScanned: (String) -> Void
     let onCancel: () -> Void
+    @Environment(\.dismiss) var dismiss
     
-    func makeUIViewController(context: Context) -> QRScannerViewController {
-        let controller = QRScannerViewController()
-        controller.delegate = context.coordinator
-        return controller
+    var body: some View {
+        NavigationView {
+            // Directly show the scanner instead of an intermediate view
+            if DataScannerViewController.isSupported && DataScannerViewController.isAvailable {
+                NativeDataScannerView(
+                    recognizedDataTypes: [.barcode()],
+                    onScanned: { scannedData in
+                        if case let .barcode(barcode) = scannedData {
+                            onCodeScanned(barcode.payloadStringValue ?? "")
+                        }
+                    },
+                    onCancel: {
+                        onCancel()
+                    }
+                )
+            } else {
+                // Fallback for devices that don't support DataScannerViewController
+                LegacyQRScannerView(
+                    onCodeScanned: onCodeScanned,
+                    onCancel: onCancel
+                )
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("Cancel") {
+                    onCancel()
+                }
+            }
+        }
+    }
+}
+
+@available(iOS 16.0, *)
+struct NativeDataScannerView: UIViewControllerRepresentable {
+    let recognizedDataTypes: Set<DataScannerViewController.RecognizedDataType>
+    let onScanned: (RecognizedItem) -> Void
+    let onCancel: () -> Void
+    
+    func makeUIViewController(context: Context) -> UINavigationController {
+        let scanner = DataScannerViewController(
+            recognizedDataTypes: recognizedDataTypes,
+            qualityLevel: .balanced,
+            recognizesMultipleItems: false,
+            isHighFrameRateTrackingEnabled: false,
+            isPinchToZoomEnabled: true,
+            isGuidanceEnabled: true,
+            isHighlightingEnabled: true
+        )
+        scanner.delegate = context.coordinator
+        
+        // Add navigation bar with cancel button
+        scanner.navigationItem.title = "Scan QR Code"
+        scanner.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .cancel,
+            target: context.coordinator,
+            action: #selector(Coordinator.cancelTapped)
+        )
+        
+        let navController = UINavigationController(rootViewController: scanner)
+        return navController
     }
     
-    func updateUIViewController(_ uiViewController: QRScannerViewController, context: Context) {}
+    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
     
-    class Coordinator: NSObject, QRScannerDelegate {
-        let parent: QRScannerView
+    class Coordinator: NSObject, DataScannerViewControllerDelegate {
+        let parent: NativeDataScannerView
         
-        init(_ parent: QRScannerView) {
+        init(_ parent: NativeDataScannerView) {
             self.parent = parent
+        }
+        
+        @objc func cancelTapped() {
+            parent.onCancel()
+        }
+        
+        func dataScanner(_ dataScanner: DataScannerViewController, didTapOn item: RecognizedItem) {
+            parent.onScanned(item)
+        }
+        
+        func dataScanner(_ dataScanner: DataScannerViewController, didAdd addedItems: [RecognizedItem], allItems: [RecognizedItem]) {
+            if let firstItem = addedItems.first {
+                parent.onScanned(firstItem)
+            }
+        }
+    }
+}
+
+// Fallback implementation for older devices or unsupported configurations
+struct LegacyQRScannerView: UIViewControllerRepresentable {
+    let onCodeScanned: (String) -> Void
+    let onCancel: () -> Void
+    
+    func makeUIViewController(context: Context) -> UINavigationController {
+        let controller = LegacyQRScannerViewController()
+        controller.delegate = context.coordinator
+        
+        // Add navigation bar with cancel button
+        controller.navigationItem.title = "Scan QR Code"
+        controller.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .cancel,
+            target: context.coordinator,
+            action: #selector(Coordinator.cancelTapped)
+        )
+        
+        let navController = UINavigationController(rootViewController: controller)
+        return navController
+    }
+    
+    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, LegacyQRScannerDelegate {
+        let parent: LegacyQRScannerView
+        
+        init(_ parent: LegacyQRScannerView) {
+            self.parent = parent
+        }
+        
+        @objc func cancelTapped() {
+            parent.onCancel()
         }
         
         func didScanCode(_ code: String) {
@@ -34,13 +149,13 @@ struct QRScannerView: UIViewControllerRepresentable {
     }
 }
 
-protocol QRScannerDelegate: AnyObject {
+protocol LegacyQRScannerDelegate: AnyObject {
     func didScanCode(_ code: String)
     func didCancelScanning()
 }
 
-class QRScannerViewController: UIViewController {
-    weak var delegate: QRScannerDelegate?
+class LegacyQRScannerViewController: UIViewController {
+    weak var delegate: LegacyQRScannerDelegate?
     private var captureSession: AVCaptureSession!
     private var previewLayer: AVCaptureVideoPreviewLayer!
     private var scanCompleted = false
@@ -108,23 +223,26 @@ class QRScannerViewController: UIViewController {
     }
     
     private func setupUI() {
-        // Add overlay
+        // Add a modern overlay with better styling
         let overlayView = UIView(frame: view.bounds)
         overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         view.addSubview(overlayView)
         
-        // Add scanning area
+        // Add scanning area with rounded corners
         let scanArea = UIView()
-        scanArea.frame = CGRect(x: 50, y: 150, width: view.bounds.width - 100, height: view.bounds.width - 100)
+        let sideLength = min(view.bounds.width - 100, 250)
+        let xPosition = (view.bounds.width - sideLength) / 2
+        let yPosition = (view.bounds.height - sideLength) / 2 - 50
+        scanArea.frame = CGRect(x: xPosition, y: yPosition, width: sideLength, height: sideLength)
         scanArea.layer.borderColor = UIColor.white.cgColor
-        scanArea.layer.borderWidth = 2
-        scanArea.layer.cornerRadius = 10
+        scanArea.layer.borderWidth = 3
+        scanArea.layer.cornerRadius = 20
         scanArea.backgroundColor = UIColor.clear
         overlayView.addSubview(scanArea)
         
         // Create a clear area in the overlay
         let path = UIBezierPath(rect: overlayView.bounds)
-        let scanPath = UIBezierPath(rect: scanArea.frame)
+        let scanPath = UIBezierPath(roundedRect: scanArea.frame, cornerRadius: 20)
         path.append(scanPath.reversing())
         
         let maskLayer = CAShapeLayer()
@@ -136,19 +254,20 @@ class QRScannerViewController: UIViewController {
         let instructionLabel = UILabel()
         instructionLabel.text = "Position QR code within the frame"
         instructionLabel.textColor = .white
-        instructionLabel.font = UIFont.systemFont(ofSize: 16)
+        instructionLabel.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         instructionLabel.textAlignment = .center
-        instructionLabel.frame = CGRect(x: 20, y: scanArea.frame.maxY + 20, width: view.bounds.width - 40, height: 30)
+        instructionLabel.numberOfLines = 0
+        instructionLabel.frame = CGRect(x: 20, y: scanArea.frame.maxY + 30, width: view.bounds.width - 40, height: 60)
         view.addSubview(instructionLabel)
         
-        // Add cancel button
+        // Add cancel button with modern styling
         let cancelButton = UIButton(type: .system)
         cancelButton.setTitle("Cancel", for: .normal)
         cancelButton.setTitleColor(.white, for: .normal)
-        cancelButton.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
-        cancelButton.frame = CGRect(x: 20, y: view.bounds.height - 100, width: view.bounds.width - 40, height: 50)
-        cancelButton.backgroundColor = UIColor.systemRed.withAlphaComponent(0.8)
-        cancelButton.layer.cornerRadius = 8
+        cancelButton.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        cancelButton.frame = CGRect(x: 50, y: view.bounds.height - 120, width: view.bounds.width - 100, height: 50)
+        cancelButton.backgroundColor = UIColor.systemRed
+        cancelButton.layer.cornerRadius = 12
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         view.addSubview(cancelButton)
     }
@@ -173,7 +292,7 @@ class QRScannerViewController: UIViewController {
     }
 }
 
-extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
+extension LegacyQRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         guard !scanCompleted else { return }
         

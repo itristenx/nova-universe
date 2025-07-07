@@ -153,76 +153,90 @@ struct LaunchView: View {
                     }) {
                         Image(systemName: "gearshape.fill")
                             .font(.title2)
-                            .foregroundColor(.black)
-                            .padding(.top, Theme.Spacing.md)
-                            .padding(.trailing, Theme.Spacing.md)
+                            .foregroundColor(.primary)
+                            .padding(12)
+                            .background(Color.white.opacity(0.9))
+                            .clipShape(Circle())
+                            .shadow(radius: 2)
                     }
                     .accessibilityLabel("Settings")
+                    .padding(.top, Theme.Spacing.md)
+                    .padding(.trailing, Theme.Spacing.md)
                     Spacer()
                 }
             },
             alignment: .topTrailing
         )
         .overlay(
-            HStack {
-                VStack {
-                    Spacer()
+            VStack {
+                Spacer()
+                
+                // Status bar at the bottom (open/closed status)
+                VStack(spacing: 0) {
+                    if let status = statusService.latest {
+                        HStack {
+                            Text(status.message)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .background(Theme.Colors.color(for: status.status))
+                    }
+                    if let note = notificationService.latest {
+                        HStack {
+                            Text(note.message)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .background(Theme.Colors.color(for: note.level))
+                    }
+                }
+                
+                // Bottom action buttons row (above status bar)
+                HStack {
+                    // Feedback button - bottom left
                     Button(action: { showFeedback = true }) {
                         Image(systemName: "ellipsis.bubble")
                             .font(.title2)
                             .foregroundColor(.black)
-                            .padding(.leading, Theme.Spacing.md)
-                            .padding(.bottom, Theme.Spacing.md)
+                            .padding(12)
+                            .background(Color.white.opacity(0.9))
+                            .clipShape(Circle())
+                            .shadow(radius: 2)
                     }
                     .accessibilityLabel("Feedback")
-                }
-                Spacer()
-            },
-            alignment: .bottomLeading
-        )
-        .overlay(
-            HStack {
-                VStack {
+                    
                     Spacer()
+                    
+                    // Server status button - bottom right
                     Button(action: { showServerConfig = true }) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 6) {
                             Circle()
                                 .fill(kioskService.activationError ? Color.red : Color.green)
-                                .frame(width: 8, height: 8)
+                                .frame(width: 10, height: 10)
                             Text("Server")
                                 .font(.caption)
-                                .foregroundColor(.gray)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
                         }
-                        .padding(8)
-                        .background(Color.black.opacity(0.1))
-                        .cornerRadius(12)
-                        .padding(.trailing, Theme.Spacing.md)
-                        .padding(.bottom, Theme.Spacing.md)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.white.opacity(0.9))
+                        .cornerRadius(16)
+                        .shadow(radius: 2)
                     }
                     .accessibilityLabel("Server Configuration")
                 }
-                Spacer()
-            },
-            alignment: .bottomTrailing
-        )
-        .overlay(
-            VStack(spacing: 0) {
-                if let status = statusService.latest {
-                    Text(status.message)
-                        .padding(8)
-                        .frame(maxWidth: .infinity)
-                        .background(Theme.Colors.color(for: status.status))
-                        .foregroundColor(.black)
-                }
-                if let note = notificationService.latest {
-                    Text(note.message)
-                        .padding(8)
-                        .frame(maxWidth: .infinity)
-                        .background(Theme.Colors.color(for: note.level))
-                        .foregroundColor(.black)
-                }
-            },
-            alignment: .top
+                .padding(.horizontal, Theme.Spacing.md)
+                .padding(.bottom, Theme.Spacing.sm)
+            }
         )
         .alert(alertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
