@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-apps=(cueit-api cueit-admin cueit-activate cueit-slack)
+apps=(cueit-api cueit-admin cueit-slack)
 
 for app in "${apps[@]}"; do
   example="$app/.env.example"

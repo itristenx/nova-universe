@@ -44,8 +44,15 @@ function changeAdminPassword() {
 }
 
 function updatePassword(newPassword) {
-  if (!newPassword || newPassword.length < 6) {
-    console.error('❌ Password must be at least 6 characters long');
+  if (!newPassword || newPassword.length < 8) {
+    console.error('❌ Password must be at least 8 characters long');
+    rl.close();
+    return;
+  }
+  
+  // Additional password strength validation
+  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+    console.error('❌ Password must contain at least one uppercase letter, one lowercase letter, and one number');
     rl.close();
     return;
   }
@@ -67,13 +74,24 @@ function updatePassword(newPassword) {
     const adminEmail = rows[0].email;
     console.log(`Updating password for: ${adminEmail}`);
     
-    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    const hashedPassword = bcrypt.hashSync(newPassword, 12); // Increase salt rounds
     
     db.run(
       'UPDATE users SET passwordHash = ? WHERE email = ? AND is_default = 1',
       [hashedPassword, adminEmail],
       function(err) {
         if (err) {
+          console.error('❌ Failed to update password:', err.message);
+        } else if (this.changes === 0) {
+          console.error('❌ No users updated - check if default admin exists');
+        } else {
+          console.log('✅ Password updated successfully');
+        }
+        rl.close();
+      }
+    );
+  });
+}
           console.error('❌ Failed to update password:', err.message);
         } else if (this.changes === 0) {
           console.error('❌ Default admin user not found');

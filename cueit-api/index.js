@@ -22,6 +22,9 @@ import path from 'path';
 import assetsRouter from './routes/assets.js';
 import integrationsRouter from './routes/integrations.js';
 import rolesRouter from './routes/roles.js';
+import { validateKioskRegistration, validateTicketSubmission, validateEmail, validateActivationCode } from './middleware/validation.js';
+import { authRateLimit, apiRateLimit, kioskRateLimit } from './middleware/rateLimiter.js';
+import { securityHeaders, requestLogger } from './middleware/security.js';
 
 dotenv.config();
 
@@ -29,8 +32,12 @@ const app = express();
 const originList = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
   : undefined;
+
+// Apply security middleware
+app.use(securityHeaders);
+app.use(requestLogger);
 app.use(cors(originList ? { origin: originList } : undefined));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Limit JSON payload size
 
 const RATE_WINDOW = Number(process.env.RATE_LIMIT_WINDOW || 60_000);
 const SUBMIT_TICKET_LIMIT = Number(process.env.SUBMIT_TICKET_LIMIT || 10);
@@ -64,9 +71,11 @@ if (!DISABLE_AUTH) {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
       },
+      name: 'cueit.sid' // Change default session name
     })
   );
   app.use(passport.initialize());
@@ -226,6 +235,25 @@ const ensureScimAuth = (req, res, next) => {
   next();
 };
 
+const kioskOrAuth = (req, res, next) => {
+  // Allow kiosk token authentication or regular admin authentication
+  const header = req.headers.authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '');
+  const { token: bodyToken } = req.body || {};
+  
+  // Check for kiosk token first
+  if (KIOSK_TOKEN && (token === KIOSK_TOKEN || bodyToken === KIOSK_TOKEN)) {
+    return next();
+  }
+  
+  // Fall back to regular authentication
+  if (DISABLE_AUTH) {
+    return next();
+  }
+  
+  return ensureAuth(req, res, next);
+};
+
 // SAML authentication routes (only if SAML is configured)
 if (!DISABLE_AUTH && process.env.SAML_ENTRY_POINT) {
   app.get('/login', authLimiter, passport.authenticate('saml'));
@@ -249,7 +277,7 @@ if (!DISABLE_AUTH) {
   });
 }
 
-app.post("/submit-ticket", ticketLimiter, async (req, res) => {
+app.post("/submit-ticket", ticketLimiter, validateTicketSubmission, async (req, res) => {
   const { name, email, title, system, urgency, description } = req.body;
 
   if (!name || !email || !title || !system || !urgency) {
@@ -557,12 +585,18 @@ app.put('/api/admin-password', ensureAuth, (req, res) => {
   );
 });
 
-app.post('/api/login', apiLoginLimiter, (req, res) => {
+app.post('/api/login', apiLoginLimiter, authRateLimit, (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
-  db.get('SELECT * FROM users WHERE email=? ORDER BY id DESC', [email], (err, row) => {
+  
+  // Validate email format
+  if (!validateEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+  
+  db.get('SELECT * FROM users WHERE email=? AND disabled=0 ORDER BY id DESC', [email], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     if (!row || !row.passwordHash) {
       return res.status(401).json({ error: 'invalid' });
@@ -570,12 +604,16 @@ app.post('/api/login', apiLoginLimiter, (req, res) => {
     if (!bcrypt.compareSync(password, row.passwordHash)) {
       return res.status(401).json({ error: 'invalid' });
     }
+    
+    // Update last login timestamp
+    db.run('UPDATE users SET last_login = ? WHERE id = ?', [new Date().toISOString(), row.id]);
+    
     const token = sign({ id: row.id, name: row.name, email: row.email });
     res.json({ token });
   });
 });
 
-app.post('/api/register-kiosk', (req, res) => {
+app.post('/api/register-kiosk', validateKioskRegistration, (req, res) => {
   const { id, version, token } = req.body;
   const header = req.headers.authorization || '';
   const auth = header.replace(/^Bearer\s+/i, '');
@@ -664,6 +702,34 @@ app.put("/api/kiosks/:id/active", ensureAuth, (req, res) => {
   );
 });
 
+// Activate kiosk endpoint
+app.post("/api/kiosks/:id/activate", ensureAuth, (req, res) => {
+  const { id } = req.params;
+  db.run(
+    `UPDATE kiosks SET active=1 WHERE id=?`,
+    [id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      events.emit('kiosk-activated', { id });
+      res.json({ id, active: true });
+    }
+  );
+});
+
+// Deactivate kiosk endpoint
+app.post("/api/kiosks/:id/deactivate", ensureAuth, (req, res) => {
+  const { id } = req.params;
+  db.run(
+    `UPDATE kiosks SET active=0 WHERE id=?`,
+    [id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      events.emit('kiosk-deactivated', { id });
+      res.json({ message: "Kiosk deactivated successfully" });
+    }
+  );
+});
+
 app.get('/api/kiosks/:id/status', (req, res) => {
   const { id } = req.params;
   db.get(
@@ -724,6 +790,31 @@ app.post('/api/kiosks/:id/users', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'create-failed' });
   }
+});
+
+// Kiosk systems configuration
+app.get('/api/kiosks/systems', ensureAuth, (req, res) => {
+  db.get('SELECT value FROM config WHERE key = ?', ['kioskSystems'], (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    const systems = row ? JSON.parse(row.value || '[]') : [];
+    res.json({ systems });
+  });
+});
+
+app.put('/api/kiosks/systems', ensureAuth, (req, res) => {
+  const { systems } = req.body;
+  if (!Array.isArray(systems)) {
+    return res.status(400).json({ error: 'Systems must be an array' });
+  }
+  
+  db.run(
+    'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+    ['kioskSystems', JSON.stringify(systems)],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ message: 'Systems updated successfully' });
+    }
+  );
 });
 
 app.get(
@@ -1096,18 +1187,62 @@ app.use('/api/roles', ensureAuth, requirePermission('manage_roles'), rolesRouter
 app.post('/api/kiosks/activation', ensureAuth, async (req, res) => {
   try {
     const activationId = uuidv4();
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    // Generate a more secure activation code (8 characters, avoiding confusing characters)
+    const generateSecureCode = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude I, O, 0, 1
+      let result = '';
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    };
+    
+    let code = generateSecureCode();
+    
+    // Ensure the code is unique
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (attempts < maxAttempts) {
+      const existingCode = await new Promise((resolve, reject) => {
+        db.get('SELECT id FROM kiosk_activations WHERE code = ?', [code], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+      
+      if (!existingCode) break;
+      
+      code = generateSecureCode();
+      attempts++;
+    }
+    
+    if (attempts >= maxAttempts) {
+      return res.status(500).json({ error: 'Failed to generate unique activation code' });
+    }
+    
     const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour
     
-    // Generate QR code
+    // Generate QR code with structured data
     const qrData = JSON.stringify({
       type: 'kiosk_activation',
       id: activationId,
       code: code,
+      server: `${req.protocol}://${req.get('host') || 'localhost'}`,
       expires: expiresAt
     });
     
-    const qrCodeDataUrl = await qrcode.toDataURL(qrData);
+    const qrCodeDataUrl = await qrcode.toDataURL(qrData, {
+      errorCorrectionLevel: 'M',
+      type: 'image/png',
+      quality: 0.92,
+      margin: 1,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
     
     db.run(
       'INSERT INTO kiosk_activations (id, code, qr_code, expires_at) VALUES (?, ?, ?, ?)',
@@ -1128,6 +1263,74 @@ app.post('/api/kiosks/activation', ensureAuth, async (req, res) => {
     console.error('Error generating kiosk activation:', error);
     res.status(500).json({ error: 'Failed to generate activation' });
   }
+});
+
+// Kiosk activation with code endpoint
+app.post('/api/kiosks/activate', (req, res) => {
+  const { kioskId, activationCode } = req.body;
+  
+  if (!kioskId || !activationCode) {
+    return res.status(400).json({ error: 'Missing kioskId or activationCode' });
+  }
+  
+  // Validate activation code format (should be alphanumeric, 6-8 characters)
+  if (!/^[A-Z0-9]{6,8}$/i.test(activationCode)) {
+    return res.status(400).json({ error: 'Invalid activation code format' });
+  }
+  
+  // Check if activation code exists and is valid
+  db.get(
+    'SELECT * FROM kiosk_activations WHERE code = ? AND used = 0 AND expires_at > ?',
+    [activationCode.toUpperCase(), new Date().toISOString()],
+    (err, activation) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      if (!activation) {
+        return res.status(400).json({ error: 'Invalid or expired activation code' });
+      }
+      
+      // Check if kiosk exists, if not register it first
+      db.get('SELECT id FROM kiosks WHERE id = ?', [kioskId], (err, kiosk) => {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        
+        const activateKiosk = () => {
+          // Mark activation code as used
+          db.run(
+            'UPDATE kiosk_activations SET used = 1, used_at = ? WHERE id = ?',
+            [new Date().toISOString(), activation.id],
+            (err) => {
+              if (err) return res.status(500).json({ error: 'DB error' });
+              
+              // Activate the kiosk
+              db.run(
+                'UPDATE kiosks SET active = 1 WHERE id = ?',
+                [kioskId],
+                (err) => {
+                  if (err) return res.status(500).json({ error: 'DB error' });
+                  
+                  events.emit('kiosk-activated', { id: kioskId, activationCode: activationCode.toUpperCase() });
+                  res.json({ message: 'Kiosk activated successfully' });
+                }
+              );
+            }
+          );
+        };
+        
+        if (!kiosk) {
+          // Register kiosk first, then activate
+          db.run(
+            'INSERT INTO kiosks (id, last_seen, version, active) VALUES (?, ?, ?, 0)',
+            [kioskId, new Date().toISOString(), '1.0.0'],
+            (err) => {
+              if (err) return res.status(500).json({ error: 'Failed to register kiosk' });
+              activateKiosk();
+            }
+          );
+        } else {
+          activateKiosk();
+        }
+      });
+    }
+  );
 });
 
 // Get kiosk activations

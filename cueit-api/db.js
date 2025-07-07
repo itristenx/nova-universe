@@ -48,7 +48,12 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
-      email TEXT UNIQUE
+      email TEXT UNIQUE,
+      passwordHash TEXT,
+      disabled INTEGER DEFAULT 0,
+      is_default INTEGER DEFAULT 0,
+      last_login TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
@@ -229,27 +234,39 @@ db.serialize(() => {
     statusOpenMsg: 'Open',
     statusClosedMsg: 'Closed',
     statusErrorMsg: 'Error',
-    adminPassword: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 10),
     scimToken: process.env.SCIM_TOKEN || '',
     directoryEnabled: '0',
     directoryProvider: 'mock',
     directoryUrl: '',
     directoryToken: ''
   };
+  
+  // Hash admin password with proper salt rounds (12 for better security)
+  defaults.adminPassword = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 12);
   const stmt = db.prepare(`INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)`);
   for (const [key, value] of Object.entries(defaults)) {
     stmt.run(key, value);
   }
   stmt.finalize();
 
-  // insert default admin user if not present - use serialize to ensure proper execution order
+  // Insert default admin user if not present - prevent duplicates
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
   const adminName = process.env.ADMIN_NAME || 'Admin';
   const adminPass = process.env.ADMIN_PASSWORD || 'admin';
-  const adminHash = bcrypt.hashSync(adminPass, 10);
+  const adminHash = bcrypt.hashSync(adminPass, 12); // Increase salt rounds for better security
+  
+  // Use a flag to prevent multiple admin creation attempts
+  let adminCreationInProgress = false;
   
   db.serialize(() => {
-    db.get('SELECT id FROM users WHERE email=?', [adminEmail], (err, row) => {
+    // Check for any existing admin users (default or superadmin role)
+    db.get(`
+      SELECT u.id, u.email FROM users u
+      LEFT JOIN user_roles ur ON u.id = ur.user_id
+      LEFT JOIN roles r ON ur.role_id = r.id
+      WHERE u.email = ? OR (r.name = 'superadmin' AND u.is_default = 1)
+      LIMIT 1
+    `, [adminEmail], (err, row) => {
       if (err) {
         console.error('Error checking for admin user:', err);
         return;
@@ -270,27 +287,29 @@ db.serialize(() => {
         );
       };
       
-      if (!row) {
+      if (!row && !adminCreationInProgress) {
+        adminCreationInProgress = true;
         console.log('Creating default admin user...');
-        // Use simpler insert initially, then update after columns are added
+        
         db.run(
-          'INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)',
+          'INSERT INTO users (name, email, passwordHash, is_default) VALUES (?, ?, ?, 1)',
           [adminName, adminEmail, adminHash],
           function (err) {
             if (err) {
-              if (!process.env.CLI_MODE) console.error('Error creating admin user:', err);
+              if (err.message && err.message.includes('UNIQUE constraint failed')) {
+                if (!process.env.CLI_MODE) console.log('✅ Admin user already exists (concurrent creation detected)');
+              } else {
+                if (!process.env.CLI_MODE) console.error('Error creating admin user:', err);
+              }
             } else {
               if (!process.env.CLI_MODE) console.log(`✅ Default admin user created: ${adminEmail} (password: ${adminPass})`);
-              // Mark as default after creation
-              db.run('UPDATE users SET is_default = 1 WHERE id = ?', [this.lastID], (updateErr) => {
-                if (updateErr && !process.env.CLI_MODE) console.log('Note: Could not mark user as default (column may not exist yet)');
-              });
               assignRole(this.lastID);
             }
+            adminCreationInProgress = false;
           }
         );
-      } else {
-        if (!process.env.CLI_MODE) console.log(`✅ Admin user already exists: ${adminEmail}`);
+      } else if (row) {
+        if (!process.env.CLI_MODE) console.log(`✅ Admin user already exists: ${row.email}`);
         // Mark existing admin as default if not already marked
         db.run('UPDATE users SET is_default = 1 WHERE id = ?', [row.id], (updateErr) => {
           if (updateErr && !process.env.CLI_MODE) console.log('Note: Could not mark user as default (column may not exist yet)');

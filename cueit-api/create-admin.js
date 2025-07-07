@@ -33,7 +33,20 @@ Environment variables:
 
 console.log(`Creating/updating admin user: ${email}`);
 
-const passwordHash = bcrypt.hashSync(password, 10);
+// Validate email format
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(email)) {
+  console.error('❌ Invalid email format');
+  process.exit(1);
+}
+
+// Validate password strength
+if (password.length < 6) {
+  console.error('❌ Password must be at least 6 characters long');
+  process.exit(1);
+}
+
+const passwordHash = bcrypt.hashSync(password, 12); // Increase salt rounds for better security
 
 // First, try to update existing user
 db.run(
