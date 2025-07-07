@@ -171,30 +171,52 @@ db.serialize(() => {
   }
   stmt.finalize();
 
-  // insert default admin user if not present
+  // insert default admin user if not present - use serialize to ensure proper execution order
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
   const adminName = process.env.ADMIN_NAME || 'Admin';
   const adminPass = process.env.ADMIN_PASSWORD || 'admin';
   const adminHash = bcrypt.hashSync(adminPass, 10);
-  db.get('SELECT id FROM users WHERE email=?', [adminEmail], (err, row) => {
-    if (err) return console.error(err);
-    const assign = (uid) => {
-      db.run(
-        'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, 1)',
-        [uid]
-      );
-    };
-    if (!row) {
-      db.run(
-        'INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)',
-        [adminName, adminEmail, adminHash],
-        function (e) {
-          if (!e) assign(this.lastID);
-        }
-      );
-    } else {
-      assign(row.id);
-    }
+  
+  db.serialize(() => {
+    db.get('SELECT id FROM users WHERE email=?', [adminEmail], (err, row) => {
+      if (err) {
+        console.error('Error checking for admin user:', err);
+        return;
+      }
+      
+      const assignRole = (uid) => {
+        db.run(
+          'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, 1)',
+          [uid],
+          (err) => {
+            if (err) {
+              console.error('Error assigning admin role:', err);
+            } else {
+              console.log(`✅ Admin role assigned to user ID ${uid}`);
+            }
+          }
+        );
+      };
+      
+      if (!row) {
+        console.log('Creating default admin user...');
+        db.run(
+          'INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)',
+          [adminName, adminEmail, adminHash],
+          function (err) {
+            if (err) {
+              console.error('Error creating admin user:', err);
+            } else {
+              console.log(`✅ Default admin user created: ${adminEmail} (password: ${adminPass})`);
+              assignRole(this.lastID);
+            }
+          }
+        );
+      } else {
+        console.log(`✅ Admin user already exists: ${adminEmail}`);
+        assignRole(row.id);
+      }
+    });
   });
 });
 

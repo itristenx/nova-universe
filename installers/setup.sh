@@ -54,3 +54,10 @@ if [ "$missing_env" = true ]; then
 fi
 
 echo "Setup complete. Edit the .env files before starting the services."
+echo ""
+echo "ℹ️  A default admin user will be automatically created when you start the API:"
+echo "   Email: admin@example.com"
+echo "   Password: admin"
+echo ""
+echo "You can create/update admin users manually with:"
+echo "   cd cueit-api && node create-admin.js [email] [password] [name]"

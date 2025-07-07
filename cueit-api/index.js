@@ -69,15 +69,17 @@ if (!DISABLE_AUTH) {
   passport.serializeUser((u, d) => d(null, u));
   passport.deserializeUser((u, d) => d(null, u));
 
-  passport.use(
-    new SamlStrategy(
-      {
-        entryPoint: process.env.SAML_ENTRY_POINT,
-        issuer: process.env.SAML_ISSUER,
-        callbackUrl: process.env.SAML_CALLBACK_URL,
-        idpCert: process.env.SAML_CERT && process.env.SAML_CERT.replace(/\\n/g, '\n'),
-      },
-      (profile, done) => {
+  // Only initialize SAML if SAML_ENTRY_POINT is configured
+  if (process.env.SAML_ENTRY_POINT) {
+    passport.use(
+      new SamlStrategy(
+        {
+          entryPoint: process.env.SAML_ENTRY_POINT,
+          issuer: process.env.SAML_ISSUER,
+          callbackUrl: process.env.SAML_CALLBACK_URL,
+          idpCert: process.env.SAML_CERT && process.env.SAML_CERT.replace(/\\n/g, '\n'),
+        },
+        (profile, done) => {
         const email =
           profile.email ||
           profile.mail ||
@@ -100,6 +102,7 @@ if (!DISABLE_AUTH) {
       }
     )
   );
+  } // End SAML conditional
 }
 
 const PORT = process.env.API_PORT || 3000;
@@ -217,7 +220,8 @@ const ensureScimAuth = (req, res, next) => {
   next();
 };
 
-if (!DISABLE_AUTH) {
+// SAML authentication routes (only if SAML is configured)
+if (!DISABLE_AUTH && process.env.SAML_ENTRY_POINT) {
   app.get('/login', authLimiter, passport.authenticate('saml'));
   app.post(
     '/login/callback',
@@ -227,6 +231,10 @@ if (!DISABLE_AUTH) {
       res.redirect(process.env.ADMIN_URL || '/');
     }
   );
+}
+
+// General authentication routes
+if (!DISABLE_AUTH) {
   app.get('/logout', (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
@@ -1000,21 +1008,75 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
 
+// Function to verify admin user exists at startup
+function verifyAdminUser() {
+  return new Promise((resolve) => {
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+    const adminName = process.env.ADMIN_NAME || 'Admin';
+    const adminPass = process.env.ADMIN_PASSWORD || 'admin';
+    
+    db.get('SELECT id, email FROM users WHERE email=?', [adminEmail], (err, row) => {
+      if (err) {
+        console.error('Error checking admin user:', err);
+        resolve(false);
+        return;
+      }
+      
+      if (!row) {
+        console.log('⚠️  No admin user found at startup, creating one...');
+        const adminHash = bcrypt.hashSync(adminPass, 10);
+        
+        db.run(
+          'INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)',
+          [adminName, adminEmail, adminHash],
+          function (err) {
+            if (err) {
+              console.error('❌ Failed to create admin user:', err);
+              resolve(false);
+            } else {
+              // Assign admin role
+              db.run(
+                'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, 1)',
+                [this.lastID],
+                (err) => {
+                  if (err) {
+                    console.error('❌ Failed to assign admin role:', err);
+                  }
+                  console.log(`✅ Emergency admin user created: ${adminEmail} (password: ${adminPass})`);
+                  resolve(true);
+                }
+              );
+            }
+          }
+        );
+      } else {
+        console.log(`✅ Admin user verified: ${row.email}`);
+        resolve(true);
+      }
+    });
+  });
+}
+
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  if (CERT_PATH && KEY_PATH) {
-    const options = {
-      cert: fs.readFileSync(CERT_PATH),
-      key: fs.readFileSync(KEY_PATH),
-    };
-    https.createServer(options, app).listen(PORT, () => {
-      console.log(`✅ CueIT API running at https://localhost:${PORT}`);
-    });
-  } else {
-    app.listen(PORT, () => {
-      console.log(`✅ CueIT API running at http://localhost:${PORT}`);
-    });
-  }
+  // Verify admin user exists before starting server
+  verifyAdminUser().then(() => {
+    if (CERT_PATH && KEY_PATH) {
+      const options = {
+        cert: fs.readFileSync(CERT_PATH),
+        key: fs.readFileSync(KEY_PATH),
+      };
+      https.createServer(options, app).listen(PORT, () => {
+        console.log(`✅ CueIT API running at https://localhost:${PORT}`);
+        console.log(`🔑 Admin login: ${process.env.ADMIN_EMAIL || 'admin@example.com'} / ${process.env.ADMIN_PASSWORD || 'admin'}`);
+      });
+    } else {
+      app.listen(PORT, () => {
+        console.log(`✅ CueIT API running at http://localhost:${PORT}`);
+        console.log(`🔑 Admin login: ${process.env.ADMIN_EMAIL || 'admin@example.com'} / ${process.env.ADMIN_PASSWORD || 'admin'}`);
+      });
+    }
+  });
 }
 
 export default app;
