@@ -19,6 +19,8 @@ import https from 'https';
 import qrcode from 'qrcode';
 import multer from 'multer';
 import path from 'path';
+import { securityHeaders, securityLogger } from './middleware/security.js';
+import { validateInput } from './middleware/validation.js';
 import assetsRouter from './routes/assets.js';
 import integrationsRouter from './routes/integrations.js';
 import rolesRouter from './routes/roles.js';
@@ -31,6 +33,10 @@ const originList = process.env.CORS_ORIGINS
   : undefined;
 app.use(cors(originList ? { origin: originList } : undefined));
 app.use(express.json());
+
+// Security middleware
+app.use(securityHeaders);
+app.use(securityLogger);
 
 const RATE_WINDOW = Number(process.env.RATE_LIMIT_WINDOW || 60_000);
 const SUBMIT_TICKET_LIMIT = Number(process.env.SUBMIT_TICKET_LIMIT || 10);
@@ -1524,7 +1530,7 @@ app.put('/api/kiosk-config/:id', ensureAuth, requirePermission('manage_system'),
 });
 
 // Admin PIN endpoints for kiosk access
-app.post('/api/verify-admin-pin', kioskOrAuth, (req, res) => {
+app.post('/api/verify-admin-pin', (req, res) => {
   const { pin } = req.body;
   if (!pin) return res.status(400).json({ error: 'Missing PIN' });
 

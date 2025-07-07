@@ -8,7 +8,6 @@ struct ContentView: View {
             Text("CueIT Launcher").font(.title)
             Toggle("API", isOn: $launcher.startAPI)
             Toggle("Admin", isOn: $launcher.startAdmin)
-            Toggle("Activate", isOn: $launcher.startActivate)
             Toggle("Slack", isOn: $launcher.startSlack)
             HStack {
                 Button("Start") { launcher.startServices() }

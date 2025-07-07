@@ -2,11 +2,10 @@ Set-Location (Join-Path $PSScriptRoot "..")
 $apps = @{
   api      = @{ dir = 'cueit-api';      cmd = 'npm --prefix cueit-api start' }
   admin    = @{ dir = 'cueit-admin';    cmd = 'npm --prefix cueit-admin run dev' }
-  activate = @{ dir = 'cueit-activate'; cmd = 'npm --prefix cueit-activate run dev' }
   slack    = @{ dir = 'cueit-slack';    cmd = 'npm --prefix cueit-slack start' }
 }
 
-$input = Read-Host "Apps to start (api,admin,activate,slack or all) [all]"
+$input = Read-Host "Apps to start (api,admin,slack or all) [all]"
 if ([string]::IsNullOrWhiteSpace($input) -or $input -eq 'all') {
   $selected = $apps.Keys
 } else {

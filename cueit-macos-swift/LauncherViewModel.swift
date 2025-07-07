@@ -7,12 +7,10 @@ class LauncherViewModel: ObservableObject {
     @Published var log: String = ""
     @Published var startAPI = true
     @Published var startAdmin = true
-    @Published var startActivate = true
     @Published var startSlack = true
 
     private let packages = ["api": "cueit-api",
                             "admin": "cueit-admin",
-                            "activate": "cueit-activate",
                             "slack": "cueit-slack"]
 
     init() {
@@ -46,7 +44,6 @@ class LauncherViewModel: ObservableObject {
     func startServices() {
         let selected = [startAPI ? "api" : nil,
                         startAdmin ? "admin" : nil,
-                        startActivate ? "activate" : nil,
                         startSlack ? "slack" : nil].compactMap { $0 }
         let apps = selected.joined(separator: ",")
         let script = resourcePath("installers/start-all.sh")

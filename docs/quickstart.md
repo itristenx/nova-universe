@@ -1,34 +1,87 @@
-# Quickstart
+# Quick Start Guide
 
-Follow these steps to get CueIT running quickly.
+Get CueIT running in 5 minutes.
 
-## 1. Install
+## Prerequisites
+- [Node.js](https://nodejs.org/) 18+
+- npm
+- SQLite3
 
-Use the installer script for your operating system:
+## Quick Setup
 
-- **macOS** – run `./installers/make-installer.sh` to create `CueIT-<version>.pkg` and then open the package.
-- **Windows** – run `./installers/make-windows-installer.ps1 -Version <version>` to build `CueIT-<version>.exe` and execute it.
-- **Linux** – run `./installers/make-linux-installer.sh <version>` to build an AppImage and launch it.
+1. **Clone and Install**
+   ```bash
+   git clone https://github.com/your-org/CueIT.git
+   cd CueIT
+   ./installers/setup.sh
+   ```
 
-After installation you can launch **CueIT** from `/Applications` on macOS, from the Start Menu on Windows and by running the AppImage on Linux. See the [macOS launcher](../README.md#macos-launcher) section for details.
+2. **Configure**
+   ```bash
+   cp .env.local.example .env.local
+   ./scripts/init-env.sh
+   ```
 
-All installer scripts are located under the `installers/` directory. On macOS you can remove the application with `./installers/uninstall-macos.sh` and upgrade it with `./installers/upgrade-macos.sh`. See [installers.md](installers.md) for more options.
-These scripts package a launcher along with the API and web apps.
+3. **Start All Services**
+   ```bash
+   ./installers/start-all.sh
+   ```
 
-## 2. Configure
+4. **Access the Admin Interface**
+   Open http://localhost:5173 in your browser
 
-After installing or cloning the repository, copy `.env.local.example` to `.env.local` and run `./scripts/init-env.sh` to generate the `.env` files for each service. Edit them as needed. See [Local vs Production Setup](environments.md) for details on every variable.
-Set `SLACK_WEBHOOK_URL` in `cueit-api/.env` if you want notification events posted to Slack.
+## Default Login
+- Email: `admin@example.com`
+- Password: `admin` (change this immediately)
 
-## 3. Launch Services
+## What's Running?
+- **API**: http://localhost:3000 - Backend services
+- **Admin UI**: http://localhost:5173 - Management interface
+- **Database**: `cueit-api/log.sqlite` - Local SQLite database
 
-You can start all services from the command line:
+## Next Steps
 
+### Configure Email (Optional)
+Edit `cueit-api/.env`:
 ```bash
-./installers/start-all.sh
+SMTP_HOST=your-smtp-server
+SMTP_PORT=587
+SMTP_USER=your-email@company.com
+SMTP_PASS=your-password
+HELPDESK_EMAIL=helpdesk@company.com
 ```
 
-Each service launches via `npm start`, ensuring its `.env` file is loaded
-correctly.
+### Set Up Kiosk (Optional)
+1. Open the iPad kiosk project in Xcode
+2. Build and run on iPad or simulator
+3. Use the admin interface to generate activation codes
+4. Scan QR code or enter activation code on kiosk
 
-On Windows use `start-all.ps1` instead. The packaged macOS app runs the same script in the background so you can start everything with a single click.
+### Configure Slack (Optional)
+1. Create a Slack app and get tokens
+2. Edit `cueit-slack/.env` with your tokens
+3. Set the slash command URL to your server
+
+## Troubleshooting
+
+**Services won't start?**
+- Check that ports 3000 and 5173 are available
+- Ensure Node.js 18+ is installed
+- Run `npm install` in each service directory
+
+**Can't connect to admin interface?**
+- Verify the API is running at http://localhost:3000/api/health
+- Check browser console for errors
+- Ensure authentication is disabled for development (`DISABLE_AUTH=true`)
+
+**Database issues?**
+- Delete `cueit-api/log.sqlite` and restart to recreate
+- Check file permissions in the cueit-api directory
+
+## Production Deployment
+
+See [Security Guide](security.md) for production deployment requirements including:
+- HTTPS configuration
+- Strong passwords and secrets
+- Environment variable security
+- Monitoring setup

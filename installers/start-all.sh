@@ -7,7 +7,6 @@ get_dir() {
   case "$1" in
     api) echo "cueit-api" ;;
     admin) echo "cueit-admin" ;;
-    activate) echo "cueit-activate" ;;
     slack) echo "cueit-slack" ;;
     *) return 1 ;;
   esac
@@ -17,15 +16,14 @@ get_cmd() {
   case "$1" in
     api) echo "npm --prefix cueit-api start" ;;
     admin) echo "npm --prefix cueit-admin run dev" ;;
-    activate) echo "npm --prefix cueit-activate run dev" ;;
     slack) echo "npm --prefix cueit-slack start" ;;
     *) return 1 ;;
   esac
 }
 
-read -rp "Apps to start (api,admin,activate,slack or all) [all]: " INPUT
+read -rp "Apps to start (api,admin,slack or all) [all]: " INPUT
 if [[ -z "$INPUT" || "$INPUT" == "all" ]]; then
-  SELECTED=(api admin activate slack)
+  SELECTED=(api admin slack)
 else
   IFS=',' read -ra SELECTED <<< "$INPUT"
 fi
