@@ -58,15 +58,24 @@ class ApiClient {
       (response) => response,
       async (error) => {
         // If API is not available, enable mock mode
-        if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK' || !error.response) {
           console.warn('API not available, falling back to mock mode');
           this.useMockMode = true;
+          
+          // Re-throw error with better context
+          const networkError = new Error('Network Error') as any;
+          networkError.code = 'ERR_NETWORK';
+          throw networkError;
         }
         
         if (error.response?.status === 401) {
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
+          // Only redirect if we're not already on the login page
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
         }
+        
         return Promise.reject(error);
       }
     );
@@ -89,8 +98,18 @@ class ApiClient {
       return this.mockRequest({ token: 'mock_token_12345' });
     }
 
-    const response = await this.client.post<AuthToken>('/api/login', credentials);
-    return response.data;
+    try {
+      const response = await this.client.post<AuthToken>('/api/login', credentials);
+      return response.data;
+    } catch (error: any) {
+      // If it's a network error, enable mock mode and retry
+      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        console.warn('Login failed due to network error, falling back to mock mode');
+        this.useMockMode = true;
+        return this.mockRequest({ token: 'mock_token_12345' });
+      }
+      throw error;
+    }
   }
 
   async me(): Promise<User> {
@@ -98,8 +117,18 @@ class ApiClient {
       return this.mockRequest(mockUsers[0]);
     }
 
-    const response = await this.client.get<User>('/api/me');
-    return response.data;
+    try {
+      const response = await this.client.get<User>('/api/me');
+      return response.data;
+    } catch (error: any) {
+      // If it's a network error, enable mock mode and retry
+      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        console.warn('Me endpoint failed due to network error, falling back to mock mode');
+        this.useMockMode = true;
+        return this.mockRequest(mockUsers[0]);
+      }
+      throw error;
+    }
   }
 
   // Users
@@ -273,8 +302,18 @@ class ApiClient {
       return this.mockRequest(mockConfig);
     }
 
-    const response = await this.client.get<Config>('/api/config');
-    return response.data;
+    try {
+      const response = await this.client.get<Config>('/api/config');
+      return response.data;
+    } catch (error: any) {
+      // If it's a network error, enable mock mode and retry
+      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        console.warn('Config endpoint failed due to network error, falling back to mock mode');
+        this.useMockMode = true;
+        return this.mockRequest(mockConfig);
+      }
+      throw error;
+    }
   }
 
   async updateConfig(config: Partial<Config>): Promise<Config> {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Bars3Icon, BellIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/auth';
+import { useApiHealth } from '@/hooks/useApiHealth';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -8,6 +9,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   const { user } = useAuthStore();
+  const { isConnected } = useApiHealth();
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -30,6 +32,17 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
         {/* Right side */}
         <div className="flex items-center space-x-4">
+          {/* API Status Indicator */}
+          <div className="flex items-center space-x-2">
+            <div 
+              className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
+              title={isConnected ? 'API Connected' : 'API Disconnected'}
+            />
+            <span className="text-xs text-gray-500 hidden sm:inline">
+              {isConnected ? 'Connected' : 'Offline'}
+            </span>
+          </div>
+
           {/* Notifications */}
           <button
             type="button"

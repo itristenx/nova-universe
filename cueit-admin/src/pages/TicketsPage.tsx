@@ -3,6 +3,7 @@ import { Button, Card, Input } from '@/components/ui';
 import { MagnifyingGlassIcon, FunnelIcon, TrashIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { formatDate, getUrgencyColor, getStatusColor } from '@/lib/utils';
 import { api } from '@/lib/api';
+import { useToastStore } from '@/stores/toast';
 import type { Log } from '@/types';
 
 export const TicketsPage: React.FC = () => {
@@ -11,6 +12,7 @@ export const TicketsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [urgencyFilter, setUrgencyFilter] = useState('');
+  const { addToast } = useToastStore();
 
   useEffect(() => {
     loadTickets();
@@ -21,8 +23,13 @@ export const TicketsPage: React.FC = () => {
       setLoading(true);
       const data = await api.getLogs();
       setTickets(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load tickets:', error);
+      addToast({
+        type: 'error',
+        title: 'Error loading tickets',
+        description: 'Unable to load support tickets. Please try refreshing the page.',
+      });
     } finally {
       setLoading(false);
     }
@@ -33,8 +40,18 @@ export const TicketsPage: React.FC = () => {
       try {
         await api.deleteLog(id);
         setTickets(tickets.filter(t => t.id !== id));
-      } catch (error) {
+        addToast({
+          type: 'success',
+          title: 'Ticket deleted',
+          description: 'The ticket has been successfully deleted.',
+        });
+      } catch (error: any) {
         console.error('Failed to delete ticket:', error);
+        addToast({
+          type: 'error',
+          title: 'Failed to delete ticket',
+          description: error.response?.data?.error || 'Unable to delete the ticket. Please try again.',
+        });
       }
     }
   };
@@ -44,8 +61,18 @@ export const TicketsPage: React.FC = () => {
       try {
         await api.clearLogs();
         setTickets([]);
-      } catch (error) {
+        addToast({
+          type: 'success',
+          title: 'All tickets cleared',
+          description: 'All support tickets have been successfully deleted.',
+        });
+      } catch (error: any) {
         console.error('Failed to clear tickets:', error);
+        addToast({
+          type: 'error',
+          title: 'Failed to clear tickets',
+          description: error.response?.data?.error || 'Unable to clear tickets. Please try again.',
+        });
       }
     }
   };

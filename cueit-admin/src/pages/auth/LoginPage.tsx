@@ -31,11 +31,31 @@ export const LoginPage: React.FC = () => {
       });
       
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Login error:', error);
+      
+      let errorTitle = 'Login failed';
+      let errorDescription = 'Please check your credentials and try again.';
+      
+      // Handle different types of errors
+      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        errorTitle = 'Connection failed';
+        errorDescription = 'Unable to connect to the server. Please check your internet connection and try again.';
+      } else if (error.response?.status === 401) {
+        errorTitle = 'Invalid credentials';
+        errorDescription = 'The email or password you entered is incorrect. Please try again.';
+      } else if (error.response?.status === 429) {
+        errorTitle = 'Too many attempts';
+        errorDescription = 'Too many login attempts. Please wait a few minutes before trying again.';
+      } else if (error.response?.status >= 500) {
+        errorTitle = 'Server error';
+        errorDescription = 'The server is experiencing issues. Please try again later.';
+      }
+      
       addToast({
         type: 'error',
-        title: 'Login failed',
-        description: 'Please check your credentials and try again.',
+        title: errorTitle,
+        description: errorDescription,
       });
     } finally {
       setIsLoading(false);

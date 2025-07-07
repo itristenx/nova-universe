@@ -149,12 +149,12 @@ export const UsersPage: React.FC = () => {
           title: 'Success',
           description: 'User deleted successfully',
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to delete user:', error);
         addToast({
           type: 'error',
           title: 'Error',
-          description: 'Failed to delete user',
+          description: error.response?.data?.error || 'Failed to delete user. Please try again.',
         });
       }
     }

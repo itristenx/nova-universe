@@ -116,19 +116,19 @@ export const IntegrationsPage: React.FC = () => {
   const deleteIntegration = async (id: number) => {
     if (confirm('Are you sure you want to delete this integration?')) {
       try {
-        // Note: API client doesn't have deleteIntegration, but we'll mock it
+        await api.deleteIntegration(id);
         setIntegrations(integrations.filter(i => i.id !== id));
         addToast({
           type: 'success',
           title: 'Success',
           description: 'Integration deleted successfully',
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to delete integration:', error);
         addToast({
           type: 'error',
           title: 'Error',
-          description: 'Failed to delete integration',
+          description: error.response?.data?.error || 'Failed to delete integration. Please try again.',
         });
       }
     }

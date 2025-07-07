@@ -38,8 +38,10 @@ export const NotificationsPage: React.FC = () => {
       try {
         await api.deleteNotification(id);
         setNotifications(notifications.filter(n => n.id !== id));
-      } catch (error) {
+        // Note: Could add toast notification here if needed
+      } catch (error: any) {
         console.error('Failed to delete notification:', error);
+        // Note: Could add error toast notification here if needed
       }
     }
   };

@@ -76,12 +76,12 @@ export const KiosksPage: React.FC = () => {
           title: 'Success',
           description: 'Kiosk deleted successfully',
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to delete kiosk:', error);
         addToast({
           type: 'error',
           title: 'Error',
-          description: 'Failed to delete kiosk',
+          description: error.response?.data?.error || 'Failed to delete kiosk. Please try again.',
         });
       }
     }
