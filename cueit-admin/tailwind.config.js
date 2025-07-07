@@ -1,43 +1,47 @@
-import daisyui from 'daisyui';
-import colors from 'tailwindcss/colors';
-import theme from '../design/theme.js';
-
+/** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: theme.fonts.sans,
-      },
-      spacing: theme.spacing,
       colors: {
-        ...colors,
-        primary: theme.colors.primary,
-        secondary: theme.colors.secondary,
-        accent: theme.colors.accent,
-        surface: theme.colors.surface,
-        content: theme.colors.content,
-        logoShadow: theme.colors.logoShadow,
-        reactShadow: theme.colors.reactShadow,
-        muted: theme.colors.muted,
-        base: theme.colors.base,
+        primary: {
+          50: '#eff6ff',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          900: '#1e3a8a',
+        },
+        gray: {
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#374151',
+          800: '#1f2937',
+          900: '#111827',
+        },
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
       },
     },
   },
-  plugins: [daisyui],
-  daisyui: {
-    themes: [
-      {
-        cueit: {
-          primary: theme.colors.primary,
-          secondary: theme.colors.secondary,
-          accent: theme.colors.accent,
-          'base-100': theme.colors.base,
-          'base-content': theme.colors.content,
-        },
-      },
-      'light',
-      'dark',
-    ],
-  },
-};
+  plugins: [],
+}
