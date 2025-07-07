@@ -144,38 +144,40 @@ struct LaunchView: View {
                 showAlert = false
             }
         }
-        .overlay(
-            HStack {
-                Spacer()
-                VStack {
-                    Button(action: {
-                        showAdmin = true
-                    }) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.title2)
-                            .foregroundColor(.primary)
-                            .padding(12)
-                            .background(Color.white.opacity(0.9))
-                            .clipShape(Circle())
-                            .shadow(radius: 2)
-                    }
-                    .accessibilityLabel("Settings")
-                    .padding(.top, Theme.Spacing.md)
-                    .padding(.trailing, Theme.Spacing.md)
+        .overlay(alignment: .topTrailing) {
+            if kioskService.state == .active {
+                HStack {
                     Spacer()
+                    VStack {
+                        Button(action: {
+                            showAdmin = true
+                        }) {
+                            Image(systemName: "gearshape.fill")
+                                .font(.title2)
+                                .foregroundColor(.primary)
+                                .padding(12)
+                                .background(Color.white.opacity(0.9))
+                                .clipShape(Circle())
+                                .shadow(radius: 2)
+                        }
+                        .accessibilityLabel("Settings")
+                        .padding(.top, Theme.Spacing.md)
+                        .padding(.trailing, Theme.Spacing.md)
+                        Spacer()
+                    }
                 }
-            },
-            alignment: .topTrailing
-        )
-        .overlay(
-            VStack {
-                Spacer()
-                
-                // Status bar at the bottom (open/closed status)
-                VStack(spacing: 0) {
-                    if let status = statusService.latest {
-                        HStack {
-                            Text(status.message)
+            }
+        }
+        .overlay {
+            if kioskService.state == .active {
+                VStack {
+                    Spacer()
+
+                    // Status bar at the bottom (open/closed status)
+                    VStack(spacing: 0) {
+                        if let status = statusService.latest {
+                            HStack {
+                                Text(status.message)
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.white)
@@ -197,47 +199,47 @@ struct LaunchView: View {
                         .frame(maxWidth: .infinity)
                         .background(Theme.Colors.color(for: note.level))
                     }
-                }
-                
-                // Bottom action buttons row (above status bar)
-                HStack {
-                    // Feedback button - bottom left
-                    Button(action: { showFeedback = true }) {
-                        Image(systemName: "ellipsis.bubble")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                            .padding(12)
-                            .background(Color.white.opacity(0.9))
-                            .clipShape(Circle())
-                            .shadow(radius: 2)
-                    }
-                    .accessibilityLabel("Feedback")
-                    
-                    Spacer()
-                    
-                    // Server status button - bottom right
-                    Button(action: { showServerConfig = true }) {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(kioskService.activationError ? Color.red : Color.green)
-                                .frame(width: 10, height: 10)
-                            Text("Server")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundColor(.primary)
+
+                    // Bottom action buttons row (above status bar)
+                    HStack {
+                        // Feedback button - bottom left
+                        Button(action: { showFeedback = true }) {
+                            Image(systemName: "ellipsis.bubble")
+                                .font(.title2)
+                                .foregroundColor(.black)
+                                .padding(12)
+                                .background(Color.white.opacity(0.9))
+                                .clipShape(Circle())
+                                .shadow(radius: 2)
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.white.opacity(0.9))
-                        .cornerRadius(16)
-                        .shadow(radius: 2)
+                        .accessibilityLabel("Feedback")
+
+                        Spacer()
+
+                        // Server status button - bottom right
+                        Button(action: { showServerConfig = true }) {
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(kioskService.activationError ? Color.red : Color.green)
+                                    .frame(width: 10, height: 10)
+                                Text("Server")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.primary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.white.opacity(0.9))
+                            .cornerRadius(16)
+                            .shadow(radius: 2)
+                        }
+                        .accessibilityLabel("Server Configuration")
                     }
-                    .accessibilityLabel("Server Configuration")
+                    .padding(.horizontal, Theme.Spacing.md)
+                    .padding(.bottom, Theme.Spacing.sm)
                 }
-                .padding(.horizontal, Theme.Spacing.md)
-                .padding(.bottom, Theme.Spacing.sm)
             }
-        )
+        }
         .alert(alertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
         }
