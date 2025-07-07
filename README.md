@@ -56,6 +56,7 @@ The admin interface includes comprehensive kiosk management functionality, inclu
 - System configuration management for ticket categories
 - Server management and restart capabilities
 - User management with role-based access control
+- Integrated security features with rate limiting and input validation
 
 The backend stores ticket logs in a local SQLite database (`cueit-api/log.sqlite`).
 Configuration values are stored in the same database and can be edited from the admin UI.
@@ -89,14 +90,12 @@ npx ngrok http $SLACK_PORT
 
 ### Running All Services
 
-Scripts are provided to launch the API, admin UI, activation page and Slack
+Scripts are provided to launch the API, admin UI, and Slack
 service together using `concurrently`. When running the script you will be
 prompted to choose which apps to start (press **Enter** for all). For each
 selected app the script verifies that a `.env` file exists and installs
 dependencies if the `node_modules` directory is missing. Each service is
 started with `npm start` so its environment file loads correctly.
-
-#### macOS / Linux
 
 ```bash
 ./installers/start-all.sh
@@ -167,7 +166,7 @@ The API tests are written with Mocha and exercise the main Express endpoints.
 
 This suite uses Jest and React Testing Library to validate the UI.
 
-See the [contributor guide](AGENTS.md) for additional details.
+See the [contributor guide](docs/development.md) for additional details.
 When adding JavaScript tests for installer scripts be sure to run `npm run lint` in the package you updated.
 
 ## Testing the API
@@ -212,13 +211,10 @@ the `kiosks` table with `active` set to `0` (inactive). A kiosk cannot submit
 tickets until it is activated.
 
 An administrator can toggle the `active` flag from the **Kiosks** tab in the
-admin UI, from the separate activation page provided by the
-`cueit-activate` app, or directly from the iPad kiosk. All three interfaces call
+admin UI or directly from the iPad kiosk. The admin interface calls
 `PUT /api/kiosks/:id/active` to update the flag. When a kiosk is inactive the
 app displays an activation screen showing the API URL and kiosk ID. Tapping the
 **Activate** button sends the request to enable the kiosk.
-When `VITE_ADMIN_URL` is set, the web activation page shows a link back to the
-admin UI for convenience.
 
 To remotely disable a kiosk open the **Kiosks** tab in the admin UI and toggle
 the active switch to the off position. You can also send a `PUT` request to
@@ -230,14 +226,12 @@ check detects the change.
 
 - **cueit-api** – Express API with an SQLite database. It exposes endpoints
   for submitting tickets, viewing logs, managing configuration and controlling
-  kiosk devices.
+  kiosk devices. Includes comprehensive security features.
 - **cueit-admin** – React SPA that consumes the backend API to display logs and
   edit configuration. It also manages kiosk activation and branding.
 - **cueit-kiosk** – SwiftUI iPad app used by end users to submit tickets. It
   registers itself with the backend and displays the ticket form only when its
   `active` flag is enabled.
-- **cueit-activate** – Tiny React app that lets you quickly activate a kiosk by
-  ID without using the full admin interface.
 - **cueit-macos-swift** – SwiftUI launcher for macOS
 - **cueit-slack** – Service handling the `/new-ticket` Slack slash command. It
   opens a modal and forwards submissions to the backend.
@@ -265,6 +259,7 @@ Each app relies on a few environment variables:
 - `JWT_SECRET` – secret used to sign JSON Web Tokens.
 - `JWT_EXPIRES_IN` – token expiration (e.g., `1h`).
 - `SCIM_TOKEN` – bearer token required for SCIM provisioning endpoints.
+- `KIOSK_TOKEN` – secure token required for kiosk registration.
 - `DISABLE_AUTH` – set to `true` to bypass SAML authentication and
   access the admin UI before SSO is configured.
 
@@ -273,12 +268,6 @@ Each app relies on a few environment variables:
 - `VITE_API_URL` – base URL of the backend API.
 - `VITE_LOGO_URL` – default logo shown before configuration is loaded.
 - `VITE_FAVICON_URL` – default favicon for the page.
-- `VITE_ACTIVATE_URL` – optional URL of the activation page for linking.
-
-### Activation App
-
-- `VITE_API_URL` – backend URL used for the activation request.
-- `VITE_ADMIN_URL` – optional link back to the admin UI shown on the page.
 
 ### Slack Service
 
@@ -297,16 +286,29 @@ npm run lint
 npm test
 ```
 
-For details on the workflow see [AGENTS.md](AGENTS.md).
+For details on the workflow see [docs/development.md](docs/development.md).
+
+## Security & Production Readiness
+
+CueIT includes comprehensive security features:
+
+- **Input Validation** – All API endpoints validate and sanitize user input
+- **Rate Limiting** – Brute force protection on authentication endpoints
+- **Security Headers** – CSP, XSS protection, and HTTPS enforcement
+- **Password Security** – Strong password hashing with bcrypt (12 salt rounds)
+- **Session Security** – Secure session management with httpOnly cookies
+- **Kiosk Security** – Secure activation codes and registration tokens
+
+See [docs/security.md](docs/security.md) for detailed security documentation.
 
 ## Future Improvements
 
-Several security and usability features are planned for a future version of the API and frontends:
+Additional features planned for future releases:
 
-- **Authentication** – current admin login uses SAML. Add JWT based auth to protect API and Slack endpoints.
-- **Log filtering** – allow filtering ticket logs by date range or email status when querying the `/api/logs` endpoint.
-- **HTTPS** – TLS support for local development is available via `TLS_CERT_PATH` and `TLS_KEY_PATH`.
-- **Kiosk registration tokens** – require a token when calling `/api/register-kiosk` to prevent unauthorized devices from spoofing a kiosk ID.
+- **Enhanced Authentication** – Multi-factor authentication support
+- **Advanced Logging** – Detailed audit logs and monitoring
+- **API Rate Limiting** – Per-user rate limiting for API endpoints
+- **Database Encryption** – At-rest encryption for sensitive data
 
 ## License
 

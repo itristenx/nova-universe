@@ -1,46 +1,35 @@
 # CueIT Kiosk
 
-A basic SwiftUI iPad kiosk application for submitting help desk tickets. The app fetches branding and text strings from the backend via the `/api/config` endpoint. These values are cached locally so the app can operate offline.
+A SwiftUI iPad kiosk application for submitting help desk tickets. The app fetches branding and configuration from the backend and caches them locally for offline operation.
 
-When launched the kiosk registers itself with the backend using `/api/register-kiosk`. An administrator must activate the kiosk from the admin UI before it can be used in production.
-Set `KIOSK_TOKEN` in `CueIT Kiosk/CueIT Kiosk/Info.plist` to include a shared
-secret during registration. This value must match the API's `KIOSK_TOKEN`.
+## Features
 
-## Building
-1. Open `CueIT Kiosk.xcodeproj` in Xcode 15 or later.
-2. Ensure the backend is running locally on the port defined in `cueit-api/.env` (`API_PORT`).
-3. Run the app on an iPad or simulator.
+- **Secure Activation**: QR code or manual activation code entry
+- **Offline Capability**: Cached configuration allows operation without constant connectivity
+- **Auto-Registration**: Automatically registers with backend on startup
+- **Admin Controls**: Built-in admin login and server configuration
+- **Directory Integration**: SCIM API integration for user lookup
 
-If the build fails complaining about `TicketFormView` it means the project was previously incomplete. This repository now includes that view and the app should compile.
+## Quick Start
 
-### Theme
+1. Open `CueIT Kiosk.xcodeproj` in Xcode 15 or later
+2. Ensure the backend API is running (default: http://127.0.0.1:3000)
+3. Run the app on an iPad or simulator
+4. Activate the kiosk using the admin interface or activation code
 
-SwiftUI views use color and spacing constants defined in `CueIT Kiosk/CueIT Kiosk/Theme.swift`.
-These values mirror the tokens in `../../design/theme.js` so the iPad app
-matches the web interfaces.
+## Configuration
 
-### Directory Lookup
+- **KIOSK_TOKEN**: Set in `Info.plist` to match the API's `KIOSK_TOKEN` for secure registration
+- **API_BASE_URL**: Backend API URL (default: http://127.0.0.1:3000)
+- **SCIM_URL**: Directory endpoint for user lookup (optional)
 
-To automatically populate the ticket form with a user's job title and manager,
-the app queries your identity provider's SCIM API. The token for this request is
-retrieved at runtime from the backend (or entered in settings) and stored
-securely in the keychain. Add a `SCIM_URL` entry to
-`CueIT Kiosk/CueIT Kiosk/Info.plist` if the directory endpoint differs from the
-default of `\(API_BASE_URL)/scim/v2`.
+## Architecture
 
-### Admin Login
-
-Tapping the gear icon on the welcome screen opens the admin login sheet. The
-entered password is sent to the backend via the `/api/verify-password` endpoint
-and never stored on the device. If the server verifies the password the sheet
-is dismissed, otherwise an error message is shown.
-
-## Tests
-
-Unit tests live in `CueIT KioskTests`. Open the project in Xcode and select
-**Product → Test** or press `⌘U` to run them. The suite verifies configuration
-loading and kiosk startup behavior.
+- **Theme**: Visual styling constants in `Theme.swift` matching design tokens
+- **Services**: Core business logic in `KioskService.swift` and `APIConfig.swift`
+- **Views**: SwiftUI interface components with activation, configuration, and ticket forms
+- **Tests**: Unit tests in `CueIT KioskTests/` covering configuration and service behavior
 
 ## Privacy
 
-See [docs/privacy-policy.md](../docs/privacy-policy.md) for details about the data collected by the kiosk and how it is retained.
+See [docs/privacy-policy.md](../docs/privacy-policy.md) for data collection and retention details.

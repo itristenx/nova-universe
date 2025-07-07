@@ -21,19 +21,9 @@ else
   echo "❌ Admin UI is not responding correctly"
 fi
 
-# Test Activation UI
-echo "Testing Activation UI..."
-activate_response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5174)
-if [[ "$activate_response" == "200" ]]; then
-  echo "✅ Activation UI is running at http://localhost:5174"
-else
-  echo "❌ Activation UI is not responding correctly"
-fi
-
 echo ""
 echo "🚀 Access your applications:"
-echo "   Admin UI:      http://localhost:5173"
-echo "   Activation UI: http://localhost:5174"
-echo "   API:           http://localhost:3000"
+echo "   Admin UI: http://localhost:5173"
+echo "   API:      http://localhost:3000"
 echo ""
 echo "📝 Note: Authentication is disabled for development (DISABLE_AUTH=true)"
