@@ -1524,10 +1524,16 @@ app.put('/api/kiosk-config/:id', ensureAuth, requirePermission('manage_system'),
 });
 
 // Admin PIN endpoints for kiosk access
-app.post('/api/verify-admin-pin', ensureAuth, (req, res) => {
-  const { pin } = req.body;
+app.post('/api/verify-admin-pin', (req, res) => {
+  const { pin, token } = req.body;
+  const header = req.headers.authorization || '';
+  const auth = header.replace(/^Bearer\s+/i, '');
+  if (KIOSK_TOKEN && token !== KIOSK_TOKEN && auth !== KIOSK_TOKEN) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+
   if (!pin) return res.status(400).json({ error: 'Missing PIN' });
-  
+
   db.get(`SELECT value FROM config WHERE key='adminPin'`, (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     const storedPin = row ? row.value : '123456'; // Default PIN
