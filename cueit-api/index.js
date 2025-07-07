@@ -1524,11 +1524,15 @@ app.put('/api/kiosk-config/:id', ensureAuth, requirePermission('manage_system'),
 });
 
 // Admin PIN endpoints for kiosk access
-app.post('/api/verify-admin-pin', (req, res) => {
+app.post('/api/verify-admin-pin', (req, res, next) => {
+  if (!KIOSK_TOKEN) {
+    return ensureAuth(req, res, next);
+  }
+
   const { pin, token } = req.body;
   const header = req.headers.authorization || '';
   const auth = header.replace(/^Bearer\s+/i, '');
-  if (KIOSK_TOKEN && token !== KIOSK_TOKEN && auth !== KIOSK_TOKEN) {
+  if (token !== KIOSK_TOKEN && auth !== KIOSK_TOKEN) {
     return res.status(401).json({ error: 'unauthorized' });
   }
 
