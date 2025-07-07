@@ -28,6 +28,7 @@ if [[ -n "$admin_port" ]]; then
   echo "✅ Admin UI is running at http://localhost:$admin_port"
 else
   echo "❌ Admin UI is not responding correctly"
+  exit 1
 fi
 
 echo ""
