@@ -196,7 +196,7 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
         elements: [
           {
             type: 'mrkdwn',
-            text: `<${adminUrl}|Open Admin UI>`,
+            text: `<${adminUrl}|Open CueIT Portal>`,
           },
         ],
       });

@@ -66,6 +66,7 @@ export interface Notification {
   id: number;
   message: string;
   type: 'ticket' | 'system' | 'integration';
+  level?: 'info' | 'warning' | 'error' | 'critical';
   read: boolean;
   createdAt: string;
 }

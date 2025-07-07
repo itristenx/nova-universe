@@ -6,7 +6,7 @@ export const useApiHealth = () => {
   const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     const checkHealth = async () => {
       if (isChecking) return;

@@ -24,7 +24,7 @@ function askPassword(question) {
 }
 
 function changeAdminPassword() {
-  console.log('🔑 CueIT Admin Password Reset Tool');
+  console.log('🔑 CueIT Portal Password Reset Tool');
   console.log('=====================================\n');
   
   // Check if password is provided as argument
@@ -44,8 +44,8 @@ function changeAdminPassword() {
 }
 
 function updatePassword(newPassword) {
-  if (!newPassword || newPassword.length < 6) {
-    console.error('❌ Password must be at least 6 characters long');
+  if (!newPassword || newPassword.length < 8) {
+    console.error('❌ Password must be at least 8 characters long');
     rl.close();
     return;
   }
@@ -75,8 +75,6 @@ function updatePassword(newPassword) {
       function(err) {
         if (err) {
           console.error('❌ Failed to update password:', err.message);
-        } else if (this.changes === 0) {
-          console.error('❌ Default admin user not found');
         } else {
           console.log(`✅ Password updated successfully for ${adminEmail}`);
         }

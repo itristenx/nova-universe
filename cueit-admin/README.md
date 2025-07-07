@@ -1,4 +1,4 @@
-# CueIT Admin UI
+# CueIT Portal
 
 Modern, enterprise-grade admin interface for managing CueIT kiosks, users, and support tickets.
 

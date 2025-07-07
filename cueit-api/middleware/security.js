@@ -12,11 +12,12 @@ export const securityHeaders = (req, res, next) => {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
   
-  // Content Security Policy
+  // Content Security Policy - Removed 'unsafe-inline' for production security
+  const isDevelopment = process.env.NODE_ENV === 'development';
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline'", // Allow inline scripts for development
-    "style-src 'self' 'unsafe-inline'",
+    isDevelopment ? "script-src 'self' 'unsafe-inline'" : "script-src 'self'", // Allow inline scripts only in dev
+    "style-src 'self' 'unsafe-inline'", // Keep for styling compatibility
     "img-src 'self' data: https:",
     "font-src 'self'",
     "connect-src 'self'",

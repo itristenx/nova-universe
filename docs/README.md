@@ -81,7 +81,7 @@ Native macOS launcher application.
    ```
 
 4. **Access Applications**
-   - Admin UI: http://localhost:5173
+   - CueIT Portal: http://localhost:5173
    - API: http://localhost:3000
    - Kiosk: Build and run in Xcode
 

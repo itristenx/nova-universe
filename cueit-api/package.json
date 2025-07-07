@@ -4,7 +4,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "NODE_NO_WARNINGS=1 mocha --recursive --timeout 10000 --exit",
+    "test:simple": "node --test",
     "start": "node index.js"
   },
   "keywords": [],
@@ -29,6 +30,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "esmock": "^2.7.1",
     "mocha": "^11.7.1",
     "supertest": "^7.1.1"
   }

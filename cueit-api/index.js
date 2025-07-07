@@ -513,18 +513,34 @@ app.get('/api/notifications', ensureAuth, (req, res) => {
 });
 
 app.post('/api/notifications', ensureAuth, (req, res) => {
-  const { message, level } = req.body;
-  if (!message || !level) {
-    return res.status(400).json({ error: 'Missing fields' });
+  const { message, level, type } = req.body;
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
   }
+  
+  // Default values for backward compatibility
+  const notificationLevel = level || 'info';
+  const notificationType = type || 'system';
   const createdAt = new Date().toISOString();
+  
   db.run(
-    `INSERT INTO notifications (message, level, created_at) VALUES (?, ?, ?)`,
-    [message, level, createdAt],
+    `INSERT INTO notifications (message, level, type, created_at, active) VALUES (?, ?, ?, ?, 1)`,
+    [message, notificationLevel, notificationType, createdAt],
     function (err) {
       if (err) return res.status(500).json({ error: 'DB error' });
+      
+      const newNotification = {
+        id: this.lastID,
+        message,
+        level: notificationLevel,
+        type: notificationType,
+        read: false,
+        createdAt,
+        active: 1
+      };
+      
       events.emit('notifications-updated');
-      res.json({ id: this.lastID });
+      res.json(newNotification);
     }
   );
 });
@@ -603,9 +619,25 @@ app.post('/api/register-kiosk', (req, res) => {
 });
 
 app.get('/api/kiosks/:id', (req, res) => {
-  db.get('SELECT * FROM kiosks WHERE id=?', [req.params.id], (err, row) => {
+  const kioskId = req.params.id;
+  
+  // Check if request has valid kiosk token or admin auth
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const payload = token && verify(token);
+  
+  // Allow access with valid kiosk token or admin auth
+  const isKioskAuth = payload && payload.type === 'kiosk' && payload.kioskId === kioskId;
+  const isAdminAuth = req.user || (payload && payload.type !== 'kiosk');
+  
+  if (!isKioskAuth && !isAdminAuth && !DISABLE_AUTH) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  
+  db.get('SELECT * FROM kiosks WHERE id=?', [kioskId], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     if (!row) return res.json({});
+    
     db.all(
       "SELECT key, value FROM config WHERE key LIKE 'directory%'",
       (e, rows) => {
@@ -665,7 +697,42 @@ app.put("/api/kiosks/:id/active", ensureAuth, (req, res) => {
     [active ? 1 : 0, id],
     (err) => {
       if (err) return res.status(500).json({ error: "DB error" });
+      events.emit('kiosk-status-updated', { id, active });
       res.json({ message: "updated" });
+    }
+  );
+});
+
+// Kiosk refresh config endpoint
+app.post("/api/kiosks/:id/refresh-config", ensureAuth, (req, res) => {
+  const { id } = req.params;
+  // Emit event to notify kiosk to refresh its config
+  events.emit('kiosk-config-refresh', { id });
+  res.json({ message: 'Config refresh requested' });
+});
+
+// Kiosk reset endpoint  
+app.post("/api/kiosks/:id/reset", ensureAuth, (req, res) => {
+  const { id } = req.params;
+  
+  // Reset kiosk to defaults and deactivate
+  db.run(
+    `UPDATE kiosks SET 
+     active=0, 
+     statusEnabled=0, 
+     currentStatus='closed',
+     logoUrl=NULL,
+     bgUrl=NULL,
+     openMsg=NULL,
+     closedMsg=NULL,
+     errorMsg=NULL,
+     schedule=NULL
+     WHERE id=?`,
+    [id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      events.emit('kiosk-reset', { id });
+      res.json({ message: 'Kiosk reset successfully' });
     }
   );
 });
@@ -1152,6 +1219,63 @@ app.get('/api/kiosks/activations', ensureAuth, (req, res) => {
   });
 });
 
+// Kiosk activation with code (public endpoint for kiosks)
+app.post('/api/kiosks/activate', (req, res) => {
+  const { kioskId, activationCode } = req.body;
+  
+  if (!kioskId || !activationCode) {
+    return res.status(400).json({ error: 'Missing kioskId or activationCode' });
+  }
+
+  // Check if activation code is valid and not expired
+  db.get(
+    'SELECT * FROM kiosk_activations WHERE code = ? AND used = 0 AND expires_at > datetime("now")',
+    [activationCode.toUpperCase()],
+    (err, activation) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      
+      if (!activation) {
+        return res.status(401).json({ error: 'Invalid or expired activation code' });
+      }
+
+      // Mark activation as used and activate the kiosk
+      const now = new Date().toISOString();
+      
+      db.serialize(() => {
+        // Mark activation as used
+        db.run(
+          'UPDATE kiosk_activations SET used = 1, used_at = ? WHERE id = ?',
+          [now, activation.id]
+        );
+        
+        // Ensure kiosk is registered and activate it
+        db.run(
+          `INSERT INTO kiosks (id, active, last_seen) VALUES (?, 1, ?)
+           ON CONFLICT(id) DO UPDATE SET active = 1, last_seen = excluded.last_seen`,
+          [kioskId, now],
+          (err) => {
+            if (err) return res.status(500).json({ error: 'DB error' });
+            
+            // Generate a kiosk token for future authenticated requests
+            const kioskToken = sign({ 
+              type: 'kiosk',
+              kioskId: kioskId,
+              activated: true
+            });
+            
+            events.emit('kiosk-activated', { kioskId, activationCode });
+            res.json({ 
+              message: 'Kiosk activated successfully',
+              token: kioskToken,
+              kioskId: kioskId
+            });
+          }
+        );
+      });
+    }
+  );
+});
+
 app.get('/api/me', ensureAuth, (req, res) => {
   res.json(req.user || {});
 });
@@ -1204,6 +1328,14 @@ app.get('/api/notifications/stream', (req, res) => {
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true });
+});
+
+// Public auth status endpoint (doesn't require authentication)
+app.get("/api/auth/status", (req, res) => {
+  res.json({ 
+    authRequired: !DISABLE_AUTH,
+    authDisabled: DISABLE_AUTH 
+  });
 });
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);

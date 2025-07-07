@@ -26,15 +26,16 @@ export const validateInput = {
     next();
   },
 
-  // Activation code validation (8 characters, alphanumeric)
+  // Activation code validation (8 characters, alphanumeric, case-insensitive)
   activationCode: (req, res, next) => {
     const { activationCode } = req.body;
     if (activationCode) {
-      const codeRegex = /^[A-HJ-NP-Z2-9]{8}$/; // Excluding confusing characters
+      // Use case-insensitive regex to accept mixed-case entries
+      const codeRegex = /^[A-HJ-NP-Z2-9]{8}$/i; // Case-insensitive
       if (!codeRegex.test(activationCode)) {
         return res.status(400).json({ error: 'Invalid activation code format' });
       }
-      // Normalize to uppercase
+      // Normalize to uppercase after validation
       req.body.activationCode = activationCode.toUpperCase();
     }
     next();
@@ -73,6 +74,10 @@ export const validateInput = {
   passwordStrength: (req, res, next) => {
     const { password } = req.body;
     if (password) {
+      // Add type check first
+      if (typeof password !== 'string') {
+        return res.status(400).json({ error: 'Password must be a string' });
+      }
       if (password.length < 8) {
         return res.status(400).json({ error: 'Password must be at least 8 characters long' });
       }

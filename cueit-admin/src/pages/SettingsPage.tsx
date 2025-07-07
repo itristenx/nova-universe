@@ -172,41 +172,110 @@ export const SettingsPage: React.FC = () => {
                   <div>
                     <h3 className="text-lg leading-6 font-medium text-gray-900">General Settings</h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      Configure basic system settings and messages.
+                      Configure basic admin portal settings and system defaults.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 gap-6">
-                    <Input
-                      label="Welcome Message"
-                      value={config?.welcomeMessage || ''}
-                      onChange={(e) => setConfig(prev => prev ? { ...prev, welcomeMessage: e.target.value } : null)}
-                      helperText="Message displayed on the kiosk welcome screen"
-                    />
-                    
-                    <Input
-                      label="Help Message"
-                      value={config?.helpMessage || ''}
-                      onChange={(e) => setConfig(prev => prev ? { ...prev, helpMessage: e.target.value } : null)}
-                      helperText="Help text displayed to users"
-                    />
+                    <div className="border-t border-gray-200 pt-6">
+                      <h4 className="text-md font-medium text-gray-900 mb-4">Session Settings</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          label="Session Timeout (minutes)"
+                          type="number"
+                          value="30"
+                          min="5"
+                          max="480"
+                          helperText="How long users stay logged in"
+                        />
+                        <Input
+                          label="Auto-refresh Interval (seconds)"
+                          type="number"
+                          value="30"
+                          min="10"
+                          max="300"
+                          helperText="How often data refreshes automatically"
+                        />
+                      </div>
+                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Input
-                        label="Status Open Message"
-                        value={config?.statusOpenMsg || ''}
-                        onChange={(e) => setConfig(prev => prev ? { ...prev, statusOpenMsg: e.target.value } : null)}
-                      />
-                      <Input
-                        label="Status Closed Message"
-                        value={config?.statusClosedMsg || ''}
-                        onChange={(e) => setConfig(prev => prev ? { ...prev, statusClosedMsg: e.target.value } : null)}
-                      />
-                      <Input
-                        label="Status Error Message"
-                        value={config?.statusErrorMsg || ''}
-                        onChange={(e) => setConfig(prev => prev ? { ...prev, statusErrorMsg: e.target.value } : null)}
-                      />
+                    <div className="border-t border-gray-200 pt-6">
+                      <h4 className="text-md font-medium text-gray-900 mb-4">System Defaults</h4>
+                      <div className="space-y-4">
+                        <Input
+                          label="Default Support Department"
+                          value="IT Support"
+                          helperText="Default department for new tickets"
+                        />
+                        <Input
+                          label="Support Email"
+                          type="email"
+                          value="support@company.com"
+                          helperText="Email address for support communications"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-6">
+                      <h4 className="text-md font-medium text-gray-900 mb-4">Global Kiosk Status</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-3">
+                            System-wide Status
+                          </label>
+                          <div className="space-y-2">
+                            <label className="flex items-center">
+                              <input 
+                                type="radio" 
+                                name="global-status" 
+                                value="open" 
+                                className="mr-3" 
+                                defaultChecked 
+                              />
+                              <div>
+                                <span className="text-sm font-medium text-gray-900">Open</span>
+                                <p className="text-xs text-gray-500">All kiosks accept support requests</p>
+                              </div>
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="radio" 
+                                name="global-status" 
+                                value="closed" 
+                                className="mr-3" 
+                              />
+                              <div>
+                                <span className="text-sm font-medium text-gray-900">Closed</span>
+                                <p className="text-xs text-gray-500">All kiosks display closed message</p>
+                              </div>
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="radio" 
+                                name="global-status" 
+                                value="individual" 
+                                className="mr-3" 
+                              />
+                              <div>
+                                <span className="text-sm font-medium text-gray-900">Individual Control</span>
+                                <p className="text-xs text-gray-500">Each kiosk manages its own status</p>
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                          <Input
+                            label="Global Open Message"
+                            value="IT Support is available to assist you"
+                            helperText="Message shown when support is available"
+                          />
+                          <Input
+                            label="Global Closed Message"
+                            value="IT Support is currently closed. Please try again during business hours."
+                            helperText="Message shown when support is unavailable"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -294,16 +363,62 @@ export const SettingsPage: React.FC = () => {
                     {/* Theme Colors */}
                     <div className="border-t border-gray-200 pt-6">
                       <h4 className="text-md font-medium text-gray-900 mb-4">Theme Customization</h4>
-                      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                        <div className="flex">
-                          <div className="ml-3">
-                            <h3 className="text-sm font-medium text-blue-800">
-                              Theme Customization Coming Soon
-                            </h3>
-                            <div className="mt-2 text-sm text-blue-700">
-                              <p>Advanced theme customization including custom colors, fonts, and layout options will be available here.</p>
-                            </div>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="primary-color" className="block text-sm font-medium text-gray-700 mb-2">
+                              Primary Color
+                            </label>
+                            <input
+                              id="primary-color"
+                              type="color"
+                              className="w-full h-10 border border-gray-300 rounded-md"
+                              defaultValue="#3B82F6"
+                              title="Primary theme color"
+                            />
                           </div>
+                          <div>
+                            <label htmlFor="secondary-color" className="block text-sm font-medium text-gray-700 mb-2">
+                              Secondary Color
+                            </label>
+                            <input
+                              id="secondary-color"
+                              type="color"
+                              className="w-full h-10 border border-gray-300 rounded-md"
+                              defaultValue="#6B7280"
+                              title="Secondary theme color"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label htmlFor="font-family" className="block text-sm font-medium text-gray-700 mb-2">
+                            Font Family
+                          </label>
+                          <select
+                            id="font-family"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                            title="Font family for the interface"
+                          >
+                            <option value="inter">Inter (Default)</option>
+                            <option value="roboto">Roboto</option>
+                            <option value="open-sans">Open Sans</option>
+                            <option value="lato">Lato</option>
+                          </select>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <label className="flex items-center">
+                            <input type="checkbox" className="mr-2" defaultChecked title="Enable dark mode support" />
+                            <span className="text-sm text-gray-700">Enable dark mode</span>
+                          </label>
+                          <label className="flex items-center">
+                            <input type="checkbox" className="mr-2" title="Enable high contrast mode" />
+                            <span className="text-sm text-gray-700">High contrast mode</span>
+                          </label>
+                        </div>
+                        <div className="pt-4 border-t border-gray-200">
+                          <Button variant="primary" size="sm">
+                            Save Theme Settings
+                          </Button>
                         </div>
                       </div>
                     </div>

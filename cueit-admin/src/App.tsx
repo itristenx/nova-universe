@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { useAuthStore } from '@/stores/auth';
+import { useAuthStatus } from '@/hooks/useAuthStatus';
 import { api } from '@/lib/api';
 
 // Lazy load other pages for better performance
@@ -30,10 +31,33 @@ const queryClient = new QueryClient({
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, login } = useAuthStore();
+  const { authStatus, loading: authStatusLoading } = useAuthStatus();
   const [loading, setLoading] = React.useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Wait for auth status to be determined
+      if (authStatusLoading || !authStatus) {
+        return;
+      }
+
+      // If auth is disabled, create a mock authenticated state
+      if (authStatus.authDisabled) {
+        const mockUser = {
+          id: 1,
+          name: 'Admin',
+          email: 'admin@example.com',
+          role: 'superadmin',
+          permissions: ['manage_users', 'manage_kiosks', 'manage_system', 'view_logs'],
+          disabled: false,
+          roles: ['superadmin'],
+        };
+        login('mock_token', mockUser);
+        setLoading(false);
+        return;
+      }
+
+      // Normal auth flow when auth is enabled
       const token = localStorage.getItem('auth_token');
       if (token) {
         try {
@@ -47,9 +71,9 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     };
 
     checkAuth();
-  }, [login]);
+  }, [login, authStatus, authStatusLoading]);
 
-  if (loading) {
+  if (loading || authStatusLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
@@ -57,6 +81,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
 
+  // If auth is disabled, always show protected content
+  if (authStatus?.authDisabled) {
+    return <>{children}</>;
+  }
+
+  // Normal auth flow - redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }

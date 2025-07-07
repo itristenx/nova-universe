@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# CueIT Admin 2.0 - Complete Project Status
+# CueIT Portal 2.0 - Complete Project Status
 
-echo "🚀 CueIT Admin UI 2.0 - Project Status"
+echo "🚀 CueIT Portal 2.0 - Project Status"
 echo "======================================"
 echo
 echo "✅ COMPLETED FEATURES:"

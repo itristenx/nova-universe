@@ -1,4 +1,4 @@
-# CueIT Admin Bug Fixes
+# CueIT Portal Bug Fixes
 
 ## Issues Fixed
 
