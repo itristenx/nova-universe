@@ -19,18 +19,21 @@ import https from 'https';
 import qrcode from 'qrcode';
 import multer from 'multer';
 import path from 'path';
-import { securityHeaders, securityLogger } from './middleware/security.js';
+import { securityHeaders, securityLogger, requestLogger } from './middleware/security.js';
 import { validateInput } from './middleware/validation.js';
 import assetsRouter from './routes/assets.js';
 import integrationsRouter from './routes/integrations.js';
 import rolesRouter from './routes/roles.js';
 import { validateKioskRegistration, validateTicketSubmission, validateEmail, validateActivationCode } from './middleware/validation.js';
 import { authRateLimit, apiRateLimit, kioskRateLimit } from './middleware/rateLimiter.js';
-import { securityHeaders, requestLogger } from './middleware/security.js';
 
 dotenv.config();
 
 const app = express();
+
+// Configure CORS origins
+const originList = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : null;
+
 // Apply security middleware
 app.use(securityHeaders);
 app.use(requestLogger);
@@ -624,6 +627,16 @@ app.post('/api/login', apiLoginLimiter, authRateLimit, (req, res) => {
     
     const token = sign({ id: row.id, name: row.name, email: row.email });
     res.json({ token });
+  });
+});
+
+// Health check endpoint for debugging frontend connectivity
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    cors: req.headers.origin || 'no-origin',
+    api: 'CueIT API v2.0'
   });
 });
 

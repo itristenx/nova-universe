@@ -19,9 +19,13 @@ export const LoginPage: React.FC = () => {
 
     try {
       const { token } = await api.login({ email, password });
-      const user = await api.me();
       
+      // Store token immediately so it's available for subsequent API calls
       localStorage.setItem('auth_token', token);
+      
+      // Use the token directly for the user profile call
+      const user = await api.me(token);
+      
       login(token, user);
       
       addToast({

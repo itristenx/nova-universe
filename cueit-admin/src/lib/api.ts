@@ -41,7 +41,7 @@ class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+      baseURL: import.meta.env.VITE_API_URL || '',
       timeout: 10000,
     });
 
@@ -101,12 +101,13 @@ class ApiClient {
     return response.data;
   }
 
-  async me(): Promise<User> {
+  async me(token?: string): Promise<User> {
     if (this.useMockMode) {
       return this.mockRequest(mockUsers[0]);
     }
 
-    const response = await this.client.get<User>('/api/me');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await this.client.get<User>('/api/me', { headers });
     return response.data;
   }
 
