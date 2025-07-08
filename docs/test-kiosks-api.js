@@ -10,7 +10,7 @@ function testEndpoint(path, description) {
       path: path,
       method: 'GET',
       headers: {
-        'Authorization': 'Bearer oh+uHRXGt1f5kww5JEnQJ7JGK0c6Wnbe'
+        'Authorization': `Bearer ${process.env.KIOSK_TOKEN}`
       }
     };
 
