@@ -21,23 +21,20 @@ enum ActivationState {
     }
 }
 
+@MainActor
 class KioskService: ObservableObject {
     static let shared = KioskService()
     private let token: String
-    private init() {
-        token = Bundle.main.object(forInfoDictionaryKey: "KIOSK_TOKEN") as? String ?? ""
-        Task {
-            await checkInitialState()
-        }
-    }
-
+    
     @Published var state: ActivationState = .checking
     @Published var activationError: Bool = false
     @Published var statusMessage: String = ""
+    
     private var timer: Timer?
     private static let minInterval: TimeInterval = 30
     private static let maxInterval: TimeInterval = 300
     private var pollInterval: TimeInterval = minInterval
+    private var cancellables = Set<AnyCancellable>()
 
     let id: String = {
         if let saved = KeychainService.string(for: "kioskId") {
@@ -53,7 +50,13 @@ class KioskService: ObservableObject {
         return new
     }()
     
-    @MainActor
+    private init() {
+        token = Bundle.main.object(forInfoDictionaryKey: "KIOSK_TOKEN") as? String ?? ""
+        Task {
+            await checkInitialState()
+        }
+    }
+    
     private func checkInitialState() {
         // Check if server URL is configured (not using default)
         let defaultURL = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String ?? "http://127.0.0.1:3000"
@@ -67,7 +70,6 @@ class KioskService: ObservableObject {
         }
     }
     
-    @MainActor
     func configureServer(_ url: String) {
         APIConfig.baseURL = url
         statusMessage = "Connecting to server..."
@@ -76,7 +78,7 @@ class KioskService: ObservableObject {
     }
 
     func register(version: String) async {
-        await MainActor.run { statusMessage = "Registering kiosk..." }
+        statusMessage = "Registering kiosk..."
         guard let url = URL(string: "\(APIConfig.baseURL)/api/register-kiosk") else { return }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
@@ -89,7 +91,6 @@ class KioskService: ObservableObject {
         _ = try? await URLSession.shared.data(for: req)
     }
 
-    @MainActor
     func checkActive() async {
         statusMessage = "Checking activation status..."
         guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(id)") else { 
@@ -186,7 +187,6 @@ class KioskService: ObservableObject {
         }
     }
 
-    @MainActor
     func activate() async -> Bool {
         statusMessage = "Activating kiosk..."
         guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(id)/active") else { return false }
@@ -207,7 +207,6 @@ class KioskService: ObservableObject {
         }
     }
     
-    @MainActor
     func activateWithCode(_ activationCode: String) async -> Bool {
         // Validate activation code format
         guard !activationCode.isEmpty, 
