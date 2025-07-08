@@ -872,11 +872,12 @@ app.get('/api/kiosks/:id', (req, res) => {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const payload = token && verify(token);
   
-  // Allow access with valid kiosk token or admin auth
+  // Allow access with valid kiosk token, admin auth, or general kiosk token
   const isKioskAuth = payload && payload.type === 'kiosk' && payload.kioskId === kioskId;
   const isAdminAuth = req.user || (payload && payload.type !== 'kiosk');
+  const hasGeneralKioskToken = KIOSK_TOKEN && token === KIOSK_TOKEN;
   
-  if (!isKioskAuth && !isAdminAuth && !DISABLE_AUTH) {
+  if (!isKioskAuth && !isAdminAuth && !hasGeneralKioskToken && !DISABLE_AUTH) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   
@@ -915,7 +916,35 @@ app.put("/api/kiosks/:id", ensureAuth, (req, res) => {
 app.get("/api/kiosks", ensureAuth, (req, res) => {
   db.all(`SELECT * FROM kiosks`, (err, rows) => {
     if (err) return res.status(500).json({ error: "DB error" });
-    res.json(rows);
+    
+    // Get global configuration for defaults
+    db.all('SELECT key, value FROM config', (err2, configRows) => {
+      if (err2) return res.status(500).json({ error: "DB error" });
+      
+      const globalConfig = Object.fromEntries(configRows.map(r => [r.key, r.value]));
+      
+      // Transform kiosks to include effectiveConfig structure
+      const kiosksWithConfig = rows.map(kiosk => ({
+        ...kiosk,
+        active: Boolean(kiosk.active), // Convert to boolean
+        configScope: 'global', // Default config scope
+        hasOverrides: false, // For now, no individual overrides
+        overrideCount: 0,
+        effectiveConfig: {
+          logoUrl: kiosk.logoUrl || globalConfig.logoUrl || '/logo.png',
+          bgUrl: kiosk.bgUrl || globalConfig.backgroundUrl,
+          statusEnabled: Boolean(kiosk.statusEnabled),
+          currentStatus: kiosk.currentStatus || globalConfig.currentStatus || 'closed',
+          openMsg: kiosk.openMsg || globalConfig.statusOpenMsg || 'Help Desk is Open',
+          closedMsg: kiosk.closedMsg || globalConfig.statusClosedMsg || 'Help Desk is Closed',
+          errorMsg: kiosk.errorMsg || globalConfig.statusErrorMsg || 'Service temporarily unavailable',
+          schedule: kiosk.schedule ? JSON.parse(kiosk.schedule) : undefined,
+          officeHours: globalConfig.officeHours ? JSON.parse(globalConfig.officeHours) : undefined
+        }
+      }));
+      
+      res.json(kiosksWithConfig);
+    });
   });
 });
 
@@ -1009,6 +1038,50 @@ app.post("/api/kiosks/:id/deactivate", ensureAuth, (req, res) => {
       res.json({ message: "Kiosk deactivated successfully" });
     }
   );
+});
+
+// Activate kiosk with activation code endpoint (for iOS app)
+app.post("/api/kiosks/activate", (req, res) => {
+  const { kioskId, activationCode } = req.body;
+  
+  if (!kioskId || !activationCode) {
+    return res.status(400).json({ error: 'Missing kioskId or activationCode' });
+  }
+  
+  // Validate activation code format
+  if (!validateActivationCode(activationCode)) {
+    return res.status(400).json({ error: 'Invalid activation code format' });
+  }
+  
+  // Check if the activation code is valid (for demo purposes, accept any 6-8 character code)
+  // In production, you would check against a database of valid codes
+  const normalizedCode = activationCode.toUpperCase();
+  
+  // For now, accept any properly formatted activation code
+  if (normalizedCode.length >= 6 && normalizedCode.length <= 8) {
+    // Check if kiosk exists
+    db.get('SELECT * FROM kiosks WHERE id=?', [kioskId], (err, kiosk) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      if (!kiosk) return res.status(404).json({ error: 'Kiosk not found' });
+      
+      // Activate the kiosk
+      db.run(
+        `UPDATE kiosks SET active=1 WHERE id=?`,
+        [kioskId],
+        (err) => {
+          if (err) return res.status(500).json({ error: "DB error" });
+          events.emit('kiosk-activated', { id: kioskId, activationCode: normalizedCode });
+          res.json({ 
+            message: "Kiosk activated successfully",
+            kioskId: kioskId, 
+            active: true 
+          });
+        }
+      );
+    });
+  } else {
+    return res.status(400).json({ error: 'Invalid or expired activation code' });
+  }
 });
 
 app.get('/api/kiosks/:id/status', (req, res) => {
@@ -2165,7 +2238,7 @@ app.put('/api/kiosk-config/:id', ensureAuth, requirePermission('manage_system'),
       openMsg, closedMsg, errorMsg, sched
     ],
     (err) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
+      if (err) return res.status(500).json({ error: "DB error" });
       events.emit('kiosk-config-updated', { id });
       res.json({ message: 'Kiosk configuration updated' });
     }
@@ -2289,8 +2362,50 @@ app.post('/api/kiosks/:id/sync-config', kioskOrAuth, (req, res) => {
 });
 
 // Get remote configuration for kiosk
-app.get('/api/kiosks/:id/remote-config', kioskOrAuth, (req, res) => {
+app.get('/api/kiosks/:id/remote-config', (req, res) => {
   const { id } = req.params;
+  
+  // Check authentication - be more permissive for remote config
+  const header = req.headers.authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '');
+  const payload = token && verify(token);
+  
+  const hasKioskToken = KIOSK_TOKEN && token === KIOSK_TOKEN;
+  const hasAdminAuth = payload && payload.type !== 'kiosk';
+  const hasValidKioskAuth = payload && payload.type === 'kiosk' && payload.kioskId === id;
+  const isAuthDisabled = DISABLE_AUTH;
+  
+  // Handle "unknown" kiosk ID variations - return default config
+  if (id === 'unknown' || id === 'unknown-kiosk' || id.startsWith('unknown')) {
+    return res.json({
+      config: {
+        statusEnabled: false,
+        currentStatus: 'closed',
+        openMsg: 'Please activate this kiosk',
+        closedMsg: 'Kiosk not activated',
+        errorMsg: 'Service temporarily unavailable',
+        logoUrl: '/logo.png',
+        faviconUrl: '/vite.svg',
+        welcomeMessage: 'Welcome',
+        helpMessage: 'Please contact your administrator to activate this kiosk',
+        systems: ['General Support']
+      },
+      adminPins: { global: null, kiosk: null },
+      lastUpdate: new Date().toISOString(),
+      version: 1,
+      permissions: {
+        canEditStatus: false,
+        canEditSchedule: false,
+        canEditBranding: false,
+        canEditOfficeHours: false
+      }
+    });
+  }
+  
+  // For registered kiosks, require some form of authentication unless auth is disabled
+  if (!hasKioskToken && !hasAdminAuth && !hasValidKioskAuth && !isAuthDisabled) {
+    return res.status(401).json({ error: 'Unauthorized - Invalid authentication' });
+  }
   
   // Get kiosk configuration
   db.get('SELECT * FROM kiosks WHERE id=?', [id], (err, kiosk) => {

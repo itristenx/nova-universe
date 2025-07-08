@@ -9,7 +9,7 @@ enum APIConfig {
             if let url = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String {
                 return url
             }
-            return "http://127.0.0.1:3000"
+            return "http://localhost:3000"
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "serverURL")

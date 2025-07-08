@@ -136,6 +136,25 @@ db.serialize(() => {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sso_configurations (
+      id INTEGER PRIMARY KEY,
+      provider TEXT NOT NULL,
+      enabled INTEGER DEFAULT 0,
+      configuration TEXT,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS admin_pins (
+      id INTEGER PRIMARY KEY DEFAULT 1,
+      global_pin TEXT,
+      kiosk_pins TEXT,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // add columns if database was created with an older schema
   function addColumnIfMissing(table, columnDef) {
     const columnName = columnDef.split(" ")[0];

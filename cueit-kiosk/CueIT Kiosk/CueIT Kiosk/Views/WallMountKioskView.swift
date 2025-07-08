@@ -98,9 +98,9 @@ struct WallMountKioskView: View {
     private var defaultBackground: some View {
         LinearGradient(
             colors: [
-                Color.blue.opacity(0.1),
-                Color.purple.opacity(0.05),
-                Color.blue.opacity(0.02)
+                Theme.Colors.primary.opacity(0.1),
+                Theme.Colors.secondary.opacity(0.05),
+                Theme.Colors.background
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
