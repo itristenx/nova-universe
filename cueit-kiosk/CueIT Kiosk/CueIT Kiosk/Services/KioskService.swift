@@ -209,29 +209,62 @@ class KioskService: ObservableObject {
     
     @MainActor
     func activateWithCode(_ activationCode: String) async -> Bool {
+        // Validate activation code format
+        guard !activationCode.isEmpty, 
+              activationCode.count >= 6 && activationCode.count <= 8,
+              activationCode.range(of: "^[A-Z0-9]+$", options: .regularExpression) != nil else {
+            statusMessage = "Invalid activation code format"
+            activationError = true
+            return false
+        }
+        
         statusMessage = "Processing activation code..."
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/activate") else { return false }
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/activate") else { 
+            statusMessage = "Invalid server URL"
+            activationError = true
+            return false 
+        }
+        
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = ["kioskId": id, "activationCode": activationCode]
+        req.timeoutInterval = 30.0 // Add timeout
+        
+        let body = ["kioskId": id, "activationCode": activationCode.uppercased()]
         req.httpBody = try? JSONEncoder().encode(body)
         
         do {
-            let (_, response) = try await URLSession.shared.data(for: req)
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                state = .active
-                activationError = false
-                statusMessage = "Kiosk activated successfully"
-                return true
+            let (data, response) = try await URLSession.shared.data(for: req)
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    state = .active
+                    activationError = false
+                    statusMessage = "Kiosk activated successfully"
+                    return true
+                } else if httpResponse.statusCode == 400 {
+                    // Parse error message from response
+                    if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                       let errorMessage = errorData["error"] as? String {
+                        statusMessage = errorMessage
+                    } else {
+                        statusMessage = "Invalid or expired activation code"
+                    }
+                    activationError = true
+                    return false
+                } else {
+                    statusMessage = "Server error (HTTP \(httpResponse.statusCode))"
+                    activationError = true
+                    return false
+                }
             } else {
+                statusMessage = "Invalid server response"
                 activationError = true
-                statusMessage = "Invalid activation code"
                 return false
             }
         } catch {
+            statusMessage = "Network error: \(error.localizedDescription)"
             activationError = true
-            statusMessage = "Activation failed"
             return false
         }
     }

@@ -50,6 +50,13 @@ function updatePassword(newPassword) {
     return;
   }
   
+  // Additional password strength validation
+  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+    console.error('❌ Password must contain at least one uppercase letter, one lowercase letter, and one number');
+    rl.close();
+    return;
+  }
+  
   // Find default admin users
   db.all('SELECT email FROM users WHERE is_default = 1', (err, rows) => {
     if (err) {
@@ -67,7 +74,7 @@ function updatePassword(newPassword) {
     const adminEmail = rows[0].email;
     console.log(`Updating password for: ${adminEmail}`);
     
-    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    const hashedPassword = bcrypt.hashSync(newPassword, 12); // Increase salt rounds
     
     db.run(
       'UPDATE users SET passwordHash = ? WHERE email = ? AND is_default = 1',
@@ -75,6 +82,8 @@ function updatePassword(newPassword) {
       function(err) {
         if (err) {
           console.error('❌ Failed to update password:', err.message);
+        } else if (this.changes === 0) {
+          console.error('❌ No users updated - check if default admin exists');
         } else {
           console.log(`✅ Password updated successfully for ${adminEmail}`);
         }

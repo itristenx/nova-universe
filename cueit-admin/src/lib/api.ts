@@ -274,16 +274,16 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<{ systems: string[] }>('/api/kiosk-systems');
+    const response = await this.client.get<{ systems: string[] }>('/api/kiosks/systems');
     return response.data;
   }
 
   async updateKioskSystems(systems: string[]): Promise<ApiResponse> {
     if (this.useMockMode) {
-      return this.mockRequest({ message: 'Systems updated successfully' });
+      return this.mockRequest({ message: 'Kiosk systems updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/kiosk-systems', { systems });
+    const response = await this.client.put<ApiResponse>('/api/kiosks/systems', { systems });
     return response.data;
   }
 

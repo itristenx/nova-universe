@@ -27,6 +27,35 @@ export const securityHeaders = (req, res, next) => {
   ].join('; ');
   
   res.setHeader('Content-Security-Policy', csp);
+  
+  next();
+};
+
+// Request logging middleware
+export const requestLogger = (req, res, next) => {
+  const start = Date.now();
+  const originalSend = res.send;
+  
+  res.send = function(data) {
+    const duration = Date.now() - start;
+    const logData = {
+      method: req.method,
+      url: req.url,
+      status: res.statusCode,
+      duration: `${duration}ms`,
+      ip: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString()
+    };
+    
+    // Log errors and suspicious activity
+    if (res.statusCode >= 400) {
+      console.log(`🚨 ${res.statusCode} ${req.method} ${req.url} - ${duration}ms - ${logData.ip}`);
+    }
+    
+    return originalSend.call(this, data);
+  };
+  
   next();
 };
 
