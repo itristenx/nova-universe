@@ -58,12 +58,14 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       async (error) => {
-        // Only enable mock mode for genuine network failures, not auth failures
-        if ((error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK' || !error.response) && 
-            !USE_MOCK_API) {
-          console.warn('API not available, but mock mode is disabled');
-          // Don't switch to mock mode automatically unless explicitly enabled
-        }
+        // Log API errors for debugging
+        console.error('API Error:', {
+          url: error.config?.url,
+          method: error.config?.method,
+          status: error.response?.status,
+          message: error.message,
+          code: error.code
+        });
         
         if (error.response?.status === 401) {
           localStorage.removeItem('auth_token');
@@ -95,18 +97,8 @@ class ApiClient {
       return this.mockRequest({ token: 'mock_token_12345' });
     }
 
-    try {
-      const response = await this.client.post<AuthToken>('/api/login', credentials);
-      return response.data;
-    } catch (error: any) {
-      // If it's a network error, enable mock mode and retry
-      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-        console.warn('Login failed due to network error, falling back to mock mode');
-        this.useMockMode = true;
-        return this.mockRequest({ token: 'mock_token_12345' });
-      }
-      throw error;
-    }
+    const response = await this.client.post<AuthToken>('/api/login', credentials);
+    return response.data;
   }
 
   async me(): Promise<User> {
@@ -114,18 +106,8 @@ class ApiClient {
       return this.mockRequest(mockUsers[0]);
     }
 
-    try {
-      const response = await this.client.get<User>('/api/me');
-      return response.data;
-    } catch (error: any) {
-      // If it's a network error, enable mock mode and retry
-      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-        console.warn('Me endpoint failed due to network error, falling back to mock mode');
-        this.useMockMode = true;
-        return this.mockRequest(mockUsers[0]);
-      }
-      throw error;
-    }
+    const response = await this.client.get<User>('/api/me');
+    return response.data;
   }
 
   // Users
@@ -264,19 +246,24 @@ class ApiClient {
   }
 
   async generateKioskActivation(): Promise<KioskActivation> {
-    if (this.useMockMode) {
-      return this.mockRequest({
-        id: 'activation_' + Date.now(),
-        code: 'ABC' + Math.floor(Math.random() * 1000),
-        qrCode: 'data:image/png;base64,mock_qr_code',
-        expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-        used: false,
-        createdAt: new Date().toISOString()
-      });
+    try {
+      const response = await this.client.post<KioskActivation>('/api/kiosks/activation');
+      return response.data;
+    } catch (error) {
+      console.error('Error generating kiosk activation:', error);
+      // Fallback to mock only if API is completely unavailable
+      if (this.useMockMode || !navigator.onLine) {
+        return this.mockRequest({
+          id: 'activation_' + Date.now(),
+          code: 'ABC' + Math.floor(Math.random() * 1000),
+          qrCode: 'data:image/png;base64,mock_qr_code',
+          expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
+          used: false,
+          createdAt: new Date().toISOString()
+        });
+      }
+      throw error;
     }
-
-    const response = await this.client.post<KioskActivation>('/api/kiosks/activation');
-    return response.data;
   }
 
   // Kiosk Systems Configuration
@@ -297,6 +284,25 @@ class ApiClient {
     }
 
     const response = await this.client.put<ApiResponse>('/api/kiosks/systems', { systems });
+    return response.data;
+  }
+
+  // Remote Kiosk Management
+  async refreshKioskConfig(id: string): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'Config refresh requested' });
+    }
+
+    const response = await this.client.post<ApiResponse>(`/api/kiosks/${id}/refresh-config`);
+    return response.data;
+  }
+
+  async resetKiosk(id: string): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'Kiosk reset successfully' });
+    }
+
+    const response = await this.client.post<ApiResponse>(`/api/kiosks/${id}/reset`);
     return response.data;
   }
 
@@ -372,18 +378,8 @@ class ApiClient {
       return this.mockRequest(mockConfig);
     }
 
-    try {
-      const response = await this.client.get<Config>('/api/config');
-      return response.data;
-    } catch (error: any) {
-      // If it's a network error, enable mock mode and retry
-      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-        console.warn('Config endpoint failed due to network error, falling back to mock mode');
-        this.useMockMode = true;
-        return this.mockRequest(mockConfig);
-      }
-      throw error;
-    }
+    const response = await this.client.get<Config>('/api/config');
+    return response.data;
   }
 
   async updateConfig(config: Partial<Config>): Promise<Config> {
@@ -416,7 +412,14 @@ class ApiClient {
       return this.mockRequest(newNotification);
     }
 
-    const response = await this.client.post<Notification>('/api/notifications', notification);
+    // Map frontend notification to backend format
+    const payload = {
+      message: notification.message,
+      type: notification.type,
+      level: notification.level || 'info'
+    };
+
+    const response = await this.client.post<Notification>('/api/notifications', payload);
     return response.data;
   }
 
@@ -636,21 +639,27 @@ class ApiClient {
 
   // Kiosk Activations
   async getKioskActivations(): Promise<KioskActivation[]> {
-    if (this.useMockMode) {
-      return this.mockRequest([
-        {
-          id: 'activation_123',
-          code: 'ABC123',
-          qrCode: 'data:image/png;base64,mock_qr_code',
-          expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-          used: false,
-          createdAt: new Date().toISOString()
-        }
-      ]);
+    try {
+      const response = await this.client.get<KioskActivation[]>('/api/kiosks/activations');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting kiosk activations:', error);
+      // Fallback to mock only if API is completely unavailable
+      if (this.useMockMode || !navigator.onLine) {
+        return this.mockRequest([
+          {
+            id: 'activation_123',
+            code: 'ABC123',
+            qrCode: 'data:image/png;base64,mock_qr_code',
+            expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
+            used: false,
+            createdAt: new Date().toISOString()
+          }
+        ]);
+      }
+      // Return empty array if API fails but we're not in mock mode
+      return [];
     }
-
-    const response = await this.client.get<KioskActivation[]>('/api/kiosks/activations');
-    return response.data;
   }
 
   async getKioskConfig(id: string): Promise<KioskConfig> {

@@ -18,11 +18,8 @@ This project ships with sample environment files for each app. A unified example
    - `AUTH_LIMIT` limits `/login` routes per window.
 2. `cueit-admin/.env.example`
    - `VITE_API_URL` should match your local API URL.
-   - Leave `VITE_LOGO_URL` and `VITE_ACTIVATE_URL` as provided or point to local resources.
-3. `cueit-activate/.env.example`
-   - `VITE_API_URL` should point to the local backend.
-   - `VITE_ADMIN_URL` can stay on `https://localhost:5173` if the admin UI runs locally with TLS.
-4. `cueit-slack/.env.example`
+   - Leave `VITE_LOGO_URL` as provided or point to local resources.
+3. `cueit-slack/.env.example`
    - Use dummy values for `SLACK_SIGNING_SECRET` and `SLACK_BOT_TOKEN`.
    - `API_URL` should match the local API URL.
 

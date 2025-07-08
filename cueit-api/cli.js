@@ -24,7 +24,7 @@ function askPassword(question) {
 }
 
 function changeAdminPassword() {
-  console.log('🔑 CueIT Admin Password Reset Tool');
+  console.log('🔑 CueIT Portal Password Reset Tool');
   console.log('=====================================\n');
   
   // Check if password is provided as argument
@@ -84,17 +84,6 @@ function updatePassword(newPassword) {
           console.error('❌ Failed to update password:', err.message);
         } else if (this.changes === 0) {
           console.error('❌ No users updated - check if default admin exists');
-        } else {
-          console.log('✅ Password updated successfully');
-        }
-        rl.close();
-      }
-    );
-  });
-}
-          console.error('❌ Failed to update password:', err.message);
-        } else if (this.changes === 0) {
-          console.error('❌ Default admin user not found');
         } else {
           console.log(`✅ Password updated successfully for ${adminEmail}`);
         }

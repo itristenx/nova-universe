@@ -19,21 +19,14 @@ start_services() {
     ADMIN_PID=$!
     cd ..
     
-    # Start Activation UI
-    echo "Starting Activation UI..."
-    cd cueit-activate && npm run dev &
-    ACTIVATE_PID=$!
-    cd ..
     
     # Save PIDs for later cleanup
     echo "$API_PID" > .api.pid
     echo "$ADMIN_PID" > .admin.pid
-    echo "$ACTIVATE_PID" > .activate.pid
     
     echo "✅ Services started!"
     echo "   API PID: $API_PID"
     echo "   Admin PID: $ADMIN_PID"
-    echo "   Activate PID: $ACTIVATE_PID"
     
     # Wait a moment for services to start
     sleep 3
@@ -51,7 +44,7 @@ stop_services() {
     pkill -f "vite" || true
     
     # Clean up PID files
-    rm -f .api.pid .admin.pid .activate.pid
+    rm -f .api.pid .admin.pid
     
     echo "✅ Services stopped!"
 }
@@ -71,12 +64,6 @@ show_status() {
         echo "✅ Admin UI is running"
     else
         echo "❌ Admin UI is not running"
-    fi
-    
-    if pgrep -f "npm.*dev.*cueit-activate" > /dev/null; then
-        echo "✅ Activation UI is running"
-    else
-        echo "❌ Activation UI is not running"
     fi
 }
 

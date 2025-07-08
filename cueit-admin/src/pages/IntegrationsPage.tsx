@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Card, Input, Modal, Select, Checkbox } from '@/components/ui';
 import { 
   Cog6ToothIcon,
@@ -185,6 +185,17 @@ export const IntegrationsPage: React.FC = () => {
       case 'smtp':
         return (
           <div className="space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-md p-4">
+              <div className="text-sm text-green-700">
+                <h4 className="font-medium mb-2">SMTP Setup Instructions:</h4>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                  <li><strong>Gmail:</strong> Use smtp.gmail.com, port 587, enable 2FA and use App Password</li>
+                  <li><strong>Outlook:</strong> Use smtp.live.com, port 587 with TLS</li>
+                  <li><strong>Office 365:</strong> Use smtp.office365.com, port 587 with TLS</li>
+                  <li><strong>Custom:</strong> Contact your email provider for SMTP settings</li>
+                </ul>
+              </div>
+            </div>
             <Input
               label="SMTP Host"
               value={formData.config.host || ''}
@@ -262,6 +273,79 @@ export const IntegrationsPage: React.FC = () => {
                 config: { ...formData.config, mailboxId: e.target.value }
               })}
               placeholder="123456"
+              required
+            />
+          </div>
+        );
+      case 'slack':
+        return (
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <div className="text-sm text-blue-700">
+                <h4 className="font-medium mb-2">Slack Setup Instructions:</h4>
+                <ol className="list-decimal list-inside space-y-1 text-xs">
+                  <li>Go to your Slack workspace settings</li>
+                  <li>Navigate to "Apps" → "App Directory" → "Manage"</li>
+                  <li>Create a new app or select "Incoming Webhooks"</li>
+                  <li>Enable incoming webhooks and add to workspace</li>
+                  <li>Copy the webhook URL and paste it below</li>
+                </ol>
+              </div>
+            </div>
+            <Input
+              label="Webhook URL"
+              value={formData.config.webhookUrl || ''}
+              onChange={(e) => setFormData({
+                ...formData,
+                config: { ...formData.config, webhookUrl: e.target.value }
+              })}
+              placeholder="https://hooks.slack.com/services/..."
+              required
+            />
+            <Input
+              label="Channel"
+              value={formData.config.channel || ''}
+              onChange={(e) => setFormData({
+                ...formData,
+                config: { ...formData.config, channel: e.target.value }
+              })}
+              placeholder="#general or #support"
+              required
+            />
+            <Input
+              label="Username (optional)"
+              value={formData.config.username || ''}
+              onChange={(e) => setFormData({
+                ...formData,
+                config: { ...formData.config, username: e.target.value }
+              })}
+              placeholder="CueIT Bot"
+            />
+          </div>
+        );
+      case 'teams':
+        return (
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <div className="text-sm text-blue-700">
+                <h4 className="font-medium mb-2">Microsoft Teams Setup Instructions:</h4>
+                <ol className="list-decimal list-inside space-y-1 text-xs">
+                  <li>Open Microsoft Teams and go to your channel</li>
+                  <li>Click "..." → "Connectors" → "Configure"</li>
+                  <li>Find "Incoming Webhook" and click "Add"</li>
+                  <li>Provide a name and upload an image (optional)</li>
+                  <li>Copy the webhook URL and paste it below</li>
+                </ol>
+              </div>
+            </div>
+            <Input
+              label="Webhook URL"
+              value={formData.config.webhookUrl || ''}
+              onChange={(e) => setFormData({
+                ...formData,
+                config: { ...formData.config, webhookUrl: e.target.value }
+              })}
+              placeholder="https://your-tenant.webhook.office.com/..."
               required
             />
           </div>

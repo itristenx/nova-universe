@@ -6,7 +6,9 @@ import {
   PowerIcon,
   QrCodeIcon,
   CogIcon,
-  ClipboardDocumentIcon
+  ClipboardDocumentIcon,
+  ArrowPathIcon,
+  ArrowUturnLeftIcon
 } from '@heroicons/react/24/outline';
 import { formatDate } from '@/lib/utils';
 import { api } from '@/lib/api';
@@ -146,6 +148,46 @@ export const KiosksPage: React.FC = () => {
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const refreshKioskConfig = async (id: string) => {
+    try {
+      await api.refreshKioskConfig(id);
+      addToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Config refresh requested for kiosk',
+      });
+    } catch (error) {
+      console.error('Failed to refresh kiosk config:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to refresh kiosk configuration',
+      });
+    }
+  };
+
+  const resetKiosk = async (id: string) => {
+    if (confirm('Are you sure you want to reset this kiosk? This will deactivate it and clear all custom settings.')) {
+      try {
+        await api.resetKiosk(id);
+        // Update local state to reflect the reset
+        setKiosks(kiosks.map(k => k.id === id ? { ...k, active: false } : k));
+        addToast({
+          type: 'success',
+          title: 'Success',
+          description: 'Kiosk reset successfully',
+        });
+      } catch (error) {
+        console.error('Failed to reset kiosk:', error);
+        addToast({
+          type: 'error',
+          title: 'Error',
+          description: 'Failed to reset kiosk',
+        });
+      }
     }
   };
 
@@ -295,14 +337,34 @@ export const KiosksPage: React.FC = () => {
                         size="sm"
                         onClick={() => toggleKioskActive(kiosk.id, kiosk.active)}
                         className={kiosk.active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
+                        title={kiosk.active ? 'Deactivate kiosk' : 'Activate kiosk'}
                       >
                         <PowerIcon className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedKiosk(kiosk)}
+                        onClick={() => refreshKioskConfig(kiosk.id)}
                         className="text-blue-600 hover:text-blue-900"
+                        title="Refresh kiosk configuration"
+                      >
+                        <ArrowPathIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => resetKiosk(kiosk.id)}
+                        className="text-orange-600 hover:text-orange-900"
+                        title="Reset kiosk to defaults"
+                      >
+                        <ArrowUturnLeftIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedKiosk(kiosk)}
+                        className="text-gray-600 hover:text-gray-900"
+                        title="Configure kiosk"
                       >
                         <CogIcon className="h-4 w-4" />
                       </Button>
@@ -311,6 +373,7 @@ export const KiosksPage: React.FC = () => {
                         size="sm"
                         onClick={() => deleteKiosk(kiosk.id)}
                         className="text-red-600 hover:text-red-900"
+                        title="Delete kiosk"
                       >
                         <TrashIcon className="h-4 w-4" />
                       </Button>
@@ -362,13 +425,21 @@ export const KiosksPage: React.FC = () => {
               {/* QR Code */}
               <div className="text-center">
                 <div className="mx-auto mb-4 p-4 bg-white border-2 border-gray-200 rounded-lg inline-block">
-                  <div className="w-48 h-48 bg-gray-100 rounded flex items-center justify-center">
-                    <div className="text-center">
-                      <QrCodeIcon className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-                      <p className="text-xs text-gray-500">QR Code</p>
-                      <p className="text-xs text-gray-400">{activationData.code}</p>
+                  {activationData.qrCode ? (
+                    <img 
+                      src={activationData.qrCode} 
+                      alt="QR Code for kiosk activation"
+                      className="w-48 h-48"
+                    />
+                  ) : (
+                    <div className="w-48 h-48 bg-gray-100 rounded flex items-center justify-center">
+                      <div className="text-center">
+                        <QrCodeIcon className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                        <p className="text-xs text-gray-500">Generating QR Code...</p>
+                        <p className="text-xs text-gray-400">{activationData.code}</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 <p className="text-sm text-gray-600">
                   Scan this QR code with the kiosk app to activate
@@ -525,6 +596,20 @@ export const KiosksPage: React.FC = () => {
                 </Button>
                 <Button
                   variant="secondary"
+                  onClick={() => refreshKioskConfig(selectedKiosk.id)}
+                >
+                  <ArrowPathIcon className="h-4 w-4 mr-2" />
+                  Refresh Config
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => resetKiosk(selectedKiosk.id)}
+                >
+                  <ArrowUturnLeftIcon className="h-4 w-4 mr-2" />
+                  Reset Kiosk
+                </Button>
+                <Button
+                  variant="secondary"
                   onClick={() => {
                     // Refresh kiosk status
                     loadKiosks();
@@ -536,15 +621,117 @@ export const KiosksPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-blue-800">
-                    Advanced Configuration
-                  </h3>
-                  <div className="mt-2 text-sm text-blue-700">
-                    <p>Advanced kiosk configuration features including remote updates, branding customization, and detailed monitoring will be available here.</p>
+            <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+              <h3 className="text-sm font-medium text-gray-800 mb-4">
+                Kiosk Configuration
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label htmlFor="welcome-message" className="block text-sm font-medium text-gray-700 mb-2">
+                      Welcome Message
+                    </label>
+                    <textarea
+                      id="welcome-message"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      rows={3}
+                      defaultValue="Welcome to CueIT! How can we help you today?"
+                      title="Welcome message displayed on kiosk"
+                    />
                   </div>
+                  <div>
+                    <label htmlFor="help-message" className="block text-sm font-medium text-gray-700 mb-2">
+                      Help Message
+                    </label>
+                    <textarea
+                      id="help-message"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      rows={2}
+                      defaultValue="Touch the screen to submit a support request or get help."
+                      title="Help message displayed on kiosk"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="status-message" className="block text-sm font-medium text-gray-700 mb-2">
+                      Status Message
+                    </label>
+                    <textarea
+                      id="status-message"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      rows={2}
+                      defaultValue="IT Support is available to assist you."
+                      title="Status message displayed on kiosk"
+                    />
+                  </div>
+                </div>
+                
+                <div className="border-t border-gray-300 pt-4">
+                  <h4 className="text-sm font-medium text-gray-800 mb-3">Open/Closed Status</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-4">
+                      <label className="flex items-center">
+                        <input 
+                          type="radio" 
+                          name="kiosk-status" 
+                          value="open" 
+                          className="mr-2" 
+                          defaultChecked 
+                          title="Kiosk is open and accepting requests" 
+                        />
+                        <span className="text-sm text-gray-700">Open (Accepting Requests)</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input 
+                          type="radio" 
+                          name="kiosk-status" 
+                          value="closed" 
+                          className="mr-2" 
+                          title="Kiosk is closed and not accepting requests" 
+                        />
+                        <span className="text-sm text-gray-700">Closed (Temporarily Unavailable)</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-300 pt-4">
+                  <h4 className="text-sm font-medium text-gray-800 mb-3">Branding & Assets</h4>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <label htmlFor="logo-url" className="block text-sm font-medium text-gray-700 mb-2">
+                        Logo URL
+                      </label>
+                      <input
+                        id="logo-url"
+                        type="url"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        placeholder="https://example.com/logo.png"
+                        title="Logo displayed on kiosk welcome screen"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="background-url" className="block text-sm font-medium text-gray-700 mb-2">
+                        Background Image URL
+                      </label>
+                      <input
+                        id="background-url"
+                        type="url"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        placeholder="https://example.com/background.jpg"
+                        title="Background image for kiosk interface"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-xs text-gray-500 mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <strong>Note:</strong> Display timeout, sound settings, and device-level configurations are managed through your Mobile Device Management (MDM) system.
+                </div>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <Button variant="primary" size="sm">
+                    Save Kiosk Configuration
+                  </Button>
                 </div>
               </div>
             </div>

@@ -6,7 +6,7 @@ import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
-const apps = ['cueit-api', 'cueit-admin', 'cueit-activate', 'cueit-slack'];
+const apps = ['cueit-api', 'cueit-admin', 'cueit-slack'];
 const scriptPath = new URL('..', import.meta.url);
 const initScript = join(scriptPath.pathname, 'init-env.sh');
 

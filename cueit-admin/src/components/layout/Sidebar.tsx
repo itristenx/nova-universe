@@ -71,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 />
               </div>
               <div className="ml-3">
-                <h1 className="text-xl font-bold text-gray-900">CueIT Admin</h1>
+                <h1 className="text-xl font-bold text-gray-900">CueIT Portal</h1>
               </div>
             </div>
           </div>

@@ -167,6 +167,7 @@ db.serialize(() => {
 
   addColumnIfMissing('notifications', 'active INTEGER DEFAULT 1');
   addColumnIfMissing('notifications', 'created_at TEXT');
+  addColumnIfMissing('notifications', 'type TEXT DEFAULT "system"');
   addColumnIfMissing('users', 'passwordHash TEXT');
   addColumnIfMissing('users', 'disabled INTEGER DEFAULT 0');
   addColumnIfMissing('users', 'is_default INTEGER DEFAULT 0');
@@ -175,17 +176,12 @@ db.serialize(() => {
 
   // After adding columns, mark default admin users
   setTimeout(() => {
-    const defaultEmails = [
-      process.env.ADMIN_EMAIL || 'admin@example.com',
-      'admin@localhost.local' // Also mark the localhost admin as default
-    ];
+    const defaultEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
     
-    defaultEmails.forEach(email => {
-      db.run('UPDATE users SET is_default = 1 WHERE email = ? AND is_default IS NOT NULL', [email], (err) => {
-        if (!err) {
-          if (!process.env.CLI_MODE) console.log(`✅ Marked ${email} as default admin user`);
-        }
-      });
+    db.run('UPDATE users SET is_default = 1 WHERE email = ? AND is_default IS NOT NULL', [defaultEmail], (err) => {
+      if (!err) {
+        if (!process.env.CLI_MODE) console.log(`✅ Marked ${defaultEmail} as default admin user`);
+      }
     });
 
     // Create unique index on email if it doesn't exist
@@ -238,7 +234,19 @@ db.serialize(() => {
     directoryEnabled: '0',
     directoryProvider: 'mock',
     directoryUrl: '',
-    directoryToken: ''
+    directoryToken: '',
+    // Default SMTP integration - enabled by default
+    integration_smtp: JSON.stringify({
+      enabled: true,
+      config: {
+        host: process.env.SMTP_HOST || '',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true',
+        username: process.env.SMTP_USER || '',
+        password: process.env.SMTP_PASS || ''
+      },
+      updatedAt: new Date().toISOString()
+    })
   };
   
   // Hash admin password with proper salt rounds (12 for better security)

@@ -16,11 +16,11 @@ mkdir -p "$PKG_ROOT/Applications"
 # Copy backend and frontends into the packaged resources directory
 RES_DIR="$APP_PATH/Contents/Resources"
 mkdir -p "$RES_DIR/installers"
-cp -R cueit-api cueit-admin cueit-activate cueit-slack design "$RES_DIR/"
+cp -R cueit-api cueit-admin cueit-slack design "$RES_DIR/"
 cp installers/start-all.sh "$RES_DIR/installers/"
 # copy .env.example to .env so the launcher does not need to write inside
 # the application bundle on first run
-for pkg in cueit-api cueit-admin cueit-activate cueit-slack; do
+for pkg in cueit-api cueit-admin cueit-slack; do
   cp "$pkg/.env.example" "$RES_DIR/$pkg/.env"
 done
 # Include certificates if present

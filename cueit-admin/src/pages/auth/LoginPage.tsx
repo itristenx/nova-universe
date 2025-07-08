@@ -77,7 +77,7 @@ export const LoginPage: React.FC = () => {
             />
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Sign in to CueIT Admin
+            Sign in to CueIT Portal
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Manage your kiosks, users, and support tickets

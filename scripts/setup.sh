@@ -22,7 +22,7 @@ if ! command -v mailpit >/dev/null 2>&1; then
   echo "Mailpit not found – install from https://github.com/axllent/mailpit if needed."
 fi
 
-# Install Node dependencies for backend, admin, activate page and Slack service
+# Install Node dependencies for backend, admin, and Slack service
 pushd cueit-api >/dev/null
 npm ci
 popd >/dev/null
@@ -30,12 +30,6 @@ popd >/dev/null
 pushd cueit-admin >/dev/null
 npm ci
 popd >/dev/null
-
-if [ -d cueit-activate ]; then
-  pushd cueit-activate >/dev/null
-  npm ci
-  popd >/dev/null
-fi
 
 if [ -d cueit-slack ]; then
   pushd cueit-slack >/dev/null
@@ -45,7 +39,7 @@ fi
 
 # Automatically create .env files if they do not exist
 missing_env=false
-for dir in cueit-api cueit-admin cueit-activate cueit-slack; do
+for dir in cueit-api cueit-admin cueit-slack; do
   [ -f "$dir/.env" ] || missing_env=true
 done
 if [ "$missing_env" = true ]; then
