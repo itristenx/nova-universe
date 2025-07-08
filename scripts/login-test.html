@@ -59,11 +59,9 @@
         async function checkCurrentState() {
             const state = document.getElementById('current-state');
             const authToken = localStorage.getItem('auth_token');
-            const authStorage = localStorage.getItem('auth-storage');
             
             state.innerHTML = `
                 <p><strong>Auth Token:</strong> ${authToken ? 'Present (length: ' + authToken.length + ')' : 'Not found'}</p>
-                <p><strong>Auth Storage:</strong> ${authStorage ? 'Present' : 'Not found'}</p>
                 <p><strong>Current URL:</strong> ${window.location.href}</p>
                 <p><strong>LocalStorage Keys:</strong> ${Object.keys(localStorage).join(', ') || 'None'}</p>
             `;
