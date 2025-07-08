@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CueIT Login Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 5px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>CueIT Authentication Test</h1>
+    
+    <div class="test-section">
+        <h3>Manual Login Test</h3>
+        <div>
+            <input type="email" id="email" placeholder="Email" value="admin@example.com">
+            <input type="password" id="password" placeholder="Password" value="admin">
+            <button onclick="testLogin()">Test Login</button>
+            <button onclick="clearAuth()">Clear Auth</button>
+        </div>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>API Test Results</h3>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Current State</h3>
+        <button onclick="checkCurrentState()">Check Current State</button>
+        <div id="current-state"></div>
+    </div>
+
+    <script>
+        async function log(message, type = 'info') {
+            const results = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        async function clearAuth() {
+            localStorage.clear();
+            sessionStorage.clear();
+            await log('Cleared all local storage and session storage', 'info');
+            checkCurrentState();
+        }
+
+        async function checkCurrentState() {
+            const state = document.getElementById('current-state');
+            const authToken = localStorage.getItem('auth_token');
+            
+            state.innerHTML = `
+                <p><strong>Auth Token:</strong> ${authToken ? 'Present (length: ' + authToken.length + ')' : 'Not found'}</p>
+                <p><strong>Current URL:</strong> ${window.location.href}</p>
+                <p><strong>LocalStorage Keys:</strong> ${Object.keys(localStorage).join(', ') || 'None'}</p>
+            `;
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('login-result');
+            
+            try {
+                await log('Starting login test...', 'info');
+                
+                // Clear previous auth
+                localStorage.removeItem('auth_token');
+                
+                // Test 1: Login API
+                await log('Step 1: Testing login API...', 'info');
+                const loginResponse = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (!loginResponse.ok) {
+                    const error = await loginResponse.json();
+                    throw new Error(`Login failed: ${JSON.stringify(error)}`);
+                }
+                
+                const { token } = await loginResponse.json();
+                await log(`✅ Login successful, token length: ${token.length}`, 'success');
+                
+                // Store token
+                localStorage.setItem('auth_token', token);
+                
+                // Test 2: Profile API with stored token
+                await log('Step 2: Testing profile API with stored token...', 'info');
+                const profileResponse = await fetch('/api/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!profileResponse.ok) {
+                    const error = await profileResponse.json();
+                    throw new Error(`Profile failed: ${JSON.stringify(error)}`);
+                }
+                
+                const user = await profileResponse.json();
+                await log(`✅ Profile successful: ${user.name} (${user.email})`, 'success');
+                
+                // Test 3: Test automatic auth header
+                await log('Step 3: Testing automatic auth header...', 'info');
+                const autoAuthResponse = await fetch('/api/me');  // Should use stored token automatically
+                
+                if (autoAuthResponse.ok) {
+                    await log('✅ Automatic auth header working', 'success');
+                } else {
+                    await log('⚠️ Automatic auth header not working', 'error');
+                }
+                
+                resultDiv.innerHTML = '<div class="success">✅ Login test completed successfully!</div>';
+                checkCurrentState();
+                
+            } catch (error) {
+                await log(`❌ Login test failed: ${error.message}`, 'error');
+                resultDiv.innerHTML = `<div class="error">❌ Login failed: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-check current state on load
+        checkCurrentState();
+    </script>
+</body>
+</html>

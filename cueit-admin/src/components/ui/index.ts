@@ -5,5 +5,5 @@ export { Toast, ToastContainer, ConnectedToastContainer } from './Toast';
 export { Modal } from './Modal';
 export { Select } from './Select';
 export { Textarea } from './Textarea';
-export { Checkbox } from './Checkbox';
+export { Checkbox } from './checkbox';
 export { FileInput } from './FileInput';

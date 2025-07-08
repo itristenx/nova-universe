@@ -177,11 +177,11 @@ export const DashboardPage: React.FC = () => {
                       {kiosk.active ? 'Active' : 'Inactive'}
                     </span>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      kiosk.currentStatus === 'open' ? 'bg-blue-100 text-blue-800' :
-                      kiosk.currentStatus === 'closed' ? 'bg-gray-100 text-gray-800' :
+                      kiosk.effectiveConfig.currentStatus === 'open' ? 'bg-blue-100 text-blue-800' :
+                      kiosk.effectiveConfig.currentStatus === 'closed' ? 'bg-gray-100 text-gray-800' :
                       'bg-red-100 text-red-800'
                     }`}>
-                      {kiosk.currentStatus || 'Unknown'}
+                      {kiosk.effectiveConfig.currentStatus || 'Unknown'}
                     </span>
                   </div>
                 </div>

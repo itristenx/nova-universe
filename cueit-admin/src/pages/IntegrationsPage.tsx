@@ -520,17 +520,17 @@ export const IntegrationsPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {integrations.map((integration) => (
               <div key={integration.id} className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     {getStatusIcon(integration.enabled, integration.working)}
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                         {integration.name}
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {integrationTypes.find(t => t.value === integration.type)?.label || integration.type}
                       </p>
                     </div>
@@ -541,7 +541,7 @@ export const IntegrationsPage: React.FC = () => {
                       size="sm"
                       onClick={() => testIntegration(integration.id)}
                       isLoading={testingIntegration === integration.id}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       Test
                     </Button>
@@ -549,7 +549,7 @@ export const IntegrationsPage: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => openEditModal(integration)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </Button>
@@ -557,7 +557,7 @@ export const IntegrationsPage: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => deleteIntegration(integration.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </Button>
@@ -565,8 +565,8 @@ export const IntegrationsPage: React.FC = () => {
                 </div>
                 
                 {integration.lastError && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm text-red-600">{integration.lastError}</p>
+                  <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                    <p className="text-sm text-red-600 dark:text-red-400">{integration.lastError}</p>
                   </div>
                 )}
               </div>

@@ -31,39 +31,82 @@ export const mockKiosks: Kiosk[] = [
     lastSeen: new Date().toISOString(),
     version: '2.1.0',
     active: true,
-    logoUrl: '',
-    bgUrl: '',
-    statusEnabled: true,
-    currentStatus: 'open',
-    openMsg: 'IT Support is available',
-    closedMsg: 'IT Support is closed',
-    errorMsg: 'System error occurred'
+    configScope: 'global',
+    hasOverrides: false,
+    overrideCount: 0,
+    effectiveConfig: {
+      logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=CueIT',
+      bgUrl: '',
+      statusEnabled: true,
+      currentStatus: 'open',
+      openMsg: 'Help Desk is Open',
+      closedMsg: 'Help Desk is Closed',
+      errorMsg: 'System error occurred'
+    }
   },
   {
     id: 'kiosk-002',
     lastSeen: new Date(Date.now() - 300000).toISOString(), // 5 minutes ago
     version: '2.0.5',
     active: true,
-    logoUrl: '',
-    bgUrl: '',
-    statusEnabled: true,
-    currentStatus: 'closed',
-    openMsg: 'IT Support is available',
-    closedMsg: 'IT Support is closed',
-    errorMsg: 'System error occurred'
+    configScope: 'individual',
+    hasOverrides: true,
+    overrideCount: 3,
+    effectiveConfig: {
+      logoUrl: 'https://via.placeholder.com/200x60/FF6B35/FFFFFF?text=Reception',
+      bgUrl: '',
+      statusEnabled: true,
+      currentStatus: 'meeting',
+      openMsg: 'Reception is available',
+      closedMsg: 'Reception is closed',
+      errorMsg: 'System maintenance'
+    },
+    overrides: {
+      status: {
+        scope: 'individual',
+        kioskId: 'kiosk-002',
+        overriddenAt: new Date().toISOString(),
+        overriddenBy: 'admin@example.com'
+      },
+      branding: {
+        scope: 'individual',
+        kioskId: 'kiosk-002',
+        overriddenAt: new Date().toISOString(),
+        overriddenBy: 'admin@example.com'
+      },
+      schedule: {
+        scope: 'individual',
+        kioskId: 'kiosk-002',
+        overriddenAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+        overriddenBy: 'manager@example.com'
+      }
+    }
   },
   {
     id: 'kiosk-003',
     lastSeen: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
     version: '2.1.0',
     active: false,
-    logoUrl: '',
-    bgUrl: '',
-    statusEnabled: false,
-    currentStatus: 'error',
-    openMsg: 'IT Support is available',
-    closedMsg: 'IT Support is closed',
-    errorMsg: 'System error occurred'
+    configScope: 'individual',
+    hasOverrides: true,
+    overrideCount: 1,
+    effectiveConfig: {
+      logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=CueIT',
+      bgUrl: '',
+      statusEnabled: false,
+      currentStatus: 'closed',
+      openMsg: 'IT Support Available',
+      closedMsg: 'IT Support Currently Closed - Back at 8 AM',
+      errorMsg: 'System error occurred'
+    },
+    overrides: {
+      officeHours: {
+        scope: 'individual',
+        kioskId: 'kiosk-003',
+        overriddenAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+        overriddenBy: 'it-admin@example.com'
+      }
+    }
   }
 ];
 

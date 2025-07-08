@@ -5,7 +5,7 @@ import { Input } from '../components/ui/Input';
 import { useToastStore } from '@/stores/toast';
 import { api } from '../lib/api';
 import { KioskActivation } from '../types';
-import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
 export const KioskActivationPage: React.FC = () => {
   const [kioskId, setKioskId] = useState('');
@@ -20,15 +20,20 @@ export const KioskActivationPage: React.FC = () => {
   useEffect(() => {
     loadActivations();
     loadSystems();
+    
+    // Auto-refresh activations every 30 seconds to sync with other pages
+    const interval = setInterval(loadActivations, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadSystems = async () => {
     try {
       setSystemsLoading(true);
       const data = await api.getKioskSystems();
-      setSystems(data.systems);
+      setSystems(data?.systems || []);
     } catch (error) {
       console.error('Failed to load systems:', error);
+      setSystems([]); // Ensure systems is always an array
       addToast({
         type: 'error',
         title: 'Error',
@@ -119,7 +124,7 @@ export const KioskActivationPage: React.FC = () => {
       return;
     }
 
-    if (systems.includes(newSystem.trim())) {
+    if ((systems || []).includes(newSystem.trim())) {
       addToast({
         type: 'error',
         title: 'Error',
@@ -129,7 +134,7 @@ export const KioskActivationPage: React.FC = () => {
     }
 
     try {
-      const updatedSystems = [...systems, newSystem.trim()];
+      const updatedSystems = [...(systems || []), newSystem.trim()];
       await api.updateKioskSystems(updatedSystems);
       setSystems(updatedSystems);
       setNewSystem('');
@@ -150,7 +155,7 @@ export const KioskActivationPage: React.FC = () => {
 
   const removeSystem = async (systemToRemove: string) => {
     try {
-      const updatedSystems = systems.filter(s => s !== systemToRemove);
+      const updatedSystems = (systems || []).filter(s => s !== systemToRemove);
       await api.updateKioskSystems(updatedSystems);
       setSystems(updatedSystems);
       addToast({
@@ -260,7 +265,7 @@ export const KioskActivationPage: React.FC = () => {
           <div className="text-center py-8">Loading systems...</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {systems.map((system) => (
+            {(systems || []).map((system) => (
               <div
                 key={system}
                 className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg border"
@@ -277,7 +282,7 @@ export const KioskActivationPage: React.FC = () => {
                 </button>
               </div>
             ))}
-            {systems.length === 0 && (
+            {(systems || []).length === 0 && (
               <div className="col-span-full text-center py-8 text-gray-500">
                 No systems configured yet.
               </div>
@@ -288,9 +293,22 @@ export const KioskActivationPage: React.FC = () => {
 
       {/* Activation Codes List */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Activation Codes
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Activation Codes
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={loadActivations}
+            disabled={loading}
+            className="text-blue-600 hover:text-blue-900"
+            title="Refresh activation codes"
+          >
+            <ArrowPathIcon className="w-4 h-4 mr-1" />
+            Refresh
+          </Button>
+        </div>
         
         {loading ? (
           <div className="text-center py-8">Loading activations...</div>
@@ -350,68 +368,6 @@ export const KioskActivationPage: React.FC = () => {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-      </Card>
-
-      {/* Kiosk Systems Management */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Kiosk Systems Configuration
-        </h2>
-        <p className="text-gray-600 mb-4">
-          Manage the list of systems that appear in the kiosk interface for ticket creation.
-        </p>
-        
-        {/* Add New System */}
-        <div className="mb-6">
-          <div className="flex space-x-2">
-            <Input
-              value={newSystem}
-              onChange={(e) => setNewSystem(e.target.value)}
-              placeholder="Enter new system name"
-              onKeyPress={(e) => e.key === 'Enter' && addSystem()}
-              className="flex-1"
-            />
-            <Button
-              variant="primary"
-              onClick={addSystem}
-              disabled={!newSystem.trim() || systemsLoading}
-              className="flex items-center space-x-2"
-            >
-              <PlusIcon className="w-4 h-4" />
-              <span>Add</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Systems List */}
-        {systemsLoading ? (
-          <div className="text-center py-8">Loading systems...</div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {systems.map((system) => (
-              <div
-                key={system}
-                className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg border"
-              >
-                <span className="text-sm font-medium text-gray-900">
-                  {system}
-                </span>
-                <button
-                  onClick={() => removeSystem(system)}
-                  className="text-red-500 hover:text-red-700 transition-colors"
-                  title="Remove system"
-                >
-                  <XMarkIcon className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-            {systems.length === 0 && (
-              <div className="col-span-full text-center py-8 text-gray-500">
-                No systems configured yet.
-              </div>
-            )}
           </div>
         )}
       </Card>

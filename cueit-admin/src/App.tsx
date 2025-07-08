@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from '@/components/layout';
 import { ConnectedToastContainer } from '@/components/ui';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { useAuthStore } from '@/stores/auth';
@@ -61,7 +62,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
       const token = localStorage.getItem('auth_token');
       if (token) {
         try {
-          const user = await api.me();
+          const user = await api.me(token);
           login(token, user);
         } catch (error) {
           localStorage.removeItem('auth_token');
@@ -180,12 +181,14 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <Router>
-          <AppRoutes />
-          <ConnectedToastContainer />
-        </Router>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <Router>
+            <AppRoutes />
+            <ConnectedToastContainer />
+          </Router>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 };
