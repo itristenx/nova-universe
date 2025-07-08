@@ -39,8 +39,8 @@ struct StatusIndicatorBar: View {
                     ))
             }
         }
-        .onChange(of: connectionStatus.state) { newState in
-            updateShowRetryButton(for: newState)
+        .onChange(of: connectionStatus.state) {
+            updateShowRetryButton(for: connectionStatus.state)
         }
         .onAppear {
             updateShowRetryButton(for: connectionStatus.state)
@@ -68,17 +68,17 @@ struct StatusIndicatorBar: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(connectionStatus.state.displayName)
                 .font(Theme.Typography.caption1.weight(.medium))
-                .foregroundColor(Theme.Colors.label)
+                .foregroundColor(Color.primary)
             
             if let errorMessage = connectionStatus.errorMessage {
                 Text(errorMessage)
                     .font(Theme.Typography.caption2)
-                    .foregroundColor(Theme.Colors.secondaryLabel)
+                    .foregroundColor(Color.secondary)
                     .lineLimit(1)
             } else if connectionStatus.state == .connected, !connectionStatus.kioskId.isEmpty {
                 Text("Kiosk ID: \(connectionStatus.kioskId)")
                     .font(Theme.Typography.caption2)
-                    .foregroundColor(Theme.Colors.secondaryLabel)
+                    .foregroundColor(Color.secondary)
             }
         }
     }
@@ -100,7 +100,7 @@ struct StatusIndicatorBar: View {
             // Expand/collapse indicator
             Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(Theme.Colors.tertiaryLabel)
+                .foregroundColor(Color(UIColor.tertiaryLabel))
                 .rotationEffect(.degrees(isExpanded ? 180 : 0))
         }
     }
@@ -156,13 +156,13 @@ struct StatusIndicatorBar: View {
         HStack {
             Text(label)
                 .font(Theme.Typography.caption2.weight(.medium))
-                .foregroundColor(Theme.Colors.secondaryLabel)
+                .foregroundColor(Color.secondary)
             
             Spacer()
             
             Text(value)
                 .font(Theme.Typography.caption2)
-                .foregroundColor(Theme.Colors.label)
+                .foregroundColor(Color.primary)
                 .lineLimit(1)
         }
     }
@@ -218,7 +218,7 @@ struct CompactStatusIndicator: View {
             
             Text(connectionStatus.state.displayName)
                 .font(Theme.Typography.caption2.weight(.medium))
-                .foregroundColor(Theme.Colors.secondaryLabel)
+                .foregroundColor(Color.secondary)
         }
         .padding(.horizontal, Theme.Spacing.xs)
         .padding(.vertical, 2)

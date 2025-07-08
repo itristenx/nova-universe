@@ -13,17 +13,14 @@ enum Theme {
         // Semantic Font Styles
         static let largeTitle = Font.largeTitle.weight(.bold)
         static let title = Font.title.weight(.bold)
-        static let title1 = Font.title.weight(.bold)
         static let title2 = Font.title2.weight(.bold)
         static let title3 = Font.title3.weight(.semibold)
         static let headline = Font.headline.weight(.semibold)
         static let subheadline = Font.subheadline.weight(.medium)
         static let body = Font.body
         static let bodyBold = Font.body.weight(.semibold)
-        static let bodyEmphasized = Font.body.weight(.semibold)
         static let callout = Font.callout
         static let footnote = Font.footnote
-        static let caption = Font.caption
         static let caption1 = Font.caption
         static let caption2 = Font.caption2
         
@@ -71,6 +68,11 @@ enum Theme {
         static let textSecondary = Color.secondary
         static let textTertiary = Color(.tertiaryLabel)
         static let textInverse = Color.white
+        
+        // Legacy compatibility - iOS system label colors
+        static let label = Color.primary
+        static let secondaryLabel = Color.secondary
+        static let tertiaryLabel = Color(.tertiaryLabel)
         
         // Interactive Colors
         static let fill = Color(.systemFill)
@@ -139,6 +141,9 @@ enum Theme {
         static let button: CGFloat = 12
         static let card: CGFloat = 16
         static let sheet: CGFloat = 20
+        
+        // Legacy compatibility
+        static let medium: CGFloat = 8
     }
     
     // MARK: - Shadows
