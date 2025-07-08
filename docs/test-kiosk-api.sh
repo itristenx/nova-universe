@@ -33,6 +33,14 @@ test_api "Categories (with token)" "$API_BASE/api/categories?token=$KIOSK_TOKEN"
 
 echo "🏁 Test Complete"
 
+# Exit with non-zero status if any test failed
+if [[ $test_failed -eq 1 ]]; then
+    echo "❌ One or more tests failed."
+    exit 1
+else
+    echo "✅ All tests passed."
+    exit 0
+fi
 # Check if server is running
 if ! curl -s http://localhost:3000/api/health > /dev/null; then
     echo ""
