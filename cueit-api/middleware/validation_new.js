@@ -31,7 +31,7 @@ export const validateInput = {
     const { activationCode } = req.body;
     if (activationCode) {
       // Use case-insensitive regex to accept mixed-case entries
-      const codeRegex = /^[A-HJ-NP-Z2-9]{8}$/i; // Case-insensitive
+      const codeRegex = /^[A-HJ-NP-Z2-9]{8}$/i; // Case-insensitive, exactly 8 characters
       if (!codeRegex.test(activationCode)) {
         return res.status(400).json({ error: 'Invalid activation code format' });
       }
