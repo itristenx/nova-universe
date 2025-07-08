@@ -4,6 +4,7 @@ import cors from 'cors';
 import nodemailer from 'nodemailer';
 import axios from 'axios';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import session from 'express-session';
 import passport from 'passport';
 import rateLimit from 'express-rate-limit';
@@ -13,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import events from './events.js';
 import * as directory from './directory.js';
 import { sign, verify } from './jwt.js';
+import jwt from 'jsonwebtoken';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import https from 'https';
@@ -58,6 +60,7 @@ const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' ||
   process.env.NODE_ENV === 'test';
 const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
 const KIOSK_TOKEN = process.env.KIOSK_TOKEN || '';
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET;
 
 if (!DISABLE_AUTH && !process.env.SESSION_SECRET) {
   console.error('SESSION_SECRET environment variable is required');
@@ -257,13 +260,23 @@ const kioskOrAuth = (req, res, next) => {
 
 // SAML authentication routes (only if SAML is configured)
 if (!DISABLE_AUTH && process.env.SAML_ENTRY_POINT) {
-  app.get('/login', authLimiter, passport.authenticate('saml'));
+  app.get('/auth/saml', authLimiter, passport.authenticate('saml'));
   app.post(
-    '/login/callback',
+    '/auth/saml/callback',
     authLimiter,
-    passport.authenticate('saml', { failureRedirect: '/login' }),
+    passport.authenticate('saml', { failureRedirect: '/?error=sso_failed' }),
     (req, res) => {
-      res.redirect(process.env.ADMIN_URL || '/');
+      // Generate JWT token for SAML authenticated user
+      const token = sign({ 
+        id: req.user.id, 
+        name: req.user.name, 
+        email: req.user.email,
+        sso: true 
+      });
+      
+      // Redirect to admin UI with token
+      const adminUrl = process.env.ADMIN_URL || 'http://localhost:5173';
+      res.redirect(`${adminUrl}/?token=${encodeURIComponent(token)}`);
     }
   );
 }
@@ -449,17 +462,42 @@ app.put("/api/config", ensureAuth, (req, res) => {
 
 app.get('/api/status-config', ensureAuth, (req, res) => {
   db.all(
-    "SELECT key, value FROM config WHERE key IN ('statusOpenMsg','statusClosedMsg','statusErrorMsg')",
+    "SELECT key, value FROM config WHERE key IN ('statusEnabled', 'currentStatus', 'statusOpenMsg','statusClosedMsg','statusErrorMsg','statusMeetingMsg','statusBrbMsg','statusLunchMsg')",
     (err, rows) => {
       if (err) return res.status(500).json({ error: 'DB error' });
-      const out = Object.fromEntries(rows.map((r) => [r.key, r.value]));
-      res.json(out);
+      const config = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+      
+      // Convert to the expected format for the frontend
+      const response = {
+        enabled: config.statusEnabled === '1' || config.statusEnabled === 'true',
+        currentStatus: config.currentStatus || 'closed',
+        openMessage: config.statusOpenMsg || 'Help Desk is Open',
+        closedMessage: config.statusClosedMsg || 'Help Desk is Closed',
+        errorMessage: config.statusErrorMsg || 'Service temporarily unavailable',
+        meetingMessage: config.statusMeetingMsg || 'In a Meeting',
+        brbMessage: config.statusBrbMsg || 'Be Right Back',
+        lunchMessage: config.statusLunchMsg || 'Out to Lunch'
+      };
+      
+      res.json(response);
     }
   );
 });
 
 app.put('/api/status-config', ensureAuth, (req, res) => {
-  const updates = req.body;
+  const { enabled, currentStatus, openMessage, closedMessage, errorMessage, meetingMessage, brbMessage, lunchMessage } = req.body;
+  
+  // Convert frontend format to backend config keys
+  const updates = {};
+  if (enabled !== undefined) updates.statusEnabled = enabled ? '1' : '0';
+  if (currentStatus !== undefined) updates.currentStatus = currentStatus;
+  if (openMessage !== undefined) updates.statusOpenMsg = openMessage;
+  if (closedMessage !== undefined) updates.statusClosedMsg = closedMessage;
+  if (errorMessage !== undefined) updates.statusErrorMsg = errorMessage;
+  if (meetingMessage !== undefined) updates.statusMeetingMsg = meetingMessage;
+  if (brbMessage !== undefined) updates.statusBrbMsg = brbMessage;
+  if (lunchMessage !== undefined) updates.statusLunchMsg = lunchMessage;
+
   const stmt = db.prepare(
     `INSERT INTO config (key, value) VALUES (?, ?)
      ON CONFLICT(key) DO UPDATE SET value=excluded.value`
@@ -469,7 +507,7 @@ app.put('/api/status-config', ensureAuth, (req, res) => {
       stmt.run(k, String(v));
     }
     stmt.finalize((err) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
+      if (err) return res.status(500).json({ error: "DB error" });
       events.emit('status-config-updated', updates);
       res.json({ message: 'updated' });
     });
@@ -502,6 +540,171 @@ app.put('/api/directory-config', ensureAuth, (req, res) => {
       res.json({ message: 'updated' });
     });
   });
+});
+
+// SSO Configuration endpoint
+app.get('/api/sso-config', ensureAuth, (req, res) => {
+  // Check database first, fall back to environment variables
+  db.get('SELECT enabled, provider, configuration FROM sso_configurations WHERE id = 1', (err, row) => {
+    if (err) {
+      console.error('Error fetching SSO config:', err);
+    }
+    
+    let config = {
+      enabled: false,
+      provider: 'saml',
+      saml: {
+        enabled: false,
+        entryPoint: '',
+        issuer: '',
+        callbackUrl: '',
+        cert: ''
+      }
+    };
+    
+    if (row && row.enabled) {
+      try {
+        const dbConfig = JSON.parse(row.configuration || '{}');
+        config = {
+          enabled: !!row.enabled,
+          provider: row.provider || 'saml',
+          ...dbConfig
+        };
+      } catch (e) {
+        console.error('Error parsing SSO configuration:', e);
+      }
+    } else {
+      // Fallback to environment variables for backward compatibility
+      const samlEnabled = !!(process.env.SAML_ENTRY_POINT && process.env.SAML_ISSUER && process.env.SAML_CALLBACK_URL);
+      config = {
+        enabled: samlEnabled,
+        provider: 'saml',
+        saml: {
+          enabled: samlEnabled,
+          entryPoint: process.env.SAML_ENTRY_POINT || '',
+          issuer: process.env.SAML_ISSUER || '',
+          callbackUrl: process.env.SAML_CALLBACK_URL || '',
+          cert: process.env.SAML_CERT ? '***CONFIGURED***' : ''
+        }
+      };
+    }
+    
+    res.json(config);
+  });
+});
+
+// SCIM Configuration endpoint  
+app.get('/api/scim-config', ensureAuth, (req, res) => {
+  // Check database first, fall back to environment variables
+  db.get('SELECT * FROM scim_configurations WHERE id = 1', (err, row) => {
+    if (err) {
+      console.error('Error fetching SCIM config:', err);
+    }
+    
+    let config = {
+      enabled: false,
+      token: '',
+      endpoint: '/scim/v2',
+      autoProvisioning: true,
+      autoDeprovisioning: false,
+      syncInterval: 3600
+    };
+    
+    if (row) {
+      config = {
+        enabled: !!row.enabled,
+        token: row.bearer_token ? '***CONFIGURED***' : '',
+        endpoint: row.endpoint_url || '/scim/v2',
+        autoProvisioning: !!row.auto_provisioning,
+        autoDeprovisioning: !!row.auto_deprovisioning,
+        syncInterval: row.sync_interval || 3600,
+        lastSync: row.last_sync
+      };
+    } else {
+      // Fallback to environment variables for backward compatibility
+      const scimEnabled = !!SCIM_TOKEN;
+      config = {
+        enabled: scimEnabled,
+        token: scimEnabled ? '***CONFIGURED***' : '',
+        endpoint: '/scim/v2'
+      };
+    }
+    
+    res.json(config);
+  });
+});
+
+// SSO availability endpoint (no authentication required for login page)
+app.get('/api/sso-available', (req, res) => {
+  // Check database first, fall back to environment variables
+  db.get('SELECT enabled, configuration FROM sso_configurations WHERE id = 1', (err, row) => {
+    if (err) {
+      console.error('Error checking SSO config:', err);
+    }
+    
+    let ssoEnabled = false;
+    let loginUrl = null;
+    
+    if (row && row.enabled) {
+      try {
+        const config = JSON.parse(row.configuration || '{}');
+        if (config.saml && config.saml.entryPoint && config.saml.issuer && config.saml.callbackUrl) {
+          ssoEnabled = true;
+          loginUrl = '/auth/saml';
+        }
+      } catch (e) {
+        console.error('Error parsing SSO configuration:', e);
+      }
+    } else {
+      // Fallback to environment variables
+      ssoEnabled = !!(process.env.SAML_ENTRY_POINT && process.env.SAML_ISSUER && process.env.SAML_CALLBACK_URL);
+      loginUrl = ssoEnabled ? '/auth/saml' : null;
+    }
+    
+    res.json({ 
+      available: ssoEnabled,
+      loginUrl: loginUrl
+    });
+  });
+});
+
+// SMTP Test endpoint
+app.post('/api/test-smtp', ensureAuth, async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email address is required' });
+  }
+
+  try {
+    const testMailOptions = {
+      from: process.env.SMTP_FROM || 'noreply@cueit.local',
+      to: email,
+      subject: 'CueIT SMTP Test Email',
+      text: 'This is a test email from CueIT to verify SMTP configuration is working correctly.',
+      html: `
+        <h2>CueIT SMTP Test</h2>
+        <p>This is a test email from CueIT to verify SMTP configuration is working correctly.</p>
+        <p>If you receive this email, your SMTP settings are configured properly.</p>
+        <hr>
+        <small>Sent from CueIT Admin Panel</small>
+      `
+    };
+
+    await transporter.sendMail(testMailOptions);
+    
+    res.json({ 
+      success: true, 
+      message: 'Test email sent successfully' 
+    });
+  } catch (error) {
+    console.error('SMTP test failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'SMTP test failed', 
+      details: error.message 
+    });
+  }
 });
 
 app.post('/api/feedback', (req, res) => {
@@ -860,6 +1063,8 @@ app.get('/api/kiosks/:id/users', async (req, res) => {
 });
 
 app.post('/api/kiosks/:id/users', async (req, res) => {
+  // NOTE: This creates a LOCAL user in CueIT database based on directory lookup
+  // Directory integration is read-only - we never modify external directory data
   const { name, email } = req.body || {};
   if (!name || !email) return res.status(400).json({ error: 'missing fields' });
   try {
@@ -1251,235 +1456,333 @@ scim.delete('/Users/:id', (req, res) => {
   });
 });
 
-app.use('/scim/v2', scim);
-
-// Static files
-app.use('/uploads', express.static('uploads'));
-
-// Routes
-app.use('/api/assets', ensureAuth, assetsRouter);
-app.use('/api/integrations', ensureAuth, integrationsRouter);
-app.use('/api/roles', ensureAuth, requirePermission('manage_roles'), rolesRouter);
-
-// Kiosk activation endpoint
-app.post('/api/kiosks/activation', ensureAuth, async (req, res) => {
+// SSO Configuration save endpoint
+app.put('/api/sso-config', ensureAuth, (req, res) => {
+  const { enabled, provider, configuration } = req.body;
+  
   try {
-    const activationId = uuidv4();
-    
-    // Generate a more secure activation code (8 characters, avoiding confusing characters)
-    const generateSecureCode = () => {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude I, O, 0, 1
-      let result = '';
-      for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    };
-    
-    let code = generateSecureCode();
-    
-    // Ensure the code is unique
-    let attempts = 0;
-    const maxAttempts = 10;
-    
-    while (attempts < maxAttempts) {
-      const existingCode = await new Promise((resolve, reject) => {
-        db.get('SELECT id FROM kiosk_activations WHERE code = ?', [code], (err, row) => {
-          if (err) reject(err);
-          else resolve(row);
-        });
-      });
-      
-      if (!existingCode) break;
-      
-      code = generateSecureCode();
-      attempts++;
-    }
-    
-    if (attempts >= maxAttempts) {
-      return res.status(500).json({ error: 'Failed to generate unique activation code' });
-    }
-    
-    const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour
-    
-    // Generate QR code with structured data
-    const qrData = JSON.stringify({
-      type: 'kiosk_activation',
-      id: activationId,
-      code: code,
-      server: `${req.protocol}://${req.get('host') || 'localhost'}`,
-      expires: expiresAt
-    });
-    
-    const qrCodeDataUrl = await qrcode.toDataURL(qrData, {
-      errorCorrectionLevel: 'M',
-      type: 'image/png',
-      quality: 0.92,
-      margin: 1,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
-    });
-    
+    // Save to database instead of environment variables
     db.run(
-      'INSERT INTO kiosk_activations (id, code, qr_code, expires_at) VALUES (?, ?, ?, ?)',
-      [activationId, code, qrCodeDataUrl, expiresAt],
+      'INSERT OR REPLACE INTO sso_configurations (id, provider, enabled, configuration, updated_at) VALUES (1, ?, ?, ?, datetime("now"))',
+      [provider || 'saml', enabled ? 1 : 0, JSON.stringify(configuration || {})],
       function(err) {
-        if (err) return res.status(500).json({ error: 'DB error' });
+        if (err) {
+          console.error('Error saving SSO config:', err);
+          return res.status(500).json({ error: 'Failed to save SSO configuration' });
+        }
         
-        res.json({
-          id: activationId,
-          code: code,
-          qrCode: qrCodeDataUrl,
-          expiresAt: expiresAt,
-          used: false
-        });
+        // Update config table for quick access
+        db.run('INSERT OR REPLACE INTO config (key, value) VALUES ("sso_enabled", ?)', [enabled ? '1' : '0']);
+        
+        res.json({ message: 'SSO configuration saved successfully' });
       }
     );
   } catch (error) {
-    console.error('Error generating kiosk activation:', error);
-    res.status(500).json({ error: 'Failed to generate activation' });
+    console.error('Error processing SSO config:', error);
+    res.status(500).json({ error: 'Failed to process SSO configuration' });
   }
 });
 
-// Kiosk activation with code endpoint
-app.post('/api/kiosks/activate', (req, res) => {
-  const { kioskId, activationCode } = req.body;
+// SCIM Configuration save endpoint
+app.put('/api/scim-config', ensureAuth, (req, res) => {
+  const { enabled, bearerToken, endpointUrl, autoProvisioning, autoDeprovisioning, syncInterval } = req.body;
   
-  if (!kioskId || !activationCode) {
-    return res.status(400).json({ error: 'Missing kioskId or activationCode' });
+  try {
+    db.run(
+      `INSERT OR REPLACE INTO scim_configurations (id, enabled, bearer_token, endpoint_url, auto_provisioning, auto_deprovisioning, sync_interval, updated_at) 
+       VALUES (1, ?, ?, ?, ?, ?, ?, datetime("now"))`,
+      [
+        enabled ? 1 : 0, 
+        bearerToken || '', 
+        endpointUrl || '/scim/v2',
+        autoProvisioning ? 1 : 0,
+        autoDeprovisioning ? 1 : 0,
+        syncInterval || 3600
+      ],
+      function(err) {
+        if (err) {
+          console.error('Error saving SCIM config:', err);
+          return res.status(500).json({ error: 'Failed to save SCIM configuration' });
+        }
+        
+        // Update config table for quick access
+        db.run('INSERT OR REPLACE INTO config (key, value) VALUES ("scim_enabled", ?)', [enabled ? '1' : '0']);
+        
+        res.json({ message: 'SCIM configuration saved successfully' });
+      }
+    );
+  } catch (error) {
+    console.error('Error processing SCIM config:', error);
+    res.status(500).json({ error: 'Failed to process SCIM configuration' });
   }
-  
-  // Validate activation code format (should be alphanumeric, 6-8 characters)
-  if (!/^[A-Z0-9]{6,8}$/i.test(activationCode)) {
-    return res.status(400).json({ error: 'Invalid activation code format' });
-  }
-  
-  // Check if activation code exists and is valid
-  db.get(
-    'SELECT * FROM kiosk_activations WHERE code = ? AND used = 0 AND expires_at > ?',
-    [activationCode.toUpperCase(), new Date().toISOString()],
-    (err, activation) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
-      if (!activation) {
-        return res.status(400).json({ error: 'Invalid or expired activation code' });
+});
+
+// Passkey Registration endpoints
+app.post('/api/passkey/register/begin', ensureAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    const { rpName, rpId, userName, userDisplayName } = req.body;
+    
+    // Generate challenge for registration
+    const challenge = Buffer.from(crypto.randomBytes(32)).toString('base64url');
+    
+    // Store challenge in session/cache (simplified for demo)
+    const registrationOptions = {
+      challenge,
+      rp: {
+        name: rpName || 'CueIT Portal',
+        id: rpId || 'localhost'
+      },
+      user: {
+        id: Buffer.from(user.id.toString()).toString('base64url'),
+        name: userName || user.email,
+        displayName: userDisplayName || user.name
+      },
+      pubKeyCredParams: [
+        { alg: -7, type: 'public-key' }, // ES256
+        { alg: -257, type: 'public-key' } // RS256
+      ],
+      timeout: 60000,
+      attestation: 'direct',
+      authenticatorSelection: {
+        authenticatorAttachment: 'platform',
+        userVerification: 'preferred',
+        residentKey: 'preferred'
+      },
+      excludeCredentials: []
+    };
+    
+    // Get existing credentials to exclude
+    db.all('SELECT credential_id FROM webauthn_credentials WHERE user_id = ?', [user.id], (err, rows) => {
+      if (!err && rows.length > 0) {
+        registrationOptions.excludeCredentials = rows.map(row => ({
+          id: row.credential_id,
+          type: 'public-key',
+          transports: ['internal']
+        }));
       }
       
-      // Check if kiosk exists, if not register it first
-      db.get('SELECT id FROM kiosks WHERE id = ?', [kioskId], (err, kiosk) => {
-        if (err) return res.status(500).json({ error: 'DB error' });
+      // Store challenge temporarily (in production, use proper session storage)
+      db.run('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)', 
+        [`passkey_challenge_${user.id}`, JSON.stringify({ challenge, timestamp: Date.now() })]);
+      
+      res.json(registrationOptions);
+    });
+  } catch (error) {
+    console.error('Error beginning passkey registration:', error);
+    res.status(500).json({ error: 'Failed to begin passkey registration' });
+  }
+});
+
+app.post('/api/passkey/register/complete', ensureAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    const { credential, credentialName } = req.body;
+    
+    // Retrieve stored challenge
+    db.get('SELECT value FROM config WHERE key = ?', [`passkey_challenge_${user.id}`], (err, row) => {
+      if (err || !row) {
+        return res.status(400).json({ error: 'Invalid or expired challenge' });
+      }
+      
+      try {
+        const { challenge, timestamp } = JSON.parse(row.value);
         
-        const activateKiosk = () => {
-          // Mark activation code as used
-          db.run(
-            'UPDATE kiosk_activations SET used = 1, used_at = ? WHERE id = ?',
-            [new Date().toISOString(), activation.id],
-            (err) => {
-              if (err) return res.status(500).json({ error: 'DB error' });
-              
-              // Activate the kiosk
-              db.run(
-                'UPDATE kiosks SET active = 1 WHERE id = ?',
-                [kioskId],
-                (err) => {
-                  if (err) return res.status(500).json({ error: 'DB error' });
-                  
-                  events.emit('kiosk-activated', { id: kioskId, activationCode: activationCode.toUpperCase() });
-                  res.json({ message: 'Kiosk activated successfully' });
-                }
-              );
-            }
-          );
-        };
-        
-        if (!kiosk) {
-          // Register kiosk first, then activate
-          db.run(
-            'INSERT INTO kiosks (id, last_seen, version, active) VALUES (?, ?, ?, 0)',
-            [kioskId, new Date().toISOString(), '1.0.0'],
-            (err) => {
-              if (err) return res.status(500).json({ error: 'Failed to register kiosk' });
-              activateKiosk();
-            }
-          );
-        } else {
-          activateKiosk();
+        // Check challenge age (5 minutes max)
+        if (Date.now() - timestamp > 300000) {
+          return res.status(400).json({ error: 'Challenge expired' });
         }
-      });
+        
+        // Verify the credential (simplified - in production use a proper WebAuthn library)
+        const credentialId = credential.id;
+        const publicKey = credential.response.publicKey;
+        
+        // Store the credential
+        db.run(
+          `INSERT INTO webauthn_credentials 
+           (id, user_id, credential_id, credential_public_key, name, transports, created_at) 
+           VALUES (?, ?, ?, ?, ?, ?, datetime("now"))`,
+          [
+            crypto.randomUUID(),
+            user.id,
+            credentialId,
+            publicKey,
+            credentialName || 'Passkey',
+            JSON.stringify(['internal'])
+          ],
+          function(err) {
+            if (err) {
+              console.error('Error storing passkey:', err);
+              return res.status(500).json({ error: 'Failed to store passkey' });
+            }
+            
+            // Clean up challenge
+            db.run('DELETE FROM config WHERE key = ?', [`passkey_challenge_${user.id}`]);
+            
+            res.json({ 
+              verified: true, 
+              credentialId: credentialId,
+              message: 'Passkey registered successfully' 
+            });
+          }
+        );
+      } catch (parseError) {
+        console.error('Error parsing challenge:', parseError);
+        res.status(400).json({ error: 'Invalid challenge data' });
+      }
+    });
+  } catch (error) {
+    console.error('Error completing passkey registration:', error);
+    res.status(500).json({ error: 'Failed to complete passkey registration' });
+  }
+});
+
+// Passkey Authentication endpoints
+app.post('/api/passkey/authenticate/begin', async (req, res) => {
+  try {
+    const challenge = Buffer.from(crypto.randomBytes(32)).toString('base64url');
+    
+    // Get all credentials for challenge generation
+    db.all('SELECT DISTINCT credential_id FROM webauthn_credentials', (err, rows) => {
+      const allowCredentials = rows ? rows.map(row => ({
+        id: row.credential_id,
+        type: 'public-key',
+        transports: ['internal']
+      })) : [];
+      
+      const authenticationOptions = {
+        challenge,
+        timeout: 60000,
+        rpId: 'localhost',
+        allowCredentials,
+        userVerification: 'preferred'
+      };
+      
+      // Store challenge temporarily
+      const challengeKey = `passkey_auth_challenge_${Date.now()}`;
+      db.run('INSERT INTO config (key, value) VALUES (?, ?)', 
+        [challengeKey, JSON.stringify({ challenge, timestamp: Date.now() })]);
+      
+      res.json({ ...authenticationOptions, challengeKey });
+    });
+  } catch (error) {
+    console.error('Error beginning passkey authentication:', error);
+    res.status(500).json({ error: 'Failed to begin passkey authentication' });
+  }
+});
+
+app.post('/api/passkey/authenticate/complete', async (req, res) => {
+  try {
+    const { credential, challengeKey } = req.body;
+    
+    // Retrieve stored challenge
+    db.get('SELECT value FROM config WHERE key = ?', [challengeKey], (err, row) => {
+      if (err || !row) {
+        return res.status(400).json({ error: 'Invalid or expired challenge' });
+      }
+      
+      try {
+        const { challenge, timestamp } = JSON.parse(row.value);
+        
+        // Check challenge age (5 minutes max)
+        if (Date.now() - timestamp > 300000) {
+          return res.status(400).json({ error: 'Challenge expired' });
+        }
+        
+        // Find the credential and associated user
+        db.get(
+          `SELECT wc.*, u.id as user_id, u.name, u.email 
+           FROM webauthn_credentials wc 
+           JOIN users u ON wc.user_id = u.id 
+           WHERE wc.credential_id = ? AND u.disabled = 0`,
+          [credential.id],
+          (err, credentialRow) => {
+            if (err || !credentialRow) {
+              return res.status(401).json({ error: 'Invalid credential' });
+            }
+            
+            // Update last used timestamp and counter
+            db.run(
+              'UPDATE webauthn_credentials SET last_used = datetime("now"), counter = counter + 1 WHERE credential_id = ?',
+              [credential.id]
+            );
+            
+            // Update user last login
+            db.run('UPDATE users SET last_login = datetime("now") WHERE id = ?', [credentialRow.user_id]);
+            
+            // Generate JWT token
+            const payload = {
+              id: credentialRow.user_id,
+              email: credentialRow.email,
+              name: credentialRow.name,
+              iat: Math.floor(Date.now() / 1000),
+              exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
+              method: 'passkey'
+            };
+            
+            const token = jwt.sign(payload, JWT_SECRET);
+            
+            // Clean up challenge
+            db.run('DELETE FROM config WHERE key = ?', [challengeKey]);
+            
+            res.json({ 
+              verified: true, 
+              token,
+              user: {
+                id: credentialRow.user_id,
+                name: credentialRow.name,
+                email: credentialRow.email
+              }
+            });
+          }
+        );
+      } catch (parseError) {
+        console.error('Error parsing challenge:', parseError);
+        res.status(400).json({ error: 'Invalid challenge data' });
+      }
+    });
+  } catch (error) {
+    console.error('Error completing passkey authentication:', error);
+    res.status(500).json({ error: 'Failed to complete passkey authentication' });
+  }
+});
+
+// List user's passkeys
+app.get('/api/passkeys', ensureAuth, (req, res) => {
+  db.all(
+    `SELECT id, name, created_at, last_used, credential_device_type 
+     FROM webauthn_credentials 
+     WHERE user_id = ? 
+     ORDER BY created_at DESC`,
+    [req.user.id],
+    (err, rows) => {
+      if (err) {
+        console.error('Error fetching passkeys:', err);
+        return res.status(500).json({ error: 'Failed to fetch passkeys' });
+      }
+      res.json(rows || []);
     }
   );
 });
 
-// Get kiosk activations
-app.get('/api/kiosks/activations', ensureAuth, (req, res) => {
-  db.all('SELECT * FROM kiosk_activations ORDER BY created_at DESC', (err, rows) => {
-    if (err) return res.status(500).json({ error: 'DB error' });
-    res.json(rows.map(row => ({
-      id: row.id,
-      code: row.code,
-      qrCode: row.qr_code,
-      expiresAt: row.expires_at,
-      used: Boolean(row.used),
-      usedAt: row.used_at,
-      createdAt: row.created_at
-    })));
-  });
-});
-
-// Kiosk activation with code (public endpoint for kiosks)
-app.post('/api/kiosks/activate', (req, res) => {
-  const { kioskId, activationCode } = req.body;
+// Delete a passkey
+app.delete('/api/passkeys/:id', ensureAuth, (req, res) => {
+  const { id } = req.params;
   
-  if (!kioskId || !activationCode) {
-    return res.status(400).json({ error: 'Missing kioskId or activationCode' });
-  }
-
-  // Check if activation code is valid and not expired
-  db.get(
-    'SELECT * FROM kiosk_activations WHERE code = ? AND used = 0 AND expires_at > datetime("now")',
-    [activationCode.toUpperCase()],
-    (err, activation) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
-      
-      if (!activation) {
-        return res.status(401).json({ error: 'Invalid or expired activation code' });
+  db.run(
+    'DELETE FROM webauthn_credentials WHERE id = ? AND user_id = ?',
+    [id, req.user.id],
+    function(err) {
+      if (err) {
+        console.error('Error deleting passkey:', err);
+        return res.status(500).json({ error: 'Failed to delete passkey' });
       }
-
-      // Mark activation as used and activate the kiosk
-      const now = new Date().toISOString();
       
-      db.serialize(() => {
-        // Mark activation as used
-        db.run(
-          'UPDATE kiosk_activations SET used = 1, used_at = ? WHERE id = ?',
-          [now, activation.id]
-        );
-        
-        // Ensure kiosk is registered and activate it
-        db.run(
-          `INSERT INTO kiosks (id, active, last_seen) VALUES (?, 1, ?)
-           ON CONFLICT(id) DO UPDATE SET active = 1, last_seen = excluded.last_seen`,
-          [kioskId, now],
-          (err) => {
-            if (err) return res.status(500).json({ error: 'DB error' });
-            
-            // Generate a kiosk token for future authenticated requests
-            const kioskToken = sign({ 
-              type: 'kiosk',
-              kioskId: kioskId,
-              activated: true
-            });
-            
-            events.emit('kiosk-activated', { kioskId, activationCode });
-            res.json({ 
-              message: 'Kiosk activated successfully',
-              token: kioskToken,
-              kioskId: kioskId
-            });
-          }
-        );
-      });
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Passkey not found' });
+      }
+      
+      res.json({ message: 'Passkey deleted successfully' });
     }
   );
 });
@@ -1823,7 +2126,7 @@ app.get('/api/kiosk-config/:id', ensureAuth, (req, res) => {
           helpMessage: config.helpMessage || 'Need to report an issue?',
           statusOpenMsg: config.statusOpenMsg || 'Open',
           statusClosedMsg: config.statusClosedMsg || 'Closed',
-          statusErrorMsg: config.statusErrorMsg || 'Error',
+          statusErrorMsg: config.statusErrorMsg || 'Service temporarily unavailable',
           systems
         }
       });
@@ -1904,4 +2207,272 @@ app.get('/api/admin-pin', ensureAuth, (req, res) => {
     const pin = row ? row.value : '123456'; // Default PIN
     res.json({ pin });
   });
+});
+
+// Kiosk configuration sync endpoints
+app.post('/api/kiosks/:id/sync-config', kioskOrAuth, (req, res) => {
+  const { id } = req.params;
+  const { configUpdates } = req.body;
+  
+  if (!configUpdates || !Array.isArray(configUpdates)) {
+    return res.status(400).json({ error: 'Invalid config updates' });
+  }
+  
+  // Process configuration updates from kiosk
+  const promises = configUpdates.map(update => {
+    return new Promise((resolve, reject) => {
+      switch (update.type) {
+        case 'status':
+          const statusData = JSON.parse(update.data);
+          db.run(
+            `UPDATE kiosks SET
+              statusEnabled=?,
+              currentStatus=?,
+              openMsg=?,
+              closedMsg=?,
+              errorMsg=?
+             WHERE id=?`,
+            [
+              statusData.statusEnabled ? 1 : 0,
+              statusData.currentStatus,
+              statusData.openMsg,
+              statusData.closedMsg,
+              statusData.errorMsg,
+              id
+            ],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+          break;
+        
+        case 'schedule':
+          const scheduleData = JSON.parse(update.data);
+          db.run(
+            `UPDATE kiosks SET schedule=? WHERE id=?`,
+            [JSON.stringify(scheduleData), id],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+          break;
+        
+        case 'branding':
+          const brandingData = JSON.parse(update.data);
+          db.run(
+            `UPDATE kiosks SET logoUrl=?, bgUrl=? WHERE id=?`,
+            [brandingData.logoUrl, brandingData.bgUrl, id],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+          break;
+        
+        default:
+          resolve(); // Skip unknown update types
+      }
+    });
+  });
+  
+  Promise.all(promises)
+    .then(() => {
+      events.emit('kiosk-config-synced', { id, updates: configUpdates });
+      res.json({ message: 'Configuration synced successfully' });
+    })
+    .catch(err => {
+      console.error('Config sync error:', err);
+      res.status(500).json({ error: 'Failed to sync configuration' });
+    });
+});
+
+// Get remote configuration for kiosk
+app.get('/api/kiosks/:id/remote-config', kioskOrAuth, (req, res) => {
+  const { id } = req.params;
+  
+  // Get kiosk configuration
+  db.get('SELECT * FROM kiosks WHERE id=?', [id], (err, kiosk) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    if (!kiosk) return res.status(404).json({ error: 'Kiosk not found' });
+    
+    // Get global configuration
+    db.all('SELECT key, value FROM config', (err, configRows) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      
+      const globalConfig = Object.fromEntries(configRows.map(r => [r.key, r.value]));
+      
+      // Get admin PINs (encrypted)
+      db.get(
+        'SELECT global_pin, kiosk_pins FROM admin_pins WHERE id=1',
+        (err, pinRow) => {
+          if (err) console.error('Failed to load admin PINs:', err);
+          
+          const adminPins = {
+            global: pinRow?.global_pin || null,
+            kiosk: pinRow?.kiosk_pins ? JSON.parse(pinRow.kiosk_pins)[id] || null : null
+          };
+          
+          const remoteConfig = {
+            config: {
+              statusEnabled: Boolean(kiosk.statusEnabled),
+              currentStatus: kiosk.currentStatus || 'closed',
+              openMsg: kiosk.openMsg || globalConfig.openMsg || 'We are open!',
+              closedMsg: kiosk.closedMsg || globalConfig.closedMsg || 'We are closed.',
+              errorMsg: kiosk.errorMsg || globalConfig.errorMsg || 'Service temporarily unavailable.',
+              logoUrl: kiosk.logoUrl || globalConfig.logoUrl || '/logo.png',
+              backgroundUrl: kiosk.bgUrl || globalConfig.backgroundUrl || null,
+              welcomeMessage: globalConfig.welcomeMessage || 'Welcome',
+              helpMessage: globalConfig.helpMessage || 'Need help?',
+              schedule: kiosk.schedule ? JSON.parse(kiosk.schedule) : null,
+              officeHours: globalConfig.officeHours ? JSON.parse(globalConfig.officeHours) : null
+            },
+            adminPins: adminPins,
+            lastUpdate: new Date().toISOString(),
+            version: 1,
+            permissions: {
+              canEditStatus: true,
+              canEditSchedule: true,
+              canEditBranding: true,
+              canEditOfficeHours: false // Always false for kiosk
+            }
+          };
+          
+          res.json(remoteConfig);
+        }
+      );
+    });
+  });
+});
+
+// Validate admin PIN
+app.post('/api/admin-pins/validate', (req, res) => {
+  const { pin, kioskId } = req.body;
+  
+  if (!pin || !/^\d{6}$/.test(pin)) {
+    return res.status(400).json({ error: 'Invalid PIN format' });
+  }
+  
+  db.get(
+    'SELECT global_pin, kiosk_pins FROM admin_pins WHERE id=1',
+    (err, row) => {
+      if (err) {
+        console.error('Failed to validate PIN:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      
+      let valid = false;
+      let pinType = null;
+      
+      // Check global PIN
+      if (row?.global_pin && row.global_pin === pin) {
+        valid = true;
+        pinType = 'global';
+      }
+      
+      // Check kiosk-specific PIN
+      if (!valid && row?.kiosk_pins && kioskId) {
+        const kioskPins = JSON.parse(row.kiosk_pins);
+        if (kioskPins[kioskId] === pin) {
+          valid = true;
+          pinType = 'kiosk';
+        }
+      }
+      
+      if (valid) {
+        // Generate session token
+        const token = sign({ 
+          type: 'admin-pin',
+          kioskId: kioskId || null,
+          pinType
+        });
+        
+        res.json({
+          valid: true,
+          token,
+          permissions: ['status', 'schedule', 'branding'], // No office hours
+          expiresAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+          pinType
+        });
+      } else {
+        res.json({
+          valid: false,
+          token: null,
+          permissions: [],
+          expiresAt: null,
+          pinType: null
+        });
+      }
+    }
+  );
+});
+
+// Update admin PINs
+app.put('/api/admin-pins', ensureAuth, (req, res) => {
+  const { globalPin, kioskPins } = req.body;
+  
+  // Validate PIN formats
+  if (globalPin && !/^\d{6}$/.test(globalPin)) {
+    return res.status(400).json({ error: 'Global PIN must be 6 digits' });
+  }
+  
+  if (kioskPins) {
+    for (const [kioskId, pin] of Object.entries(kioskPins)) {
+      if (pin && !/^\d{6}$/.test(pin)) {
+        return res.status(400).json({ error: `PIN for kiosk ${kioskId} must be 6 digits` });
+      }
+    }
+  }
+  
+  // Create or update admin pins table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS admin_pins (
+      id INTEGER PRIMARY KEY,
+      global_pin TEXT,
+      kiosk_pins TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Failed to create admin_pins table:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    
+    db.run(
+      `INSERT INTO admin_pins (id, global_pin, kiosk_pins) VALUES (1, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET 
+       global_pin=excluded.global_pin,
+       kiosk_pins=excluded.kiosk_pins,
+       updated_at=CURRENT_TIMESTAMP`,
+      [globalPin || null, kioskPins ? JSON.stringify(kioskPins) : null],
+      (err) => {
+        if (err) {
+          console.error('Failed to update admin PINs:', err);
+          return res.status(500).json({ error: 'Database error' });
+        }
+        
+        events.emit('admin-pins-updated', { globalPin: !!globalPin, kioskPins: Object.keys(kioskPins || {}) });
+        res.json({ message: 'Admin PINs updated successfully' });
+      }
+    );
+  });
+});
+
+// Get admin PINs (for management interface)
+app.get('/api/admin-pins', ensureAuth, (req, res) => {
+  db.get(
+    'SELECT global_pin, kiosk_pins FROM admin_pins WHERE id=1',
+    (err, row) => {
+      if (err) {
+        console.error('Failed to get admin PINs:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      
+      res.json({
+        globalPin: row?.global_pin || null,
+        kioskPins: row?.kiosk_pins ? JSON.parse(row.kiosk_pins) : {}
+      });
+    }
+  );
 });

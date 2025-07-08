@@ -1,21 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Input, FileInput, Checkbox } from '@/components/ui';
-import { CogIcon, PaintBrushIcon, KeyIcon, BellIcon, ServerIcon } from '@heroicons/react/24/outline';
+import { CogIcon, PaintBrushIcon, KeyIcon, BellIcon, ServerIcon, ClockIcon, UserGroupIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ScheduleManager } from '@/components/ScheduleManager';
+import { ThemeSelector } from '@/components/ThemeSelector';
+import { DirectorySSOConfig } from '@/components/DirectorySSOConfig';
+import { PasskeyManagement } from '@/components/PasskeyManagement';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-import type { Config, SecuritySettings, NotificationSettings } from '@/types';
+import type { Config, SecuritySettings, NotificationSettings, ScheduleConfig, OfficeHours, Kiosk } from '@/types';
+import { AdminPinManagement } from '@/components/AdminPinManagement';
 
 export const SettingsPage: React.FC = () => {
   const [config, setConfig] = useState<Config | null>(null);
+  const [scheduleConfig, setScheduleConfig] = useState<ScheduleConfig | null>(null);
+  const [officeHoursConfig, setOfficeHoursConfig] = useState<OfficeHours | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [restarting, setRestarting] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [uploadingAsset, setUploadingAsset] = useState<string | null>(null);
+  const [kiosks, setKiosks] = useState<Kiosk[]>([]);
   const { addToast } = useToastStore();
 
   useEffect(() => {
     loadConfig();
+    loadScheduleConfigs();
+    loadKiosks();
   }, []);
 
   const loadConfig = async () => {
@@ -32,6 +42,104 @@ export const SettingsPage: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadScheduleConfigs = async () => {
+    try {
+      const statusConfig = await api.getStatusConfig();
+      setScheduleConfig(statusConfig.schedule || {
+        enabled: false,
+        schedule: {
+          monday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          tuesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          wednesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          saturday: { enabled: false, slots: [] },
+          sunday: { enabled: false, slots: [] }
+        },
+        timezone: 'America/New_York'
+      });
+      setOfficeHoursConfig(statusConfig.officeHours || {
+        enabled: false,
+        title: 'IT Support Hours',
+        schedule: {
+          monday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          tuesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          wednesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          saturday: { enabled: false, slots: [] },
+          sunday: { enabled: false, slots: [] }
+        },
+        timezone: 'America/New_York',
+        showNextOpen: true
+      });
+    } catch (error) {
+      console.error('Failed to load schedule configs:', error);
+    }
+  };
+
+  const loadKiosks = async () => {
+    try {
+      const data = await api.getKiosks();
+      setKiosks(data);
+    } catch (error) {
+      console.error('Failed to load kiosks:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to load kiosk list',
+      });
+    }
+  };
+
+  const saveScheduleConfig = async (newConfig: ScheduleConfig) => {
+    try {
+      const currentStatusConfig = await api.getStatusConfig();
+      await api.updateStatusConfig({
+        ...currentStatusConfig,
+        schedule: newConfig
+      });
+      setScheduleConfig(newConfig);
+      addToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Schedule configuration saved successfully',
+      });
+    } catch (error) {
+      console.error('Failed to save schedule config:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to save schedule configuration',
+      });
+      throw error;
+    }
+  };
+
+  const saveOfficeHoursConfig = async (newConfig: OfficeHours) => {
+    try {
+      const currentStatusConfig = await api.getStatusConfig();
+      await api.updateStatusConfig({
+        ...currentStatusConfig,
+        officeHours: newConfig
+      });
+      setOfficeHoursConfig(newConfig);
+      addToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Office hours configuration saved successfully',
+      });
+    } catch (error) {
+      console.error('Failed to save office hours config:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to save office hours configuration',
+      });
+      throw error;
     }
   };
 
@@ -83,22 +191,24 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  const handleAssetUpload = async (file: File | null, type: 'logo' | 'favicon') => {
+  const handleAssetUpload = async (file: File | null, type: 'logo' | 'favicon' | 'kiosk-logo') => {
     if (!file) return;
 
     try {
       setUploadingAsset(type);
-      const asset = await api.uploadAsset(file, type);
+      // Use 'logo' for API call for kiosk-logo since it's the same type
+      const apiType = type === 'kiosk-logo' ? 'logo' as const : type;
+      const asset = await api.uploadAsset(file, apiType);
       
       setConfig(prev => prev ? {
         ...prev,
-        [type === 'logo' ? 'logoUrl' : 'faviconUrl']: asset.url
+        [type === 'logo' ? 'logoUrl' : type === 'favicon' ? 'faviconUrl' : 'kioskLogoUrl']: asset.url
       } : null);
 
       addToast({
         type: 'success',
         title: 'Success',
-        description: `${type === 'logo' ? 'Logo' : 'Favicon'} uploaded successfully`,
+        description: `${type === 'logo' ? 'Logo' : type === 'favicon' ? 'Favicon' : 'Kiosk Logo'} uploaded successfully`,
       });
     } catch (error) {
       console.error(`Failed to upload ${type}:`, error);
@@ -114,8 +224,11 @@ export const SettingsPage: React.FC = () => {
 
   const tabs = [
     { id: 'general', name: 'General', icon: CogIcon },
-    { id: 'branding', name: 'Branding', icon: PaintBrushIcon },
+    { id: 'branding', name: 'Portal Branding', icon: PaintBrushIcon },
+    { id: 'schedule', name: 'Schedule & Hours', icon: ClockIcon },
+    { id: 'directory', name: 'Directory & SSO', icon: UserGroupIcon },
     { id: 'security', name: 'Security', icon: KeyIcon },
+    { id: 'pin-management', name: 'PIN Management', icon: KeyIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'system', name: 'System', icon: ServerIcon },
   ];
@@ -178,7 +291,24 @@ export const SettingsPage: React.FC = () => {
 
                   <div className="grid grid-cols-1 gap-6">
                     <div className="border-t border-gray-200 pt-6">
-                      <h4 className="text-md font-medium text-gray-900 mb-4">Session Settings</h4>
+                      <h4 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">Appearance</h4>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Theme
+                            </label>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Choose between light and dark mode for the admin interface
+                            </p>
+                          </div>
+                          <ThemeSelector />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-6">
+                      <h4 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">Session Settings</h4>
                       <div className="grid grid-cols-2 gap-4">
                         <Input
                           label="Session Timeout (minutes)"
@@ -215,67 +345,18 @@ export const SettingsPage: React.FC = () => {
                         />
                       </div>
                     </div>
+                  </div>
 
-                    <div className="border-t border-gray-200 pt-6">
-                      <h4 className="text-md font-medium text-gray-900 mb-4">Global Kiosk Status</h4>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
-                            System-wide Status
-                          </label>
-                          <div className="space-y-2">
-                            <label className="flex items-center">
-                              <input 
-                                type="radio" 
-                                name="global-status" 
-                                value="open" 
-                                className="mr-3" 
-                                defaultChecked 
-                              />
-                              <div>
-                                <span className="text-sm font-medium text-gray-900">Open</span>
-                                <p className="text-xs text-gray-500">All kiosks accept support requests</p>
-                              </div>
-                            </label>
-                            <label className="flex items-center">
-                              <input 
-                                type="radio" 
-                                name="global-status" 
-                                value="closed" 
-                                className="mr-3" 
-                              />
-                              <div>
-                                <span className="text-sm font-medium text-gray-900">Closed</span>
-                                <p className="text-xs text-gray-500">All kiosks display closed message</p>
-                              </div>
-                            </label>
-                            <label className="flex items-center">
-                              <input 
-                                type="radio" 
-                                name="global-status" 
-                                value="individual" 
-                                className="mr-3" 
-                              />
-                              <div>
-                                <span className="text-sm font-medium text-gray-900">Individual Control</span>
-                                <p className="text-xs text-gray-500">Each kiosk manages its own status</p>
-                              </div>
-                            </label>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 gap-4">
-                          <Input
-                            label="Global Open Message"
-                            value="IT Support is available to assist you"
-                            helperText="Message shown when support is available"
-                          />
-                          <Input
-                            label="Global Closed Message"
-                            value="IT Support is currently closed. Please try again during business hours."
-                            helperText="Message shown when support is unavailable"
-                          />
-                        </div>
-                      </div>
+                  {/* Save button for General tab */}
+                  <div className="pt-6 border-t border-gray-200">
+                    <div className="flex justify-end">
+                      <Button
+                        variant="primary"
+                        onClick={saveConfig}
+                        isLoading={saving}
+                      >
+                        Save Changes
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -284,7 +365,7 @@ export const SettingsPage: React.FC = () => {
               {activeTab === 'branding' && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Branding Settings</h3>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Portal Branding Settings</h3>
                     <p className="mt-1 text-sm text-gray-500">
                       Customize the appearance of your kiosks and admin interface.
                     </p>
@@ -298,7 +379,7 @@ export const SettingsPage: React.FC = () => {
                         accept="image/*"
                         onChange={(file) => handleAssetUpload(file, 'logo')}
                         disabled={uploadingAsset === 'logo'}
-                        helperText="Upload your organization's logo (PNG, JPG, SVG recommended)"
+                        helperText="Upload your organization's logo (PNG, JPG, SVG recommended). Recommended size: 200x200px (square) or 200x60px (wide)"
                       />
                       
                       {/* Logo preview */}
@@ -319,6 +400,41 @@ export const SettingsPage: React.FC = () => {
                               value={config?.logoUrl || ''}
                               onChange={(e) => setConfig(prev => prev ? { ...prev, logoUrl: e.target.value } : null)}
                               helperText="Direct URL to logo file"
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Kiosk Logo Upload */}
+                    <div>
+                      <FileInput
+                        label="Kiosk Logo"
+                        accept="image/*"
+                        onChange={(file) => handleAssetUpload(file, 'kiosk-logo')}
+                        disabled={uploadingAsset === 'kiosk-logo'}
+                        helperText="Upload a logo specifically for kiosk displays (PNG, JPG, SVG recommended). Recommended size: 300x150px or 400x200px for optimal display on kiosk screens"
+                      />
+                      
+                      {/* Kiosk Logo preview */}
+                      {config?.kioskLogoUrl && (
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Current Kiosk Logo</label>
+                          <div className="flex items-center space-x-4">
+                            <img
+                              src={config.kioskLogoUrl}
+                              alt="Kiosk logo"
+                              className="h-16 w-auto border border-gray-300 rounded bg-white p-2"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                            <Input
+                              label="Kiosk Logo URL (optional)"
+                              value={config?.kioskLogoUrl || ''}
+                              onChange={(e) => setConfig(prev => prev ? { ...prev, kioskLogoUrl: e.target.value } : null)}
+                              helperText="Direct URL to kiosk logo file"
                               className="flex-1"
                             />
                           </div>
@@ -415,14 +531,85 @@ export const SettingsPage: React.FC = () => {
                             <span className="text-sm text-gray-700">High contrast mode</span>
                           </label>
                         </div>
-                        <div className="pt-4 border-t border-gray-200">
-                          <Button variant="primary" size="sm">
-                            Save Theme Settings
-                          </Button>
-                        </div>
+
                       </div>
                     </div>
                   </div>
+
+                  {/* Save button for Branding tab */}
+                  <div className="pt-6 border-t border-gray-200">
+                    <div className="flex justify-end">
+                      <Button
+                        variant="primary"
+                        onClick={saveConfig}
+                        isLoading={saving}
+                      >
+                        Save Branding Settings
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'schedule' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">Schedule & Hours Configuration</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Configure automatic scheduling and office hours display for kiosks.
+                    </p>
+                  </div>
+
+                  <div className="space-y-8">
+                    {/* Automatic Scheduling */}
+                    <div className="border border-gray-200 rounded-lg p-6">
+                      <h4 className="text-lg font-medium text-gray-900 mb-4">Automatic Scheduling</h4>
+                      <p className="text-sm text-gray-600 mb-6">
+                        Automatically open and close kiosks based on your schedule. Kiosks will switch to "closed" status outside of scheduled hours.
+                      </p>
+                      
+                      {scheduleConfig && (
+                        <ScheduleManager
+                          title="Automatic Schedule"
+                          config={scheduleConfig}
+                          onSave={saveScheduleConfig}
+                          showEnabled={true}
+                        />
+                      )}
+                    </div>
+
+                    {/* Office Hours Display */}
+                    <div className="border border-gray-200 rounded-lg p-6">
+                      <h4 className="text-lg font-medium text-gray-900 mb-4">Office Hours Display</h4>
+                      <p className="text-sm text-gray-600 mb-6">
+                        Show office hours information on kiosks. This is purely informational and doesn't affect automatic scheduling.
+                      </p>
+                      
+                      {officeHoursConfig && (
+                        <ScheduleManager
+                          title="Office Hours"
+                          config={officeHoursConfig}
+                          onSave={saveOfficeHoursConfig}
+                          showEnabled={true}
+                          showTitle={true}
+                          showNextOpen={true}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'directory' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Directory & SSO Integration</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      Configure directory integration, Single Sign-On (SSO), and SCIM provisioning for user management.
+                    </p>
+                  </div>
+
+                  <DirectorySSOConfig onConfigChange={loadConfig} />
                 </div>
               )}
 
@@ -436,6 +623,29 @@ export const SettingsPage: React.FC = () => {
                   </div>
 
                   <SecuritySettingsForm />
+                  
+                  <div className="border-t border-gray-200 pt-6">
+                    <PasskeyManagement />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'pin-management' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">Admin PIN Management</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Manage admin PINs for kiosk access. Configure global PINs or individual PINs for each kiosk.
+                    </p>
+                  </div>
+
+                  <AdminPinManagement 
+                    kiosks={kiosks} 
+                    onUpdate={() => {
+                      // Refresh kiosks list if needed
+                      loadKiosks();
+                    }} 
+                  />
                 </div>
               )}
 
@@ -477,19 +687,6 @@ export const SettingsPage: React.FC = () => {
                   </Card>
                 </div>
               )}
-
-              {/* Save button */}
-              <div className="pt-6 border-t border-gray-200">
-                <div className="flex justify-end">
-                  <Button
-                    variant="primary"
-                    onClick={saveConfig}
-                    isLoading={saving}
-                  >
-                    Save Changes
-                  </Button>
-                </div>
-              </div>
             </div>
           </Card>
         </div>
@@ -528,27 +725,13 @@ const SecuritySettingsForm: React.FC = () => {
     }
   };
 
-  const loadAdminPin = async () => {
-    try {
-      const response = await fetch('/api/admin-pin', {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setAdminPin(data.pin);
-      }
-    } catch (error) {
-      console.error('Failed to load admin PIN:', error);
-    }
-  };
-
   const saveSecuritySettings = async () => {
     if (!settings) return;
     
     try {
       setSaving(true);
       await api.updateSecuritySettings(settings);
-      await saveAdminPin();
+      
       addToast({
         type: 'success',
         title: 'Success',
@@ -566,22 +749,17 @@ const SecuritySettingsForm: React.FC = () => {
     }
   };
 
-  const saveAdminPin = async () => {
-    if (!/^\d{6}$/.test(adminPin)) {
-      throw new Error('PIN must be 6 digits');
-    }
-    
-    const response = await fetch('/api/admin-pin', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ pin: adminPin }),
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to save admin PIN');
+  const loadAdminPin = async () => {
+    try {
+      const response = await fetch('/api/admin-pin', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAdminPin(data.pin);
+      }
+    } catch (error) {
+      console.error('Failed to load admin PIN:', error);
     }
   };
 
@@ -692,6 +870,7 @@ const SecuritySettingsForm: React.FC = () => {
         </div>
       </div>
 
+      {/* Save button for Security Settings */}
       <div className="pt-6 border-t border-gray-200">
         <div className="flex justify-end">
           <Button
@@ -712,6 +891,8 @@ const NotificationSettingsForm: React.FC = () => {
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
   const { addToast } = useToastStore();
 
   useEffect(() => {
@@ -741,6 +922,7 @@ const NotificationSettingsForm: React.FC = () => {
     try {
       setSaving(true);
       await api.updateNotificationSettings(settings);
+      
       addToast({
         type: 'success',
         title: 'Success',
@@ -755,6 +937,37 @@ const NotificationSettingsForm: React.FC = () => {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleTestSMTP = async () => {
+    if (!testEmail) {
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Please enter an email address for testing',
+      });
+      return;
+    }
+
+    try {
+      setTestingEmail(true);
+      await api.testSMTP(testEmail);
+      
+      addToast({
+        type: 'success',
+        title: 'SMTP Test Successful',
+        description: `Test email sent to ${testEmail}`,
+      });
+    } catch (error: any) {
+      console.error('SMTP test failed:', error);
+      addToast({
+        type: 'error',
+        title: 'SMTP Test Failed',
+        description: error.response?.data?.error || 'Failed to send test email',
+      });
+    } finally {
+      setTestingEmail(false);
     }
   };
 
@@ -815,9 +1028,7 @@ const NotificationSettingsForm: React.FC = () => {
             onChange={(checked) => setSettings(prev => prev ? { ...prev, weeklyReports: checked } : null)}
           />
         </div>
-      </div>
-
-      <div>
+      </div>      <div>
         <Input
           label="Notification Retention (days)"
           type="number"
@@ -829,6 +1040,41 @@ const NotificationSettingsForm: React.FC = () => {
         />
       </div>
 
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-gray-900 dark:text-gray-100">SMTP Email Testing</h4>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Test your SMTP configuration by sending a test email
+        </p>
+        <div className="flex space-x-3">
+          <div className="flex-1">
+            <Input
+              label="Test Email Address"
+              type="email"
+              value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+              placeholder="test@example.com"
+            />
+          </div>
+          <div className="flex items-end">
+            <Button
+              onClick={handleTestSMTP}
+              disabled={testingEmail || !testEmail}
+              size="sm"
+            >
+              {testingEmail ? (
+                <>
+                  <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send Test Email'
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Save button for Notification Settings */}
       <div className="pt-6 border-t border-gray-200">
         <div className="flex justify-end">
           <Button

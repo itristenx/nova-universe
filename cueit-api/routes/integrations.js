@@ -198,7 +198,7 @@ router.post('/:id/test', async (req, res) => {
           }
           // Test SMTP connection
           const nodemailer = await import('nodemailer');
-          const transporter = nodemailer.default.createTransporter({
+          const transporter = nodemailer.default.createTransport({
             host: config.host,
             port: config.port || 587,
             secure: config.secure || false,

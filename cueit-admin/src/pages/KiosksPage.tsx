@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Modal } from '@/components/ui';
+import { ScheduleManager } from '@/components/ScheduleManager';
 import { 
   ComputerDesktopIcon, 
   TrashIcon, 
@@ -8,25 +9,83 @@ import {
   CogIcon,
   ClipboardDocumentIcon,
   ArrowPathIcon,
-  ArrowUturnLeftIcon
+  ArrowUturnLeftIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import { formatDate } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-import type { Kiosk, KioskActivation } from '@/types';
+import type { Kiosk, KioskActivation, ScheduleConfig, OfficeHours } from '@/types';
 
 export const KiosksPage: React.FC = () => {
   const [kiosks, setKiosks] = useState<Kiosk[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedKiosk, setSelectedKiosk] = useState<Kiosk | null>(null);
   const [showActivationModal, setShowActivationModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [activationData, setActivationData] = useState<KioskActivation | null>(null);
   const [generatingCode, setGeneratingCode] = useState(false);
+  const [globalStatus, setGlobalStatus] = useState<'open' | 'closed' | 'meeting' | 'brb' | 'lunch'>('open');
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [kioskScheduleConfig, setKioskScheduleConfig] = useState<{ schedule?: ScheduleConfig; officeHours?: OfficeHours } | null>(null);
   const { addToast } = useToastStore();
 
   useEffect(() => {
     loadKiosks();
+    loadGlobalStatus();
   }, []);
+
+  const loadGlobalStatus = async () => {
+    try {
+      const config = await api.getStatusConfig();
+      setGlobalStatus(config.currentStatus || (config.enabled ? 'open' : 'closed'));
+    } catch (error) {
+      console.error('Failed to load global status:', error);
+    }
+  };
+
+  const updateGlobalStatus = async (status: 'open' | 'closed' | 'meeting' | 'brb' | 'lunch') => {
+    try {
+      setStatusLoading(true);
+      
+      // Get current config first to preserve other settings
+      const currentConfig = await api.getStatusConfig();
+      
+      const updatedConfig = {
+        ...currentConfig,
+        enabled: status === 'open',
+        currentStatus: status,
+        openMessage: currentConfig.openMessage || 'Help Desk is Open',
+        closedMessage: currentConfig.closedMessage || 'Help Desk is Closed',
+        meetingMessage: currentConfig.meetingMessage || 'In a Meeting',
+        brbMessage: currentConfig.brbMessage || 'Be Right Back',
+        lunchMessage: currentConfig.lunchMessage || 'Out to Lunch'
+      };
+      
+      await api.updateStatusConfig(updatedConfig);
+      setGlobalStatus(status);
+      
+      addToast({
+        type: 'success',
+        title: 'Success',
+        description: `Global status updated to ${status}`,
+      });
+      
+      // Reload status to ensure sync
+      setTimeout(loadGlobalStatus, 500);
+    } catch (error) {
+      console.error('Failed to update global status:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to update global status',
+      });
+      // Reload current status on error
+      loadGlobalStatus();
+    } finally {
+      setStatusLoading(false);
+    }
+  };
 
   const loadKiosks = async () => {
     try {
@@ -138,6 +197,74 @@ export const KiosksPage: React.FC = () => {
     setActivationData(null);
   };
 
+  const openScheduleModal = async (kiosk: Kiosk) => {
+    try {
+      setSelectedKiosk(kiosk);
+      const config = await api.getKioskScheduleConfig(kiosk.id);
+      setKioskScheduleConfig(config);
+      setShowScheduleModal(true);
+    } catch (error) {
+      console.error('Failed to load kiosk schedule config:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to load schedule configuration',
+      });
+    }
+  };
+
+  const saveKioskSchedule = async (scheduleConfig: ScheduleConfig) => {
+    if (!selectedKiosk) return;
+    
+    try {
+      await api.updateStatusConfig({
+        ...kioskScheduleConfig,
+        schedule: scheduleConfig
+      });
+      
+      setKioskScheduleConfig(prev => ({ ...prev, schedule: scheduleConfig }));
+      addToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Kiosk schedule updated successfully',
+      });
+    } catch (error) {
+      console.error('Failed to update kiosk schedule:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to update kiosk schedule',
+      });
+      throw error;
+    }
+  };
+
+  const saveKioskOfficeHours = async (officeHoursConfig: OfficeHours) => {
+    if (!selectedKiosk) return;
+    
+    try {
+      await api.updateStatusConfig({
+        ...kioskScheduleConfig,
+        officeHours: officeHoursConfig
+      });
+      
+      setKioskScheduleConfig(prev => ({ ...prev, officeHours: officeHoursConfig }));
+      addToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Office hours updated successfully',
+      });
+    } catch (error) {
+      console.error('Failed to update office hours:', error);
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to update office hours',
+      });
+      throw error;
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'open':
@@ -146,6 +273,12 @@ export const KiosksPage: React.FC = () => {
         return 'bg-gray-100 text-gray-800 border-gray-200';
       case 'error':
         return 'bg-red-100 text-red-800 border-red-200';
+      case 'meeting':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'brb':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'lunch':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -201,13 +334,81 @@ export const KiosksPage: React.FC = () => {
             Monitor and manage your deployed kiosks
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={openActivationModal}
-        >
-          <QrCodeIcon className="h-4 w-4 mr-2" />
-          Generate Activation Code
-        </Button>
+        <div className="flex items-center space-x-4">
+          {/* Kiosk Indicator Status */}
+          <div className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg px-4 py-2">
+            <label className="text-sm font-medium text-gray-700">Status:</label>
+            <div className="flex items-center space-x-3 flex-wrap">
+              <label className="flex items-center">
+                <input 
+                  type="radio" 
+                  name="kiosk-indicator-status" 
+                  value="open" 
+                  className="mr-2" 
+                  checked={globalStatus === 'open'}
+                  onChange={() => updateGlobalStatus('open')}
+                  disabled={statusLoading}
+                />
+                <span className="text-sm text-green-700 font-medium">Open</span>
+              </label>
+              <label className="flex items-center">
+                <input 
+                  type="radio" 
+                  name="kiosk-indicator-status" 
+                  value="closed" 
+                  className="mr-2" 
+                  checked={globalStatus === 'closed'}
+                  onChange={() => updateGlobalStatus('closed')}
+                  disabled={statusLoading}
+                />
+                <span className="text-sm text-red-700 font-medium">Closed</span>
+              </label>
+              <label className="flex items-center">
+                <input 
+                  type="radio" 
+                  name="kiosk-indicator-status" 
+                  value="meeting" 
+                  className="mr-2" 
+                  checked={globalStatus === 'meeting'}
+                  onChange={() => updateGlobalStatus('meeting')}
+                  disabled={statusLoading}
+                />
+                <span className="text-sm text-purple-700 font-medium">In a Meeting</span>
+              </label>
+              <label className="flex items-center">
+                <input 
+                  type="radio" 
+                  name="kiosk-indicator-status" 
+                  value="brb" 
+                  className="mr-2" 
+                  checked={globalStatus === 'brb'}
+                  onChange={() => updateGlobalStatus('brb')}
+                  disabled={statusLoading}
+                />
+                <span className="text-sm text-yellow-700 font-medium">Be Right Back</span>
+              </label>
+              <label className="flex items-center">
+                <input 
+                  type="radio" 
+                  name="kiosk-indicator-status" 
+                  value="lunch" 
+                  className="mr-2" 
+                  checked={globalStatus === 'lunch'}
+                  onChange={() => updateGlobalStatus('lunch')}
+                  disabled={statusLoading}
+                />
+                <span className="text-sm text-orange-700 font-medium">Out to Lunch</span>
+              </label>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            onClick={openActivationModal}
+          >
+            <QrCodeIcon className="h-4 w-4 mr-2" />
+            Generate Activation Code
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -321,8 +522,8 @@ export const KiosksPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(kiosk.currentStatus)}`}>
-                        {kiosk.currentStatus || 'Unknown'}
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(kiosk.effectiveConfig.currentStatus)}`}>
+                        {kiosk.effectiveConfig.currentStatus || 'Unknown'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -367,6 +568,15 @@ export const KiosksPage: React.FC = () => {
                         title="Configure kiosk"
                       >
                         <CogIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openScheduleModal(kiosk)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Manage schedule & office hours"
+                      >
+                        <ClockIcon className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -470,30 +680,6 @@ export const KiosksPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Activation URL */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  QR Code Data
-                </label>
-                <div className="flex items-center space-x-2">
-                  <div className="flex-1 p-3 bg-gray-50 border border-gray-200 rounded-md">
-                    <code className="text-sm font-mono text-gray-900 break-all">
-                      {activationData.qrCode}
-                    </code>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => copyToClipboard(activationData.qrCode)}
-                  >
-                    <ClipboardDocumentIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="mt-1 text-sm text-gray-500">
-                  QR code data for manual entry
-                </p>
-              </div>
-
               {/* Expiration */}
               <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
                 <div className="flex">
@@ -560,8 +746,8 @@ export const KiosksPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Current State
                 </label>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(selectedKiosk.currentStatus)}`}>
-                  {selectedKiosk.currentStatus || 'Unknown'}
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(selectedKiosk.effectiveConfig.currentStatus)}`}>
+                  {selectedKiosk.effectiveConfig.currentStatus || 'Unknown'}
                 </span>
               </div>
               <div>
@@ -580,7 +766,7 @@ export const KiosksPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Status Enabled
                 </label>
-                <p className="text-sm text-gray-900">{selectedKiosk.statusEnabled ? 'Yes' : 'No'}</p>
+                <p className="text-sm text-gray-900">{selectedKiosk.effectiveConfig.statusEnabled ? 'Yes' : 'No'}</p>
               </div>
             </div>
 
@@ -666,6 +852,36 @@ export const KiosksPage: React.FC = () => {
                 </div>
                 
                 <div className="border-t border-gray-300 pt-4">
+                  <h4 className="text-sm font-medium text-gray-800 mb-3">Kiosk Indicator Status</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-4">
+                      <label className="flex items-center">
+                        <input 
+                          type="radio" 
+                          name="kiosk-indicator" 
+                          value="open" 
+                          className="mr-2" 
+                          defaultChecked 
+                          title="Kiosk displays open status indicator" 
+                        />
+                        <span className="text-sm text-gray-700">Open Status</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input 
+                          type="radio" 
+                          name="kiosk-indicator" 
+                          value="closed" 
+                          className="mr-2" 
+                          title="Kiosk displays closed status indicator" 
+                        />
+                        <span className="text-sm text-gray-700">Closed Status</span>
+                      </label>
+                    </div>
+                    <p className="text-xs text-gray-500">This controls the status indicator displayed on the kiosk interface</p>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-300 pt-4">
                   <h4 className="text-sm font-medium text-gray-800 mb-3">Open/Closed Status</h4>
                   <div className="space-y-3">
                     <div className="flex items-center space-x-4">
@@ -740,6 +956,152 @@ export const KiosksPage: React.FC = () => {
 
         <div className="flex justify-end space-x-3 mt-6">
           <Button variant="secondary" onClick={() => setSelectedKiosk(null)}>
+            Close
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Schedule Management Modal */}
+      <Modal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        title={`Manage Schedule & Office Hours for Kiosk ${selectedKiosk?.id}`}
+        size="lg"
+      >
+        {selectedKiosk && (
+          <div className="space-y-6">
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Automatic Schedule</h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Configure when this kiosk should automatically open and close.
+                </p>
+                <ScheduleManager
+                  title="Automatic Schedule"
+                  config={kioskScheduleConfig?.schedule || {
+                    enabled: false,
+                    schedule: {
+                      monday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      tuesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      wednesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      saturday: { enabled: false, slots: [] },
+                      sunday: { enabled: false, slots: [] }
+                    },
+                    timezone: 'America/New_York'
+                  }}
+                  onSave={saveKioskSchedule}
+                  showEnabled={true}
+                />
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Office Hours Display</h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Configure office hours information to display on the kiosk.
+                </p>
+                <ScheduleManager
+                  title="Office Hours"
+                  config={kioskScheduleConfig?.officeHours || {
+                    enabled: false,
+                    title: 'IT Support Hours',
+                    schedule: {
+                      monday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      tuesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      wednesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                      saturday: { enabled: false, slots: [] },
+                      sunday: { enabled: false, slots: [] }
+                    },
+                    timezone: 'America/New_York',
+                    showNextOpen: true
+                  }}
+                  onSave={saveKioskOfficeHours}
+                  showEnabled={true}
+                  showTitle={true}
+                  showNextOpen={true}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button variant="secondary" onClick={() => setShowScheduleModal(false)}>
+            Close
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Schedule Configuration Modal */}
+      <Modal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        title={`Schedule & Hours - ${selectedKiosk?.id || 'Kiosk'}`}
+        size="xl"
+      >
+        {selectedKiosk && kioskScheduleConfig && (
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Automatic Schedule</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Configure when this kiosk should automatically open and close.
+              </p>
+              <ScheduleManager
+                title="Automatic Schedule"
+                config={kioskScheduleConfig?.schedule || {
+                  enabled: false,
+                  schedule: {
+                    monday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    tuesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    wednesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    saturday: { enabled: false, slots: [] },
+                    sunday: { enabled: false, slots: [] }
+                  },
+                  timezone: 'America/New_York'
+                }}
+                onSave={saveKioskSchedule}
+                showEnabled={true}
+              />
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Office Hours Display</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Configure office hours information to display on the kiosk.
+              </p>
+              <ScheduleManager
+                title="Office Hours"
+                config={kioskScheduleConfig?.officeHours || {
+                  enabled: false,
+                  title: 'IT Support Hours',
+                  schedule: {
+                    monday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    tuesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    wednesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+                    saturday: { enabled: false, slots: [] },
+                    sunday: { enabled: false, slots: [] }
+                  },
+                  timezone: 'America/New_York',
+                  showNextOpen: true
+                }}
+                onSave={saveKioskOfficeHours}
+                showEnabled={true}
+                showTitle={true}
+                showNextOpen={true}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button variant="secondary" onClick={() => setShowScheduleModal(false)}>
             Close
           </Button>
         </div>

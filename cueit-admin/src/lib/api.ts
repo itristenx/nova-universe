@@ -17,6 +17,14 @@ import type {
   AuthToken,
   DashboardStats,
   ActivityLog,
+  ScheduleConfig,
+  OfficeHours,
+  KioskAdminLoginRequest,
+  KioskAdminLoginResponse,
+  GlobalConfiguration,
+  KioskConfiguration,
+  ConfigScope,
+  ConfigurationSummary,
 } from '@/types';
 import {
   mockUsers,
@@ -41,12 +49,15 @@ class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_URL || '',
+      baseURL: this.getServerUrl(),
       timeout: 10000,
     });
 
-    // Request interceptor to add auth token
+    // Request interceptor to add auth token and update base URL
     this.client.interceptors.request.use((config) => {
+      // Update base URL in case it changed
+      config.baseURL = this.getServerUrl();
+      
       const token = localStorage.getItem('auth_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -78,6 +89,16 @@ class ApiClient {
         return Promise.reject(error);
       }
     );
+  }
+
+  // Get the current server URL from localStorage or environment
+  private getServerUrl(): string {
+    const storedUrl = localStorage.getItem('api_server_url');
+    const envUrl = import.meta.env.VITE_API_URL;
+    const defaultUrl = 'http://localhost:3000';
+    
+    // Use stored URL if available, otherwise environment URL, otherwise default
+    return storedUrl || envUrl || defaultUrl;
   }
 
   // Mock method helper
@@ -642,7 +663,13 @@ class ApiClient {
   async getKioskActivations(): Promise<KioskActivation[]> {
     try {
       const response = await this.client.get<KioskActivation[]>('/api/kiosks/activations');
-      return response.data;
+      // Ensure we always return an array
+      if (Array.isArray(response.data)) {
+        return response.data;
+      } else {
+        console.warn('API returned non-array data for kiosk activations:', response.data);
+        return [];
+      }
     } catch (error) {
       console.error('Error getting kiosk activations:', error);
       // Fallback to mock only if API is completely unavailable
@@ -669,13 +696,18 @@ class ApiClient {
         kiosk: { 
           id, 
           active: true, 
-          statusEnabled: true, 
-          currentStatus: 'open' as const,
-          openMsg: 'Open', 
-          closedMsg: 'Closed', 
-          errorMsg: 'Error',
           lastSeen: new Date().toISOString(),
-          version: '1.0.0'
+          version: '1.0.0',
+          configScope: 'global' as ConfigScope,
+          hasOverrides: false,
+          overrideCount: 0,
+          effectiveConfig: {
+            statusEnabled: true, 
+            currentStatus: 'open' as const,
+            openMsg: 'Open', 
+            closedMsg: 'Closed', 
+            errorMsg: 'Error'
+          }
         },
         config: {
           logoUrl: '/logo.png',
@@ -749,9 +781,40 @@ class ApiClient {
     if (this.useMockMode) {
       return this.mockRequest({
         enabled: true,
+        currentStatus: 'open', // Current global status
         openMessage: 'Help Desk is Open',
         closedMessage: 'Help Desk is Closed',
-        schedule: null
+        meetingMessage: 'In a Meeting',
+        brbMessage: 'Be Right Back',
+        lunchMessage: 'Out to Lunch',
+        schedule: {
+          enabled: false,
+          schedule: {
+            monday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            tuesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            wednesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            saturday: { enabled: false, slots: [] },
+            sunday: { enabled: false, slots: [] }
+          },
+          timezone: 'America/New_York'
+        },
+        officeHours: {
+          enabled: false,
+          title: 'IT Support Hours',
+          schedule: {
+            monday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            tuesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            wednesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+            saturday: { enabled: false, slots: [] },
+            sunday: { enabled: false, slots: [] }
+          },
+          timezone: 'America/New_York',
+          showNextOpen: true
+        }
       });
     }
 
@@ -794,50 +857,134 @@ class ApiClient {
     return response.data;
   }
 
-  // Kiosk Users
-  async getKioskUsers(kioskId: string): Promise<User[]> {
-    if (this.useMockMode) {
-      return this.mockRequest([]);
-    }
-
-    const response = await this.client.get<User[]>(`/api/kiosks/${kioskId}/users`);
-    return response.data;
-  }
-
-  async addKioskUser(kioskId: string, userId: number): Promise<ApiResponse> {
-    if (this.useMockMode) {
-      return this.mockRequest({ message: 'User added to kiosk successfully' });
-    }
-
-    const response = await this.client.post<ApiResponse>(`/api/kiosks/${kioskId}/users`, { userId });
-    return response.data;
-  }
-
-  // Kiosk Status
-  async getKioskStatus(kioskId: string): Promise<any> {
+  // SSO Configuration
+  async getSSOConfig(): Promise<any> {
     if (this.useMockMode) {
       return this.mockRequest({
-        status: 'online',
-        lastSeen: new Date().toISOString(),
-        version: '1.0.0'
+        enabled: false,
+        provider: 'saml',
+        saml: {
+          enabled: false,
+          entryPoint: '',
+          issuer: '',
+          callbackUrl: '',
+          cert: ''
+        }
       });
     }
 
-    const response = await this.client.get<any>(`/api/kiosks/${kioskId}/status`);
+    const response = await this.client.get<any>('/api/sso-config');
     return response.data;
   }
 
-  async updateKioskStatus(kioskId: string, status: any): Promise<ApiResponse> {
+  async getSSOAvailability(): Promise<{ available: boolean; loginUrl?: string }> {
     if (this.useMockMode) {
-      return this.mockRequest({ message: 'Kiosk status updated successfully' });
+      return this.mockRequest({ available: false });
     }
 
-    // Handle both activation endpoint and general status endpoint
-    const endpoint = status.hasOwnProperty('active') 
-      ? `/api/kiosks/${kioskId}/active` 
-      : `/api/kiosks/${kioskId}/status`;
-    
-    const response = await this.client.put<ApiResponse>(endpoint, status);
+    const response = await this.client.get<{ available: boolean; loginUrl?: string }>('/api/sso-available');
+    return response.data;
+  }
+
+  // SCIM Configuration
+  async getSCIMConfig(): Promise<any> {
+    if (this.useMockMode) {
+      return this.mockRequest({
+        enabled: false,
+        token: '',
+        endpoint: '/scim/v2'
+      });
+    }
+
+    const response = await this.client.get<any>('/api/scim-config');
+    return response.data;
+  }
+
+  async updateSCIMConfig(config: any): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'SCIM configuration updated successfully' });
+    }
+
+    const response = await this.client.put<ApiResponse>('/api/scim-config', config);
+    return response.data;
+  }
+
+  // Passkey Management
+  async getPasskeys(): Promise<any[]> {
+    if (this.useMockMode) {
+      return this.mockRequest([
+        {
+          id: '1',
+          name: 'Touch ID',
+          created_at: '2025-01-01T00:00:00Z',
+          last_used: '2025-01-07T00:00:00Z',
+          credential_device_type: 'platform'
+        }
+      ]);
+    }
+
+    const response = await this.client.get<any[]>('/api/passkeys');
+    return response.data;
+  }
+
+  async deletePasskey(id: string): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'Passkey deleted successfully' });
+    }
+
+    const response = await this.client.delete<ApiResponse>(`/api/passkeys/${id}`);
+    return response.data;
+  }
+
+  async beginPasskeyRegistration(options: any): Promise<any> {
+    if (this.useMockMode) {
+      return this.mockRequest({
+        challenge: 'mock-challenge',
+        rp: { name: 'CueIT Portal', id: 'localhost' },
+        user: { id: 'mock-user-id', name: 'mock@example.com', displayName: 'Mock User' },
+        pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+        timeout: 60000
+      });
+    }
+
+    const response = await this.client.post<any>('/api/passkey/register/begin', options);
+    return response.data;
+  }
+
+  async completePasskeyRegistration(data: any): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ verified: true, message: 'Passkey registered successfully' });
+    }
+
+    const response = await this.client.post<ApiResponse>('/api/passkey/register/complete', data);
+    return response.data;
+  }
+
+  async beginPasskeyAuthentication(): Promise<any> {
+    if (this.useMockMode) {
+      return this.mockRequest({
+        challenge: 'mock-auth-challenge',
+        timeout: 60000,
+        rpId: 'localhost',
+        allowCredentials: [],
+        challengeKey: 'mock-challenge-key'
+      });
+    }
+
+    const response = await this.client.post<any>('/api/passkey/authenticate/begin');
+    return response.data;
+  }
+
+  async completePasskeyAuthentication(data: any): Promise<{ verified: boolean; token?: string; user?: any }> {
+    if (this.useMockMode) {
+      return this.mockRequest({
+        verified: true,
+        token: 'mock-jwt-token',
+        user: { id: 1, name: 'Mock User', email: 'mock@example.com' }
+      });
+    }
+
+    const response = await this.client.post<{ verified: boolean; token?: string; user?: any }>('/api/passkey/authenticate/complete', data);
     return response.data;
   }
 }

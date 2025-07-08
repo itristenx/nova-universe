@@ -10,11 +10,18 @@ struct Theme {
         static let green = Color.green
         static let red = Color.red
         static let yellow = Color.yellow
+        static let purple = Color.purple
+        static let orange = Color.orange
         
         static func color(for level: String) -> Color {
             switch level {
             case "warning": return yellow
             case "error": return red
+            case "open": return green
+            case "closed": return red
+            case "meeting": return purple
+            case "brb": return yellow
+            case "lunch": return orange
             default: return green
             }
         }

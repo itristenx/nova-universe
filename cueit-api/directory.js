@@ -53,6 +53,8 @@ export async function searchDirectory(q) {
 }
 
 export async function createUser(name, email) {
+  // NOTE: This creates a user in the LOCAL CueIT database, NOT in the external directory
+  // Directory integration is strictly read-only - we never modify external directory data
   return new Promise((resolve, reject) => {
     db.run(
       'INSERT INTO users (name, email) VALUES (?, ?)',

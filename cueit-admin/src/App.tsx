@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from '@/components/layout';
 import { ConnectedToastContainer } from '@/components/ui';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { useAuthStore } from '@/stores/auth';
@@ -180,12 +181,14 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <Router>
-          <AppRoutes />
-          <ConnectedToastContainer />
-        </Router>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <Router>
+            <AppRoutes />
+            <ConnectedToastContainer />
+          </Router>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 };

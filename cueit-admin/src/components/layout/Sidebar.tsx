@@ -13,6 +13,7 @@ import {
   QrCodeIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/auth';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
@@ -34,6 +35,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { isDark } = useTheme();
 
   const handleLogout = () => {
     logout();
@@ -52,27 +54,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <img
-                  className="h-8 w-8"
-                  src="/logo.png"
-                  alt="CueIT"
-                  onError={(e) => {
+          <div className="flex flex-col items-center px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex-shrink-0 mb-3">
+              <img
+                className="h-12 w-auto max-w-[160px]"
+                src={isDark ? '/logo-dark.png' : '/logo.png'}
+                alt="CueIT"
+                onError={(e) => {
+                  // Fallback to regular logo if dark version doesn't exist
+                  if (e.currentTarget.src.includes('logo-dark.png')) {
+                    e.currentTarget.src = '/logo.png';
+                  } else {
                     e.currentTarget.src = '/vite.svg';
-                  }}
-                />
-              </div>
-              <div className="ml-3">
-                <h1 className="text-xl font-bold text-gray-900">CueIT Portal</h1>
-              </div>
+                  }
+                }}
+              />
+            </div>
+            <div className="w-full text-center">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">CueIT Portal</h1>
             </div>
           </div>
 
@@ -85,8 +90,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 className={({ isActive }) =>
                   `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
                     isActive
-                      ? 'bg-primary-100 text-primary-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-primary-100 dark:bg-primary-900 text-primary-900 dark:text-primary-100'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                   }`
                 }
                 onClick={() => onClose()}
@@ -101,22 +106,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </nav>
 
           {/* User menu */}
-          <div className="flex-shrink-0 border-t border-gray-200 p-4">
+          <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center">
+                <div className="h-8 w-8 bg-primary-600 dark:bg-primary-500 rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
                     {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                   </span>
                 </div>
               </div>
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-700">{user?.name || 'Admin'}</p>
-                <p className="text-xs text-gray-500">{user?.email || 'admin@example.com'}</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{user?.name || 'Admin'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{user?.roles?.[0] || 'Administrator'}</p>
               </div>
               <button
                 onClick={handleLogout}
-                className="ml-3 flex-shrink-0 text-gray-400 hover:text-gray-600"
+                className="ml-3 flex-shrink-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 title="Logout"
               >
                 <ArrowRightOnRectangleIcon className="h-5 w-5" />
