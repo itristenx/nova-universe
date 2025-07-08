@@ -102,7 +102,7 @@ async function runUITests() {
     console.log('\n5️⃣ Testing Form Submission...');
     try {
       // Trigger form submission
-      loginForm.dispatchEvent(new Event('submit', { bubbles: true }));
+      submitButton.click();
       
       // Wait for potential navigation or state change
       await sleep(2000);
