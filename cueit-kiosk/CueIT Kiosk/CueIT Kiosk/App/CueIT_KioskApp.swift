@@ -10,27 +10,28 @@ import Foundation
 
 @main
 struct CueITKioskApp: App {
-    @StateObject private var appCoordinator = AppCoordinator.shared
-    @StateObject private var connectionStatus = ConnectionStatus()
-    @StateObject private var notificationManager = NotificationManager.shared
+    @StateObject private var kioskController = KioskController.shared
     
     init() {
         // Apply modern theme
         setupAppearance()
         
-        // Register kiosk version
+        // Initialize kiosk controller
         Task {
-            await KioskService.shared.register(version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
+            await kioskController.initialize()
         }
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(appCoordinator)
-                .environmentObject(connectionStatus)
-                .environmentObject(notificationManager)
+                .environmentObject(kioskController)
                 .preferredColorScheme(.light) // Force light mode for kiosk consistency
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                    Task {
+                        await kioskController.handleAppActivation()
+                    }
+                }
         }
     }
     
@@ -38,10 +39,10 @@ struct CueITKioskApp: App {
         // Configure navigation bar appearance
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Theme.Colors.surface)
+        appearance.backgroundColor = UIColor.systemBackground
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor(Theme.Colors.text),
-            .font: Theme.Typography.headline.font
+            .foregroundColor: UIColor.label,
+            .font: UIFont.systemFont(ofSize: 20, weight: .semibold)
         ]
         
         UINavigationBar.appearance().standardAppearance = appearance
@@ -51,7 +52,7 @@ struct CueITKioskApp: App {
         // Configure tab bar appearance if needed
         let tabAppearance = UITabBarAppearance()
         tabAppearance.configureWithOpaqueBackground()
-        tabAppearance.backgroundColor = UIColor(Theme.Colors.surface)
+        tabAppearance.backgroundColor = UIColor.systemBackground
         
         UITabBar.appearance().standardAppearance = tabAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabAppearance

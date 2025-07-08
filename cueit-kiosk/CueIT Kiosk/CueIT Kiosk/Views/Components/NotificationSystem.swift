@@ -235,12 +235,12 @@ struct NotificationView: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                 Text(notification.title)
                     .font(Theme.Typography.headline)
-                    .foregroundColor(Theme.Colors.label)
+                    .foregroundColor(Theme.Colors.text)
                 
                 if let message = notification.message {
                     Text(message)
                         .font(Theme.Typography.body)
-                        .foregroundColor(Theme.Colors.secondaryLabel)
+                        .foregroundColor(Theme.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -265,15 +265,15 @@ struct NotificationView: View {
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(Theme.Colors.tertiaryLabel)
+                    .foregroundColor(Theme.Colors.textTertiary)
             }
         }
         .padding(Theme.Spacing.md)
         .background(
-            RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+            RoundedRectangle(cornerRadius: Theme.CornerRadius.md)
                 .fill(notification.type.backgroundColor)
                 .overlay(
-                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.md)
                         .stroke(notification.type.color.opacity(0.2), lineWidth: 1)
                 )
         )
@@ -287,7 +287,7 @@ struct NotificationView: View {
                     dragOffset = value.translation
                 }
                 .onEnded { value in
-                    if abs(value.translation.x) > 100 || abs(value.translation.y) > 50 {
+                    if abs(value.translation.width) > 100 || abs(value.translation.height) > 50 {
                         withAnimation(.easeOut(duration: 0.2)) {
                             onDismiss()
                         }

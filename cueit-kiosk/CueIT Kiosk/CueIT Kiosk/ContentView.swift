@@ -2,30 +2,55 @@
 //  ContentView.swift
 //  CueIT Kiosk
 //
-//  Main app content view that uses AppCoordinator for state management
+//  Modern Conference Room Kiosk - Complete Rebuild
+//  Inspired by Zoom/Microsoft conference room scheduling tablets
 //
 
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject private var appCoordinator: AppCoordinator
-    @EnvironmentObject private var connectionStatus: ConnectionStatus
-    @EnvironmentObject private var notificationManager: NotificationManager
+    @StateObject private var kioskController = KioskController.shared
+    @StateObject private var configManager = ConfigurationManager.shared
+    @StateObject private var connectionManager = ConnectionManager.shared
     
     var body: some View {
-        LaunchView()
-            .onOpenURL { url in
-                appCoordinator.handleDeepLink(url: url)
+        ZStack {
+            // Main kiosk interface
+            switch kioskController.currentState {
+            case .initializing:
+                InitializationView()
+            case .serverSetup:
+                ServerSetupView()
+            case .activation:
+                ActivationModeView()
+            case .ready:
+                MainKioskInterface()
+            case .error(let message):
+                ErrorStateView(message: message)
+            case .maintenance:
+                MaintenanceView()
             }
-            .sheet(isPresented: $appCoordinator.showServerConfig) {
-                ServerConfigView()
+            
+            // Global overlays
+            if kioskController.showSettings {
+                SettingsOverlay()
+                    .transition(.opacity)
             }
-            .sheet(isPresented: $appCoordinator.showAdminPanel) {
-                EnhancedAdminLoginView(configService: EnhancedConfigService.shared)
+            
+            if kioskController.showNotification {
+                NotificationOverlay()
+                    .transition(.move(edge: .top))
             }
-            .fullScreenCover(isPresented: $appCoordinator.showFeedbackForm) {
-                FeedbackFormView()
-            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: kioskController.currentState)
+        .animation(.easeInOut(duration: 0.2), value: kioskController.showSettings)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: kioskController.showNotification)
+        .onAppear {
+            kioskController.initialize()
+        }
+        .task {
+            await connectionManager.startMonitoring()
+        }
     }
 }
 

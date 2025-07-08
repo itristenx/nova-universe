@@ -176,7 +176,17 @@ class KioskService: ObservableObject {
         } catch {
             self.state = .error
             self.activationError = true
-            self.statusMessage = "Cannot connect to server: \(error.localizedDescription)"
+            // Clean up connection error message
+            let errorDesc = error.localizedDescription
+            if errorDesc.contains("Could not connect to the server") || errorDesc.contains("The Internet connection appears to be offline") {
+                self.statusMessage = "Unable to reach server"
+            } else if errorDesc.contains("timeout") {
+                self.statusMessage = "Connection timeout"
+            } else if errorDesc.contains("DNS") || errorDesc.contains("host") {
+                self.statusMessage = "Server not found"
+            } else {
+                self.statusMessage = "Connection failed"
+            }
             print("Connection error: \(error)")
         }
 
