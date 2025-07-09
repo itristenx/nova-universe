@@ -11,8 +11,8 @@ echo "1. Testing server connectivity..."
 SERVER_RESPONSE=$(curl -s http://localhost:3000/api/server-info)
 if [ $? -eq 0 ]; then
     echo "✅ Server is running and responding"
-    echo "   Organization: $(echo $SERVER_RESPONSE | jq -r '.organizationName')"
-    echo "   PIN Length: $(echo $SERVER_RESPONSE | jq -r '.minPinLength')-$(echo $SERVER_RESPONSE | jq -r '.maxPinLength') digits"
+    echo "   Organization: $(echo "$SERVER_RESPONSE" | jq -r '.organizationName')"
+    echo "   PIN Length: $(echo "$SERVER_RESPONSE" | jq -r '.minPinLength')-$(echo "$SERVER_RESPONSE" | jq -r '.maxPinLength') digits"
 else
     echo "❌ Server is not responding"
     exit 1
