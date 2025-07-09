@@ -17,8 +17,8 @@ struct CueITKioskApp: App {
         // Apply modern theme
         setupAppearance()
         
-        // Initialize kiosk controller
-        kioskController.initialize()
+        // Note: kioskController.initialize() moved to ContentView.onAppear
+        // to avoid accessing @StateObject before SwiftUI initialization
     }
 
     var body: some Scene {

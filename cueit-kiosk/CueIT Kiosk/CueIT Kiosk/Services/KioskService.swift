@@ -52,9 +52,7 @@ class KioskService: ObservableObject {
     
     private init() {
         token = Bundle.main.object(forInfoDictionaryKey: "KIOSK_TOKEN") as? String ?? ""
-        Task {
-            await checkInitialState()
-        }
+        checkInitialState()
     }
     
     private func checkInitialState() {

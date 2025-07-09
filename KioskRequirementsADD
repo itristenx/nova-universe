@@ -1,0 +1,128 @@
+# 🧾 CueIT Kiosk Display Requirements
+
+This document outlines the full technical and UX requirements for building the **CueIT Kiosk Display App**, designed to emulate the Apple/Zoom Room-style interface for in-office kiosk usage.
+
+---
+
+## 🧱 Core Layout Goals
+
+| UI Element            | Description                                                                 |
+|----------------------|-----------------------------------------------------------------------------|
+| **Room Title**       | Displays the name of the room/kiosk (e.g. "Conference Room")                |
+| **Time Display**     | Shows only the current time and date in large centered text                 |
+| **Status Bar**       | Displays kiosk status ("Available", "In Use") in a full-width bottom bar     |
+| **Action Button**    | Button labeled “Open Ticket” inside the status bar                          |
+| **Settings Gear**    | Opens admin settings with Apple-style wizard                                |
+
+---
+
+## 🖥 Revised Visual Layout (Inspired by Image 2)
+
+```swift
+ZStack {
+  BackgroundColor (or subtle blurred pattern)
+  VStack {
+    // Top Bar
+    HStack {
+      Text("Room Name Here")
+        .font(.title.bold())
+        .padding(.leading)
+      Spacer()
+      SettingsIcon()
+        .padding(.trailing)
+    }
+    .padding(.top)
+
+    Spacer()
+
+    // Time Display
+    VStack(spacing: 4) {
+      Text(currentTime)      // e.g. "23:55"
+        .font(.system(size: 48, weight: .medium))
+      Text(currentDate)      // e.g. "Tuesday, July 8"
+        .font(.subheadline)
+        .foregroundColor(.secondary)
+    }
+    .padding()
+
+    Spacer()
+
+    // Status Bar at Bottom
+    HStack {
+      VStack(alignment: .leading) {
+        Text("Available")
+          .font(.title2.bold())
+        Text("Ready to help")
+          .font(.caption)
+          .foregroundColor(.white.opacity(0.7))
+      }
+      Spacer()
+      Button(action: openTicket) {
+        Label("Open Ticket", systemImage: "plus")
+          .font(.headline)
+          .padding(.horizontal)
+          .padding(.vertical, 10)
+          .background(Color.white.opacity(0.2))
+          .cornerRadius(10)
+      }
+    }
+    .padding()
+    .frame(maxWidth: .infinity)
+    .background(Color.green)
+    .foregroundColor(.white)
+  }
+}
+```
+
+---
+
+## ✅ Functional Requirements
+
+- Remove "No upcoming meetings" text
+- Time/Date display should be centered, clean, and large
+- Bottom status bar should occupy full width
+- Background can be solid white / black or background provided in the config from the server.
+
+---
+
+## ⚙️ Admin Panel + Wizard (Unchanged)
+- Ensure Wizard includes:
+  - Proper positioning of elements and ensure there is transitions betweens steps. (Moving right to left not left to right)
+  - Server connection - should be accessible without admin login (in the event kiosk goes offline or server disconnects)
+  - Room naming - Ensure this is able to be set through the Kiosk or through the Admin UI. Ensure changes made in either place are saved on the server. 
+  - Confirmation - Only once server updates any information like "Room name" etc. Show a loading screen while waiting. 
+
+---
+
+## ✨ Apple-Like Styling Tips
+- Rounded corners on all views (16–24pt)
+- Use SF Symbols for icons
+- Color palette:
+  - Available = `Color.green`
+  - Busy = `Color.red`
+  - In-Meeting = Color.purple
+  - Be right back = Color.yellow
+  - Status Unavailable = color.Orange
+**Ensure Kiosk Indicator Statuses are updated to include these in both the kiosk and admin UI. 
+Ensure kiosks can update this manually and it return that data to the server to be displayed in the UI. 
+  - Button = `Color.white.opacity(0.2)` Text = slightly darker that status color. 
+
+---
+
+## ✅ Deliverables (for Copilot)
+- [ ] `KioskHomeView.swift` (update to reflect new layout)
+- [ ] `StatusBarView.swift` (modular status area)
+- [ ] `TimeDisplayView.swift` (modular time block)
+- [ ] `ActivationWizard.swift` (onboarding)
+
+---
+
+## 🧪 Codex / Copilot Prompt Template
+Create a SwiftUI view called `KioskHomeView` that uses the following layout:
+- A top HStack with the room name and a gear icon button
+- A large time and date display in the center - With customizable welcome message etc (See admin UI for configurable messages)
+- A bottom status bar that is full-width and includes a label (e.g., "Available") on the left and a button on the right labeled "Open Ticket"
+- Use a green background for the status bar when available
+- Use system fonts and SF Symbols (e.g. gear, plus)
+- Support dark mode and responsiveness on iPad screen sizes
+```

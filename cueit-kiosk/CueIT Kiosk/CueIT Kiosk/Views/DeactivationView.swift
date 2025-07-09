@@ -104,7 +104,7 @@ struct DeactivationView: View {
     
     private func loadOrganizationName() {
         // Try to get organization name from server configuration or stored data
-        if let serverConfig = configManager.serverConfiguration {
+        if configManager.serverConfiguration != nil {
             // In a real implementation, we'd fetch this from the server
             // For now, we'll use a stored value or default
             organizationName = UserDefaults.standard.string(forKey: "organizationName") ?? "Your Organization"

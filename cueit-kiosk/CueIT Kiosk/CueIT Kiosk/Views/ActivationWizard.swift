@@ -299,19 +299,21 @@ struct ActivationWizard: View {
                             currentStep = WizardStep(rawValue: currentStep.rawValue + 1) ?? currentStep
                         }
                     }
-                } else {
-                    // For other steps, just proceed
-                    await MainActor.run {
-                        isLoading = false
-                        if currentStep.rawValue < WizardStep.allCases.count - 1 {
-                            currentStep = WizardStep(rawValue: currentStep.rawValue + 1) ?? currentStep
-                        }
-                    }
                 }
             } catch {
                 await MainActor.run {
                     isLoading = false
                     errorMessage = error.localizedDescription
+                }
+            }
+            
+            // For other steps, just proceed without error handling
+            if currentStep != .serverConnection && currentStep != .activation {
+                await MainActor.run {
+                    isLoading = false
+                    if currentStep.rawValue < WizardStep.allCases.count - 1 {
+                        currentStep = WizardStep(rawValue: currentStep.rawValue + 1) ?? currentStep
+                    }
                 }
             }
         }
@@ -405,24 +407,17 @@ struct ActivationWizard: View {
         errorMessage = nil
         
         Task {
-            do {
-                // Save configuration
-                await configManager.updateServerURL(serverURL)
-                await configManager.updateAdminPIN(adminPIN)
-                await configManager.updateRoomName(roomName)
-                
-                // Mark setup as complete
-                await MainActor.run {
-                    UserDefaults.standard.set(true, forKey: "isSetupComplete")
-                    UserDefaults.standard.set(true, forKey: "isActivated")
-                    isLoading = false
-                    kioskController.transitionTo(.activated)
-                }
-            } catch {
-                await MainActor.run {
-                    isLoading = false
-                    errorMessage = "Setup failed: \(error.localizedDescription)"
-                }
+            // Save configuration
+            await configManager.updateServerURL(serverURL)
+            await configManager.updateAdminPIN(adminPIN)
+            await configManager.updateRoomName(roomName)
+            
+            // Mark setup as complete
+            await MainActor.run {
+                UserDefaults.standard.set(true, forKey: "isSetupComplete")
+                UserDefaults.standard.set(true, forKey: "isActivated")
+                isLoading = false
+                kioskController.transitionTo(.activated)
             }
         }
     }

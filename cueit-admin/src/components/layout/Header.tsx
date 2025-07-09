@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   const { addToast } = useToastStore();
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState<'open' | 'closed' | 'meeting' | 'brb' | 'lunch'>('open');
+  const [currentStatus, setCurrentStatus] = useState<'open' | 'closed' | 'meeting' | 'brb' | 'lunch' | 'unavailable'>('open');
   const [loading, setLoading] = useState(false);
   const [showServerModal, setShowServerModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
     };
   }, []);
 
-  const handleStatusChange = async (status: 'open' | 'closed' | 'meeting' | 'brb' | 'lunch') => {
+  const handleStatusChange = async (status: 'open' | 'closed' | 'meeting' | 'brb' | 'lunch' | 'unavailable') => {
     try {
       setLoading(true);
       
@@ -71,9 +71,10 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         currentStatus: status,
         openMessage: currentConfig.openMessage || 'Help Desk is Open',
         closedMessage: currentConfig.closedMessage || 'Help Desk is Closed',
-        meetingMessage: currentConfig.meetingMessage || 'In a Meeting',
+        meetingMessage: currentConfig.meetingMessage || 'In a Meeting - Back Soon',
         brbMessage: currentConfig.brbMessage || 'Be Right Back',
-        lunchMessage: currentConfig.lunchMessage || 'Out to Lunch'
+        lunchMessage: currentConfig.lunchMessage || 'Out to Lunch - Back in 1 Hour',
+        unavailableMessage: currentConfig.unavailableMessage || 'Status Unavailable'
       });
       
       setCurrentStatus(status);
@@ -123,6 +124,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
       case 'brb':
         return 'bg-yellow-500';
       case 'lunch':
+        return 'bg-orange-500';
+      case 'unavailable':
         return 'bg-orange-500';
       default:
         return 'bg-gray-500';
@@ -217,6 +220,16 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                   >
                     <div className="h-2 w-2 rounded-full bg-orange-500" />
                     <span>Out to Lunch</span>
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange('unavailable')}
+                    disabled={loading}
+                    className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 ${
+                      currentStatus === 'unavailable' ? 'bg-orange-50 dark:bg-orange-900 text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    <div className="h-2 w-2 rounded-full bg-orange-500" />
+                    <span>Status Unavailable</span>
                   </button>
                   <div className="border-t border-gray-100 dark:border-gray-600 my-1"></div>
                   <button

@@ -510,6 +510,7 @@ export const ConfigurationPage: React.FC = () => {
                           kiosk.effectiveConfig.currentStatus === 'meeting' ? 'bg-purple-100 text-purple-800' :
                           kiosk.effectiveConfig.currentStatus === 'brb' ? 'bg-yellow-100 text-yellow-800' :
                           kiosk.effectiveConfig.currentStatus === 'lunch' ? 'bg-orange-100 text-orange-800' :
+                          kiosk.effectiveConfig.currentStatus === 'unavailable' ? 'bg-orange-100 text-orange-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
                           {kiosk.effectiveConfig.currentStatus}

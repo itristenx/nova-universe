@@ -19,6 +19,7 @@ class ConfigurationManager: ObservableObject {
     @Published var isActivated = false
     @Published var isDeactivated = false
     @Published var lastConfigUpdate: Date?
+    @Published var currentRoomName: String = "Conference Room"
     
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
@@ -70,11 +71,11 @@ class ConfigurationManager: ObservableObject {
     
     // MARK: - Configuration Updates
     func refreshConfiguration() async {
-        guard let serverConfig = serverConfiguration, isActivated else { return }
+        guard serverConfiguration != nil, isActivated else { return }
         
         // TODO: Implement proper API call to get kiosk configuration
         // For now, create a basic configuration
-        let roomName = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
+        let _ = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
         
         // Create a basic configuration if none exists
         if kioskConfiguration == nil {
@@ -106,7 +107,10 @@ class ConfigurationManager: ObservableObject {
     }
     
     func updateRoomName(_ name: String) async {
-        userDefaults.set(name, forKey: "kioskRoomName")
+        await MainActor.run {
+            currentRoomName = name
+            userDefaults.set(name, forKey: "kioskRoomName")
+        }
     }
     
     // MARK: - Deactivation Management
@@ -127,6 +131,7 @@ class ConfigurationManager: ObservableObject {
             serverConfiguration = nil
             kioskConfiguration = nil
             lastConfigUpdate = nil
+            currentRoomName = "Conference Room"
             
             // Clear UserDefaults
             userDefaults.removeObject(forKey: UserDefaultsKeys.serverConfig)
@@ -151,6 +156,9 @@ class ConfigurationManager: ObservableObject {
         // Load activation status
         isActivated = userDefaults.bool(forKey: UserDefaultsKeys.isActivated)
         isDeactivated = userDefaults.bool(forKey: UserDefaultsKeys.isDeactivated)
+        
+        // Load room name
+        currentRoomName = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
         
         // Load server configuration
         if let data = userDefaults.data(forKey: UserDefaultsKeys.serverConfig),
@@ -207,60 +215,6 @@ class ConfigurationManager: ObservableObject {
 }
 
 // MARK: - Configuration Models
-struct ServerConfiguration: Codable {
-    let baseURL: String
-    let name: String
-    let isSecure: Bool
-    let lastTested: Date
-    
-    init(baseURL: String, name: String = "CueIT Server") {
-        self.baseURL = baseURL
-        self.name = name
-        self.isSecure = baseURL.hasPrefix("https")
-        self.lastTested = Date()
-    }
-}
-
-struct KioskConfiguration: Codable {
-    let displayName: String
-    let location: String?
-    let logoURL: String?
-    let backgroundURL: String?
-    let theme: KioskTheme
-    let features: KioskFeatures
-    let messaging: MessagingConfiguration
-    let statusIndicator: StatusIndicatorConfiguration
-    
-    struct KioskTheme: Codable {
-        let primaryColor: String
-        let secondaryColor: String
-        let accentColor: String
-        let backgroundStyle: String // "solid", "gradient", "image"
-    }
-    
-    struct KioskFeatures: Codable {
-        let showClock: Bool
-        let showWeather: Bool
-        let showCalendar: Bool
-        let enableFeedback: Bool
-        let allowGuestAccess: Bool
-    }
-    
-    struct MessagingConfiguration: Codable {
-        let welcomeMessage: String
-        let helpText: String
-        let showTicker: Bool
-        let tickerText: String?
-    }
-    
-    struct StatusIndicatorConfiguration: Codable {
-        let enabled: Bool
-        let position: String // "top", "bottom", "floating"
-        let showConnectionStatus: Bool
-        let showLastUpdate: Bool
-    }
-}
-
 // MARK: - Keychain Manager
 class KeychainManager {
     func store(key: String, value: String) -> Bool {
