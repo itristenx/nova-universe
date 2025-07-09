@@ -25,7 +25,7 @@ export const KiosksPage: React.FC = () => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [activationData, setActivationData] = useState<KioskActivation | null>(null);
   const [generatingCode, setGeneratingCode] = useState(false);
-  const [globalStatus, setGlobalStatus] = useState<'open' | 'closed' | 'meeting' | 'brb' | 'lunch'>('open');
+  const [globalStatus, setGlobalStatus] = useState<'open' | 'closed' | 'meeting' | 'brb' | 'lunch' | 'unavailable'>('open');
   const [statusLoading, setStatusLoading] = useState(false);
   const [kioskScheduleConfig, setKioskScheduleConfig] = useState<{ schedule?: ScheduleConfig; officeHours?: OfficeHours } | null>(null);
   const { addToast } = useToastStore();
@@ -44,7 +44,7 @@ export const KiosksPage: React.FC = () => {
     }
   };
 
-  const updateGlobalStatus = async (status: 'open' | 'closed' | 'meeting' | 'brb' | 'lunch') => {
+  const updateGlobalStatus = async (status: 'open' | 'closed' | 'meeting' | 'brb' | 'lunch' | 'unavailable') => {
     try {
       setStatusLoading(true);
       
@@ -57,9 +57,10 @@ export const KiosksPage: React.FC = () => {
         currentStatus: status,
         openMessage: currentConfig.openMessage || 'Help Desk is Open',
         closedMessage: currentConfig.closedMessage || 'Help Desk is Closed',
-        meetingMessage: currentConfig.meetingMessage || 'In a Meeting',
+        meetingMessage: currentConfig.meetingMessage || 'In a Meeting - Back Soon',
         brbMessage: currentConfig.brbMessage || 'Be Right Back',
-        lunchMessage: currentConfig.lunchMessage || 'Out to Lunch'
+        lunchMessage: currentConfig.lunchMessage || 'Out to Lunch - Back in 1 Hour',
+        unavailableMessage: currentConfig.unavailableMessage || 'Status Unavailable'
       };
       
       await api.updateStatusConfig(updatedConfig);
@@ -279,6 +280,8 @@ export const KiosksPage: React.FC = () => {
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'lunch':
         return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'unavailable':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -398,6 +401,18 @@ export const KiosksPage: React.FC = () => {
                   disabled={statusLoading}
                 />
                 <span className="text-sm text-orange-700 font-medium">Out to Lunch</span>
+              </label>
+              <label className="flex items-center">
+                <input 
+                  type="radio" 
+                  name="kiosk-indicator-status" 
+                  value="unavailable" 
+                  className="mr-2" 
+                  checked={globalStatus === 'unavailable'}
+                  onChange={() => updateGlobalStatus('unavailable')}
+                  disabled={statusLoading}
+                />
+                <span className="text-sm text-orange-700 font-medium">Status Unavailable</span>
               </label>
             </div>
           </div>

@@ -474,9 +474,10 @@ app.get('/api/status-config', ensureAuth, (req, res) => {
         openMessage: config.statusOpenMsg || 'Help Desk is Open',
         closedMessage: config.statusClosedMsg || 'Help Desk is Closed',
         errorMessage: config.statusErrorMsg || 'Service temporarily unavailable',
-        meetingMessage: config.statusMeetingMsg || 'In a Meeting',
+        meetingMessage: config.statusMeetingMsg || 'In a Meeting - Back Soon',
         brbMessage: config.statusBrbMsg || 'Be Right Back',
-        lunchMessage: config.statusLunchMsg || 'Out to Lunch'
+        lunchMessage: config.statusLunchMsg || 'Out to Lunch - Back in 1 Hour',
+        unavailableMessage: config.statusUnavailableMsg || 'Status Unavailable'
       };
       
       res.json(response);
@@ -485,7 +486,7 @@ app.get('/api/status-config', ensureAuth, (req, res) => {
 });
 
 app.put('/api/status-config', ensureAuth, (req, res) => {
-  const { enabled, currentStatus, openMessage, closedMessage, errorMessage, meetingMessage, brbMessage, lunchMessage } = req.body;
+  const { enabled, currentStatus, openMessage, closedMessage, errorMessage, meetingMessage, brbMessage, lunchMessage, unavailableMessage } = req.body;
   
   // Convert frontend format to backend config keys
   const updates = {};
@@ -497,6 +498,7 @@ app.put('/api/status-config', ensureAuth, (req, res) => {
   if (meetingMessage !== undefined) updates.statusMeetingMsg = meetingMessage;
   if (brbMessage !== undefined) updates.statusBrbMsg = brbMessage;
   if (lunchMessage !== undefined) updates.statusLunchMsg = lunchMessage;
+  if (unavailableMessage !== undefined) updates.statusUnavailableMsg = unavailableMessage;
 
   const stmt = db.prepare(
     `INSERT INTO config (key, value) VALUES (?, ?)

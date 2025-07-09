@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var kioskController = KioskController.shared
+    @EnvironmentObject var kioskController: KioskController
     @StateObject private var configManager = ConfigurationManager.shared
     @StateObject private var connectionManager = ConnectionManager.shared
     

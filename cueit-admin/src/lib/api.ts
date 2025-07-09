@@ -784,9 +784,10 @@ class ApiClient {
         currentStatus: 'open', // Current global status
         openMessage: 'Help Desk is Open',
         closedMessage: 'Help Desk is Closed',
-        meetingMessage: 'In a Meeting',
+        meetingMessage: 'In a Meeting - Back Soon',
         brbMessage: 'Be Right Back',
-        lunchMessage: 'Out to Lunch',
+        lunchMessage: 'Out to Lunch - Back in 1 Hour',
+        unavailableMessage: 'Status Unavailable',
         schedule: {
           enabled: false,
           schedule: {

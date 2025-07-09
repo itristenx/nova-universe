@@ -280,7 +280,7 @@ struct ManualActivationView: View {
                     .font(.system(size: 20, weight: .bold, design: .monospaced))
                     .autocapitalization(.allCharacters)
                     .disableAutocorrection(true)
-                    .onChange(of: activationCode) { newValue in
+                    .onChange(of: activationCode) { _, newValue in
                         activationCode = newValue.uppercased()
                     }
                 

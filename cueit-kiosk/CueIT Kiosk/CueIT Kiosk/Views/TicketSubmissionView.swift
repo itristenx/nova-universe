@@ -375,7 +375,12 @@ struct TicketSubmissionView: View {
     private func submitTicket(_ ticket: TicketSubmission) async -> Bool {
         guard let serverConfig = configManager.serverConfiguration else { return false }
         
-        return await APIService.shared.submitTicket(ticket, serverURL: serverConfig.baseURL)
+        return await APIService.shared.submitTicket(
+            kioskId: ticket.kioskId,
+            category: ticket.category,
+            description: ticket.description,
+            serverURL: serverConfig.baseURL
+        )
     }
 }
 

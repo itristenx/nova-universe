@@ -40,6 +40,10 @@ db.serialize(() => {
       openMsg TEXT,
       closedMsg TEXT,
       errorMsg TEXT,
+      meetingMsg TEXT,
+      brbMsg TEXT,
+      lunchMsg TEXT,
+      unavailableMsg TEXT,
       schedule TEXT
     )
   `);
@@ -182,6 +186,10 @@ db.serialize(() => {
   addColumnIfMissing('kiosks', 'openMsg TEXT');
   addColumnIfMissing('kiosks', 'closedMsg TEXT');
   addColumnIfMissing('kiosks', 'errorMsg TEXT');
+  addColumnIfMissing('kiosks', 'meetingMsg TEXT');
+  addColumnIfMissing('kiosks', 'brbMsg TEXT');
+  addColumnIfMissing('kiosks', 'lunchMsg TEXT');
+  addColumnIfMissing('kiosks', 'unavailableMsg TEXT');
   addColumnIfMissing('kiosks', 'schedule TEXT');
 
   addColumnIfMissing('notifications', 'active INTEGER DEFAULT 1');
@@ -250,6 +258,10 @@ db.serialize(() => {
     statusOpenMsg: 'Open',
     statusClosedMsg: 'Closed',
     statusErrorMsg: 'Error',
+    statusMeetingMsg: 'In a Meeting - Back Soon',
+    statusBrbMsg: 'Be Right Back',
+    statusLunchMsg: 'Out to Lunch - Back in 1 Hour',
+    statusUnavailableMsg: 'Status Unavailable',
     minPinLength: process.env.MIN_PIN_LENGTH || '4',
     maxPinLength: process.env.MAX_PIN_LENGTH || '8',
     scimToken: process.env.SCIM_TOKEN || '',

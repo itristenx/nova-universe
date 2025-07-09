@@ -180,12 +180,12 @@ struct KioskHomeView: View {
             HStack {
                 // Status Color Bar
                 Rectangle()
-                    .fill(statusManager.isAvailable ? Color.green : Color.red)
+                    .fill(statusManager.currentStatus.color)
                     .frame(width: 8)
                     .cornerRadius(4)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(statusManager.isAvailable ? "Available" : "In Use")
+                    Text(statusManager.currentStatus.displayName)
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(.white)
                     
@@ -233,7 +233,7 @@ struct KioskHomeView: View {
     
     // MARK: - Computed Properties
     private var roomName: String {
-        configManager.kioskConfiguration?.displayName ?? "Conference Room"
+        configManager.currentRoomName
     }
     
     private var notificationMessage: String {
@@ -273,14 +273,34 @@ struct SettingsView: View {
     
     enum RoomStatus: String, CaseIterable {
         case available = "Available"
-        case inUse = "In Use"
+        case inUse = "In Use" 
+        case meeting = "In a Meeting"
+        case brb = "Be Right Back"
+        case lunch = "At Lunch"
+        case unavailable = "Status Unavailable"
         case maintenance = "Maintenance"
+        
+        var kioskStatus: KioskStatus? {
+            switch self {
+            case .available: return .available
+            case .inUse: return .inUse
+            case .meeting: return .meeting
+            case .brb: return .brb
+            case .lunch: return .lunch
+            case .unavailable: return .unavailable
+            case .maintenance: return nil // Keep maintenance separate for admin
+            }
+        }
         
         var color: Color {
             switch self {
             case .available: return .green
             case .inUse: return .red
-            case .maintenance: return .orange
+            case .meeting: return .purple
+            case .brb: return .yellow
+            case .lunch: return .blue
+            case .unavailable: return .orange
+            case .maintenance: return .gray
             }
         }
     }
@@ -308,8 +328,16 @@ struct SettingsView: View {
             AdminLoginView(configService: ConfigService())
         }
         .onAppear {
-            tempRoomName = configManager.kioskConfiguration?.displayName ?? ""
-            tempStatus = statusManager.isAvailable ? .available : .inUse
+            tempRoomName = configManager.currentRoomName
+            // Convert current status to room status
+            switch statusManager.currentStatus {
+            case .available: tempStatus = .available
+            case .inUse: tempStatus = .inUse
+            case .meeting: tempStatus = .meeting
+            case .brb: tempStatus = .brb
+            case .lunch: tempStatus = .lunch
+            case .unavailable: tempStatus = .unavailable
+            }
         }
     }
     
@@ -384,11 +412,29 @@ struct SettingsView: View {
                 KioskInfoRow(label: "Last Updated", value: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short))
             }
         }
-        .onChange(of: tempRoomName) { _, newValue in
-            saveRoomName(newValue)
+        .onChange(of: tempRoomName) {
+            saveRoomName(tempRoomName)
         }
-        .onChange(of: tempStatus) { _, newValue in
-            statusManager.setManualStatus(newValue == .available)
+        .onChange(of: tempStatus) {
+            // Only allow status changes if user is authenticated
+            if isAuthenticated {
+                if let kioskStatus = tempStatus.kioskStatus {
+                    let success = statusManager.setAdminStatus(kioskStatus, requireAuth: true)
+                    if !success {
+                        // Revert if authentication failed
+                        resetTempStatusToCurrentStatus()
+                    }
+                } else if tempStatus == .maintenance {
+                    // Handle maintenance mode separately if needed
+                    let success = statusManager.setAdminStatus(.unavailable, requireAuth: true)
+                    if !success {
+                        resetTempStatusToCurrentStatus()
+                    }
+                }
+            } else {
+                // Revert to current status if not authenticated
+                resetTempStatusToCurrentStatus()
+            }
         }
     }
     
@@ -397,6 +443,18 @@ struct SettingsView: View {
     private func saveRoomName(_ name: String) {
         Task {
             await configManager.updateRoomName(name)
+        }
+    }
+    
+    private func resetTempStatusToCurrentStatus() {
+        // Convert current status back to room status for the UI
+        switch statusManager.currentStatus {
+        case .available: tempStatus = .available
+        case .inUse: tempStatus = .inUse
+        case .meeting: tempStatus = .meeting
+        case .brb: tempStatus = .brb
+        case .lunch: tempStatus = .lunch
+        case .unavailable: tempStatus = .unavailable
         }
     }
     

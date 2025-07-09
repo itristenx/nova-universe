@@ -2,7 +2,7 @@
 //  StatusManager.swift
 //  CueIT Kiosk
 //
-//  Manages kiosk status (Available/In Use) with backend sync and manual override
+//  Manages kiosk status with backend sync and manual override
 //
 
 import SwiftUI
@@ -13,10 +13,25 @@ class StatusManager: ObservableObject {
     static let shared = StatusManager()
     
     // MARK: - Published Properties
-    @Published var isAvailable: Bool = true
-    @Published var statusDescription: String = "Ready to help"
+    @Published var currentStatus: KioskStatus = .available
+    @Published var statusConfiguration: StatusConfiguration = StatusConfiguration()
     @Published var isManualOverride: Bool = false
     @Published var lastUpdate: Date = Date()
+    
+    // Legacy support
+    var isAvailable: Bool {
+        currentStatus == .available
+    }
+    
+    var statusDescription: String {
+        if !connectionManager.isConnected {
+            return "Offline mode"
+        } else if isManualOverride {
+            return "Manual override active"
+        } else {
+            return statusConfiguration.message(for: currentStatus)
+        }
+    }
     
     // MARK: - Dependencies
     private let configManager = ConfigurationManager.shared
@@ -33,8 +48,8 @@ class StatusManager: ObservableObject {
     
     // MARK: - Public Methods
     func startMonitoring() {
-        // Start periodic status sync
-        statusTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
+        // Start periodic status sync - reduced frequency to avoid too frequent refreshes
+        statusTimer = Timer.scheduledTimer(withTimeInterval: 120.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 await self?.syncWithBackend()
             }
@@ -51,10 +66,10 @@ class StatusManager: ObservableObject {
         statusTimer = nil
     }
     
-    func setManualStatus(_ available: Bool) {
-        isAvailable = available
+    private func setManualStatus(_ status: KioskStatus) {
+        currentStatus = status
         isManualOverride = true
-        updateStatusDescription()
+        lastUpdate = Date()
         saveStatus()
         
         // Sync with backend if connected
@@ -63,9 +78,28 @@ class StatusManager: ObservableObject {
         }
     }
     
+    private func setManualStatus(_ available: Bool) {
+        // Legacy support for existing code
+        setManualStatus(available ? .available : .inUse)
+    }
+    
+    // Admin-only method for status changes that require authentication
+    func setAdminStatus(_ status: KioskStatus, requireAuth: Bool = true) -> Bool {
+        if requireAuth {
+            // Check if admin is authenticated through AuthenticationManager
+            let authManager = AuthenticationManager.shared
+            guard authManager.isAdminAuthenticated else {
+                return false
+            }
+        }
+        
+        setManualStatus(status)
+        return true
+    }
+    
     func clearManualOverride() {
         isManualOverride = false
-        updateStatusDescription()
+        lastUpdate = Date()
         saveStatus()
         
         // Re-sync with backend
@@ -74,9 +108,40 @@ class StatusManager: ObservableObject {
         }
     }
     
+    // Admin-only method for clearing override that requires authentication
+    func clearAdminOverride(requireAuth: Bool = true) -> Bool {
+        if requireAuth {
+            guard AuthenticationManager.shared.isAdminAuthenticated else {
+                return false
+            }
+        }
+        
+        clearManualOverride()
+        return true
+    }
+    
     func refreshStatus() {
         Task {
             await syncWithBackend()
+        }
+    }
+    
+    func updateStatusConfiguration(_ config: StatusConfiguration) {
+        statusConfiguration = config
+        saveStatusConfiguration()
+    }
+    
+    // Force refresh configuration when admin authenticates
+    func refreshConfigurationForAdmin() {
+        guard AuthenticationManager.shared.isAdminAuthenticated else { return }
+        
+        Task {
+            guard connectionManager.isConnected,
+                  let serverConfig = configManager.serverConfiguration else {
+                return
+            }
+            
+            await fetchStatusConfiguration(serverURL: serverConfig.baseURL)
         }
     }
     
@@ -89,9 +154,8 @@ class StatusManager: ObservableObject {
                     Task { @MainActor in
                         await self?.syncWithBackend()
                     }
-                } else {
-                    self?.updateStatusDescription()
                 }
+                // Status description is now computed, no need to update manually
             }
             .store(in: &cancellables)
         
@@ -106,47 +170,74 @@ class StatusManager: ObservableObject {
     }
     
     private func syncWithBackend() async {
-        guard connectionManager.isConnected else {
-            updateStatusDescription()
+        guard connectionManager.isConnected,
+              let serverConfig = configManager.serverConfiguration else {
             return
         }
         
-        // For now, just update the description
-        // TODO: Implement actual backend sync when API is ready
-        updateStatusDescription()
+        // Only fetch configuration updates if admin is authenticated
+        // This prevents unauthorized changes from being pulled from server
+        let authManager = AuthenticationManager.shared
+        if authManager.isAdminAuthenticated {
+            await fetchStatusConfiguration(serverURL: serverConfig.baseURL)
+        }
+        
+        // Always sync current status (read-only operation)
+        if !isManualOverride {
+            await fetchCurrentStatus(serverURL: serverConfig.baseURL)
+        }
     }
     
     private func syncManualStatusToBackend() async {
-        guard connectionManager.isConnected else {
+        guard connectionManager.isConnected,
+              let _ = configManager.serverConfiguration else {
             return
         }
         
-        // TODO: Implement actual backend sync when API is ready
-        print("Would sync manual status to backend: \(isAvailable)")
+        // TODO: Implement status sync when API types are resolved
+        print("Would sync status to backend: \(currentStatus.rawValue)")
     }
     
-    private func updateStatusDescription() {
-        if !connectionManager.isConnected {
-            statusDescription = "Offline mode"
-        } else if isManualOverride {
-            statusDescription = "Manual override active"
-        } else if isAvailable {
-            statusDescription = "Ready to help"
-        } else {
-            statusDescription = "Room occupied"
-        }
+    private func fetchStatusConfiguration(serverURL: String) async {
+        // TODO: Implement status configuration fetch when API types are resolved
+        print("Would fetch status configuration from: \(serverURL)")
+    }
+    
+    private func fetchCurrentStatus(serverURL: String) async {
+        // TODO: Implement API call to fetch current status
+        // For now, keep current status
     }
     
     private func saveStatus() {
-        UserDefaults.standard.set(isAvailable, forKey: "lastKnownStatus")
+        UserDefaults.standard.set(currentStatus.rawValue, forKey: "lastKnownStatus")
         UserDefaults.standard.set(isManualOverride, forKey: "isManualOverride")
         UserDefaults.standard.set(lastUpdate, forKey: "lastStatusUpdate")
     }
     
+    private func saveStatusConfiguration() {
+        if let data = try? JSONEncoder().encode(statusConfiguration) {
+            UserDefaults.standard.set(data, forKey: "statusConfiguration")
+        }
+    }
+    
     private func loadSavedStatus() {
-        isAvailable = UserDefaults.standard.object(forKey: "lastKnownStatus") as? Bool ?? true
+        // Load status
+        if let statusString = UserDefaults.standard.string(forKey: "lastKnownStatus"),
+           let status = KioskStatus(rawValue: statusString) {
+            currentStatus = status
+        } else {
+            // Legacy support - convert old boolean to new enum
+            let wasAvailable = UserDefaults.standard.object(forKey: "lastKnownStatus") as? Bool ?? true
+            currentStatus = wasAvailable ? .available : .inUse
+        }
+        
         isManualOverride = UserDefaults.standard.bool(forKey: "isManualOverride")
         lastUpdate = UserDefaults.standard.object(forKey: "lastStatusUpdate") as? Date ?? Date()
-        updateStatusDescription()
+        
+        // Load status configuration
+        if let data = UserDefaults.standard.data(forKey: "statusConfiguration"),
+           let config = try? JSONDecoder().decode(StatusConfiguration.self, from: data) {
+            statusConfiguration = config
+        }
     }
 }

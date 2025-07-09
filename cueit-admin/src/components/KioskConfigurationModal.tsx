@@ -52,7 +52,8 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
       closedMessage: kiosk.effectiveConfig.closedMsg,
       meetingMessage: 'In a Meeting - Back Soon',
       brbMessage: 'Be Right Back',
-      lunchMessage: 'Out to Lunch - Back in 1 Hour'
+      lunchMessage: 'Out to Lunch - Back in 1 Hour',
+      unavailableMessage: 'Status Unavailable'
     }
   });
 
@@ -87,7 +88,8 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
             closedMessage: config.statusConfig.customMessages?.closedMessage || statusConfig.customMessages.closedMessage,
             meetingMessage: config.statusConfig.customMessages?.meetingMessage || statusConfig.customMessages.meetingMessage,
             brbMessage: config.statusConfig.customMessages?.brbMessage || statusConfig.customMessages.brbMessage,
-            lunchMessage: config.statusConfig.customMessages?.lunchMessage || statusConfig.customMessages.lunchMessage
+            lunchMessage: config.statusConfig.customMessages?.lunchMessage || statusConfig.customMessages.lunchMessage,
+            unavailableMessage: config.statusConfig.customMessages?.unavailableMessage || statusConfig.customMessages.unavailableMessage
           }
         });
       }
@@ -345,6 +347,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                         <option value="meeting">In a Meeting</option>
                         <option value="brb">Be Right Back</option>
                         <option value="lunch">Out to Lunch</option>
+                        <option value="unavailable">Status Unavailable</option>
                       </select>
                     </div>
 
@@ -421,6 +424,21 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                           onChange={(e) => setStatusConfig(prev => ({
                             ...prev,
                             customMessages: { ...prev.customMessages, lunchMessage: e.target.value }
+                          }))}
+                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label htmlFor="unavailable-message" className="block text-sm font-medium text-gray-700 mb-2">
+                          Status Unavailable Message
+                        </label>
+                        <input
+                          id="unavailable-message"
+                          type="text"
+                          value={statusConfig.customMessages.unavailableMessage}
+                          onChange={(e) => setStatusConfig(prev => ({
+                            ...prev,
+                            customMessages: { ...prev.customMessages, unavailableMessage: e.target.value }
                           }))}
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                         />
