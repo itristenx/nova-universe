@@ -88,7 +88,7 @@ class KioskController: ObservableObject {
         configManager.$serverConfiguration
             .sink { [weak self] config in
                 if config == nil {
-                    self?.transitionTo(.serverSetup)
+                    self?.transitionTo(.setup)
                 }
             }
             .store(in: &cancellables)
@@ -98,9 +98,18 @@ class KioskController: ObservableObject {
             .sink { [weak self] activated in
                 self?.isActivated = activated
                 if activated {
-                    self?.transitionTo(.ready)
-                } else if self?.currentState != .initializing && self?.currentState != .serverSetup {
-                    self?.transitionTo(.activation)
+                    self?.transitionTo(.activated)
+                } else if self?.currentState != .initializing && self?.currentState != .setup {
+                    self?.transitionTo(.setup)
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Listen for deactivation changes
+        configManager.$isDeactivated
+            .sink { [weak self] deactivated in
+                if deactivated {
+                    self?.transitionTo(.deactivated)
                 }
             }
             .store(in: &cancellables)
@@ -108,7 +117,7 @@ class KioskController: ObservableObject {
         // Listen for connection status
         connectionManager.$isConnected
             .sink { [weak self] connected in
-                if !connected && self?.currentState == .ready {
+                if !connected && self?.currentState == .activated {
                     self?.showNotification(message: "Connection lost - operating in offline mode")
                 }
             }
@@ -116,9 +125,15 @@ class KioskController: ObservableObject {
     }
     
     private func performInitialization() async {
+        // Check if kiosk is deactivated first
+        if configManager.isDeactivated {
+            transitionTo(.deactivated)
+            return
+        }
+        
         // Check if server is configured
         guard configManager.serverConfiguration != nil else {
-            transitionTo(.serverSetup)
+            transitionTo(.setup)
             return
         }
         
@@ -135,51 +150,9 @@ class KioskController: ObservableObject {
         // Check activation status
         let activationStatus = await configManager.checkActivationStatus()
         if activationStatus {
-            transitionTo(.ready)
+            transitionTo(.activated)
         } else {
-            transitionTo(.activation)
+            transitionTo(.setup)
         }
-    }
-}
-
-// MARK: - Kiosk State
-enum KioskState: Equatable {
-    case initializing
-    case serverSetup
-    case activation
-    case ready
-    case error(String)
-    case maintenance
-    
-    static func == (lhs: KioskState, rhs: KioskState) -> Bool {
-        switch (lhs, rhs) {
-        case (.initializing, .initializing),
-             (.serverSetup, .serverSetup),
-             (.activation, .activation),
-             (.ready, .ready),
-             (.maintenance, .maintenance):
-            return true
-        case (.error(let lhsMessage), .error(let rhsMessage)):
-            return lhsMessage == rhsMessage
-        default:
-            return false
-        }
-    }
-}
-
-// MARK: - Kiosk Info
-struct KioskInfo: Codable {
-    let id: String
-    let name: String
-    let location: String?
-    let lastUpdated: Date
-    let version: String
-    
-    init(id: String = UUID().uuidString, name: String = "Conference Room Kiosk", location: String? = nil) {
-        self.id = id
-        self.name = name
-        self.location = location
-        self.lastUpdated = Date()
-        self.version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
 }

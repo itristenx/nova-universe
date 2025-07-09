@@ -126,16 +126,17 @@ struct ActivationView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Colors.base.ignoresSafeArea())
         .fullScreenCover(isPresented: $showingQRScanner) {
-            QRScannerView(
-                onCodeScanned: { code in
-                    showingQRScanner = false
-                    activationCode = code
+            QRScannerView(onResult: { result in
+                showingQRScanner = false
+                switch result {
+                case .success(let scanResult):
+                    activationCode = scanResult.string
                     Task { await activateWithCode() }
-                },
-                onCancel: {
-                    showingQRScanner = false
+                case .failure(_):
+                    // Handle scan failure
+                    break
                 }
-            )
+            })
         }
         .sheet(isPresented: $showingServerConfig) {
             ServerConfigView()

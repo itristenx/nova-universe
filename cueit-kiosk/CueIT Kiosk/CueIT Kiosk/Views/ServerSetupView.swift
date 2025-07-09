@@ -231,7 +231,7 @@ struct ServerSetupView: View {
         )
         
         configManager.setServerConfiguration(config)
-        kioskController.transitionTo(.activation)
+        kioskController.transitionTo(.setup)
     }
 }
 

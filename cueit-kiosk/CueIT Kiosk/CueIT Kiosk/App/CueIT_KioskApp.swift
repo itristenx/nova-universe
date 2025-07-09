@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Foundation
+import UIKit
 
 @main
 struct CueITKioskApp: App {
@@ -17,9 +18,7 @@ struct CueITKioskApp: App {
         setupAppearance()
         
         // Initialize kiosk controller
-        Task {
-            await kioskController.initialize()
-        }
+        kioskController.initialize()
     }
 
     var body: some Scene {

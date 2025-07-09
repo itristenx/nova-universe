@@ -136,7 +136,7 @@ struct ActivationModeView: View {
                 
                 if success {
                     kioskController.showNotification(message: "Kiosk activated successfully!")
-                    kioskController.transitionTo(.ready)
+                    kioskController.transitionTo(.activated)
                 } else {
                     activationError = "Invalid activation code. Please try again or contact your administrator."
                 }

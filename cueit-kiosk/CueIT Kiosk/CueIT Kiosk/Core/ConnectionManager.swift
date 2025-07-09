@@ -35,8 +35,10 @@ class ConnectionManager: ObservableObject {
     
     nonisolated func stopMonitoring() {
         monitor.cancel()
-        pingTimer?.invalidate()
-        pingTimer = nil
+        Task { @MainActor in
+            pingTimer?.invalidate()
+            pingTimer = nil
+        }
     }
     
     func testConnection() async -> Bool {
@@ -161,7 +163,8 @@ class ConnectionManager: ObservableObject {
     }
     
     deinit {
-        stopMonitoring()
+        monitor.cancel()
+        // pingTimer cleanup will be handled by async task in stopMonitoring()
     }
 }
 

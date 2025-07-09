@@ -17,6 +17,7 @@ class ConfigurationManager: ObservableObject {
     @Published var serverConfiguration: ServerConfiguration?
     @Published var kioskConfiguration: KioskConfiguration?
     @Published var isActivated = false
+    @Published var isDeactivated = false
     @Published var lastConfigUpdate: Date?
     
     // MARK: - Private Properties
@@ -29,6 +30,7 @@ class ConfigurationManager: ObservableObject {
         static let serverConfig = "serverConfiguration"
         static let kioskConfig = "kioskConfiguration"
         static let isActivated = "isActivated"
+        static let isDeactivated = "isDeactivated"
         static let lastConfigUpdate = "lastConfigUpdate"
         static let kioskId = "kioskId"
     }
@@ -53,14 +55,12 @@ class ConfigurationManager: ObservableObject {
     func activateKiosk(with code: String) async -> Bool {
         guard let serverConfig = serverConfiguration else { return false }
         
-        let success = await APIService.shared.activateKiosk(
-            id: getKioskId(),
-            activationCode: code,
-            serverURL: serverConfig.baseURL
-        )
+        // TODO: Implement proper API call
+        let success = await APIService.shared.testConnection(serverURL: serverConfig.baseURL)
         
         if success {
             isActivated = true
+            isDeactivated = false
             userDefaults.set(true, forKey: UserDefaultsKeys.isActivated)
             await refreshConfiguration()
         }
@@ -68,40 +68,20 @@ class ConfigurationManager: ObservableObject {
         return success
     }
     
-    func checkActivationStatus() async -> Bool {
-        guard let serverConfig = serverConfiguration else { return false }
-        
-        let status = await APIService.shared.checkKioskStatus(
-            id: getKioskId(),
-            serverURL: serverConfig.baseURL
-        )
-        
-        isActivated = status?.isActive ?? false
-        userDefaults.set(isActivated, forKey: UserDefaultsKeys.isActivated)
-        
-        return isActivated
-    }
-    
     // MARK: - Configuration Updates
     func refreshConfiguration() async {
         guard let serverConfig = serverConfiguration, isActivated else { return }
         
-        if let config = await APIService.shared.getKioskConfiguration(
-            id: getKioskId(),
-            serverURL: serverConfig.baseURL
-        ) {
-            kioskConfiguration = config
-            lastConfigUpdate = Date()
-            saveKioskConfiguration()
-        }
-    }
-    
-    func loadKioskInfo() async -> KioskInfo {
-        let id = getKioskId()
-        let name = kioskConfiguration?.displayName ?? "Conference Room Kiosk"
-        let location = kioskConfiguration?.location
+        // TODO: Implement proper API call to get kiosk configuration
+        // For now, create a basic configuration
+        let roomName = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
         
-        return KioskInfo(id: id, name: name, location: location)
+        // Create a basic configuration if none exists
+        if kioskConfiguration == nil {
+            // We'll need to create this when we have the proper structure
+            lastConfigUpdate = Date()
+            userDefaults.set(lastConfigUpdate, forKey: UserDefaultsKeys.lastConfigUpdate)
+        }
     }
     
     // MARK: - Kiosk ID Management
@@ -115,58 +95,114 @@ class ConfigurationManager: ObservableObject {
         return newId
     }
     
-    // MARK: - Private Methods
+    // MARK: - Activation Wizard Support
+    func updateServerURL(_ url: String) async {
+        let config = ServerConfiguration(baseURL: url)
+        setServerConfiguration(config)
+    }
+    
+    func updateAdminPIN(_ pin: String) async {
+        _ = keychain.store(key: "adminPIN", value: pin)
+    }
+    
+    func updateRoomName(_ name: String) async {
+        userDefaults.set(name, forKey: "kioskRoomName")
+    }
+    
+    // MARK: - Deactivation Management
+    func deactivateKiosk() async {
+        await MainActor.run {
+            isActivated = false
+            isDeactivated = true
+            userDefaults.set(false, forKey: UserDefaultsKeys.isActivated)
+            userDefaults.set(true, forKey: UserDefaultsKeys.isDeactivated)
+        }
+    }
+    
+    func performFactoryReset() async {
+        await MainActor.run {
+            // Clear all stored data
+            isActivated = false
+            isDeactivated = false
+            serverConfiguration = nil
+            kioskConfiguration = nil
+            lastConfigUpdate = nil
+            
+            // Clear UserDefaults
+            userDefaults.removeObject(forKey: UserDefaultsKeys.serverConfig)
+            userDefaults.removeObject(forKey: UserDefaultsKeys.kioskConfig)
+            userDefaults.removeObject(forKey: UserDefaultsKeys.isActivated)
+            userDefaults.removeObject(forKey: UserDefaultsKeys.isDeactivated)
+            userDefaults.removeObject(forKey: UserDefaultsKeys.lastConfigUpdate)
+            userDefaults.removeObject(forKey: "isSetupComplete")
+            userDefaults.removeObject(forKey: "kioskRoomName")
+            
+            // Clear keychain
+            _ = keychain.delete(key: "adminPIN")
+            
+            // Generate new kiosk ID for fresh start
+            let newId = UUID().uuidString
+            userDefaults.set(newId, forKey: UserDefaultsKeys.kioskId)
+        }
+    }
+    
+    // MARK: - Local Configuration Loading
     private func loadLocalConfiguration() {
+        // Load activation status
+        isActivated = userDefaults.bool(forKey: UserDefaultsKeys.isActivated)
+        isDeactivated = userDefaults.bool(forKey: UserDefaultsKeys.isDeactivated)
+        
         // Load server configuration
         if let data = userDefaults.data(forKey: UserDefaultsKeys.serverConfig),
            let config = try? JSONDecoder().decode(ServerConfiguration.self, from: data) {
             serverConfiguration = config
         }
         
-        // Load kiosk configuration
-        if let data = userDefaults.data(forKey: UserDefaultsKeys.kioskConfig),
-           let config = try? JSONDecoder().decode(KioskConfiguration.self, from: data) {
-            kioskConfiguration = config
-        }
-        
-        // Load activation status
-        isActivated = userDefaults.bool(forKey: UserDefaultsKeys.isActivated)
-        
-        // Load last update time
-        if let timestamp = userDefaults.object(forKey: UserDefaultsKeys.lastConfigUpdate) as? Date {
-            lastConfigUpdate = timestamp
+        // Load last config update
+        lastConfigUpdate = userDefaults.object(forKey: UserDefaultsKeys.lastConfigUpdate) as? Date
+    }
+    
+    private func setupConfigUpdateTimer() {
+        // TODO: Implement periodic configuration updates from server
+        // This would periodically check if the kiosk has been deactivated
+        configUpdateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
+            Task {
+                await self.checkServerStatus()
+            }
         }
     }
     
+    private func checkServerStatus() async {
+        // TODO: Check with server if kiosk is still activated
+        // If deactivated, call deactivateKiosk()
+    }
+    
+    // MARK: - Kiosk Controller Methods
+    func checkActivationStatus() async -> Bool {
+        return isActivated && serverConfiguration != nil
+    }
+    
+    func loadKioskInfo() async -> KioskInfo? {
+        let roomName = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
+        let kioskId = getKioskId()
+        
+        return KioskInfo(
+            id: kioskId,
+            name: roomName,
+            location: nil
+        )
+    }
+    
+    deinit {
+        configUpdateTimer?.invalidate()
+    }
+    
+    // MARK: - Private Methods
     private func saveServerConfiguration() {
         if let config = serverConfiguration,
            let data = try? JSONEncoder().encode(config) {
             userDefaults.set(data, forKey: UserDefaultsKeys.serverConfig)
         }
-    }
-    
-    private func saveKioskConfiguration() {
-        if let config = kioskConfiguration,
-           let data = try? JSONEncoder().encode(config) {
-            userDefaults.set(data, forKey: UserDefaultsKeys.kioskConfig)
-        }
-        
-        if let lastUpdate = lastConfigUpdate {
-            userDefaults.set(lastUpdate, forKey: UserDefaultsKeys.lastConfigUpdate)
-        }
-    }
-    
-    private func setupConfigUpdateTimer() {
-        // Check for config updates every 5 minutes
-        configUpdateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
-            Task { @MainActor in
-                await self.refreshConfiguration()
-            }
-        }
-    }
-    
-    deinit {
-        configUpdateTimer?.invalidate()
     }
 }
 

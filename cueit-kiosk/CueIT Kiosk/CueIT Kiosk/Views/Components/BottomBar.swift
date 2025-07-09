@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct BottomBar: View {
     @StateObject private var authManager = AuthenticationManager.shared
@@ -100,7 +101,7 @@ struct BottomBar: View {
                 )
         )
         .sheet(isPresented: $showAdminLogin) {
-            AdminLoginView()
+            AdminLoginView(configService: ConfigService())
         }
     }
     
