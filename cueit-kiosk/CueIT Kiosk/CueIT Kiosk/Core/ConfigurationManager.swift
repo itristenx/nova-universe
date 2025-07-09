@@ -71,7 +71,7 @@ class ConfigurationManager: ObservableObject {
     
     // MARK: - Configuration Updates
     func refreshConfiguration() async {
-        guard let _ = serverConfiguration, isActivated else { return }
+        guard serverConfiguration != nil, isActivated else { return }
         
         // TODO: Implement proper API call to get kiosk configuration
         // For now, create a basic configuration
