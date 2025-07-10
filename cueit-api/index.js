@@ -35,7 +35,9 @@ const app = express();
 
 // Configure CORS origins
 const originList = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : null;
-console.log('🔧 CORS Debug - originList:', originList);
+if (process.env.DEBUG_CORS === 'true') {
+  console.log('🔧 CORS Debug - originList:', originList);
+}
 
 // Apply security middleware
 app.use(securityHeaders);
