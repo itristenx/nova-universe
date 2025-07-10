@@ -325,7 +325,7 @@ struct SettingsView: View {
             })
         }
         .sheet(isPresented: $showAdminLogin) {
-            AdminLoginView(configService: ConfigService())
+            EnhancedAdminLoginView(configService: EnhancedConfigService.shared)
         }
         .onAppear {
             tempRoomName = configManager.currentRoomName
@@ -412,19 +412,19 @@ struct SettingsView: View {
                 KioskInfoRow(label: "Last Updated", value: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short))
             }
         }
-        .onChange(of: tempRoomName) {
-            saveRoomName(tempRoomName)
+        .onChange(of: tempRoomName) { _, newValue in
+            saveRoomName(newValue)
         }
-        .onChange(of: tempStatus) {
+        .onChange(of: tempStatus) { _, newStatus in
             // Only allow status changes if user is authenticated
             if isAuthenticated {
-                if let kioskStatus = tempStatus.kioskStatus {
+                if let kioskStatus = newStatus.kioskStatus {
                     let success = statusManager.setAdminStatus(kioskStatus, requireAuth: true)
                     if !success {
                         // Revert if authentication failed
                         resetTempStatusToCurrentStatus()
                     }
-                } else if tempStatus == .maintenance {
+                } else if newStatus == .maintenance {
                     // Handle maintenance mode separately if needed
                     let success = statusManager.setAdminStatus(.unavailable, requireAuth: true)
                     if !success {

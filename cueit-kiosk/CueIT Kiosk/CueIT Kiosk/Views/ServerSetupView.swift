@@ -152,7 +152,7 @@ struct ServerSetupView: View {
                                         } else {
                                             Image(systemName: "network")
                                         }
-                                        Text(isConnecting ? "Testing Connection..." : "Test Connection")
+                                        Text(isConnecting ? "Connecting..." : "Connect")
                                     }
                                     .font(.system(size: 18, weight: .semibold))
                                     .foregroundColor(.white)
