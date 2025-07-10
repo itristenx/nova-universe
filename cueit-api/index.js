@@ -55,12 +55,21 @@ app.use((req, res, next) => {
 });
 
 // Temporarily allow all origins for debugging
-console.log('🔧 CORS Debug - Setting up CORS with origin: true');
-app.use(cors({ 
-  origin: true,
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
+if (process.env.DEBUG_CORS === 'true') {
+  console.log('🔧 CORS Debug - Setting up CORS with origin: true');
+  app.use(cors({ 
+    origin: true,
+    credentials: true,
+    optionsSuccessStatus: 200
+  }));
+} else {
+  console.log('🔒 CORS Production - Setting up CORS with restricted origins:', originList);
+  app.use(cors({ 
+    origin: originList || false,
+    credentials: true,
+    optionsSuccessStatus: 200
+  }));
+}
 
 // Add post-CORS middleware to log headers (only in debug mode)
 if (process.env.DEBUG_CORS === 'true') {
