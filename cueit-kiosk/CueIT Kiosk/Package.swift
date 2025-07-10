@@ -19,7 +19,9 @@ let package = Package(
             name: "CueIT-Kiosk",
             dependencies: [
                 .product(name: "CodeScanner", package: "CodeScanner")
-            ]
+            ],
+            path: "CueIT Kiosk",
+            exclude: ["Info.plist", "Assets.xcassets"]
         )
     ]
 )

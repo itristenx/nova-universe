@@ -35,11 +35,47 @@ const app = express();
 
 // Configure CORS origins
 const originList = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : null;
+console.log('🔧 CORS Debug - originList:', originList);
 
 // Apply security middleware
 app.use(securityHeaders);
 app.use(requestLogger);
-app.use(cors(originList ? { origin: originList } : undefined));
+
+// Add custom CORS debugging middleware
+app.use((req, res, next) => {
+  console.log('🔍 Request received:', {
+    method: req.method,
+    url: req.url,
+    origin: req.headers.origin,
+    userAgent: req.headers['user-agent']?.substring(0, 50)
+  });
+  next();
+});
+
+// Temporarily allow all origins for debugging
+console.log('🔧 CORS Debug - Setting up CORS with origin: true');
+app.use(cors({ 
+  origin: true,
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+
+// Add post-CORS middleware to log headers (only in debug mode)
+if (process.env.DEBUG_CORS === 'true') {
+  app.use((req, res, next) => {
+    const originalSend = res.send;
+    res.send = function(data) {
+      console.log('📤 Response headers:', {
+        'access-control-allow-origin': res.getHeader('access-control-allow-origin'),
+        'access-control-allow-credentials': res.getHeader('access-control-allow-credentials'),
+        vary: res.getHeader('vary')
+      });
+      return originalSend.call(this, data);
+    };
+    next();
+  });
+}
+
 app.use(express.json({ limit: '10mb' })); // Limit JSON payload size
 
 const RATE_WINDOW = Number(process.env.RATE_LIMIT_WINDOW || 60_000);
@@ -837,11 +873,46 @@ app.post('/api/login', apiLoginLimiter, authRateLimit, (req, res) => {
 
 // Health check endpoint for debugging frontend connectivity
 app.get('/api/health', (req, res) => {
+  const uptime = Math.floor(process.uptime());
+  const hours = Math.floor(uptime / 3600);
+  const minutes = Math.floor((uptime % 3600) / 60);
+  const seconds = uptime % 60;
+  
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
     cors: req.headers.origin || 'no-origin',
-    api: 'CueIT API v2.0'
+    api: 'CueIT API v2.0',
+    version: 'CueIT API v2.0',
+    uptime: `${hours}h ${minutes}m ${seconds}s`,
+    uptimeSeconds: uptime
+  });
+});
+
+// Auth status endpoint for admin UI
+app.get('/api/auth/status', (req, res) => {
+  res.json({
+    authRequired: !DISABLE_AUTH,
+    authDisabled: DISABLE_AUTH
+  });
+});
+
+// Server status endpoint for admin UI
+app.get('/api/server/status', ensureAuth, (req, res) => {
+  const uptime = Math.floor(process.uptime());
+  const hours = Math.floor(uptime / 3600);
+  const minutes = Math.floor((uptime % 3600) / 60);
+  const seconds = uptime % 60;
+  
+  res.json({
+    status: 'running',
+    uptime: `${hours}h ${minutes}m ${seconds}s`,
+    uptimeSeconds: uptime,
+    version: 'CueIT API v2.0',
+    nodeVersion: process.version,
+    memoryUsage: process.memoryUsage(),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 

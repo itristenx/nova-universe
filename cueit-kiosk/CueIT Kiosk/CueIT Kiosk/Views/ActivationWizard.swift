@@ -7,12 +7,15 @@
 
 import SwiftUI
 import Foundation
+import AVFoundation
+import UIKit
 
 struct ActivationWizard: View {
     @StateObject private var configManager = ConfigurationManager.shared
     @StateObject private var kioskController = KioskController.shared
     
     @State private var currentStep: WizardStep = .welcome
+    @State private var isNavigatingForward = true // Track navigation direction
     @State private var serverURL = ""
     @State private var activationCode = ""
     @State private var adminPIN = ""
@@ -61,17 +64,17 @@ struct ActivationWizard: View {
         var subtitle: String {
             switch self {
             case .welcome:
-                return "Let's get your kiosk set up for your organization"
+                return "Let's get your kiosk setup!"
             case .serverConnection:
-                return "Connect to your organization's IT support system"
+                return "Connect to your organization's CueIT server"
             case .activation:
-                return "Enter your activation code or scan the QR code from the admin portal"
+                return "Enter your activation code or scan the QR code from the CueIT Portal"
             case .pinSetup:
                 return "Create a secure PIN for admin access"
             case .roomNameSetup:
                 return "Assign this kiosk to a room or location"
             case .confirmation:
-                return "Your kiosk is ready to use"
+                return "Your kiosk is ready to use and be deployed"
             }
         }
         
@@ -118,9 +121,10 @@ struct ActivationWizard: View {
                         // Main content
                         currentStepView
                             .transition(.asymmetric(
-                                insertion: .move(edge: .trailing).combined(with: .opacity),
-                                removal: .move(edge: .leading).combined(with: .opacity)
+                                insertion: .move(edge: isNavigatingForward ? .trailing : .leading).combined(with: .opacity),
+                                removal: .move(edge: isNavigatingForward ? .leading : .trailing).combined(with: .opacity)
                             ))
+                            .animation(.easeInOut(duration: 0.5), value: currentStep)
                         
                         Spacer()
                         
@@ -196,9 +200,7 @@ struct ActivationWizard: View {
         HStack(spacing: 20) {
             if currentStep.rawValue > 0 {
                 Button("Back") {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        goToPreviousStep()
-                    }
+                    goToPreviousStep()
                 }
                 .font(.system(size: 18, weight: .medium))
                 .foregroundColor(.blue)
@@ -209,12 +211,10 @@ struct ActivationWizard: View {
             Spacer()
             
             Button(action: {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    if currentStep == .confirmation {
-                        completeSetup()
-                    } else {
-                        goToNextStep()
-                    }
+                if currentStep == .confirmation {
+                    completeSetup()
+                } else {
+                    goToNextStep()
                 }
             }) {
                 HStack(spacing: 8) {
@@ -263,7 +263,7 @@ struct ActivationWizard: View {
         case .welcome:
             return "Get Started"
         case .serverConnection:
-            return isServerConnected ? "Continue" : "Test Connection"
+            return isServerConnected ? "Continue Setup" : "Connect"
         case .activation:
             return "Activate Kiosk"
         case .pinSetup:
@@ -288,7 +288,10 @@ struct ActivationWizard: View {
                     await MainActor.run {
                         isLoading = false
                         if isServerConnected && currentStep.rawValue < WizardStep.allCases.count - 1 {
-                            currentStep = WizardStep(rawValue: currentStep.rawValue + 1) ?? currentStep
+                            isNavigatingForward = true
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                currentStep = WizardStep(rawValue: currentStep.rawValue + 1) ?? currentStep
+                            }
                         }
                     }
                 } else if currentStep == .activation {
@@ -296,7 +299,10 @@ struct ActivationWizard: View {
                     await MainActor.run {
                         isLoading = false
                         if currentStep.rawValue < WizardStep.allCases.count - 1 {
-                            currentStep = WizardStep(rawValue: currentStep.rawValue + 1) ?? currentStep
+                            isNavigatingForward = true
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                currentStep = WizardStep(rawValue: currentStep.rawValue + 1) ?? currentStep
+                            }
                         }
                     }
                 }
@@ -304,6 +310,12 @@ struct ActivationWizard: View {
                 await MainActor.run {
                     isLoading = false
                     errorMessage = error.localizedDescription
+                    // Reset connection state on error
+                    if currentStep == .serverConnection {
+                        isServerConnected = false
+                        connectionProgress = 0.0
+                        connectionStatus = ""
+                    }
                 }
             }
             
@@ -312,7 +324,10 @@ struct ActivationWizard: View {
                 await MainActor.run {
                     isLoading = false
                     if currentStep.rawValue < WizardStep.allCases.count - 1 {
-                        currentStep = WizardStep(rawValue: currentStep.rawValue + 1) ?? currentStep
+                        isNavigatingForward = true
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            currentStep = WizardStep(rawValue: currentStep.rawValue + 1) ?? currentStep
+                        }
                     }
                 }
             }
@@ -326,59 +341,98 @@ struct ActivationWizard: View {
             isServerConnected = false
         }
         
-        // Simulate connection progress
-        for i in 1...5 {
-            await MainActor.run {
-                connectionProgress = Double(i) / 5.0
-                switch i {
-                case 1: connectionStatus = "Resolving server address..."
-                case 2: connectionStatus = "Establishing connection..."
-                case 3: connectionStatus = "Authenticating..."
-                case 4: connectionStatus = "Fetching server configuration..."
-                case 5: connectionStatus = "Connection successful!"
-                default: break
-                }
-            }
-            try await Task.sleep(for: .milliseconds(500))
+        // Simulate connection progress steps
+        await MainActor.run {
+            connectionProgress = 0.2
+            connectionStatus = "Resolving server address..."
         }
-        
-        try await fetchServerInfo()
+        try await Task.sleep(for: .milliseconds(300))
         
         await MainActor.run {
+            connectionProgress = 0.4
+            connectionStatus = "Establishing connection..."
+        }
+        try await Task.sleep(for: .milliseconds(300))
+        
+        await MainActor.run {
+            connectionProgress = 0.6
+            connectionStatus = "Authenticating..."
+        }
+        try await Task.sleep(for: .milliseconds(300))
+        
+        await MainActor.run {
+            connectionProgress = 0.8
+            connectionStatus = "Fetching server configuration..."
+        }
+        try await Task.sleep(for: .milliseconds(300))
+        
+        // Actually attempt to fetch server info
+        try await fetchServerInfo()
+        
+        // Only update to success if fetchServerInfo didn't throw an error
+        await MainActor.run {
+            connectionProgress = 1.0
+            connectionStatus = "Connection successful!"
             isServerConnected = true
+        }
+        
+        // Final status update with organization name
+        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run {
             connectionStatus = "Connected to \(serverInfo?.organizationName ?? "server")"
         }
     }
     
     private func fetchServerInfo() async throws {
         guard let url = URL(string: "\(serverURL)/api/server-info") else {
-            throw NSError(domain: "ActivationWizard", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid server URL"])
+            throw NSError(domain: "ActivationWizard", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid server URL format"])
         }
         
-        let (data, response) = try await URLSession.shared.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
-            throw NSError(domain: "ActivationWizard", code: 2, userInfo: [NSLocalizedDescriptionKey: "Unable to connect to server"])
-        }
-        
-        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            await MainActor.run {
-                serverInfo = ServerInfo(
-                    organizationName: json["organizationName"] as? String ?? "Your Organization",
-                    minPinLength: json["minPinLength"] as? Int ?? 4,
-                    maxPinLength: json["maxPinLength"] as? Int ?? 8,
-                    logoUrl: json["logoUrl"] as? String,
-                    serverVersion: json["serverVersion"] as? String
-                )
-                
-                // Store organization name for future use (e.g., deactivation screen)
-                if let orgName = json["organizationName"] as? String {
-                    UserDefaults.standard.set(orgName, forKey: "organizationName")
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw NSError(domain: "ActivationWizard", code: 2, userInfo: [NSLocalizedDescriptionKey: "Invalid server response"])
+            }
+            
+            if httpResponse.statusCode == 404 {
+                throw NSError(domain: "ActivationWizard", code: 3, userInfo: [NSLocalizedDescriptionKey: "Server found but CueIT API not available. Check if the server is running CueIT."])
+            } else if httpResponse.statusCode != 200 {
+                throw NSError(domain: "ActivationWizard", code: 4, userInfo: [NSLocalizedDescriptionKey: "Server responded with error (HTTP \(httpResponse.statusCode))"])
+            }
+            
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                await MainActor.run {
+                    serverInfo = ServerInfo(
+                        organizationName: json["organizationName"] as? String ?? "Your Organization",
+                        minPinLength: json["minPinLength"] as? Int ?? 4,
+                        maxPinLength: json["maxPinLength"] as? Int ?? 8,
+                        logoUrl: json["logoUrl"] as? String,
+                        serverVersion: json["serverVersion"] as? String
+                    )
+                    
+                    // Store organization name for future use (e.g., deactivation screen)
+                    if let orgName = json["organizationName"] as? String {
+                        UserDefaults.standard.set(orgName, forKey: "organizationName")
+                    }
+                    
+                    // Save server URL to configuration
+                    configManager.setServerConfiguration(ServerConfiguration(baseURL: serverURL))
                 }
-                
-                // Save server URL to configuration
-                configManager.setServerConfiguration(ServerConfiguration(baseURL: serverURL))
+            } else {
+                throw NSError(domain: "ActivationWizard", code: 5, userInfo: [NSLocalizedDescriptionKey: "Invalid response format from server"])
+            }
+        } catch let error as NSError where error.domain == "ActivationWizard" {
+            // Re-throw our custom errors
+            throw error
+        } catch {
+            // Handle network errors with more specific messages
+            if error.localizedDescription.contains("could not connect") || error.localizedDescription.contains("network connection") {
+                throw NSError(domain: "ActivationWizard", code: 6, userInfo: [NSLocalizedDescriptionKey: "Could not connect to server. Please check the URL and your network connection."])
+            } else if error.localizedDescription.contains("timeout") {
+                throw NSError(domain: "ActivationWizard", code: 7, userInfo: [NSLocalizedDescriptionKey: "Connection timed out. Please check if the server is reachable."])
+            } else {
+                throw NSError(domain: "ActivationWizard", code: 8, userInfo: [NSLocalizedDescriptionKey: "Network error: \(error.localizedDescription)"])
             }
         }
     }
@@ -398,7 +452,10 @@ struct ActivationWizard: View {
         errorMessage = nil
         
         if currentStep.rawValue > 0 {
-            currentStep = WizardStep(rawValue: currentStep.rawValue - 1) ?? currentStep
+            isNavigatingForward = false
+            withAnimation(.easeInOut(duration: 0.5)) {
+                currentStep = WizardStep(rawValue: currentStep.rawValue - 1) ?? currentStep
+            }
         }
     }
     
@@ -427,30 +484,53 @@ struct ActivationWizard: View {
 struct WelcomeStepView: View {
     var body: some View {
         VStack(spacing: 32) {
-            Image(systemName: "hand.wave.fill")
-                .font(.system(size: 80, weight: .light))
-                .foregroundStyle(.blue)
-                .symbolEffect(.bounce, value: true)
+            // Use the same gradient circle design as the app icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue, Color.purple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 120, height: 120)
+                
+                Image(systemName: "desktopcomputer")
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundColor(.white)
+            }
+            .symbolEffect(.bounce, value: true)
             
             VStack(spacing: 12) {
-                Text("Welcome to CueIT Kiosk")
+                Text("Welcome to CueIT")
                     .font(.system(size: 42, weight: .light, design: .rounded))
                     .multilineTextAlignment(.center)
                 
-                Text("Let's get your kiosk set up for your organization")
-                    .font(.system(size: 20, weight: .medium))
+                Text("Ready to get started?")
+                    .font(.system(size: 28, weight: .medium, design: .rounded))
+                    .foregroundColor(.blue)
+                    .multilineTextAlignment(.center)
+                
+                Text("Let's setup CueIT Kiosk for your organanization")
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 20)
             }
             
+            Spacer()
+                .frame(height: 20)
+            
             VStack(alignment: .leading, spacing: 16) {
-                FeatureRow(icon: "server.rack", text: "Connect to your IT support system")
+                FeatureRow(icon: "server.rack", text: "Connect to your CueIT Server")
+                FeatureRow(icon: "qrcode.viewfinder", text: "Activate your kiosk")
                 FeatureRow(icon: "shield.fill", text: "Secure admin access with PIN")
                 FeatureRow(icon: "location.fill", text: "Configure room assignment")
-                FeatureRow(icon: "checkmark.circle.fill", text: "Ready to help your team")
+                FeatureRow(icon: "checkmark.circle.fill", text: "Prepare for deployment")
             }
             .padding(.horizontal, 40)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 }
@@ -460,15 +540,17 @@ struct FeatureRow: View {
     let text: String
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(alignment: .center, spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 20, weight: .medium))
                 .foregroundColor(.blue)
-                .frame(width: 24)
+                .frame(width: 24, height: 24)
+                .contentShape(Rectangle())
             
             Text(text)
                 .font(.system(size: 18, weight: .medium))
                 .foregroundColor(.primary)
+                .multilineTextAlignment(.leading)
             
             Spacer()
         }
@@ -641,51 +723,339 @@ struct ActivationStepView: View {
 struct QRCodeScannerView: View {
     @Binding var activationCode: String
     @Binding var isPresented: Bool
+    @State private var hasPermission = false
+    @State private var showingPermissionAlert = false
     
     var body: some View {
         NavigationView {
-            VStack {
-                Text("QR Code Scanner")
-                    .font(.largeTitle)
-                    .padding()
-                
-                Text("Position the QR code from your admin portal within the frame")
-                    .multilineTextAlignment(.center)
-                    .padding()
-                
-                // Placeholder for QR scanner
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.blue, lineWidth: 2)
-                    .frame(width: 250, height: 250)
-                    .overlay(
-                        VStack {
-                            Image(systemName: "qrcode.viewfinder")
-                                .font(.system(size: 64))
-                                .foregroundColor(.blue)
-                            
-                            Text("QR Scanner View")
-                                .foregroundColor(.secondary)
-                        }
+            ZStack {
+                if hasPermission {
+                    QRCodeScannerCameraView(
+                        activationCode: $activationCode,
+                        isPresented: $isPresented
                     )
-                
-                Spacer()
-                
-                // Demo button for testing
-                Button("Use Demo Code (ABC123)") {
-                    activationCode = "ABC123"
-                    isPresented = false
+                } else {
+                    VStack(spacing: 24) {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 64))
+                            .foregroundColor(.gray)
+                        
+                        Text("Camera Access Required")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        
+                        Text("Please allow camera access to scan QR codes")
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.secondary)
+                        
+                        Button("Request Permission") {
+                            requestCameraPermission()
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .cornerRadius(12)
+                    }
+                    .padding()
                 }
-                .foregroundColor(.blue)
-                .padding()        }
-        .navigationTitle("Scan QR Code")
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .automatic) {
-                Button("Done") {
-                    isPresented = false
+            }
+            .navigationTitle("Scan QR Code")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        isPresented = false
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Enter Code") {
+                        // Allow manual code entry
+                        activationCode = ""
+                        isPresented = false
+                    }
                 }
             }
         }
+        .onAppear {
+            checkCameraPermission()
+        }
+        .alert("Camera Permission Denied", isPresented: $showingPermissionAlert) {
+            Button("Settings") {
+                if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsUrl)
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                isPresented = false
+            }
+        } message: {
+            Text("Please enable camera access in Settings to scan QR codes")
+        }
+    }
+    
+    private func checkCameraPermission() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            hasPermission = true
+        case .notDetermined:
+            requestCameraPermission()
+        case .denied, .restricted:
+            hasPermission = false
+        @unknown default:
+            hasPermission = false
+        }
+    }
+    
+    private func requestCameraPermission() {
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            DispatchQueue.main.async {
+                if granted {
+                    hasPermission = true
+                } else {
+                    showingPermissionAlert = true
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Camera View for QR Scanning
+struct QRCodeScannerCameraView: UIViewControllerRepresentable {
+    typealias Context = UIViewControllerRepresentableContext<QRCodeScannerCameraView>
+    
+    @Binding var activationCode: String
+    @Binding var isPresented: Bool
+    
+    func makeUIViewController(context: Context) -> QRCodeScannerViewController {
+        let controller = QRCodeScannerViewController()
+        controller.delegate = context.coordinator
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: QRCodeScannerViewController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, QRCodeScannerDelegate {
+        let parent: QRCodeScannerCameraView
+        
+        init(_ parent: QRCodeScannerCameraView) {
+            self.parent = parent
+        }
+        
+        func didScanCode(_ code: String) {
+            parent.activationCode = code
+            parent.isPresented = false
+        }
+        
+        func didFailWithError(_ error: Error) {
+            print("QR Scanner error: \(error.localizedDescription)")
+        }
+    }
+}
+
+// MARK: - QR Scanner Delegate Protocol
+protocol QRCodeScannerDelegate: AnyObject {
+    func didScanCode(_ code: String)
+    func didFailWithError(_ error: Error)
+}
+
+// MARK: - QR Scanner View Controller
+class QRCodeScannerViewController: UIViewController {
+    weak var delegate: QRCodeScannerDelegate?
+    
+    private var captureSession: AVCaptureSession!
+    private var previewLayer: AVCaptureVideoPreviewLayer!
+    private var scannerOverlay: UIView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupCamera()
+        setupUI()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        startScanning()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopScanning()
+    }
+    
+    private func setupCamera() {
+        captureSession = AVCaptureSession()
+        
+        guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else {
+            delegate?.didFailWithError(NSError(domain: "QRScanner", code: 1, userInfo: [NSLocalizedDescriptionKey: "Camera not available"]))
+            return
+        }
+        
+        do {
+            let videoInput = try AVCaptureDeviceInput(device: videoCaptureDevice)
+            
+            if captureSession.canAddInput(videoInput) {
+                captureSession.addInput(videoInput)
+            } else {
+                delegate?.didFailWithError(NSError(domain: "QRScanner", code: 2, userInfo: [NSLocalizedDescriptionKey: "Could not add video input"]))
+                return
+            }
+            
+            let metadataOutput = AVCaptureMetadataOutput()
+            
+            if captureSession.canAddOutput(metadataOutput) {
+                captureSession.addOutput(metadataOutput)
+                
+                metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+                metadataOutput.metadataObjectTypes = [.qr]
+            } else {
+                delegate?.didFailWithError(NSError(domain: "QRScanner", code: 3, userInfo: [NSLocalizedDescriptionKey: "Could not add metadata output"]))
+                return
+            }
+            
+            previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+            previewLayer.frame = view.layer.bounds
+            previewLayer.videoGravity = .resizeAspectFill
+            view.layer.addSublayer(previewLayer)
+            
+        } catch {
+            delegate?.didFailWithError(error)
+        }
+    }
+    
+    private func setupUI() {
+        // Create scanning overlay
+        scannerOverlay = UIView(frame: view.bounds)
+        scannerOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        view.addSubview(scannerOverlay)
+        
+        // Create clear scanning area
+        let scanAreaSize: CGFloat = 250
+        let scanArea = CGRect(
+            x: (view.bounds.width - scanAreaSize) / 2,
+            y: (view.bounds.height - scanAreaSize) / 2,
+            width: scanAreaSize,
+            height: scanAreaSize
+        )
+        
+        let path = UIBezierPath(rect: scannerOverlay.bounds)
+        path.append(UIBezierPath(roundedRect: scanArea, cornerRadius: 12).reversing())
+        
+        let maskLayer = CAShapeLayer()
+        maskLayer.path = path.cgPath
+        scannerOverlay.layer.mask = maskLayer
+        
+        // Add corner indicators
+        addCornerIndicators(to: scanArea)
+        
+        // Add instruction label
+        let instructionLabel = UILabel()
+        instructionLabel.text = "Position the QR code within the frame"
+        instructionLabel.textColor = .white
+        instructionLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        instructionLabel.textAlignment = .center
+        instructionLabel.numberOfLines = 0
+        instructionLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(instructionLabel)
+        
+        NSLayoutConstraint.activate([
+            instructionLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            instructionLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            instructionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            instructionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+        ])
+    }
+    
+    private func addCornerIndicators(to scanArea: CGRect) {
+        let cornerLength: CGFloat = 20
+        let cornerWidth: CGFloat = 3
+        let cornerColor = UIColor.systemBlue
+        
+        // Top-left
+        let topLeft = UIView()
+        topLeft.backgroundColor = cornerColor
+        topLeft.frame = CGRect(x: scanArea.minX, y: scanArea.minY, width: cornerLength, height: cornerWidth)
+        view.addSubview(topLeft)
+        
+        let topLeftVertical = UIView()
+        topLeftVertical.backgroundColor = cornerColor
+        topLeftVertical.frame = CGRect(x: scanArea.minX, y: scanArea.minY, width: cornerWidth, height: cornerLength)
+        view.addSubview(topLeftVertical)
+        
+        // Top-right
+        let topRight = UIView()
+        topRight.backgroundColor = cornerColor
+        topRight.frame = CGRect(x: scanArea.maxX - cornerLength, y: scanArea.minY, width: cornerLength, height: cornerWidth)
+        view.addSubview(topRight)
+        
+        let topRightVertical = UIView()
+        topRightVertical.backgroundColor = cornerColor
+        topRightVertical.frame = CGRect(x: scanArea.maxX - cornerWidth, y: scanArea.minY, width: cornerWidth, height: cornerLength)
+        view.addSubview(topRightVertical)
+        
+        // Bottom-left
+        let bottomLeft = UIView()
+        bottomLeft.backgroundColor = cornerColor
+        bottomLeft.frame = CGRect(x: scanArea.minX, y: scanArea.maxY - cornerWidth, width: cornerLength, height: cornerWidth)
+        view.addSubview(bottomLeft)
+        
+        let bottomLeftVertical = UIView()
+        bottomLeftVertical.backgroundColor = cornerColor
+        bottomLeftVertical.frame = CGRect(x: scanArea.minX, y: scanArea.maxY - cornerLength, width: cornerWidth, height: cornerLength)
+        view.addSubview(bottomLeftVertical)
+        
+        // Bottom-right
+        let bottomRight = UIView()
+        bottomRight.backgroundColor = cornerColor
+        bottomRight.frame = CGRect(x: scanArea.maxX - cornerLength, y: scanArea.maxY - cornerWidth, width: cornerLength, height: cornerWidth)
+        view.addSubview(bottomRight)
+        
+        let bottomRightVertical = UIView()
+        bottomRightVertical.backgroundColor = cornerColor
+        bottomRightVertical.frame = CGRect(x: scanArea.maxX - cornerWidth, y: scanArea.maxY - cornerLength, width: cornerWidth, height: cornerLength)
+        view.addSubview(bottomRightVertical)
+    }
+    
+    private func startScanning() {
+        if !captureSession.isRunning {
+            DispatchQueue.global(qos: .userInitiated).async {
+                self.captureSession.startRunning()
+            }
+        }
+    }
+    
+    private func stopScanning() {
+        if captureSession.isRunning {
+            captureSession.stopRunning()
+        }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        previewLayer?.frame = view.layer.bounds
+        scannerOverlay?.frame = view.bounds
+    }
+}
+
+// MARK: - Metadata Output Delegate
+extension QRCodeScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
+    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+        if let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
+           let stringValue = metadataObject.stringValue {
+            
+            // Provide haptic feedback
+            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+            impactFeedback.impactOccurred()
+            
+            // Stop scanning to prevent multiple reads
+            stopScanning()
+            
+            delegate?.didScanCode(stringValue)
         }
     }
 }

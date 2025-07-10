@@ -1,4 +1,6 @@
 import SwiftUI
+import UIKit
+// import CodeScanner  // Temporarily commented out - package not available
 
 struct ActivationView: View {
     @State private var activating = false
@@ -8,7 +10,7 @@ struct ActivationView: View {
     @State private var showingServerConfig = false
     @State private var activationCode = ""
     @StateObject private var kioskService = KioskService.shared
-    @StateObject private var configService = ConfigService()
+    @StateObject private var configService = EnhancedConfigService.shared
 
     var body: some View {
         VStack(spacing: 20) {
@@ -126,20 +128,21 @@ struct ActivationView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Colors.base.ignoresSafeArea())
         .fullScreenCover(isPresented: $showingQRScanner) {
-            QRScannerView(onResult: { result in
-                showingQRScanner = false
-                switch result {
-                case .success(let scanResult):
-                    activationCode = scanResult.string
-                    Task { await activateWithCode() }
-                case .failure(_):
-                    // Handle scan failure
-                    break
+            // TODO: Implement QR scanner when CodeScanner package is available
+            VStack {
+                Text("QR Scanner")
+                    .font(.title)
+                Text("CodeScanner package not available")
+                    .foregroundColor(.secondary)
+                Button("Cancel") {
+                    showingQRScanner = false
                 }
-            })
+                .padding()
+            }
+            .padding()
         }
         .sheet(isPresented: $showingServerConfig) {
-            ServerConfigView()
+            ServerSetupView()
         }
     }
 

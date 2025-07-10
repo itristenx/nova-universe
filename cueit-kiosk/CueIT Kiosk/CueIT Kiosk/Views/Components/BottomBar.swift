@@ -92,16 +92,16 @@ struct BottomBar: View {
         .padding(.vertical, 16)
         .background(
             Rectangle()
-                .fill(Color(.systemBackground).opacity(0.95))
+                .fill(Color(UIColor.systemBackground).opacity(0.95))
                 .overlay(
                     Rectangle()
-                        .fill(Color(.systemGray4))
+                        .fill(Color(UIColor.systemGray4))
                         .frame(height: 1),
                     alignment: .top
                 )
         )
         .sheet(isPresented: $showAdminLogin) {
-            AdminLoginView(configService: ConfigService())
+            EnhancedAdminLoginView(configService: EnhancedConfigService.shared)
         }
     }
     

@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 // Input validation middleware
 export const validateInput = {
   // Email validation

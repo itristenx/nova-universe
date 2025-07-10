@@ -548,3 +548,22 @@ struct SystemInfoView: View {
         return displayFormatter.string(from: date)
     }
 }
+
+// MARK: - Supporting Views
+struct PinDigitView: View {
+    let digit: String
+    let isFilled: Bool
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isFilled ? Color.blue : Color.gray.opacity(0.5), lineWidth: 2)
+                .frame(width: 40, height: 50)
+            
+            Text(digit)
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundColor(isFilled ? Color.blue : Color.gray.opacity(0.5))
+        }
+        .animation(.easeInOut(duration: 0.2), value: isFilled)
+    }
+}

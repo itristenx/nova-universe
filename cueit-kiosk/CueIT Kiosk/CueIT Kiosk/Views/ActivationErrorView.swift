@@ -1,4 +1,6 @@
 import SwiftUI
+import UIKit
+import UIKit
 
 struct ActivationErrorView: View {
     @StateObject private var kioskService = KioskService.shared
@@ -73,7 +75,7 @@ struct ActivationErrorView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Colors.base.ignoresSafeArea())
         .sheet(isPresented: $showingServerConfig) {
-            ServerConfigView()
+            ServerSetupView()
         }
     }
 }
