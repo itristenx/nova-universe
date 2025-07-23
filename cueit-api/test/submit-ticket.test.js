@@ -18,7 +18,7 @@ function resetDb(done) {
     for (const [k, v] of Object.entries(defaults)) {
       stmt.run(k, v);
     }
-    stmt.run('adminPassword', bcrypt.hashSync('admin', 10));
+    stmt.run('adminPassword', bcrypt.hashSync('admin', 12));
     stmt.finalize(done);
   });
 }

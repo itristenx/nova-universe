@@ -135,3 +135,15 @@ curl -X POST \
   -d '{"userName":"john@example.com","displayName":"John"}' \
   http://localhost:3000/scim/v2/Users
 ```
+
+## Security
+
+### Password Hashing
+
+This application uses bcryptjs for password hashing with the following security configurations:
+
+- **bcryptjs version**: Latest stable version (3.0.2)
+- **Salt rounds**: 12 (provides strong protection against brute force attacks)
+- **Future consideration**: For new projects, consider migrating to Argon2 which is the current OWASP recommended password hashing algorithm
+
+All password hashing operations in the codebase consistently use 12 salt rounds, which provides a good balance between security and performance.

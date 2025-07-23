@@ -16,7 +16,7 @@ const dbFile = path.join(__dirname, '..', 'log.sqlite');
 function createUser(email, name, password) {
   return new Promise((resolve) => {
     const db = new sqlite3.Database(dbFile);
-    const hash = bcrypt.hashSync(password, 10);
+    const hash = bcrypt.hashSync(password, 12);
     db.run(
       `INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)`,
       [name, email, hash],

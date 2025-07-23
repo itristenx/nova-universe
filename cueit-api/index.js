@@ -875,7 +875,7 @@ app.post('/api/verify-password', ensureAuth, (req, res) => {
 app.put('/api/admin-password', ensureAuth, (req, res) => {
   const { password } = req.body;
   if (!password) return res.status(400).json({ error: 'Missing password' });
-  const hash = bcrypt.hashSync(password, 10);
+  const hash = bcrypt.hashSync(password, 12);
   db.run(
     `INSERT INTO config (key, value) VALUES ('adminPassword', ?)
      ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
