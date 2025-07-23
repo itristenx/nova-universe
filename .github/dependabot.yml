@@ -1,0 +1,72 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "itristenx"
+    labels:
+      - "dependencies"
+      - "npm"
+
+  # Enable version updates for npm in cueit-api
+  - package-ecosystem: "npm"
+    directory: "/cueit-api"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "itristenx"
+    labels:
+      - "dependencies"
+      - "api"
+
+  # Enable version updates for npm in cueit-admin
+  - package-ecosystem: "npm"
+    directory: "/cueit-admin"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "itristenx"
+    labels:
+      - "dependencies"
+      - "frontend"
+
+  # Enable version updates for npm in cueit-kiosk
+  - package-ecosystem: "npm"
+    directory: "/cueit-kiosk"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "itristenx"
+    labels:
+      - "dependencies"
+      - "kiosk"
+
+  # Enable version updates for npm in cueit-slack
+  - package-ecosystem: "npm"
+    directory: "/cueit-slack"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "itristenx"
+    labels:
+      - "dependencies"
+      - "slack"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    reviewers:
+      - "itristenx"
+    labels:
+      - "dependencies"
+      - "github-actions"

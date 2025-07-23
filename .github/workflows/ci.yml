@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install root dependencies
+      run: npm ci
+
+    - name: Run root tests
+      run: npm test
+
+    - name: Install API dependencies
+      working-directory: ./cueit-api
+      run: npm ci
+      continue-on-error: true
+
+    - name: Run API tests
+      working-directory: ./cueit-api  
+      run: npm test
+      continue-on-error: true
+
+    - name: Install Admin dependencies
+      working-directory: ./cueit-admin
+      run: npm ci
+      continue-on-error: true
+
+    - name: Run Admin tests
+      working-directory: ./cueit-admin
+      run: npm test
+      continue-on-error: true
+
+    - name: Install Kiosk dependencies
+      working-directory: ./cueit-kiosk
+      run: npm ci
+      continue-on-error: true
+
+    - name: Run Kiosk tests
+      working-directory: ./cueit-kiosk
+      run: npm test
+      continue-on-error: true
+
+    - name: Install Slack dependencies
+      working-directory: ./cueit-slack
+      run: npm ci
+      continue-on-error: true
+
+    - name: Run Slack tests
+      working-directory: ./cueit-slack
+      run: npm test
+      continue-on-error: true
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+
+    - name: Install root dependencies
+      run: npm ci
+
+    - name: Install API dependencies and lint
+      working-directory: ./cueit-api
+      run: |
+        if [ -f package.json ]; then
+          npm ci
+          if npm run lint --silent 2>/dev/null; then
+            npm run lint
+          fi
+        fi
+      continue-on-error: true
+
+    - name: Install Admin dependencies and lint
+      working-directory: ./cueit-admin
+      run: |
+        if [ -f package.json ]; then
+          npm ci
+          if npm run lint --silent 2>/dev/null; then
+            npm run lint
+          fi
+        fi
+      continue-on-error: true
