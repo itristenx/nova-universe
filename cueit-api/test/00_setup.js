@@ -49,8 +49,3 @@ globalThis.setSendBehavior = (fn) => {
 globalThis.setAxiosBehavior = (fn) => {
   axiosBehavior = fn;
 };
-
-after(() => {
-  nodemailer.createTransport = originalCreate;
-  axios.post = originalPost;
-});

@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import session from 'express-session';
 import passport from 'passport';
-import rateLimit from 'express-rate-limit';
+import { rateLimit } from 'express-rate-limit';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import db from './db.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,6 +28,8 @@ import integrationsRouter from './routes/integrations.js';
 import rolesRouter from './routes/roles.js';
 import { validateKioskRegistration, validateTicketSubmission, validateEmail, validateActivationCode } from './middleware/validation.js';
 import { authRateLimit, apiRateLimit, kioskRateLimit } from './middleware/rateLimiter.js';
+import helmet from 'helmet';
+import { body, validationResult } from 'express-validator';
 
 dotenv.config();
 
@@ -42,6 +44,7 @@ if (process.env.DEBUG_CORS === 'true') {
 // Apply security middleware
 app.use(securityHeaders);
 app.use(requestLogger);
+app.use(helmet());
 
 // Add custom CORS debugging middleware
 app.use((req, res, next) => {
@@ -94,9 +97,24 @@ const SUBMIT_TICKET_LIMIT = Number(process.env.SUBMIT_TICKET_LIMIT || 10);
 const API_LOGIN_LIMIT = Number(process.env.API_LOGIN_LIMIT || 5);
 const AUTH_LIMIT = Number(process.env.AUTH_LIMIT || 5);
 
-const ticketLimiter = rateLimit({ windowMs: RATE_WINDOW, max: SUBMIT_TICKET_LIMIT });
-const apiLoginLimiter = rateLimit({ windowMs: RATE_WINDOW, max: API_LOGIN_LIMIT });
-const authLimiter = rateLimit({ windowMs: RATE_WINDOW, max: AUTH_LIMIT });
+const ticketLimiter = rateLimit({
+  windowMs: RATE_WINDOW,
+  limit: SUBMIT_TICKET_LIMIT,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+});
+const apiLoginLimiter = rateLimit({
+  windowMs: RATE_WINDOW,
+  limit: API_LOGIN_LIMIT,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+});
+const authLimiter = rateLimit({
+  windowMs: RATE_WINDOW,
+  limit: AUTH_LIMIT,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+});
 
 if (process.env.DISABLE_AUTH === 'true' && process.env.NODE_ENV === 'production') {
   console.error('DISABLE_AUTH cannot be true when NODE_ENV is production');
@@ -338,11 +356,19 @@ if (!DISABLE_AUTH) {
   });
 }
 
-app.post("/submit-ticket", ticketLimiter, validateTicketSubmission, async (req, res) => {
+app.post("/submit-ticket", ticketLimiter, [
+  body('name').isString().trim().notEmpty(),
+  body('email').isEmail().normalizeEmail(),
+  body('title').isString().trim().notEmpty(),
+  body('system').isString().trim().notEmpty(),
+  body('urgency').isString().trim().notEmpty(),
+  body('description').optional().isString().trim(),
+], async (req, res) => {
   const { name, email, title, system, urgency, description } = req.body;
 
-  if (!name || !email || !title || !system || !urgency) {
-    return res.status(400).json({ error: "Missing required fields" });
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
 
   const ticketId = uuidv4().split("-")[0];
@@ -756,9 +782,16 @@ app.post('/api/test-smtp', ensureAuth, async (req, res) => {
   }
 });
 
-app.post('/api/feedback', (req, res) => {
+app.post('/api/feedback', [
+  body('name').optional().isString().trim(),
+  body('message').isString().trim().notEmpty(),
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { name = '', message } = req.body;
-  if (!message) return res.status(400).json({ error: 'Missing message' });
   const timestamp = new Date().toISOString();
   db.run(
     `INSERT INTO feedback (name, message, timestamp) VALUES (?, ?, ?)`,
@@ -854,7 +887,15 @@ app.put('/api/admin-password', ensureAuth, (req, res) => {
   );
 });
 
-app.post('/api/login', apiLoginLimiter, authRateLimit, (req, res) => {
+app.post('/api/login', apiLoginLimiter, authRateLimit, [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 8 }).trim(),
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Missing fields' });
@@ -1226,4 +1267,13 @@ app.listen(PORT, () => {
   console.log(`🚀 CueIT API Server running on port ${PORT}`);
   console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
   console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
 });
