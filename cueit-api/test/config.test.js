@@ -10,7 +10,7 @@ const defaults = {
   welcomeMessage: 'Welcome to the Help Desk',
   helpMessage: 'Need to report an issue?',
 };
-const adminHash = bcrypt.hashSync('admin', 10);
+const adminHash = bcrypt.hashSync('admin', 12);
 
 function resetDb(done) {
   db.serialize(() => {
