@@ -1,6 +1,6 @@
-# 🧾 CueIT Kiosk Display Requirements
+# 🧾 Nova Universe Kiosk Display Requirements
 
-This document outlines the full technical and UX requirements for building the **CueIT Kiosk Display App**, designed to emulate the Apple/Zoom Room-style interface for in-office kiosk usage.
+This document outlines the full technical and UX requirements for building the **Nova Universe Kiosk Display App**, designed to emulate the Apple/Zoom Room-style interface for in-office kiosk usage.
 
 ---
 

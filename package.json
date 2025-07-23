@@ -1,7 +1,16 @@
 {
-  "name": "cueit-root",
+  "name": "nova-universe",
+  "version": "1.0.0",
+  "description": "An internal help desk application for submitting and tracking IT tickets",
   "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itristenx/nova-universe.git"
+  },
+  "author": "itristenx",
+  "license": "MIT",
+  "keywords": ["helpdesk", "tickets", "it-support", "kiosk", "internal-tools"],
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
