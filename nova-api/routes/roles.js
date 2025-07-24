@@ -40,7 +40,7 @@ router.get('/', (req, res) => {
 
 /**
  * @swagger
- * /api/roles:
+ * /api/v1/roles:
  *   post:
  *     summary: Create a new role
  *     requestBody:
