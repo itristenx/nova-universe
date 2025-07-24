@@ -4,8 +4,21 @@
 **/dist-ssr/
 **/build/
 
+# VS Code settings
+.vscode/
+
+# Test coverage
+coverage/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# npm/yarn/pack output
+*.tgz
+
 # Log files
 *.log
+*.log.*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -14,26 +27,45 @@ lerna-debug.log*
 
 # Local environment files
 *.env
+*.env.*.local
 *.local
 
 # SQLite databases generated at runtime
 *.sqlite
+
+# Test output
+*.test-results.xml
 
 # macOS and system files
 .DS_Store
 Thumbs.db
 
 # IDE and editor folders
-.vscode/
 .idea/
+*.iml
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+
+# Backup and temp files
+*.orig
+*.bak
+*.tmp
 
 # Xcode user data and build products
 *.xcodeproj/**/xcuserdata/
 *.xcworkspace/**/xcuserdata/
+*.xcuserstate
 DerivedData/
 xcuserdata/
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# fastlane output (iOS CI/CD)
+fastlane/report.xml
+fastlane/test_output/
