@@ -245,7 +245,54 @@ router.delete('/:id', (req, res) => {
  */
 
 router.post('/:id/test', async (req, res, next) => {
-  // ...existing code...
+  const integrationId = req.params.id;
+
+  try {
+    // Fetch the integration configuration from the database
+    const query = 'SELECT value FROM config WHERE key = ?';
+    const key = `integration_${integrationId}`;
+    db.get(query, [key], (err, row) => {
+      if (err) {
+        logger.error(`Database error: ${err.message}`);
+        return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+      }
+
+      if (!row) {
+        return res.status(404).json({
+          error: 'Integration not found',
+          errorCode: 'NOT_FOUND',
+          supportedTypes: ['type1', 'type2'], // Example supported types
+        });
+      }
+
+      // Parse the configuration
+      let config;
+      try {
+        config = JSON.parse(row.value);
+      } catch (parseError) {
+        logger.error(`Invalid configuration format: ${parseError.message}`);
+        return res.status(400).json({
+          error: 'Invalid integration configuration',
+          errorCode: 'INVALID_CONFIG',
+        });
+      }
+
+      // Perform the integration test (mocked for now)
+      if (config.type === 'type1') {
+        // Simulate a successful test
+        return res.status(200).json({ message: 'Integration test successful' });
+      } else {
+        return res.status(404).json({
+          error: 'Test not implemented for this integration type',
+          errorCode: 'TEST_NOT_IMPLEMENTED',
+          supportedTypes: ['type1'], // Example supported types
+        });
+      }
+    });
+  } catch (error) {
+    logger.error(`Unexpected error: ${error.message}`);
+    return res.status(500).json({ error: 'Integration test failed', errorCode: 'TEST_FAILED' });
+  }
 });
 
 export default router;
