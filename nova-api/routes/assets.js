@@ -79,7 +79,7 @@ router.get('/', (req, res) => {
 
 /**
  * @swagger
- * /api/assets:
+ * /api/v1/assets:
  *   post:
  *     summary: Upload a new asset
  *     requestBody:
