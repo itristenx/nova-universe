@@ -132,7 +132,28 @@ router.get('/', (req, res) => {
  *                   type: string
  */
 router.put('/:id', (req, res) => {
-  // ...existing code...
+  const { id } = req.params;
+  const { name, type, config, enabled } = req.body;
+
+  if (!name || !type || !config || typeof enabled !== 'boolean') {
+    return res.status(400).json({ error: 'Invalid request body', errorCode: 'INVALID_BODY' });
+  }
+
+  const query = 'UPDATE integrations SET name = ?, type = ?, config = ?, enabled = ? WHERE id = ?';
+  const params = [name, type, JSON.stringify(config), enabled, id];
+
+  db.run(query, params, function (err) {
+    if (err) {
+      logger.error(`Failed to update integration with id ${id}: ${err.message}`);
+      return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Integration not found', errorCode: 'NOT_FOUND' });
+    }
+
+    res.status(200).json({ message: 'Integration updated successfully' });
+  });
 });
 
 
