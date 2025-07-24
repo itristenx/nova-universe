@@ -30,7 +30,6 @@ describe('GET /api/logs filters', function() {
   });
 
   it('returns all logs by default', async function() {
-    const res = await request(app).get('/api/logs').expect(200);
     const res = await request(app).get('/api/v1/logs').expect(200);
     assert.strictEqual(res.body.length, 3);
   });
