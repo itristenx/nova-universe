@@ -65,13 +65,11 @@ export const useApiHealth = () => {
   }, [isConnected, isChecking]);
 
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-
     // Check immediately
     checkHealth();
 
     // Then check every 15 seconds for more real-time monitoring
-    interval = setInterval(() => checkHealth(true), 15000);
+    const interval = setInterval(() => checkHealth(true), 15000);
 
     // Listen for online/offline events
     const handleOnline = () => checkHealth(true);

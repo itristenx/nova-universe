@@ -147,7 +147,7 @@ export const LoginPage: React.FC = () => {
     } catch (error: any) {
       console.error('Passkey login error:', error);
       
-      let errorTitle = 'Passkey Login failed';
+      const errorTitle = 'Passkey Login failed';
       let errorDescription = 'Authentication failed. Please try again.';
       
       if (error.name === 'NotAllowedError') {

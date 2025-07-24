@@ -17,14 +17,6 @@ import type {
   AuthToken,
   DashboardStats,
   ActivityLog,
-  ScheduleConfig,
-  OfficeHours,
-  KioskAdminLoginRequest,
-  KioskAdminLoginResponse,
-  GlobalConfiguration,
-  KioskConfiguration,
-  ConfigScope,
-  ConfigurationSummary,
 } from '@/types';
 import {
   mockUsers,
@@ -698,7 +690,7 @@ class ApiClient {
           active: true, 
           lastSeen: new Date().toISOString(),
           version: '1.0.0',
-          configScope: 'global' as ConfigScope,
+          configScope: 'global',
           hasOverrides: false,
           overrideCount: 0,
           effectiveConfig: {
@@ -986,6 +978,199 @@ class ApiClient {
     }
 
     const response = await this.client.post<{ verified: boolean; token?: string; user?: any }>('/api/passkey/authenticate/complete', data);
+    return response.data;
+  }
+
+  // Admin Pin Management
+  async updateAdminPins(pinConfig: { globalPin?: string; kioskPins?: Record<string, string> }): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'Admin pins updated successfully' });
+    }
+
+    const response = await this.client.put<ApiResponse>('/api/admin-pins', pinConfig);
+    return response.data;
+  }
+
+  async validateAdminPin(pin: string, kioskId?: string): Promise<{ valid: boolean; permissions: string[] }> {
+    if (this.useMockMode) {
+      return this.mockRequest({ 
+        valid: true, 
+        permissions: ['admin', 'override_status', 'manage_settings'] 
+      });
+    }
+
+    const response = await this.client.post<{ valid: boolean; permissions: string[] }>('/api/admin-pins/validate', { pin, kioskId });
+    return response.data;
+  }
+
+  // SSO Configuration
+  async updateSSOConfig(config: any): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'SSO configuration updated successfully' });
+    }
+
+    const response = await this.client.put<ApiResponse>('/api/sso-config', config);
+    return response.data;
+  }
+
+  // Kiosk Configuration Management
+  async getKioskConfiguration(kioskId: string): Promise<any> {
+    if (this.useMockMode) {
+      return this.mockRequest({
+        id: kioskId,
+        statusConfig: {
+          enabled: true,
+          currentStatus: 'open',
+          openMessage: 'Help Desk is Open',
+          closedMessage: 'Help Desk is Closed'
+        },
+        brandingConfig: {
+          logoUrl: '/logo.png',
+          welcomeMessage: 'Welcome to IT Help Desk'
+        },
+        scheduleConfig: {
+          enabled: false,
+          timezone: 'America/New_York'
+        }
+      });
+    }
+
+    const response = await this.client.get<any>(`/api/kiosks/${kioskId}/configuration`);
+    return response.data;
+  }
+
+  async setKioskOverride(kioskId: string, configType: string, configData: any): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'Kiosk override set successfully' });
+    }
+
+    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/overrides/${configType}`, configData);
+    return response.data;
+  }
+
+  async removeKioskOverride(kioskId: string, configType: string): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'Kiosk override removed successfully' });
+    }
+
+    const response = await this.client.delete<ApiResponse>(`/api/kiosks/${kioskId}/overrides/${configType}`);
+    return response.data;
+  }
+
+  // Global Configuration Management
+  async getGlobalConfiguration(): Promise<any> {
+    if (this.useMockMode) {
+      return this.mockRequest({
+        status: {
+          enabled: true,
+          currentStatus: 'open',
+          openMessage: 'Help Desk is Open',
+          closedMessage: 'Help Desk is Closed'
+        },
+        branding: {
+          logoUrl: '/logo.png',
+          welcomeMessage: 'Welcome to IT Help Desk'
+        },
+        schedule: {
+          enabled: false,
+          timezone: 'America/New_York'
+        }
+      });
+    }
+
+    const response = await this.client.get<any>('/api/configuration/global');
+    return response.data;
+  }
+
+  async getConfigurationSummary(): Promise<any> {
+    if (this.useMockMode) {
+      return this.mockRequest({
+        totalKiosks: 5,
+        globalOverrides: 0,
+        kioskOverrides: 2,
+        lastUpdated: new Date().toISOString()
+      });
+    }
+
+    const response = await this.client.get<any>('/api/configuration/summary');
+    return response.data;
+  }
+
+  async updateGlobalConfiguration(config: any): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'Global configuration updated successfully' });
+    }
+
+    const response = await this.client.put<ApiResponse>('/api/configuration/global', config);
+    return response.data;
+  }
+
+  async setKioskConfigScope(kioskId: string, scope: string): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'Kiosk configuration scope updated successfully' });
+    }
+
+    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/config-scope`, { scope });
+    return response.data;
+  }
+
+  async resetAllKiosksToGlobal(): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'All kiosks reset to global configuration successfully' });
+    }
+
+    const response = await this.client.post<ApiResponse>('/api/configuration/reset-all-to-global');
+    return response.data;
+  }
+
+  async applyGlobalConfigToAll(configType: string): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: `Global ${configType} configuration applied to all kiosks successfully` });
+    }
+
+    const response = await this.client.post<ApiResponse>('/api/configuration/apply-global-to-all', { configType });
+    return response.data;
+  }
+
+  // Kiosk Status Management
+  async updateKioskStatus(kioskId: string, status: { active: boolean }): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'Kiosk status updated successfully' });
+    }
+
+    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/status`, status);
+    return response.data;
+  }
+
+  // Schedule Configuration
+  async getKioskScheduleConfig(kioskId: string): Promise<any> {
+    if (this.useMockMode) {
+      return this.mockRequest({
+        enabled: false,
+        timezone: 'America/New_York',
+        schedule: {
+          monday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          tuesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          wednesday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
+          saturday: { enabled: false, slots: [] },
+          sunday: { enabled: false, slots: [] }
+        }
+      });
+    }
+
+    const response = await this.client.get<any>(`/api/kiosks/${kioskId}/schedule-config`);
+    return response.data;
+  }
+
+  // SMTP Testing
+  async testSMTP(testEmail: string): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'SMTP test email sent successfully' });
+    }
+
+    const response = await this.client.post<ApiResponse>('/api/smtp/test', { email: testEmail });
     return response.data;
   }
 }
