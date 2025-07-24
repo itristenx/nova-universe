@@ -3,11 +3,13 @@ dotenv.config();
 
 const required = [
   'SESSION_SECRET',
-  'JWT_SECRET',
-  'SMTP_HOST',
-  'SMTP_USER',
-  'SMTP_PASS',
+  'JWT_SECRET'
 ];
+
+// Only require SMTP in production
+if (process.env.NODE_ENV === 'production') {
+  required.push('SMTP_HOST', 'SMTP_USER', 'SMTP_PASS');
+}
 
 const missing = required.filter((k) => !process.env[k]);
 if (missing.length) {
@@ -25,26 +27,20 @@ const config = {
   corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['*'],
   nodeEnv: process.env.NODE_ENV || 'development',
   helpdeskEmail: process.env.HELPDESK_EMAIL,
-  // Add more config as needed
+// Add more config as needed
 };
 
-export default config;
-    if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
-      console.error('JWT_SECRET must be at least 32 characters long in production');
-      process.exit(1);
-    }
-    
-    if (!process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD === 'admin') {
-      warnings.push('ADMIN_PASSWORD should be changed from default value in production');
-    }
-    
-    if (!process.env.KIOSK_TOKEN) {
-      warnings.push('KIOSK_TOKEN not set - kiosk registration will be open');
-    }
-    
-    if (!process.env.SCIM_TOKEN) {
-      warnings.push('SCIM_TOKEN not set - SCIM endpoints will be disabled');
-    }
+// Validate environment and return status info
+export const validateEnvironment = () => {
+  const env = process.env.NODE_ENV || 'development';
+  const warnings = [];
+  
+  if (!process.env.SESSION_SECRET) {
+    warnings.push('SESSION_SECRET not set - using default (insecure)');
+  }
+  
+  if (!process.env.JWT_SECRET) {
+    warnings.push('JWT_SECRET not set - using default (insecure)');
   }
   
   if (warnings.length > 0) {
@@ -66,6 +62,8 @@ export default config;
     tlsEnabled: !!(process.env.TLS_CERT_PATH && process.env.TLS_KEY_PATH)
   };
 };
+
+export default config;
 
 export const getConfig = () => {
   return {

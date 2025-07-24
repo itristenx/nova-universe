@@ -1,3 +1,7 @@
+import express from 'express';
+
+const router = express.Router();
+
 /**
  * @swagger
  * /api/v1/health:
@@ -20,9 +24,6 @@
 router.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
-import express from 'express';
-
-const router = express.Router();
 
 // Platform-level server info endpoint
 /**

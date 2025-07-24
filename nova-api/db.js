@@ -1,3 +1,12 @@
+
+// db.js
+import { logger } from './logger.js';
+import sqlite3pkg from 'sqlite3';
+import bcrypt from 'bcryptjs';
+const sqlite3 = sqlite3pkg.verbose();
+const db = new sqlite3.Database("log.sqlite");
+
+db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS passkeys (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,14 +22,6 @@
       UNIQUE(user_id, credential_id)
     )
   `);
-// db.js
-import { logger } from './logger.js';
-import sqlite3pkg from 'sqlite3';
-import bcrypt from 'bcryptjs';
-const sqlite3 = sqlite3pkg.verbose();
-const db = new sqlite3.Database("log.sqlite");
-
-db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -175,12 +176,53 @@ db.serialize(() => {
     )
   `);
 
-  // add columns if database was created with an older schema
-  function addColumnIfMissing(table, columnDef) {
+  // Robust column addition and post-schema logic
+  const addColumnTasks = [
+    ['kiosks', 'active INTEGER DEFAULT 0'],
+    ['kiosks', 'logoUrl TEXT'],
+    ['kiosks', 'bgUrl TEXT'],
+    ['kiosks', 'statusEnabled INTEGER DEFAULT 0'],
+    ['kiosks', 'currentStatus TEXT'],
+    ['kiosks', 'openMsg TEXT'],
+    ['kiosks', 'closedMsg TEXT'],
+    ['kiosks', 'errorMsg TEXT'],
+    ['kiosks', 'meetingMsg TEXT'],
+    ['kiosks', 'brbMsg TEXT'],
+    ['kiosks', 'lunchMsg TEXT'],
+    ['kiosks', 'unavailableMsg TEXT'],
+    ['kiosks', 'schedule TEXT'],
+    ['notifications', 'active INTEGER DEFAULT 1'],
+    ['notifications', 'created_at TEXT'],
+    ['notifications', 'type TEXT DEFAULT "system"'],
+    ['users', 'passwordHash TEXT'],
+    ['users', 'disabled INTEGER DEFAULT 0'],
+    ['users', 'is_default INTEGER DEFAULT 0'],
+    ['logs', 'servicenow_id TEXT'],
+    ['roles', 'description TEXT']
+  ];
+  let pending = addColumnTasks.length;
+  function afterSchemaUpdate() {
+    const defaultEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+    db.run('UPDATE users SET is_default = 1 WHERE email = ? AND is_default IS NOT NULL', [defaultEmail], (err) => {
+      if (err) {
+        logger.error(`Error marking ${defaultEmail} as default admin user:`, err.message);
+      } else {
+        if (!process.env.CLI_MODE) logger.info(`Marked ${defaultEmail} as default admin user`);
+      }
+    });
+    db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)', (err) => {
+      if (err && !err.message.includes('already exists')) {
+        logger.error('Warning: Could not create unique index on users.email:', err.message);
+      }
+    });
+  }
+  if (pending === 0) afterSchemaUpdate();
+  addColumnTasks.forEach(([table, columnDef]) => {
     const columnName = columnDef.split(" ")[0];
     db.all(`PRAGMA table_info(${table})`, (err, rows) => {
       if (err) {
         logger.error(err);
+        if (--pending === 0) afterSchemaUpdate();
         return;
       }
       const exists = rows.some((r) => r.name === columnName);
@@ -189,51 +231,13 @@ db.serialize(() => {
           if (err2 && !/duplicate column name/i.test(err2.message)) {
             logger.error(err2);
           }
+          if (--pending === 0) afterSchemaUpdate();
         });
+      } else {
+        if (--pending === 0) afterSchemaUpdate();
       }
     });
-  }
-
-  addColumnIfMissing('kiosks', 'active INTEGER DEFAULT 0');
-  addColumnIfMissing('kiosks', 'logoUrl TEXT');
-  addColumnIfMissing('kiosks', 'bgUrl TEXT');
-  addColumnIfMissing('kiosks', 'statusEnabled INTEGER DEFAULT 0');
-  addColumnIfMissing('kiosks', 'currentStatus TEXT');
-  addColumnIfMissing('kiosks', 'openMsg TEXT');
-  addColumnIfMissing('kiosks', 'closedMsg TEXT');
-  addColumnIfMissing('kiosks', 'errorMsg TEXT');
-  addColumnIfMissing('kiosks', 'meetingMsg TEXT');
-  addColumnIfMissing('kiosks', 'brbMsg TEXT');
-  addColumnIfMissing('kiosks', 'lunchMsg TEXT');
-  addColumnIfMissing('kiosks', 'unavailableMsg TEXT');
-  addColumnIfMissing('kiosks', 'schedule TEXT');
-
-  addColumnIfMissing('notifications', 'active INTEGER DEFAULT 1');
-  addColumnIfMissing('notifications', 'created_at TEXT');
-  addColumnIfMissing('notifications', 'type TEXT DEFAULT "system"');
-  addColumnIfMissing('users', 'passwordHash TEXT');
-  addColumnIfMissing('users', 'disabled INTEGER DEFAULT 0');
-  addColumnIfMissing('users', 'is_default INTEGER DEFAULT 0');
-  addColumnIfMissing('logs', 'servicenow_id TEXT');
-  addColumnIfMissing('roles', 'description TEXT');
-
-  // After adding columns, mark default admin users
-  setTimeout(() => {
-    const defaultEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
-    
-    db.run('UPDATE users SET is_default = 1 WHERE email = ? AND is_default IS NOT NULL', [defaultEmail], (err) => {
-      if (!err) {
-        if (!process.env.CLI_MODE) logger.info(`Marked ${defaultEmail} as default admin user`);
-      }
-    });
-
-    // Create unique index on email if it doesn't exist
-    db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)', (err) => {
-      if (err && !err.message.includes('already exists')) {
-        logger.error('Warning: Could not create unique index on users.email:', err.message);
-      }
-    });
-  }, 1000); // Wait for schema updates to complete
+  });
 
   // seed role/permission tables with hierarchical roles
   db.run("INSERT OR IGNORE INTO roles (id, name, description) VALUES (1, 'superadmin', 'Super Administrator - Full System Access')");

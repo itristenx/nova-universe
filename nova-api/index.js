@@ -1,3 +1,4 @@
+// All imports at the top
 import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
 import { logger } from './logger.js';
@@ -9,6 +10,45 @@ import assetsRouter from './routes/assets.js';
 import integrationsRouter from './routes/integrations.js';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+import express from 'express';
+import cors from 'cors';
+import nodemailer from 'nodemailer';
+import axios from 'axios';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import session from 'express-session';
+import passport from 'passport';
+import { rateLimit } from 'express-rate-limit';
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
+import db from './db.js';
+import { v4 as uuidv4 } from 'uuid';
+import events from './events.js';
+import { sign, verify } from './jwt.js';
+import base64url from 'base64url';
+import {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
+} from '@simplewebauthn/server';
+import qrcode from 'qrcode';
+import { securityHeaders, requestLogger } from './middleware/security.js';
+import { validateKioskRegistration, validateTicketSubmission, validateEmail, validateActivationCode } from './middleware/validation.js';
+import { authRateLimit, apiRateLimit, kioskRateLimit } from './middleware/rateLimiter.js';
+import helmet from 'helmet';
+import { body, validationResult } from 'express-validator';
+
+// Configure environment
+dotenv.config();
+
+// Initialize Express app
+const app = express();
 // --- Version helpers ---
 function getApiVersion() {
   try {
@@ -55,29 +95,37 @@ const swaggerDefinition = {
 
 const swaggerOptions = {
   swaggerDefinition,
-  apis: ['./routes/*.js'], // You can add JSDoc comments to your route files for more detail
+  apis: [
+    path.join(__dirname, 'routes', '*.js'),
+    path.join(__dirname, 'routes', 'server.js'),
+    path.join(__dirname, 'routes', 'organizations.js'),
+    path.join(__dirname, 'routes', 'directory.js'),
+    path.join(__dirname, 'routes', 'roles.js'),
+    path.join(__dirname, 'routes', 'assets.js'),
+    path.join(__dirname, 'routes', 'integrations.js')
+  ]
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use('/api/v1/organizations', organizationsRouter);
-app.use('/api/v1/directory', directoryRouter);
-app.use('/api/v1/roles', rolesRouter);
-app.use('/api/v1/assets', assetsRouter);
-app.use('/api/v1/integrations', integrationsRouter);
-app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
-import dotenv from 'dotenv';
+// Debug: Log the swagger spec to see if it's being generated
+if (process.env.NODE_ENV === 'development') {
+  console.log('📋 Swagger spec generated with paths:', Object.keys(swaggerSpec.paths || {}));
+}
+
 // Environment variable validation helper
 function validateEnv() {
   // Required variables for secure production operation
   const requiredVars = [
     'SESSION_SECRET',
-    'JWT_SECRET',
-    'SMTP_HOST',
-    'SMTP_USER',
-    'SMTP_PASS',
+    'JWT_SECRET'
   ];
+
+  // Only require SMTP in production
+  if (process.env.NODE_ENV === 'production') {
+    requiredVars.push('SMTP_HOST', 'SMTP_USER', 'SMTP_PASS');
+  }
+
   // Optional variables (warn if missing, but not fatal)
   const optionalVars = [
     'CORS_ORIGINS',
@@ -120,38 +168,6 @@ function validateEnv() {
 }
 
 validateEnv();
-import express from 'express';
-import cors from 'cors';
-import nodemailer from 'nodemailer';
-import axios from 'axios';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import session from 'express-session';
-import passport from 'passport';
-import { rateLimit } from 'express-rate-limit';
-import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
-import db from './db.js';
-import { v4 as uuidv4 } from 'uuid';
-import events from './events.js';
-// ...existing code...
-import { sign, verify } from './jwt.js';
-import base64url from 'base64url';
-import {
-  generateRegistrationOptions,
-  verifyRegistrationResponse,
-  generateAuthenticationOptions,
-  verifyAuthenticationResponse,
-} from '@simplewebauthn/server';
-import qrcode from 'qrcode';
-import { securityHeaders, requestLogger } from './middleware/security.js';
-import { validateKioskRegistration, validateTicketSubmission, validateEmail, validateActivationCode } from './middleware/validation.js';
-import { authRateLimit, apiRateLimit, kioskRateLimit } from './middleware/rateLimiter.js';
-import helmet from 'helmet';
-import { body, validationResult } from 'express-validator';
-
-dotenv.config();
-
-const app = express();
 
 // Configure CORS origins
 const originList = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : null;
@@ -162,7 +178,25 @@ if (process.env.DEBUG_CORS === 'true') {
 // Apply security middleware
 app.use(securityHeaders);
 app.use(requestLogger);
-app.use(helmet());
+
+// Disable CSP entirely for Swagger UI routes
+app.use('/api-docs', (req, res, next) => {
+  res.removeHeader('Content-Security-Policy');
+  next();
+});
+
+// Regular CSP for other routes  
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "https:", "data:"]
+    }
+  }
+}));
 
 // Add custom CORS debugging middleware
 app.use((req, res, next) => {
@@ -1650,6 +1684,73 @@ app.delete('/api/users/:id', ensureAuth, (req, res) => {
 
 
 // --- END ADDITIONAL MISSING ENDPOINTS ---
+
+// Setup API routes
+app.get('/api-docs/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
+// Simple test page to debug Swagger UI
+app.get('/api-docs/test', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Swagger UI Test</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+            .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+            .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        </style>
+    </head>
+    <body>
+        <h1>Swagger UI Debug</h1>
+        <div class="status success">✅ Server is running</div>
+        <div class="status info">📋 JSON Spec available at: <a href="/api-docs/swagger.json">/api-docs/swagger.json</a></div>
+        <div class="status info">📖 Swagger UI at: <a href="/api-docs/">/api-docs/</a></div>
+        
+        <h2>API Endpoints Found:</h2>
+        <ul>
+          ${Object.keys(swaggerSpec.paths || {}).map(path => `<li><code>${path}</code></li>`).join('')}
+        </ul>
+        
+        <h2>Debug Info:</h2>
+        <pre>Swagger spec paths: ${JSON.stringify(Object.keys(swaggerSpec.paths || {}), null, 2)}</pre>
+        
+        <script>
+          console.log('Test page loaded successfully');
+          fetch('/api-docs/swagger.json')
+            .then(response => response.json())
+            .then(data => {
+              console.log('Swagger JSON loaded:', data);
+              document.getElementById('swagger-status').textContent = '✅ Swagger JSON loads correctly';
+            })
+            .catch(error => {
+              console.error('Error loading Swagger JSON:', error);
+              document.getElementById('swagger-status').textContent = '❌ Error loading Swagger JSON';
+            });
+        </script>
+        <div id="swagger-status" class="status info">🔄 Testing Swagger JSON loading...</div>
+    </body>
+    </html>
+  `);
+});
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  swaggerOptions: {
+    url: '/api-docs/swagger.json'
+  },
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "Nova Universe API Documentation"
+}));
+app.use('/api/v1/organizations', organizationsRouter);
+app.use('/api/v1/directory', directoryRouter);
+app.use('/api/v1/roles', rolesRouter);
+app.use('/api/v1/assets', assetsRouter);
+app.use('/api/v1/integrations', integrationsRouter);
+app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
 
 app.listen(PORT, () => {
   console.log(`🚀 CueIT API Server running on port ${PORT}`);
