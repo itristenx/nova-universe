@@ -3,18 +3,99 @@ import db from '../db.js';
 
 const router = express.Router();
 
-// Get all roles
+
+/**
+ * @swagger
+ * /api/v1/roles:
+ *   get:
+ *     summary: Get all roles
+ *     responses:
+ *       200:
+ *         description: List of roles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ */
 router.get('/', (req, res) => {
   db.all('SELECT * FROM roles ORDER BY name', (err, rows) => {
-    if (err) return res.status(500).json({ error: 'DB error' });
+    if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
     res.json(rows);
   });
 });
 
-// Create role
+
+/**
+ * @swagger
+ * /api/roles:
+ *   post:
+ *     summary: Create a new role
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Role created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *       400:
+ *         description: Role name required or already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ *       500:
+ *         description: Database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ */
 router.post('/', (req, res) => {
   const { name, description } = req.body;
-  if (!name) return res.status(400).json({ error: 'Role name is required' });
+  if (!name) return res.status(400).json({ error: 'Role name is required', errorCode: 'ROLE_NAME_REQUIRED' });
 
   db.run(
     'INSERT INTO roles (name, description) VALUES (?, ?)',
@@ -22,16 +103,61 @@ router.post('/', (req, res) => {
     function(err) {
       if (err) {
         if (err.message.includes('UNIQUE constraint failed')) {
-          return res.status(400).json({ error: 'Role already exists' });
+          return res.status(400).json({ error: 'Role already exists', errorCode: 'ROLE_EXISTS' });
         }
-        return res.status(500).json({ error: 'DB error' });
+        return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       }
       res.json({ id: this.lastID, name, description });
     }
   );
 });
 
-// Update role
+
+/**
+ * @swagger
+ * /api/roles/{id}:
+ *   put:
+ *     summary: Update a role
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Role updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ */
 router.put('/:id', (req, res) => {
   const { id } = req.params;
   const { name, description } = req.body;
@@ -40,19 +166,63 @@ router.put('/:id', (req, res) => {
     'UPDATE roles SET name=?, description=? WHERE id=?',
     [name, description || '', id],
     (err) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
+      if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       res.json({ message: 'Role updated' });
     }
   );
 });
 
-// Delete role
+/**
+ * @swagger
+ * /api/roles/{id}:
+ *   delete:
+ *     summary: Delete a role
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *     responses:
+ *       200:
+ *         description: Role deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Cannot delete admin role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ *       500:
+ *         description: Database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ */
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
 
   // Don't allow deleting admin role
   if (id === '1') {
-    return res.status(400).json({ error: 'Cannot delete admin role' });
+    return res.status(400).json({ error: 'Cannot delete admin role', errorCode: 'CANNOT_DELETE_ADMIN_ROLE' });
   }
 
   db.serialize(() => {
@@ -62,21 +232,80 @@ router.delete('/:id', (req, res) => {
     db.run('DELETE FROM role_permissions WHERE role_id=?', [id]);
     // Delete role
     db.run('DELETE FROM roles WHERE id=?', [id], (err) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
+      if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       res.json({ message: 'Role deleted' });
     });
   });
 });
 
-// Get permissions
+
+/**
+ * @swagger
+ * /api/roles/permissions:
+ *   get:
+ *     summary: Get all available permissions
+ *     responses:
+ *       200:
+ *         description: List of permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ */
 router.get('/permissions', (req, res) => {
   db.all('SELECT * FROM permissions ORDER BY name', (err, rows) => {
-    if (err) return res.status(500).json({ error: 'DB error' });
+    if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
     res.json(rows);
   });
 });
 
-// Get role permissions
+
+/**
+ * @swagger
+ * /api/roles/{id}/permissions:
+ *   get:
+ *     summary: Get permissions for a specific role
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *     responses:
+ *       200:
+ *         description: List of permissions for the role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ */
 router.get('/:id/permissions', (req, res) => {
   const { id } = req.params;
 
@@ -86,19 +315,77 @@ router.get('/:id/permissions', (req, res) => {
      WHERE rp.role_id = ?`,
     [id],
     (err, rows) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
+      if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       res.json(rows);
     }
   );
 });
 
-// Update role permissions
+
+/**
+ * @swagger
+ * /api/roles/{id}/permissions:
+ *   put:
+ *     summary: Update permissions for a specific role
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - permissionIds
+ *             properties:
+ *               permissionIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *     responses:
+ *       200:
+ *         description: Role permissions updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Permission IDs must be an array
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ *       500:
+ *         description: Database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ */
 router.put('/:id/permissions', (req, res) => {
   const { id } = req.params;
   const { permissionIds } = req.body;
 
   if (!Array.isArray(permissionIds)) {
-    return res.status(400).json({ error: 'Permission IDs must be an array' });
+    return res.status(400).json({ error: 'Permission IDs must be an array', errorCode: 'PERMISSION_IDS_NOT_ARRAY' });
   }
 
   db.serialize(() => {
@@ -112,7 +399,7 @@ router.put('/:id/permissions', (req, res) => {
         stmt.run(id, permissionId);
       });
       stmt.finalize((err) => {
-        if (err) return res.status(500).json({ error: 'DB error' });
+        if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
         res.json({ message: 'Role permissions updated' });
       });
     } else {

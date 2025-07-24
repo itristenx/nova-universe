@@ -28,7 +28,7 @@ class ConfigService: ObservableObject {
         }
 
         // Try to fetch fresh config from server
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/config") else {
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v1/config") else {
             // Only show error if we don't have cached config
             if UserDefaults.standard.data(forKey: "config") == nil {
                 self.errorMessage = "Unable to load configuration"
@@ -55,7 +55,7 @@ class ConfigService: ObservableObject {
 
         // kiosk specific overrides
         if let kioskId = UserDefaults.standard.string(forKey: "kioskId"),
-           let kurl = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(kioskId)") {
+           let kurl = URL(string: "\(APIConfig.baseURL)/api/v1/kiosks/\(kioskId)") {
             struct KioskConfig: Codable { var logoUrl: String?; var bgUrl: String? }
             do {
                 let (data, _) = try await URLSession.shared.data(from: kurl)
@@ -75,7 +75,7 @@ class ConfigService: ObservableObject {
     struct VerifyResponse: Decodable { let valid: Bool }
 
     func verifyPassword(_ password: String, completion: @escaping (Bool, Error?) -> Void) {
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/verify-password") else {
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v1/verify-password") else {
             completion(false, nil)
             return
         }
@@ -99,7 +99,7 @@ class ConfigService: ObservableObject {
     }
     
     func verifyPin(_ pin: String, completion: @escaping (Bool, Error?) -> Void) {
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/verify-admin-pin") else {
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v1/verify-admin-pin") else {
             completion(false, URLError(.badURL))
             return
         }

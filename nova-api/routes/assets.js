@@ -43,23 +43,100 @@ const upload = multer({
   }
 });
 
-// Get all assets
+
+/**
+ * @swagger
+ * /api/v1/assets:
+ *   get:
+ *     summary: Get all uploaded assets
+ *     responses:
+ *       200:
+ *         description: List of assets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Database error
+ *         content:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ */
 router.get('/', (req, res) => {
   db.all('SELECT * FROM assets ORDER BY uploaded_at DESC', (err, rows) => {
-    if (err) return res.status(500).json({ error: 'DB error' });
+    if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
     res.json(rows);
   });
 });
 
-// Upload asset
+/**
+ * @swagger
+ * /api/assets:
+ *   post:
+ *     summary: Upload a new asset
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *               - name
+ *               - type
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *               name:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Asset uploaded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       400:
+ *         description: No file uploaded or missing fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ *       500:
+ *         description: Database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ */
 router.post('/', upload.single('file'), (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
+    return res.status(400).json({ error: 'No file uploaded', errorCode: 'NO_FILE_UPLOADED' });
   }
 
   const { name, type } = req.body;
   if (!name || !type) {
-    return res.status(400).json({ error: 'Name and type are required' });
+    return res.status(400).json({ error: 'Name and type are required', errorCode: 'NAME_TYPE_REQUIRED' });
   }
 
   const url = `/uploads/${req.file.filename}`;
@@ -68,7 +145,7 @@ router.post('/', upload.single('file'), (req, res) => {
     'INSERT INTO assets (name, type, filename, url) VALUES (?, ?, ?, ?)',
     [name, type, req.file.filename, url],
     function(err) {
-      if (err) return res.status(500).json({ error: 'DB error' });
+      if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       
       res.json({
         id: this.lastID,
@@ -88,8 +165,8 @@ router.delete('/:id', (req, res) => {
   
   // Get asset info first
   db.get('SELECT * FROM assets WHERE id = ?', [id], (err, row) => {
-    if (err) return res.status(500).json({ error: 'DB error' });
-    if (!row) return res.status(404).json({ error: 'Asset not found' });
+    if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+    if (!row) return res.status(404).json({ error: 'Asset not found', errorCode: 'ASSET_NOT_FOUND' });
     
     // Delete file from disk
     const filePath = path.join(uploadsDir, row.filename);
@@ -99,7 +176,7 @@ router.delete('/:id', (req, res) => {
     
     // Delete from database
     db.run('DELETE FROM assets WHERE id = ?', [id], (err) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
+      if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       res.json({ message: 'Asset deleted' });
     });
   });

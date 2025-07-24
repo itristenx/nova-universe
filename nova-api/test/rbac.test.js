@@ -61,13 +61,13 @@ describe('RBAC permissions', function () {
   after(stopServer);
 
   it('denies access without permission', async () => {
-    const res = await fetch(`http://localhost:${port}/api/login`, {
+    const res = await fetch(`http://localhost:${port}/api/v1/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'bob@example.com', password: 'bob' }),
     });
     const data = await res.json();
-    const res2 = await fetch(`http://localhost:${port}/api/users`, {
+    const res2 = await fetch(`http://localhost:${port}/api/v1/users`, {
       headers: { Authorization: `Bearer ${data.token}` },
     });
     assert.strictEqual(res2.status, 403);

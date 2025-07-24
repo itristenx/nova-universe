@@ -253,7 +253,7 @@ cd cueit-kiosk && ./clean-build.sh
 ### Common Issues
 
 #### API Connection Issues
-1. Check if API is running: `curl http://localhost:3000/api/health`
+1. Check if API is running: `curl http://localhost:3000/api/health` (see also `/api/version` for version info)
 2. Verify environment variables are set
 3. Check database file permissions
 

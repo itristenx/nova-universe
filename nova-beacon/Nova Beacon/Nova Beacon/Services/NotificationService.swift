@@ -19,7 +19,7 @@ class NotificationService: ObservableObject {
 
     private func connect() {
         task?.cancel()
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/notifications/stream") else { return }
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v1/notifications/stream") else { return }
         task = Task {
             do {
                 let (bytes, _) = try await URLSession.shared.bytes(from: url)

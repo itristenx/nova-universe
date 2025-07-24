@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { logger } from './logger.js';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import db from './db.js';
@@ -24,8 +25,8 @@ function askPassword(question) {
 }
 
 function changeAdminPassword() {
-  console.log('🔑 CueIT Portal Password Reset Tool');
-  console.log('=====================================\n');
+  logger.info('🔑 CueIT Portal Password Reset Tool');
+  logger.info('=====================================\n');
   
   // Check if password is provided as argument
   const newPassword = process.argv[3];
@@ -45,14 +46,14 @@ function changeAdminPassword() {
 
 function updatePassword(newPassword) {
   if (!newPassword || newPassword.length < 8) {
-    console.error('❌ Password must be at least 8 characters long');
+    logger.error('Password must be at least 8 characters long');
     rl.close();
     return;
   }
   
   // Additional password strength validation
   if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
-    console.error('❌ Password must contain at least one uppercase letter, one lowercase letter, and one number');
+    logger.error('Password must contain at least one uppercase letter, one lowercase letter, and one number');
     rl.close();
     return;
   }
@@ -60,19 +61,19 @@ function updatePassword(newPassword) {
   // Find default admin users
   db.all('SELECT email FROM users WHERE is_default = 1', (err, rows) => {
     if (err) {
-      console.error('❌ Database error:', err.message);
+      logger.error('Database error:', err.message);
       rl.close();
       return;
     }
     
     if (rows.length === 0) {
-      console.error('❌ No default admin users found');
+      logger.error('No default admin users found');
       rl.close();
       return;
     }
     
     const adminEmail = rows[0].email;
-    console.log(`Updating password for: ${adminEmail}`);
+    logger.info(`Updating password for: ${adminEmail}`);
     
     const hashedPassword = bcrypt.hashSync(newPassword, 12); // Increase salt rounds
     
@@ -81,11 +82,11 @@ function updatePassword(newPassword) {
       [hashedPassword, adminEmail],
       function(err) {
         if (err) {
-          console.error('❌ Failed to update password:', err.message);
+          logger.error('Failed to update password:', err.message);
         } else if (this.changes === 0) {
-          console.error('❌ No users updated - check if default admin exists');
+          logger.error('No users updated - check if default admin exists');
         } else {
-          console.log(`✅ Password updated successfully for ${adminEmail}`);
+          logger.info(`Password updated successfully for ${adminEmail}`);
         }
         rl.close();
       }
@@ -94,8 +95,8 @@ function updatePassword(newPassword) {
 }
 
 function listUsers() {
-  console.log('📋 CueIT Default Admin Users');
-  console.log('============================\n');
+  logger.info('CueIT Default Admin Users');
+  logger.info('============================\n');
   
   // Wait for database initialization
   setTimeout(() => {
@@ -109,13 +110,13 @@ function listUsers() {
       ORDER BY u.id
     `, (err, rows) => {
       if (err) {
-        console.error('❌ Failed to fetch default admin users:', err.message);
+        logger.error('Failed to fetch default admin users:', err.message);
         rl.close();
         return;
       }
       
       if (rows.length === 0) {
-        console.log('⚠️  No default superadmin users found.');
+        logger.warn('No default superadmin users found.');
         rl.close();
         return;
       }
@@ -123,9 +124,9 @@ function listUsers() {
       rows.forEach(user => {
         const status = user.disabled ? '❌ DISABLED' : '✅ ACTIVE';
         
-        console.log(`ID: ${user.id} | ${user.name} (${user.email})`);
-        console.log(`   Status: ${status} 🛡️  DEFAULT SUPERADMIN`);
-        console.log(`   Role: ${user.role}\n`);
+        logger.info(`ID: ${user.id} | ${user.name} (${user.email})`);
+        logger.info(`   Status: ${status} 🛡️  DEFAULT SUPERADMIN`);
+        logger.info(`   Role: ${user.role}\n`);
       });
       
       rl.close();
@@ -148,10 +149,10 @@ switch (command) {
   case 'help':
   case '--help':
   case '-h':
-    console.log('CueIT CLI Commands:');
-    console.log('==================');
-    console.log('node cli.js change-password  - Change default admin password');
-    console.log('node cli.js list-users       - List default superadmin users');
+    logger.info('CueIT CLI Commands:');
+    logger.info('==================');
+    logger.info('node cli.js change-password  - Change default admin password');
+    logger.info('node cli.js list-users       - List default superadmin users');
     console.log('node cli.js help             - Show this help message');
     rl.close();
     break;

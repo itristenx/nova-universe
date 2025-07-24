@@ -70,7 +70,7 @@ HELPDESK_EMAIL=helpdesk@company.com
 - Run `npm install` in each service directory
 
 **Can't connect to admin interface?**
-- Verify the API is running at http://localhost:3000/api/health
+- Verify the API is running at http://localhost:3000/api/health (see also /api/version for version info)
 - Check browser console for errors
 - Ensure authentication is disabled for development (`DISABLE_AUTH=true`)
 

@@ -1,62 +1,68 @@
-import rateLimit from 'express-rate-limit';
 
-// Rate limiting configurations
+import rateLimit from 'express-rate-limit';
+import config from '../config/environment.js';
+
+/**
+ * Create a rate limiter middleware with sensible defaults, overridable by options or environment variables.
+ * @param {object} options - express-rate-limit options
+ * @returns {import('express').RequestHandler}
+ */
 export const createRateLimiter = (options = {}) => {
   const defaults = {
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
     message: {
       error: 'Too many requests from this IP, please try again later.',
     },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    skip: (req, res) => {
-      // Skip rate limiting for health checks
-      return req.path === '/api/health';
-    }
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req, res) => req.path === '/api/health',
   };
-
   return rateLimit({ ...defaults, ...options });
 };
 
-// Specific rate limiters for different endpoints
+/**
+ * Preconfigured rate limiters for different API areas.
+ */
 export const rateLimiters = {
-  // Authentication endpoints - stricter limits
+  /**
+   * Authentication endpoints - stricter limits
+   */
   auth: createRateLimiter({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // limit each IP to 5 auth attempts per windowMs
+    windowMs: parseInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS) || 15 * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_AUTH_MAX) || 5,
     message: {
       error: 'Too many authentication attempts, please try again later.',
-    }
+    },
   }),
-
-  // API endpoints - moderate limits
+  /**
+   * API endpoints - moderate limits
+   */
   api: createRateLimiter({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS) || 15 * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_API_MAX) || 100,
   }),
-
-  // Kiosk endpoints - specific limits
+  /**
+   * Kiosk endpoints - specific limits
+   */
   kiosk: createRateLimiter({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 10, // limit each IP to 10 kiosk requests per minute
+    windowMs: parseInt(process.env.RATE_LIMIT_KIOSK_WINDOW_MS) || 1 * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_KIOSK_MAX) || 10,
     message: {
       error: 'Too many kiosk requests, please try again later.',
-    }
+    },
   }),
-
-  // Ticket submission - prevent spam
+  /**
+   * Ticket submission - prevent spam
+   */
   ticket: createRateLimiter({
-    windowMs: 5 * 60 * 1000, // 5 minutes
-    max: 5, // limit each IP to 5 ticket submissions per 5 minutes
+    windowMs: parseInt(process.env.RATE_LIMIT_TICKET_WINDOW_MS) || 5 * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_TICKET_MAX) || 5,
     message: {
       error: 'Too many ticket submissions, please try again later.',
-    }
-  })
+    },
+  }),
 };
-
-// Alternative implementation - custom rate limiting middleware
-const rateLimitStore = new Map();
 
 export const createRateLimit = (windowMs = 15 * 60 * 1000, maxRequests = 100) => {
   return (req, res, next) => {

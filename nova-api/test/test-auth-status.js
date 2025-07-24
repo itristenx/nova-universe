@@ -2,14 +2,14 @@
 const axios = require('axios');
 
 async function testAuthStatusIntegration() {
-  console.log('🧪 Testing /api/auth/status endpoint integration...\n');
+  console.log('🧪 Testing /api/v1/auth/status endpoint integration...\n');
 
   const API_URL = 'http://localhost:3000';
   const FRONTEND_ORIGIN = 'http://localhost:5175';
 
   try {
     console.log('1. Testing direct auth status call...');
-    const response = await axios.get(`${API_URL}/api/auth/status`, {
+    const response = await axios.get(`${API_URL}/api/v1/auth/status`, {
       headers: {
         'Origin': FRONTEND_ORIGIN,
         'Content-Type': 'application/json'

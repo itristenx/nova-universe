@@ -1,4 +1,20 @@
+  db.run(`
+    CREATE TABLE IF NOT EXISTS passkeys (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      credential_id TEXT NOT NULL,
+      public_key TEXT NOT NULL,
+      counter INTEGER DEFAULT 0,
+      transports TEXT,
+      device_type TEXT,
+      backed_up INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      last_used TEXT,
+      UNIQUE(user_id, credential_id)
+    )
+  `);
 // db.js
+import { logger } from './logger.js';
 import sqlite3pkg from 'sqlite3';
 import bcrypt from 'bcryptjs';
 const sqlite3 = sqlite3pkg.verbose();
@@ -164,14 +180,14 @@ db.serialize(() => {
     const columnName = columnDef.split(" ")[0];
     db.all(`PRAGMA table_info(${table})`, (err, rows) => {
       if (err) {
-        console.error(err);
+        logger.error(err);
         return;
       }
       const exists = rows.some((r) => r.name === columnName);
       if (!exists) {
         db.run(`ALTER TABLE ${table} ADD COLUMN ${columnDef}`, (err2) => {
           if (err2 && !/duplicate column name/i.test(err2.message)) {
-            console.error(err2);
+            logger.error(err2);
           }
         });
       }
@@ -207,14 +223,14 @@ db.serialize(() => {
     
     db.run('UPDATE users SET is_default = 1 WHERE email = ? AND is_default IS NOT NULL', [defaultEmail], (err) => {
       if (!err) {
-        if (!process.env.CLI_MODE) console.log(`✅ Marked ${defaultEmail} as default admin user`);
+        if (!process.env.CLI_MODE) logger.info(`Marked ${defaultEmail} as default admin user`);
       }
     });
 
     // Create unique index on email if it doesn't exist
     db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)', (err) => {
       if (err && !err.message.includes('already exists')) {
-        console.error('Warning: Could not create unique index on users.email:', err.message);
+        logger.error('Warning: Could not create unique index on users.email:', err.message);
       }
     });
   }, 1000); // Wait for schema updates to complete
@@ -310,7 +326,7 @@ db.serialize(() => {
       LIMIT 1
     `, [adminEmail], (err, row) => {
       if (err) {
-        console.error('Error checking for admin user:', err);
+        logger.error('Error checking for admin user:', err);
         return;
       }
       
@@ -321,9 +337,9 @@ db.serialize(() => {
           [uid],
           (err) => {
             if (err) {
-              console.error('Error assigning superadmin role:', err);
+              logger.error('Error assigning superadmin role:', err);
             } else {
-              if (!process.env.CLI_MODE) console.log(`✅ Superadmin role assigned to user ID ${uid}`);
+              if (!process.env.CLI_MODE) logger.info(`Superadmin role assigned to user ID ${uid}`);
             }
           }
         );
@@ -331,7 +347,7 @@ db.serialize(() => {
       
       if (!row && !adminCreationInProgress) {
         adminCreationInProgress = true;
-        console.log('Creating default admin user...');
+        logger.info('Creating default admin user...');
         
         db.run(
           'INSERT INTO users (name, email, passwordHash, is_default) VALUES (?, ?, ?, 1)',
@@ -339,22 +355,22 @@ db.serialize(() => {
           function (err) {
             if (err) {
               if (err.message && err.message.includes('UNIQUE constraint failed')) {
-                if (!process.env.CLI_MODE) console.log('✅ Admin user already exists (concurrent creation detected)');
+                if (!process.env.CLI_MODE) logger.info('Admin user already exists (concurrent creation detected)');
               } else {
-                if (!process.env.CLI_MODE) console.error('Error creating admin user:', err);
+                if (!process.env.CLI_MODE) logger.error('Error creating admin user:', err);
               }
             } else {
-              if (!process.env.CLI_MODE) console.log(`✅ Default admin user created: ${adminEmail} (password: ${adminPass})`);
+              if (!process.env.CLI_MODE) logger.info(`Default admin user created: ${adminEmail} (password: ${adminPass})`);
               assignRole(this.lastID);
             }
             adminCreationInProgress = false;
           }
         );
       } else if (row) {
-        if (!process.env.CLI_MODE) console.log(`✅ Admin user already exists: ${row.email}`);
+        if (!process.env.CLI_MODE) logger.info(`Admin user already exists: ${row.email}`);
         // Mark existing admin as default if not already marked
         db.run('UPDATE users SET is_default = 1 WHERE id = ?', [row.id], (updateErr) => {
-          if (updateErr && !process.env.CLI_MODE) console.log('Note: Could not mark user as default (column may not exist yet)');
+          if (updateErr && !process.env.CLI_MODE) logger.info('Note: Could not mark user as default (column may not exist yet)');
         });
         assignRole(row.id);
       }

@@ -384,7 +384,7 @@ struct ActivationWizard: View {
     }
     
     private func fetchServerInfo() async throws {
-        guard let url = URL(string: "\(serverURL)/api/server-info") else {
+        guard let url = URL(string: "\(serverURL)/api/v1/server-info") else {
             throw NSError(domain: "ActivationWizard", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid server URL format"])
         }
         
