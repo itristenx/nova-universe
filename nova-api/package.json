@@ -34,6 +34,6 @@
   "devDependencies": {
     "esmock": "^2.7.1",
     "mocha": "^11.7.1",
-    "supertest": "^7.1.1"
+    "supertest": "^7.1.4"
   }
 }
