@@ -87,7 +87,7 @@ router.get('/', (req, res) => {
 
 /**
  * @swagger
- * /api/integrations/{id}:
+ * /api/v1/integrations/{id}:
  *   put:
  *     summary: Update an integration configuration
  *     parameters:
