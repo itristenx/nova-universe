@@ -1,1 +1,0 @@
-CueIT Kiosk lets employees submit help desk tickets from a shared iPad. The app collects the user's name, email, title, manager, affected system and urgency level to create the request. See the in-app privacy policy or docs/privacy-policy.md for details.

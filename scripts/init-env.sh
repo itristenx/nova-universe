@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-apps=(cueit-api cueit-admin cueit-slack)
+apps=(nova-api nova-core nova-comms)
 
 for app in "${apps[@]}"; do
   example="$app/.env.example"

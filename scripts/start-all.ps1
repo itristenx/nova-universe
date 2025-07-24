@@ -1,11 +1,11 @@
 Set-Location (Join-Path $PSScriptRoot "..")
 $apps = @{
-  api      = @{ dir = 'cueit-api';      cmd = 'npm --prefix cueit-api start' }
-  admin    = @{ dir = 'cueit-admin';    cmd = 'npm --prefix cueit-admin run dev' }
-  slack    = @{ dir = 'cueit-slack';    cmd = 'npm --prefix cueit-slack start' }
+  api      = @{ dir = 'nova-api';      cmd = 'npm --prefix nova-api start' }
+  core     = @{ dir = 'nova-core';     cmd = 'npm --prefix nova-core run dev' }
+  comms    = @{ dir = 'nova-comms';    cmd = 'npm --prefix nova-comms start' }
 }
 
-$input = Read-Host "Apps to start (api,admin,slack or all) [all]"
+$input = Read-Host "Apps to start (api,core,comms or all) [all]"
 if ([string]::IsNullOrWhiteSpace($input) -or $input -eq 'all') {
   $selected = $apps.Keys
 } else {
@@ -29,7 +29,7 @@ foreach ($app in $selected) {
     npm --prefix $dir install
   }
   $names += $app
-$commands += $apps[$app].cmd
+  $commands += $apps[$app].cmd
 }
 
 if (-not $Env:TLS_CERT_PATH -and (Test-Path cert.pem)) {

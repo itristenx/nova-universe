@@ -5,25 +5,25 @@ cd "$SCRIPT_DIR/.."
 
 get_dir() {
   case "$1" in
-    api) echo "cueit-api" ;;
-    admin) echo "cueit-admin" ;;
-    slack) echo "cueit-slack" ;;
+    api) echo "nova-api" ;;
+    core) echo "nova-core" ;;
+    comms) echo "nova-comms" ;;
     *) return 1 ;;
   esac
 }
 
 get_cmd() {
   case "$1" in
-    api) echo "npm --prefix cueit-api start" ;;
-    admin) echo "npm --prefix cueit-admin run dev" ;;
-    slack) echo "npm --prefix cueit-slack start" ;;
+    api) echo "npm --prefix nova-api start" ;;
+    core) echo "npm --prefix nova-core run dev" ;;
+    comms) echo "npm --prefix nova-comms start" ;;
     *) return 1 ;;
   esac
 }
 
-read -rp "Apps to start (api,admin,slack or all) [all]: " INPUT
+read -rp "Apps to start (api,core,comms or all) [all]: " INPUT
 if [[ -z "$INPUT" || "$INPUT" == "all" ]]; then
-  SELECTED=(api admin slack)
+  SELECTED=(api core comms)
 else
   IFS=',' read -ra SELECTED <<< "$INPUT"
 fi

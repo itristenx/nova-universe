@@ -1,0 +1,31 @@
+{
+    "folders": [
+        {
+            "name": "Nova Beacon",
+            "path": "./Nova Beacon"
+        }
+    ],
+    "settings": {
+        "swift.path": "/usr/bin/swift",
+        "swift.sourcekit-lsp.serverPath": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
+        "swift.disableAutoResolve": false,
+        "swift.backgroundCompilation": true,
+        "swift.defaultToolchain": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
+        "files.associations": {
+            "*.swift": "swift",
+            "*.xcodeproj": "folder",
+            "*.xcworkspace": "folder"
+        },
+        "files.exclude": {
+            "**/DerivedData": true,
+            "**/.build": true,
+            "**/build": true
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "swift-server.swift",
+            "sswg.swift-lang"
+        ]
+    }
+}

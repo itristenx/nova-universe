@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/nova-core"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/nova-api"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/nova-comms"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

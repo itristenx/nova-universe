@@ -22,24 +22,24 @@ if ! command -v mailpit >/dev/null 2>&1; then
   echo "Mailpit not found – install from https://github.com/axllent/mailpit if needed."
 fi
 
-# Install Node dependencies for backend, admin, and Slack service
-pushd cueit-api >/dev/null
+# Install Node dependencies for backend, admin, and comms service
+pushd nova-api >/dev/null
 npm ci
 popd >/dev/null
 
-pushd cueit-admin >/dev/null
+pushd nova-core >/dev/null
 npm ci
 popd >/dev/null
 
-if [ -d cueit-slack ]; then
-  pushd cueit-slack >/dev/null
+if [ -d nova-comms ]; then
+  pushd nova-comms >/dev/null
   npm ci
   popd >/dev/null
 fi
 
 # Automatically create .env files if they do not exist
 missing_env=false
-for dir in cueit-api cueit-admin cueit-slack; do
+for dir in nova-api nova-core nova-comms; do
   [ -f "$dir/.env" ] || missing_env=true
 done
 if [ "$missing_env" = true ]; then
@@ -54,4 +54,4 @@ echo "   Email: admin@example.com"
 echo "   Password: admin"
 echo ""
 echo "You can create/update admin users manually with:"
-echo "   cd cueit-api && node create-admin.js [email] [password] [name]"
+echo "   cd nova-api && node create-admin.js [email] [password] [name]"

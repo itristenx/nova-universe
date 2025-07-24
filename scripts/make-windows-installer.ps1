@@ -5,30 +5,24 @@ param(
 
 Set-Location (Join-Path $PSScriptRoot '..')
 
-$AppDir = 'cueit-macos'
+npm --prefix nova-core install
+npm --prefix nova-core run build
 
-npm --prefix $AppDir install
-npm --prefix cueit-admin install
-npm --prefix cueit-admin run build
-npx --prefix $AppDir electron-packager $AppDir CueIT `
-  --platform=win32 --arch=x64 --out "$AppDir/dist" --overwrite
+$RES_DIR = Join-Path (Get-Location) 'dist\resources'
+if (-not (Test-Path $RES_DIR)) { New-Item -ItemType Directory -Path $RES_DIR | Out-Null }
 
-$Source = Join-Path $AppDir 'dist/CueIT-win32-x64'
+Copy-Item nova-api, nova-core, nova-comms, design -Destination $RES_DIR -Recurse -Force
+Copy-Item installers\start-all.sh $RES_DIR\installers -Force
+
+foreach ($pkg in 'nova-api','nova-core','nova-comms') {
+  Copy-Item (Join-Path $pkg '.env.example') (Join-Path $RES_DIR $pkg '.env') -Force
+}
+
 $cert = Join-Path (Get-Location) 'cert.pem'
 $key = Join-Path (Get-Location) 'key.pem'
 if (Test-Path $cert -and Test-Path $key) {
-  Copy-Item $cert $Source -Force
-  Copy-Item $key $Source -Force
-}
-$Inno = "$env:ProgramFiles(x86)\Inno Setup 6\ISCC.exe"
-if (-not (Test-Path $Inno)) {
-  Write-Host "Inno Setup not found at $Inno. Install from https://jrsoftware.org/isinfo.php." -ForegroundColor Yellow
-  exit 1
+  Copy-Item $cert $RES_DIR -Force
+  Copy-Item $key $RES_DIR -Force
 }
 
-& $Inno 'installers/CueIT.iss' \
-  /DAppVersion=$Version \
-  /DSourceDir=$Source \
-  /DOutputDir=$AppDir
-
-Write-Host "Installer created at $AppDir\CueIT-$Version.exe"
+Write-Host "Windows installer resources prepared at $RES_DIR"

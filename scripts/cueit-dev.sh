@@ -5,20 +5,19 @@ cd "$SCRIPT_DIR"
 
 # Function to start services
 start_services() {
-    echo "🚀 Starting CueIT services..."
+    echo "🚀 Starting the Nova Universe platform services..."
     
     # Start API
-    echo "Starting API..."
-    cd cueit-api && npm start &
+    echo "Starting Platform API..."
+    cd ../nova-api && npm start &
     API_PID=$!
-    cd ..
+    cd - >/dev/null
     
     # Start Admin UI
-    echo "Starting Admin UI..."
-    cd cueit-admin && npm run dev &
+    echo "Starting Nova Core Admin UI..."
+    cd ../nova-core && npm run dev &
     ADMIN_PID=$!
-    cd ..
-    
+    cd - >/dev/null
     
     # Save PIDs for later cleanup
     echo "$API_PID" > .api.pid
@@ -35,7 +34,7 @@ start_services() {
 
 # Function to stop services
 stop_services() {
-    echo "🛑 Stopping CueIT services..."
+    echo "🛑 Stopping Nova Universe services..."
     
     # Kill by process name
     pkill -f "npm.*start" || true
@@ -51,19 +50,19 @@ stop_services() {
 
 # Function to show status
 show_status() {
-    echo "📊 CueIT Service Status:"
+    echo "📊 Nova Universe Platform Status:"
     echo "========================"
     
     if pgrep -f "node index.js" > /dev/null; then
-        echo "✅ API is running"
+        echo "✅ Platform API is running"
     else
-        echo "❌ API is not running"
+        echo "❌ Platform API is not running"
     fi
     
-    if pgrep -f "npm.*dev.*cueit-admin" > /dev/null; then
-        echo "✅ Admin UI is running"
+    if pgrep -f "npm.*dev.*nova-core" > /dev/null; then
+        echo "✅ Nova Core Admin UI is running"
     else
-        echo "❌ Admin UI is not running"
+        echo "❌ Nova Core Admin UI is not running"
     fi
 }
 
@@ -91,9 +90,9 @@ case "${1:-}" in
         echo "Usage: $0 {start|stop|restart|status|test}"
         echo ""
         echo "Commands:"
-        echo "  start    - Start all CueIT services"
-        echo "  stop     - Stop all CueIT services"
-        echo "  restart  - Restart all CueIT services"
+        echo "  start    - Start all Nova Universe services"
+        echo "  stop     - Stop all Nova Universe services"
+        echo "  restart  - Restart all Nova Universe services"
         echo "  status   - Show service status"
         echo "  test     - Test if services are responding"
         exit 1

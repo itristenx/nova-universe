@@ -1,35 +1,119 @@
-# CueIT
+# Nova Universe
 
-An internal help desk application for submitting and tracking IT tickets.
+[![Build Status](https://img.shields.io/github/actions/workflow/status/itristenx/nova-universe/ci.yml?branch=main)](https://github.com/itristenx/nova-universe/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Open Issues](https://img.shields.io/github/issues/itristenx/nova-universe)](https://github.com/itristenx/nova-universe/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/itristenx/nova-universe)](https://github.com/itristenx/nova-universe/pulls)
+
+---
+
+## About
+
+**Nova** is an open source, enterprise-grade help desk platform for submitting and tracking IT tickets. It features a modern admin UI, kiosk support, Slack integration, and robust security. Designed for easy deployment and extensibility.
+
+---
+
+## Features
+- Multi-app monorepo: Platform API, Core Admin UI, Beacon Kiosk, Comms (Slack integration)
+- Modern React/TypeScript admin interface
+- Secure Express/SQLite backend
+- iPad kiosk support
+- Slack slash command integration
+- SAML SSO, JWT, and RBAC
+- Rate limiting, input validation, and audit logging
+- Installer scripts for all major OSes
+- Automated tests and CI/CD ready
+
+---
 
 [→ Quickstart Guide](docs/quickstart.md)
 
-The repository contains several apps:
+## Repository Structure
 
-- **cueit-api** – Express/SQLite API
-- **cueit-admin** – React admin interface with integrated kiosk activation management
-- **cueit-kiosk** – iPad kiosk for ticket submission
-- **cueit-slack** – Slack slash command integration
-- **cueit-macos-swift** – SwiftUI launcher for macOS
+- **nova-api** – Nova Platform API (Express/SQLite backend)
+- **nova-core** – Nova Core (React admin interface with integrated kiosk activation management)
+- **nova-beacon** – Nova Beacon (iPad kiosk for ticket submission)
+- **nova-comms** – Nova Comms (Slack slash command integration)
 
-The `design/theme.js` file defines shared colors, fonts and spacing. Frontends
-import these tokens so styles remain consistent across the admin UI and SwiftUI kiosk app.
+The `design/theme.js` file defines shared colors, fonts and spacing. Frontends import these tokens so styles remain consistent across the admin UI and kiosk app.
 
-The admin interface now includes integrated kiosk activation management, eliminating
-the need for a separate activation interface.
+---
+
+## Getting Started
+
+### Requirements
+- [Node.js](https://nodejs.org/) 18 or higher
+- npm
+- sqlite3
+- [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
+
+### Quick Start
+
+```bash
+git clone https://github.com/itristenx/nova-universe.git
+cd nova-universe
+./installers/setup.sh
+./scripts/init-env.sh
+./installers/start-all.sh
+```
+
+Open http://localhost:5173 to access the admin interface.
+
+**Default login:** admin@example.com / admin
+
+---
+
+## Documentation
+- [📖 Full Documentation](docs/README.md)
+- [🚀 Quick Start Guide](docs/quickstart.md)
+- [🔒 Security & Production](docs/security.md)
+- [🔧 Development Guide](docs/development.md)
+
+---
+
+## Community & Contributing
+- [Contributing Guidelines](.github/CONTRIBUTING.md)
+- [Code of Conduct](.github/CODE_OF_CONDUCT.md)
+- [Security Policy](.github/SECURITY.md)
+- [Discussions](https://github.com/itristenx/nova-universe/discussions)
+- [Open an Issue](https://github.com/itristenx/nova-universe/issues)
+- [Submit a Pull Request](https://github.com/itristenx/nova-universe/pulls)
+
+We welcome all contributions! Please read the contributing guidelines and code of conduct before submitting issues or pull requests.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## Credits & Acknowledgments
+- [Contributor Covenant](https://www.contributor-covenant.org/) for the Code of Conduct
+- [Choose an Open Source License](https://choosealicense.com/)
+- [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) for README inspiration
+- All contributors and open source dependencies
+
+---
+
+## Contact
+
+For questions, suggestions, or support, please use [GitHub Discussions](https://github.com/itristenx/nova-universe/discussions) or open an issue.
+
+---
 
 ## Requirements
 - [Node.js](https://nodejs.org/) 18 or higher
 - npm
 - sqlite3
 - [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
-- Xcode on macOS if you plan to build the SwiftUI kiosk
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/your-org/CueIT.git
-cd CueIT
+git clone https://github.com/itristenx/nova-universe.git
+cd nova-universe
 ./installers/setup.sh
 ./scripts/init-env.sh
 ./installers/start-all.sh
@@ -47,8 +131,8 @@ Next run `./scripts/init-env.sh` to create the `.env` files for each app (edit t
 You can also follow the manual instructions below.
 See [Local vs Production Setup](docs/environments.md) for details on configuring the environment variables used by each service.
 
-### Backend
-1. Navigate to `cueit-api`.
+### Platform API
+1. Navigate to `nova-api`.
 2. Run `npm install` to install dependencies.
 3. Edit the `.env` file with your SMTP configuration and `HELPDESK_EMAIL`.
    To send tickets directly to HelpScout instead, provide
@@ -59,8 +143,8 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
    `LOGO_URL` and other defaults.
 4. Start the server with `node index.js` (uses `API_PORT`, default `3000`).
 
-### Admin Frontend
-1. Navigate to `cueit-admin`.
+### Core Admin UI
+1. Navigate to `nova-core`.
 2. Run `npm install` to install dependencies.
 3. Edit the `.env` file and set `VITE_API_URL`. You can also set `VITE_LOGO_URL`.
 4. Start the development server with `npm run dev` and open `http://localhost:5173`.
@@ -72,12 +156,12 @@ The admin interface includes comprehensive kiosk management functionality, inclu
 - User management with role-based access control
 - Integrated security features with rate limiting and input validation
 
-The backend stores ticket logs in a local SQLite database (`cueit-api/log.sqlite`).
+The backend stores ticket logs in a local SQLite database (`nova-api/log.sqlite`).
 Configuration values are stored in the same database and can be edited from the admin UI.
 
-### Slack Service
+### Comms (Slack Service)
 1. Create a Slack app following [Slack's app setup guide](https://api.slack.com/apps) and add a `/new-ticket` slash command (see [Slash commands documentation](https://api.slack.com/interactivity/slash-commands)). Set its request URL to this service.
-2. Navigate to `cueit-slack` and run `npm install`.
+2. Navigate to `nova-comms` and run `npm install`.
 3. Edit the `.env` file and set:
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
@@ -98,7 +182,7 @@ npx ngrok http $SLACK_PORT
    openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365
    ```
 
-2. Set `TLS_CERT_PATH` and `TLS_KEY_PATH` in `cueit-api/.env` to the certificate paths.
+2. Set `TLS_CERT_PATH` and `TLS_KEY_PATH` in `nova-api/.env` to the certificate paths.
 3. Update the URLs in all `.env` files to use `https://localhost` as shown in the examples.
 4. Place `cert.pem` and `key.pem` in the project root before running the installer scripts so the files are bundled.
 
@@ -115,26 +199,16 @@ started with `npm start` so its environment file loads correctly.
 ./installers/start-all.ps1
 ```
 
-### macOS Launcher
-
-Use the SwiftUI launcher in `cueit-macos-swift` to start the services with a single click. Run `./installers/make-installer.sh <version>` to build a `.pkg` installer and launch **CueIT** from Applications.
-All installer scripts reside in the `installers/` directory.
-See [docs/installers.md](docs/installers.md) for detailed instructions.
-Run `./installers/uninstall-macos.sh` to remove the app and `./installers/upgrade-macos.sh` to rebuild and reinstall.
-During development open the Xcode project and build the **CueITApp** target.
-
-The SwiftUI kiosk can only be built and run on macOS with Xcode installed.
-
 ### Windows Installer
 
 Install [Inno Setup](https://jrsoftware.org/isinfo.php) along with Node.js and npm.
-Run the following command to generate `CueIT-<version>.exe`:
+Run the following command to generate `Nova-<version>.exe`:
 
 ```powershell
 ./installers/make-windows-installer.ps1 -Version 1.0.0
 ```
 
-Run the generated `.exe` to install CueIT.
+Run the generated `.exe` to install Nova Universe.
 
 ### Linux Installer
 
@@ -156,19 +230,19 @@ All installer and upgrade scripts live in `installers/` and should include basic
 
 ## Running Tests
 
-CueIT includes automated test suites for the backend API and the admin UI.
+Nova Universe includes automated test suites for the backend API and the admin UI.
 
-### cueit-api
+### nova-api
 
-1. `cd cueit-api`
+1. `cd nova-api`
 2. `npm install`
 3. `npm test`
 
 The API tests are written with Mocha and exercise the main Express endpoints.
 
-### cueit-admin
+### nova-core
 
-1. `cd cueit-admin`
+1. `cd nova-core`
 2. `npm install`
 3. `npm test`
 
@@ -195,31 +269,31 @@ curl -X POST http://localhost:3000/submit-ticket \
 ```
 
 For a complete description of all endpoints see
-[cueit-api/README.md](cueit-api/README.md#api-endpoints).
+[nova-api/README.md](nova-api/README.md#api-endpoints).
 
 ## HelpScout Integration
 
 When `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` are defined in
-`cueit-api/.env`, the API creates a new HelpScout conversation for each ticket
+`nova-api/.env`, the API creates a new HelpScout conversation for each ticket
 submitted to `POST /submit-ticket`. Set `HELPSCOUT_SMTP_FALLBACK=true` if you
 want the server to also send the ticket email using your SMTP configuration.
 
 ## ServiceNow Integration
 
 Set `SERVICENOW_INSTANCE`, `SERVICENOW_USER` and `SERVICENOW_PASS` in
-`cueit-api/.env` to create incidents via ServiceNow's REST API when tickets are
+`nova-api/.env` to create incidents via ServiceNow's REST API when tickets are
 submitted. The incident ID returned by ServiceNow is stored with each log
 entry.
 
 ## Kiosk Activation
 
-When the iPad kiosk application launches it sends a `POST` request to
+When the Nova Beacon application launches it sends a `POST` request to
 `/api/register-kiosk` with a unique identifier. The backend stores the kiosk in
 the `kiosks` table with `active` set to `0` (inactive). A kiosk cannot submit
 tickets until it is activated.
 
 An administrator can toggle the `active` flag from the **Kiosks** tab in the
-admin UI or directly from the iPad kiosk. The admin interface calls
+admin UI or directly from the Beacon kiosk. The admin interface calls
 `PUT /api/kiosks/:id/active` to update the flag. When a kiosk is inactive the
 app displays an activation screen showing the API URL and kiosk ID. Tapping the
 **Activate** button sends the request to enable the kiosk.
@@ -232,30 +306,21 @@ check detects the change.
 
 ## Components
 
-- **cueit-api** – Express backend with SQLite database
-- **cueit-admin** – React admin interface  
-- **cueit-kiosk** – iPad kiosk app for ticket submission
-- **cueit-slack** – Slack integration
-- **cueit-macos-swift** – macOS launcher
-
-## Documentation
-
-- [📖 Full Documentation](docs/README.md)
-- [🚀 Quick Start Guide](docs/quickstart.md)
-- [🔒 Security & Production](docs/security.md)
-- [🔧 Development Guide](docs/development.md)
+- **nova-api** – Nova Platform API (Express backend with SQLite database)
+- **nova-core** – Nova Core (React admin interface)
+- **nova-beacon** – Nova Beacon (iPad kiosk app for ticket submission)
+- **nova-comms** – Nova Comms (Slack integration)
 
 ## Requirements
 
 - Node.js 18+
 - SQLite3
-- Xcode (for iPad kiosk)
 
 ## Environment Variables
 
 Each app relies on a few environment variables:
 
-### Backend
+### Platform API
 
 - `HELPDESK_EMAIL` – destination address for ticket emails.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` – SMTP credentials used by
@@ -278,13 +343,13 @@ Each app relies on a few environment variables:
 - `DISABLE_AUTH` – set to `true` to bypass SAML authentication and
   access the admin UI before SSO is configured.
 
-### Admin UI
+### Core Admin UI
 
 - `VITE_API_URL` – base URL of the backend API.
 - `VITE_LOGO_URL` – default logo shown before configuration is loaded.
 - `VITE_FAVICON_URL` – default favicon for the page.
 
-### Slack Service
+### Comms (Slack Service)
 
 - `SLACK_SIGNING_SECRET` – Slack app signing secret.
 - `SLACK_BOT_TOKEN` – bot token with permissions to open modals and post
@@ -305,7 +370,7 @@ For details on the workflow see [docs/development.md](docs/development.md).
 
 ## Security & Production Readiness
 
-CueIT includes comprehensive security features:
+Nova Universe includes comprehensive security features:
 
 - **Input Validation** – All API endpoints validate and sanitize user input
 - **Rate Limiting** – Brute force protection on authentication endpoints
