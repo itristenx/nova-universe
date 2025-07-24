@@ -15,7 +15,7 @@ struct InitializationView: View {
     @State private var loadingText = "Initializing..."
     @State private var progress: Double = 0.0
     @State private var showLogo = false
-    @State private var organizationName = "Your Organization"
+        let url = URL(string: "\(serverConfig.baseURL)/api/v1/server-info")!
     @State private var hasConnectionError = false
     @State private var errorMessage = ""
     
@@ -194,7 +194,7 @@ struct InitializationView: View {
     private func fetchServerInfo() async throws {
         // For development, use localhost if no server config is set
         let serverConfig = configManager.serverConfiguration ?? ServerConfiguration(baseURL: "http://localhost:3000")
-        let url = URL(string: "\(serverConfig.baseURL)/api/server-info")!
+        let url = URL(string: "\(serverConfig.baseURL)/api/v1/server-info")!
         
         let (data, response) = try await URLSession.shared.data(from: url)
         

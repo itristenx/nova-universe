@@ -24,7 +24,7 @@ class APIService {
     
     // MARK: - Connection Testing
     func testConnection(serverURL: String) async -> Bool {
-        guard let url = URL(string: "\(serverURL)/api/health") else { return false }
+        guard let url = URL(string: "\(serverURL)/api/v1/health") else { return false }
         
         do {
             let (data, response) = try await session.data(from: url)

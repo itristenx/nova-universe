@@ -10,6 +10,11 @@
     "vite": "^7.0.6"
   },
   "dependencies": {
-    "concurrently": "^9.2.0"
+    "@simplewebauthn/server": "^13.1.2",
+    "base64url": "^3.0.1",
+    "concurrently": "^9.2.0",
+    "pm2": "^6.0.8",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }

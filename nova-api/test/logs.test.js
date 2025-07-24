@@ -30,13 +30,13 @@ describe('GET /api/logs filters', function() {
   });
 
   it('returns all logs by default', async function() {
-    const res = await request(app).get('/api/logs').expect(200);
+    const res = await request(app).get('/api/v1/logs').expect(200);
     assert.strictEqual(res.body.length, 3);
   });
 
   it('filters by date range', async function() {
     const res = await request(app)
-      .get('/api/logs')
+      .get('/api/v1/logs')
       .query({ start: '2024-06-02', end: '2024-06-09' })
       .expect(200);
     assert.strictEqual(res.body.length, 1);
@@ -45,7 +45,7 @@ describe('GET /api/logs filters', function() {
 
   it('filters by status', async function() {
     const res = await request(app)
-      .get('/api/logs')
+      .get('/api/v1/logs')
       .query({ status: 'fail' })
       .expect(200);
     assert.strictEqual(res.body.length, 1);

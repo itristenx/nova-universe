@@ -14,7 +14,9 @@
   "description": "",
   "dependencies": {
     "@node-saml/passport-saml": "^5.0.1",
+    "@simplewebauthn/server": "^13.1.2",
     "axios": "^1.11.0",
+    "base64url": "^3.0.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
@@ -29,6 +31,8 @@
     "passport": "^0.7.0",
     "qrcode": "^1.5.4",
     "sqlite3": "^5.1.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

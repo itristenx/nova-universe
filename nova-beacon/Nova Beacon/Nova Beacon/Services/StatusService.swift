@@ -33,7 +33,7 @@ class StatusService: ObservableObject {
 
     private func connect() {
         task?.cancel()
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/events") else { return }
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v1/events") else { return }
         task = Task {
             do {
                 let (bytes, _) = try await URLSession.shared.bytes(from: url)

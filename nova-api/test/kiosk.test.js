@@ -11,7 +11,7 @@ beforeEach((done) => {
 describe('Kiosk registration and activation', function() {
   it('POST /api/register-kiosk with missing id', function() {
     return request(app)
-      .post('/api/register-kiosk')
+      .post('/api/v1/register-kiosk')
       .send({ version: '1.0', token })
       .expect(400)
       .expect(res => {
@@ -30,7 +30,7 @@ describe('Kiosk registration and activation', function() {
 
     // verify kiosk listed and inactive
     let res = await request(app)
-      .get('/api/kiosks')
+      .get('/api/v1/kiosks')
       .expect(200);
     let kiosk = res.body.find(k => k.id === kioskId);
     assert(kiosk, 'kiosk not listed');

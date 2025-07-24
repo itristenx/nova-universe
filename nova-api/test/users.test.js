@@ -10,7 +10,7 @@ beforeEach((done) => {
 describe('User management', function() {
   it('creates a user with hashed password', async function() {
     const res = await request(app)
-      .post('/api/users')
+      .post('/api/v1/users')
       .send({ name: 'Alice', email: 'a@example.com', password: 'secret' })
       .expect(200);
     assert(res.body.id, 'id missing');

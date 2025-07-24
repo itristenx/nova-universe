@@ -32,7 +32,7 @@ beforeEach((done) => {
 describe('Config endpoints', function () {
   it('GET /api/config returns defaults', function () {
     return request(app)
-      .get('/api/config')
+      .get('/api/v1/config')
       .expect(200)
       .expect((res) => {
         for (const [k, v] of Object.entries(defaults)) {
@@ -44,9 +44,9 @@ describe('Config endpoints', function () {
 
   it('PUT /api/config updates and persists values', async function () {
     const updates = { logoUrl: 'new.png', welcomeMessage: 'Hi' };
-    await request(app).put('/api/config').send(updates).expect(200);
+    await request(app).put('/api/v1/config').send(updates).expect(200);
 
-    const res = await request(app).get('/api/config').expect(200);
+    const res = await request(app).get('/api/v1/config').expect(200);
     assert.strictEqual(res.body.logoUrl, 'new.png');
     assert.strictEqual(res.body.welcomeMessage, 'Hi');
   });

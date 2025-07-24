@@ -84,7 +84,7 @@ settings from `.env` and listens on `API_PORT` (default `3000`).
 - `GET /api/notifications` – list all notifications.
 - `POST /api/notifications` – create a notification with `message` and `level`.
 - `DELETE /api/notifications/:id` – delete a notification.
-- `GET /api/notifications/stream` – Server-Sent Events stream of active notifications.
+- `GET /api/v1/notifications/stream` – Server-Sent Events stream of active notifications.
 
 ### Database Schema
 

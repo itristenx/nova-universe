@@ -18,7 +18,7 @@
 ## 🔧 Key API Endpoints for iOS Kiosk
 
 ### Authentication & Registration
-1. **Health Check**: `GET /api/health` ✅
+1. **Health Check**: `GET /api/health` ✅ (see also `/api/version`)
 2. **Kiosk Registration**: `POST /api/register-kiosk` ✅
 3. **Kiosk Status**: `GET /api/kiosks/:id` ✅
 4. **Remote Config**: `GET /api/kiosks/:id/remote-config` ✅
@@ -103,7 +103,7 @@ open "CueIT Kiosk.xcodeproj"
 ## 🔧 Troubleshooting Guide
 
 ### If iOS App Shows "Connection Error"
-1. **Check API Server**: `curl http://localhost:3000/api/health`
+1. **Check API Server**: `curl http://localhost:3000/api/health` (see also `/api/version`)
 2. **Check iOS Simulator Network**: Ensure simulator can reach localhost
 3. **Check CORS Settings**: Verify API allows iOS requests
 4. **Check Logs**: Look at Xcode console for detailed error messages

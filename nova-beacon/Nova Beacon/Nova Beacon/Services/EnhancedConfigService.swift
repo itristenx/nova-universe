@@ -83,7 +83,7 @@ struct ConfigUpdate: Codable {
     var data: Data
     var timestamp: String
     var source: String // "kiosk" or "admin"
-    var kioskId: String
+                throw ConfigError.invalidURL
 }
 
 struct AdminPinValidation: Codable {
@@ -142,7 +142,7 @@ class EnhancedConfigService: ObservableObject {
     @MainActor
     func loadRemoteConfig() async {
         do {
-            guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(kioskId)/remote-config") else {
+            guard let url = URL(string: "\(APIConfig.baseURL)/api/v1/kiosks/\(kioskId)/remote-config") else {
                 throw ConfigError.invalidURL
             }
             

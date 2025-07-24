@@ -19,6 +19,7 @@ export const useApiHealth = () => {
                        'http://localhost:3000';
       
       // Use fetch for health check to avoid interceptors that might interfere
+      // Use /api/health for status, /api/version for version info
       const response = await fetch(`${serverUrl}/api/health`, {
         method: 'GET',
         headers: {

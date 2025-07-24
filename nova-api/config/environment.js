@@ -1,79 +1,46 @@
-// Environment configuration validation
 import dotenv from 'dotenv';
-
-// Load environment variables
 dotenv.config();
 
-// Define required environment variables for different modes
-const requiredEnvVars = {
-  development: [
-    'SESSION_SECRET',
-    'JWT_SECRET'
-  ],
-  production: [
-    'SESSION_SECRET',
-    'JWT_SECRET',
-    'SMTP_HOST',
-    'SMTP_PORT',
-    'SMTP_USER',
-    'SMTP_PASS',
-    'HELPDESK_EMAIL'
-  ],
-  test: [
-    'JWT_SECRET'
-  ]
+const required = [
+  'SESSION_SECRET',
+  'JWT_SECRET'
+];
+
+// Only require SMTP in production
+if (process.env.NODE_ENV === 'production') {
+  required.push('SMTP_HOST', 'SMTP_USER', 'SMTP_PASS');
+}
+
+const missing = required.filter((k) => !process.env[k]);
+if (missing.length) {
+  throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+}
+
+const config = {
+  sessionSecret: process.env.SESSION_SECRET,
+  jwtSecret: process.env.JWT_SECRET,
+  smtp: {
+    host: process.env.SMTP_HOST,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+  corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['*'],
+  nodeEnv: process.env.NODE_ENV || 'development',
+  helpdeskEmail: process.env.HELPDESK_EMAIL,
+// Add more config as needed
 };
 
-// Validate environment configuration
+// Validate environment and return status info
 export const validateEnvironment = () => {
   const env = process.env.NODE_ENV || 'development';
-  const required = requiredEnvVars[env] || requiredEnvVars.development;
   const warnings = [];
   
-  const missing = required.filter(varName => !process.env[varName]);
-  
-  if (missing.length > 0) {
-    console.error(`Missing required environment variables for ${env} mode:`);
-    missing.forEach(varName => {
-      console.error(`  - ${varName}`);
-    });
-    
-    if (env === 'production') {
-      console.error('Application cannot start in production without these variables.');
-      process.exit(1);
-    } else {
-      console.warn('Some functionality may be limited without these variables.');
-    }
+  if (!process.env.SESSION_SECRET) {
+    warnings.push('SESSION_SECRET not set - using default (insecure)');
   }
   
-  // Security checks
-  if (env === 'production') {
-    if (process.env.DISABLE_AUTH === 'true') {
-      console.error('DISABLE_AUTH cannot be true in production');
-      process.exit(1);
-    }
-    
-    if (process.env.SESSION_SECRET && process.env.SESSION_SECRET.length < 32) {
-      console.error('SESSION_SECRET must be at least 32 characters long in production');
-      process.exit(1);
-    }
-    
-    if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
-      console.error('JWT_SECRET must be at least 32 characters long in production');
-      process.exit(1);
-    }
-    
-    if (!process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD === 'admin') {
-      warnings.push('ADMIN_PASSWORD should be changed from default value in production');
-    }
-    
-    if (!process.env.KIOSK_TOKEN) {
-      warnings.push('KIOSK_TOKEN not set - kiosk registration will be open');
-    }
-    
-    if (!process.env.SCIM_TOKEN) {
-      warnings.push('SCIM_TOKEN not set - SCIM endpoints will be disabled');
-    }
+  if (!process.env.JWT_SECRET) {
+    warnings.push('JWT_SECRET not set - using default (insecure)');
   }
   
   if (warnings.length > 0) {
@@ -95,6 +62,8 @@ export const validateEnvironment = () => {
     tlsEnabled: !!(process.env.TLS_CERT_PATH && process.env.TLS_KEY_PATH)
   };
 };
+
+export default config;
 
 export const getConfig = () => {
   return {

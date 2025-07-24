@@ -22,23 +22,23 @@ beforeEach((done) => {
 describe('Kiosk status API', function() {
   it('stores and retrieves kiosk status fields', async function() {
     await request(app)
-      .post('/api/register-kiosk')
+      .post('/api/v1/register-kiosk')
       .send({ id: 'k1', token })
       .expect(200);
 
     let res = await request(app)
-      .get('/api/kiosks/k1/status')
+      .get('/api/v1/kiosks/k1/status')
       .expect(200);
     assert.strictEqual(res.body.statusEnabled, 0);
 
     const payload = { statusEnabled: true, currentStatus: 'open', openMsg: 'Hi', schedule: { mon: '8-5' } };
     await request(app)
-      .put('/api/kiosks/k1/status')
+      .put('/api/v1/kiosks/k1/status')
       .send(payload)
       .expect(200);
 
     res = await request(app)
-      .get('/api/kiosks/k1/status')
+      .get('/api/v1/kiosks/k1/status')
       .expect(200);
     assert.strictEqual(res.body.statusEnabled, 1);
     assert.strictEqual(res.body.currentStatus, 'open');

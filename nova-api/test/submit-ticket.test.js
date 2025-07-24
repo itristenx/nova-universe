@@ -52,7 +52,7 @@ describe('POST /submit-ticket', function () {
       description: 'Desc',
     };
 
-    const res = await request(app).post('/submit-ticket').send(payload).expect(200);
+    const res = await request(app).post('/api/v1/submit-ticket').send(payload).expect(200);
     assert.strictEqual(called, true, 'sendMail not called');
     assert.strictEqual(res.body.emailStatus, 'success');
 

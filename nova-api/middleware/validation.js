@@ -1,56 +1,57 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
-// Input validation middleware
+/**
+ * Input validation middleware for Nova Universe API
+ * Extend with more validators as needed.
+ */
 export const validateInput = {
-  // Email validation
+  /**
+   * Email validation and normalization
+   */
   email: (req, res, next) => {
     const { email } = req.body;
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
+        return res.status(400).json({ error: 'Invalid email format', errorCode: 'INVALID_EMAIL' });
       }
-      // Sanitize email
       req.body.email = email.toLowerCase().trim();
     }
     next();
   },
-
-  // Kiosk ID validation (UUID format)
+  /**
+   * Kiosk ID validation (UUID format)
+   */
   kioskId: (req, res, next) => {
     const kioskId = req.params.id || req.body.id;
     if (kioskId) {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(kioskId)) {
-        return res.status(400).json({ error: 'Invalid kiosk ID format' });
+        return res.status(400).json({ error: 'Invalid kiosk ID format', errorCode: 'INVALID_KIOSK_ID' });
       }
     }
     next();
   },
-
-  // Activation code validation (8 characters, alphanumeric, case-insensitive)
+  /**
+   * Activation code validation (8 characters, alphanumeric, case-insensitive)
+   */
   activationCode: (req, res, next) => {
     const { activationCode } = req.body;
     if (activationCode) {
-      // Use case-insensitive regex to accept mixed-case entries
-      const codeRegex = /^[A-HJ-NP-Z2-9]{8}$/i; // Case-insensitive
+      const codeRegex = /^[A-HJ-NP-Z2-9]{8}$/i;
       if (!codeRegex.test(activationCode)) {
-        return res.status(400).json({ error: 'Invalid activation code format' });
+        return res.status(400).json({ error: 'Invalid activation code format', errorCode: 'INVALID_ACTIVATION_CODE' });
       }
-      // Normalize to uppercase after validation
       req.body.activationCode = activationCode.toUpperCase();
     }
     next();
   },
-
-  // Generic string sanitization
+  /**
+   * Generic string sanitization for all string fields in req.body
+   */
   sanitizeStrings: (req, res, next) => {
     const sanitizeString = (str) => {
       if (typeof str !== 'string') return str;
-      return str.trim().replace(/[<>]/g, ''); // Remove potential HTML tags
+      return str.trim().replace(/[<>]/g, '');
     };
-
     const sanitizeObject = (obj) => {
       if (typeof obj !== 'object' || obj === null) return obj;
       const sanitized = {};

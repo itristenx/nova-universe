@@ -1,42 +1,43 @@
-// Security headers middleware
-export const securityHeaders = (req, res, next) => {
-  // Set security headers
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  
-  // Only set HSTS if HTTPS
-  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
-  
-  // Content Security Policy - Removed 'unsafe-inline' for production security
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const csp = [
-    "default-src 'self'",
-    isDevelopment ? "script-src 'self' 'unsafe-inline'" : "script-src 'self'", // Allow inline scripts only in dev
-    "style-src 'self' 'unsafe-inline'", // Keep for styling compatibility
-    "img-src 'self' data: https:",
-    "font-src 'self'",
-    "connect-src 'self'",
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-    "form-action 'self'"
-  ].join('; ');
-  
-  res.setHeader('Content-Security-Policy', csp);
-  
-  next();
-};
 
-// Request logging middleware
+import helmet from 'helmet';
+import { logger } from '../logger.js';
+
+/**
+ * Security middleware using helmet and custom headers.
+ * @type {import('express').RequestHandler}
+ */
+export const securityHeaders = [
+  helmet(),
+  (req, res, next) => {
+    // Additional custom headers
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    // Content Security Policy
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const csp = [
+      "default-src 'self'",
+      isDevelopment ? "script-src 'self' 'unsafe-inline'" : "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "font-src 'self'",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'"
+    ].join('; ');
+    res.setHeader('Content-Security-Policy', csp);
+    next();
+  }
+];
+
+/**
+ * Request logging middleware using centralized logger.
+ * @type {import('express').RequestHandler}
+ */
 export const requestLogger = (req, res, next) => {
   const start = Date.now();
   const originalSend = res.send;
-  
-  res.send = function(data) {
+  res.send = function (data) {
     const duration = Date.now() - start;
     const logData = {
       method: req.method,
@@ -45,17 +46,15 @@ export const requestLogger = (req, res, next) => {
       duration: `${duration}ms`,
       ip: req.ip || req.connection.remoteAddress,
       userAgent: req.get('User-Agent'),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
-    // Log errors and suspicious activity
     if (res.statusCode >= 400) {
-      console.log(`🚨 ${res.statusCode} ${req.method} ${req.url} - ${duration}ms - ${logData.ip}`);
+      logger.error(`HTTP ${res.statusCode} ${req.method} ${req.url} - ${duration}ms - ${logData.ip}`);
+    } else {
+      logger.info(`${req.method} ${req.url} - ${duration}ms - ${logData.ip}`);
     }
-    
     return originalSend.call(this, data);
   };
-  
   next();
 };
 

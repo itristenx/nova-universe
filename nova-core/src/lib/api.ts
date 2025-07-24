@@ -340,7 +340,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get('/api/server/status');
+    const response = await this.client.get('/api/v1/server/status');
     return response.data;
   }
 
