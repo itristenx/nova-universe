@@ -61,6 +61,7 @@ const upload = multer({
  *       500:
  *         description: Database error
  *         content:
+ *           application/json:
  *             schema:
  *               type: object
  *               properties:
