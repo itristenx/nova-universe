@@ -1,0 +1,154 @@
+# 📘 NOVA LORE: Knowledge Base System Agent Prompt
+
+## 🧠 Purpose
+Design and deploy a robust, secure, and fun-to-use **Knowledge Base module** ("Nova Lore") that mimics ServiceNow KB structure while adding modern collaboration features like Notion/Confluence. Ensure seamless integration across the Nova Universe — especially with Nova Pulse (Technician Portal), Nova Core (Admin UI), and Nova Helix/ID (SSO, SCIM, and RBAC). Support both **public and private articles**, searchable via unique KB IDs and protected by role-based permissions.
+
+---
+
+## ✅ Goals & Features
+
+### 🧱 Core Structure
+- Each article must:
+  - Have a **KB ID** prefix (e.g., `KB00001`)
+  - Be uniquely addressable via:
+    - Public URL: `https://kb.nova.dev/kb00001` (if marked public)
+    - Private URL: `https://kb.nova.dev/private/kb00001` (RBAC-restricted)
+- Support nested categories/tags (like Notion databases)
+- Support markdown, rich text, tables, file attachments, and embedded images/media
+- Support metadata indexing (created_by, updated_by, last_accessed_by, last_modified, system_context, urgency_tags, etc.)
+
+### 🛡️ Security & Access Control
+- Leverage **Nova Helix (SSO/SCIM)** to enforce:
+  - View/edit/create/delete permissions by:
+    - User Role (admin, technician, ops_user, hr_user, end_user, guest)
+    - Department / Group
+    - Article ownership or author
+  - Visibility options:
+    - `public`, `internal`, `restricted`, `department_only`
+  - Approval workflow (optional): require review/approval before publishing
+- All article content must be:
+  - Encrypted at rest
+  - Auditable (access logs, edits, version history)
+
+### 🔄 Integration with Nova Modules
+- **Nova Pulse**:
+  - Suggest relevant KB articles while viewing/responding to tickets
+  - Show solution effectiveness ratings and author XP
+- **Nova Orbit**:
+  - Show featured/helpful articles on user dashboards
+  - Track article helpfulness via thumbs up/down or emoji reactions
+- **Nova Core**:
+  - Admin UI for managing KB templates, visibility policies, editorial workflows
+  - Bulk article import/export and change history
+- **Nova Synth (Cosmo AI)**:
+  - Autocomplete article drafts
+  - Summarize existing articles
+  - Detect similar articles to avoid duplicates
+  - Gamify authorship via Nova Ascend (XP, badges)
+
+### 🪄 Fun / Collaborative Features (Notion-like)
+- Inline comments and @mentions
+- Collaboration mode (editing with peers)
+- Article versioning with diff view
+- Article templates for common requests or systems
+- Article “impact score” (views × resolution success × recency)
+- Article badges like:
+  - ✅ Verified Solution
+  - 🌟 Popular
+  - 🛠️ Fix-It Friday
+  - 🔐 Compliance Certified
+
+---
+
+## 📁 Database Schema (Simplified)
+
+### Table: `kb_articles`
+| Field                | Type         | Notes |
+|---------------------|--------------|-------|
+| id                  | UUID         | Primary Key |
+| kb_id               | STRING       | Format: `KB-00001` (auto-increment via counter table) |
+| title               | STRING       | Indexed |
+| body_markdown       | TEXT         | Markdown or WYSIWYG content |
+| visibility          | ENUM         | `public`, `internal`, `restricted`, `department_only` |
+| created_by_id       | UUID         | Linked to `users` table (Nova Helix) |
+| last_modified_by_id | UUID         | |
+| system_context      | STRING       | e.g., "Zoom", "Okta", "VPN" |
+| tags                | ARRAY[STRING]| e.g., ["remote", "mac", "zoom"] |
+| verified_solution   | BOOLEAN      | Toggles solution badge |
+| approval_required   | BOOLEAN      | For internal review |
+| approved_by_id      | UUID         | Nullable |
+| version             | INTEGER      | Auto-incrementing |
+| access_count        | INTEGER      | Tracked per-user basis |
+| helpful_count       | INTEGER      | 👍 reactions |
+| unhelpful_count     | INTEGER      | 👎 reactions |
+| created_at          | TIMESTAMP    | |
+| updated_at          | TIMESTAMP    | |
+| deleted_at          | TIMESTAMP    | Soft delete |
+
+### Table: `kb_article_versions`
+- Stores complete diffs and rollback capability
+
+### Table: `kb_article_comments`
+- Inline feedback and user collaboration
+
+---
+
+## 🔐 Role-Based Access Matrix
+
+| Role         | View Public | View Internal | Edit Own | Edit All | Approve | Delete |
+|--------------|-------------|----------------|----------|----------|---------|--------|
+| end_user     | ✅          | 🔒 (if allowed) | ❌       | ❌       | ❌      | ❌     |
+| technician   | ✅          | ✅              | ✅       | ❌       | ❌      | ❌     |
+| hr_user      | ✅          | ✅              | ✅       | ❌       | ✅      | ❌     |
+| ops_user     | ✅          | ✅              | ✅       | ❌       | ✅      | ❌     |
+| tech_lead    | ✅          | ✅              | ✅       | ✅       | ✅      | ✅     |
+| admin        | ✅          | ✅              | ✅       | ✅       | ✅      | ✅     |
+
+---
+
+## 🧩 APIs / SDK Integration
+
+Expose secure, rate-limited endpoints:
+
+- `GET /api/kb/:kb_id`
+- `POST /api/kb` (requires `editor` or `admin`)
+- `PUT /api/kb/:kb_id`
+- `DELETE /api/kb/:kb_id`
+- `GET /api/kb/search?q=...&tags=...`
+- `GET /api/kb/suggest?ticket_id=...`
+
+SDK modules should:
+- Auto-auth via Nova ID token
+- Include wrapper functions for Pulse/Orbit UI
+- Support offline caching for kiosk or remote use
+
+---
+
+## 🚀 Agent Instructions
+
+1. **Verify** if module `nova-lore` exists. If not, **create it** and register in Nova Deck.
+2. **Create routes** for public and private URLs.
+3. **Implement** secure RBAC using Nova Helix identity layer.
+4. **Integrate** with Nova Core Admin UI for full editorial management.
+5. **Enable** rich content editing and markdown preview.
+6. **Build** a recommendation engine that matches ticket context to KB articles.
+7. **Connect** with Cosmo for content suggestion, XP rewards, and gamified features.
+8. **Log and audit** every read/write/edit/delete of KB articles.
+9. **Create UI** in Pulse and Orbit for search, view, and suggest article flows.
+10. **Double check** encryption-at-rest and permission escalation protection.
+
+---
+
+## 📌 Notes
+
+- The knowledge base will **store no PII or credentials**, only general info and public help docs.
+- Future features may include:
+  - KB article subscriptions
+  - SLA-bound solution tagging
+  - AI-powered summarization for mobile view
+  - Auto-generate articles from Pulse ticket resolutions
+
+---
+
+# 🌌 Module Name: **Nova Lore**
+> The living library of Nova — a galaxy of knowledge authored, evolved, and protected by its contributors.
