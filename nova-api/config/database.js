@@ -52,11 +52,10 @@ export const databaseConfig = {
     username: process.env.MONGO_USERNAME || 'nova_admin',
     password: process.env.MONGO_PASSWORD || generateSecurePassword(),
     
-    // Connection URI with authentication and SSL
+    // Connection URI without credentials for security
     get uri() {
-      const auth = this.username && this.password ? `${this.username}:${this.password}@` : '';
-      const sslOptions = process.env.NODE_ENV === 'production' ? '&ssl=true&authSource=admin' : '';
-      return `mongodb://${auth}${this.host}:${this.port}/${this.database}?retryWrites=true&w=majority${sslOptions}`;
+      const sslOptions = process.env.NODE_ENV === 'production' ? '&ssl=true' : '';
+      return `mongodb://${this.host}:${this.port}/${this.database}?retryWrites=true&w=majority${sslOptions}`;
     },
     
     // MongoDB client options

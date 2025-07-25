@@ -30,24 +30,24 @@ export class MongoDBManager {
         tlsAllowInvalidHostnames: false
       } : {};
 
-      // Connection options
+      // Connection options with improved security and performance settings
       const options = {
-        maxPoolSize: this.config.maxConnections || 10,
-        minPoolSize: this.config.minConnections || 2,
-        maxIdleTimeMS: this.config.idleTimeout || 30000,
-        serverSelectionTimeoutMS: this.config.connectionTimeout || 5000,
+        maxPoolSize: 10,
+        minPoolSize: 2,
+        maxIdleTimeMS: 30000,
+        serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
-        connectTimeoutMS: 10000,
+        family: 4, // Use IPv4, skip trying IPv6
         ...sslOptions
       };
 
       // Add authentication if configured
-      if (this.config.user && this.config.password) {
+      if (this.config.username && this.config.password) {
         options.auth = {
-          username: this.config.user,
+          username: this.config.username,
           password: this.config.password
         };
-        options.authSource = this.config.authSource || 'admin';
+        options.authSource = this.config.options?.authSource || 'admin';
       }
 
       // Connect to MongoDB
