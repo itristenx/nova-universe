@@ -59,7 +59,7 @@ const router = express.Router();
  */
 router.get('/',
   authenticateJWT,
-  createRateLimit(15 * 60 * 1000, 30, 15 * 60 * 1000), // 30 requests per 15 minutes
+  createRateLimit(15 * 60 * 1000, 30), // 30 requests per 15 minutes
   async (req, res) => {
     try {
       // Check if user has admin role
