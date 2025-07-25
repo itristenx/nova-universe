@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     -- Constraints
-    CONSTRAINT users_email_format CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT users_email_format CHECK (email ~* '^[A-Za-z0-9](\.?[A-Za-z0-9_-])*@[A-Za-z0-9-]+(\.[A-Za-z]{2,})+$'),
     CONSTRAINT users_name_length CHECK (length(name) >= 2)
 );
 
