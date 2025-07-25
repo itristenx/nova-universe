@@ -47,6 +47,7 @@ import { authRateLimit, apiRateLimit, kioskRateLimit } from './middleware/rateLi
 import helmet from 'helmet';
 import { body, validationResult } from 'express-validator';
 import { getServiceNowConfig, getEmailStrategy } from './utils/serviceHelpers.js';
+import healthRouter from './routes/health.js';
 
 // Configure environment
 dotenv.config();
@@ -1764,6 +1765,7 @@ app.use('/api/v1/integrations', integrationsRouter);
 app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
+app.use('/api/v1/health', healthRouter);
 
 app.listen(PORT, () => {
   console.log(`🚀 CueIT API Server running on port ${PORT}`);
