@@ -13,6 +13,9 @@ const log = (level, ...args) => {
     case 'info':
       console.info(`[${timestamp}] ℹ️`, ...args);
       break;
+    case 'debug':
+      console.debug(`[${timestamp}] 🐛`, ...args);
+      break;
     default:
       console.log(`[${timestamp}]`, ...args);
   }
@@ -23,4 +26,5 @@ export const logger = {
   warn: (...args) => log('warn', ...args),
   info: (...args) => log('info', ...args),
   log: (...args) => log('log', ...args),
+  debug: (...args) => log('debug', ...args),
 };

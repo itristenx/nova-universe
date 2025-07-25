@@ -1,52 +1,58 @@
 // All imports at the top
-import swaggerUi from 'swagger-ui-express';
-import swaggerJSDoc from 'swagger-jsdoc';
 import { logger } from './logger.js';
-import organizationsRouter from './routes/organizations.js';
-import directoryRouter from './routes/directory.js';
-import serverRouter from './routes/server.js';
-import rolesRouter from './routes/roles.js';
 import assetsRouter from './routes/assets.js';
-import integrationsRouter from './routes/integrations.js';
-import searchRouter from './routes/search.js';
 import configurationRouter from './routes/configuration.js';
-import ConfigurationManager from './config/app-settings.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import directoryRouter from './routes/directory.js';
+import integrationsRouter from './routes/integrations.js';
+import organizationsRouter from './routes/organizations.js';
+import rolesRouter from './routes/roles.js';
+import searchRouter from './routes/search.js';
+import serverRouter from './routes/server.js';
+// Nova module routes
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+} from '@simplewebauthn/server';
+import axios from 'axios';
+import base64url from 'base64url';
+import bcrypt from 'bcryptjs';
+import cors from 'cors';
+import crypto from 'crypto';
 import dotenv from 'dotenv';
+import express from 'express';
+import { rateLimit } from 'express-rate-limit';
+import session from 'express-session';
+import { body, validationResult } from 'express-validator';
+import fs from 'fs';
+import helmet from 'helmet';
+import nodemailer from 'nodemailer';
+import passport from 'passport';
+import path from 'path';
+import qrcode from 'qrcode';
+import { fileURLToPath } from 'url';
+import { v4 as uuidv4 } from 'uuid';
+import ConfigurationManager from './config/app-settings.js';
+import db from './db.js';
+import events from './events.js';
+import { sign, verify } from './jwt.js';
+import { validateToken } from './middleware/auth.js';
+import { authRateLimit } from './middleware/rateLimiter.js';
+import { requestLogger, securityHeaders } from './middleware/security.js';
+import { validateActivationCode, validateEmail, validateKioskRegistration } from './middleware/validation.js';
+import helixRouter from './routes/helix.js';
+import loreRouter from './routes/lore.js';
+import orbitRouter from './routes/orbit.js';
+import pulseRouter from './routes/pulse.js';
+import scimRouter from './routes/scim.js';
+import synthRouter from './routes/synth.js';
+import { getEmailStrategy, getServiceNowConfig } from './utils/serviceHelpers.js';
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-import express from 'express';
-import cors from 'cors';
-import nodemailer from 'nodemailer';
-import axios from 'axios';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import session from 'express-session';
-import passport from 'passport';
-import { rateLimit } from 'express-rate-limit';
-import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
-import db from './db.js';
-import { v4 as uuidv4 } from 'uuid';
-import events from './events.js';
-import { sign, verify } from './jwt.js';
-import base64url from 'base64url';
-import {
-  generateRegistrationOptions,
-  verifyRegistrationResponse,
-  generateAuthenticationOptions,
-  verifyAuthenticationResponse,
-} from '@simplewebauthn/server';
-import qrcode from 'qrcode';
-import { securityHeaders, requestLogger } from './middleware/security.js';
-import { validateKioskRegistration, validateTicketSubmission, validateEmail, validateActivationCode } from './middleware/validation.js';
-import { authRateLimit, apiRateLimit, kioskRateLimit } from './middleware/rateLimiter.js';
-import helmet from 'helmet';
-import { body, validationResult } from 'express-validator';
-import { getServiceNowConfig, getEmailStrategy } from './utils/serviceHelpers.js';
 
 // Configure environment
 dotenv.config();
@@ -82,6 +88,13 @@ function getCliVersion() {
 }
 
 // Swagger/OpenAPI setup
+let swaggerJSDoc, swaggerUi;
+// Only import swagger-jsdoc in production or when not testing
+if (process.env.NODE_ENV !== 'test') {
+  swaggerJSDoc = (await import('swagger-jsdoc')).default;
+  swaggerUi = (await import('swagger-ui-express')).default;
+}
+
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
@@ -106,7 +119,13 @@ const swaggerOptions = {
     path.join(__dirname, 'routes', 'directory.js'),
     path.join(__dirname, 'routes', 'roles.js'),
     path.join(__dirname, 'routes', 'assets.js'),
-    path.join(__dirname, 'routes', 'integrations.js')
+    path.join(__dirname, 'routes', 'integrations.js'),
+    // Nova module routes
+    path.join(__dirname, 'routes', 'helix.js'),
+    path.join(__dirname, 'routes', 'lore.js'),
+    path.join(__dirname, 'routes', 'pulse.js'),
+    path.join(__dirname, 'routes', 'orbit.js'),
+    path.join(__dirname, 'routes', 'synth.js')
   ]
 };
 
@@ -304,7 +323,7 @@ if (!DISABLE_AUTH) {
         sameSite: 'strict',
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
       },
-      name: 'cueit.sid' // Change default session name
+      name: 'novauniverse.sid' // Change default session name
     })
   );
   app.use(passport.initialize());
@@ -559,9 +578,9 @@ app.post("/submit-ticket", ticketLimiter, [
   const mailOptions = {
     from: email,
     to: process.env.HELPDESK_EMAIL,
-    subject: `[CueIT Ticket] ${title} (${urgency})`,
+    subject: `[Nova Universe Ticket] ${title} (${urgency})`,
     text: `
-New IT Help Desk Request (CueIT):
+New IT Help Desk Request (Nova Universe):
 
 Name: ${name}
 Email: ${email}
@@ -882,16 +901,16 @@ app.post('/api/test-smtp', ensureAuth, async (req, res) => {
 
   try {
     const testMailOptions = {
-      from: process.env.SMTP_FROM || 'noreply@cueit.local',
+      from: process.env.SMTP_FROM || 'noreply@novauniverse.local',
       to: email,
-      subject: 'CueIT SMTP Test Email',
-      text: 'This is a test email from CueIT to verify SMTP configuration is working correctly.',
+      subject: 'Nova Universe SMTP Test Email',
+      text: 'This is a test email from Nova Universe to verify SMTP configuration is working correctly.',
       html: `
-        <h2>CueIT SMTP Test</h2>
-        <p>This is a test email from CueIT to verify SMTP configuration is working correctly.</p>
+        <h2>Nova Universe SMTP Test</h2>
+        <p>This is a test email from Nova Universe to verify SMTP configuration is working correctly.</p>
         <p>If you receive this email, your SMTP settings are configured properly.</p>
         <hr>
-        <small>Sent from CueIT Admin Panel</small>
+        <small>Sent from Nova Universe Admin Panel</small>
       `
     };
 
@@ -1488,7 +1507,7 @@ app.get('/api/dashboard/stats', ensureAuth, (req, res) => {
           users: userRow?.userCount || 0,
           kiosks: kioskRow?.kioskCount || 0,
           logs: logRow?.logCount || 0,
-          version: 'CueIT API v2.0'
+          version: 'Nova Universe API v2.0'
         });
       });
     });
@@ -1502,7 +1521,7 @@ app.get('/api/dashboard/activity', ensureAuth, (req, res) => {
 });
 
 // 7. Passkey Management (FIDO2/WebAuthn)
-const rpName = process.env.RP_NAME || 'CueIT Portal';
+const rpName = process.env.RP_NAME || 'Nova Universe Portal';
 const rpID = process.env.RP_ID || 'localhost';
 const origin = process.env.RP_ORIGIN || 'http://localhost:5173';
 
@@ -1765,10 +1784,33 @@ app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
 
-app.listen(PORT, () => {
-  console.log(`🚀 CueIT API Server running on port ${PORT}`);
-  console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
-  console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
+// Nova module routes
+app.use('/api/v1/helix', helixRouter);     // Nova Helix - Identity Engine
+app.use('/api/v1/lore', loreRouter);       // Nova Lore - Knowledge Base
+app.use('/api/v1/pulse', pulseRouter);     // Nova Pulse - Technician Portal
+app.use('/api/v1/orbit', orbitRouter);     // Nova Orbit - End-User Portal
+app.use('/api/v1/synth', synthRouter);     // Nova Synth - AI Engine
+app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
+
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Nova Universe API Server running on port ${PORT}`);
+    console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
+    console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
+  });
+}
+
+export default app;
+
+// Apply token validation middleware to all routes
+app.use(validateToken);
+
+// Enhanced error handling
+app.use((err, req, res, next) => {
+  logger.error(`Error: ${err.message}`);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+  });
 });
 
 // Global error handler

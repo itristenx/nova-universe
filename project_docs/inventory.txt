@@ -1,0 +1,211 @@
+# 🚀 NOVA INVENTORY MODULE SPEC
+
+## 🌌 Purpose
+
+Nova Inventory is a robust, centralized asset tracking system designed to replace and consolidate all previous asset tracking tools in the Nova Universe. It provides feature parity with legacy systems and enhances functionality to meet enterprise-grade requirements. It tightly integrates with:
+
+* **Nova Pulse** (Technician Interface)
+* **Nova Core** (Admin Portal)
+* **Nova Helix** (User/Org Metadata via SCIM/SAML)
+* **Nova Lore** (Knowledge Base for asset-related articles)
+* **Nova Beacon** (Kiosk activation + status monitoring)
+
+---
+
+## 🏦 Enterprise Features Checklist
+
+| Feature                        | Included |
+| ------------------------------ | -------- |
+| SCIM / SAML Integration        | ✅        |
+| Role-based Access Control      | ✅        |
+| Full Auditing and History Logs | ✅        |
+| API + Webhook Support          | ✅        |
+| Custom Fields                  | ✅        |
+| Asset Lifecycle Management     | ✅        |
+| Reporting and Dashboards       | ✅        |
+| Soft Deletes with Audit Trail  | ✅        |
+| Mass Import/Export (CSV)       | ✅        |
+| QR Code + Barcode Scanning     | ✅        |
+| Customer + Org Assignment      | ✅        |
+| Multi-location Support         | ✅        |
+| Technician Mobile/Scan View    | ✅        |
+| Warranty Expiry Management     | ✅        |
+| Kiosk Asset Integration        | ✅        |
+
+---
+
+## 📂 Database Schema (Simplified)
+
+```plaintext
+assets (
+  id, asset_tag, type_id, serial_number, model, vendor_id,
+  purchase_date, warranty_expiry, assigned_to_user_id,
+  assigned_to_org_id, assigned_to_customer_id,
+  department, status, location_id, kiosk_id (nullable),
+  custom_fields (JSON), notes, created_by, updated_by, timestamps
+)
+
+asset_types (
+  id, name, icon, default_lifecycle_days, required_fields (JSON)
+)
+
+asset_status_logs (
+  id, asset_id, previous_status, new_status, changed_by_user_id, notes, timestamp
+)
+
+asset_assignments (
+  id, asset_id, user_id, org_id, customer_id, assigned_by, assigned_date, expected_return, return_date, manager_id
+)
+
+locations (
+  id, name, room, floor, site_id, gps (optional)
+)
+
+vendors (
+  id, name, website, support_email, contact_name, warranty_url
+)
+
+kiosk_links (
+  id, kiosk_id, asset_id, registered_from, config_ref
+)
+```
+
+---
+
+## 📥 CSV Import/Export
+
+### CSV Import
+
+* **Endpoint**: `POST /inventory/import`
+* **Template Download**: Available in Nova Core
+* **Fields Validated**: Unique asset\_tag/serial, warranty dates, valid user/org/customer
+* **Pre-import preview**: Conflict resolution + rollback
+
+### CSV Export
+
+* Available filters: Location, Status, Warranty Expiry, Assigned User
+* Formats: CSV, XLSX
+
+---
+
+## 📈 Reporting & Dashboards
+
+* Assets by type/status/vendor/location/age
+* Warranty alerts (upcoming/expired)
+* Assignment summaries (by user, org, department)
+* Unassigned/missing/stale assets
+* Export reports from Nova Core
+
+---
+
+## 🚚 Nova Pulse Technician Features
+
+* View assigned assets
+* Scan QR/barcode to lookup
+* Change status / log repair
+* Check-in / check-out
+* Flag asset issues
+* Cosmo AI prompts ("Show all assets in Room 101")
+
+---
+
+## 👨‍💼 Nova Core Admin Functions
+
+* Full CRUD over all assets, types, vendors, locations
+* Import/export with preview + rollback
+* Create/modify asset fields + templates
+* Schedule reports
+* Assign/approve asset transfers
+* Audit logs for every action
+* Field-level encryption on sensitive data
+
+---
+
+## 🤖 Nova Helix + SCIM Integration
+
+* Assets linked to users via SCIM `user_id`
+* Users resolved in real-time from SCIM mapping
+* Departments + Orgs populated via metadata
+* Assets auto-unassign if user deleted/deactivated
+
+---
+
+## 🔧 API & Webhooks
+
+### REST API
+
+* `GET /assets`
+* `POST /assets/assign`
+* `PATCH /assets/:id/status`
+* `GET /assets/:id/history`
+* `GET /assets/user/:id`
+
+### Webhook Events
+
+* `asset.assigned`
+* `asset.status_changed`
+* `asset.flagged`
+* `asset.warranty_expiring`
+
+---
+
+## 🔐 Access Matrix
+
+| Role       | View Assets | Edit | Assign | Approve | Import | Delete | View Logs |
+| ---------- | ----------- | ---- | ------ | ------- | ------ | ------ | --------- |
+| end\_user  | Own only    | ❌    | ❌      | ❌       | ❌      | ❌      | ❌         |
+| technician | All         | ✅    | ✅      | ❌       | ❌      | ❌      | ✅         |
+| tech\_lead | All         | ✅    | ✅      | ✅       | ❌      | ❌      | ✅         |
+| admin      | All         | ✅    | ✅      | ✅       | ✅      | ✅      | ✅         |
+
+---
+
+## 🚗 Kiosk Integration (Nova Beacon)
+
+* All activated kiosks show as assets (type: Kiosk)
+* Config + Activation handled via Nova Helix/Core
+* Asset table includes: kiosk\_id, config\_ref, version, heartbeat, org/site/room
+* View-only in Inventory (locked from editing)
+
+---
+
+## 🌟 Branding & Design
+
+| Element       | Value                     |
+| ------------- | ------------------------- |
+| Module Name   | Nova Inventory            |
+| Short Name    | Inventory                 |
+| Primary Color | `#4A90E2` (Electric Blue) |
+| Accent Color  | `#F5A623` (Asset Orange)  |
+| Icon          | Box + QR Tag / Orbit Ring |
+| URL Path      | `/inventory`              |
+
+---
+
+## 🤖 Codename for AI Agents
+
+**Prompt Root**: `inventory_task.md`
+
+Agent Instructions:
+
+* Log all changes in audit trail with timestamp and user
+* Verify SCIM links for users/orgs before assignment
+* Validate all imports with rollback fallback
+* Use Helix APIs for metadata
+* Use Pulse to display asset-tied tickets or warranty flags
+* Flag kiosks as system-managed (read-only)
+
+---
+
+## ✅ Final TODO
+
+* [ ] Schema scaffold + test migration from legacy systems
+* [ ] Build import validation + rollback
+* [ ] Integrate kiosk registry with Helix + Inventory
+* [ ] Secure field encryption for serials, custom fields
+* [ ] Ensure all asset views include ticket, status, and assignment logs
+* [ ] Trigger Notify alerts for warranty expiration, flags
+
+---
+
+**Nova Inventory** becomes the single source of truth for assets across the Nova Universe, enabling seamless visibility and management for IT, Ops, and Admins alike.

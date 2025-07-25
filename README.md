@@ -271,14 +271,14 @@ curl -X POST http://localhost:3000/submit-ticket \
 For a complete description of all endpoints see
 [nova-api/README.md](nova-api/README.md#api-endpoints).
 
-## HelpScout Integration
+## HelpScout Integration #PENDING CHANGE TO IMPORT ONLY TO NOVA
 
 When `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` are defined in
 `nova-api/.env`, the API creates a new HelpScout conversation for each ticket
 submitted to `POST /submit-ticket`. Set `HELPSCOUT_SMTP_FALLBACK=true` if you
 want the server to also send the ticket email using your SMTP configuration.
 
-## ServiceNow Integration
+## ServiceNow Integration #PENDING DEPERCATION
 
 Set `SERVICENOW_INSTANCE`, `SERVICENOW_USER` and `SERVICENOW_PASS` in
 `nova-api/.env` to create incidents via ServiceNow's REST API when tickets are

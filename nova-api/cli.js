@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-import { logger } from './logger.js';
-import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
-import db from './db.js';
+import dotenv from 'dotenv';
 import readline from 'readline';
+import db from './db.js';
+import { logger } from './logger.js';
 
 // Set flag to suppress verbose admin setup output
 process.env.CLI_MODE = 'true';
@@ -25,7 +25,7 @@ function askPassword(question) {
 }
 
 function changeAdminPassword() {
-  logger.info('🔑 CueIT Portal Password Reset Tool');
+  logger.info('🔑 Nova Universe Portal Password Reset Tool');
   logger.info('=====================================\n');
   
   // Check if password is provided as argument
@@ -95,7 +95,7 @@ function updatePassword(newPassword) {
 }
 
 function listUsers() {
-  logger.info('CueIT Default Admin Users');
+  logger.info('Nova Universe Default Admin Users');
   logger.info('============================\n');
   
   // Wait for database initialization
@@ -149,7 +149,7 @@ switch (command) {
   case 'help':
   case '--help':
   case '-h':
-    logger.info('CueIT CLI Commands:');
+    logger.info('Nova Universe CLI Commands:');
     logger.info('==================');
     logger.info('node cli.js change-password  - Change default admin password');
     logger.info('node cli.js list-users       - List default superadmin users');

@@ -1,31 +1,36 @@
+import setupPromise from './00_setup.js';
 import request from 'supertest';
 import assert from 'assert';
 import db from '../db.js';
 import bcrypt from 'bcryptjs';
 const app = globalThis.app;
 
-function resetDb(done) {
+async function resetDb() {
+  await db.ensureReady();
   const defaults = {
     logoUrl: '/logo.png',
     faviconUrl: '/vite.svg',
     welcomeMessage: 'Welcome to the Help Desk',
     helpMessage: 'Need to report an issue?',
   };
-  db.serialize(() => {
-    db.run('DELETE FROM logs');
-    db.run('DELETE FROM config');
-    const stmt = db.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
-    for (const [k, v] of Object.entries(defaults)) {
-      stmt.run(k, v);
-    }
-    stmt.run('adminPassword', bcrypt.hashSync('admin', 12));
-    stmt.finalize(done);
+  await new Promise((resolve) => {
+    db.serialize(() => {
+      db.run('DELETE FROM logs');
+      db.run('DELETE FROM config');
+      const stmt = db.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
+      for (const [k, v] of Object.entries(defaults)) {
+        stmt.run(k, v);
+      }
+      stmt.run('adminPassword', bcrypt.hashSync('admin', 12));
+      stmt.finalize(resolve);
+    });
   });
 }
 
-beforeEach((done) => {
+beforeEach(async () => {
+  await setupPromise;
   global.setSendBehavior(() => Promise.resolve());
-  resetDb(done);
+  await resetDb();
 });
 
 describe('POST /submit-ticket', function () {

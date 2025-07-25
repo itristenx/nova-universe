@@ -1,0 +1,267 @@
+Here is a full breakdown of the Nova Platform API, including architecture, modules, authentication, versioning, endpoints, eventing, RBAC handling, and internal vs external access.
+
+⸻
+
+🛰️ Nova Platform API Breakdown
+
+This API serves as the unified backbone for all Nova Universe modules, powering communication between frontends, services, and external systems. It is modular, secure, versioned, and event-driven.
+
+⸻
+
+🔧 Architecture Overview
+
+Feature	Description
+Type	RESTful API with GraphQL hybrid support for admin/analytics modules
+Gateway	api.nova.universe (reverse proxy via NGINX or API Gateway)
+Framework	Node.js with Express (REST) + Apollo Server (GraphQL for internal tools)
+Rate Limiting	Per user/tenant/IP via Redis (e.g. 10 req/sec)
+Versioning	URL-based versioning (e.g., /api/v2/...)
+Auth Layer	JWT (via Nova Helix SSO), API Keys, SCIM Tokens
+Data Layer	Prisma ORM (SQL DB) + MongoDB (unstructured data, tickets) + ElasticSearch
+Queue/Event Layer	Redis Pub/Sub + optional Kafka integration
+Logging/Tracing	Elastic Stack (ELK) + OpenTelemetry support
+Deployment	Containerized (Docker), managed with Kubernetes
+
+
+⸻
+
+🔐 Authentication & Security
+
+Auth Types Supported:
+	•	JWT Bearer (via Helix): For users and service-to-service calls
+	•	Scoped API Keys: For integration/webhooks
+	•	SCIM Tokens: For provisioning sync
+	•	Session Tokens (internal use, limited to Orbit/Kiosk UI)
+
+Token Scopes:
+	•	read:tickets, write:config, admin:inventory, etc.
+	•	SCIM uses provisioning:*
+	•	API keys can be scoped per module or tenant
+
+Validation Middleware:
+
+Every route is protected by:
+	•	Token decoder (JWT or API Key)
+	•	Scope validator
+	•	Role validator (via RBAC service from Helix)
+
+⸻
+
+🗃️ API Modules & Routes
+
+Each Nova module has its own route namespace.
+
+🔵 Core Platform
+
+GET    /api/v2/status
+POST   /api/v2/feedback
+GET    /api/v2/config/tenant
+
+
+⸻
+
+🪪 Helix (Identity / SSO / SCIM)
+
+POST   /api/v2/helix/login
+POST   /api/v2/helix/token/refresh
+GET    /api/v2/helix/user/me
+POST   /api/v2/helix/scim/users
+POST   /api/v2/helix/scim/groups
+
+
+⸻
+
+🎫 Pulse (Technician Workbench)
+
+GET    /api/v2/pulse/tickets
+POST   /api/v2/pulse/tickets
+PATCH  /api/v2/pulse/tickets/:id
+POST   /api/v2/pulse/flags
+GET    /api/v2/pulse/queues
+
+Submodules:
+	•	/pulse/hr/tickets (HR tickets)
+	•	/pulse/ops/tickets (Ops tickets)
+	•	/pulse/cyber/tickets (Cyber tickets)
+	•	/pulse/inventory (see Inventory module)
+
+⸻
+
+🧑 Orbit (End User Portal)
+
+GET    /api/v2/orbit/catalog
+POST   /api/v2/orbit/request
+GET    /api/v2/orbit/tickets
+
+
+⸻
+
+📦 Inventory (Assets)
+
+GET    /api/v2/inventory/assets
+POST   /api/v2/inventory/assets
+PATCH  /api/v2/inventory/assets/:id
+POST   /api/v2/inventory/import
+
+
+⸻
+
+📬 Mailroom (Email Ingestion)
+
+POST   /api/v2/mailroom/inbound
+GET    /api/v2/mailroom/logs
+
+Mailroom processes inbound SMTP → ticket, request, or feedback based on headers.
+
+⸻
+
+🧠 Lore (Knowledge Base)
+
+GET    /api/v2/lore/articles
+POST   /api/v2/lore/articles
+PATCH  /api/v2/lore/articles/:id
+GET    /api/v2/lore/impact
+
+
+⸻
+
+🛰️ Comms (Slack, SMS, etc.)
+
+POST   /api/v2/comms/slack/command
+POST   /api/v2/comms/slack/modal
+POST   /api/v2/comms/notify
+
+
+⸻
+
+🛸 Beacon (Kiosk)
+
+GET    /api/v2/beacon/config
+POST   /api/v2/beacon/ticket
+GET    /api/v2/beacon/assets
+
+
+⸻
+
+🧪 Forge (Dev Tools)
+
+GET    /api/v2/forge/docs
+POST   /api/v2/forge/register-module
+GET    /api/v2/forge/health
+
+
+⸻
+
+⚙️ Admin-Only API (Nova Core)
+
+GET    /api/v2/core/settings
+POST   /api/v2/core/settings
+GET    /api/v2/core/audit-logs
+POST   /api/v2/core/branding
+
+Restricted to admin:* and superadmin:* roles
+
+⸻
+
+🔁 Events & Webhooks
+
+System Events:
+	•	ticket.created
+	•	ticket.updated
+	•	alert.triggered
+	•	asset.imported
+	•	user.role.assigned
+	•	config.updated
+
+Webhooks:
+
+POST https://example.com/hooks/tickets
+
+	•	Configurable per tenant
+	•	Support retry, HMAC signing, and filtering by event
+
+⸻
+
+📊 GraphQL (Internal Tools)
+
+Available on /api/v2/graphql, used by:
+	•	Nova Deck
+	•	Admin Reporting UI
+	•	Analytics Module (optional)
+
+Supports:
+
+query {
+  tickets(status: "open") {
+    id
+    type
+    assignedTo
+    priority
+  }
+}
+
+
+⸻
+
+🧱 RBAC Enforcement via API
+	•	All role and scope enforcement is centralized via Helix Roles Service
+	•	Pulse submodules enforce access control dynamically:
+	•	HR agents can’t view Cyber queues unless explicitly granted
+	•	UI hints (e.g., “disabled actions”) are inferred via /me API response
+
+⸻
+
+📁 File Uploads
+
+POST /api/v2/files/upload
+GET  /api/v2/files/:id
+
+	•	Stored in S3 or compatible object storage
+	•	Secure pre-signed URLs
+	•	Usage in tickets, assets, knowledge articles
+
+⸻
+
+🔎 Search
+	•	Indexed in ElasticSearch
+	•	API:
+
+GET /api/v2/search?q=onboarding+macbook
+
+
+	•	Modules using:
+	•	Orbit (for catalog and Lore)
+	•	Pulse (ticket search)
+	•	Inventory (asset lookup)
+
+⸻
+
+🔄 Sync / Integration APIs
+	•	SCIM: /api/v2/helix/scim/...
+	•	Slack: /api/v2/comms/slack/...
+	•	GoAlert Proxy: /api/v2/alert/trigger
+	•	SMTP/Mailroom: /api/v2/mailroom/...
+	•	Webhook Engine: /api/v2/core/hooks
+
+⸻
+
+🛡️ API Security Measures
+
+Layer	Description
+AuthN	JWT, SCIM, API Key
+AuthZ	RBAC scoped permissions
+Rate Limiting	Redis-backed per-user, per-IP
+Data Validation	Zod + TypeScript enforcement
+Audit Logging	Tracked per endpoint + action
+Transport	TLS enforced (HTTPS-only)
+Input Filtering	Anti-XSS, Anti-SQL injection, sanitization
+
+
+⸻
+
+📚 Developer Docs
+	•	Swagger/OpenAPI: /api/docs
+	•	GraphQL Playground: /api/v2/graphql
+	•	API Tokens Management: in Nova Core > Developers Tab
+
+⸻

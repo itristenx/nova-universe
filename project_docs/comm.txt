@@ -1,0 +1,140 @@
+🛰️ Nova Comms – Full Breakdown
+
+🧭 Overview
+
+Nova Comms is Nova’s centralized communication and conversational interface module, primarily focused on:
+	•	Slack-based interaction (with expansion to Teams, Discord, etc.)
+	•	Slash commands, modal UIs, and bot conversations
+	•	AI-powered assistant Cosmo embedded in chat
+	•	Inbound and outbound communication routing
+	•	Automated triage, response, and ticket creation
+	•	Agent + end-user workflow shortcuts
+
+It acts as both the integration point with external chat platforms (starting with Slack) and as an intelligent communication middleware for triggering workflows, surfacing knowledge, and streamlining help desk interactions.
+
+⸻
+
+🧩 Key Capabilities
+
+Category	Feature	Description
+Slack Integration	/nova, /it-help, /report, etc.	Slash commands for fast ticket creation, forms, and actions
+	Modal support	Rich modal-based interactions for ticket intake, approvals, workflows
+	Message buttons & menus	Actionable message components (e.g., approve, assign, escalate)
+	Cosmo replies in threads	AI replies, suggestions, and nudges inside Slack threads
+AI Assistant (Cosmo)	Intent detection	Detects user needs from natural messages (e.g. “my laptop is broken”)
+	Smart replies	Auto-suggests articles, draft responses, or workflows
+	Escalation detection	Flags frustration or urgency for faster routing
+	Ticket summarization	Cosmo summarizes threads for agents and auto-tags metadata
+Multichannel Support	Email to Comms	Integrates with Mailroom to convert email replies into Comms threads
+	Chat-to-Orbit sync	Links conversations to Orbit portal activity
+	Omnichannel logging	All interactions logged to tickets and searchable by agents
+Notification System	Alert delivery	Sends GoAlert, status, or system messages via Slack/Teams
+	Subscription control	Users can manage channel-specific notification subscriptions
+	Approvals in Slack	Workflow-based approval requests delivered and acted on in Slack
+Triage & Routing	NLP-based routing	Routes messages/tickets to correct Pulse subqueue
+	Keyword triggers	Customizable triggers for auto-responses or actions
+	Conversational forms	Progressive data gathering before ticket creation
+Agent Tools	Message macros	Agent shorthand for common replies
+	Unified agent inbox	View Slack thread, Orbit thread, and ticket side-by-side
+	Reassignment tools	Slash or button-driven reassignment to queues or agents
+
+
+⸻
+
+📦 Slack App Details
+	•	App Name: Nova Comms
+	•	Bot Display Name: Cosmo
+	•	Slack Commands:
+	•	/it-help: Launches modal form for end-user ticket intake
+	•	/nova-status: Returns current system status
+	•	/nova-queue: Displays Pulse queue summary
+	•	/nova-feedback: Submit feedback to the product team
+	•	/nova-assign: Assign open thread to self or another agent
+	•	Scopes Required:
+	•	chat:write, commands, users:read, channels:read, app_mentions:read, chat:write.public, reactions:write
+	•	Interactivity:
+	•	Block Kit modals for ticket intake
+	•	Threaded AI responses from Cosmo
+	•	Interactive buttons in Pulse and Comms threads
+
+⸻
+
+🧠 Cosmo Capabilities in Comms
+
+Capability	Example Behavior
+Intent Mapping	“My Zoom isn’t working” → Cosmo opens incident ticket
+Article Suggestions	Cosmo finds top 3 KB articles based on thread context
+Ticket Creation	Creates ticket with inferred category/urgency
+Triage Metadata	Auto-fills location, product, urgency, tags
+Sentiment Tracking	Flags frustrated or high-priority messages
+Thread Summarization	Summarizes 20-message Slack thread into 3-sentence recap
+Escalation Triggers	Adds “Needs Review” flag when blocked or unresolved for X time
+
+
+⸻
+
+🧱 Architecture Integration
+
+Data Flow
+
+Slack → Nova Comms → Core API → Pulse / Orbit / Lore / Mailroom → Helix
+
+Modules Used
+	•	Pulse: Queues, agent assignment, alerts
+	•	Orbit: Linked ticket forms, status updates
+	•	Lore: Auto-suggested knowledge base articles
+	•	Mailroom: Converts emails into threads
+	•	Helix: Identity/role checks for permissions and routing
+	•	Deck: Admin controls and dashboards for Comms analytics
+
+⸻
+
+🎮 Gamification & XP (Optional)
+	•	Users gain XP for using self-service options successfully
+	•	Agents receive Stardust points for resolving Comms threads
+	•	Comms interactions feed into Nova Ascend leaderboard
+
+⸻
+
+🛠️ Admin + Config
+
+Setting	Description
+Slack Workspace Linking	Per-org workspace mapping via Helix
+Channel Mapping	Map channels to Pulse queues or ticket types
+AI Behavior	Enable/disable Cosmo inline replies
+Custom Slash Commands	Add org-specific commands scoped to Nova
+Default Form Mapping	Tie forms to workflows per tenant
+Logging & Privacy	Configure message retention, redaction, and audit trail
+
+
+⸻
+
+🔒 Security & Compliance
+	•	Fully scoped OAuth tokens via Slack App Manifest
+	•	SCIM + Helix role-based access checks on actions
+	•	Inline redaction and DLP rules for regulated orgs
+	•	Full audit logging of thread actions and ticket creation
+
+⸻
+
+🧪 Future Roadmap
+
+Feature	Description
+Teams & Discord Support	Extend Comms to other collaboration platforms
+Audio Input to Ticket	Allow users to record short issues directly
+Real-Time Cosmo Chat	Conversational AI for back-and-forth dialog in chat
+Admin Notifications Bot	Custom org-wide alerts and maintenance messages
+Cosmo “Daily Digest”	AI-generated Slack post summarizing overnight activity
+
+
+⸻
+
+🔧 Implementation Notes
+	•	Built using Slack Bolt.js
+	•	Runs on Supabase Edge Functions for form handling
+	•	Middleware routes data through Nova Core API v2
+	•	Cosmo model uses intent classification + retrieval augmented generation via Lore
+
+⸻
+
+Would you like this as a Markdown implementation doc next?

@@ -1,0 +1,234 @@
+Here’s a complete explanation and implementation guide in Markdown format for Beacon / Nova Mobile, the mobile and kiosk experience module within the Nova Universe.
+
+⸻
+
+
+# 📡 Nova Beacon & Nova Mobile
+> Unified Kiosk & Mobile Experience for End Users
+
+---
+
+## 🔭 Overview
+
+**Nova Beacon** and **Nova Mobile** are two access modes of the same front-end delivery platform, optimized for:
+
+- **Beacon (Kiosk Mode):** iOS/iPadOS-powered self-service terminal.
+- **Nova Mobile:** Native app experience for iPhone and Android (via Flutter or React Native), delivering Nova Orbit features on the go.
+
+Both provide streamlined, secure, and branded access to Nova Orbit capabilities like ticket creation, request catalog browsing, announcements, status updates, and Cosmo interactions.
+
+---
+
+## 🧠 Purpose
+
+- Provide **zero-friction IT support access** for users in physical locations (via kiosk).
+- Offer **on-the-go utility** for mobile-first users.
+- Deliver a **custom branded, configurable frontend** with minimal backend logic.
+
+---
+
+## 🧱 Key Features
+
+| Feature | Beacon (Kiosk) | Mobile App |
+|--------|----------------|------------|
+| Ticket Creation | ✅ | ✅ |
+| Dynamic Branding | ✅ | ✅ |
+| Remote Configuration | ✅ | ✅ |
+| Offline Cache Support | ✅ | ✅ |
+| Cosmo AI Assistant | ✅ | ✅ |
+| QR Login / ID Scan | ✅ | ✅ |
+| Request Catalog | ✅ | ✅ |
+| Status Page / Outages | ✅ | ✅ |
+| Announcement Feed | ✅ | ✅ |
+| SSO (if enabled) | ❌ (anonymous mode) | ✅ |
+| Language Localization | ✅ | ✅ |
+| Audit Logging | ✅ | ✅ |
+| Custom Forms | ✅ | ✅ |
+
+---
+
+## 🔐 Security & Auth Modes
+
+- **Beacon** operates in **"anonymous kiosk mode"** with optional auto-login using a limited-use service account.
+- **Mobile** supports full **Nova ID authentication** via Nova Helix (SSO, SCIM, etc).
+
+---
+
+## 🧩 Architecture
+
+```plaintext
+[ User (Kiosk or Mobile) ]
+       |
+       v
+[ Nova Beacon / Mobile App ]
+       |
+       v
+[ Nova Orbit API (via Platform API v2) ]
+       |
+       v
+[ Core Modules (Pulse, Orbit, Lore, Mailroom, etc) ]
+
+	•	Uses Platform API v2 with tokenized access.
+	•	Kiosk config fetched from Nova Core Configuration Service.
+	•	Optional push notification integration for mobile.
+	•	Offline fallback powered by local cache + background sync.
+
+⸻
+
+🛠️ Implementation Plan
+
+1. App Shell
+	•	Frameworks:
+	•	Kiosk: SwiftUI (iPad-only, locked down)
+	•	Mobile: React Native (cross-platform) or SwiftUI + Kotlin
+	•	Core Views:
+	•	Home screen (logo, announcements, status)
+	•	Ticket / request wizard
+	•	Cosmo chat interface
+	•	Confirmation screens
+	•	Settings (hidden for kiosk)
+
+2. Remote Config
+	•	Pulled on startup from /core/config endpoint:
+
+{
+  "theme": {
+    "logo_url": "https://cdn.nova/logo-tenant123.png",
+    "primary_color": "#1D1EFF"
+  },
+  "forms": {
+    "default_ticket_form_id": "form_incident_kiosk"
+  },
+  "cosmo": {
+    "enabled": true,
+    "preset_prompt": "Hi! How can I help you today?"
+  }
+}
+
+	•	Cached locally, refreshed every 15 minutes.
+
+3. Ticket Flow
+	•	Anonymous or authenticated submission:
+
+POST /orbit/tickets
+{
+  "type": "incident",
+  "submitted_by": "anon_beacon",
+  "details": {
+    "description": "My monitor is broken.",
+    "location": "Floor 3 - Pod B"
+  }
+}
+
+	•	Supports dynamic forms from /orbit/forms.
+
+4. Cosmo Assistant Integration
+	•	App includes in-app chat UI with Cosmo SDK:
+	•	Context-aware (kiosk/mobile mode)
+	•	Uses preset prompt if user is unauthenticated
+	•	API token issued via guest auth
+
+5. Branding & Lockdown (Kiosk only)
+	•	Guided access mode
+	•	Hide all system gestures
+	•	Admin unlock via long-press + passcode
+	•	Device identity tracked via Core (device_id, location_code)
+
+⸻
+
+🧪 QA & Testing
+	•	Offline test mode
+	•	SLA breach / network error simulation
+	•	Config fallback validation
+	•	UI snapshot testing (branding, layout)
+	•	Kiosk watchdog mode (auto-relaunch on crash)
+
+⸻
+
+🧰 Admin Controls (via Core Admin)
+
+Setting	Description
+Logo URL	Tenant-branded image
+Theme Color	Primary button & header
+Ticket Form ID	Default form to use
+Cosmo Enabled	AI toggle
+Kiosk Location	Label to track device
+Fallback Mode	Enables cached mode when offline
+Maintenance Banner	Custom top banner
+App Lockout	Prevents user interaction
+
+
+⸻
+
+🚀 Deployment
+
+Beacon (Kiosk)
+	•	Built via SwiftUI
+	•	MDM/DEP support (Supervised iPads)
+	•	Configured remotely via Nova Core
+	•	Auto-launch on boot
+	•	Lockdown: Guided Access or Autonomous Single App Mode
+
+Nova Mobile
+	•	iOS: SwiftUI app on App Store / internal deployment
+	•	Android: Kotlin/Compose or React Native via Play Store / MDM
+	•	Login: Nova Helix SSO or Okta
+	•	Secure token storage (Keychain / EncryptedStorage)
+
+⸻
+
+🧭 Future Enhancements
+	•	FaceID/TouchID Login for Nova Mobile
+	•	NFC badge check-in for Beacon
+	•	Multi-tenant mobile app support
+	•	Offline ticket queue for mobile
+	•	iBeacon/Bluetooth integration for room awareness
+	•	Passcode + QR unlock for Admins
+	•	Deep linking from email/push to ticket views
+
+⸻
+
+🧑‍🎨 Sample Screens
+
+(To be designed in Figma)
+
+	•	Kiosk Home Screen: Logo, Status, “Tap to Start”
+	•	Ticket Flow: Step-by-step form
+	•	Cosmo Chat: Bubble-based interaction
+	•	Mobile Home: Feed + Quick Actions
+	•	Confirmation View: “Your ticket has been submitted!”
+
+⸻
+
+🧾 API Summary
+
+Endpoint	Description
+GET /core/config?kiosk_id=	Fetch kiosk/mobile config
+POST /orbit/tickets	Submit ticket
+GET /orbit/forms/:id	Get ticket form layout
+POST /cosmo/query	Submit chat message
+GET /status/summary	Fetch current outage status
+GET /announcements	Fetch active announcements
+
+
+⸻
+
+📓 Developer Notes
+	•	Codebase split:
+	•	beacon-kiosk-ios/
+	•	nova-mobile/
+	•	Shared component lib (design system)
+	•	Offline-first data layer for ticket queue
+	•	Auto-restart on crash (kiosk)
+	•	Error telemetry sent via /core/telemetry
+
+⸻
+
+🧩 Related Modules
+	•	Nova Orbit – Shared APIs and ticketing
+	•	Nova Core – Branding, config, kiosk registry
+	•	Nova Helix – Auth for mobile
+	•	Cosmo SDK – AI interface and messaging
+	•	Nova Mailroom – Backend for email receipts (ticket confirmations)
+
+⸻

@@ -1,7 +1,6 @@
 import request from 'supertest';
 import assert from 'assert';
 import db from '../db.js';
-const app = globalThis.app;
 
 beforeEach((done) => {
   db.run('DELETE FROM feedback', done);
@@ -9,20 +8,23 @@ beforeEach((done) => {
 
 describe('Feedback API', function() {
   it('stores feedback and returns id', async function() {
-    const res = await request(app)
-      .post('/api/v1/feedback')
+    const res = await request(global.app)
+      .post('/api/feedback')
       .send({ name: 'Alice', message: 'Great app' })
       .expect(200);
     assert.ok(res.body.id);
 
-    const list = await request(app).get('/api/v1/feedback').expect(200);
+    const list = await request(global.app)
+      .get('/api/feedback')
+      .set('Authorization', 'Bearer testtoken')
+      .expect(200);
     assert.strictEqual(list.body.length, 1);
     assert.strictEqual(list.body[0].name, 'Alice');
     assert.strictEqual(list.body[0].message, 'Great app');
   });
 
   it('validates message', function() {
-    return request(app)
+    return request(global.app)
       .post('/api/feedback')
       .send({})
       .expect(400);

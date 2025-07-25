@@ -1,4 +1,4 @@
-# CueIT API Events
+# Nova Universe API Events
 
 This folder exposes a small event bus used by the backend to broadcast changes. When `SLACK_WEBHOOK_URL` is set in `.env`, the backend listens for these events and posts messages to the given Slack Incoming Webhook.
 

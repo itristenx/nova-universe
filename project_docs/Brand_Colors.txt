@@ -1,0 +1,92 @@
+Here is a complete, enterprise-ready color palette for the Nova Universe, balancing space-inspired tech aesthetics with the sports/entertainment flair you’ve aimed for. It’s structured for modular branding—so each module can have slight variations while remaining part of the cohesive Nova brand.
+
+⸻
+
+🌌 Nova Universe — Primary Brand Palette
+
+Color Name	HEX	Usage
+Nova Midnight	#0A0F1F	Primary background / dark mode base
+Nova White	#F9FAFB	Primary text / light mode base
+Nova Core Blue	#276EF1	Primary accent / CTA buttons
+Starlight Gray	#E2E6ED	Neutral border / light backgrounds
+Blackhole Black	#010409	Headers / Strong emphasis
+Orbit Silver	#B0BAC9	Secondary text / disabled states
+Cosmic Lavender	#B8A1FF	Friendly accents / Cosmo assistant
+Meteor Orange	#FF7C5B	Warnings / Energetic highlights
+Solar Gold	#FFC857	Success highlights / achievement glow
+Plasma Red	#F8485E	Errors / alerts
+Nebula Teal	#38B2AC	Info highlights / onboarding flows
+
+
+⸻
+
+🌗 Light Mode Background System
+
+Element	HEX	Notes
+Page Background	#F9FAFB	Smooth off-white
+Card Background	#FFFFFF	Elevated containers
+Border & Divider	#E2E6ED	Thin lines, gentle contrast
+Input Background	#F0F2F7	For forms and controls
+
+🌑 Dark Mode Background System
+
+Element	HEX	Notes
+Page Background	#0A0F1F	Deep Nova Midnight
+Card Background	#121826	Slight elevation from base
+Border & Divider	#1F2737	Low-contrast lines
+Input Background	#20293A	For form fields and inputs
+
+
+⸻
+
+✨ Highlighted Colors per Module (Accent Set)
+
+Module	Accent Color	HEX	Notes
+Core (Admin)	Blue	#276EF1	Nova’s system blue
+Helix (Identity)	Purple	#7A5FFF	Strong identity / authentication
+Pulse (Technician)	Cyan	#00C9D1	Active, fast, reactive
+Orbit (User Portal)	Coral	#FF6B6B	Engaging, user-friendly
+Beacon (Kiosk)	Aqua	#2ED5D0	Soft glow feel for iPad interfaces
+Lore (Knowledge)	Gold	#FEC84B	Enlightening / smart
+Comms (Slack etc)	Indigo	#6674F2	Messaging, integrations
+Synth (AI)	Lavender	#B8A1FF	Friendly yet futuristic
+Deck (Switcher)	Teal	#38B2AC	Clean hub experience
+Mailroom (Ops)	Steel Gray	#6B7A90	Operational feel
+Inventory	Olive	#C3D61D	Taggable, trackable, earthy tones
+
+
+⸻
+
+🧠 Cosmo — AI Assistant Highlight Set
+
+Tone	HEX	Usage
+Cosmo Glow	#B8A1FF	Default Cosmo color
+Cosmo Hover	#A18BFF	Hover/focus state
+Cosmo XP	#FFC857	XP progress glow
+Cosmo Alert	#F8485E	Smart alert tone
+
+
+⸻
+
+🎮 Gamification (Nova Ascend / Stardust XP)
+
+Element	HEX	Notes
+XP Badge	#FFC857	Gamified progress
+MVP Highlight	#38B2AC	Leaderboards
+Team Mode Badge	#6674F2	Cooperative mode / Slack Teams
+Level Up Aura	#B8A1FF	Animation aura for achievements
+
+
+⸻
+
+🎨 Utility Colors
+
+Purpose	HEX	Usage
+Success	#2ECC71	For check marks, confirmations
+Warning	#F39C12	System or user warnings
+Danger	#E74C3C	Critical errors
+Info	#3498DB	Notices and blue banners
+Disabled	#ADB5BD	Inputs, buttons
+
+
+⸻

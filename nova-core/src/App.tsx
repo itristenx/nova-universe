@@ -1,20 +1,21 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Layout } from '@/components/layout';
 import { ConnectedToastContainer } from '@/components/ui';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import { LoginPage } from '@/pages/auth/LoginPage';
-import { DashboardPage } from '@/pages/DashboardPage';
-import { useAuthStore } from '@/stores/auth';
 import { useAuthStatus } from '@/hooks/useAuthStatus';
 import { api } from '@/lib/api';
+import { LoginPage } from '@/pages/auth/LoginPage';
+import { NovaDashboard } from '@/pages/NovaDashboard';
+import { SAMLConfigurationPage } from '@/pages/SAMLConfigurationPage';
+import { UserManagementPage } from '@/pages/UserManagementPage';
+import { useAuthStore } from '@/stores/auth';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React, { useEffect } from 'react';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 // Lazy load other pages for better performance
 const TicketsPage = React.lazy(() => import('@/pages/TicketsPage').then(m => ({ default: m.TicketsPage })));
 const KiosksPage = React.lazy(() => import('@/pages/KiosksPage').then(m => ({ default: m.KiosksPage })));
-const UsersPage = React.lazy(() => import('@/pages/UsersPage').then(m => ({ default: m.UsersPage })));
 const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
 const NotificationsPage = React.lazy(() => import('@/pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const SettingsPage = React.lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
@@ -107,7 +108,7 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       >
-        <Route index element={<DashboardPage />} />
+        <Route index element={<NovaDashboard />} />
         <Route
           path="tickets"
           element={
@@ -126,11 +127,15 @@ const AppRoutes: React.FC = () => {
         />
         <Route
           path="users"
-          element={
-            <React.Suspense fallback={<div>Loading...</div>}>
-              <UsersPage />
-            </React.Suspense>
-          }
+          element={<UserManagementPage />}
+        />
+        <Route
+          path="user-management"
+          element={<UserManagementPage />}
+        />
+        <Route
+          path="saml-configuration"
+          element={<SAMLConfigurationPage />}
         />
         <Route
           path="analytics"

@@ -1,0 +1,265 @@
+Here is a comprehensive breakdown of all Nova Universe modules, including submodules and their key features, reflecting the full enterprise-grade architecture as of the latest plans and implementations.
+
+⸻
+
+🌌 Nova Universe – Full Module and Feature Breakdown
+
+⸻
+
+🔹 1. Nova Core
+
+Central system configuration, tenant management, and licensing
+
+Features:
+	•	Multi-tenant management
+	•	Global settings & toggles
+	•	Brand and logo customization per tenant
+	•	Feature flag engine
+	•	License verification & enforcement
+	•	Email templates & mail configuration
+	•	Telemetry + logging + audit pipelines
+	•	Version control & changelog broadcasting
+	•	Module activation/deactivation
+	•	App secrets and API key provisioning
+
+⸻
+
+🔐 2. Nova Helix
+
+Identity, Auth, SCIM, Roles, and Account Management
+
+Submodules & Features:
+	•	SSO Engine
+	•	SAML, OIDC, OAuth2 support
+	•	Okta, Entra ID, Google Workspace, etc.
+	•	SCIM Provisioning
+	•	Role and group mapping
+	•	JIT provisioning
+	•	Nova ID
+	•	Unified account profile across all modules
+	•	Tracks XP, achievements, audit, and sessions
+	•	RBAC + ABAC
+	•	Core roles: end_user, tech, admin, etc.
+	•	Scoped permissions per module/submodule
+	•	Delegation
+	•	Admins can assign limited access
+	•	Audit Logs
+	•	Role changes, login history, IP tracking
+
+⸻
+
+🛰️ 3. Nova Pulse
+
+Technician + Agent Workspace for all operational teams
+
+Submodules:
+	•	IT
+	•	INC, REQ, TASK, CHG ticket types
+	•	Approval flows, escalations, categorization
+	•	HR
+	•	Confidential tickets
+	•	Custom access scopes
+	•	Sensitive flagging & routing
+	•	Cyber (ISAC)
+	•	Security incident tracking
+	•	Integrated GoAlert alert triggers
+	•	Visibility restrictions
+	•	Ops
+	•	Facilities & operational request tickets
+	•	Inventory use, checklist templates
+	•	Inventory (shared with Ops/IT)
+	•	Asset assignment, check-in/out
+	•	QR/Barcode scan, history trail
+
+Features:
+	•	Multi-queue view and ownership
+	•	Fullscreen “Deep Work” mode
+	•	Priority, VIP, SLA, and category flags
+	•	Dynamic filtering and saved views
+	•	Bulk action tools
+	•	XP + gamification tracking
+	•	Technician leaderboard and streaks
+	•	Alert routing via GoAlert
+	•	Internal and external ticket notes
+	•	Inline Cosmo (AI) suggestions
+
+⸻
+
+🚀 4. Nova Orbit
+
+End User Portal
+
+Features:
+	•	Branded portal per tenant
+	•	Request Catalog with smart forms
+	•	View, update, and comment on tickets
+	•	Cosmo AI assistant (intent recognition)
+	•	Knowledge Base (via Nova Lore)
+	•	Multi-channel ticket submission (Slack, Email, Kiosk)
+	•	Status dashboard (incidents, SLAs)
+	•	Chat-like UI option for casual experience
+	•	Mobile-first design
+
+⸻
+
+🧠 5. Nova Lore
+
+Knowledge Base Engine
+
+Features:
+	•	Article creation with tags, impact score, feedback
+	•	AI-assisted writing with Cosmo
+	•	Verified solution badges
+	•	Search + relevance engine
+	•	Article → ticket linking
+	•	XP for article authors
+	•	Gamified contributions (badges, ranks)
+	•	Drafts, approvals, and publishing pipeline
+	•	Markdown + WYSIWYG editor
+
+⸻
+
+🪐 6. Nova Comms
+
+Slack App + Notifications Engine
+
+Features:
+	•	Slash command support (/it-help, /nova, etc.)
+	•	Modal form submission
+	•	Real-time updates on ticket status
+	•	Alerting to Slack channels (via GoAlert proxy)
+	•	Cosmo integration inside Slack
+	•	Notification routing rules (Slack, Email, Push)
+	•	Threaded ticket conversations
+	•	Supports Enterprise Grid workspaces
+
+⸻
+
+📦 7. Nova Beacon
+
+Kiosk / iOS Ticketing App
+
+Features:
+	•	SwiftUI-based local-first iOS App
+	•	Remote config via Nova Core (logo, prompts)
+	•	Offline ticket capture and sync
+	•	Customizable UI text per tenant
+	•	Assigned location metadata
+	•	Autocategorization via Cosmo
+	•	Visual status animations
+	•	iPad-based support in facilities or lobbies
+
+⸻
+🧰 8. Nova Forge (Future Feature)
+
+Developer Tools & Backstage Integration
+
+Features:
+	•	Backstage-based Dev Portal (proxy-integrated)
+	•	Plugin for Nova module insights (e.g. Pulse queues, Core config)
+	•	GitHub/GitLab integration
+	•	Nova Universe module templates
+	•	Internal Docs & API reference publishing
+	•	App scaffolding support
+	•	Developer XP system and badges
+	•	CI/CD deployment status boards
+
+⸻
+
+🧪 9. Nova Deck
+
+Unified App Launcher / Dashboard
+
+Features:
+	•	Role-aware app tiles (Pulse, Orbit, Core, etc.)
+	•	Central access to all modules
+	•	Tenant-branded UI
+	•	Notifications + activity stream
+	•	Single-sign-on across modules
+	•	Unified settings panel
+	•	Cosmo AI entry point
+	•	Alerts + ticket summary widgets
+
+⸻
+
+📬 10. Nova Mailroom
+
+Email Ingestion & Routing Engine
+
+Features:
+	•	Inbound SMTP / IMAP connector
+	•	Ticket auto-creation from email
+	•	Smart classification (Cosmo + rule engine)
+	•	Email → Thread mapping
+	•	Signature stripping, noise filtering
+	•	Auto-reply and SLA clock start
+	•	Queue routing from aliases (e.g. hr@, it@)
+	•	Error + bounce reporting
+
+⸻
+
+🛠️ 11. Nova Core (Admin) Dashboard
+
+System Admin & Global Settings Interface
+
+Features:
+	•	Global branding & logos per tenant
+	•	Custom domain setup
+	•	Theme + color control
+	•	Tenant-wide setting propagation
+	•	Webhook management
+	•	Role override enforcement
+	•	License status & limits
+	•	Custom config editor for kiosk / Forge / Orbit
+
+⸻
+
+⏰ 12. GoAlert (Integrated via API)
+
+Alerting Backend (Used by Pulse + Comms)
+
+Features:
+	•	On-call schedules & escalation
+	•	Alert escalation policies
+	•	Slack + SMS + Phone Call routing
+	•	Pulse → GoAlert trigger rules
+	•	Alert deduplication + suppression
+	•	On-call calendar UI (inside Pulse)
+
+⸻
+
+🔧 Additional Shared Features Across Modules
+	•	Cosmo AI
+	•	Embedded in Pulse, Orbit, Comms, Lore
+	•	Intent classification, smart suggestions
+	•	Article recall and generation
+	•	Friendly end-user voice, strict audit mode
+	•	SLA Engine
+	•	Per catalog item / queue configuration
+	•	Urgency × Impact matrix
+	•	Real-time SLA breach tracking
+	•	Gamification (Nova Ascend)
+	•	XP, ranks, badges across all modules
+	•	Team leaderboards and Pulse battles
+	•	Title rewards and Nova ID linking
+	•	Nova ID System
+	•	Tracks XP, roles, audit, and identity
+	•	Unified sign-in across all modules
+	•	Opt-in public leaderboard ranking
+
+⸻
+
+🗃️ Ticket Types (Supported Globally)
+	•	INC - Incident
+	•	REQ - Request (hardware, software, onboarding, etc.)
+	•	TASK - Sub-task (linked to other tickets)
+	•	CHG - Change Request
+	•	PRB - Problem Ticket
+	•	HR - Confidential HR Ticket
+	•	OPS - Operations
+	•	ISAC - Cybersecurity / Security Incident
+	•	FDBK - User-submitted feedback
+
+⸻
+
+Would you like this formatted into a structured markdown or design doc for sharing or printing?

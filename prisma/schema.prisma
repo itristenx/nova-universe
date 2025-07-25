@@ -1,60 +1,56 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-// User management and authentication
 model User {
-  id            String    @id @default(uuid())
-  name          String?
-  email         String    @unique
-  passwordHash  String?
-  disabled      Boolean   @default(false)
-  isDefault     Boolean   @default(false)
-  lastLogin     DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relations
-  roles         UserRole[]
-  passkeys      Passkey[]
-  logs          Log[]
-  feedback      Feedback[]
+  id                                                String            @id @default(uuid())
+  name                                              String?
+  email                                             String            @unique
+  passwordHash                                      String?
+  disabled                                          Boolean           @default(false)
+  isDefault                                         Boolean           @default(false)
+  lastLogin                                         DateTime?
+  createdAt                                         DateTime          @default(now())
+  updatedAt                                         DateTime          @updatedAt
+  twoFactorEnabled                                  Boolean           @default(false)
+  twoFactorSecret                                   String?
+  twoFactorBackupCodes                              Json?
+  twoFactorVerified                                 Boolean           @default(false)
+  samlNameId                                        String?           @unique
+  samlSessionIndex                                  String?
+  department                                        String?
+  lastSamlLogin                                     DateTime?
+  feedback                                          Feedback[]
+  logs                                              Log[]
+  passkeys                                          Passkey[]
+  support_tickets_support_tickets_assigneeIdTousers support_tickets[] @relation("support_tickets_assigneeIdTousers")
+  support_tickets_support_tickets_userIdTousers     support_tickets[] @relation("support_tickets_userIdTousers")
+  roles                                             UserRole[]
 
   @@map("users")
 }
 
-// Role-based access control
 model Role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
   description String?
-  createdAt   DateTime @default(now())
-
-  // Relations
-  users       UserRole[]
+  createdAt   DateTime         @default(now())
   permissions RolePermission[]
+  users       UserRole[]
 
   @@map("roles")
 }
 
 model Permission {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
   description String?
-  createdAt   DateTime @default(now())
-
-  // Relations
+  createdAt   DateTime         @default(now())
   roles       RolePermission[]
 
   @@map("permissions")
@@ -64,10 +60,8 @@ model UserRole {
   userId     String
   roleId     Int
   assignedAt DateTime @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
   @@map("user_roles")
@@ -76,56 +70,47 @@ model UserRole {
 model RolePermission {
   roleId       Int
   permissionId Int
-  assignedAt   DateTime @default(now())
-
-  // Relations
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  assignedAt   DateTime   @default(now())
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
   @@map("role_permissions")
 }
 
-// WebAuthn passkeys
 model Passkey {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   userId       String
-  credentialId String   @unique
+  credentialId String    @unique
   publicKey    String
-  counter      Int      @default(0)
+  counter      Int       @default(0)
   transports   String?
   deviceType   String?
-  backedUp     Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  backedUp     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
   lastUsed     DateTime?
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("passkeys")
 }
 
-// System logs and tickets
 model Log {
-  id            Int      @id @default(autoincrement())
-  ticketId      String?
-  name          String?
-  email         String?
-  title         String?
-  system        String?
-  urgency       String?
-  timestamp     DateTime @default(now())
-  emailStatus   String?
-  servicenowId  String?
-  userId        String?
-
-  // Relations
-  user User? @relation(fields: [userId], references: [id])
+  id           Int      @id @default(autoincrement())
+  ticketId     String?
+  name         String?
+  email        String?
+  title        String?
+  system       String?
+  urgency      String?
+  timestamp    DateTime @default(now())
+  emailStatus  String?
+  servicenowId String?
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
 
   @@map("logs")
 }
 
-// System configuration
 model Config {
   key       String   @id
   value     String?
@@ -134,48 +119,41 @@ model Config {
   @@map("config")
 }
 
-// Kiosk management
 model Kiosk {
-  id                String    @id
-  lastSeen          DateTime?
-  version           String?
-  active            Boolean   @default(false)
-  logoUrl           String?
-  bgUrl             String?
-  statusEnabled     Boolean   @default(false)
-  currentStatus     String?
-  openMsg           String?
-  closedMsg         String?
-  errorMsg          String?
-  meetingMsg        String?
-  brbMsg            String?
-  lunchMsg          String?
-  unavailableMsg    String?
-  schedule          Json?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  // Relations
-  activations KioskActivation[]
+  id             String            @id
+  lastSeen       DateTime?
+  version        String?
+  active         Boolean           @default(false)
+  logoUrl        String?
+  bgUrl          String?
+  statusEnabled  Boolean           @default(false)
+  currentStatus  String?
+  openMsg        String?
+  closedMsg      String?
+  errorMsg       String?
+  meetingMsg     String?
+  brbMsg         String?
+  lunchMsg       String?
+  unavailableMsg String?
+  schedule       Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  activations    KioskActivation[]
 
   @@map("kiosks")
 }
 
-// User feedback
 model Feedback {
   id        Int      @id @default(autoincrement())
   name      String?
   message   String?
   timestamp DateTime @default(now())
   userId    String?
-
-  // Relations
-  user User? @relation(fields: [userId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@map("feedback")
 }
 
-// System notifications
 model Notification {
   id        Int      @id @default(autoincrement())
   message   String
@@ -188,7 +166,6 @@ model Notification {
   @@map("notifications")
 }
 
-// Directory integrations (LDAP, SCIM, etc.)
 model DirectoryIntegration {
   id        Int      @id @default(autoincrement())
   provider  String
@@ -200,21 +177,19 @@ model DirectoryIntegration {
   @@map("directory_integrations")
 }
 
-// File assets
 model Asset {
-  id           Int      @id @default(autoincrement())
-  name         String
-  type         String
-  filename     String
-  url          String
-  sizeBytes    Int?
-  mimeType     String?
-  uploadedAt   DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  name       String
+  type       String
+  filename   String
+  url        String
+  sizeBytes  Int?
+  mimeType   String?
+  uploadedAt DateTime @default(now())
 
   @@map("assets")
 }
 
-// Kiosk activation codes
 model KioskActivation {
   id        String    @id
   code      String
@@ -224,14 +199,11 @@ model KioskActivation {
   usedAt    DateTime?
   createdAt DateTime  @default(now())
   kioskId   String?
-
-  // Relations
-  kiosk Kiosk? @relation(fields: [kioskId], references: [id])
+  kiosk     Kiosk?    @relation(fields: [kioskId], references: [id])
 
   @@map("kiosk_activations")
 }
 
-// SSO configurations
 model SsoConfiguration {
   id            Int      @id @default(autoincrement())
   provider      String
@@ -242,12 +214,32 @@ model SsoConfiguration {
   @@map("sso_configurations")
 }
 
-// Admin PINs
 model AdminPin {
-  id        Int      @id @default(1)
+  id        Int      @id @default(autoincrement())
   globalPin String?
   kioskPins Json?
   updatedAt DateTime @default(now()) @updatedAt
 
   @@map("admin_pins")
+}
+
+model knowledge_base_articles {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model support_tickets {
+  id                                      Int      @id @default(autoincrement())
+  title                                   String
+  description                             String
+  status                                  String   @default("open")
+  createdAt                               DateTime @default(now())
+  updatedAt                               DateTime @default(now())
+  userId                                  String?
+  assigneeId                              String?
+  users_support_tickets_assigneeIdTousers User?    @relation("support_tickets_assigneeIdTousers", fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_support_tickets_userIdTousers     User?    @relation("support_tickets_userIdTousers", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

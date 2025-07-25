@@ -21,8 +21,8 @@ export class DatabaseFactory {
 
     try {
       logger.info('Initializing database factory...');
-      
-      const primaryDatabases = this.config.primaryDatabase.split(',').map(db => db.trim());
+      // Use correct config property for primary database
+      const primaryDatabases = (this.config.primary || this.config.primaryDatabase || 'sqlite').split(',').map(db => db.trim());
       
       // Initialize PostgreSQL if enabled
       if (primaryDatabases.includes('postgresql')) {

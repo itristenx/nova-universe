@@ -1,5 +1,5 @@
-import db from './db.js';
 import axios from 'axios';
+import db from './db.js';
 
 export async function getConfig() {
   return new Promise((resolve, reject) => {
@@ -53,7 +53,7 @@ export async function searchDirectory(q) {
 }
 
 export async function createUser(name, email) {
-  // NOTE: This creates a user in the LOCAL CueIT database, NOT in the external directory
+  // NOTE: This creates a user in the LOCAL Nova Universe database, NOT in the external directory
   // Directory integration is strictly read-only - we never modify external directory data
   return new Promise((resolve, reject) => {
     db.run(

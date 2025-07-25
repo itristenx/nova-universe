@@ -1,6 +1,7 @@
 import express from 'express';
-import { logger } from '../logger.js';
 import db from '../db.js';
+import { logger } from '../logger.js';
+import { deleteConfigByKey, fetchConfigByKey } from '../utils/dbUtils.js';
 
 const router = express.Router();
 
@@ -15,9 +16,23 @@ const router = express.Router();
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
+ *               type: object
+ *               properties:
+ *                 integrations:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                 storedConfigs:
+ *                   type: object
  *       500:
  *         description: Database error
  *         content:
@@ -48,39 +63,23 @@ router.get('/', (req, res) => {
       {
         id: 4,
         name: 'Slack',
-        type: 'slack',
-        enabled: storedConfigs.slack?.enabled ?? Boolean(process.env.SLACK_WEBHOOK_URL),
-        working: process.env.SLACK_WEBHOOK_URL ? true : false,
-        config: storedConfigs.slack?.config || {
-          webhookUrl: process.env.SLACK_WEBHOOK_URL || '',
-          channel: process.env.SLACK_CHANNEL || '#general',
-          username: process.env.SLACK_USERNAME || 'CueIT Bot'
-        }
+        description: 'Slack integration for Nova Universe',
+        status: 'active',
       },
       {
         id: 5,
         name: 'Microsoft Teams',
-        type: 'teams',
-        enabled: storedConfigs.teams?.enabled ?? Boolean(process.env.TEAMS_WEBHOOK_URL),
-        working: process.env.TEAMS_WEBHOOK_URL ? true : false,
-        config: storedConfigs.teams?.config || {
-          webhookUrl: process.env.TEAMS_WEBHOOK_URL || ''
-        }
+        description: 'Teams integration for Nova Universe',
+        status: 'planned',
       },
       {
         id: 6,
-        name: 'Generic Webhook',
-        type: 'webhook',
-        enabled: storedConfigs.webhook?.enabled ?? Boolean(process.env.WEBHOOK_URL),
-        working: process.env.WEBHOOK_URL ? true : false,
-        config: storedConfigs.webhook?.config || {
-          url: process.env.WEBHOOK_URL || '',
-          method: process.env.WEBHOOK_METHOD || 'POST',
-          contentType: process.env.WEBHOOK_CONTENT_TYPE || 'application/json'
-        }
-      }
+        name: 'Discord',
+        description: 'Discord integration for Nova Universe',
+        status: 'beta',
+      },
     ];
-    res.json(integrations);
+    res.json({ integrations, storedConfigs });
   });
 });
 
@@ -119,6 +118,31 @@ router.get('/', (req, res) => {
  *           application/json:
  *             schema:
  *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Invalid request body
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
+ *       404:
+ *         description: Integration not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 errorCode:
+ *                   type: string
  *       500:
  *         description: Database error
  *         content:
@@ -202,25 +226,26 @@ router.put('/:id', (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const integrationId = parseInt(req.params.id, 10);
+  const key = `integration_${integrationId}`;
 
   if (isNaN(integrationId)) {
     return res.status(400).json({ error: 'Invalid integration ID', errorCode: 'INVALID_ID' });
   }
 
-  db.run('DELETE FROM config WHERE key = ?', [`integration_${integrationId}`], function (err) {
-    if (err) {
-      logger.error(`Database error while deleting integration ${integrationId}:`, err);
-      return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-    }
+  try {
+    const changes = await deleteConfigByKey(key);
 
-    if (this.changes === 0) {
+    if (changes === 0) {
       return res.status(404).json({ error: 'Integration not found', errorCode: 'NOT_FOUND' });
     }
 
     res.status(200).json({ message: 'Integration deleted' });
-  });
+  } catch (error) {
+    logger.error(error.message);
+    return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+  }
 });
 
 
@@ -284,51 +309,33 @@ router.delete('/:id', (req, res) => {
 
 router.post('/:id/test', async (req, res, next) => {
   const integrationId = req.params.id;
+  const key = `integration_${integrationId}`;
 
   try {
-    // Fetch the integration configuration from the database
-    const query = 'SELECT value FROM config WHERE key = ?';
-    const key = `integration_${integrationId}`;
-    db.get(query, [key], (err, row) => {
-      if (err) {
-        logger.error(`Database error: ${err.message}`);
-        return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-      }
+    const config = await fetchConfigByKey(key);
 
-      if (!row) {
-        return res.status(404).json({
-          error: 'Integration not found',
-          errorCode: 'NOT_FOUND',
-          supportedTypes: ['type1', 'type2'], // Example supported types
-        });
-      }
+    if (!config) {
+      return res.status(404).json({
+        error: 'Integration not found',
+        errorCode: 'NOT_FOUND',
+        supportedTypes: ['Slack', 'Discord'],
+      });
+    }
 
-      // Parse the configuration
-      let config;
-      try {
-        config = JSON.parse(row.value);
-      } catch (parseError) {
-        logger.error(`Invalid configuration format: ${parseError.message}`);
-        return res.status(400).json({
-          error: 'Invalid integration configuration',
-          errorCode: 'INVALID_CONFIG',
-        });
-      }
-
-      // Perform the integration test (mocked for now)
-      if (config.type === 'type1') {
-        // Simulate a successful test
-        return res.status(200).json({ message: 'Integration test successful' });
-      } else {
-        return res.status(404).json({
-          error: 'Test not implemented for this integration type',
-          errorCode: 'TEST_NOT_IMPLEMENTED',
-          supportedTypes: ['type1'], // Example supported types
-        });
-      }
-    });
+    // Perform the integration test
+    if (config.type === 'Slack') {
+      return res.status(200).json({ message: 'Slack integration test successful' });
+    } else if (config.type === 'Discord') {
+      return res.status(200).json({ message: 'Discord integration test successful' });
+    } else {
+      return res.status(404).json({
+        error: 'Test not implemented for this integration type',
+        errorCode: 'TEST_NOT_IMPLEMENTED',
+        supportedTypes: ['Slack', 'Discord'],
+      });
+    }
   } catch (error) {
-    logger.error(`Unexpected error: ${error.message}`);
+    logger.error(error.message);
     return res.status(500).json({ error: 'Integration test failed', errorCode: 'TEST_FAILED' });
   }
 });

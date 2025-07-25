@@ -51,11 +51,11 @@ class EnhancedPrismaClient {
       try {
         return await next(params);
       } catch (error: any) {
-        logger.error('Prisma operation failed:', {
+        logger.error('Prisma operation failed: ' + JSON.stringify({
           model: params.model,
           action: params.action,
-          error: error.message
-        });
+          error: error instanceof Error ? error.message : String(error)
+        }));
         throw error;
       }
     });
@@ -67,11 +67,11 @@ class EnhancedPrismaClient {
       
       if (sensitiveModels.includes(params.model || '') && 
           sensitiveActions.includes(params.action)) {
-        logger.info('Sensitive operation:', {
+        logger.info('Sensitive operation: ' + JSON.stringify({
           model: params.model,
           action: params.action,
           args: JSON.stringify(params.args, null, 2)
-        });
+        }));
       }
       
       return await next(params);
@@ -104,11 +104,11 @@ class EnhancedPrismaClient {
   }
 
   // Transaction wrapper with enhanced error handling
-  async transaction<T>(fn: (tx: PrismaClient) => Promise<T>): Promise<T> {
+  async transaction<T>(fn: (tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => Promise<T>): Promise<T> {
     try {
       return await this.client.$transaction(fn);
     } catch (error: any) {
-      logger.error('Prisma transaction failed:', error);
+      logger.error('Prisma transaction failed: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }

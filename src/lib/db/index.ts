@@ -1,9 +1,9 @@
 // src/lib/db/index.ts
 // Unified database manager coordinating PostgreSQL, MongoDB, and Elasticsearch
-import enhancedPrisma from './postgres.js';
-import enhancedMongo from './mongo.js';
-import { elasticManager } from './elastic.js';
 import { logger } from '../../../nova-api/logger.js';
+import { elasticManager } from './elastic.js';
+import enhancedMongo from './mongo.js';
+import enhancedPrisma from './postgres.js';
 
 // Database health status interface
 interface DatabaseHealth {
@@ -51,7 +51,7 @@ class NovaDatabaseManager {
       this.initialized = true;
       logger.info('Nova Database Manager initialized successfully');
     } catch (error) {
-      logger.error('Failed to initialize Nova Database Manager:', error);
+      logger.error('Failed to initialize Nova Database Manager: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -64,7 +64,7 @@ class NovaDatabaseManager {
       elasticManager.healthCheck()
     ]);
 
-    return {
+    const healthStatus = {
       postgres: postgresHealth.status === 'fulfilled' 
         ? postgresHealth.value 
         : { healthy: false, error: postgresHealth.reason?.message },
@@ -75,6 +75,10 @@ class NovaDatabaseManager {
         ? elasticHealth.value
         : { healthy: false, error: elasticHealth.reason?.message }
     };
+
+    logger.info('Health status: ' + JSON.stringify(healthStatus));
+
+    return healthStatus;
   }
 
   // User management operations (PostgreSQL primary, with audit logging to MongoDB)
@@ -235,7 +239,7 @@ class NovaDatabaseManager {
       let ticket;
       try {
         ticket = await enhancedPrisma.prisma.supportTicket.update({
-          where: { id: ticketId },
+          where: { id: parseInt(ticketId, 10) }, // Convert ticketId to number
           data: updateData,
           include: {
             user: true,
@@ -347,10 +351,7 @@ class NovaDatabaseManager {
       let article;
       try {
         article = await enhancedPrisma.prisma.knowledgeBaseArticle.create({ 
-          data: articleData,
-          include: {
-            author: true
-          }
+          data: articleData
         });
       } catch (error: any) {
         if (error.message.includes('Unknown model')) {
@@ -470,7 +471,7 @@ class NovaDatabaseManager {
         timestamp: new Date()
       };
     } catch (error) {
-      logger.error('Error getting system metrics:', error);
+      logger.error('Error getting system metrics: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -490,7 +491,7 @@ class NovaDatabaseManager {
         await elasticManager.indexLog(eventData);
       }
     } catch (error) {
-      logger.error('Error logging event:', error);
+      logger.error('Error logging event: ' + (error instanceof Error ? error.message : String(error)));
       // Don't throw for logging errors
     }
   }
@@ -520,8 +521,6 @@ class NovaDatabaseManager {
             select: {
               id: true,
               email: true,
-              firstName: true,
-              lastName: true,
               createdAt: true,
               updatedAt: true
             }
@@ -611,7 +610,7 @@ class NovaDatabaseManager {
       logger.info('Nova Database Manager shutdown completed');
       process.exit(0);
     } catch (error) {
-      logger.error('Error during database shutdown:', error);
+      logger.error('Error during database shutdown: ' + (error instanceof Error ? error.message : String(error)));
       process.exit(1);
     }
   }
@@ -621,9 +620,9 @@ class NovaDatabaseManager {
 export const novaDb = new NovaDatabaseManager();
 
 // Export individual database managers for direct access when needed
-export { default as postgres } from './postgres.js';
-export { default as mongo } from './mongo.js';
 export { elasticManager as elasticsearch } from './elastic.js';
+export { default as mongo } from './mongo.js';
+export { default as postgres } from './postgres.js';
 
 // Export convenience methods
 export const {

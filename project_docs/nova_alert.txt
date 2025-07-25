@@ -8,6 +8,8 @@ GoAlert_Integration_Plan.md
 
 This document defines the full integration strategy for embedding GoAlert into the Nova Universe, specifically within the Nova Pulse module. The integration treats GoAlert as a headless alerting engine, with all user interaction and configuration abstracted through Nova’s unified UI, API, and RBAC layers.
 
+https://github.com/target/goalert
+
 ⸻
 
 🎯 Integration Goals
