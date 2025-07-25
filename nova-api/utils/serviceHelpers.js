@@ -1,6 +1,6 @@
 /**
  * Service configuration and availability utilities
- * Extracts service existence checking logic to improve code readability
+ * Extracts service configuration checking logic to improve code readability
  */
 
 /**
