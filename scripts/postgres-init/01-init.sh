@@ -4,17 +4,23 @@
 
 set -e
 
+# Ensure required environment variables are set
+if [ -z "$NOVA_READONLY_PASSWORD" ] || [ -z "$NOVA_BACKUP_PASSWORD" ]; then
+    echo "Error: Required environment variables NOVA_READONLY_PASSWORD or NOVA_BACKUP_PASSWORD are not set."
+    exit 1
+fi
+
 # Create application user with limited privileges
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     -- Create read-only user for monitoring
-    CREATE USER nova_readonly WITH PASSWORD 'readonly_pass_2024';
+    CREATE USER nova_readonly WITH PASSWORD '$NOVA_READONLY_PASSWORD';
     GRANT CONNECT ON DATABASE $POSTGRES_DB TO nova_readonly;
     GRANT USAGE ON SCHEMA public TO nova_readonly;
     GRANT SELECT ON ALL TABLES IN SCHEMA public TO nova_readonly;
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO nova_readonly;
 
     -- Create backup user
-    CREATE USER nova_backup WITH PASSWORD 'backup_pass_2024';
+    CREATE USER nova_backup WITH PASSWORD '$NOVA_BACKUP_PASSWORD';
     GRANT CONNECT ON DATABASE $POSTGRES_DB TO nova_backup;
     GRANT USAGE ON SCHEMA public TO nova_backup;
     GRANT SELECT ON ALL TABLES IN SCHEMA public TO nova_backup;
