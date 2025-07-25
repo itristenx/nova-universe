@@ -43,6 +43,7 @@ import { validateKioskRegistration, validateTicketSubmission, validateEmail, val
 import { authRateLimit, apiRateLimit, kioskRateLimit } from './middleware/rateLimiter.js';
 import helmet from 'helmet';
 import { body, validationResult } from 'express-validator';
+import { getServiceNowConfig, getEmailStrategy } from './utils/serviceHelpers.js';
 
 // Configure environment
 dotenv.config();
@@ -530,21 +531,20 @@ app.post("/submit-ticket", ticketLimiter, [
   const ticketId = uuidv4().split("-")[0];
   const timestamp = new Date().toISOString();
 
-  const SN_INSTANCE = process.env.SERVICENOW_INSTANCE;
-  const SN_USER = process.env.SERVICENOW_USER;
-  const SN_PASS = process.env.SERVICENOW_PASS;
+  // Handle ServiceNow integration
   let serviceNowId = '';
-  if (SN_INSTANCE && SN_USER && SN_PASS) {
+  const serviceNowConfig = getServiceNowConfig();
+  if (serviceNowConfig) {
     try {
       const resp = await axios.post(
-        `${SN_INSTANCE}/api/now/table/incident`,
+        `${serviceNowConfig.instance}/api/now/table/incident`,
         {
           short_description: title,
           urgency,
           description: `Name: ${name}\nEmail: ${email}\nSystem: ${system}\n\n${description || ''}`,
         },
         {
-          auth: { username: SN_USER, password: SN_PASS },
+          auth: { username: serviceNowConfig.user, password: serviceNowConfig.pass },
         }
       );
       serviceNowId = resp.data?.result?.sys_id || '';
@@ -570,22 +570,18 @@ ${description || "(No description provided)"}
     `,
   };
 
-  const HS_KEY = process.env.HELPSCOUT_API_KEY || '';
-  const HS_MAILBOX = process.env.HELPSCOUT_MAILBOX_ID || '';
-  const HS_FALLBACK = process.env.HELPSCOUT_SMTP_FALLBACK === 'true';
-
-  const sendViaHelpScout = !!HS_KEY;
-  const sendViaSmtp = !sendViaHelpScout || HS_FALLBACK;
+  // Determine email sending strategy
+  const emailStrategy = getEmailStrategy();
 
   let emailStatus = "success";
   try {
-    if (sendViaHelpScout) {
+    if (emailStrategy.sendViaHelpScout) {
       await axios.post(
         "https://api.helpscout.net/v2/conversations",
         {
           type: "email",
           subject: mailOptions.subject,
-          mailboxId: Number(HS_MAILBOX),
+          mailboxId: Number(emailStrategy.helpScout.mailboxId),
           customer: { email, firstName: name },
           threads: [
             {
@@ -596,11 +592,11 @@ ${description || "(No description provided)"}
           ],
         },
         {
-          headers: { Authorization: `Bearer ${HS_KEY}` },
+          headers: { Authorization: `Bearer ${emailStrategy.helpScout.apiKey}` },
         }
       );
     }
-    if (sendViaSmtp) {
+    if (emailStrategy.sendViaSmtp) {
       await transporter.sendMail(mailOptions);
     }
   } catch (err) {
