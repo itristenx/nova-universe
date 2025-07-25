@@ -163,7 +163,7 @@ router.get('/tickets',
       .withMessage('Invalid status value'),
     query('priority')
       .optional()
-      .isIn(['low', 'medium', 'high', 'urgent'])
+      .isIn(['low', 'medium', 'high', 'critical'])
       .withMessage('Invalid priority value'),
     query('sort')
       .optional()
