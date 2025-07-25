@@ -621,7 +621,7 @@ class ElasticsearchManager {
 
       const response = await this.client.search({
         index: 'nova_kb',
-        body: searchBody
+        ...searchBody
       });
 
       return {
