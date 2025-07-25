@@ -182,12 +182,6 @@ if (process.env.DEBUG_CORS === 'true') {
 app.use(securityHeaders);
 app.use(requestLogger);
 
-// Disable CSP entirely for Swagger UI routes
-app.use('/api-docs', (req, res, next) => {
-  res.removeHeader('Content-Security-Policy');
-  next();
-});
-
 // Regular CSP for other routes  
 app.use(helmet({
   contentSecurityPolicy: {
@@ -200,6 +194,12 @@ app.use(helmet({
     }
   }
 }));
+
+// Disable CSP entirely for Swagger UI routes (must be after helmet)
+app.use('/api-docs', (req, res, next) => {
+  res.removeHeader('Content-Security-Policy');
+  next();
+});
 
 // Add custom CORS debugging middleware
 app.use((req, res, next) => {
@@ -1741,7 +1741,7 @@ app.get('/api-docs/test', (req, res) => {
   `);
 });
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(null, {
   swaggerOptions: {
     url: '/api-docs/swagger.json'
   },

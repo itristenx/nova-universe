@@ -1,0 +1,310 @@
+# 🌌 **Nova Universe: Master Platform Specification & Branding Document**
+
+---
+
+## 🔬 Overview
+
+**Nova Universe** is an enterprise-grade, modular ITSM and operations platform tailored for dynamic organizations such as BSE Global. It unifies IT, HR, Cybersecurity, Operations, and End-User experience into one scalable, secure, and beautiful ecosystem. It blends modern software practices, deep identity control, gamification, and an AI-powered assistant named **Cosmo**, all wrapped in a branded experience inspired by tech and sports entertainment.
+
+---
+
+## 🌍 Core Modules & Submodules
+
+### 📊 Nova Core
+
+**Function:** Admin backbone, platform configuration, user management, delegation, config flags, org-wide settings.
+
+* **Submodules:**
+
+  * **Delegation Engine**: Allows for scoped access and approvals.
+  * **Platform Config**: Toggles, branding, SLA defaults, tenant settings.
+  * **Audit Engine**: Logs activity by user/IP/device, module-specific actions.
+
+### 🧰 Nova Helix (Identity Engine)
+
+**Function:** Central SSO, SCIM directory sync, RBAC enforcement, session control, kiosk provisioning.
+
+* **Features:**
+
+  * SSO via Okta/Azure AD (SAML & OIDC)
+  * SCIM Provisioning (users, groups, roles)
+  * JIT Access
+  * Multi-org support
+  * Role federation across modules
+
+### 📈 Nova Pulse (Technician Suite)
+
+**Function:** Unified dashboard for agents across IT, HR, Cybersecurity, and Ops
+
+* **Submodules:**
+
+  * **Pulse\:IT** - Core help desk, hardware/software, CI mapping
+  * **Pulse\:HR** - HR support queue with private data handling
+  * **Pulse\:Ops** - Field support, venue ops, mailroom
+  * **Pulse\:Cyber** - ISAC incident handling, alerts, breach response
+  * **Pulse\:Inventory** - Assets, assignment, warranty, check-in/out
+  * **Pulse\:Workflow** - Trigger-based and approval flows
+
+### 🌎 Nova Orbit (End-User Portal)
+
+**Function:** User dashboard for tickets, knowledge, requests, and notifications
+
+* **Submodules:**
+
+  * **Request Catalog** - Smart form catalog mapped to REQ types
+  * **My Tickets** - Real-time tracking, updates
+  * **My Assets** - Devices, software assigned
+  * **Lore Access** - Contextual KB with feedback
+
+### 🌌 Nova Lore (Knowledge Base)
+
+**Function:** Collaborative knowledge management with gamified authoring
+
+* **Features:**
+
+  * Article XP, impact metrics
+  * Verified Solution tags
+  * Audience targeting (End-user, HR only, Agents only)
+
+### 🚀 Nova Beacon (Kiosk App)
+
+**Function:** Venue/iPad Kiosk for ticket intake
+
+* **Features:**
+
+  * Remote-config from Core
+  * Dynamic logo & theme
+  * Offline fallback UI
+  * SSO-free, Helix-powered ephemeral session
+
+### 💌 Nova Comms (Slack App)
+
+**Function:** Slash command UI with Cosmo, ticket creation, KB, approvals
+
+* **Slash Commands:**
+
+  * `/it-help`
+  * `/request`
+  * `/cosmo`
+  * `/lore`
+  * `/pulse`
+
+### 🔌 Nova Synth (AI Engine)
+
+**Function:** AI/automation engine for workflows, NLP classification, MCP integration
+
+* **Features:**
+
+  * Auto-classification of tickets
+  * Workflow actions
+  * Article recommendation
+  * Slack + Portal intent parsing
+  * Connected to Cosmo's brain
+
+### 🏋️‍♂️ Nova Deck (Launcher Dashboard)
+
+**Function:** Cross-module dashboard and launcher
+
+* **Features:**
+
+  * Personalized launch tiles
+  * Module shortcuts
+  * Cosmo status card
+
+---
+
+## 🏛 Architecture
+
+```plaintext
+                         +----------------+
+                         |  Identity (Helix)  |
+                         +--------+-------+
+                                  |
+         +------------------------+--------------------------+
+         |                        |                          |
+ +-------v------+         +-------v-------+          +-------v--------+
+ |   API Layer  |         |  Workflow/Synth|          |   Webhooks     |
+ +------+-------+         +---------------+          +----------------+
+        |                        |                           |
+ +------v------------------------v---------------------------v--------+
+ |                          Nova Core (RBAC, Config, Audit)           |
+ +-------------+------------------------+------------------------------+
+               |                        |                         |
+      +--------v------+       +---------v---------+        +-------v------+
+      |   Nova Pulse  |       |    Nova Orbit     |        |  Nova Beacon |
+      +---------------+       +-------------------+        +--------------+
+           |                          |
+   +-------+------+        +----------+---------+
+   | Pulse Submods|        | Lore + Catalog    |
+   +--------------+        +-------------------+
+```
+
+---
+
+## 🔒 Role-Based Access Control (RBAC)
+
+### Core Roles (SCIM/Helix-managed):
+
+* `end_user`
+* `technician`
+* `tech_lead`
+* `admin`
+* `hr_agent`
+* `hr_admin`
+* `ops_agent`
+* `ops_admin`
+* `cyber_agent`
+* `cyber_admin`
+* `nova_superadmin`
+
+### Feature Access Examples:
+
+| Feature                    | end\_user | technician | tech\_lead | admin |
+| -------------------------- | --------- | ---------- | ---------- | ----- |
+| Submit Ticket              | ✅         | ✅          | ✅          | ✅     |
+| View Request Catalog       | ✅         | ✅          | ✅          | ✅     |
+| Edit SLA Policy            | ❌         | ❌          | ✅          | ✅     |
+| Manage Roles / RBAC        | ❌         | ❌          | ❌          | ✅     |
+| Run Audit Report           | ❌         | ❌          | ✅          | ✅     |
+| Submit Cybersecurity Alert | ✅         | ❌          | ❌          | ❌     |
+
+### Internal Flags (Helix config / Ticket Metadata):
+
+* `VIP`
+* `NewHire`
+* `SecurityConcern`
+* `CIReference`
+* `MobileSubmitted`
+
+---
+
+## 📊 API Overview (v2)
+
+### Universal Conventions
+
+* RESTful design
+* JWT auth via Helix
+* OpenAPI v2 compliant
+* Namespaces per module
+* `INC123456`, `REQ123456` format (no dashes)
+
+### Key Endpoints
+
+#### `/api/helix`
+
+* `GET /session`
+* `POST /sso/login`
+* `GET /me/roles`
+* `GET /audit/logs`
+
+#### `/api/pulse`
+
+* `GET /tickets?queue=it`
+* `POST /tickets` (INC, REQ, etc.)
+* `PATCH /tickets/:id/assign`
+
+#### `/api/orbit`
+
+* `GET /my/tickets`
+* `GET /request-catalog`
+* `POST /submit-request`
+
+#### `/api/lore`
+
+* `GET /articles/:id`
+* `GET /search?q=reset password`
+* `POST /feedback`
+
+#### `/api/synth`
+
+* `POST /classify`
+* `POST /workflow/trigger`
+* `GET /recommendations`
+
+---
+
+## 🌈 Branding & Design System
+
+### Brand Voice
+
+* **Professional but friendly**
+* **Conversational with clarity**
+* **AI with charm (Cosmo)**
+* **Apple-level polish**
+
+### Mascot: **Cosmo**
+
+* Visual: Cute, minimal astronaut helmet with glowing eye
+* Voice: Friendly, curious, helpful
+* Contextual behavior ("Nice try! Let's solve this together")
+
+### Fonts
+
+* Headers: `Inter ExtraBold`
+* Body: `Inter Medium`
+
+### Color Palette
+
+| Name          | HEX     | Usage                    |
+| ------------- | ------- | ------------------------ |
+| Nova Blue     | #2D81FF | Primary buttons, accents |
+| Space Black   | #1A1C20 | Header backgrounds       |
+| Gravity Gray  | #343A40 | Text and muted UI        |
+| Orbit White   | #F9FAFB | Background               |
+| Beacon Yellow | #FFCB2B | Kiosk, highlights        |
+| Pulse Teal    | #00C7B1 | Technician UI highlights |
+| Lore Purple   | #7352FF | Knowledge base accents   |
+
+---
+
+## 🎓 Gamification: Nova Ascend
+
+* XP awarded per action (ticket, resolution, KB write, approval)
+* Levels and ranks: "Cadet", "Engineer", "Commander", "Nova Master"
+* Badges: "Stardust Author", "VIP Saver", "Cyber Sentinel"
+* Slack integration via `/ascend`
+
+---
+
+## 📅 Onboarding Flows
+
+* SSO Login → Profile Setup
+* Role detection → Dynamic walkthrough (Pulse vs Orbit vs Admin)
+* Cosmo introduces modules
+* Nova ID and XP shown on dashboard
+
+---
+
+## 🔧 Developer Experience
+
+* OpenAPI v2 for all services
+* Supabase for Edge Functions (Slack submission)
+* Webhook-ready triggers from Pulse, Synth
+* MCP-compatible endpoint structure for AI agents
+* GitHub Actions for CI/CD
+
+---
+
+## 🌐 Future-Proofing
+
+* Versioning per module
+* Helm charts for self-hosted deployments
+* Agentic support with Cosmo AI for actions
+* Identity federation support (multi-org Helix upgrade planned)
+
+---
+
+## 🔹 Suggested Improvements
+
+* Add MCP/LLM memory history for Cosmo
+* Expand Lore gamification into leaderboard
+* Optional AI summarization of long tickets
+* Slack DM support via `/cosmo`
+
+---
+
+## 📄 Appendix
+
+* See `Nova_API_v2.md` for full endpoint specs
+* See `Nova_Brand_Guide.pdf` for logos, Slack avatars, iOS icons
+* See `Nova_Playbook.md` for development phases and QA milestones
