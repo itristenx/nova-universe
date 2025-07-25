@@ -1,0 +1,188 @@
+Here is a full GoAlert Integration Plan for the Nova Universe, designed to be secure, scalable, and fully aligned with Nova’s architecture and principles — including modular integration, RBAC, workflow automation, and AI interaction via Cosmo and Synth.
+
+⸻
+
+GoAlert_Integration_Plan.md
+
+📌 Overview
+
+This document defines the full integration strategy for embedding GoAlert into the Nova Universe, specifically within the Nova Pulse module. The integration treats GoAlert as a headless alerting engine, with all user interaction and configuration abstracted through Nova’s unified UI, API, and RBAC layers.
+
+⸻
+
+🎯 Integration Goals
+	•	Use GoAlert as a backend-only on-call rotation and alert dispatch engine
+	•	Eliminate direct UI/API exposure to end users or most technicians
+	•	Route all alert creation and management through:
+	•	Workflows (Pulse Workflow Engine)
+	•	Cosmo (AI assistant / Synth layer)
+	•	Nova API (v2)
+	•	Maintain RBAC parity with Nova Helix
+	•	Maintain full auditability, security, and visibility from Nova Pulse and Core
+
+⸻
+
+🧱 Architecture
+
+[Nova Pulse]
+   |
+   |--- [Alert Manager UI]   <-- used by Pulse Leads/Admins only
+   |
+   |--- [Workflow Engine] 
+   |        |
+   |        |--> [Nova v2 API] --> [GoAlert API]
+   |
+   |--- [Cosmo AI]
+             |
+             |--> [MCP Tasks] --> [Nova API v2] --> [GoAlert]
+
+[GoAlert]
+   - On-call Schedules
+   - Rotation Policies
+   - Escalation Chains
+   - Alert Routing Rules
+   - Notification Channels
+
+
+⸻
+
+🔐 Security & Access Control
+
+Layer	Responsibility	Controlled By
+Helix (SCIM)	Core identity & RBAC provisioning	SCIM / Okta / Azure Entra
+Pulse RBAC	Submodule role-based alert visibility	Pulse Admin/Lead
+Nova API	API layer for interacting with GoAlert	Platform API / Synth
+GoAlert UI	🔒 Disabled for all users	Hidden via proxy config
+
+
+⸻
+
+👤 Supported Roles & Permissions
+
+Role	Alert View	Alert Create	Schedule Mgmt	Escalation Mgmt
+End User	❌	❌	❌	❌
+Technician	✅ (assigned alerts only)	❌	❌	❌
+Tech Lead	✅	✅ (through workflows)	❌	❌
+Pulse Lead/Admin	✅	✅	✅	✅
+Core Admin	✅	✅	✅	✅
+
+
+⸻
+
+🔁 Workflow Scenarios
+
+1. Automated Alert via Ticket Workflow
+	•	Trigger: Incident (INC) ticket with specific flags (e.g. isCritical, CI.type === 'Network')
+	•	Flow:
+	•	Workflow Engine evaluates ticket
+	•	If criteria met, API call to Nova Alert Proxy
+	•	Proxy creates alert in GoAlert using pre-assigned escalation policy
+
+2. Cosmo-Triggered Alert Escalation
+	•	Trigger: User requests escalation via Cosmo ("escalate this issue to on-call")
+	•	Flow:
+	•	Cosmo parses context via MCP
+	•	Validates user permissions and incident metadata
+	•	Routes through Nova API to GoAlert
+
+3. Pulse Lead Manual Alert Creation (Admin UI)
+	•	Use case: Proactive on-call testing or internal alerting
+	•	Flow:
+	•	Uses Pulse Alert UI (restricted to Admin/Lead)
+	•	UI renders filtered schedules, escalation chains
+	•	Sends alert via Nova API
+
+⸻
+
+🔌 API Proxy Layer (Nova API v2)
+
+Endpoints
+
+Endpoint	Method	Description
+/alerts/create	POST	Create alert via metadata/workflow
+/alerts/escalate/:ticketId	POST	Escalate an active incident
+/alerts/status/:alertId	GET	Fetch current alert status
+/alerts/schedules	GET	List viewable on-call schedules
+/alerts/rotate/:scheduleId	POST	Trigger manual rotation
+
+All GoAlert API calls are proxied through Nova’s backend:
+	•	Ensures logging, RBAC checks, masking
+	•	Enables Nova to apply branding, language control (e.g. Cosmo tone)
+	•	Allows LLM logic to decide when to alert or escalate
+
+⸻
+
+🔍 Auditing & Logging
+
+Logged Fields
+
+Field	Source	Notes
+alert_id	GoAlert	UUID of alert
+triggered_by	Nova (user ID)	Who triggered alert (user/workflow)
+schedule_id	GoAlert	Which schedule was involved
+source_ticket_id	Nova	ID of related ticket
+created_at	Nova API	UTC timestamp
+delivery_status	GoAlert	Notification success/fail
+
+Audit logs are stored in Nova Core Audit System with linkage to CI, User, and Ticket metadata.
+
+⸻
+
+🧪 Testing & QA Plan
+
+Scenario	Result
+Workflow triggers alert to GoAlert	Alert appears, user is notified
+Cosmo escalates ticket	Alert created, logged, and escalated
+RBAC prevents tech from viewing unrelated alerts	✅ Access Denied
+Pulse Lead updates schedule	✅ Updated and audit logged
+Invalid API payload	❌ Rejected, error returned
+
+
+⸻
+
+🧰 Deployment & Config
+
+Environment Variables
+
+GOALERT_API_BASE=https://goalert.internal
+GOALERT_API_KEY=****
+GOALERT_PROXY_ENABLED=true
+GOALERT_ALERT_SOURCE=nova
+
+GoAlert Setup Checklist
+	•	Create schedules: Ops On-Call, Cyber Escalation, Infra Emergency
+	•	Create escalation chains for each team
+	•	Disable UI exposure (reverse proxy w/ access controls)
+	•	Preconfigure fallback notification rules (SMS, Email, Slack)
+
+⸻
+
+🚀 Future Enhancements
+	•	Support Alert Suppression Windows from Nova UI
+	•	Slack/Teams alert delivery preview via Nova Comms
+	•	Add Alert Impact Matrix for visualization in Pulse ticket view
+	•	Cosmo “status follow-up” agent ("Is the on-call aware of this?")
+	•	Auto-deescalation based on ticket resolution state
+
+⸻
+
+📎 Related Modules
+	•	✅ Nova Pulse: Main alert display & schedule mgmt
+	•	✅ Nova Synth: AI execution layer for escalations
+	•	✅ Nova Orbit: Indirect (read-only) alert visibility on open ticket
+	•	✅ Nova Core: System audit, role access enforcement
+	•	✅ Nova Helix: RBAC and user provisioning
+	•	✅ Nova API v2: Proxy handler for GoAlert
+
+⸻
+
+🧩 Final Notes
+
+GoAlert is a powerful alerting backend, but Nova controls:
+	•	Who can see alerts
+	•	How alerts are created (via workflows, AI)
+	•	Where alerts show up (Pulse UI only)
+	•	When alerts are triggered (rule-based or LLM-based)
+
+Direct usage of GoAlert’s native UI is prohibited — all interactions must be mediated through Nova’s ecosystem.
+

@@ -1,0 +1,354 @@
+# Nova Universe – Complete Modules, Submodules, and Feature Directory
+
+---
+
+## 🌌 Overview
+
+The **Nova Universe** is a modular, enterprise-grade ITSM ecosystem designed for extensibility, AI integration, and user-focused experience. This document outlines every module, its submodules, features, and relevant relationships.
+
+---
+
+## ✨ Core Platform Modules
+
+These foundational modules power the Nova Universe backend, workflows, identity, automation, and communication.
+
+### 1. **Nova Core**
+
+*System logic, configuration, workflow, audit, and base analytics.*
+
+#### Features:
+
+* Tenant & system configuration engine
+* Theming and branding per tenant
+* Audit trail (user, IP, metadata)
+* Event & notification engine (internal routing)
+* Workflow engine (automations, approvals)
+* SLA engine (Urgency x Impact matrix)
+* Base analytics schema
+
+---
+
+### 2. **Nova Helix**
+
+*Universal identity and access platform.*
+
+#### Features:
+
+* Login system (Local, SAML, OIDC, Magic Link)
+* Nova ID: persistent user identifier across modules
+* SCIM support: user provisioning & deprovisioning
+* Role-based access control (RBAC)
+* Just-in-Time access provisioning
+* MFA, session enforcement
+* Kiosk activation and assignment
+
+---
+
+### 3. **Nova Synth**
+
+*The AI, automation, and workflow intelligence engine.*
+
+#### Features:
+
+* Intent classification engine (ticket, search, command)
+* Automation & rules engine
+* Workflow state transitions
+* Integration with Model Context Protocol (MCP)
+* AI memory management
+* AI behavior audit & control center
+
+---
+
+### 4. **Nova Comms**
+
+*Channel and communication integration across the platform.*
+
+#### Features:
+
+* Slack App: slash commands, modal forms, ticket previews
+* Email Ingest: auto-parse and ticket creation
+* Email Outbox: replies with threading
+* Notification engine: broadcast, direct alerts
+* Slack Request Catalog integration
+* Alert routing fallback (used by GoAlert)
+
+---
+
+## 🌐 End User Experience Modules
+
+### 5. **Nova Orbit**
+
+*The end user portal across IT, HR, Ops, and Knowledge.*
+
+#### Submodules:
+
+* Tickets
+* Request Catalog
+* Cosmo Assistant
+* Lore (Knowledge Base)
+* Dock (Mailroom user-facing)
+* Assets (user's assigned devices)
+* My Activity
+
+#### Features:
+
+* Fully responsive & tenant-themed UI
+* Smart global search with filters
+* Article and ticket suggestions via Cosmo
+* Public/private tickets
+* Ticket status and interaction
+* Form-based request catalog
+
+---
+
+### 6. **Nova Pulse**
+
+*Technician and agent portal for all workspaces.*
+
+#### Submodules:
+
+| Name         | Purpose                                |
+| ------------ | -------------------------------------- |
+| Pulse\:IT    | Standard IT support, devices, software |
+| Pulse\:Ops   | Facilities, delivery, logistics        |
+| Pulse\:HR    | HR cases, onboarding, leave            |
+| Pulse\:Cyber | ISAC: cyber threats, breach response   |
+
+#### Features:
+
+* Modular queue views per role and submodule
+* Agent workspace with ticket deep view
+* Ticket flags: VIP, Compliance, New Hire
+* CI + Asset link viewer
+* SLA timers and visualizations
+* Related tickets mapping
+* XP-based leaderboard system
+* Custom queue filtering and saved views
+* Scoped permissions for teams/leads
+
+---
+
+### 7. **Nova Beacon**
+
+*iPadOS kiosk app for quick ticketing and package check-in.*
+
+#### Features:
+
+* Issue reporting via form or Cosmo
+* QR/Name/Nova ID check-in support
+* Location-aware ticket routing
+* Mailroom pickup integration (Dock)
+* Offline sync with local fallback
+* Per-kiosk branding and configuration
+
+---
+
+## 🔎 Knowledge & Operational Modules
+
+### 8. **Nova Lore**
+
+*Secure, AI-enhanced Knowledge Base (KB).*
+
+#### Features:
+
+* Scoped articles (team-based visibility)
+* KB ID: e.g., `KB123456`
+* AI-suggested articles
+* Public/private access
+* XP tracking for article authors
+* Feedback, star rating, usage metrics
+* Article linking to tickets
+* Verified solutions badge
+
+---
+
+### 9. **Nova Dock**
+
+*Mailroom & delivery management system integrated into Pulse\:Ops.*
+
+#### Features:
+
+* Delivery check-in & recipient matching
+* Recipient signature capture
+* QR-based pickup via Beacon
+* Issue flagging (e.g. damaged)
+* Searchable delivery logs
+* Location-aware filtering
+
+---
+
+### 10. **Nova Inventory**
+
+*Central asset and configuration item (CI) system integrated into Pulse.*
+
+#### Features:
+
+* Devices, licenses, peripherals tracking
+* CI relationship mapping (impact analysis)
+* Ownership by user/org/team
+* CSV import template + validator
+* Asset history + audit trail
+* Kiosk device linking
+* Statuses: Assigned, In Transit, Repair, Retired
+* Role-aware access control
+
+---
+
+## 🚨 Alerting & Escalation Engine
+
+### 11. **Nova Alerts** (GoAlert Integration)
+
+*Backend alerting engine via GoAlert, proxied via Nova API.*
+
+#### Features:
+
+* Alerts only triggered via Synth workflows or Pulse\:Cyber
+* Alert types: Incident, Outage, Breach, Compliance
+* On-call scheduling
+* SMS/Voice/Email delivery via Comms
+* Alert visibility in Pulse\:Cyber
+* Management by Pulse\:Cyber Leads
+* Cosmo awareness and acknowledgment of alerts
+* No direct GoAlert UI exposed
+* Audit of alert delivery, read receipt
+
+---
+
+## 🏢 Service & Ticket Modules
+
+### 12. **Request Catalog**
+
+*Structured, scoped, and dynamic service request layer.*
+
+#### Features:
+
+* Dynamic forms with branching logic
+* Scoped visibility: Org, Role, Team
+* Approval chain engine
+* Slack integration
+* Mobile & Web parity
+* Grouped categories
+* Auto-fill with user metadata
+
+---
+
+### 13. **Global Ticketing Engine**
+
+*Universal ticket system powering all modules.*
+
+#### Supported Ticket Types:
+
+| Code | Name          | Description                                                      |
+| ---- | ------------- | ---------------------------------------------------------------- |
+| INC  | Incident      | Unexpected disruption or degradation of service.                 |
+| REQ  | Request       | Standard service request for access, items, onboarding, etc.     |
+| PRB  | Problem       | Investigation into recurring issues or root causes.              |
+| CHG  | Change        | Request for change to infrastructure or service.                 |
+| TASK | Task          | Sub-ticket assigned for fulfillment, follow-up, or steps.        |
+| HR   | HR Case       | Human Resources-specific ticket: benefits, policy, conflict.     |
+| OPS  | Operations    | Facilities, equipment, physical access, or logistics.            |
+| ISAC | Cybersecurity | Incident related to security alerts, breaches, or ISAC policies. |
+| FB   | Feedback      | Product, service, or support-related feedback.                   |
+
+#### Features:
+
+* ID Format: e.g. INC123456
+* State engine: Open, In Progress, Pending, Closed, Canceled
+* Lifecycle transitions & audit logs
+* Field-level permissions
+* SLA breach tracking
+* Related ticket mapping
+* Cosmo auto-classification & triage
+* Structured + unstructured metadata fields
+
+---
+
+## 🔹 Support Utilities
+
+### 14. **Nova Deck**
+
+*Universal app switcher and system launcher.*
+
+#### Features:
+
+* Modular app grid view
+* Cross-module shortcut support
+* Status broadcasts & banners
+* Per-role visibility of modules
+* Dev mode switch for Forge users
+
+---
+
+### 15. **Forge** (Developer Hub)
+
+*Optional internal dev portal powered by Backstage.*
+
+#### Features:
+
+* Internal Nova SDK documentation
+* CI/CD pipeline visibility
+* Service ownership dashboard
+* Plugin templates & scaffolding
+* Internal dev onboarding
+
+---
+
+## 🔧 Cross-Cutting Features
+
+### Cosmo (AI Assistant)
+
+Present in: Orbit, Pulse, Beacon, Comms
+
+* End-user triage + help
+* Agent command execution
+* Trivia, onboarding assistance
+* Ticket status, KB lookup, system navigation
+* XP system integration
+* Scoped context memory
+* MCP-compliant, auditable, secure
+
+### Nova ID System
+
+* One user ID across platform
+* XP, achievements, metadata
+* Secure linkage to sessions, audit, tickets, assets
+* Visible in all interfaces
+
+---
+
+## 📊 Role-Based Access Control (RBAC)
+
+### Default Roles:
+
+| Role         | Description                                                             |
+| ------------ | ----------------------------------------------------------------------- |
+| end\_user    | Default user role. Access to Orbit, submit tickets, view assets and KB. |
+| tech         | Technician for Pulse submodule (IT, Ops, HR, Cyber). Scoped access.     |
+| tech\_lead   | Supervisor-level agent. Access to team queues and assignments.          |
+| agent        | General support role across modules (alias of tech).                    |
+| agent\_lead  | Lead role across teams, manages queues, reviews tickets.                |
+| ops\_lead    | Facilities & logistics supervisor. Manages Ops queue and dock.          |
+| hr\_lead     | Manages HR tickets and visibility. Scoped for privacy.                  |
+| cyber\_lead  | Cybersecurity supervisor. Sees ISAC tickets and GoAlert feeds.          |
+| admin        | Full access to modules and configs. Cannot change identity/SSO.         |
+| helix\_admin | Identity and access admin. SSO, SCIM, MFA, roles.                       |
+| kiosk\_admin | Manages kiosk assignments and configurations.                           |
+| lore\_editor | Writes, edits, and publishes KB articles. Scoped by topic.              |
+| comms\_admin | Manages email, Slack, alerting preferences.                             |
+
+### RBAC Matrix:
+
+| Module       | end\_user | tech | tech\_lead | agent\_lead | ops\_lead | hr\_lead | cyber\_lead | admin | helix\_admin |
+| ------------ | --------- | ---- | ---------- | ----------- | --------- | -------- | ----------- | ----- | ------------ |
+| Orbit        | ✅         | ❌    | ❌          | ❌           | ❌         | ❌        | ❌           | ❌     | ❌            |
+| Pulse\:IT    | ❌         | ✅    | ✅          | ✅           | ❌         | ❌        | ❌           | ✅     | ❌            |
+| Pulse\:Ops   | ❌         | ✅    | ✅          | ✅           | ✅         | ❌        | ❌           | ✅     | ❌            |
+| Pulse\:HR    | ❌         | ✅    | ✅          | ✅           | ❌         | ✅        | ❌           | ✅     | ❌            |
+| Pulse\:Cyber | ❌         | ✅    | ✅          | ✅           | ❌         | ❌        | ✅           | ✅     | ❌            |
+| Beacon       | ✅         | ❌    | ❌          | ❌           | ❌         | ❌        | ❌           | ✅     | ❌            |
+| Lore         | ✅/❌       | ✅    | ✅          | ✅           | ✅         | ✅        | ✅           | ✅     | ❌            |
+| Inventory    | ✅         | ✅    | ✅          | ✅           | ✅         | ✅        | ✅           | ✅     | ❌            |
+| Alerts       | ❌         | ✅    | ✅          | ✅           | ❌         | ❌        | ✅           | ✅     | ❌            |
+| Core/Synth   | ❌         | ❌    | ❌          | ❌           | ❌         | ❌        | ❌           | ✅     | ❌            |
+| Helix        | ❌         | ❌    | ❌          | ❌           | ❌         | ❌        | ❌           | ❌     | ✅            |
+

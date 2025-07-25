@@ -2,6 +2,9 @@
 import rateLimit from 'express-rate-limit';
 import config from '../config/environment.js';
 
+// In-memory store for rate limiting
+const rateLimitStore = new Map();
+
 /**
  * Create a rate limiter middleware with sensible defaults, overridable by options or environment variables.
  * @param {object} options - express-rate-limit options
