@@ -53,6 +53,9 @@ export const databaseConfig = {
     password: process.env.MONGO_PASSWORD || generateSecurePassword(),
     
     // Connection URI without credentials for security
+    // Note: Credentials (username and password) are intentionally excluded from the URI
+    // to prevent sensitive information from being exposed in logs or error messages.
+    // Authentication should be handled separately via the `options` object below.
     get uri() {
       const sslOptions = process.env.NODE_ENV === 'production' ? '&ssl=true' : '';
       return `mongodb://${this.host}:${this.port}/${this.database}?retryWrites=true&w=majority${sslOptions}`;
