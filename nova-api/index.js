@@ -8,6 +8,9 @@ import serverRouter from './routes/server.js';
 import rolesRouter from './routes/roles.js';
 import assetsRouter from './routes/assets.js';
 import integrationsRouter from './routes/integrations.js';
+import searchRouter from './routes/search.js';
+import configurationRouter from './routes/configuration.js';
+import ConfigurationManager from './config/app-settings.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -1745,11 +1748,25 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customCss: '.swagger-ui .topbar { display: none }',
   customSiteTitle: "Nova Universe API Documentation"
 }));
+
+// Initialize configuration management system
+ConfigurationManager.initialize().catch(err => {
+  logger.error('Failed to initialize configuration manager:', err);
+});
+
+// Initialize Elasticsearch
+import elasticManager from './database/elastic.js';
+elasticManager.initialize().catch(err => {
+  logger.error('Failed to initialize Elasticsearch:', err);
+});
+
 app.use('/api/v1/organizations', organizationsRouter);
 app.use('/api/v1/directory', directoryRouter);
 app.use('/api/v1/roles', rolesRouter);
 app.use('/api/v1/assets', assetsRouter);
 app.use('/api/v1/integrations', integrationsRouter);
+app.use('/api/v1/search', searchRouter);
+app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
 
 app.listen(PORT, () => {
