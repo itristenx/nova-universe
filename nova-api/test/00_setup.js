@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import axios from 'axios';
-import db from '../db.js';
+import dbWrapper, { setupInitialData, initializeDatabase } from '../db.js';
 
 let setupPromise = (async () => {
   if (!process.env.DISABLE_AUTH) {
@@ -24,6 +24,10 @@ let setupPromise = (async () => {
 
   const originalPost = axios.post;
   axios.post = (...args) => axiosBehavior(...args);
+
+  // Ensure database is initialized and use the returned db instance
+  const db = await initializeDatabase();
+  await setupInitialData();
 
   const mod = await import('../index.js');
   app = mod.default;

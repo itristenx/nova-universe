@@ -23,6 +23,9 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "../../design/**/*"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

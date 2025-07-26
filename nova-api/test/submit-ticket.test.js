@@ -1,12 +1,17 @@
-import setupPromise from './00_setup.js';
 import request from 'supertest';
 import assert from 'assert';
-import db from '../db.js';
-import bcrypt from 'bcryptjs';
-const app = globalThis.app;
+import dbWrapper from '../db.js';
+import setupPromise from './00_setup.js';
+
+let app;
+
+beforeAll(async () => {
+  await setupPromise;
+  app = globalThis.app;
+});
 
 async function resetDb() {
-  await db.ensureReady();
+  await dbWrapper.ensureReady();
   const defaults = {
     logoUrl: '/logo.png',
     faviconUrl: '/vite.svg',
@@ -14,10 +19,10 @@ async function resetDb() {
     helpMessage: 'Need to report an issue?',
   };
   await new Promise((resolve) => {
-    db.serialize(() => {
-      db.run('DELETE FROM logs');
-      db.run('DELETE FROM config');
-      const stmt = db.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
+    dbWrapper.serialize(() => {
+      dbWrapper.run('DELETE FROM logs');
+      dbWrapper.run('DELETE FROM config');
+      const stmt = dbWrapper.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
       for (const [k, v] of Object.entries(defaults)) {
         stmt.run(k, v);
       }
@@ -28,7 +33,6 @@ async function resetDb() {
 }
 
 beforeEach(async () => {
-  await setupPromise;
   global.setSendBehavior(() => Promise.resolve());
   await resetDb();
 });
@@ -62,7 +66,7 @@ describe('POST /submit-ticket', function () {
     assert.strictEqual(res.body.emailStatus, 'success');
 
     const row = await new Promise((resolve) => {
-      db.get('SELECT * FROM logs WHERE ticket_id=?', [res.body.ticketId], (err, r) => {
+      dbWrapper.get('SELECT * FROM logs WHERE ticket_id=?', [res.body.ticketId], (err, r) => {
         resolve(r);
       });
     });
@@ -85,7 +89,7 @@ describe('POST /submit-ticket', function () {
     assert.strictEqual(res.body.emailStatus, 'fail');
 
     const row = await new Promise((resolve) => {
-      db.get('SELECT * FROM logs WHERE ticket_id=?', [res.body.ticketId], (err, r) => {
+      dbWrapper.get('SELECT * FROM logs WHERE ticket_id=?', [res.body.ticketId], (err, r) => {
         resolve(r);
       });
     });
@@ -169,7 +173,7 @@ describe('POST /submit-ticket', function () {
     assert.strictEqual(snCalled, true, 'ServiceNow not called');
 
     const row = await new Promise((resolve) => {
-      db.get('SELECT * FROM logs WHERE ticket_id=?', [res.body.ticketId], (err, r) => {
+      dbWrapper.get('SELECT * FROM logs WHERE ticket_id=?', [res.body.ticketId], (err, r) => {
         resolve(r);
       });
     });

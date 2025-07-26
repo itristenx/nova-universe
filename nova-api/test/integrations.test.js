@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../index.js';
-import db from '../db.js';
+import dbWrapper from '../db.js';
 
 jest.mock('../db');
 
@@ -11,7 +11,7 @@ describe('Integrations API', () => {
 
   describe('GET /api/v1/integrations', () => {
     it('should return a list of integrations', async () => {
-      db.all.mockImplementation((query, params, callback) => {
+      dbWrapper.all.mockImplementation((query, params, callback) => {
         callback(null, [
           { key: 'integration_4', value: '{"type":"Slack"}' },
           { key: 'integration_5', value: '{"type":"Discord"}' },
@@ -26,7 +26,7 @@ describe('Integrations API', () => {
     });
 
     it('should handle database errors', async () => {
-      db.all.mockImplementation((query, params, callback) => {
+      dbWrapper.all.mockImplementation((query, params, callback) => {
         callback(new Error('Database error'));
       });
 
@@ -39,7 +39,7 @@ describe('Integrations API', () => {
 
   describe('POST /api/v1/integrations/:id/test', () => {
     it('should test Slack integration successfully', async () => {
-      db.get.mockImplementation((query, params, callback) => {
+      dbWrapper.get.mockImplementation((query, params, callback) => {
         callback(null, { value: '{"type":"Slack"}' });
       });
 
@@ -50,7 +50,7 @@ describe('Integrations API', () => {
     });
 
     it('should return 404 for unsupported integration types', async () => {
-      db.get.mockImplementation((query, params, callback) => {
+      dbWrapper.get.mockImplementation((query, params, callback) => {
         callback(null, { value: '{"type":"Unknown"}' });
       });
 
@@ -61,7 +61,7 @@ describe('Integrations API', () => {
     });
 
     it('should handle database errors', async () => {
-      db.get.mockImplementation((query, params, callback) => {
+      dbWrapper.get.mockImplementation((query, params, callback) => {
         callback(new Error('Database error'));
       });
 

@@ -1,8 +1,15 @@
 import request from 'supertest';
 import assert from 'assert';
-import db from '../db.js';
+import dbWrapper from '../db.js';
 import bcrypt from 'bcryptjs';
-const app = globalThis.app;
+import setupPromise from './00_setup.js';
+
+let app;
+
+beforeAll(async () => {
+  await setupPromise;
+  app = globalThis.app;
+});
 
 const defaults = {
   logoUrl: '/logo.png',
@@ -13,10 +20,10 @@ const defaults = {
 const adminHash = bcrypt.hashSync('admin', 12);
 
 function resetDb(done) {
-  db.serialize(() => {
-    db.run('DELETE FROM logs');
-    db.run('DELETE FROM config');
-    const stmt = db.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
+  dbWrapper.serialize(() => {
+    dbWrapper.run('DELETE FROM logs');
+    dbWrapper.run('DELETE FROM config');
+    const stmt = dbWrapper.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
     for (const [k, v] of Object.entries(defaults)) {
       stmt.run(k, v);
     }

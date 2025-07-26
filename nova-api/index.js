@@ -38,7 +38,7 @@ import ConfigurationManager from './config/app-settings.js';
 import db from './db.js';
 import events from './events.js';
 import { sign, verify } from './jwt.js';
-import { validateToken } from './middleware/auth.js';
+import { authenticateJWT } from './middleware/auth.js';
 import { authRateLimit } from './middleware/rateLimiter.js';
 import { requestLogger, securityHeaders } from './middleware/security.js';
 import { validateActivationCode, validateEmail, validateKioskRegistration } from './middleware/validation.js';

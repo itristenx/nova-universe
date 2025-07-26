@@ -1,6 +1,7 @@
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
+import './Modal.css';
 
 interface ModalProps {
   isOpen: boolean;
@@ -27,35 +28,32 @@ export const Modal: React.FC<ModalProps> = ({
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
   };
-
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 transition-opacity"
+          className="fixed inset-0 modal"
           onClick={onClose}
         />
-        
         {/* Modal */}
-        <div className={`relative w-full ${sizeClasses[size]} bg-white dark:bg-gray-800 rounded-lg shadow-xl`}>
+        <div className={`relative w-full ${sizeClasses[size]} modal`}>
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{title}</h3>
+          <div className="flex items-center justify-between p-6 border-b">
+            <h3 className="text-lg font-medium modal-title">{title}</h3>
             {showCloseButton && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                className="text-gray-400 hover:text-gray-600"
               >
                 <XMarkIcon className="h-5 w-5" />
               </Button>
             )}
           </div>
-          
           {/* Content */}
-          <div className="p-6 text-gray-900 dark:text-gray-100">
+          <div className="p-6 modal-content">
             {children}
           </div>
         </div>

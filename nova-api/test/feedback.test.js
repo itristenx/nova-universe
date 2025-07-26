@@ -1,20 +1,28 @@
 import request from 'supertest';
 import assert from 'assert';
-import db from '../db.js';
+import dbWrapper from '../db.js';
+import setupPromise from './00_setup.js';
+
+let app;
+
+beforeAll(async () => {
+  await setupPromise;
+  app = globalThis.app;
+});
 
 beforeEach((done) => {
-  db.run('DELETE FROM feedback', done);
+  dbWrapper.run('DELETE FROM feedback', done);
 });
 
 describe('Feedback API', function() {
   it('stores feedback and returns id', async function() {
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/api/feedback')
       .send({ name: 'Alice', message: 'Great app' })
       .expect(200);
     assert.ok(res.body.id);
 
-    const list = await request(global.app)
+    const list = await request(app)
       .get('/api/feedback')
       .set('Authorization', 'Bearer testtoken')
       .expect(200);
@@ -24,7 +32,7 @@ describe('Feedback API', function() {
   });
 
   it('validates message', function() {
-    return request(global.app)
+    return request(app)
       .post('/api/feedback')
       .send({})
       .expect(400);

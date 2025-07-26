@@ -1,6 +1,6 @@
 // db.js - Enhanced database layer with PostgreSQL/MongoDB support
 import { logger } from './logger.js';
-import { DatabaseFactory } from '../database/factory.js';
+import { DatabaseFactory } from './database/factory.js';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';

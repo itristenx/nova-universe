@@ -1,11 +1,11 @@
 import request from 'supertest';
 import assert from 'assert';
-import db from '../db.js';
+import dbWrapper from '../db.js';
 const app = globalThis.app || (await import('../index.js')).default;
 const token = 'kiosktoken';
 
 beforeEach((done) => {
-  db.run('DELETE FROM kiosks', done);
+  dbWrapper.run('DELETE FROM kiosks', done);
 });
 
 describe('Kiosk registration and activation', function() {

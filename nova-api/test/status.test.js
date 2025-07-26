@@ -1,13 +1,20 @@
 import request from 'supertest';
 import assert from 'assert';
-import db from '../db.js';
-const app = globalThis.app;
+import dbWrapper from '../db.js';
+import setupPromise from './00_setup.js';
+
+let app;
 const token = 'kiosktoken';
 
+beforeAll(async () => {
+  await setupPromise;
+  app = globalThis.app;
+});
+
 function resetConfig(done) {
-  db.serialize(() => {
-    db.run("DELETE FROM config WHERE key IN ('statusOpenMsg','statusClosedMsg','statusErrorMsg')");
-    const stmt = db.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
+  dbWrapper.serialize(() => {
+    dbWrapper.run("DELETE FROM config WHERE key IN ('statusOpenMsg','statusClosedMsg','statusErrorMsg')");
+    const stmt = dbWrapper.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
     stmt.run('statusOpenMsg', 'Open');
     stmt.run('statusClosedMsg', 'Closed');
     stmt.run('statusErrorMsg', 'Error');
@@ -16,7 +23,7 @@ function resetConfig(done) {
 }
 
 beforeEach((done) => {
-  db.run('DELETE FROM kiosks', () => resetConfig(done));
+  dbWrapper.run('DELETE FROM kiosks', () => resetConfig(done));
 });
 
 describe('Kiosk status API', function() {

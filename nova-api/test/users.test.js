@@ -1,10 +1,17 @@
 import request from 'supertest';
 import assert from 'assert';
-import db from '../db.js';
-const app = globalThis.app;
+import dbWrapper from '../db.js';
+import setupPromise from './00_setup.js';
+
+let app;
+
+beforeAll(async () => {
+  await setupPromise;
+  app = globalThis.app;
+});
 
 beforeEach((done) => {
-  db.run('DELETE FROM users', done);
+  dbWrapper.run('DELETE FROM users', done);
 });
 
 describe('User management', function() {
@@ -15,7 +22,7 @@ describe('User management', function() {
       .expect(200);
     assert(res.body.id, 'id missing');
     const row = await new Promise((resolve) => {
-      db.get('SELECT * FROM users WHERE id=?', [res.body.id], (e, r) => resolve(r));
+      dbWrapper.get('SELECT * FROM users WHERE id=?', [res.body.id], (e, r) => resolve(r));
     });
     assert(row, 'row missing');
     assert.notStrictEqual(row.passwordHash, null);
@@ -24,14 +31,14 @@ describe('User management', function() {
 
   it('updates user info and password', async function() {
     const id = await new Promise((resolve) => {
-      db.run('INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)', ['Bob', 'b@e.com', null], function() { resolve(this.lastID); });
+      dbWrapper.run('INSERT INTO users (name, email, passwordHash) VALUES (?, ?, ?)', ['Bob', 'b@e.com', null], function() { resolve(this.lastID); });
     });
     await request(app)
       .put(`/api/users/${id}`)
       .send({ name: 'Bobby', email: 'bob@e.com', password: 'newpass' })
       .expect(200);
     const row = await new Promise((resolve) => {
-      db.get('SELECT * FROM users WHERE id=?', [id], (e, r) => resolve(r));
+      dbWrapper.get('SELECT * FROM users WHERE id=?', [id], (e, r) => resolve(r));
     });
     assert.strictEqual(row.name, 'Bobby');
     assert.strictEqual(row.email, 'bob@e.com');

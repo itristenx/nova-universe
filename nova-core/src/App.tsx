@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Showcase } from '@/components/ui/Showcase';
 
 // Lazy load other pages for better performance
 const TicketsPage = React.lazy(() => import('@/pages/TicketsPage').then(m => ({ default: m.TicketsPage })));
@@ -100,6 +101,7 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/showcase" element={<Showcase />} />
       <Route
         path="/"
         element={

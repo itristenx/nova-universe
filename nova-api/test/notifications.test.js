@@ -1,12 +1,12 @@
 import request from 'supertest';
 import assert from 'assert';
 import http from 'http';
-import db from '../db.js';
+import dbWrapper from '../db.js';
 import app from '../index.js';
 
 describe('Notifications API', function() {
   beforeEach((done) => {
-    db.run('DELETE FROM notifications', done);
+    dbWrapper.run('DELETE FROM notifications', done);
   });
 
   it('creates and lists notifications', async function() {

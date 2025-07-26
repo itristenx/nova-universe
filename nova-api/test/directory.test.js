@@ -1,17 +1,24 @@
 import request from 'supertest';
 import assert from 'assert';
-import db from '../db.js';
-const app = globalThis.app;
+import dbWrapper from '../db.js';
+import setupPromise from './00_setup.js';
+
+let app;
 const token = 'kiosktoken';
 
+beforeAll(async () => {
+  await setupPromise;
+  app = globalThis.app;
+});
+
 function seedDir(done) {
-  db.serialize(() => {
-    db.run('DELETE FROM directory_integrations');
-    db.run(
+  dbWrapper.serialize(() => {
+    dbWrapper.run('DELETE FROM directory_integrations');
+    dbWrapper.run(
       "INSERT INTO directory_integrations (id, provider, settings) VALUES (1,'mock','[{\"name\":\"Alice\",\"email\":\"alice@example.com\"}]')"
     );
-    db.run("DELETE FROM config WHERE key LIKE 'directory%'");
-    const stmt = db.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
+    dbWrapper.run("DELETE FROM config WHERE key LIKE 'directory%'");
+    const stmt = dbWrapper.prepare('INSERT INTO config (key, value) VALUES (?, ?)');
     stmt.run('directoryEnabled', '1');
     stmt.run('directoryProvider', 'mock');
     stmt.run('directoryUrl', '');
@@ -21,7 +28,7 @@ function seedDir(done) {
 }
 
 beforeEach((done) => {
-  db.run('DELETE FROM users', () => seedDir(done));
+  dbWrapper.run('DELETE FROM users', () => seedDir(done));
 });
 
 describe('Directory search via kiosk', function () {
@@ -46,7 +53,7 @@ describe('Directory search via kiosk', function () {
       .expect(200);
     assert(res.body.id, 'id missing');
     const row = await new Promise((resolve) => {
-      db.get('SELECT * FROM users WHERE id=?', [res.body.id], (e, r) => resolve(r));
+      dbWrapper.get('SELECT * FROM users WHERE id=?', [res.body.id], (e, r) => resolve(r));
     });
     assert(row, 'row missing');
   });
@@ -55,7 +62,7 @@ describe('Directory search via kiosk', function () {
     setAxiosBehavior(() => {
       throw new Error('fail');
     });
-    await db.run("UPDATE config SET value='scim' WHERE key='directoryProvider'");
+    await dbWrapper.run("UPDATE config SET value='scim' WHERE key='directoryProvider'");
     await request(app)
       .post('/api/register-kiosk')
       .send({ id: 'k2', token })

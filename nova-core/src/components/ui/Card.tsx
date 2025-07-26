@@ -1,4 +1,5 @@
 import React from 'react';
+import './Card.css';
 
 interface CardProps {
   children: React.ReactNode;
@@ -14,11 +15,11 @@ export const Card: React.FC<CardProps> = ({
   description,
 }) => {
   return (
-    <div className={`card p-6 ${className}`}>
+    <div className={`card ${className}`}>
       {(title || description) && (
         <div className="mb-4">
-          {title && <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>}
-          {description && <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{description}</p>}
+          {title && <h3 className="text-lg font-semibold card-title">{title}</h3>}
+          {description && <p className="text-sm mt-1 card-desc">{description}</p>}
         </div>
       )}
       {children}

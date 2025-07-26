@@ -1,30 +1,34 @@
-import setupPromise from './00_setup.js';
 import request from 'supertest';
 import assert from 'assert';
-import db from '../db.js';
+import dbWrapper from '../db.js';
+import setupPromise from './00_setup.js';
 
-const app = globalThis.app;
+let app;
+
+beforeAll(async () => {
+  await setupPromise;
+  app = globalThis.app;
+});
 
 async function resetDb() {
-  await db.ensureReady();
+  await dbWrapper.ensureReady();
   await new Promise((resolve) => {
-    db.run('DELETE FROM logs', resolve);
+    dbWrapper.run('DELETE FROM logs', resolve);
   });
 }
 
 beforeEach(async () => {
-  await setupPromise;
   await resetDb();
-  db.serialize(() => {
-    db.run(
+  dbWrapper.serialize(() => {
+    dbWrapper.run(
       `INSERT INTO logs (ticket_id, name, email, title, system, urgency, timestamp, email_status)
        VALUES ('1', 'A', 'a@x.com', 'T1', 'Sys', 'High', '2024-06-01T10:00:00Z', 'success')`
     );
-    db.run(
+    dbWrapper.run(
       `INSERT INTO logs (ticket_id, name, email, title, system, urgency, timestamp, email_status)
        VALUES ('2', 'B', 'b@x.com', 'T2', 'Sys', 'Low', '2024-06-05T10:00:00Z', 'fail')`
     );
-    db.run(
+    dbWrapper.run(
       `INSERT INTO logs (ticket_id, name, email, title, system, urgency, timestamp, email_status)
        VALUES ('3', 'C', 'c@x.com', 'T3', 'Sys', 'Low', '2024-06-10T10:00:00Z', 'success')`,
       () => {}

@@ -1,9 +1,9 @@
 import assert from 'assert';
-import db from '../db.js';
+import dbWrapper from '../db.js';
 
 describe('Default user seed', function () {
   it('creates admin user with hashed password', function (done) {
-    db.get(
+    dbWrapper.get(
       'SELECT * FROM users WHERE email=?',
       ['admin@example.com'],
       (err, row) => {

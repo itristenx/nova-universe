@@ -1,7 +1,14 @@
 import request from 'supertest';
 import assert from 'assert';
-const app = globalThis.app;
+import setupPromise from './00_setup.js';
+
+let app;
 const token = 'kiosktoken';
+
+beforeAll(async () => {
+  await setupPromise;
+  app = globalThis.app;
+});
 
 describe('Admin PIN verification', function() {
   it('rejects request with missing token', function() {

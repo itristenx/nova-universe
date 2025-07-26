@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { colors, fonts, spacing } from '../../../design/theme';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -34,28 +35,31 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     const updateTheme = () => {
       let shouldBeDark = false;
-      
       if (mode === 'dark') {
         shouldBeDark = true;
       } else if (mode === 'light') {
         shouldBeDark = false;
       } else {
-        // system mode
         shouldBeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       }
-      
       setIsDark(shouldBeDark);
-      
       if (shouldBeDark) {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
+      // Inject design tokens as CSS variables at root
+      Object.entries(colors).forEach(([key, value]) => {
+        document.documentElement.style.setProperty(`--color-${key}`, value);
+      });
+      Object.entries(fonts).forEach(([key, value]) => {
+        document.documentElement.style.setProperty(`--font-${key}`, Array.isArray(value) ? value.join(', ') : value);
+      });
+      Object.entries(spacing).forEach(([key, value]) => {
+        document.documentElement.style.setProperty(`--spacing-${key}`, value);
+      });
     };
-
     updateTheme();
-    
-    // Listen for system theme changes when in system mode
     if (mode === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       mediaQuery.addEventListener('change', updateTheme);
