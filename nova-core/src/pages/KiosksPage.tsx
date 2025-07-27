@@ -549,7 +549,7 @@ export const KiosksPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
                         onClick={() => toggleKioskActive(kiosk.id, kiosk.active)}
                         className={kiosk.active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
@@ -558,7 +558,7 @@ export const KiosksPage: React.FC = () => {
                         <PowerIcon className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
                         onClick={() => refreshKioskConfig(kiosk.id)}
                         className="text-blue-600 hover:text-blue-900"
@@ -567,7 +567,7 @@ export const KiosksPage: React.FC = () => {
                         <ArrowPathIcon className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
                         onClick={() => resetKiosk(kiosk.id)}
                         className="text-orange-600 hover:text-orange-900"
@@ -576,7 +576,7 @@ export const KiosksPage: React.FC = () => {
                         <ArrowUturnLeftIcon className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
                         onClick={() => setSelectedKiosk(kiosk)}
                         className="text-gray-600 hover:text-gray-900"
@@ -585,7 +585,7 @@ export const KiosksPage: React.FC = () => {
                         <CogIcon className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
                         onClick={() => openScheduleModal(kiosk)}
                         className="text-blue-600 hover:text-blue-900"
@@ -594,7 +594,7 @@ export const KiosksPage: React.FC = () => {
                         <ClockIcon className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
                         onClick={() => deleteKiosk(kiosk.id)}
                         className="text-red-600 hover:text-red-900"

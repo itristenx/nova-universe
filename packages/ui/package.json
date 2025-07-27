@@ -1,0 +1,32 @@
+{
+  "name": "@nova/ui",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run build:types && npm run build:js",
+    "build:types": "tsc --emitDeclarationOnly --declaration --declarationMap --project tsconfig.json --outDir dist",
+    "build:js": "NODE_OPTIONS=--max-old-space-size=4096 tsup src/index.tsx --format esm,cjs --out-dir dist",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "peerDependencies": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "eslint": "^8.0.0",
+    "tsup": "^7.2.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@mui/material": "^7.2.0",
+    "@mui/types": "^7.4.4",
+    "@nova/theme": "file:../theme"
+  }
+}

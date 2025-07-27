@@ -228,6 +228,42 @@ services:
     networks:
       - nova-network
 
+  # Nova Comms (Slack/Messaging Service)
+  nova-comms:
+    build:
+      context: ./nova-comms
+      dockerfile: Dockerfile
+    container_name: nova-comms
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      # Add any required environment variables for comms here
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
+    networks:
+      - nova-network
+
+  # Nova Core (Admin UI)
+  nova-core:
+    build:
+      context: ./nova-core
+      dockerfile: Dockerfile
+    container_name: nova-core
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      # Add any required environment variables for UI here
+    ports:
+      - "5173:5173"
+    depends_on:
+      - nova-api
+    networks:
+      - nova-network
+
 volumes:
   postgres_data:
     driver: local

@@ -298,7 +298,7 @@ export const KioskActivationPage: React.FC = () => {
             Activation Codes
           </h2>
           <Button
-            variant="ghost"
+            variant="default"
             size="sm"
             onClick={loadActivations}
             disabled={loading}

@@ -392,7 +392,7 @@ export const UsersPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
                         onClick={() => openEditModal(user)}
                         className="text-blue-600 hover:text-blue-900"
@@ -403,7 +403,7 @@ export const UsersPage: React.FC = () => {
                       {/* Disable/Enable button - only show if not default user */}
                       {!user.is_default && (
                         <Button
-                          variant="ghost"
+                          variant="default"
                           size="sm"
                           onClick={() => toggleUserStatus(user)}
                           className={user.disabled ? "text-green-600 hover:text-green-900" : "text-orange-600 hover:text-orange-900"}
@@ -416,7 +416,7 @@ export const UsersPage: React.FC = () => {
                       {/* Delete button - only show if not default user */}
                       {!user.is_default && (
                         <Button
-                          variant="ghost"
+                          variant="default"
                           size="sm"
                           onClick={() => deleteUser(user.id)}
                           className="text-red-600 hover:text-red-900"

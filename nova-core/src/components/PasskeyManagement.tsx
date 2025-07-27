@@ -258,7 +258,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
                     </div>
                   </div>
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="sm"
                     onClick={() => setDeleteModal({ isOpen: true, passkey })}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"

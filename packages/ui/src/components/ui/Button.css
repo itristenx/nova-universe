@@ -1,0 +1,28 @@
+.button--primary {
+  background-color: var(--btn-bg, #1D4ED8);
+  color: var(--btn-color, #ffffff);
+  font-family: var(--btn-font, 'Inter, system-ui, sans-serif');
+  padding: var(--btn-padding, 0.5rem 1rem);
+  border-radius: var(--btn-radius, 0.25rem);
+}
+.button--secondary {
+  background-color: var(--btn-bg, #9333EA);
+  color: var(--btn-color, #ffffff);
+  font-family: var(--btn-font, 'Inter, system-ui, sans-serif');
+  padding: var(--btn-padding, 0.5rem 1rem);
+  border-radius: var(--btn-radius, 0.25rem);
+}
+.button--danger {
+  background-color: var(--btn-bg, #ef4444);
+  color: var(--btn-color, #ffffff);
+  font-family: var(--btn-font, 'Inter, system-ui, sans-serif');
+  padding: var(--btn-padding, 0.5rem 1rem);
+  border-radius: var(--btn-radius, 0.25rem);
+}
+.button--ghost {
+  background-color: var(--btn-bg, transparent);
+  color: var(--btn-color, #1f2937);
+  font-family: var(--btn-font, 'Inter, system-ui, sans-serif');
+  padding: var(--btn-padding, 0.5rem 1rem);
+  border-radius: var(--btn-radius, 0.25rem);
+}

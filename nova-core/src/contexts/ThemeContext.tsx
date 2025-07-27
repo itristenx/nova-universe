@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { colors, fonts, spacing } from '../../../design/theme';
+import { colors, fonts, spacing } from '@nova/theme';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 

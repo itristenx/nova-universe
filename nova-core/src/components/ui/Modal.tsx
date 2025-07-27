@@ -43,7 +43,7 @@ export const Modal: React.FC<ModalProps> = ({
             <h3 className="text-lg font-medium modal-title">{title}</h3>
             {showCloseButton && (
               <Button
-                variant="ghost"
+                variant="default"
                 size="sm"
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-600"

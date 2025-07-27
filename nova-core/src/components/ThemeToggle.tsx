@@ -34,7 +34,7 @@ export const ThemeToggle: React.FC = () => {
 
   return (
     <Button
-      variant="ghost"
+      variant="default"
       size="sm"
       onClick={toggleTheme}
       className="p-2"

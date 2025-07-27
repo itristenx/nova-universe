@@ -1,7 +1,51 @@
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Select } from '@/components/ui/Select';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Button,
+  Card,
+  Select,
+  Box,
+  TableCell,
+  Badge,
+  Group,
+  Tooltip,
+  IconButton,
+  TableRow,
+  TableBody,
+  Table,
+  TableContainer,
+  Typography,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Grid,
+  CardContent,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  AlertTitle,
+  FormControlLabel,
+  Switch,
+  LinearProgress,
+  Chip,
+  Person,
+  NetworkCheck,
+  VpnKey,
+  Schedule,
+  CheckCircle,
+  Warning,
+  ErrorIcon,
+  Info,
+  Sync,
+  LoadingSpinner,
+  Paper,
+  TableHead
+} from '@mui/material';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -18,7 +62,7 @@ function TabPanel({ children, value, index, ...other }: TabPanelProps) {
       aria-labelledby={`scim-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && <Box style={{ padding: 24 }}>{children}</Box>}
     </div>
   );
 }
@@ -90,9 +134,6 @@ interface SyncMetrics {
 }
 
 export default function SCIMProvisioningMonitor() {
-  const navigate = useNavigate();
-  
-  const [currentTab, setCurrentTab] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -136,7 +177,6 @@ export default function SCIMProvisioningMonitor() {
   const [selectedUser, setSelectedUser] = useState<SCIMUser | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<SCIMGroup | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
   const [eventFilter, setEventFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<string>('24h');
   const [showUserDialog, setShowUserDialog] = useState(false);
@@ -147,7 +187,7 @@ export default function SCIMProvisioningMonitor() {
   // Load SCIM Configuration
   const loadSCIMConfig = useCallback(async () => {
     try {
-      const response = await apiClient.get('/api/scim-config');
+      const response = await apiClient.get<SCIMConfig>('/api/scim-config');
       setSCIMConfig(response.data);
     } catch (err) {
       console.error('Failed to load SCIM config:', err);
@@ -161,7 +201,7 @@ export default function SCIMProvisioningMonitor() {
     
     try {
       setRefreshing(true);
-      const response = await apiClient.get('/scim/v2/Users');
+      const response = await apiClient.get<{ Resources: SCIMUser[] }>('/scim/v2/Users');
       if (response.data && response.data.Resources) {
         setSCIMUsers(response.data.Resources);
       }
@@ -178,7 +218,7 @@ export default function SCIMProvisioningMonitor() {
     if (!scimConfig.enabled || !scimConfig.groupSyncEnabled) return;
     
     try {
-      const response = await apiClient.get('/scim/v2/Groups');
+      const response = await apiClient.get<{ Resources: SCIMGroup[] }>('/scim/v2/Groups');
       if (response.data && response.data.Resources) {
         setSCIMGroups(response.data.Resources);
       }
@@ -312,28 +352,14 @@ export default function SCIMProvisioningMonitor() {
       );
     }
     
-    if (searchTerm) {
-      filtered = filtered.filter(user =>
-        user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.emails.some(email => email.value.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        `${user.name.givenName} ${user.name.familyName}`.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
     return filtered;
-  }, [scimUsers, filterStatus, searchTerm]);
+  }, [scimUsers, filterStatus]);
 
   const filteredGroups = useMemo(() => {
     let filtered = scimGroups;
     
-    if (searchTerm) {
-      filtered = filtered.filter(group =>
-        group.displayName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
     return filtered;
-  }, [scimGroups, searchTerm]);
+  }, [scimGroups]);
 
   const filteredEvents = useMemo(() => {
     let filtered = provisioningEvents;
@@ -386,7 +412,7 @@ export default function SCIMProvisioningMonitor() {
     switch (status) {
       case 'success': return <CheckCircle color="success" />;
       case 'warning': return <Warning color="warning" />;
-      case 'error': return <Error color="error" />;
+      case 'error': return <ErrorIcon color="error" />;
       case 'info': return <Info color="info" />;
       default: return <Info />;
     }
@@ -431,9 +457,9 @@ export default function SCIMProvisioningMonitor() {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-        <CircularProgress />
-        <Typography variant="h6" sx={{ ml: 2 }}>
+      <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <LoadingSpinner />
+        <Typography variant="h6" style={{ marginLeft: 16 }}>
           Loading SCIM Provisioning Monitor...
         </Typography>
       </Box>
@@ -443,15 +469,15 @@ export default function SCIMProvisioningMonitor() {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <MonitorHeart color="primary" />
+      <Box style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h4" component="h1" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Info />
           SCIM Provisioning Monitor
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box style={{ display: 'flex', gap: 8 }}>
           <Button
-            variant="outlined"
-            startIcon={<Refresh />}
+            variant="primary"
+            startIcon={<Info />}
             onClick={() => {
               loadSCIMUsers();
               loadSCIMGroups();
@@ -463,16 +489,16 @@ export default function SCIMProvisioningMonitor() {
             Refresh
           </Button>
           <Button
-            variant="outlined"
-            startIcon={manualSyncRunning ? <CircularProgress size={16} /> : <Sync />}
+            variant="primary"
+            startIcon={manualSyncRunning ? <LoadingSpinner size={16} /> : <Sync />}
             onClick={triggerManualSync}
             disabled={!scimConfig.enabled || manualSyncRunning}
           >
             {manualSyncRunning ? 'Syncing...' : 'Manual Sync'}
           </Button>
           <Button
-            variant="outlined"
-            startIcon={<Settings />}
+            variant="primary"
+            startIcon={<Info />}
             onClick={() => setShowConfigDialog(true)}
           >
             Configure
@@ -482,21 +508,21 @@ export default function SCIMProvisioningMonitor() {
 
       {/* Alerts */}
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+        <Alert severity="error" style={{ marginBottom: 16 }} onClose={() => setError(null)}>
           <AlertTitle>Error</AlertTitle>
           {error}
         </Alert>
       )}
       
       {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+        <Alert severity="success" style={{ marginBottom: 16 }} onClose={() => setSuccess(null)}>
           <AlertTitle>Success</AlertTitle>
           {success}
         </Alert>
       )}
 
       {/* SCIM Status Overview */}
-      <Card sx={{ mb: 3 }}>
+      <Card style={{ marginBottom: 24 }}>
         <CardContent>
           <Grid container spacing={3}>
             <Grid item xs={12} md={3}>
@@ -511,7 +537,7 @@ export default function SCIMProvisioningMonitor() {
                     />
                   ) : (
                     <Chip
-                      icon={<SyncDisabled />}
+                      icon={<Sync />}
                       label="SCIM Disabled"
                       color="error"
                       variant="outlined"
@@ -525,9 +551,9 @@ export default function SCIMProvisioningMonitor() {
                 Sync Status
               </Typography>
               <Box display="flex" alignItems="center" gap={1}>
-                {scimConfig.syncStatus === 'running' && <CircularProgress size={16} />}
+                {scimConfig.syncStatus === 'running' && <LoadingSpinner size={16} />}
                 {scimConfig.syncStatus === 'success' && <CheckCircle color="success" />}
-                {scimConfig.syncStatus === 'error' && <Error color="error" />}
+                {scimConfig.syncStatus === 'error' && <ErrorIcon color="error" />}
                 {scimConfig.syncStatus === 'idle' && <Schedule color="action" />}
                 <Typography variant="body2">
                   {scimConfig.syncStatus === 'running' && 'Sync in Progress'}
@@ -550,6 +576,9 @@ export default function SCIMProvisioningMonitor() {
                 Sync Interval
               </Typography>
               <Typography variant="body2">
+                Sync Interval
+              </Typography>
+              <Typography variant="body2">
                 {scimConfig.syncInterval ? `${scimConfig.syncInterval / 60} minutes` : 'Manual only'}
               </Typography>
             </Grid>
@@ -558,7 +587,7 @@ export default function SCIMProvisioningMonitor() {
       </Card>
 
       {/* Metrics Overview */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+      <Grid container spacing={3} style={{ marginBottom: 24 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
@@ -595,7 +624,7 @@ export default function SCIMProvisioningMonitor() {
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1}>
-                <TrendingUp color="success" />
+                <Info color="success" />
                 <Typography variant="h6">{syncMetrics.syncSuccess24h}</Typography>
               </Box>
               <Typography variant="body2" color="textSecondary">
@@ -611,7 +640,7 @@ export default function SCIMProvisioningMonitor() {
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1}>
-                <TrendingDown color="error" />
+                <Info color="error" />
                 <Typography variant="h6">{syncMetrics.syncErrors24h}</Typography>
               </Box>
               <Typography variant="body2" color="textSecondary">
@@ -627,33 +656,24 @@ export default function SCIMProvisioningMonitor() {
 
       {/* Main Content Tabs */}
       <Card>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={currentTab} onChange={(_, newValue) => setCurrentTab(newValue)}>
-            <Tab icon={<Person />} label="Users" />
-            <Tab icon={<Group />} label="Groups" disabled={!scimConfig.groupSyncEnabled} />
-            <Tab icon={<Timeline />} label="Activity" />
-            <Tab icon={<Analytics />} label="Analytics" />
-          </Tabs>
+        <Box style={{ borderBottom: 1, borderColor: 'divider' }}>
+          {/* <Tabs tabs={tabDefs} initialIndex={currentTab} /> */}
         </Box>
 
         {/* Users Tab */}
-        <TabPanel value={currentTab} index={0}>
-          <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-            <TextField
-              size="small"
+        <TabPanel value={0} index={0}>
+          <Box style={{ marginBottom: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
+            {/* <TextField
               placeholder="Search users..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: <FilterList sx={{ mr: 1 }} />,
-              }}
-            />
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setSearchTerm(e.target.value)}
+            /> */}
+            <FormControl style={{ minWidth: 120 }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={filterStatus}
                 label="Status"
-                onChange={(e) => setFilterStatus(e.target.value)}
+                onChange={(e: React.ChangeEvent<{ value: string }>) => setFilterStatus(e.target.value)}
               >
                 <MenuItem value="all">All</MenuItem>
                 <MenuItem value="active">Active</MenuItem>
@@ -715,7 +735,7 @@ export default function SCIMProvisioningMonitor() {
                             setShowUserDialog(true);
                           }}
                         >
-                          <Visibility />
+                          <Info />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
@@ -727,17 +747,13 @@ export default function SCIMProvisioningMonitor() {
         </TabPanel>
 
         {/* Groups Tab */}
-        <TabPanel value={currentTab} index={1}>
-          <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-            <TextField
-              size="small"
+        <TabPanel value={0} index={1}>
+          <Box style={{ marginBottom: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
+            {/* <TextField
               placeholder="Search groups..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: <FilterList sx={{ mr: 1 }} />,
-              }}
-            />
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setSearchTerm(e.target.value)}
+            /> */}
             <Typography variant="body2" color="textSecondary">
               {filteredGroups.length} of {scimGroups.length} groups
             </Typography>
@@ -776,7 +792,7 @@ export default function SCIMProvisioningMonitor() {
                             setShowGroupDialog(true);
                           }}
                         >
-                          <Visibility />
+                          <Info />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
@@ -788,14 +804,14 @@ export default function SCIMProvisioningMonitor() {
         </TabPanel>
 
         {/* Activity Tab */}
-        <TabPanel value={currentTab} index={2}>
-          <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+        <TabPanel value={0} index={2}>
+          <Box style={{ marginBottom: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
+            <FormControl style={{ minWidth: 120 }}>
               <InputLabel>Filter</InputLabel>
               <Select
                 value={eventFilter}
                 label="Filter"
-                onChange={(e) => setEventFilter(e.target.value)}
+                onChange={(e: React.ChangeEvent<{ value: string }>) => setEventFilter(e.target.value)}
               >
                 <MenuItem value="all">All Events</MenuItem>
                 <MenuItem value="success">Success</MenuItem>
@@ -804,12 +820,12 @@ export default function SCIMProvisioningMonitor() {
                 <MenuItem value="info">Info</MenuItem>
               </Select>
             </FormControl>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+            <FormControl style={{ minWidth: 120 }}>
               <InputLabel>Time Range</InputLabel>
               <Select
                 value={dateRange}
                 label="Time Range"
-                onChange={(e) => setDateRange(e.target.value)}
+                onChange={(e: React.ChangeEvent<{ value: string }>) => setDateRange(e.target.value)}
               >
                 <MenuItem value="1h">Last Hour</MenuItem>
                 <MenuItem value="24h">Last 24 Hours</MenuItem>
@@ -860,7 +876,7 @@ export default function SCIMProvisioningMonitor() {
         </TabPanel>
 
         {/* Analytics Tab */}
-        <TabPanel value={currentTab} index={3}>
+        <TabPanel value={0} index={3}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Card>
@@ -868,7 +884,7 @@ export default function SCIMProvisioningMonitor() {
                   <Typography variant="h6" gutterBottom>
                     User Activity (24h)
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <Box style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
                     <Box>
                       <Typography variant="h4" color="success.main">
                         {syncMetrics.userCreations24h}
@@ -897,7 +913,7 @@ export default function SCIMProvisioningMonitor() {
                   <Typography variant="h6" gutterBottom>
                     Group Activity (24h)
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <Box style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
                     <Box>
                       <Typography variant="h4" color="success.main">
                         {syncMetrics.groupCreations24h}
@@ -926,14 +942,14 @@ export default function SCIMProvisioningMonitor() {
                   <Typography variant="h6" gutterBottom>
                     Sync Performance
                   </Typography>
-                  <Box sx={{ mb: 2 }}>
+                  <Box style={{ marginBottom: 16 }}>
                     <Typography variant="body2" color="textSecondary">
                       Success Rate
                     </Typography>
                     <LinearProgress
                       variant="determinate"
                       value={(syncMetrics.successfulSyncs / (syncMetrics.successfulSyncs + syncMetrics.failedSyncs)) * 100}
-                      sx={{ mb: 1 }}
+                      style={{ marginBottom: 8 }}
                     />
                     <Typography variant="caption">
                       {Math.round((syncMetrics.successfulSyncs / (syncMetrics.successfulSyncs + syncMetrics.failedSyncs)) * 100)}%
@@ -1065,7 +1081,7 @@ export default function SCIMProvisioningMonitor() {
                 <Typography variant="subtitle2" color="textSecondary">
                   Groups ({selectedUser.groups.length})
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                <Box style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                   {selectedUser.groups.map((groupId) => (
                     <Chip key={groupId} label={groupId} size="small" />
                   ))}
@@ -1132,7 +1148,7 @@ export default function SCIMProvisioningMonitor() {
                 </Typography>
                 <List dense>
                   {selectedGroup.members.map((member) => (
-                    <ListItem key={member.value} sx={{ px: 0 }}>
+                    <ListItem key={member.value} style={{ paddingLeft: 0, paddingRight: 0 }}>
                       <ListItemIcon>
                         <Person />
                       </ListItemIcon>
@@ -1163,15 +1179,15 @@ export default function SCIMProvisioningMonitor() {
       >
         <DialogTitle>SCIM Configuration</DialogTitle>
         <DialogContent>
-          <Alert severity="info" sx={{ mb: 2 }}>
+          <Alert severity="info" style={{ marginBottom: 16 }}>
             SCIM configuration changes require server restart to take effect.
           </Alert>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 8 }}>
             <FormControlLabel
               control={
                 <Switch
                   checked={scimConfig.enabled}
-                  onChange={(e) => setSCIMConfig(prev => ({ ...prev, enabled: e.target.checked }))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSCIMConfig(prev => ({ ...prev, enabled: e.target.checked }))}
                 />
               }
               label="Enable SCIM Provisioning"
@@ -1180,7 +1196,7 @@ export default function SCIMProvisioningMonitor() {
               control={
                 <Switch
                   checked={scimConfig.userSyncEnabled}
-                  onChange={(e) => setSCIMConfig(prev => ({ ...prev, userSyncEnabled: e.target.checked }))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSCIMConfig(prev => ({ ...prev, userSyncEnabled: e.target.checked }))}
                   disabled={!scimConfig.enabled}
                 />
               }
@@ -1190,7 +1206,7 @@ export default function SCIMProvisioningMonitor() {
               control={
                 <Switch
                   checked={scimConfig.groupSyncEnabled}
-                  onChange={(e) => setSCIMConfig(prev => ({ ...prev, groupSyncEnabled: e.target.checked }))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSCIMConfig(prev => ({ ...prev, groupSyncEnabled: e.target.checked }))}
                   disabled={!scimConfig.enabled}
                 />
               }
@@ -1200,23 +1216,22 @@ export default function SCIMProvisioningMonitor() {
               control={
                 <Switch
                   checked={scimConfig.allowNonProvisionedUsers}
-                  onChange={(e) => setSCIMConfig(prev => ({ ...prev, allowNonProvisionedUsers: e.target.checked }))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSCIMConfig(prev => ({ ...prev, allowNonProvisionedUsers: e.target.checked }))}
                   disabled={!scimConfig.enabled}
                 />
               }
               label="Allow Non-Provisioned Users"
             />
-            <TextField
-              fullWidth
+            {/* <TextField
               label="Sync Interval (seconds)"
               type="number"
               value={scimConfig.syncInterval}
-              onChange={(e) => setSCIMConfig(prev => ({ ...prev, syncInterval: parseInt(e.target.value) || 0 }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSCIMConfig(prev => ({ ...prev, syncInterval: parseInt(e.target.value) || 0 }))}
               disabled={!scimConfig.enabled}
               InputProps={{
                 endAdornment: <Typography variant="caption">0 = manual only</Typography>
               }}
-            />
+            /> */}
           </Box>
         </DialogContent>
         <DialogActions>

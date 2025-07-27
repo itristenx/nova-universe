@@ -236,7 +236,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
             </Button>
             
             <Button
-              variant="ghost"
+              variant="default"
               onClick={resetToDefault}
             >
               Reset to Default

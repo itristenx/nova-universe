@@ -449,7 +449,7 @@ export const SAMLConfigurationPage: React.FC = () => {
                     </code>
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="default"
                       onClick={() => copyToClipboard(`${window.location.origin}/auth/saml`)}
                     >
                       <ClipboardDocumentIcon className="h-4 w-4" />
@@ -464,7 +464,7 @@ export const SAMLConfigurationPage: React.FC = () => {
                     </code>
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="default"
                       onClick={() => copyToClipboard(config.callbackUrl)}
                     >
                       <ClipboardDocumentIcon className="h-4 w-4" />
@@ -475,7 +475,7 @@ export const SAMLConfigurationPage: React.FC = () => {
                   <span>SP Metadata:</span>
                   <Button
                     size="sm"
-                    variant="ghost"
+                    variant="default"
                     onClick={generateMetadata}
                   >
                     Generate & Copy
@@ -838,7 +838,7 @@ export const SAMLConfigurationPage: React.FC = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">SAML Setup Wizard</h3>
               <Button
-                variant="ghost"
+                variant="default"
                 onClick={() => setShowSetupWizard(false)}
               >
                 ×
@@ -887,7 +887,7 @@ export const SAMLConfigurationPage: React.FC = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Parse IdP Metadata</h3>
               <Button
-                variant="ghost"
+                variant="default"
                 onClick={() => setShowMetadataParser(false)}
               >
                 ×

@@ -537,7 +537,7 @@ export const IntegrationsPage: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button
-                      variant="ghost"
+                      variant="default"
                       size="sm"
                       onClick={() => testIntegration(integration.id)}
                       isLoading={testingIntegration === integration.id}
@@ -546,7 +546,7 @@ export const IntegrationsPage: React.FC = () => {
                       Test
                     </Button>
                     <Button
-                      variant="ghost"
+                      variant="default"
                       size="sm"
                       onClick={() => openEditModal(integration)}
                       className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
@@ -554,7 +554,7 @@ export const IntegrationsPage: React.FC = () => {
                       <PencilIcon className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="ghost"
+                      variant="default"
                       size="sm"
                       onClick={() => deleteIntegration(integration.id)}
                       className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"

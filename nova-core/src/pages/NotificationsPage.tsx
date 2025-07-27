@@ -317,7 +317,7 @@ export const NotificationsPage: React.FC = () => {
                   </div>
                   <div className="ml-4 flex-shrink-0">
                     <Button
-                      variant="ghost"
+                      variant="default"
                       size="sm"
                       onClick={() => deleteNotification(notification.id)}
                       className="text-red-600 hover:text-red-900"
