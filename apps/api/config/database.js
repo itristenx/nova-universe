@@ -19,7 +19,7 @@ export const databaseConfig = {
     password: (() => {
       const password = process.env.POSTGRES_PASSWORD;
       if (!password) {
-        logger.error('POSTGRES_PASSWORD is not set. Falling back to a secure default password.');
+        logger.error('POSTGRES_PASSWORD is not set. Generating a temporary password.');
         return generateSecurePassword();
       }
       return password;
