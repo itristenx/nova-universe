@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Import from the created modules
-import { DatabaseFactory } from '../src/lib/db/index.ts';
+import { DatabaseFactory } from '../src/lib/db/index.js';
 import { logger } from '../apps/api/logger.js';
 
 // Test configuration

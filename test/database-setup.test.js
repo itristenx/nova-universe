@@ -1,6 +1,6 @@
 // test/database-setup.test.js
 // Test file to validate the Nova Universe enhanced database setup
-import { novaDb } from '../src/lib/db/index.ts';
+import { novaDb } from '../src/lib/db/index.js';
 import { logger } from '../apps/api/logger.js';
 
 async function testDatabaseSetup() {
