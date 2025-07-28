@@ -1,45 +1,46 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
-
 model User {
-  id                                                String            @id @default(uuid())
-  name                                              String?
-  email                                             String            @unique
-  passwordHash                                      String?
-  disabled                                          Boolean           @default(false)
-  isDefault                                         Boolean           @default(false)
-  lastLogin                                         DateTime?
-  createdAt                                         DateTime          @default(now())
-  updatedAt                                         DateTime          @updatedAt
-  twoFactorEnabled                                  Boolean           @default(false)
-  twoFactorSecret                                   String?
-  twoFactorBackupCodes                              Json?
-  twoFactorVerified                                 Boolean           @default(false)
-  samlNameId                                        String?           @unique
-  samlSessionIndex                                  String?
-  department                                        String?
-  lastSamlLogin                                     DateTime?
-  feedback                                          Feedback[]
-  logs                                              Log[]
-  passkeys                                          Passkey[]
-  support_tickets_support_tickets_assigneeIdTousers support_tickets[] @relation("support_tickets_assigneeIdTousers")
-  support_tickets_support_tickets_userIdTousers     support_tickets[] @relation("support_tickets_userIdTousers")
-  roles                                             UserRole[]
+  id            String   @id @default(uuid())
+  name          String?
+  email         String   @unique
+  passwordHash  String?  @map("password_hash")
+  disabled      Boolean  @default(false)
+  isDefault     Boolean  @default(false) @map("is_default")
+  lastLogin     DateTime? @map("last_login")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  twoFactorEnabled      Boolean  @default(false) @map("two_factor_enabled")
+  twoFactorSecret       String?  @map("two_factor_secret")
+  twoFactorBackupCodes  Json?    @map("two_factor_backup_codes")
+  twoFactorVerified     Boolean  @default(false) @map("two_factor_verified")
+  samlNameId            String?  @unique @map("saml_name_id")
+  samlSessionIndex      String?  @map("saml_session_index")
+  department            String?
+  lastSamlLogin         DateTime? @map("last_saml_login")
+  feedback              Feedback[]
+  logs                  Log[]
+  passkeys              Passkey[]
+  support_tickets_support_tickets_assigneeIdTousers SupportTicket[] @relation("support_tickets_assigneeIdTousers")
+  support_tickets_support_tickets_userIdTousers     SupportTicket[] @relation("support_tickets_userIdTousers")
+  roles                 UserRole[]
 
   @@map("users")
 }
 
 model Role {
-  id          Int              @id @default(autoincrement())
-  name        String           @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   description String?
-  createdAt   DateTime         @default(now())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
   permissions RolePermission[]
   users       UserRole[]
 
@@ -47,19 +48,21 @@ model Role {
 }
 
 model Permission {
-  id          Int              @id @default(autoincrement())
-  name        String           @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   description String?
-  createdAt   DateTime         @default(now())
+  resource    String?
+  action      String?
+  createdAt   DateTime @default(now()) @map("created_at")
   roles       RolePermission[]
 
   @@map("permissions")
 }
 
 model UserRole {
-  userId     String
-  roleId     Int
-  assignedAt DateTime @default(now())
+  userId     String   @map("user_id")
+  roleId     Int      @map("role_id")
+  assignedAt DateTime @default(now()) @map("assigned_at")
   role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -68,9 +71,9 @@ model UserRole {
 }
 
 model RolePermission {
-  roleId       Int
-  permissionId Int
-  assignedAt   DateTime   @default(now())
+  roleId       Int      @map("role_id")
+  permissionId Int      @map("permission_id")
+  assignedAt   DateTime @default(now()) @map("assigned_at")
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
@@ -79,16 +82,16 @@ model RolePermission {
 }
 
 model Passkey {
-  id           Int       @id @default(autoincrement())
-  userId       String
-  credentialId String    @unique
-  publicKey    String
-  counter      Int       @default(0)
+  id           Int      @id @default(autoincrement())
+  userId       String   @map("user_id")
+  credentialId String   @unique @map("credential_id")
+  publicKey    String   @map("public_key")
+  counter      Int      @default(0)
   transports   String?
-  deviceType   String?
-  backedUp     Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  lastUsed     DateTime?
+  deviceType   String?  @map("device_type")
+  backedUp     Boolean  @default(false) @map("backed_up")
+  createdAt    DateTime @default(now()) @map("created_at")
+  lastUsed     DateTime? @map("last_used")
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("passkeys")
@@ -96,48 +99,52 @@ model Passkey {
 
 model Log {
   id           Int      @id @default(autoincrement())
-  ticketId     String?
+  ticketId     String?  @map("ticket_id")
   name         String?
   email        String?
   title        String?
   system       String?
   urgency      String?
   timestamp    DateTime @default(now())
-  emailStatus  String?
-  servicenowId String?
-  userId       String?
+  emailStatus  String?  @map("email_status")
+  servicenowId String?  @map("servicenow_id")
+  userId       String?  @map("user_id")
   user         User?    @relation(fields: [userId], references: [id])
 
   @@map("logs")
 }
 
 model Config {
-  key       String   @id
-  value     String?
-  updatedAt DateTime @default(now()) @updatedAt
+  key         String   @id
+  value       String?
+  valueType   String?  @map("value_type")
+  description String?
+  isPublic    Boolean? @default(false) @map("is_public")
+  category    String?
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("config")
 }
 
 model Kiosk {
-  id             String            @id
-  lastSeen       DateTime?
+  id             String   @id
+  lastSeen       DateTime? @map("last_seen")
   version        String?
-  active         Boolean           @default(false)
-  logoUrl        String?
-  bgUrl          String?
-  statusEnabled  Boolean           @default(false)
-  currentStatus  String?
-  openMsg        String?
-  closedMsg      String?
-  errorMsg       String?
-  meetingMsg     String?
-  brbMsg         String?
-  lunchMsg       String?
-  unavailableMsg String?
+  active         Boolean  @default(false)
+  logoUrl        String?  @map("logo_url")
+  bgUrl          String?  @map("bg_url")
+  statusEnabled  Boolean  @default(false) @map("status_enabled")
+  currentStatus  String?  @map("current_status")
+  openMsg        String?  @map("open_msg")
+  closedMsg      String?  @map("closed_msg")
+  errorMsg       String?  @map("error_msg")
+  meetingMsg     String?  @map("meeting_msg")
+  brbMsg         String?  @map("brb_msg")
+  lunchMsg       String?  @map("lunch_msg")
+  unavailableMsg String?  @map("unavailable_msg")
   schedule       Json?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
   activations    KioskActivation[]
 
   @@map("kiosks")
@@ -148,7 +155,7 @@ model Feedback {
   name      String?
   message   String?
   timestamp DateTime @default(now())
-  userId    String?
+  userId    String?  @map("user_id")
   user      User?    @relation(fields: [userId], references: [id])
 
   @@map("feedback")
@@ -160,8 +167,8 @@ model Notification {
   level     String   @default("info")
   active    Boolean  @default(true)
   type      String   @default("system")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("notifications")
 }
@@ -171,8 +178,8 @@ model DirectoryIntegration {
   provider  String
   settings  Json?
   enabled   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
 
   @@map("directory_integrations")
 }
@@ -183,9 +190,9 @@ model Asset {
   type       String
   filename   String
   url        String
-  sizeBytes  Int?
-  mimeType   String?
-  uploadedAt DateTime @default(now())
+  sizeBytes  Int?     @map("size_bytes")
+  mimeType   String?  @map("mime_type")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
 
   @@map("assets")
 }
@@ -193,12 +200,12 @@ model Asset {
 model KioskActivation {
   id        String    @id
   code      String
-  qrCode    String
-  expiresAt DateTime
+  qrCode    String    @map("qr_code")
+  expiresAt DateTime  @map("expires_at")
   used      Boolean   @default(false)
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
-  kioskId   String?
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  kioskId   String?   @map("kiosk_id")
   kiosk     Kiosk?    @relation(fields: [kioskId], references: [id])
 
   @@map("kiosk_activations")
@@ -209,37 +216,42 @@ model SsoConfiguration {
   provider      String
   enabled       Boolean  @default(false)
   configuration Json?
-  updatedAt     DateTime @default(now()) @updatedAt
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("sso_configurations")
 }
 
 model AdminPin {
   id        Int      @id @default(autoincrement())
-  globalPin String?
-  kioskPins Json?
-  updatedAt DateTime @default(now()) @updatedAt
+  globalPin String?  @map("global_pin")
+  kioskPins Json?    @map("kiosk_pins")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("admin_pins")
 }
 
-model knowledge_base_articles {
+model KnowledgeBaseArticle {
   id        Int      @id @default(autoincrement())
   title     String
   content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  @@map("knowledge_base_articles")
 }
 
-model support_tickets {
-  id                                      Int      @id @default(autoincrement())
-  title                                   String
-  description                             String
-  status                                  String   @default("open")
-  createdAt                               DateTime @default(now())
-  updatedAt                               DateTime @default(now())
-  userId                                  String?
-  assigneeId                              String?
+model SupportTicket {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  status      String   @default("open")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+  userId      String?  @map("user_id")
+  assigneeId  String?  @map("assignee_id")
   users_support_tickets_assigneeIdTousers User?    @relation("support_tickets_assigneeIdTousers", fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users_support_tickets_userIdTousers     User?    @relation("support_tickets_userIdTousers", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("support_tickets")
 }
+
+// All model fields using @default(autoincrement()) are Int type and compatible with PostgreSQL.

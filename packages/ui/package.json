@@ -1,5 +1,5 @@
 {
-  "name": "@nova/ui",
+  "name": "@nova-universe/ui",
   "version": "0.1.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -27,6 +27,6 @@
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^7.2.0",
     "@mui/types": "^7.4.4",
-    "@nova/theme": "file:../theme"
+    "@nova-universe/theme": "file:../theme"
   }
 }

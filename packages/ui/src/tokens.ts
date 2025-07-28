@@ -1,4 +1,4 @@
-// Design tokens for @nova/ui
+// Design tokens for @nova-universe/ui
 export const colors = {
   primary: '#1976d2',
   secondary: '#9c27b0',

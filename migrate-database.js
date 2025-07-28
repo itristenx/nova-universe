@@ -16,14 +16,12 @@
  */
 
 import { Command } from 'commander';
-import { logger } from './nova-api/logger.js';
-import { MigrationManager } from './database/migrations.js';
-import { DatabaseFactory } from './database/factory.js';
-import sqlite3pkg from 'sqlite3';
+import { logger } from './apps/api/logger.js';
+import { MigrationManager } from './apps/api/database/migrations.js';
+import { DatabaseFactory } from './apps/api/database/factory.js';
 import fs from 'fs';
 import path from 'path';
 
-const sqlite3 = sqlite3pkg.verbose();
 const program = new Command();
 
 // CLI Configuration
@@ -50,11 +48,6 @@ async function main() {
     logger.info('Starting Nova Universe database migration...');
     logger.info('Options:', options);
 
-    // Validate source database
-    if (!fs.existsSync(options.source)) {
-      throw new Error(`Source SQLite database not found: ${options.source}`);
-    }
-
     // Initialize migration manager
     const migrationManager = new MigrationManager();
     const dbFactory = new DatabaseFactory();
@@ -73,9 +66,8 @@ async function main() {
     }
 
     // Perform data migration
-    logger.info('Starting data migration from SQLite...');
-    const migrationResult = await migrationManager.migrateFromSQLite(
-      options.source,
+    logger.info('Starting data migration...');
+    const migrationResult = await migrationManager.migrate(
       {
         targetDatabases: options.target === 'both' ? ['postgresql', 'mongodb'] : [options.target],
         dryRun: options.dryRun,

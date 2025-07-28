@@ -203,66 +203,66 @@ services:
       - no-new-privileges:true
 
   # Nova API (Main Application)
-  nova-api:
-    build:
-      context: ./nova-api
-      dockerfile: Dockerfile
-    container_name: nova-api
-    restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: postgres://nova_admin:nova_secure_pass_2024@postgres:5432/nova_universe
-      MONGO_URL: mongodb://admin:mongo_secure_pass_2024@mongodb:27017/nova_logs
-      # Add any other required environment variables here
-    ports:
-      - "3001:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - nova-network
+  # nova-api:
+  #   build:
+  #     context: ./nova-api
+  #     dockerfile: Dockerfile
+  #   container_name: nova-api
+  #   restart: unless-stopped
+  #   environment:
+  #     NODE_ENV: development
+  #     DATABASE_URL: postgres://nova_admin:nova_secure_pass_2024@postgres:5432/nova_universe
+  #     MONGO_URL: mongodb://admin:mongo_secure_pass_2024@mongodb:27017/nova_logs
+  #     # Add any other required environment variables here
+  #   ports:
+  #     - "3001:3000"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     mongodb:
+  #       condition: service_healthy
+  #     elasticsearch:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - nova-network
 
   # Nova Comms (Slack/Messaging Service)
-  nova-comms:
-    build:
-      context: ./nova-comms
-      dockerfile: Dockerfile
-    container_name: nova-comms
-    restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      # Add any required environment variables for comms here
-    ports:
-      - "3002:3002"
-    depends_on:
-      - postgres
-      - mongodb
-      - redis
-    networks:
-      - nova-network
+  # nova-comms:
+  #   build:
+  #     context: ./nova-comms
+  #     dockerfile: Dockerfile
+  #   container_name: nova-comms
+  #   restart: unless-stopped
+  #   environment:
+  #     NODE_ENV: development
+  #     # Add any required environment variables for comms here
+  #   ports:
+  #     - "3002:3002"
+  #   depends_on:
+  #     - postgres
+  #     - mongodb
+  #     - redis
+  #   networks:
+  #     - nova-network
 
   # Nova Core (Admin UI)
-  nova-core:
-    build:
-      context: ./nova-core
-      dockerfile: Dockerfile
-    container_name: nova-core
-    restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      # Add any required environment variables for UI here
-    ports:
-      - "5173:5173"
-    depends_on:
-      - nova-api
-    networks:
-      - nova-network
+  # nova-core:
+  #   build:
+  #     context: ./nova-core
+  #     dockerfile: Dockerfile
+  #   container_name: nova-core
+  #   restart: unless-stopped
+  #   environment:
+  #     NODE_ENV: development
+  #     # Add any required environment variables for UI here
+  #   ports:
+  #     - "5173:5173"
+  #   depends_on:
+  #     - nova-api
+  #   networks:
+  #     - nova-network
 
 volumes:
   postgres_data:

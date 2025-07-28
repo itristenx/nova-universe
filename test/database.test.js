@@ -9,11 +9,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Import from the created modules
-import { DatabaseFactory } from '../database/factory.js';
-import { PostgreSQLManager } from '../database/postgresql.js';
-import { MongoDBManager } from '../database/mongodb.js';
-import { MigrationManager } from '../database/migrations.js';
-import { logger } from '../nova-api/logger.js';
+import { DatabaseFactory } from '../src/lib/db/index.ts';
+import { logger } from '../apps/api/logger.js';
 
 // Test configuration
 const testConfig = {
@@ -507,7 +504,7 @@ describe('Integration Tests', () => {
   it('should handle a complete user workflow', async () => {
     // Create user
     const userResult = await dbFactory.query(`
-      INSERT INTO users (name, email, password_hash, is_default) 
+      INSERT INTO users (name, email, passwordHash, isDefault) 
       VALUES ($1, $2, $3, $4) 
       RETURNING id
     `, ['Test User', 'test@example.com', 'hashed_password', false]);

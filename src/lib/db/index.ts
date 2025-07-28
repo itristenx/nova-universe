@@ -1,6 +1,6 @@
 // src/lib/db/index.ts
 // Unified database manager coordinating PostgreSQL, MongoDB, and Elasticsearch
-import { logger } from '../../../nova-api/logger.js';
+import { logger } from '../../../apps/api/logger.js';
 import { elasticManager } from './elastic.js';
 import enhancedMongo from './mongo.js';
 import enhancedPrisma from './postgres.js';
@@ -164,11 +164,11 @@ class NovaDatabaseManager {
       // Create ticket in PostgreSQL (first check if supportTicket model exists)
       let ticket;
       try {
-        ticket = await enhancedPrisma.prisma.supportTicket.create({ 
+        ticket = await enhancedPrisma.prisma.support_tickets.create({ 
           data: ticketData,
           include: {
-            user: true,
-            assignee: true
+            users_support_tickets_userIdTousers: true,
+            users_support_tickets_assigneeIdTousers: true
           }
         });
       } catch (error: any) {
@@ -238,12 +238,12 @@ class NovaDatabaseManager {
       // Update ticket in PostgreSQL
       let ticket;
       try {
-        ticket = await enhancedPrisma.prisma.supportTicket.update({
+        ticket = await enhancedPrisma.prisma.support_tickets.update({
           where: { id: parseInt(ticketId, 10) }, // Convert ticketId to number
           data: updateData,
           include: {
-            user: true,
-            assignee: true
+            users_support_tickets_userIdTousers: true,
+            users_support_tickets_assigneeIdTousers: true
           }
         });
       } catch (error: any) {
@@ -350,7 +350,7 @@ class NovaDatabaseManager {
       // Create article in PostgreSQL
       let article;
       try {
-        article = await enhancedPrisma.prisma.knowledgeBaseArticle.create({ 
+        article = await enhancedPrisma.prisma.knowledge_base_articles.create({ 
           data: articleData
         });
       } catch (error: any) {
@@ -537,10 +537,10 @@ class NovaDatabaseManager {
 
       if (options.includeTickets) {
         try {
-          exportData.tickets = await enhancedPrisma.prisma.supportTicket.findMany({
+          exportData.tickets = await enhancedPrisma.prisma.support_tickets.findMany({
             include: {
-              user: { select: { id: true, email: true } },
-              assignee: { select: { id: true, email: true } }
+              users_support_tickets_userIdTousers: { select: { id: true, email: true } },
+              users_support_tickets_assigneeIdTousers: { select: { id: true, email: true } }
             }
           });
         } catch (error: any) {
@@ -555,11 +555,7 @@ class NovaDatabaseManager {
 
       if (options.includeKb) {
         try {
-          exportData.knowledgeBase = await enhancedPrisma.prisma.knowledgeBaseArticle.findMany({
-            include: {
-              author: { select: { id: true, email: true } }
-            }
-          });
+          exportData.knowledgeBase = await enhancedPrisma.prisma.knowledge_base_articles.findMany();
         } catch (error: any) {
           if (error.message.includes('Unknown model')) {
             logger.warn('KnowledgeBaseArticle model not found, skipping KB export');

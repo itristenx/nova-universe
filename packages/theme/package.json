@@ -1,5 +1,5 @@
 {
-  "name": "@nova/theme",
+  "name": "@nova-universe/theme",
   "version": "1.0.0",
   "main": "dist/theme.js",
   "types": "dist/theme.d.ts"

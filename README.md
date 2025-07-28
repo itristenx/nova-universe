@@ -16,7 +16,7 @@
 ## Features
 - Multi-app monorepo: Platform API, Core Admin UI, Beacon Kiosk, Comms (Slack integration)
 - Modern React/TypeScript admin interface
-- Secure Express/SQLite backend
+- Secure Express/PostgreSQL backend
 - iPad kiosk support
 - Slack slash command integration
 - SAML SSO, JWT, and RBAC
@@ -30,7 +30,7 @@
 
 ## Repository Structure
 
-- **nova-api** – Nova Platform API (Express/SQLite backend)
+- **nova-api** – Nova Platform API (Express/PostgreSQL backend)
 - **nova-core** – Nova Core (React admin interface with integrated kiosk activation management)
 - **nova-beacon** – Nova Beacon (iPad kiosk for ticket submission)
 - **nova-comms** – Nova Comms (Slack slash command integration)
@@ -44,8 +44,8 @@ The `design/theme.js` file defines shared colors, fonts and spacing. Frontends i
 ### Requirements
 - [Node.js](https://nodejs.org/) 18 or higher
 - npm
-- sqlite3
 - [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
+- PostgreSQL 15 or higher
 
 ### Quick Start
 
@@ -106,8 +106,8 @@ For questions, suggestions, or support, please use [GitHub Discussions](https://
 ## Requirements
 - [Node.js](https://nodejs.org/) 18 or higher
 - npm
-- sqlite3
 - [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
+- PostgreSQL 15 or higher
 
 ## Quick Start
 
@@ -125,7 +125,7 @@ Open http://localhost:5173 to access the admin interface.
 
 ## Setup
 
-Run `./installers/setup.sh` to install Node.js, SQLite and all project dependencies in one step.
+Run `./installers/setup.sh` to install Node.js and all project dependencies in one step.
 Copy `.env.local.example` to `.env.local` and adjust any values for your machine.
 Next run `./scripts/init-env.sh` to create the `.env` files for each app (edit them before launching).
 You can also follow the manual instructions below.
@@ -156,7 +156,7 @@ The admin interface includes comprehensive kiosk management functionality, inclu
 - User management with role-based access control
 - Integrated security features with rate limiting and input validation
 
-The backend stores ticket logs in a local SQLite database (`nova-api/log.sqlite`).
+The backend stores ticket logs in a local PostgreSQL database.
 Configuration values are stored in the same database and can be edited from the admin UI.
 
 ### Comms (Slack Service)
@@ -306,7 +306,7 @@ check detects the change.
 
 ## Components
 
-- **nova-api** – Nova Platform API (Express backend with SQLite database)
+- **nova-api** – Nova Platform API (Express backend with PostgreSQL database)
 - **nova-core** – Nova Core (React admin interface)
 - **nova-beacon** – Nova Beacon (iPad kiosk app for ticket submission)
 - **nova-comms** – Nova Comms (Slack integration)
@@ -314,7 +314,7 @@ check detects the change.
 ## Requirements
 
 - Node.js 18+
-- SQLite3
+- PostgreSQL 15+
 
 ## Environment Variables
 

@@ -1,0 +1,227 @@
+# 📬 Nova Native Microsoft 365 Email Integration (Multi-Queue)
+
+> Native M365 Graph API email handling across multiple queues (IT, HR, Cyber, Ops). Configurable in Nova Core. Fully API-driven. No SMTP or IMAP required.
+
+---
+
+## 📌 Objectives
+
+- Enable **sending and receiving** email using Microsoft Graph API
+- Support **multiple M365 accounts** (e.g. `hr@`, `it@`, `ops@`, `cyber@`)
+- Managed via **Nova Core configuration UI/API**
+- Automatic ticket creation powered by **Synth** and unified **Nova API**
+- Entirely Graph-based, secure, and compliant
+
+---
+
+## 🧱 System Architecture
+
+```txt
+Nova Core
+  └─ Email Account Configs (address, queue, flags, etc.)
+
+Nova API
+  ├─ Email Engine
+  │   ├─ Microsoft Graph Integration (send/receive)
+  │   ├─ Polling / Webhook Subscriptions
+  │   └─ Attachment + metadata normalizer
+  └─ Synth (AI)
+      ├─ Intent Classification → "create_ticket"
+      ├─ NLP Extraction → urgency, requestor, attachments, flags
+      └─ Routes to correct queue
+
+
+⸻
+
+🔐 Microsoft Graph Setup
+
+1. App Registration
+	•	Create a single Azure App Registration
+	•	Enable Application Permissions:
+	•	Mail.Send
+	•	Mail.ReadWrite
+	•	MailboxSettings.Read
+	•	User.Read.All
+
+2. Mailbox Access Rights
+
+Use PowerShell to assign full mailbox access to the app for each address:
+
+Add-MailboxPermission -Identity "ops@domain.com" `
+  -User "APP_ID@TENANT.onmicrosoft.com" `
+  -AccessRights FullAccess
+
+
+⸻
+
+⚙️ Email Account Configuration (Nova Core)
+
+Schema (email_accounts)
+
+type EmailAccount {
+  id: string;
+  queue: 'IT' | 'HR' | 'OPS' | 'CYBER';
+  address: string; // e.g. ops@domain.com
+  displayName: string;
+  enabled: boolean;
+  graphImpersonation: boolean;
+  autoCreateTickets: boolean;
+  webhookMode: boolean;
+  lastSynced: Date;
+}
+
+API
+
+Method	Endpoint	Description
+GET	/core/email-accounts	List all email configs
+POST	/core/email-accounts	Add new email integration
+PUT	/core/email-accounts/{id}	Update email config
+DELETE	/core/email-accounts/{id}	Remove email account integration
+
+
+⸻
+
+📥 Receiving Email
+
+Option A: Polling (default)
+
+Poll inbox for unread messages:
+
+GET /users/hr@domain.com/mailFolders/inbox/messages?$filter=isRead eq false
+
+After processing:
+
+PATCH /users/hr@domain.com/messages/{id}
+{
+  "isRead": true
+}
+
+Option B: Webhook (optional real-time)
+
+Subscribe to notifications:
+
+POST /subscriptions
+{
+  "changeType": "created",
+  "resource": "users/ops@domain.com/mailFolders('inbox')/messages",
+  "notificationUrl": "https://nova/api/graph-email-webhook",
+  "expirationDateTime": "2025-08-27T00:00:00Z",
+  "clientState": "secure_hash"
+}
+
+Webhook must:
+	•	Verify clientState
+	•	Retrieve new message by ID
+	•	Pass to Synth
+
+Subscriptions must be auto-renewed.
+
+⸻
+
+📤 Sending Email
+
+Nova API Route
+
+POST /email/send
+{
+  from: "ops@domain.com",
+  to: "user@company.com",
+  subject: "Ticket Update",
+  html: "<p>Your issue has been resolved.</p>",
+  queue: "OPS"
+}
+
+Internally calls:
+
+POST https://graph.microsoft.com/v1.0/users/ops@domain.com/sendMail
+Authorization: Bearer {access_token}
+
+
+⸻
+
+🧠 Synth: Auto-Ticket Creation
+
+Triggered when a new email is received.
+
+Flow
+
+1. New email received (via poll or webhook)
+2. Pass to Synth
+3. Synth performs:
+   - Intent detection → "create_ticket"
+   - NLP extraction → body, tags, requester, attachments
+4. Create ticket via API
+
+Ticket Creation Example
+
+POST /tickets
+{
+  source: "email",
+  queue: "HR",
+  subject: "New hire request",
+  body: "Can you help onboard Jane Doe?",
+  from: "manager@company.com",
+  attachments: [...],
+  flags: ["new_hire"]
+}
+
+
+⸻
+
+🧰 Developer Implementation Plan
+
+Phase	Feature
+1	Core config schema + API
+2	Graph Send-only API
+3	Graph Read (polling logic)
+4	Synth pipeline for auto-ticketing
+5	Webhook support + subscription renewal engine
+6	Admin logging, fallback modes, retries
+
+
+⸻
+
+🔒 Security Best Practices
+	•	Store client ID/secret in secure vaults
+	•	Use application-level RBAC for queue visibility
+	•	Log all outbound emails and webhook attempts
+	•	Monitor Graph throttling (429 errors)
+	•	Use per-queue tokens if needed
+
+⸻
+
+✅ Example Accounts
+
+Queue	Email Address
+IT	it@yourdomain.com
+HR	hr@yourdomain.com
+Cyber	cyber@yourdomain.com
+Ops	ops@yourdomain.com
+
+
+⸻
+
+🔍 Monitoring
+	•	Track success/failure per send
+	•	Log Graph API error codes
+	•	Retain email message ID for traceability
+
+⸻
+
+🏁 Endpoints Summary
+
+Endpoint	Description
+POST /email/send	Send email via Graph
+GET /email/messages	View received messages per account
+POST /email/process	Trigger manual ticket generation
+POST /core/email-accounts	Manage account configurations
+
+
+⸻
+
+📌 Notes
+	•	This module replaces legacy SMTP/IMAP pipelines
+	•	Nova API is the sole interface for sending and receiving email
+	•	Synth handles all AI-driven intent parsing, auto-ticket creation, and metadata enrichment
+
+⸻

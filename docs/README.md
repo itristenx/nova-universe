@@ -22,7 +22,7 @@ CueIT is an internal help desk application for submitting and tracking IT ticket
 
 ### Prerequisites
 - Node.js 18+ and npm
-- SQLite3
+- PostgreSQL
 - For iOS kiosk: Xcode 15+ and iOS 16+
 
 ### Installation
@@ -46,7 +46,7 @@ cd CueIT
 CueIT is a comprehensive IT help desk system with multiple components:
 
 ### Core Components
-- **cueit-api** - Backend API server (Node.js/Express/SQLite)
+- **cueit-api** - Backend API server (Node.js/Express/PostgreSQL)
 - **cueit-admin** - Web admin interface (React/TypeScript/Vite)
 - **cueit-kiosk** - iOS kiosk application (Swift/SwiftUI)
 - **cueit-slack** - Slack integration service
@@ -63,11 +63,11 @@ CueIT is a comprehensive IT help desk system with multiple components:
 ## Components
 
 ### cueit-api
-Express.js backend with SQLite database. Handles ticket submission, user management, kiosk activation, and integrations.
+Express.js backend with PostgreSQL database. Handles ticket submission, user management, kiosk activation, and integrations.
 
 **Key Features:**
 - REST API for all operations
-- SQLite database with automatic migrations
+- PostgreSQL database with automatic migrations
 - Comprehensive security middleware
 - Rate limiting and input validation
 - Integration with HelpScout, ServiceNow, and Slack
@@ -109,7 +109,7 @@ Native macOS launcher application.
                                  │
                     ┌─────────────▼──────────────┐
                     │        cueit-api           │
-                    │   (Express + SQLite)       │
+                    │   (Express + PostgreSQL)   │
                     └────────────────────────────┘
 ```
 
@@ -148,6 +148,7 @@ ADMIN_PASSWORD=your-secure-password
 KIOSK_TOKEN=your-kiosk-token
 SMTP_HOST=your-smtp-server
 HELPDESK_EMAIL=helpdesk@example.com
+DATABASE_URL=postgres://user:password@localhost:5432/cueit
 ```
 
 #### cueit-admin/.env
@@ -255,7 +256,7 @@ cd cueit-kiosk && ./clean-build.sh
 #### API Connection Issues
 1. Check if API is running: `curl http://localhost:3000/api/health` (see also `/api/version` for version info)
 2. Verify environment variables are set
-3. Check database file permissions
+3. Check database connection and migrations
 
 #### iOS Kiosk Build Issues
 1. Clean build: `cd cueit-kiosk && ./clean-build.sh`
