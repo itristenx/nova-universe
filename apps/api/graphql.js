@@ -1,6 +1,6 @@
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
-import { gql } from 'graphql';
+import { gql } from '@apollo/server';
 import db from './db.js';
 import { verify } from './jwt.js';
 
