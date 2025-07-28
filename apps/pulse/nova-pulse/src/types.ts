@@ -13,10 +13,8 @@ export interface Ticket {
 }
 
 export interface TicketUpdate extends Partial<Ticket> {
-  status?: string
   workNote?: string
   timeSpent?: number
-  resolution?: string
 }
 
 export interface DashboardData {
