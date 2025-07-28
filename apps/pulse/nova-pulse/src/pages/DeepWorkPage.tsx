@@ -5,7 +5,7 @@ import { getTickets, updateTicket } from '../lib/api'
 
 export const DeepWorkPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>()
-  const { data } = useQuery(['ticket', ticketId], () => getTickets({ ticketId }).then(t => t[0]), { enabled: !!ticketId })
+  const { data } = useQuery({ queryKey: { key: 'ticket', ticketId }, queryFn: () => getTickets({ ticketId }).then(t => t[0]), enabled: !!ticketId })
   const [note, setNote] = React.useState('')
 
   if (!data) return <div>Loading...</div>
