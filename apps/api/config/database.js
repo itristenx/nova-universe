@@ -16,7 +16,14 @@ export const databaseConfig = {
     port: parseInt(process.env.POSTGRES_PORT || '5432'),
     database: process.env.POSTGRES_DB || 'nova_universe',
     user: process.env.POSTGRES_USER || 'nova_admin',
-    password: process.env.POSTGRES_PASSWORD,
+    password: (() => {
+      const password = process.env.POSTGRES_PASSWORD;
+      if (!password) {
+        logger.error('POSTGRES_PASSWORD is not set. Falling back to a secure default password.');
+        return generateSecurePassword();
+      }
+      return password;
+    })(),
     
     // SSL/TLS configuration
     ssl: process.env.NODE_ENV === 'production' ? {
