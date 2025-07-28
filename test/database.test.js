@@ -18,15 +18,15 @@ import { logger } from '../nova-api/logger.js';
 // Test configuration
 const testConfig = {
   postgresql: {
-    host: process.env.POSTGRES_HOST || 'localhost',
-    port: parseInt(process.env.POSTGRES_PORT || '5432'),
-    database: process.env.POSTGRES_DB || 'nova_universe_test',
-    user: process.env.POSTGRES_USER || 'nova_user',
-    password: process.env.POSTGRES_PASSWORD || 'secure_password_here',
+    host: process.env.POSTGRES_HOST ?? 'localhost',
+    port: parseInt(process.env.POSTGRES_PORT ?? '5432'),
+    database: process.env.POSTGRES_DB ?? 'nova_universe_test',
+    user: process.env.POSTGRES_USER ?? 'nova_user',
+    password: process.env.POSTGRES_PASSWORD ?? 'secure_password_here',
     ssl: false
   },
   mongodb: {
-    uri: process.env.MONGO_URI || 'mongodb://localhost:27017/nova_universe_test',
+    uri: process.env.MONGO_URI ?? 'mongodb://localhost:27017/nova_universe_test',
     options: {
       useNewUrlParser: true,
       useUnifiedTopology: true

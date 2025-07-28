@@ -6,17 +6,17 @@ import { logger } from '../../../nova-api/logger.js';
 // Configuration from environment with robust defaults and validation
 const validateElasticConfig = () => {
   const config = {
-    node: process.env.ELASTIC_URL || 'http://localhost:9200',
+    node: process.env.ELASTIC_URL ?? 'http://localhost:9200',
     auth: {
-      username: process.env.ELASTIC_USERNAME || 'elastic',
-      password: process.env.ELASTIC_PASSWORD || 'changeme'
+      username: process.env.ELASTIC_USERNAME ?? 'elastic',
+      password: process.env.ELASTIC_PASSWORD ?? 'changeme'
     },
-    requestTimeout: parseInt(process.env.ELASTIC_REQUEST_TIMEOUT || '30000'),
-    pingTimeout: parseInt(process.env.ELASTIC_PING_TIMEOUT || '3000'),
+    requestTimeout: parseInt(process.env.ELASTIC_REQUEST_TIMEOUT ?? '30000'),
+    pingTimeout: parseInt(process.env.ELASTIC_PING_TIMEOUT ?? '3000'),
     sniffOnStart: process.env.ELASTIC_SNIFF_ON_START === 'true',
     sniffInterval: process.env.ELASTIC_SNIFF_INTERVAL ? parseInt(process.env.ELASTIC_SNIFF_INTERVAL) : false,
     sniffOnConnectionFault: process.env.ELASTIC_SNIFF_ON_CONNECTION_FAULT === 'true',
-    maxRetries: parseInt(process.env.ELASTIC_MAX_RETRIES || '3'),
+    maxRetries: parseInt(process.env.ELASTIC_MAX_RETRIES ?? '3'),
     resurrectStrategy: 'ping' as const,
     compression: process.env.ELASTIC_COMPRESSION === 'true',
     ssl: process.env.ELASTIC_SSL_VERIFY === 'false' ? {

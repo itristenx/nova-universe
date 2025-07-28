@@ -3,8 +3,8 @@
 import { MongoClient, Db } from 'mongodb';
 import { logger } from '../../../nova-api/logger.js';
 
-const uri = process.env.MONGO_URL || process.env.MONGO_URI || 'mongodb://localhost:27017';
-const dbName = process.env.MONGO_DB_NAME || 'nova_logs';
+const uri = process.env.MONGO_URL ?? process.env.MONGO_URI ?? 'mongodb://localhost:27017';
+const dbName = process.env.MONGO_DB_NAME ?? 'nova_logs';
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
@@ -31,7 +31,7 @@ if (!global._mongoClientPromise) {
         username: process.env.MONGO_USER,
         password: process.env.MONGO_PASSWORD
       },
-      authSource: process.env.MONGO_AUTH_SOURCE || 'admin'
+      authSource: process.env.MONGO_AUTH_SOURCE ?? 'admin'
     });
   }
 
