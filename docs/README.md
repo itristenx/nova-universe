@@ -1,6 +1,6 @@
-# CueIT Documentation
+# Nova Universe Documentation
 
-CueIT is an internal help desk application for submitting and tracking IT tickets.
+Nova Universe is an internal help desk application for submitting and tracking IT tickets.
 
 ## Table of Contents
 - [Quick Start Guide](#quick-start-guide)
@@ -29,7 +29,7 @@ CueIT is an internal help desk application for submitting and tracking IT ticket
 ```bash
 # Clone and setup
 git clone <repository-url>
-cd CueIT
+cd nova-universe
 ./installers/setup.sh
 
 # Start all services
@@ -43,14 +43,14 @@ cd CueIT
 
 ## Project Overview
 
-CueIT is a comprehensive IT help desk system with multiple components:
+Nova Universe is a comprehensive IT help desk system with multiple components:
 
 ### Core Components
-- **cueit-api** - Backend API server (Node.js/Express/PostgreSQL)
-- **cueit-admin** - Web admin interface (React/TypeScript/Vite)
-- **cueit-kiosk** - iOS kiosk application (Swift/SwiftUI)
-- **cueit-slack** - Slack integration service
-- **cueit-macos-swift** - macOS launcher application
+- **nova-api** - Backend API server (Node.js/Express/PostgreSQL)
+- **nova-admin** - Web admin interface (React/TypeScript/Vite)
+- **nova-kiosk** - iOS kiosk application (Swift/SwiftUI)
+- **nova-slack** - Slack integration service
+- **nova-macos-swift** - macOS launcher application
 
 ### Key Features
 - Ticket submission and management
@@ -62,7 +62,7 @@ CueIT is a comprehensive IT help desk system with multiple components:
 
 ## Components
 
-### cueit-api
+### nova-api
 Express.js backend with PostgreSQL database. Handles ticket submission, user management, kiosk activation, and integrations.
 
 **Key Features:**
@@ -72,7 +72,7 @@ Express.js backend with PostgreSQL database. Handles ticket submission, user man
 - Rate limiting and input validation
 - Integration with HelpScout and Slack (ServiceNow integration deprecated)
 
-### cueit-admin
+### nova-admin
 React admin interface for managing the help desk system.
 
 **Key Features:**
@@ -82,7 +82,7 @@ React admin interface for managing the help desk system.
 - Real-time status monitoring
 - Responsive design
 
-### cueit-kiosk
+### nova-kiosk
 SwiftUI iPad application for end-user ticket submission.
 
 **Key Features:**
@@ -91,24 +91,24 @@ SwiftUI iPad application for end-user ticket submission.
 - Directory integration for user lookup
 - Touch-friendly interface
 
-### cueit-slack
+### nova-slack
 Slack integration for ticket submission via slash commands.
 
-### cueit-macos-swift
+### nova-macos-swift
 Native macOS launcher application.
 
 ## Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   cueit-admin   │    │   cueit-kiosk   │    │   cueit-slack   │
+│   nova-admin   │    │   nova-kiosk   │    │   nova-slack   │
 │  (React SPA)    │    │  (iPad App)     │    │ (Slack Bot)     │
 └─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
           │                      │                      │
           └──────────────────────┼──────────────────────┘
                                  │
                     ┌─────────────▼──────────────┐
-                    │        cueit-api           │
+                    │        nova-api           │
                     │   (Express + PostgreSQL)   │
                     └────────────────────────────┘
 ```
@@ -123,9 +123,9 @@ Native macOS launcher application.
 ### Manual Setup
 ```bash
 # Install dependencies for each component
-cd cueit-api && npm ci
-cd ../cueit-admin && npm ci
-cd ../cueit-slack && npm ci
+cd nova-api && npm ci
+cd ../nova-admin && npm ci
+cd ../nova-slack && npm ci
 
 # Initialize environment files
 ./scripts/init-env.sh

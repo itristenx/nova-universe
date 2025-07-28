@@ -18,7 +18,7 @@ struct ActivationErrorView: View {
                 .font(.title)
                 .fontWeight(.semibold)
             
-            Text("Unable to connect to the CueIT server. Please check your connection and server settings.")
+            Text("Unable to connect to the Nova Universe server. Please check your connection and server settings.")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Theme.Spacing.md)

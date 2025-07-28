@@ -1,4 +1,4 @@
-# CueIT Admin UI - Configuration Guide
+# Nova Universe Admin UI - Configuration Guide
 
 ## Logo Configuration
 

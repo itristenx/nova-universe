@@ -25,11 +25,11 @@
 - This also applies to any JavaScript tests added for installer-related packages
 
 ## Project Structure
-- `cueit-api/` - Express backend with SQLite
-- `cueit-admin/` - React admin interface  
-- `cueit-kiosk/` - iPad SwiftUI app
-- `cueit-slack/` - Slack integration
-- `cueit-macos-swift/` - macOS launcher
+- `nova-api/` - Express backend with SQLite
+- `nova-admin/` - React admin interface  
+- `nova-kiosk/` - iPad SwiftUI app
+- `nova-slack/` - Slack integration
+- `nova-macos-swift/` - macOS launcher
 - `docs/` - Documentation
 - `installers/` - Build scripts
 

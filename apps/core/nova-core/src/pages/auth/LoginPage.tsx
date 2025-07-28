@@ -241,14 +241,14 @@ export const LoginPage: React.FC = () => {
             <img
               className="h-20 w-auto max-w-full object-contain"
               src="/logo.png"
-              alt="CueIT"
+              alt="Nova Universe"
               onError={(e) => {
                 e.currentTarget.src = '/vite.svg';
               }}
             />
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Sign in to CueIT Portal
+            Sign in to Nova Universe Portal
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Manage your kiosks, users, and support tickets

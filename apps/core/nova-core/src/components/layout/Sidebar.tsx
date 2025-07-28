@@ -65,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <img
                 className="h-12 w-auto max-w-[160px]"
                 src={isDark ? '/logo-dark.png' : '/logo.png'}
-                alt="CueIT"
+                alt="Nova Universe"
                 onError={(e) => {
                   // Fallback to regular logo if dark version doesn't exist
                   if (e.currentTarget.src.includes('logo-dark.png')) {
@@ -77,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               />
             </div>
             <div className="w-full text-center">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">CueIT Portal</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Nova Universe Portal</h1>
             </div>
           </div>
 
