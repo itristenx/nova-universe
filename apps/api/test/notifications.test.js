@@ -2,7 +2,7 @@ import 'dotenv/config';
 import request from 'supertest';
 import assert from 'assert';
 import http from 'http';
-import dbWrapper from '../db.js';
+import dbWrapper, { closeDatabase } from '../db.js';
 import app from '../index.js';
 import setupPromise from './00_setup.js';
 
@@ -64,5 +64,9 @@ describe('Notifications API', function() {
         .post('/api/notifications')
         .send({ message: 'Test msg', level: 'info' });
     });
+  });
+
+  afterAll(async () => {
+    await closeDatabase();
   });
 });

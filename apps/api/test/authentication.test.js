@@ -1,5 +1,6 @@
 import request from 'supertest';
 import app from '../index.js';
+import { closeDatabase } from '../db.js';
 
 let authToken;
 let testUser = {
@@ -305,5 +306,9 @@ describe('Nova Helix Authentication Features', () => {
 
       expect(response.body.success).toBe(false);
     });
+  });
+
+  afterAll(async () => {
+    await closeDatabase();
   });
 });

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import request from 'supertest';
 import assert from 'assert';
-import dbWrapper from '../db.js';
+import dbWrapper, { closeDatabase } from '../db.js';
 import setupPromise from './00_setup.js';
 
 let app;
@@ -41,5 +41,9 @@ describe('User management', function() {
     assert.strictEqual(row.name, 'Bobby');
     assert.strictEqual(row.email, 'bob@e.com');
     assert.notStrictEqual(row.password_hash, null);
+  });
+
+  afterAll(async () => {
+    await closeDatabase();
   });
 });
