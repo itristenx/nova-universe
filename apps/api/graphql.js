@@ -46,7 +46,13 @@ export async function setupGraphQL(app) {
   const authMiddleware = async (req, res, next) => {
     const header = req.headers.authorization || '';
     const token = header.replace(/^Bearer\s+/i, '');
-    const payload = token && verify(token);
+    let payload;
+    try {
+      payload = token && verify(token);
+    } catch (error) {
+      console.error('JWT verification error:', error);
+      return res.status(401).json({ error: 'Invalid token' });
+    }
     if (!payload) {
       return res.status(401).json({ error: 'Authentication required' });
     }
