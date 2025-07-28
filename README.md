@@ -143,7 +143,7 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
 4. Start the server with `node index.js` (uses `API_PORT`, default `3000`).
 
 The API also exposes a GraphQL endpoint at `/api/v2/graphql` for internal tools.
-You can explore it with Apollo Sandbox or `curl`:
+Authenticate with an admin JWT token before making requests. You can explore it with Apollo Sandbox or `curl`:
 
 ```graphql
 query {

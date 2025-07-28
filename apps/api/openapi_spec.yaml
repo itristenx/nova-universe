@@ -88,10 +88,13 @@ paths:
                 properties:
                   id:
                     type: string
+
   /graphql:
     post:
       summary: GraphQL endpoint
-      description: Execute GraphQL queries against the Nova API.
+      description: Execute GraphQL queries against the Nova API. Requires a Bearer JWT from the admin login.
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -151,3 +154,10 @@ paths:
                 properties:
                   id:
                     type: string
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
