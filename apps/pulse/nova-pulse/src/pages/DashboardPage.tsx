@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { getDashboard, getTimesheet } from '../lib/api'
 
 export const DashboardPage: React.FC = () => {
-  const { data: dashboard } = useQuery(['dashboard'], getDashboard)
-  const { data: timesheet } = useQuery(['timesheet'], () => getTimesheet())
+  const { data: dashboard } = useQuery({ queryKey: ['dashboard'], queryFn: getDashboard })
+  const { data: timesheet } = useQuery({ queryKey: ['timesheet'], queryFn: () => getTimesheet() })
 
   if (!dashboard || !timesheet) return <div>Loading...</div>
 
