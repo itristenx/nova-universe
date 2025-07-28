@@ -96,7 +96,6 @@ export interface Log {
   urgency: 'Low' | 'Medium' | 'High' | 'Critical';
   timestamp: string;
   emailStatus: 'success' | 'fail';
-  serviceNowId?: string;
 }
 
 export interface Config {

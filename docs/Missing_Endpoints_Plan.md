@@ -14,9 +14,9 @@ This document outlines the missing API endpoints required for the Nova-Universe 
 - **Priority**: High
 
 ### ServiceNow Integration
-- **Description**: Remove ServiceNow integration.
-- **Endpoints to Remove**:
-  - `POST /api/servicenow/create` – Create incidents in ServiceNow.
+- **Description**: ServiceNow integration has been deprecated and all related
+  endpoints have been removed.
+- **Status**: Completed. All ServiceNow-related endpoints have been removed.
 - **Priority**: High
 
 ### Advanced Reporting and Analytics

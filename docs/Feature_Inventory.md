@@ -63,7 +63,7 @@ This document provides a comprehensive inventory of features, modules, and submo
 
 ### Integrations
 - **Slack**: Slash commands and notifications.
-- **ServiceNow**: ~~Incident creation (deprecated)~~
+ - **ServiceNow**: ~~Integration deprecated and removed~~
 - **HelpScout**: Ticket synchronization.
 
 ### Knowledge Base
