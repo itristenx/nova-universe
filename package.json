@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@heroui/react": "^2.8.1",
+    "@node-saml/passport-saml": "^5.1.0",
     "@simplewebauthn/server": "^13.1.2",
     "autoprefixer": "^10.4.21",
     "base64url": "^3.0.1",
@@ -47,7 +48,8 @@
     "react-dom": "19.1.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "uuid": "^11.1.0"
   },
   "overrides": {
     "react": "19.1.0",
