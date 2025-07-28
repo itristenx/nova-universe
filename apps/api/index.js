@@ -50,6 +50,7 @@ import pulseRouter from './routes/pulse.js';
 import scimRouter from './routes/scim.js';
 import synthRouter from './routes/synth.js';
 import { getEmailStrategy } from './utils/serviceHelpers.js';
+import { setupGraphQL } from './graphql.js';
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -1221,6 +1222,8 @@ app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
 export async function createApp() {
   // All the above setup code remains as is
   // (from dotenv.config() through all middleware, routers, etc.)
+  // Setup Apollo GraphQL server
+  await setupGraphQL(app);
   // Do not call app.listen here
   return app;
 }

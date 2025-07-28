@@ -184,7 +184,7 @@ POST https://example.com/hooks/tickets
 
 📊 GraphQL (Internal Tools)
 
-Available on /api/v2/graphql, used by:
+Available on /api/v2/graphql (JWT-authenticated, admin-only), used by:
 	•	Nova Deck
 	•	Admin Reporting UI
 	•	Analytics Module (optional)
