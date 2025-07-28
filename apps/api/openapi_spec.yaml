@@ -88,6 +88,19 @@ paths:
                 properties:
                   id:
                     type: string
+  /graphql:
+    post:
+      summary: GraphQL endpoint
+      description: Execute GraphQL queries against the Nova API.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: GraphQL response
   /users:
     get:
       summary: List users
