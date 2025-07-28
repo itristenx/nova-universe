@@ -48,7 +48,7 @@ export async function setupGraphQL(app) {
     const token = header.replace(/^Bearer\s+/i, '');
     let payload;
     try {
-      payload = token && verify(token);
+      payload = token ? verify(token) : null;
     } catch (error) {
       console.error('JWT verification error:', error);
       return res.status(401).json({ error: 'Invalid token' });
