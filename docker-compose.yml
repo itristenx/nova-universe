@@ -211,7 +211,7 @@ services:
   #   restart: unless-stopped
   #   environment:
   #     NODE_ENV: development
-  #     DATABASE_URL: postgres://nova_admin:${POSTGRES_PASSWORD}@postgres:5432/nova_universe
+  #     DATABASE_URL: postgres://nova_admin:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/nova_universe
   #     MONGO_URL: mongodb://admin:mongo_secure_pass_2024@mongodb:27017/nova_logs
   #     # Add any other required environment variables here
   #   ports:
