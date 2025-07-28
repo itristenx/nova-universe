@@ -139,8 +139,8 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
    To send tickets directly to HelpScout instead, provide
    `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` (optionally set
    `HELPSCOUT_SMTP_FALLBACK=true` to also send email).
-   ServiceNow integration has been removed. You can customize `API_PORT`,
-   `LOGO_URL` and other defaults.
+   **Note:** ServiceNow integration has been fully deprecated and removed.
+   You can customize `API_PORT`, `LOGO_URL` and other defaults.
 4. Start the server with `node index.js` (uses `API_PORT`, default `3000`).
 
 The API also exposes a GraphQL endpoint at `/api/v2/graphql` for internal tools.
@@ -293,7 +293,8 @@ want the server to also send the ticket email using your SMTP configuration.
 
 ## ServiceNow Integration (Deprecated)
 
-ServiceNow support has been removed from the platform.
+ServiceNow support has been **removed** from the platform and no
+ServiceNow-specific configuration or endpoints remain.
 
 ## Kiosk Activation
 

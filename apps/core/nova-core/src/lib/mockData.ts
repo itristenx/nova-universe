@@ -120,8 +120,7 @@ export const mockLogs: Log[] = [
     system: 'Desktop',
     urgency: 'Medium',
     timestamp: new Date().toISOString(),
-    emailStatus: 'success',
-    serviceNowId: 'INC0010001'
+    emailStatus: 'success'
   },
   {
     id: 2,
@@ -132,8 +131,7 @@ export const mockLogs: Log[] = [
     system: 'Laptop',
     urgency: 'Critical',
     timestamp: new Date(Date.now() - 1800000).toISOString(), // 30 minutes ago
-    emailStatus: 'success',
-    serviceNowId: 'INC0010002'
+    emailStatus: 'success'
   }
 ];
 
