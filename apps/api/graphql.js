@@ -70,7 +70,8 @@ export async function setupGraphQL(app) {
       }
       req.user = user;
       next();
-    } catch {
+    } catch (error) {
+      console.error('Database error:', error);
       return res.status(500).json({ error: 'Database error' });
     }
   };
