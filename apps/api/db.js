@@ -298,4 +298,17 @@ initializeDatabase().catch(error => {
 });
 
 export default dbWrapper;
-export { setupInitialData, initializeDatabase };
+
+// Gracefully close all database connections
+async function closeDatabase() {
+  try {
+    if (dbFactory && isInitialized) {
+      await dbFactory.close();
+      isInitialized = false;
+    }
+  } catch (error) {
+    logger.error('Failed to close database:', error);
+  }
+}
+
+export { setupInitialData, initializeDatabase, closeDatabase };
