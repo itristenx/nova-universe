@@ -16,7 +16,7 @@ This document outlines the missing API endpoints required for the Nova-Universe 
 ### ServiceNow Integration
 - **Description**: ServiceNow integration has been deprecated and all related
   endpoints have been removed.
-- **Endpoints to Remove**: N/A
+- **Status**: Completed. All ServiceNow-related endpoints have been removed.
 - **Priority**: High
 
 ### Advanced Reporting and Analytics
