@@ -302,9 +302,14 @@ export default dbWrapper;
 // Gracefully close all database connections
 async function closeDatabase() {
   try {
-    if (dbFactory && isInitialized) {
+    if (dbFactory && typeof dbFactory.close === 'function' && isInitialized === true) {
       await dbFactory.close();
       isInitialized = false;
+    } else {
+      logger.warn('closeDatabase called but dbFactory or isInitialized is in an invalid state.', {
+        dbFactory: dbFactory ? 'valid' : 'null/undefined',
+        isInitialized,
+      });
     }
   } catch (error) {
     logger.error('Failed to close database:', error);
