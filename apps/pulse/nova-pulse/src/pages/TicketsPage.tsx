@@ -8,7 +8,7 @@ const QUEUES = ['HR', 'IT', 'Operations', 'Cyber']
 
 export const TicketsPage: React.FC = () => {
   const [queue, setQueue] = React.useState(QUEUES[0])
-  const { data: tickets = [], refetch } = useQuery(['tickets', queue], () => getTickets({ queue }))
+  const { data: tickets = [], refetch } = useQuery({ queryKey: { key: 'tickets', queue }, queryFn: () => getTickets({ queue }) })
 
   return (
     <div>
