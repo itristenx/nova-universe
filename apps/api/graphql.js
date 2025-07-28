@@ -52,10 +52,14 @@ export async function setupGraphQL(app) {
     }
 
     try {
-      const result = await db.query(
-        'SELECT u.id, u.name, u.email, r.name AS role\n         FROM users u\n         LEFT JOIN user_roles ur ON u.id = ur.userId\n         LEFT JOIN roles r ON ur.roleId = r.id\n         WHERE u.id = $1',
-        [payload.id]
-      );
+      const userQuery = `
+        SELECT u.id, u.name, u.email, r.name AS role
+        FROM users u
+        LEFT JOIN user_roles ur ON u.id = ur.userId
+        LEFT JOIN roles r ON ur.roleId = r.id
+        WHERE u.id = $1
+      `;
+      const result = await db.query(userQuery, [payload.id]);
       if (result.rows.length === 0) {
         return res.status(401).json({ error: 'Invalid token' });
       }
