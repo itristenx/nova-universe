@@ -1,0 +1,19 @@
+// BrandingConfig structure for tenant branding
+export type BrandingConfig = {
+  tenantId: string;
+  logoUrl: string;
+  primaryColor: string;
+  secondaryColor: string;
+  helpText: string;
+  fallbackToNova: boolean;
+};
+
+// Example: default Nova branding
+export const defaultBranding: BrandingConfig = {
+  tenantId: 'nova',
+  logoUrl: '/nova-logo-light.png',
+  primaryColor: '#3b82f6',
+  secondaryColor: '#6366f1',
+  helpText: 'Welcome to Nova Orbit!',
+  fallbackToNova: true,
+};
