@@ -107,7 +107,6 @@ model Log {
   urgency      String?
   timestamp    DateTime @default(now())
   emailStatus  String?  @map("email_status")
-  servicenowId String?  @map("servicenow_id")
   userId       String?  @map("user_id")
   user         User?    @relation(fields: [userId], references: [id])
 

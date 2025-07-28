@@ -63,7 +63,7 @@ This document provides a comprehensive inventory of features, modules, and submo
 
 ### Integrations
 - **Slack**: Slash commands and notifications.
-- **ServiceNow**: Incident creation.
+- **ServiceNow**: ~~Incident creation (deprecated)~~
 - **HelpScout**: Ticket synchronization.
 
 ### Knowledge Base
@@ -82,7 +82,7 @@ This document provides a comprehensive inventory of features, modules, and submo
 
 ### Third-Party Integrations
 - **Slack and Teams**: Enhanced collaboration.
-- **ServiceNow and HelpScout**: Remove ServiceNow integration and create and Import Only HelpScout intergration.
+ - **ServiceNow**: Integration removed. HelpScout supports import-only mode.
 
 ---
 

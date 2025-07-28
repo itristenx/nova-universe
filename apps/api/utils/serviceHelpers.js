@@ -4,34 +4,6 @@
  */
 
 /**
- * Checks if ServiceNow integration is properly configured
- * @returns {boolean} True if ServiceNow can be used, false otherwise
- */
-export function isServiceNowConfigured() {
-  const SN_INSTANCE = process.env.SERVICENOW_INSTANCE;
-  const SN_USER = process.env.SERVICENOW_USER;
-  const SN_PASS = process.env.SERVICENOW_PASS;
-  
-  return !!(SN_INSTANCE && SN_USER && SN_PASS);
-}
-
-/**
- * Gets ServiceNow configuration if available
- * @returns {Object|null} ServiceNow config object or null if not configured
- */
-export function getServiceNowConfig() {
-  if (!isServiceNowConfigured()) {
-    return null;
-  }
-  
-  return {
-    instance: process.env.SERVICENOW_INSTANCE,
-    user: process.env.SERVICENOW_USER,
-    pass: process.env.SERVICENOW_PASS
-  };
-}
-
-/**
  * Checks if HelpScout integration is properly configured
  * @returns {boolean} True if HelpScout can be used, false otherwise
  */

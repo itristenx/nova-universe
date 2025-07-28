@@ -56,7 +56,6 @@ export const validateEnvironment = () => {
     authDisabled: process.env.DISABLE_AUTH === 'true',
     hasSmtp: !!(process.env.SMTP_HOST && process.env.SMTP_USER),
     hasHelpScout: !!(process.env.HELPSCOUT_API_KEY && process.env.HELPSCOUT_MAILBOX_ID),
-    hasServiceNow: !!(process.env.SERVICENOW_INSTANCE && process.env.SERVICENOW_USER),
     hasKioskToken: !!process.env.KIOSK_TOKEN,
     hasScimToken: !!process.env.SCIM_TOKEN,
     tlsEnabled: !!(process.env.TLS_CERT_PATH && process.env.TLS_KEY_PATH)
@@ -92,9 +91,6 @@ export const getConfig = () => {
     SMTP_SECURE: process.env.SMTP_SECURE === 'true',
     HELPDESK_EMAIL: process.env.HELPDESK_EMAIL,
     SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
-    SERVICENOW_INSTANCE: process.env.SERVICENOW_INSTANCE,
-    SERVICENOW_USER: process.env.SERVICENOW_USER,
-    SERVICENOW_PASS: process.env.SERVICENOW_PASS,
     HELPSCOUT_API_KEY: process.env.HELPSCOUT_API_KEY,
     HELPSCOUT_MAILBOX_ID: process.env.HELPSCOUT_MAILBOX_ID,
     HELPSCOUT_SMTP_FALLBACK: process.env.HELPSCOUT_SMTP_FALLBACK === 'true'
@@ -109,7 +105,6 @@ export const logEnvironmentStatus = () => {
   console.log(`🔐 Authentication: ${config.authDisabled ? 'DISABLED' : 'ENABLED'}`);
   console.log(`📧 Email: ${config.hasSmtp ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
   console.log(`🎫 HelpScout: ${config.hasHelpScout ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
-  console.log(`🏢 ServiceNow: ${config.hasServiceNow ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
   console.log(`📱 Kiosk Token: ${config.hasKioskToken ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
   console.log(`🔐 SCIM Token: ${config.hasScimToken ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
   console.log(`🔒 TLS: ${config.tlsEnabled ? 'ENABLED' : 'DISABLED'}`);

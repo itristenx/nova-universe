@@ -88,7 +88,7 @@ All components support dark mode with proper contrast:
 - **Slack:** Tests webhook connectivity and channel access
 - **Teams:** Tests webhook URL and Microsoft Teams integration
 - **Help Scout:** Tests API key validity and mailbox access
-- **ServiceNow:** Tests instance connection and authentication
+- **ServiceNow:** Integration removed
 - **Generic Webhook:** Tests URL response and payload delivery
 
 ## Kiosk Activation Codes

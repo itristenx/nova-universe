@@ -31,7 +31,6 @@
   - You are about to drop the column `createdAt` on the `knowledge_base_articles` table. All the data in the column will be lost.
   - You are about to drop the column `updatedAt` on the `knowledge_base_articles` table. All the data in the column will be lost.
   - You are about to drop the column `emailStatus` on the `logs` table. All the data in the column will be lost.
-  - You are about to drop the column `servicenowId` on the `logs` table. All the data in the column will be lost.
   - You are about to drop the column `ticketId` on the `logs` table. All the data in the column will be lost.
   - You are about to drop the column `userId` on the `logs` table. All the data in the column will be lost.
   - You are about to drop the column `createdAt` on the `notifications` table. All the data in the column will be lost.
@@ -181,11 +180,9 @@ ADD COLUMN     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 -- AlterTable
 ALTER TABLE "logs" DROP COLUMN "emailStatus",
-DROP COLUMN "servicenowId",
 DROP COLUMN "ticketId",
 DROP COLUMN "userId",
 ADD COLUMN     "email_status" TEXT,
-ADD COLUMN     "servicenow_id" TEXT,
 ADD COLUMN     "ticket_id" TEXT,
 ADD COLUMN     "user_id" TEXT;
 

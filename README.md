@@ -137,9 +137,8 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
 3. Edit the `.env` file with your SMTP configuration and `HELPDESK_EMAIL`.
    To send tickets directly to HelpScout instead, provide
    `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` (optionally set
-   `HELPSCOUT_SMTP_FALLBACK=true` to also send email). Alternatively set
-   `SERVICENOW_INSTANCE`, `SERVICENOW_USER` and `SERVICENOW_PASS` to
-   create incidents in ServiceNow. You can also customize `API_PORT`,
+   `HELPSCOUT_SMTP_FALLBACK=true` to also send email).
+   ServiceNow integration has been removed. You can customize `API_PORT`,
    `LOGO_URL` and other defaults.
 4. Start the server with `node index.js` (uses `API_PORT`, default `3000`).
 
@@ -278,12 +277,9 @@ When `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` are defined in
 submitted to `POST /submit-ticket`. Set `HELPSCOUT_SMTP_FALLBACK=true` if you
 want the server to also send the ticket email using your SMTP configuration.
 
-## ServiceNow Integration #PENDING DEPERCATION
+## ServiceNow Integration (Deprecated)
 
-Set `SERVICENOW_INSTANCE`, `SERVICENOW_USER` and `SERVICENOW_PASS` in
-`nova-api/.env` to create incidents via ServiceNow's REST API when tickets are
-submitted. The incident ID returned by ServiceNow is stored with each log
-entry.
+ServiceNow support has been removed from the platform.
 
 ## Kiosk Activation
 
@@ -328,8 +324,6 @@ Each app relies on a few environment variables:
 - `HELPSCOUT_API_KEY`, `HELPSCOUT_MAILBOX_ID` – enable HelpScout integration
   for ticket submissions.
 - `HELPSCOUT_SMTP_FALLBACK` – set to `true` to also send email via SMTP.
-- `SERVICENOW_INSTANCE`, `SERVICENOW_USER`, `SERVICENOW_PASS` – create
-  incidents in ServiceNow instead of email.
 - `SESSION_SECRET`, `SAML_ENTRY_POINT`, `SAML_ISSUER`, `SAML_CERT`,
   `SAML_CALLBACK_URL`, `ADMIN_URL` – required for SAML login.
 - Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.

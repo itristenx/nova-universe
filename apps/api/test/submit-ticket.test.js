@@ -141,37 +141,4 @@ describe('POST /submit-ticket', function () {
     delete process.env.HELPSCOUT_SMTP_FALLBACK;
   });
 
-  it('posts to ServiceNow when credentials are provided', async function () {
-    process.env.SERVICENOW_INSTANCE = 'https://snow.example.com';
-    process.env.SERVICENOW_USER = 'user';
-    process.env.SERVICENOW_PASS = 'pass';
-    let snCalled = false;
-    global.setAxiosBehavior(async (url) => {
-      if (url === 'https://snow.example.com/api/now/table/incident') {
-        snCalled = true;
-        return { data: { result: { sys_id: 'INC001' } } };
-      }
-    });
-
-    const payload = {
-      name: 'SN',
-      email: 'sn@example.com',
-      title: 'ServiceNow',
-      system: 'Sys',
-      urgency: 'High',
-    };
-
-    const res = await request(app).post('/submit-ticket').send(payload);
-    assert.strictEqual(res.status, 200);
-    assert.strictEqual(snCalled, true, 'ServiceNow not called');
-
-    const { rows } = await dbWrapper.query('SELECT * FROM logs WHERE ticket_id = $1', [res.body.ticketId]);
-    const row = rows[0];
-    assert.strictEqual(row.servicenow_id, 'INC001');
-
-    delete process.env.SERVICENOW_INSTANCE;
-    delete process.env.SERVICENOW_USER;
-    delete process.env.SERVICENOW_PASS;
-    global.setAxiosBehavior(async () => ({}));
-  });
 });
