@@ -86,7 +86,6 @@ CREATE TABLE "logs" (
     "urgency" TEXT,
     "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "emailStatus" TEXT,
-    "servicenowId" TEXT,
     "userId" TEXT,
 
     CONSTRAINT "logs_pkey" PRIMARY KEY ("id")

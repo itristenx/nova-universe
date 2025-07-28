@@ -179,19 +179,6 @@ export const mockIntegrations: Integration[] = [
       mailboxId: '123456'
     },
     working: true
-  },
-  {
-    id: 3,
-    name: 'ServiceNow Dev',
-    type: 'servicenow',
-    enabled: false,
-    settings: {},
-    config: {
-      instanceUrl: 'https://company-dev.service-now.com',
-      username: 'api_user'
-    },
-    working: false,
-    lastError: 'Authentication failed'
   }
 ];
 

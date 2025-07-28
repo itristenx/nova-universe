@@ -163,7 +163,6 @@ CREATE TABLE IF NOT EXISTS logs (
     email_sent_at TIMESTAMP,
     
     -- External integrations
-    servicenow_id VARCHAR(100),
     external_refs JSONB DEFAULT '{}',
     
     -- Metadata

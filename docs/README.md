@@ -70,7 +70,7 @@ Express.js backend with PostgreSQL database. Handles ticket submission, user man
 - PostgreSQL database with automatic migrations
 - Comprehensive security middleware
 - Rate limiting and input validation
-- Integration with HelpScout, ServiceNow, and Slack
+- Integration with HelpScout and Slack (ServiceNow integration deprecated)
 
 ### cueit-admin
 React admin interface for managing the help desk system.

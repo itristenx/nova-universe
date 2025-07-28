@@ -1,62 +1,15 @@
 import 'dotenv/config';
 import assert from 'assert';
-import { isServiceNowConfigured, getServiceNowConfig, isHelpScoutConfigured, getHelpScoutConfig, getEmailStrategy } from '../utils/serviceHelpers.js';
+import { isHelpScoutConfigured, getHelpScoutConfig, getEmailStrategy } from '../utils/serviceHelpers.js';
 
 describe('Service Helpers', function () {
   beforeEach(() => {
     // Clear relevant environment variables before each test
-    delete process.env.SERVICENOW_INSTANCE;
-    delete process.env.SERVICENOW_USER;
-    delete process.env.SERVICENOW_PASS;
     delete process.env.HELPSCOUT_API_KEY;
     delete process.env.HELPSCOUT_MAILBOX_ID;
     delete process.env.HELPSCOUT_SMTP_FALLBACK;
   });
 
-  describe('ServiceNow Configuration', function () {
-    it('should return false when ServiceNow is not configured', function () {
-      assert.strictEqual(isServiceNowConfigured(), false);
-    });
-
-    it('should return false when only instance is configured', function () {
-      process.env.SERVICENOW_INSTANCE = 'https://test.service-now.com';
-      assert.strictEqual(isServiceNowConfigured(), false);
-    });
-
-    it('should return false when only user is configured', function () {
-      process.env.SERVICENOW_USER = 'testuser';
-      assert.strictEqual(isServiceNowConfigured(), false);
-    });
-
-    it('should return false when only password is configured', function () {
-      process.env.SERVICENOW_PASS = 'testpass';
-      assert.strictEqual(isServiceNowConfigured(), false);
-    });
-
-    it('should return true when all ServiceNow credentials are configured', function () {
-      process.env.SERVICENOW_INSTANCE = 'https://test.service-now.com';
-      process.env.SERVICENOW_USER = 'testuser';
-      process.env.SERVICENOW_PASS = 'testpass';
-      assert.strictEqual(isServiceNowConfigured(), true);
-    });
-
-    it('should return null config when ServiceNow is not configured', function () {
-      assert.strictEqual(getServiceNowConfig(), null);
-    });
-
-    it('should return valid config when ServiceNow is configured', function () {
-      process.env.SERVICENOW_INSTANCE = 'https://test.service-now.com';
-      process.env.SERVICENOW_USER = 'testuser';
-      process.env.SERVICENOW_PASS = 'testpass';
-      
-      const config = getServiceNowConfig();
-      assert.deepStrictEqual(config, {
-        instance: 'https://test.service-now.com',
-        user: 'testuser',
-        pass: 'testpass'
-      });
-    });
-  });
 
   describe('HelpScout Configuration', function () {
     it('should return false when HelpScout is not configured', function () {

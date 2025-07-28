@@ -83,7 +83,7 @@
 - ✅ Server starts successfully on http://localhost:3000
 - ✅ Integrations endpoint returns proper JSON structure
 - ✅ SMTP integration enabled by default
-- ✅ All 6 integration types available (SMTP, Help Scout, ServiceNow, Slack, Teams, Webhook)
+- ✅ Integrations available: SMTP, Help Scout, Slack, Teams, Webhook (ServiceNow removed)
 
 ### Admin Interface Testing  
 - ✅ Admin interface starts on http://localhost:5175

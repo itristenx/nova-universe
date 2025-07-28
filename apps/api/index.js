@@ -49,7 +49,7 @@ import orbitRouter from './routes/orbit.js';
 import pulseRouter from './routes/pulse.js';
 import scimRouter from './routes/scim.js';
 import synthRouter from './routes/synth.js';
-import { getEmailStrategy, getServiceNowConfig } from './utils/serviceHelpers.js';
+import { getEmailStrategy } from './utils/serviceHelpers.js';
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);

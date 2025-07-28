@@ -15,7 +15,6 @@ import type { Integration } from '@/types';
 const integrationTypes = [
   { value: 'smtp', label: 'SMTP Email' },
   { value: 'helpscout', label: 'Help Scout' },
-  { value: 'servicenow', label: 'ServiceNow' },
   { value: 'slack', label: 'Slack' },
   { value: 'teams', label: 'Microsoft Teams' },
   { value: 'webhook', label: 'Generic Webhook' },
@@ -346,40 +345,6 @@ export const IntegrationsPage: React.FC = () => {
                 config: { ...formData.config, webhookUrl: e.target.value }
               })}
               placeholder="https://your-tenant.webhook.office.com/..."
-              required
-            />
-          </div>
-        );
-      case 'servicenow':
-        return (
-          <div className="space-y-4">
-            <Input
-              label="Instance URL"
-              value={formData.config.instanceUrl || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, instanceUrl: e.target.value }
-              })}
-              placeholder="https://your-instance.service-now.com"
-              required
-            />
-            <Input
-              label="Username"
-              value={formData.config.username || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, username: e.target.value }
-              })}
-              required
-            />
-            <Input
-              label="Password"
-              type="password"
-              value={formData.config.password || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, password: e.target.value }
-              })}
               required
             />
           </div>

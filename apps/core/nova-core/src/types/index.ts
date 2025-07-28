@@ -135,7 +135,7 @@ export interface DirectoryUser {
 export interface Integration {
   id: number;
   name: string;
-  type: 'smtp' | 'helpscout' | 'servicenow' | 'slack' | 'teams' | 'webhook';
+  type: 'smtp' | 'helpscout' | 'slack' | 'teams' | 'webhook';
   enabled: boolean;
   settings: Record<string, unknown>;
   config?: Record<string, unknown>;
