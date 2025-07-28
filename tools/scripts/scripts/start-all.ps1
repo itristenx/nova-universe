@@ -3,9 +3,10 @@ $apps = @{
   api      = @{ dir = 'nova-api';      cmd = 'npm --prefix nova-api start' }
   core     = @{ dir = 'nova-core';     cmd = 'npm --prefix nova-core run dev' }
   comms    = @{ dir = 'nova-comms';    cmd = 'npm --prefix nova-comms start' }
+  pulse    = @{ dir = 'nova-pulse';    cmd = 'npm --prefix nova-pulse run dev' }
 }
 
-$input = Read-Host "Apps to start (api,core,comms or all) [all]"
+$input = Read-Host "Apps to start (api,core,comms,pulse or all) [all]"
 if ([string]::IsNullOrWhiteSpace($input) -or $input -eq 'all') {
   $selected = $apps.Keys
 } else {
