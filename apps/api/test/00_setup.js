@@ -1,7 +1,7 @@
 import 'dotenv/config';
 process.env.POSTGRES_HOST = 'localhost';
 process.env.POSTGRES_USER = 'nova_admin';
-process.env.POSTGRES_PASSWORD = 'nova_secure_pass_2024';
+process.env.POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD || 'postgres';
 
 import nodemailer from 'nodemailer';
 import axios from 'axios';
