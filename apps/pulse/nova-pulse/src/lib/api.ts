@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Ticket, DashboardData, TimesheetEntry } from '../types'
+import type { Ticket, DashboardData, TimesheetEntry, TicketUpdate } from '../types'
 
 const client = axios.create({ baseURL: '/api/v1/pulse' })
 
@@ -13,7 +13,7 @@ export const getTickets = async (params?: Record<string, string | number>) => {
   return data.tickets
 }
 
-export const updateTicket = async (ticketId: string, updates: Partial<Ticket> & { status?: string; workNote?: string; timeSpent?: number; resolution?: string }) => {
+export const updateTicket = async (ticketId: string, updates: TicketUpdate) => {
   const { data } = await client.put(`/tickets/${ticketId}/update`, updates)
   return data
 }

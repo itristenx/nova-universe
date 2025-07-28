@@ -12,6 +12,11 @@ export interface Ticket {
   updatedAt: string
 }
 
+export interface TicketUpdate extends Partial<Ticket> {
+  workNote?: string
+  timeSpent?: number
+}
+
 export interface DashboardData {
   myTickets: {
     total: number
