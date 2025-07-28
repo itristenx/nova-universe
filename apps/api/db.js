@@ -302,7 +302,7 @@ export default dbWrapper;
 // Gracefully close all database connections
 async function closeDatabase() {
   try {
-    if (dbFactory && typeof dbFactory.close === 'function' && isInitialized === true) {
+    if (dbFactory && typeof dbFactory.close === 'function' && isInitialized) {
       await dbFactory.close();
       isInitialized = false;
     } else {
