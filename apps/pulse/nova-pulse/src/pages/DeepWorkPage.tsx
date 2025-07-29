@@ -123,13 +123,6 @@ export const DeepWorkPage: React.FC = () => {
             )
           },
           {
-            label: 'Logs',
-            content: (
-              <pre className="bg-muted p-2 rounded text-xs overflow-auto max-h-64">
-                {history.map(h => `${h.timestamp} ${h.user} ${h.action} ${h.details || ''}`).join('\n')}
-              </pre>
-            )
-          },
           {
             label: 'Assets',
             content: (
