@@ -870,7 +870,7 @@ router.get('/inventory',
   checkQueueAccess(req => req.query.queue),
   async (req, res) => {
     try {
-      const { rows } = await db.query('SELECT id, asset_tag, model, status FROM inventory_assets ORDER BY id')
+      const { rows } = await db.query('SELECT id, asset_tag, model, status, name, type FROM inventory_assets ORDER BY id')
       res.json({ success: true, assets: rows })
     } catch (err) {
       logger.error('Error fetching inventory:', err)
