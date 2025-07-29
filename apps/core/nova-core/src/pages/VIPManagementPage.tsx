@@ -48,7 +48,7 @@ export const VIPManagementPage: React.FC = () => {
             <th className="px-4 py-2 text-left">User</th>
             <th className="px-4 py-2 text-left">VIP</th>
             <th className="px-4 py-2 text-left">Level</th>
-            <th className="px-4 py-2" />
+            
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -64,9 +64,6 @@ export const VIPManagementPage: React.FC = () => {
                   <option value="gold">gold</option>
                   <option value="exec">exec</option>
                 </Select>
-              </td>
-              <td className="px-4 py-2">
-                <Button onClick={() => updateVip(u, !!u.is_vip, u.vip_level || 'priority')}>Save</Button>
               </td>
             </tr>
           ))}

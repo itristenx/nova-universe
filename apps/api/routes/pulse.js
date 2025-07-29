@@ -309,57 +309,46 @@ router.post('/tickets',
       const { title, description, priority, requestedById } = req.body;
       const now = new Date();
 
-      db.get('SELECT is_vip, vip_level FROM users WHERE id = $1', [requestedById], (vipErr, vipRow) => {
-        if (vipErr) {
-          logger.error('Error checking VIP status:', vipErr);
-          return res.status(500).json({ success:false, error:'Failed to create ticket', errorCode:'VIP_CHECK_ERROR' });
-        }
+      const vipRow = await db.oneOrNone('SELECT is_vip, vip_level FROM users WHERE id = $1', [requestedById]);
 
-        const dueDate = new Date(now);
-        switch (priority) {
-          case 'critical':
+      const dueDate = new Date(now);
+      switch (priority) {
+        case 'critical':
+          dueDate.setHours(now.getHours() + 4); break;
+        case 'high':
+          dueDate.setDate(now.getDate() + 1); break;
+        case 'medium':
+          dueDate.setDate(now.getDate() + 3); break;
+        default:
+          dueDate.setDate(now.getDate() + 7);
+      }
+
+      if (vipRow?.is_vip) {
+        switch (vipRow.vip_level) {
+          case 'exec':
+            dueDate.setHours(now.getHours() + 2); break;
+          case 'gold':
             dueDate.setHours(now.getHours() + 4); break;
-          case 'high':
-            dueDate.setDate(now.getDate() + 1); break;
-          case 'medium':
-            dueDate.setDate(now.getDate() + 3); break;
           default:
-            dueDate.setDate(now.getDate() + 7);
+            dueDate.setHours(now.getHours() + 8);
         }
+      }
 
-        if (vipRow?.is_vip) {
-          switch (vipRow.vip_level) {
-            case 'exec':
-              dueDate.setHours(now.getHours() + 2); break;
-            case 'gold':
-              dueDate.setHours(now.getHours() + 4); break;
-            default:
-              dueDate.setHours(now.getHours() + 8);
-          }
-        }
+      const vipWeight = calculateVipWeight(vipRow?.is_vip, vipRow?.vip_level);
 
-        const vipWeight = calculateVipWeight(vipRow?.is_vip, vipRow?.vip_level);
+      const newId = require('uuid').v4();
+      const ticketId = `TKT-${Date.now().toString().slice(-5)}`;
 
-        const newId = require('uuid').v4();
-        const ticketId = `TKT-${Date.now().toString().slice(-5)}`;
+      await db.none(
+        'INSERT INTO tickets (id, ticket_id, title, description, priority, status, requested_by_id, assigned_to_id, due_date, created_at, updated_at, vip_priority_score, vip_trigger_source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
+        [newId, ticketId, title, description, priority, 'open', requestedById, req.user.id, dueDate.toISOString(), now.toISOString(), now.toISOString(), vipWeight, 'api']
+      );
 
-        db.run(
-          'INSERT INTO tickets (id, ticket_id, title, description, priority, status, requested_by_id, assigned_to_id, due_date, created_at, updated_at, vip_priority_score, vip_trigger_source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
-          [newId, ticketId, title, description, priority, 'open', requestedById, req.user.id, dueDate.toISOString(), now.toISOString(), now.toISOString(), vipWeight, 'api'],
-          async (err) => {
-            if (err) {
-              logger.error('Error creating ticket:', err);
-              return res.status(500).json({ success:false, error:'Failed to create ticket', errorCode:'TICKET_CREATE_ERROR' });
-            }
+      if (vipRow?.is_vip && dueDate.getTime() - now.getTime() < 60*60*1000) {
+        await notifyCosmoEscalation(ticketId, 'sla_risk');
+      }
 
-            if (vipRow?.is_vip && dueDate.getTime() - now.getTime() < 60*60*1000) {
-              await notifyCosmoEscalation(ticketId, 'sla_risk');
-            }
-
-            res.status(201).json({ success:true, ticketId, vipWeight });
-          }
-        );
-      });
+      res.status(201).json({ success:true, ticketId, vipWeight });
     } catch (error) {
       logger.error('Error creating ticket:', error);
       res.status(500).json({ success:false, error:'Failed to create ticket', errorCode:'TICKET_CREATE_ERROR' });
