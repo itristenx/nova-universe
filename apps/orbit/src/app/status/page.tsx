@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { getServiceStatus } from "../../lib/api";
 
-
-// TODO: Replace with real status API
 interface StatusData {
   id: number;
   service: string;
@@ -12,17 +11,19 @@ interface StatusData {
 export default function StatusPage() {
   const [status, setStatus] = useState<StatusData[]>([]);
   const [loading, setLoading] = useState(false);
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
 
   useEffect(() => {
     setLoading(true);
-    // TODO: Call real status API
-    setTimeout(() => {
-      setStatus([
-        { id: 1, service: "Email", state: "Operational", updated: "2025-07-28T10:00:00Z" },
-        { id: 2, service: "VPN", state: "Degraded", updated: "2025-07-28T09:00:00Z" },
-      ]);
-      setLoading(false);
-    }, 800);
+    getServiceStatus(token)
+      .then(res => {
+        if (res.success) {
+          setStatus(res.status || []);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   return (

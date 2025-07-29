@@ -1,25 +1,48 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
+import { getSession, updateProfile } from "../../lib/api";
 
-// TODO: Replace with real user profile API
 export default function ProfilePage() {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const [userId, setUserId] = useState<string>("");
   const [profile, setProfile] = useState({
-    name: "Jane Doe",
-    email: "jane@example.com",
-    org: "Nova Corp",
+    name: "",
+    email: "",
+    org: "",
   });
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState(profile);
+
+  useEffect(() => {
+    if (!token) return;
+    getSession(token)
+      .then(res => {
+        if (res.success) {
+          setUserId(res.user.id);
+          const data = {
+            name: res.user.name || '',
+            email: res.user.email || '',
+            org: res.user.org || ''
+          };
+          setProfile(data);
+          setForm(data);
+        }
+      })
+      .catch(() => {});
+  }, [token]);
 
   function handleEdit() {
     setEditing(true);
     setForm(profile);
   }
   function handleSave() {
-    setProfile(form);
-    setEditing(false);
-    // TODO: Save to API
+    if (!token || !userId) return;
+    updateProfile(token, userId, form).then(() => {
+      setProfile(form);
+      setEditing(false);
+    });
   }
 
   return (

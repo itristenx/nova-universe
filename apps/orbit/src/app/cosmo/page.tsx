@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
-
-// TODO: Integrate real Cosmo SDK
+import { sendCosmoMessage } from "../../lib/api";
 export default function CosmoPage() {
   const [messages, setMessages] = useState<{from: string, text: string}[]>([]);
   const [input, setInput] = useState("");
@@ -12,11 +11,20 @@ export default function CosmoPage() {
     if (!input.trim()) return;
     setLoading(true);
     setMessages(msgs => [...msgs, { from: "user", text: input }]);
-    // TODO: Call Cosmo SDK
-    setTimeout(() => {
-      setMessages(msgs => [...msgs, { from: "cosmo", text: "This is a placeholder response from Cosmo." }]);
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+    try {
+      const res = await sendCosmoMessage(token, input);
+      if (res.success) {
+        setMessages(msgs => [...msgs, { from: "cosmo", text: res.message }]);
+      } else {
+        setMessages(msgs => [...msgs, { from: "cosmo", text: "Sorry, something went wrong." }]);
+      }
+    } catch {
+      setMessages(msgs => [...msgs, { from: "cosmo", text: "Sorry, something went wrong." }]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
     setInput("");
   }
 
