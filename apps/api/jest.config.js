@@ -5,7 +5,7 @@ export default {
     '^.+\\.ts$': ['ts-jest', { useESM: true }],
     '^.+\\.js$': 'babel-jest'
   },
-  extensionsToTreatAsEsm: ['.ts'],
+  extensionsToTreatAsEsm: ['.ts', '.js'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   }
