@@ -53,6 +53,9 @@ export interface Asset {
   id: number
   name: string
   type: string
+  assetTag?: string
+  serialNumber?: string
+  model?: string
   status?: string
 }
 

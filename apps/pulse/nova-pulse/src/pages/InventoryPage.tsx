@@ -10,7 +10,7 @@ export const InventoryPage: React.FC = () => {
       <h2 className="text-xl font-semibold mb-4">Inventory</h2>
       <ul className="list-disc pl-5">
         {assets.map(asset => (
-          <li key={asset.id}>{asset.name} - {asset.type}</li>
+          <li key={asset.id}>{asset.name} ({asset.assetTag || 'n/a'}) - {asset.type}</li>
         ))}
       </ul>
     </div>
