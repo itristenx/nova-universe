@@ -891,7 +891,7 @@ router.get('/xp',
         'SELECT u.id AS userId, u.name, u.department, l.xp_total FROM leaderboard l JOIN users u ON u.id = l.user_id ORDER BY l.xp_total DESC LIMIT 20'
       )
       const { rows: teamRows } = await db.query(
-        'SELECT u.department AS team, SUM(l.xp_total) AS xp_total FROM leaderboard l JOIN users u ON l.user_id = u.id GROUP BY u.department ORDER BY xp_total DESC'
+        'SELECT u.department AS team, SUM(l.xp_total) AS xp_total FROM leaderboard l JOIN users u ON l.user_id = u.id GROUP BY u.department ORDER BY SUM(l.xp_total) DESC'
       )
       const myRes = await db.query('SELECT xp_total FROM leaderboard WHERE user_id = $1', [req.user.id])
       const myXp = myRes.rows[0] ? parseInt(myRes.rows[0].xp_total, 10) : 0
