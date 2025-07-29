@@ -883,6 +883,82 @@ router.get('/inventory',
   }
 );
 
+// Ticket history
+router.get('/tickets/:ticketId/history',
+  authenticateJWT,
+  [
+    body('ticketId')
+      .isNumeric().withMessage('Ticket ID must be a numeric value')
+      .notEmpty().withMessage('Ticket ID is required'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    try {
+      const { ticketId } = req.params;
+      db.all(`
+        SELECT tl.action, tl.details, tl.timestamp, u.name as user_name
+        FROM ticket_logs tl
+        LEFT JOIN users u ON tl.user_id = u.id
+        WHERE tl.ticket_id = $1
+        ORDER BY tl.timestamp ASC
+      `, [ticketId], (err, rows) => {
+        if (err) {
+          logger.error('Error fetching ticket history:', err);
+          return res.status(500).json({ success: false, error: 'Failed to fetch ticket history', errorCode: 'HISTORY_ERROR' });
+        }
+        const history = (rows || []).map(r => ({
+          action: r.action,
+          details: r.details,
+          timestamp: r.timestamp,
+          user: r.user_name
+        }));
+        res.json({ success: true, history });
+      });
+    } catch (error) {
+      logger.error('Error fetching ticket history:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch ticket history', errorCode: 'HISTORY_ERROR' });
+    }
+  }
+);
+
+// Related items for a ticket
+router.get('/tickets/:ticketId/related',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { ticketId } = req.params;
+      const ticket = await db.getAsync('SELECT requested_by_id FROM tickets WHERE ticket_id = ?', [ticketId]);
+      if (!ticket) {
+        return res.status(404).json({ success: false, error: 'Ticket not found', errorCode: 'TICKET_NOT_FOUND' });
+      }
+
+      const [relatedTickets, assets] = await Promise.all([
+        db.allAsync(`
+          SELECT ticket_id, title, status, priority
+          FROM tickets
+          WHERE requested_by_id = ? AND ticket_id != ? AND deleted_at IS NULL
+          ORDER BY created_at DESC
+          LIMIT 5
+        `, [ticket.requested_by_id, ticketId]),
+        db.allAsync(`
+          SELECT id, name, asset_tag
+          FROM inventory_assets
+          WHERE assigned_to_user_id = ?
+          LIMIT 5
+        `, [ticket.requested_by_id])
+      ]);
+
+      res.json({ success: true, tickets: relatedTickets || [], assets: assets || [] });
+    } catch (error) {
+      logger.error('Error fetching related items:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch related items', errorCode: 'RELATED_ERROR' });
+    }
+  }
+);
+
 // Get XP leaderboard and user totals
 router.get('/xp',
   authenticateJWT,

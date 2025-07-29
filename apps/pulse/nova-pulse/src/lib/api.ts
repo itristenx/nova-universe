@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Ticket, DashboardData, TimesheetEntry, TicketUpdate, Alert, Asset, XpEvent, LeaderboardEntry, TeamRanking } from '../types'
+import type { Ticket, DashboardData, TimesheetEntry, TicketUpdate, Alert, Asset, XpEvent, LeaderboardEntry, TeamRanking, TicketHistoryEntry } from '../types'
 
 const client = axios.create({ baseURL: '/api/v1/pulse' })
 
@@ -36,6 +36,16 @@ export const getInventory = async () => {
 export const getAssetsForUser = async (userId: string) => {
   const { data } = await client.get<{ success: boolean; assets: Asset[] }>(`/inventory/user/${userId}`)
   return data.assets
+}
+
+export const getTicketHistory = async (ticketId: string) => {
+  const { data } = await client.get<{ success: boolean; history: TicketHistoryEntry[] }>(`/tickets/${ticketId}/history`)
+  return data.history
+}
+
+export const getRelatedItems = async (ticketId: string) => {
+  const { data } = await client.get<{ success: boolean; tickets: Ticket[]; assets: Asset[] }>(`/tickets/${ticketId}/related`)
+  return { tickets: data.tickets, assets: data.assets }
 }
 
 export const postXpEvent = async (event: Partial<XpEvent>) => {
