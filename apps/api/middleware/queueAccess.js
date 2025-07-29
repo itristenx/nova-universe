@@ -4,7 +4,10 @@ export function checkQueueAccess(queueGetter) {
     const user = req.user || {}
     const { queues = [], roles = [] } = user
 
-    if (roles.includes('admin') || roles.includes('superadmin') || queues.includes(queue)) {
+    if (roles.includes('admin') || roles.includes('superadmin')) {
+      return next()
+    }
+    if (queue && queues.includes(queue)) {
       return next()
     }
     return res.status(403).json({
