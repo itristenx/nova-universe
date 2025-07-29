@@ -33,7 +33,7 @@ CREATE TABLE audit_logs (
 -- XP Events Table
 CREATE TABLE xp_events (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
+    user_id TEXT REFERENCES users(id),
     amount INT NOT NULL,
     reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
