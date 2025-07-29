@@ -108,7 +108,7 @@ export interface Config {
   statusClosedMsg: string;
   statusErrorMsg: string;
   rateLimitWindow: string;
-  rateLimitMax: string;
+  rateLimitMax: number;
   systems?: string;
   urgencies?: string;
   directoryEnabled: boolean;
