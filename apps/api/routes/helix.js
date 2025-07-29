@@ -9,6 +9,8 @@ import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 import { configureSAML, generateSAMLMetadata } from '../middleware/saml.js';
+import scimRouter from './scim.js';
+import rolesRouter from './roles.js';
 import {
     disable2FA,
     generate2FASecret,
@@ -1111,5 +1113,9 @@ router.get('/sso/saml/metadata', async (req, res) => {
     });
   }
 });
+
+// Expose SCIM and role management within Helix namespace
+router.use('/scim/v2', scimRouter);
+router.use('/roles', rolesRouter);
 
 export default router;

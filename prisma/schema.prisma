@@ -23,6 +23,7 @@ model User {
   twoFactorVerified     Boolean  @default(false) @map("two_factor_verified")
   samlNameId            String?  @unique @map("saml_name_id")
   samlSessionIndex      String?  @map("saml_session_index")
+  scimExternalId        String?  @map("scim_external_id")
   department            String?
   lastSamlLogin         DateTime? @map("last_saml_login")
   isVip                 Boolean  @default(false) @map("is_vip")
@@ -33,6 +34,7 @@ model User {
   support_tickets_support_tickets_assigneeIdTousers SupportTicket[] @relation("support_tickets_assigneeIdTousers")
   support_tickets_support_tickets_userIdTousers     SupportTicket[] @relation("support_tickets_userIdTousers")
   roles                 UserRole[]
+  scimMappings          ScimMapping[]
 
   @@map("users")
 }
@@ -331,4 +333,15 @@ model Leaderboard {
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("leaderboard")
+}
+
+model ScimMapping {
+  id        String   @id @default(uuid())
+  externalId String? @map("external_id")
+  userId    String   @map("user_id")
+  provider  String?
+  syncTime  DateTime? @map("sync_time")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("scim_mappings")
 }

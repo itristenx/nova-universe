@@ -1,7 +1,15 @@
 import express from 'express';
 import db from '../db.js';
+import { authenticateJWT } from '../middleware/auth.js';
 
 const router = express.Router();
+
+function requireAdmin(req, res, next) {
+  if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
+    return res.status(403).json({ error: 'Admin role required' });
+  }
+  next();
+}
 
 
 /**
@@ -30,7 +38,7 @@ const router = express.Router();
  *                 errorCode:
  *                   type: string
  */
-router.get('/', (req, res) => {
+router.get('/', authenticateJWT, requireAdmin, (req, res) => {
   db.all('SELECT * FROM roles ORDER BY name', (err, rows) => {
     if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
     res.json(rows);
@@ -93,7 +101,7 @@ router.get('/', (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.post('/', (req, res) => {
+router.post('/', authenticateJWT, requireAdmin, (req, res) => {
   const { name, description } = req.body;
   if (!name) return res.status(400).json({ error: 'Role name is required', errorCode: 'ROLE_NAME_REQUIRED' });
   db.run(
@@ -157,7 +165,7 @@ router.post('/', (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.put('/:id', (req, res) => {
+router.put('/:id', authenticateJWT, requireAdmin, (req, res) => {
   const { id } = req.params;
   const { name, description } = req.body;
   db.run(
@@ -215,7 +223,7 @@ router.put('/:id', (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', authenticateJWT, requireAdmin, (req, res) => {
   const { id } = req.params;
   if (id === '1') {
     return res.status(400).json({ error: 'Cannot delete admin role', errorCode: 'CANNOT_DELETE_ADMIN_ROLE' });
@@ -255,7 +263,7 @@ router.delete('/:id', (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.get('/permissions', (req, res) => {
+router.get('/permissions', authenticateJWT, requireAdmin, (req, res) => {
   db.all('SELECT * FROM permissions ORDER BY name', (err, rows) => {
     if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
     res.json(rows);
@@ -296,7 +304,7 @@ router.get('/permissions', (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.get('/:id/permissions', (req, res) => {
+router.get('/:id/permissions', authenticateJWT, requireAdmin, (req, res) => {
   const { id } = req.params;
   db.all(
     `SELECT p.* FROM permissions p
@@ -369,7 +377,7 @@ router.get('/:id/permissions', (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.put('/:id/permissions', (req, res) => {
+router.put('/:id/permissions', authenticateJWT, requireAdmin, (req, res) => {
   const { id } = req.params;
   const { permissionIds } = req.body;
   if (!Array.isArray(permissionIds)) {
