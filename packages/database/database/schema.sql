@@ -41,6 +41,6 @@ CREATE TABLE xp_events (
 
 -- Leaderboard Table
 CREATE TABLE leaderboard (
-    user_id INT PRIMARY KEY REFERENCES users(id),
+    user_id TEXT PRIMARY KEY REFERENCES users(id),
     xp_total INT NOT NULL DEFAULT 0
 );
