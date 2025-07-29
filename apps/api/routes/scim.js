@@ -601,9 +601,11 @@ router.put('/Groups/:id', authenticateSCIM, async (req, res) => {
 router.delete('/Groups/:id', authenticateSCIM, async (req, res) => {
   try {
     const { id } = req.params;
-    await db.none('DELETE FROM user_roles WHERE role_id=$1', [id]);
-    await db.none('DELETE FROM role_permissions WHERE role_id=$1', [id]);
-    await db.none('DELETE FROM roles WHERE id=$1', [id]);
+    await db.tx(async t => {
+      await t.none('DELETE FROM user_roles WHERE role_id=$1', [id]);
+      await t.none('DELETE FROM role_permissions WHERE role_id=$1', [id]);
+      await t.none('DELETE FROM roles WHERE id=$1', [id]);
+    });
     res.status(204).send();
   } catch (err) {
     logger.error('Error deleting SCIM group:', err);
