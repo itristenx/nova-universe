@@ -3,7 +3,7 @@ export default {
   testEnvironment: 'node',
   transform: {
     '^.+\\.ts$': ['ts-jest', { useESM: true }],
-    '^.+\\.js$': ['babel-jest', { useESM: true }]
+    '^.+\\.js$': 'babel-jest'
   },
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
