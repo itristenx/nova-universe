@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test && pnpm -r --if-present test",
+    "test": "bash tools/scripts/run-tests.sh",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --config ./tools/config/eslint.config.js"
   },
