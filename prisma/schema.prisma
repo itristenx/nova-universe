@@ -254,3 +254,60 @@ model SupportTicket {
 }
 
 // All model fields using @default(autoincrement()) are Int type and compatible with PostgreSQL.
+
+model InventoryAsset {
+  id                Int      @id @default(autoincrement())
+  assetTag          String   @map("asset_tag")
+  typeId            Int?     @map("type_id")
+  serialNumber      String?  @map("serial_number")
+  model             String?
+  vendorId          Int?     @map("vendor_id")
+  purchaseDate      DateTime? @map("purchase_date")
+  warrantyExpiry    DateTime? @map("warranty_expiry")
+  assignedToUserId  String?  @map("assigned_to_user_id")
+  assignedToOrgId   Int?     @map("assigned_to_org_id")
+  assignedToCustomerId Int?  @map("assigned_to_customer_id")
+  department        String?
+  status            String?
+  locationId        Int?     @map("location_id")
+  kioskId           String?  @map("kiosk_id")
+  customFields      Json?    @map("custom_fields")
+  notes             String?
+  createdBy         String?  @map("created_by")
+  updatedBy         String?  @map("updated_by")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  statusLogs        AssetStatusLog[]
+  assignments       AssetAssignment[]
+
+  @@map("inventory_assets")
+}
+
+model AssetStatusLog {
+  id              Int      @id @default(autoincrement())
+  assetId         Int      @map("asset_id")
+  previousStatus  String?  @map("previous_status")
+  newStatus       String   @map("new_status")
+  changedByUserId String?  @map("changed_by_user_id")
+  notes           String?
+  timestamp       DateTime @default(now())
+  asset           InventoryAsset @relation(fields: [assetId], references: [id])
+
+  @@map("asset_status_logs")
+}
+
+model AssetAssignment {
+  id             Int      @id @default(autoincrement())
+  assetId        Int      @map("asset_id")
+  userId         String?  @map("user_id")
+  orgId          Int?     @map("org_id")
+  customerId     Int?     @map("customer_id")
+  assignedBy     String?  @map("assigned_by")
+  assignedDate   DateTime @default(now()) @map("assigned_date")
+  expectedReturn DateTime? @map("expected_return")
+  returnDate     DateTime? @map("return_date")
+  managerId      String?  @map("manager_id")
+  asset          InventoryAsset @relation(fields: [assetId], references: [id])
+
+  @@map("asset_assignments")
+}

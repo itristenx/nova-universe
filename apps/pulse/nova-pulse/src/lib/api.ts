@@ -33,6 +33,11 @@ export const getInventory = async () => {
   return data.assets
 }
 
+export const getAssetsForUser = async (userId: string) => {
+  const { data } = await client.get<{ success: boolean; assets: Asset[] }>(`/inventory/user/${userId}`)
+  return data.assets
+}
+
 export const postXpEvent = async (event: Partial<XpEvent>) => {
   const { data } = await client.post('/xp', event)
   return data

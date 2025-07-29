@@ -27,3 +27,11 @@ CREATE TRIGGER update_sso_configurations_updated_at BEFORE UPDATE ON sso_configu
 
 CREATE TRIGGER update_directory_integrations_updated_at BEFORE UPDATE ON directory_integrations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_inventory_assets_updated_at BEFORE UPDATE ON inventory_assets
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_asset_status_logs_updated_at BEFORE UPDATE ON asset_status_logs
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_asset_assignments_updated_at BEFORE UPDATE ON asset_assignments
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
