@@ -7,6 +7,7 @@ import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 import { checkQueueAccess } from '../middleware/queueAccess.js';
+import { calculateVipWeight } from '../utils/utils.js';
 
 // Maximum XP that can be awarded in a single event
 export const MAX_XP_AMOUNT = 1000;
@@ -437,13 +438,7 @@ router.get('/tickets',
           dueDate: row.due_date,
           slaRemaining: row.due_date ?
             Math.round((new Date(row.due_date) - Date.now()) / 60000) : null,
-          vipWeight: row.is_vip
-            ? row.vip_level === 'exec'
-              ? 3
-              : row.vip_level === 'gold'
-                ? 2
-                : 1
-            : 0
+          vipWeight: calculateVipWeight(row.is_vip, row.vip_level)
         }));
 
         tickets = tickets.sort((a, b) => b.vipWeight - a.vipWeight);

@@ -6,6 +6,7 @@ import db from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
+import { calculateVipWeight } from '../utils/utils.js';
 
 const router = express.Router();
 
@@ -329,7 +330,7 @@ router.post('/tickets',
           }
         }
 
-        const vipWeight = vipRow?.is_vip ? (vipRow.vip_level === 'exec' ? 3 : vipRow.vip_level === 'gold' ? 2 : 1) : 0;
+        const vipWeight = calculateVipWeight(vipRow?.is_vip, vipRow?.vip_level);
 
         // Insert new ticket
         const insertQuery = `
