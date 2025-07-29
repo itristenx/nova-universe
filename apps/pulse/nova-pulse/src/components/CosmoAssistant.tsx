@@ -14,7 +14,7 @@ export const CosmoAssistant: React.FC = () => {
     setTimeout(() => {
       setMessages(msgs => [...msgs, { from: 'cosmo', text: 'This is a placeholder response from Cosmo.' }])
       setLoading(false)
-    }, 1000)
+    }, RESPONSE_DELAY)
     setInput('')
   }
 
