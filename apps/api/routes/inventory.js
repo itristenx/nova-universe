@@ -143,7 +143,11 @@ router.post('/:id/status', authenticateJWT, async (req, res) => {
 // Create assignment
 router.post('/:id/assign', authenticateJWT, async (req, res) => {
   try {
-    const { user_id, org_id, customer_id, assigned_by, expected_return, manager_id } = req.body;
+    let { user_id, org_id, customer_id, assigned_by, expected_return, manager_id } = req.body;
+
+    if (user_id === null || user_id === undefined || user_id === '') {
+      user_id = null;
+    }
     const { rows } = await db.query(
       `INSERT INTO asset_assignments (asset_id, user_id, org_id, customer_id, assigned_by, expected_return, manager_id)
        VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
