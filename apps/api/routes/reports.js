@@ -40,6 +40,7 @@ router.get('/usage', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (err) {
+    console.error('Database query error:', err);
     res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
   }
 });
