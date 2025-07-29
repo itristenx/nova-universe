@@ -16,5 +16,6 @@ interface ToastContainerProps {
 }
 export declare const ToastContainer: React.FC<ToastContainerProps>;
 export declare const ConnectedToastContainer: React.FC;
+export { useToastStore } from '../../stores/toast';
 export {};
 //# sourceMappingURL=Toast.d.ts.map
