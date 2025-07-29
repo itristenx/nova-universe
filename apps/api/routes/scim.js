@@ -509,6 +509,111 @@ router.delete('/Users/:id', authenticateSCIM, async (req, res) => {
 });
 
 /**
+ * SCIM Group list
+ */
+router.get('/Groups', authenticateSCIM, async (req, res) => {
+  try {
+    const rows = await db.any(
+      `SELECT r.id AS role_id, r.name AS role_name,
+              u.id AS user_id, u.name AS user_name
+       FROM roles r
+       LEFT JOIN user_roles ur ON r.id = ur.role_id
+       LEFT JOIN users u ON u.id = ur.user_id
+       ORDER BY r.id`
+    );
+    const map = new Map();
+    for (const row of rows) {
+      if (!map.has(row.role_id)) {
+        map.set(row.role_id, { id: row.role_id, name: row.role_name, members: [] });
+      }
+      if (row.user_id) {
+        map.get(row.role_id).members.push({ id: row.user_id, name: row.user_name });
+      }
+    }
+    const resources = Array.from(map.values()).map(formatGroupForSCIM);
+    res.json({
+      schemas: ['urn:ietf:params:scim:api:messages:2.0:ListResponse'],
+      Resources: resources,
+      totalResults: resources.length,
+      startIndex: 1,
+      itemsPerPage: resources.length
+    });
+  } catch (err) {
+    logger.error('Error fetching SCIM groups:', err);
+    res.status(500).json({ detail: 'Internal error' });
+  }
+});
+
+router.post('/Groups', authenticateSCIM, async (req, res) => {
+  try {
+    const name = req.body.displayName;
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({ detail: 'displayName is required' });
+    }
+    const { id } = await db.one(
+      'INSERT INTO roles (name, created_at, updated_at) VALUES ($1, NOW(), NOW()) RETURNING id',
+      [name]
+    );
+    const role = await db.one('SELECT id, name FROM roles WHERE id=$1', [id]);
+    res.status(201).json(formatGroupForSCIM({ ...role, members: [] }));
+  } catch (err) {
+    logger.error('Error creating SCIM group:', err);
+    res.status(500).json({ detail: 'Internal error' });
+  }
+});
+
+router.get('/Groups/:id', authenticateSCIM, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const role = await db.oneOrNone('SELECT id, name FROM roles WHERE id=$1', [id]);
+    if (!role) return res.status(404).json({ detail: 'Group not found' });
+    const members = await db.any(
+      `SELECT u.id, u.name FROM users u JOIN user_roles ur ON u.id=ur.user_id WHERE ur.role_id=$1`,
+      [id]
+    );
+    res.json(formatGroupForSCIM({ ...role, members }));
+  } catch (err) {
+    logger.error('Error fetching SCIM group:', err);
+    res.status(500).json({ detail: 'Internal error' });
+  }
+});
+
+router.put('/Groups/:id', authenticateSCIM, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const name = req.body.displayName;
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({ detail: 'displayName is required' });
+    }
+    await db.none('UPDATE roles SET name=$1, updated_at=NOW() WHERE id=$2', [name, id]);
+    const role = await db.one('SELECT id, name FROM roles WHERE id=$1', [id]);
+    const members = await db.any(
+      `SELECT u.id, u.name FROM users u JOIN user_roles ur ON u.id=ur.user_id WHERE ur.role_id=$1`,
+      [id]
+    );
+    res.json(formatGroupForSCIM({ ...role, members }));
+  } catch (err) {
+    logger.error('Error updating SCIM group:', err);
+    res.status(500).json({ detail: 'Internal error' });
+  }
+});
+
+router.delete('/Groups/:id', authenticateSCIM, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.tx(async t => {
+      await t.none('DELETE FROM user_roles WHERE role_id=$1', [id]);
+      await t.none('DELETE FROM role_permissions WHERE role_id=$1', [id]);
+      await t.none('DELETE FROM roles WHERE id=$1', [id]);
+    });
+    res.status(204).send();
+  } catch (err) {
+    logger.error('Error deleting SCIM group:', err);
+    res.status(500).json({ detail: 'Internal error' });
+  }
+});
+
+/**
  * Format user data for SCIM response
  */
 function formatUserForSCIM(user) {
@@ -539,6 +644,24 @@ function formatUserForSCIM(user) {
       created: user.created_at,
       lastModified: user.updated_at,
       location: `/api/v1/scim/Users/${user.id}`
+    }
+  };
+}
+
+/**
+ * Format role/permission data for SCIM Group response
+ */
+function formatGroupForSCIM(group) {
+  return {
+    schemas: ['urn:ietf:params:scim:schemas:core:2.0:Group'],
+    id: String(group.id),
+    displayName: group.name,
+    members: (group.members || []).map(m => ({
+      value: m.id,
+      display: m.name
+    })),
+    meta: {
+      resourceType: 'Group'
     }
   };
 }
