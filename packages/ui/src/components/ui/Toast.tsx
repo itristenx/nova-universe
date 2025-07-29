@@ -1,7 +1,7 @@
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { useToastStore } from '../../stores/toast';
 
-// TODO: Integrate toast state via props/context for universal use
 
 interface Toast {
   id: string;
@@ -117,7 +117,9 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove
 
 // Connected ToastContainer that uses the store
 export const ConnectedToastContainer: React.FC = () => {
-  // const { toasts, removeToast } = useToastStore();
-  
-  return <ToastContainer toasts={[]} onRemove={() => {}} />;
+  const { toasts, removeToast } = useToastStore();
+
+  return <ToastContainer toasts={toasts} onRemove={removeToast} />;
 };
+
+export { useToastStore } from '../../stores/toast';
