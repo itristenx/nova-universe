@@ -59,6 +59,13 @@ export interface Asset {
   status?: string
 }
 
+export interface TicketHistoryEntry {
+  action: string
+  details?: string
+  timestamp: string
+  user: string
+}
+
 export interface XpEvent {
   amount: number
   reason?: string
