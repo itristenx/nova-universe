@@ -123,6 +123,8 @@ async function setupDefaultConfig() {
       statusBrbMsg: 'Be Right Back',
       statusLunchMsg: 'Out to Lunch - Back in 1 Hour',
       statusUnavailableMsg: 'Status Unavailable',
+      rateLimitWindow: process.env.RATE_LIMIT_WINDOW || '900000',
+      rateLimitMax: process.env.RATE_LIMIT_MAX || '100',
       minPinLength: process.env.MIN_PIN_LENGTH || '4',
       maxPinLength: process.env.MAX_PIN_LENGTH || '8',
       scimToken: process.env.SCIM_TOKEN || '',

@@ -549,23 +549,71 @@ const v1Router = express.Router();
 // --- BEGIN: Move all direct /api/* endpoint definitions to v1Router ---
 v1Router.get('/config', ensureAuth, (req, res) => {
   db.all(`SELECT key, value FROM config`, (err, rows) => {
-    if (err) return res.status(500).json({ error: "DB error" });
-    const config = Object.fromEntries(rows.map((r) => [r.key, r.value]));
-    delete config.adminPassword;
+    if (err) return res.status(500).json({ error: 'DB error' });
+    const dbConfig = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+    delete dbConfig.adminPassword;
+
+    const defaults = {
+      logoUrl: '/logo.png',
+      faviconUrl: '/vite.svg',
+      welcomeMessage: 'Welcome to the Help Desk',
+      helpMessage: 'Need to report an issue?',
+      statusOpenMsg: 'Open',
+      statusClosedMsg: 'Closed',
+      statusErrorMsg: 'Error',
+      statusMeetingMsg: 'In a Meeting - Back Soon',
+      statusBrbMsg: 'Be Right Back',
+      statusLunchMsg: 'Out to Lunch - Back in 1 Hour',
+      statusUnavailableMsg: 'Status Unavailable',
+      rateLimitWindow: '900000',
+      rateLimitMax: '100'
+    };
+
+    const envConfig = {
+      logoUrl: process.env.LOGO_URL,
+      faviconUrl: process.env.FAVICON_URL,
+      welcomeMessage: process.env.WELCOME_MESSAGE,
+      helpMessage: process.env.HELP_MESSAGE,
+      statusOpenMsg: process.env.STATUS_OPEN_MSG,
+      statusClosedMsg: process.env.STATUS_CLOSED_MSG,
+      statusErrorMsg: process.env.STATUS_ERROR_MSG,
+      statusMeetingMsg: process.env.STATUS_MEETING_MSG,
+      statusBrbMsg: process.env.STATUS_BRB_MSG,
+      statusLunchMsg: process.env.STATUS_LUNCH_MSG,
+      statusUnavailableMsg: process.env.STATUS_UNAVAILABLE_MSG,
+      rateLimitWindow: process.env.RATE_LIMIT_WINDOW,
+      rateLimitMax: process.env.RATE_LIMIT_MAX
+    };
+
+    const config = { ...defaults, ...dbConfig, ...envConfig };
     res.json(config);
   });
 });
 
-v1Router.put("/api/config", ensureAuth, (req, res) => {
+v1Router.put('/api/config', ensureAuth, (req, res) => {
   const updates = req.body;
-  const stmt = db.prepare('INSERT INTO config (key, value) VALUES ($1, $2) ON CONFLICT(key) DO UPDATE SET value=excluded.value');
+  const stmt = db.prepare(
+    'INSERT INTO config (key, value) VALUES ($1, $2) ON CONFLICT(key) DO UPDATE SET value=excluded.value'
+  );
   db.serialize(() => {
     for (const [key, value] of Object.entries(updates)) {
       stmt.run(key, String(value));
     }
     stmt.finalize((err) => {
-      if (err) return res.status(500).json({ error: "DB error" });
-      res.json({ message: "Config updated" });
+      if (err) return res.status(500).json({ error: 'DB error' });
+
+      db.all(`SELECT key, value FROM config`, (err2, rows) => {
+        if (err2) return res.status(500).json({ error: 'DB error' });
+        const dbConfig = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+        delete dbConfig.adminPassword;
+
+        const defaults = DEFAULT_CONFIG;
+
+        const envConfig = getEnvConfig();
+
+        const config = { ...defaults, ...dbConfig, ...envConfig };
+        res.json(config);
+      });
     });
   });
 });
