@@ -363,7 +363,7 @@ router.get('/tickets',
       } = req.query;
 
       let query = `
-        SELECT t.*, 
+        SELECT t.*, u.is_vip, u.vip_level,
                u.name as requester_name, u.email as requester_email,
                a.name as assignee_name,
                COUNT(*) OVER() as total_count
@@ -437,7 +437,13 @@ router.get('/tickets',
           dueDate: row.due_date,
           slaRemaining: row.due_date ?
             Math.round((new Date(row.due_date) - Date.now()) / 60000) : null,
-          vipWeight: row.vip_weight || 0
+          vipWeight: row.is_vip
+            ? row.vip_level === 'exec'
+              ? 3
+              : row.vip_level === 'gold'
+                ? 2
+                : 1
+            : 0
         }));
 
         tickets = tickets.sort((a, b) => b.vipWeight - a.vipWeight);

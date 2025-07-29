@@ -25,6 +25,8 @@ model User {
   samlSessionIndex      String?  @map("saml_session_index")
   department            String?
   lastSamlLogin         DateTime? @map("last_saml_login")
+  isVip                 Boolean  @default(false) @map("is_vip")
+  vipLevel              String?  @map("vip_level")
   feedback              Feedback[]
   logs                  Log[]
   passkeys              Passkey[]

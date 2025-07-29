@@ -25,7 +25,10 @@ export const TicketGrid: React.FC<Props> = ({ tickets, onSelect }) => (
             onClick={() => onSelect?.(t)}
             className="hover:bg-gray-100 cursor-pointer"
           >
-            <TableCell>{t.ticketId}</TableCell>
+            <TableCell>
+              {t.vipWeight ? <span className="text-yellow-500 mr-1">★</span> : null}
+              {t.ticketId}
+            </TableCell>
             <TableCell>{t.title}</TableCell>
             <TableCell>{t.priority}</TableCell>
             <TableCell>{t.status}</TableCell>
