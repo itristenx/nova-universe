@@ -142,7 +142,7 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
    `HELPSCOUT_SMTP_FALLBACK=true` to also send email).
   For Microsoft 365 integration configure `M365_TOKEN` and see
   [docs/M365-email-setup.md](docs/M365-email-setup.md). Set
-  `API_BASE_URL` if the service isn't running on `http://localhost:3000`.
+  `API_BASE_URL` to the full service URL when not using `http://localhost:3000`.
    **Note:** ServiceNow integration has been fully deprecated and removed.
    You can customize `API_PORT`, `LOGO_URL` and other defaults.
 4. Start the server with `node index.js` (uses `API_PORT`, default `3000`).

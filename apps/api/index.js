@@ -1233,13 +1233,20 @@ export async function createApp() {
   await setupGraphQL(app);
 
   // Start Microsoft 365 email polling service if credentials provided
+  let m365Service;
   if (process.env.M365_TOKEN) {
-    const service = new M365EmailService({
+    m365Service = new M365EmailService({
       tokenProvider: envTokenProvider,
       pollInterval: parseInt(process.env.GRAPH_POLL_INTERVAL || '300000')
     });
-    service.start();
+    await m365Service.start();
   }
+
+  function shutdown() {
+    if (m365Service) m365Service.stop();
+  }
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
   // Do not call app.listen here
   return app;
 }

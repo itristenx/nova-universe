@@ -52,11 +52,34 @@ router.put(
       return res.status(400).json({ success: false, error: 'VALIDATION_ERROR', details: errors.array() });
     }
     const { id } = req.params;
-    const { queue, address, displayName, enabled, graphImpersonation, autoCreateTickets, webhookMode, lastSynced } = req.body;
+    const fields = {
+      queue: req.body.queue,
+      address: req.body.address,
+      display_name: req.body.displayName,
+      enabled: req.body.enabled,
+      graph_impersonation: req.body.graphImpersonation,
+      auto_create_tickets: req.body.autoCreateTickets,
+      webhook_mode: req.body.webhookMode,
+      last_synced: req.body.lastSynced,
+    };
+    const setClauses = [];
+    const values = [];
+    let i = 1;
+    for (const [col, val] of Object.entries(fields)) {
+      if (val !== undefined) {
+        setClauses.push(`${col}=$${i}`);
+        values.push(val);
+        i++;
+      }
+    }
+    if (setClauses.length === 0) {
+      return res.status(400).json({ success: false, error: 'NO_FIELDS' });
+    }
+    values.push(id);
     try {
       const result = await db.query(
-        `UPDATE email_accounts SET queue=$1, address=$2, display_name=$3, enabled=$4, graph_impersonation=$5, auto_create_tickets=$6, webhook_mode=$7, last_synced=$8 WHERE id=$9 RETURNING *`,
-        [queue, address, displayName, enabled, graphImpersonation, autoCreateTickets, webhookMode, lastSynced, id]
+        `UPDATE email_accounts SET ${setClauses.join(', ')} WHERE id=$${i} RETURNING *`,
+        values
       );
       res.json({ success: true, account: result.rows[0] });
     } catch (err) {

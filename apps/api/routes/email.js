@@ -21,7 +21,8 @@ router.post(
     body('from').isEmail(),
     body('to').isEmail(),
     body('subject').notEmpty(),
-    body('queue').optional().isIn(['IT', 'HR', 'OPS', 'CYBER'])
+    body('queue').optional().isIn(['IT', 'HR', 'OPS', 'CYBER']),
+    body('html').optional().isString()
   ],
   async (req, res) => {
     const errors = validationResult(req);
