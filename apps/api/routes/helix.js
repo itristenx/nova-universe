@@ -1023,7 +1023,7 @@ router.get('/sso/saml/login', (req, res, next) => {
  *       500:
  *         description: SAML processing error
  */
-router.post('/sso/saml/callback', (req, res, next) => {
+router.post('/sso/saml/callback', async (req, res, next) => {
   try {
     const passport = configureSAML();
     passport.authenticate('saml', { session: false }, async (err, user, info) => {
