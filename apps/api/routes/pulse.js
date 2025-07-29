@@ -840,14 +840,26 @@ router.get('/timesheet',
 // Alerts feed - proxies Nova Core alerts
 router.get('/alerts',
   authenticateJWT,
+  [
+    check('queue')
+      .isString().withMessage('Queue must be a string')
+      .trim()
+      .escape()
+      .notEmpty().withMessage('Queue parameter is required'),
+  ],
   checkQueueAccess(req => req.query.queue),
   async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
     try {
-      const alerts = await db.findDocuments('alerts', { queue: req.query.queue })
-      res.json({ success: true, alerts })
+      const sanitizedQueue = req.query.queue;
+      const alerts = await db.findDocuments('alerts', { queue: sanitizedQueue });
+      res.json({ success: true, alerts });
     } catch (err) {
-      logger.error('Error fetching alerts:', err)
-      res.status(500).json({ success: false, error: 'Failed to fetch alerts', errorCode: 'ALERTS_ERROR' })
+      logger.error('Error fetching alerts:', err);
+      res.status(500).json({ success: false, error: 'Failed to fetch alerts', errorCode: 'ALERTS_ERROR' });
     }
   }
 );
