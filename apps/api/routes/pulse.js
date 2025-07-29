@@ -886,7 +886,16 @@ router.get('/inventory',
 // Ticket history
 router.get('/tickets/:ticketId/history',
   authenticateJWT,
+  [
+    body('ticketId')
+      .isNumeric().withMessage('Ticket ID must be a numeric value')
+      .notEmpty().withMessage('Ticket ID is required'),
+  ],
   async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
     try {
       const { ticketId } = req.params;
       db.all(`
