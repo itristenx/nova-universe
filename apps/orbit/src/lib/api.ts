@@ -102,6 +102,10 @@ export async function updateProfile(token: string, id: string, data: { name: str
     body: JSON.stringify(data),
     credentials: 'include'
   });
+  if (!res.ok) {
+    const errorDetails = await res.text();
+    throw new Error(`Failed to update profile: ${res.status} ${res.statusText} - ${errorDetails}`);
+  }
   return res.json();
 }
 
