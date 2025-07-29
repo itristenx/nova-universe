@@ -10,6 +10,9 @@ export interface Ticket {
   assignedTo?: { id: number; name: string }
   createdAt: string
   updatedAt: string
+  dueDate?: string
+  slaRemaining?: number
+  vipWeight?: number
 }
 
 export interface TicketUpdate extends Partial<Ticket> {
@@ -38,4 +41,23 @@ export interface TimesheetEntry {
   title: string
   timeSpent: number
   date: string
+}
+
+export interface Alert {
+  id: string
+  message: string
+  createdAt: string
+}
+
+export interface Asset {
+  id: number
+  name: string
+  type: string
+  status?: string
+}
+
+export interface XpEvent {
+  amount: number
+  reason?: string
+  createdAt: string
 }

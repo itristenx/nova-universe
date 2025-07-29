@@ -6,6 +6,8 @@ import { TicketsPage } from './pages/TicketsPage'
 import { DeepWorkPage } from './pages/DeepWorkPage'
 import { GamificationPage } from './pages/GamificationPage'
 import { AlertsPage } from './pages/AlertsPage'
+import { InventoryPage } from './pages/InventoryPage'
+import { LeaderboardPage } from './pages/LeaderboardPage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } }
@@ -19,6 +21,8 @@ const App: React.FC = () => (
         <Route path="/tickets" element={<TicketsPage />} />
         <Route path="/tickets/:ticketId" element={<DeepWorkPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
+        <Route path="/inventory" element={<InventoryPage />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/gamification" element={<GamificationPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
