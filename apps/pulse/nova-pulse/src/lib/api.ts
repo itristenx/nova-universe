@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Ticket, DashboardData, TimesheetEntry, TicketUpdate, Alert, Asset, XpEvent } from '../types'
+import type { Ticket, DashboardData, TimesheetEntry, TicketUpdate, Alert, Asset, XpEvent, LeaderboardEntry, TeamRanking } from '../types'
 
 const client = axios.create({ baseURL: '/api/v1/pulse' })
 
@@ -40,5 +40,10 @@ export const getAssetsForUser = async (userId: string) => {
 
 export const postXpEvent = async (event: Partial<XpEvent>) => {
   const { data } = await client.post('/xp', event)
+  return data
+}
+
+export const getXpLeaderboard = async () => {
+  const { data } = await client.get<{ success: boolean; leaderboard: LeaderboardEntry[]; teams: TeamRanking[]; me: { xp: number } }>('/xp')
   return data
 }

@@ -29,3 +29,18 @@ CREATE TABLE audit_logs (
     ticket_id INT REFERENCES tickets(id),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- XP Events Table
+CREATE TABLE xp_events (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT REFERENCES users(id),
+    amount INT NOT NULL,
+    reason TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Leaderboard Table
+CREATE TABLE leaderboard (
+    user_id TEXT PRIMARY KEY REFERENCES users(id),
+    xp_total INT NOT NULL DEFAULT 0
+);
