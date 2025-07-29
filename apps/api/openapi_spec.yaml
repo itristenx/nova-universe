@@ -155,6 +155,93 @@ paths:
                   id:
                     type: string
 
+  /api/reports/usage:
+    get:
+      summary: Get usage metrics
+      responses:
+        '200':
+          description: Usage metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: integer
+                  kiosks:
+                    type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/reports/insights:
+    get:
+      summary: Get system insights
+      responses:
+        '200':
+          description: Insights list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    message:
+                      type: string
+
+  /api/workflows/trigger:
+    post:
+      summary: Trigger a workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workflow:
+                  type: string
+      responses:
+        '200':
+          description: Workflow triggered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  runId:
+                    type: integer
+                  status:
+                    type: string
+        '400':
+          description: Missing workflow
+
+  /api/workflows/status:
+    get:
+      summary: Get workflow status
+      responses:
+        '200':
+          description: Workflow status list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    workflow:
+                      type: string
+                    status:
+                      type: string
+                    triggeredAt:
+                      type: string
+                      format: date-time
+
 components:
   securitySchemes:
     bearerAuth:
