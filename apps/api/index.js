@@ -607,21 +607,7 @@ v1Router.put('/api/config', ensureAuth, (req, res) => {
         const dbConfig = Object.fromEntries(rows.map((r) => [r.key, r.value]));
         delete dbConfig.adminPassword;
 
-        const defaults = {
-          logoUrl: '/logo.png',
-          faviconUrl: '/vite.svg',
-          welcomeMessage: 'Welcome to the Help Desk',
-          helpMessage: 'Need to report an issue?',
-          statusOpenMsg: 'Open',
-          statusClosedMsg: 'Closed',
-          statusErrorMsg: 'Error',
-          statusMeetingMsg: 'In a Meeting - Back Soon',
-          statusBrbMsg: 'Be Right Back',
-          statusLunchMsg: 'Out to Lunch - Back in 1 Hour',
-          statusUnavailableMsg: 'Status Unavailable',
-          rateLimitWindow: '900000',
-          rateLimitMax: '100'
-        };
+        const defaults = DEFAULT_CONFIG;
 
         const envConfig = {
           logoUrl: process.env.LOGO_URL,
