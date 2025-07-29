@@ -127,6 +127,9 @@ export async function getServiceStatus(token: string) {
     headers: { Authorization: `Bearer ${token}` },
     credentials: 'include'
   });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch service status: ${res.status} ${res.statusText}`);
+  }
   return res.json();
 }
 
