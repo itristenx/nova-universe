@@ -1173,6 +1173,21 @@ class ApiClient {
     const response = await this.client.post<ApiResponse>('/api/smtp/test', { email: testEmail });
     return response.data;
   }
+
+  // Inventory
+  async getInventoryAssets(): Promise<InventoryAsset[]> {
+    const response = await this.client.get<InventoryAsset[]>('/api/inventory');
+    return response.data as any;
+  }
+
+  async importInventory(file: File): Promise<ApiResponse> {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await this.client.post<ApiResponse>('/api/inventory/import', form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  }
 }
 
 export const api = new ApiClient();

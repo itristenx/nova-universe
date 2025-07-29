@@ -160,6 +160,14 @@ export interface Asset {
   uploadedAt: string;
 }
 
+export interface InventoryAsset {
+  id: number;
+  asset_tag?: string;
+  serial_number?: string;
+  model?: string;
+  status?: string;
+}
+
 export interface ApiResponse<T = unknown> {
   data?: T;
   message?: string;

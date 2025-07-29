@@ -373,6 +373,96 @@ CREATE TABLE IF NOT EXISTS admin_pins (
   CONSTRAINT single_row CHECK (id = 1)
 );
 
+-- Inventory assets table
+CREATE TABLE IF NOT EXISTS inventory_assets (
+  id SERIAL PRIMARY KEY,
+  asset_tag VARCHAR(100) NOT NULL,
+  type_id INTEGER,
+  serial_number VARCHAR(100),
+  model VARCHAR(255),
+  vendor_id INTEGER,
+  purchase_date TIMESTAMP,
+  warranty_expiry TIMESTAMP,
+  assigned_to_user_id VARCHAR(100),
+  assigned_to_org_id INTEGER,
+  assigned_to_customer_id INTEGER,
+  department VARCHAR(100),
+  status VARCHAR(50),
+  location_id INTEGER,
+  kiosk_id VARCHAR(100),
+  custom_fields JSONB DEFAULT '{}',
+  notes TEXT,
+  created_by VARCHAR(100),
+  updated_by VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Asset types table
+CREATE TABLE IF NOT EXISTS asset_types (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  icon VARCHAR(100),
+  default_lifecycle_days INTEGER,
+  required_fields JSONB DEFAULT '{}'
+);
+
+-- Asset status logs
+CREATE TABLE IF NOT EXISTS asset_status_logs (
+  id SERIAL PRIMARY KEY,
+  asset_id INTEGER REFERENCES inventory_assets(id),
+  previous_status VARCHAR(50),
+  new_status VARCHAR(50) NOT NULL,
+  changed_by_user_id VARCHAR(100),
+  notes TEXT,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Asset assignments
+CREATE TABLE IF NOT EXISTS asset_assignments (
+  id SERIAL PRIMARY KEY,
+  asset_id INTEGER REFERENCES inventory_assets(id),
+  user_id VARCHAR(100),
+  org_id INTEGER,
+  customer_id INTEGER,
+  assigned_by VARCHAR(100),
+  assigned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expected_return TIMESTAMP,
+  return_date TIMESTAMP,
+  manager_id VARCHAR(100),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Locations table
+CREATE TABLE IF NOT EXISTS locations (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100),
+  room VARCHAR(50),
+  floor VARCHAR(50),
+  site_id INTEGER,
+  gps VARCHAR(100)
+);
+
+-- Vendors table
+CREATE TABLE IF NOT EXISTS vendors (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  website TEXT,
+  support_email VARCHAR(255),
+  contact_name VARCHAR(255),
+  warranty_url TEXT
+);
+
+-- Kiosk links table
+CREATE TABLE IF NOT EXISTS kiosk_links (
+  id SERIAL PRIMARY KEY,
+  kiosk_id VARCHAR(100),
+  asset_id INTEGER,
+  registered_from VARCHAR(100),
+  config_ref VARCHAR(100)
+);
+
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_isDefault ON users(isDefault);
@@ -384,6 +474,11 @@ CREATE INDEX IF NOT EXISTS idx_kiosks_active ON kiosks(active);
 CREATE INDEX IF NOT EXISTS idx_notifications_active ON notifications(active);
 CREATE INDEX IF NOT EXISTS idx_assets_type ON assets(type);
 CREATE INDEX IF NOT EXISTS idx_kiosk_activations_expires ON kiosk_activations(expires_at);
+CREATE INDEX IF NOT EXISTS idx_inventory_assets_tag ON inventory_assets(asset_tag);
+CREATE INDEX IF NOT EXISTS idx_asset_status_logs_asset ON asset_status_logs(asset_id);
+CREATE INDEX IF NOT EXISTS idx_asset_assignments_asset ON asset_assignments(asset_id);
+CREATE INDEX IF NOT EXISTS idx_locations_site ON locations(site_id);
+CREATE INDEX IF NOT EXISTS idx_kiosk_links_asset ON kiosk_links(asset_id);
 
 -- Create triggers for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -398,6 +493,9 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECU
 CREATE TRIGGER update_kiosks_updated_at BEFORE UPDATE ON kiosks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_notifications_updated_at BEFORE UPDATE ON notifications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_inventory_assets_updated_at BEFORE UPDATE ON inventory_assets FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_asset_status_logs_updated_at BEFORE UPDATE ON asset_status_logs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_asset_assignments_updated_at BEFORE UPDATE ON asset_assignments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 `;
 
     const timestamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
