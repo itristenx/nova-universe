@@ -93,7 +93,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
       'updated_by'
     ];
     const set = fields.map((f,i)=> `${f} = $${i+1}`).join(',');
-    const values = fields.map(f=> req.body[f] ?? null);
+    const values = fields.map(f => req.body[f] ?? null);
     values.push(req.params.id);
     const { rows } = await db.query(
       `UPDATE inventory_assets SET ${set} WHERE id = $${fields.length+1} RETURNING *`,
