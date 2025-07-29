@@ -36,7 +36,7 @@
     "figlet": "^1.8.2",
     "fs-extra": "^11.3.0",
     "helmet": "^8.1.0",
-    "inquirer": "^12.8.2",
+    "inquirer": "^12.9.0",
     "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
     "listr2": "^9.0.1",
