@@ -20,9 +20,10 @@ async function login(email, password) {
 
 async function createUser(id, email, name, password, isVip = false, vipLevel = null) {
   const hash = (await import('bcryptjs')).default.hashSync(password, 12);
+  const now = new Date().toISOString();
   await dbWrapper.query(
-    'INSERT INTO users (id, email, name, password_hash, is_vip, vip_level, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$7)',
-    [id, email, name, hash, isVip ? 1 : 0, vipLevel, new Date().toISOString()]
+    'INSERT INTO users (id, email, name, password_hash, is_vip, vip_level, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+    [id, email, name, hash, isVip ? 1 : 0, vipLevel, now, now]
   );
 }
 
