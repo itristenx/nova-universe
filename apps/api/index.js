@@ -9,6 +9,8 @@ import rolesRouter from './routes/roles.js';
 import searchRouter from './routes/search.js';
 import serverRouter from './routes/server.js';
 import logsRouter from './routes/logs.js'; // Import logsRouter
+import reportsRouter from './routes/reports.js';
+import workflowsRouter from './routes/workflows.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -1211,6 +1213,8 @@ app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
 app.use('/api/v1/logs', logsRouter); // Register logsRouter
+app.use('/api/reports', reportsRouter);
+app.use('/api/workflows', workflowsRouter);
 
 // Nova module routes
 app.use('/api/v1/helix', helixRouter);     // Nova Helix - Identity Engine

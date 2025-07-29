@@ -10,7 +10,7 @@ const config: JestConfigWithTsJest = {
     ],
     '^.+\\.js$': 'babel-jest'
   },
-  extensionsToTreatAsEsm: ['.ts', '.js', '.mjs'],
+  extensionsToTreatAsEsm: ['.ts', '.js'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   },
