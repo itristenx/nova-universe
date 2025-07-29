@@ -1,13 +1,22 @@
 export function checkQueueAccess(queueGetter) {
   return (req, res, next) => {
     const queue = typeof queueGetter === 'function' ? queueGetter(req) : queueGetter
+    const sanitizedQueue = typeof queue === 'string' ? queue.trim() : ''
+
+    if (!/^[A-Za-z0-9_-]+$/.test(sanitizedQueue)) {
+      return res.status(400).json({
+        error: 'Invalid queue parameter',
+        errorCode: 'INVALID_QUEUE'
+      })
+    }
+
     const user = req.user || {}
     const { queues = [], roles = [] } = user
 
     if (roles.includes('admin') || roles.includes('superadmin')) {
       return next()
     }
-    if (queue && queues.includes(queue)) {
+    if (queues.includes(sanitizedQueue)) {
       return next()
     }
     return res.status(403).json({

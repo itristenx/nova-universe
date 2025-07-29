@@ -885,8 +885,12 @@ router.post('/xp',
   async (req, res) => {
     try {
       const { amount = 0, reason } = req.body
+      const parsedAmount = Number(amount)
+      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || parsedAmount > 10000) {
+        return res.status(400).json({ success: false, error: 'Invalid amount', errorCode: 'INVALID_AMOUNT' })
+      }
       await db.run('INSERT INTO xp_events (user_id, amount, reason, created_at) VALUES ($1, $2, $3, $4)',
-        [req.user.id, amount, reason || null, new Date().toISOString()])
+        [req.user.id, parsedAmount, reason || null, new Date().toISOString()])
       res.json({ success: true })
     } catch (err) {
       logger.error('Error logging XP event:', err)
