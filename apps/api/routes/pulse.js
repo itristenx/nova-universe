@@ -921,42 +921,28 @@ router.get('/tickets/:ticketId/related',
   async (req, res) => {
     try {
       const { ticketId } = req.params;
-      db.get('SELECT requested_by_id FROM tickets WHERE ticket_id = $1', [ticketId], (err, ticket) => {
-        if (err) {
-          logger.error('Error fetching ticket:', err);
-          return res.status(500).json({ success: false, error: 'Failed to fetch related items', errorCode: 'RELATED_ERROR' });
-        }
-        if (!ticket) {
-          return res.status(404).json({ success: false, error: 'Ticket not found', errorCode: 'TICKET_NOT_FOUND' });
-        }
+      const ticket = await db.getAsync('SELECT requested_by_id FROM tickets WHERE ticket_id = ?', [ticketId]);
+      if (!ticket) {
+        return res.status(404).json({ success: false, error: 'Ticket not found', errorCode: 'TICKET_NOT_FOUND' });
+      }
 
-        db.all(`
+      const [relatedTickets, assets] = await Promise.all([
+        db.allAsync(`
           SELECT ticket_id, title, status, priority
           FROM tickets
-          WHERE requested_by_id = $1 AND ticket_id != $2 AND deleted_at IS NULL
+          WHERE requested_by_id = ? AND ticket_id != ? AND deleted_at IS NULL
           ORDER BY created_at DESC
           LIMIT 5
-        `, [ticket.requested_by_id, ticketId], (relErr, relatedTickets) => {
-          if (relErr) {
-            logger.error('Error fetching related tickets:', relErr);
-            return res.status(500).json({ success: false, error: 'Failed to fetch related items', errorCode: 'RELATED_ERROR' });
-          }
+        `, [ticket.requested_by_id, ticketId]),
+        db.allAsync(`
+          SELECT id, name, asset_tag
+          FROM inventory_assets
+          WHERE assigned_to_user_id = ?
+          LIMIT 5
+        `, [ticket.requested_by_id])
+      ]);
 
-          db.all(`
-            SELECT id, name, asset_tag
-            FROM inventory_assets
-            WHERE assigned_to_user_id = $1
-            LIMIT 5
-          `, [ticket.requested_by_id], (assetErr, assets) => {
-            if (assetErr) {
-              logger.error('Error fetching related assets:', assetErr);
-              return res.status(500).json({ success: false, error: 'Failed to fetch related items', errorCode: 'RELATED_ERROR' });
-            }
-
-            res.json({ success: true, tickets: relatedTickets || [], assets: assets || [] });
-          });
-        });
-      });
+      res.json({ success: true, tickets: relatedTickets || [], assets: assets || [] });
     } catch (error) {
       logger.error('Error fetching related items:', error);
       res.status(500).json({ success: false, error: 'Failed to fetch related items', errorCode: 'RELATED_ERROR' });
