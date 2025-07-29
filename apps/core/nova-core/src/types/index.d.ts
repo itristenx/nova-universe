@@ -2,6 +2,8 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    is_vip?: boolean;
+    vip_level?: string;
     disabled?: boolean;
     isDefault?: boolean;
     roles?: string[];

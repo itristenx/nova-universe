@@ -164,6 +164,14 @@ class ApiClient {
     return response.data;
   }
 
+  async updateVipStatus(id: number, data: { isVip: boolean; vipLevel?: string }): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ message: 'VIP updated' });
+    }
+    const response = await this.client.put<ApiResponse>(`/api/v1/helix/users/${id}/vip`, data);
+    return response.data;
+  }
+
   // Roles and Permissions
   async getRoles(): Promise<Role[]> {
     if (this.useMockMode) {

@@ -28,6 +28,7 @@ model User {
   lastSamlLogin         DateTime? @map("last_saml_login")
   isVip                 Boolean  @default(false) @map("is_vip")
   vipLevel              String?  @map("vip_level")
+  vipSlaOverride        Json?    @map("vip_sla_override")
   feedback              Feedback[]
   logs                  Log[]
   passkeys              Passkey[]
@@ -253,6 +254,8 @@ model SupportTicket {
   assigneeId  String?  @map("assignee_id")
   users_support_tickets_assigneeIdTousers User?    @relation("support_tickets_assigneeIdTousers", fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users_support_tickets_userIdTousers     User?    @relation("support_tickets_userIdTousers", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  vipPriorityScore Int?    @map("vip_priority_score")
+  vipTriggerSource String? @map("vip_trigger_source")
 
   @@map("support_tickets")
 }
