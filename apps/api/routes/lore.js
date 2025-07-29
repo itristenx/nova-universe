@@ -9,6 +9,15 @@ import { createRateLimit } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
+function parseTags(json) {
+  try {
+    return json ? JSON.parse(json) : [];
+  } catch (err) {
+    logger.warn('Failed to parse tags:', err);
+    return [];
+  }
+}
+
 /**
  * @swagger
  * components:
@@ -203,7 +212,7 @@ router.get('/articles',
         content: row.body_markdown,
         excerpt: row.body_markdown ? row.body_markdown.substring(0, 200) + '...' : '',
         visibility: row.visibility,
-        tags: row.tags ? JSON.parse(row.tags) : [],
+        tags: parseTags(row.tags),
         systemContext: row.system_context,
         verifiedSolution: row.verified_solution,
         helpfulCount: row.helpful_count,
@@ -311,7 +320,7 @@ router.get('/articles/:kbId',
         title: row.title,
         content: row.body_markdown,
         visibility: row.visibility,
-        tags: row.tags ? JSON.parse(row.tags) : [],
+        tags: parseTags(row.tags),
         systemContext: row.system_context,
         verifiedSolution: row.verified_solution,
         helpfulCount: row.helpful_count,
@@ -461,7 +470,7 @@ router.post('/articles',
         visibility,
         JSON.stringify(tags),
         systemContext || null,
-        verifiedSolution ? 1 : 0,
+        verifiedSolution,
         userId,
         now,
         now
@@ -481,7 +490,7 @@ router.post('/articles',
         title: newArticle.title,
         content: newArticle.body_markdown,
         visibility: newArticle.visibility,
-        tags: newArticle.tags ? JSON.parse(newArticle.tags) : [],
+        tags: parseTags(newArticle.tags),
         systemContext: newArticle.system_context,
         verifiedSolution: newArticle.verified_solution,
         helpfulCount: 0,
@@ -579,7 +588,7 @@ router.put('/articles/:kbId',
         title = article.title,
         content = article.body_markdown,
         visibility = article.visibility,
-        tags = article.tags ? JSON.parse(article.tags) : [],
+        tags = parseTags(article.tags),
         systemContext = article.system_context,
         verifiedSolution = article.verified_solution
       } = req.body;
@@ -588,7 +597,7 @@ router.put('/articles/:kbId',
 
       const updateRow = await db.one(
         `UPDATE kb_articles SET title=$1, body_markdown=$2, visibility=$3, tags=$4, system_context=$5, verified_solution=$6, last_modified_by_id=$7, version=version+1, updated_at=$8 WHERE id=$9 RETURNING version`,
-        [title, content, visibility, JSON.stringify(tags), systemContext, verifiedSolution ? 1 : 0, req.user.id, now, article.id]
+        [title, content, visibility, JSON.stringify(tags), systemContext, verifiedSolution, req.user.id, now, article.id]
       );
 
       await db.none(
@@ -799,7 +808,7 @@ router.get('/search',
         content: row.body_markdown,
         excerpt: row.body_markdown ? row.body_markdown.substring(0, 200) + '...' : '',
         visibility: row.visibility,
-        tags: row.tags ? JSON.parse(row.tags) : [],
+        tags: parseTags(row.tags),
         systemContext: row.system_context,
         verifiedSolution: row.verified_solution,
         helpfulCount: row.helpful_count,
