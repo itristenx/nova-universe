@@ -46,7 +46,10 @@ export default function ProfilePage() {
         setProfile(form);
         setEditing(false);
       })
-      .catch(() => setError("Failed to update profile"));
+      .catch((error) => {
+        console.error("Error updating profile:", error);
+        setError(`Failed to update profile: ${error.message || "Unknown error"}`);
+      });
   }
 
   return (
