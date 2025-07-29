@@ -15,7 +15,10 @@ export function checkQueueAccess(queueGetter) {
         errorCode: 'INVALID_QUEUE'
       })
     }
-    if (!/^[A-Za-z0-9_-]+$/.test(sanitizedQueue)) {
+// Define a regex pattern for valid queue identifiers
+const VALID_QUEUE_IDENTIFIER_REGEX = /^[A-Za-z0-9_-]+$/;
+
+    if (!VALID_QUEUE_IDENTIFIER_REGEX.test(sanitizedQueue)) {
       return res.status(400).json({
         error: 'Invalid queue parameter',
         errorCode: 'INVALID_QUEUE'
