@@ -86,6 +86,9 @@ export async function getSession(token: string) {
     headers: { Authorization: `Bearer ${token}` },
     credentials: 'include'
   });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch session: ${res.status} ${res.statusText}`);
+  }
   return res.json();
 }
 
