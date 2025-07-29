@@ -15,8 +15,10 @@ export const DeliveryTrackingPage: React.FC = () => {
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Delivery Tracking</h2>
       <div className="space-y-2">
-        <input className="border p-2" placeholder="Package ID" value={id} onChange={e => setId(e.target.value)} />
-        <select className="border p-2" value={status} onChange={e => setStatus(e.target.value)}>
+        <label htmlFor="package-id" className="sr-only">Package ID</label>
+        <input id="package-id" aria-label="Package ID" className="border p-2" placeholder="Package ID" value={id} onChange={e => setId(e.target.value)} />
+        <label htmlFor="status" className="sr-only">Status</label>
+        <select id="status" aria-label="Status" className="border p-2" value={status} onChange={e => setStatus(e.target.value)}>
           <option value="ready">Ready</option>
           <option value="picked_up">Picked Up</option>
           <option value="returned">Returned</option>

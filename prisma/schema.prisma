@@ -8,41 +8,46 @@ generator client {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  name          String?
-  email         String   @unique
-  passwordHash  String?  @map("password_hash")
-  disabled      Boolean  @default(false)
-  isDefault     Boolean  @default(false) @map("is_default")
-  lastLogin     DateTime? @map("last_login")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  twoFactorEnabled      Boolean  @default(false) @map("two_factor_enabled")
-  twoFactorSecret       String?  @map("two_factor_secret")
-  twoFactorBackupCodes  Json?    @map("two_factor_backup_codes")
-  twoFactorVerified     Boolean  @default(false) @map("two_factor_verified")
-  samlNameId            String?  @unique @map("saml_name_id")
-  samlSessionIndex      String?  @map("saml_session_index")
-  department            String?
-  lastSamlLogin         DateTime? @map("last_saml_login")
-  isVip                 Boolean  @default(false) @map("is_vip")
-  vipLevel              String?  @map("vip_level")
-  feedback              Feedback[]
-  logs                  Log[]
-  passkeys              Passkey[]
-  support_tickets_support_tickets_assigneeIdTousers SupportTicket[] @relation("support_tickets_assigneeIdTousers")
-  support_tickets_support_tickets_userIdTousers     SupportTicket[] @relation("support_tickets_userIdTousers")
-  roles                 UserRole[]
+  id                                                String               @id @default(uuid())
+  name                                              String?
+  email                                             String               @unique
+  passwordHash                                      String?              @map("password_hash")
+  disabled                                          Boolean              @default(false)
+  isDefault                                         Boolean              @default(false) @map("is_default")
+  lastLogin                                         DateTime?            @map("last_login")
+  createdAt                                         DateTime             @default(now()) @map("created_at")
+  updatedAt                                         DateTime             @updatedAt @map("updated_at")
+  twoFactorEnabled                                  Boolean              @default(false) @map("two_factor_enabled")
+  twoFactorSecret                                   String?              @map("two_factor_secret")
+  twoFactorBackupCodes                              Json?                @map("two_factor_backup_codes")
+  twoFactorVerified                                 Boolean              @default(false) @map("two_factor_verified")
+  samlNameId                                        String?              @unique @map("saml_name_id")
+  samlSessionIndex                                  String?              @map("saml_session_index")
+  department                                        String?
+  lastSamlLogin                                     DateTime?            @map("last_saml_login")
+  isVip                                             Boolean              @default(false) @map("is_vip")
+  vipLevel                                          String?              @map("vip_level")
+  feedback                                          Feedback[]
+  logs                                              Log[]
+  passkeys                                          Passkey[]
+  support_tickets_support_tickets_assigneeIdTousers SupportTicket[]      @relation("support_tickets_assigneeIdTousers")
+  support_tickets_support_tickets_userIdTousers     SupportTicket[]      @relation("support_tickets_userIdTousers")
+  roles                                             UserRole[]
+  proxyAuthorizationsAsRecipient                    ProxyAuthorization[] @relation("recipient")
+  proxyAuthorizationsAsProxy                        ProxyAuthorization[] @relation("proxy")
+  XpEvent                                           XpEvent[]
+  Leaderboard                                       Leaderboard[]
+  MailroomPackage                                   MailroomPackage[]
 
   @@map("users")
 }
 
 model Role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
   description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
   permissions RolePermission[]
   users       UserRole[]
 
@@ -50,12 +55,12 @@ model Role {
 }
 
 model Permission {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
   description String?
   resource    String?
   action      String?
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
   roles       RolePermission[]
 
   @@map("permissions")
@@ -73,9 +78,9 @@ model UserRole {
 }
 
 model RolePermission {
-  roleId       Int      @map("role_id")
-  permissionId Int      @map("permission_id")
-  assignedAt   DateTime @default(now()) @map("assigned_at")
+  roleId       Int        @map("role_id")
+  permissionId Int        @map("permission_id")
+  assignedAt   DateTime   @default(now()) @map("assigned_at")
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
@@ -84,15 +89,15 @@ model RolePermission {
 }
 
 model Passkey {
-  id           Int      @id @default(autoincrement())
-  userId       String   @map("user_id")
-  credentialId String   @unique @map("credential_id")
-  publicKey    String   @map("public_key")
-  counter      Int      @default(0)
+  id           Int       @id @default(autoincrement())
+  userId       String    @map("user_id")
+  credentialId String    @unique @map("credential_id")
+  publicKey    String    @map("public_key")
+  counter      Int       @default(0)
   transports   String?
-  deviceType   String?  @map("device_type")
-  backedUp     Boolean  @default(false) @map("backed_up")
-  createdAt    DateTime @default(now()) @map("created_at")
+  deviceType   String?   @map("device_type")
+  backedUp     Boolean   @default(false) @map("backed_up")
+  createdAt    DateTime  @default(now()) @map("created_at")
   lastUsed     DateTime? @map("last_used")
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -100,17 +105,17 @@ model Passkey {
 }
 
 model Log {
-  id           Int      @id @default(autoincrement())
-  ticketId     String?  @map("ticket_id")
-  name         String?
-  email        String?
-  title        String?
-  system       String?
-  urgency      String?
-  timestamp    DateTime @default(now())
-  emailStatus  String?  @map("email_status")
-  userId       String?  @map("user_id")
-  user         User?    @relation(fields: [userId], references: [id])
+  id          Int      @id @default(autoincrement())
+  ticketId    String?  @map("ticket_id")
+  name        String?
+  email       String?
+  title       String?
+  system      String?
+  urgency     String?
+  timestamp   DateTime @default(now())
+  emailStatus String?  @map("email_status")
+  userId      String?  @map("user_id")
+  user        User?    @relation(fields: [userId], references: [id])
 
   @@map("logs")
 }
@@ -128,24 +133,24 @@ model Config {
 }
 
 model Kiosk {
-  id             String   @id
-  lastSeen       DateTime? @map("last_seen")
+  id             String            @id
+  lastSeen       DateTime?         @map("last_seen")
   version        String?
-  active         Boolean  @default(false)
-  logoUrl        String?  @map("logo_url")
-  bgUrl          String?  @map("bg_url")
-  statusEnabled  Boolean  @default(false) @map("status_enabled")
-  currentStatus  String?  @map("current_status")
-  openMsg        String?  @map("open_msg")
-  closedMsg      String?  @map("closed_msg")
-  errorMsg       String?  @map("error_msg")
-  meetingMsg     String?  @map("meeting_msg")
-  brbMsg         String?  @map("brb_msg")
-  lunchMsg       String?  @map("lunch_msg")
-  unavailableMsg String?  @map("unavailable_msg")
+  active         Boolean           @default(false)
+  logoUrl        String?           @map("logo_url")
+  bgUrl          String?           @map("bg_url")
+  statusEnabled  Boolean           @default(false) @map("status_enabled")
+  currentStatus  String?           @map("current_status")
+  openMsg        String?           @map("open_msg")
+  closedMsg      String?           @map("closed_msg")
+  errorMsg       String?           @map("error_msg")
+  meetingMsg     String?           @map("meeting_msg")
+  brbMsg         String?           @map("brb_msg")
+  lunchMsg       String?           @map("lunch_msg")
+  unavailableMsg String?           @map("unavailable_msg")
   schedule       Json?
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
   activations    KioskActivation[]
 
   @@map("kiosks")
@@ -179,8 +184,8 @@ model DirectoryIntegration {
   provider  String
   settings  Json?
   enabled   Boolean  @default(false)
-  createdAt DateTime @map("created_at") @default(now())
-  updatedAt DateTime @map("updated_at") @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("directory_integrations")
 }
@@ -237,18 +242,19 @@ model KnowledgeBaseArticle {
   content   String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
+
   @@map("knowledge_base_articles")
 }
 
 model SupportTicket {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  status      String   @default("open")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @map("updated_at")
-  userId      String?  @map("user_id")
-  assigneeId  String?  @map("assignee_id")
+  id                                      Int      @id @default(autoincrement())
+  title                                   String
+  description                             String
+  status                                  String   @default("open")
+  createdAt                               DateTime @default(now()) @map("created_at")
+  updatedAt                               DateTime @default(now()) @map("updated_at")
+  userId                                  String?  @map("user_id")
+  assigneeId                              String?  @map("assignee_id")
   users_support_tickets_assigneeIdTousers User?    @relation("support_tickets_assigneeIdTousers", fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users_support_tickets_userIdTousers     User?    @relation("support_tickets_userIdTousers", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -258,57 +264,57 @@ model SupportTicket {
 // All model fields using @default(autoincrement()) are Int type and compatible with PostgreSQL.
 
 model InventoryAsset {
-  id                Int      @id @default(autoincrement())
-  assetTag          String   @map("asset_tag")
-  typeId            Int?     @map("type_id")
-  serialNumber      String?  @map("serial_number")
-  model             String?
-  vendorId          Int?     @map("vendor_id")
-  purchaseDate      DateTime? @map("purchase_date")
-  warrantyExpiry    DateTime? @map("warranty_expiry")
-  assignedToUserId  String?  @map("assigned_to_user_id")
-  assignedToOrgId   Int?     @map("assigned_to_org_id")
-  assignedToCustomerId Int?  @map("assigned_to_customer_id")
-  department        String?
-  status            String?
-  locationId        Int?     @map("location_id")
-  kioskId           String?  @map("kiosk_id")
-  customFields      Json?    @map("custom_fields")
-  notes             String?
-  createdBy         String?  @map("created_by")
-  updatedBy         String?  @map("updated_by")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-  statusLogs        AssetStatusLog[]
-  assignments       AssetAssignment[]
+  id                   Int               @id @default(autoincrement())
+  assetTag             String            @map("asset_tag")
+  typeId               Int?              @map("type_id")
+  serialNumber         String?           @map("serial_number")
+  model                String?
+  vendorId             Int?              @map("vendor_id")
+  purchaseDate         DateTime?         @map("purchase_date")
+  warrantyExpiry       DateTime?         @map("warranty_expiry")
+  assignedToUserId     String?           @map("assigned_to_user_id")
+  assignedToOrgId      Int?              @map("assigned_to_org_id")
+  assignedToCustomerId Int?              @map("assigned_to_customer_id")
+  department           String?
+  status               String?
+  locationId           Int?              @map("location_id")
+  kioskId              String?           @map("kiosk_id")
+  customFields         Json?             @map("custom_fields")
+  notes                String?
+  createdBy            String?           @map("created_by")
+  updatedBy            String?           @map("updated_by")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  statusLogs           AssetStatusLog[]
+  assignments          AssetAssignment[]
 
   @@map("inventory_assets")
 }
 
 model AssetStatusLog {
-  id              Int      @id @default(autoincrement())
-  assetId         Int      @map("asset_id")
-  previousStatus  String?  @map("previous_status")
-  newStatus       String   @map("new_status")
-  changedByUserId String?  @map("changed_by_user_id")
+  id              Int            @id @default(autoincrement())
+  assetId         Int            @map("asset_id")
+  previousStatus  String?        @map("previous_status")
+  newStatus       String         @map("new_status")
+  changedByUserId String?        @map("changed_by_user_id")
   notes           String?
-  timestamp       DateTime @default(now())
+  timestamp       DateTime       @default(now())
   asset           InventoryAsset @relation(fields: [assetId], references: [id])
 
   @@map("asset_status_logs")
 }
 
 model AssetAssignment {
-  id             Int      @id @default(autoincrement())
-  assetId        Int      @map("asset_id")
-  userId         String?  @map("user_id")
-  orgId          Int?     @map("org_id")
-  customerId     Int?     @map("customer_id")
-  assignedBy     String?  @map("assigned_by")
-  assignedDate   DateTime @default(now()) @map("assigned_date")
-  expectedReturn DateTime? @map("expected_return")
-  returnDate     DateTime? @map("return_date")
-  managerId      String?  @map("manager_id")
+  id             Int            @id @default(autoincrement())
+  assetId        Int            @map("asset_id")
+  userId         String?        @map("user_id")
+  orgId          Int?           @map("org_id")
+  customerId     Int?           @map("customer_id")
+  assignedBy     String?        @map("assigned_by")
+  assignedDate   DateTime       @default(now()) @map("assigned_date")
+  expectedReturn DateTime?      @map("expected_return")
+  returnDate     DateTime?      @map("return_date")
+  managerId      String?        @map("manager_id")
   asset          InventoryAsset @relation(fields: [assetId], references: [id])
 
   @@map("asset_assignments")
@@ -349,9 +355,9 @@ model MailroomPackage {
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
-  recipient        User?    @relation(fields: [recipientId], references: [id])
-  events           DeliveryEvent[]
-  proxyAuths       ProxyAuthorization[]
+  recipient  User?                @relation(fields: [recipientId], references: [id])
+  events     DeliveryEvent[]
+  proxyAuths ProxyAuthorization[]
 
   @@map("mailroom_packages")
 }
@@ -366,7 +372,7 @@ model DeliveryEvent {
   photoUrl    String?  @map("photo_url")
   signature   Bytes?   @map("signature_blob")
 
-  package     MailroomPackage @relation(fields: [packageId], references: [id])
+  package MailroomPackage @relation(fields: [packageId], references: [id])
 
   @@map("delivery_events")
 }
@@ -379,9 +385,9 @@ model ProxyAuthorization {
   expiration  DateTime
   status      String
 
-  package     MailroomPackage @relation(fields: [packageId], references: [id])
-  recipient   User?           @relation("recipient", fields: [recipientId], references: [id])
-  proxy       User?           @relation("proxy", fields: [proxyId], references: [id])
+  package   MailroomPackage @relation(fields: [packageId], references: [id])
+  recipient User?           @relation("recipient", fields: [recipientId], references: [id])
+  proxy     User?           @relation("proxy", fields: [proxyId], references: [id])
 
   @@map("proxy_authorizations")
 }
