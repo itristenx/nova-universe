@@ -428,7 +428,7 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
       updates.push(`is_vip = $${paramIndex++}`);
       params.push(isVip ? 1 : 0);
     }
-    if (vipLevel) {
+    if (vipLevel !== undefined) {
       updates.push(`vip_level = $${paramIndex++}`);
       params.push(vipLevel);
     }
