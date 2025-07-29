@@ -47,6 +47,7 @@ import helixRouter from './routes/helix.js';
 import loreRouter from './routes/lore.js';
 import orbitRouter from './routes/orbit.js';
 import pulseRouter from './routes/pulse.js';
+import mailroomRouter from './routes/mailroom.js';
 import inventoryRouter from './routes/inventory.js';
 import scimRouter from './routes/scim.js';
 import synthRouter from './routes/synth.js';
@@ -1216,6 +1217,7 @@ app.use('/api/v1/logs', logsRouter); // Register logsRouter
 app.use('/api/v1/helix', helixRouter);     // Nova Helix - Identity Engine
 app.use('/api/v1/lore', loreRouter);       // Nova Lore - Knowledge Base
 app.use('/api/v1/pulse', pulseRouter);     // Nova Pulse - Technician Portal
+app.use('/api/v1/mailroom', mailroomRouter); // Nova Mailroom - Package Handling
 app.use('/api/v1/orbit', orbitRouter);     // Nova Orbit - End-User Portal
 app.use('/api/v1/synth', synthRouter);     // Nova Synth - AI Engine
 app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API

@@ -228,6 +228,32 @@ class APIService {
         
         return false
     }
+
+    // MARK: - Mailroom Package Intake
+    func createPackage(tracking: String, recipientId: String, serverURL: String) async -> Bool {
+        guard let url = URL(string: "\(serverURL)/api/v1/mailroom/packages") else { return false }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let payload: [String: Any] = [
+            "tracking_number": tracking,
+            "recipient_id": recipientId
+        ]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+            let (_, response) = try await session.data(for: request)
+
+            if let httpResponse = response as? HTTPURLResponse {
+                return httpResponse.statusCode == 200
+            }
+        } catch {
+            print("Package intake failed: \(error)")
+        }
+
+        return false
+    }
     
     // MARK: - Helper Methods
     private func getKioskToken() -> String {

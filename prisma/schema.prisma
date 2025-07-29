@@ -332,3 +332,56 @@ model Leaderboard {
 
   @@map("leaderboard")
 }
+
+model MailroomPackage {
+  id               Int      @id @default(autoincrement())
+  trackingNumber   String?  @map("tracking_number")
+  carrier          String?
+  sender           String?
+  recipientId      String   @map("recipient_id")
+  department       String?
+  packageType      String?  @map("package_type")
+  status           String   @default("inbound")
+  assignedLocation String?  @map("assigned_location")
+  linkedTicketId   Int?     @map("linked_ticket_id")
+  linkedAssetId    Int?     @map("linked_asset_id")
+  flags            Json?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  recipient        User?    @relation(fields: [recipientId], references: [id])
+  events           DeliveryEvent[]
+  proxyAuths       ProxyAuthorization[]
+
+  @@map("mailroom_packages")
+}
+
+model DeliveryEvent {
+  id          Int      @id @default(autoincrement())
+  packageId   Int      @map("package_id")
+  eventType   String   @map("event_type")
+  performedBy String?  @map("performed_by")
+  location    String?
+  timestamp   DateTime @default(now())
+  photoUrl    String?  @map("photo_url")
+  signature   Bytes?   @map("signature_blob")
+
+  package     MailroomPackage @relation(fields: [packageId], references: [id])
+
+  @@map("delivery_events")
+}
+
+model ProxyAuthorization {
+  id          Int      @id @default(autoincrement())
+  recipientId String   @map("recipient_id")
+  proxyId     String   @map("proxy_id")
+  packageId   Int      @map("package_id")
+  expiration  DateTime
+  status      String
+
+  package     MailroomPackage @relation(fields: [packageId], references: [id])
+  recipient   User?           @relation("recipient", fields: [recipientId], references: [id])
+  proxy       User?           @relation("proxy", fields: [proxyId], references: [id])
+
+  @@map("proxy_authorizations")
+}
