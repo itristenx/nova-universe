@@ -80,3 +80,55 @@ export async function submitFeedback(token: string, data: FeedbackData) {
   });
   return res.json();
 }
+
+export async function getSession(token: string) {
+  const res = await fetch('/api/v1/helix/session', {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
+  });
+  return res.json();
+}
+
+export async function updateProfile(token: string, id: string, data: { name: string; email: string; org: string }) {
+  const res = await fetch(`/api/users/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(data),
+    credentials: 'include'
+  });
+  return res.json();
+}
+
+export async function searchKnowledge(token: string, query: string) {
+  const url = new URL('/api/v1/lore/search', window.location.origin);
+  url.searchParams.set('q', query);
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
+  });
+  return res.json();
+}
+
+export async function getServiceStatus(token: string) {
+  const res = await fetch('/api/server/status', {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
+  });
+  return res.json();
+}
+
+export async function sendCosmoMessage(token: string, message: string) {
+  const res = await fetch('/api/v1/synth/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ message }),
+    credentials: 'include'
+  });
+  return res.json();
+}

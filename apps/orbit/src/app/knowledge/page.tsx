@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
+import { searchKnowledge } from "../../lib/api";
 
-// TODO: Replace with real KB search API
 export default function KnowledgePage() {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
   const [query, setQuery] = useState("");
 interface KnowledgeResult {
   id: string;
@@ -20,14 +22,18 @@ const [results, setResults] = useState<KnowledgeResult[]>([]);
     setLoading(true);
     setError(null);
     setResults([]);
-    // TODO: Call real KB search API
-    setTimeout(() => {
-      setResults([
-        { id: "1", title: "How to reset your password", summary: "Go to profile > security...", url: "#" },
-        { id: "2", title: "VPN setup guide", summary: "Download the VPN client...", url: "#" },
-      ]);
+    try {
+      const res = await searchKnowledge(token, query);
+      if (res.success) {
+        setResults(res.results || []);
+      } else {
+        setError(res.error || "Search failed");
+      }
+    } catch {
+      setError("Search failed");
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   }
 
   return (

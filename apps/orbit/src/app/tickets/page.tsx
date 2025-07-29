@@ -43,11 +43,10 @@ export default function TicketsPage() {
   const [total, setTotal] = useState(0);
   const limit = 10;
 
-  // TODO: Replace with real auth token from context/session
   const token =
-	typeof window !== "undefined"
-	  ? localStorage.getItem("token") || "demo-token"
-	  : "";
+        typeof window !== "undefined"
+          ? localStorage.getItem("token") || ""
+          : "";
 
   const router = useRouter();
 
