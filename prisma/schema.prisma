@@ -332,3 +332,24 @@ model Leaderboard {
 
   @@map("leaderboard")
 }
+
+enum QueueType {
+  IT
+  HR
+  OPS
+  CYBER
+}
+
+model EmailAccount {
+  id                String   @id @default(uuid())
+  queue             QueueType
+  address           String   @unique
+  displayName       String?
+  enabled           Boolean  @default(true)
+  graphImpersonation Boolean @default(false) @map("graph_impersonation")
+  autoCreateTickets Boolean  @default(true) @map("auto_create_tickets")
+  webhookMode       Boolean  @default(false) @map("webhook_mode")
+  lastSynced        DateTime? @map("last_synced")
+
+  @@map("email_accounts")
+}

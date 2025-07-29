@@ -20,6 +20,7 @@
 - Secure Express/PostgreSQL backend
 - iPad kiosk support
 - Slack slash command integration
+- Native Microsoft 365 email integration
 - SAML SSO, JWT, and RBAC
 - Rate limiting, input validation, and audit logging
 - Installer scripts for all major OSes
@@ -139,6 +140,8 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
    To send tickets directly to HelpScout instead, provide
    `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` (optionally set
    `HELPSCOUT_SMTP_FALLBACK=true` to also send email).
+   For Microsoft 365 integration configure `M365_TOKEN` and see
+   [docs/M365-email-setup.md](docs/M365-email-setup.md).
    **Note:** ServiceNow integration has been fully deprecated and removed.
    You can customize `API_PORT`, `LOGO_URL` and other defaults.
 4. Start the server with `node index.js` (uses `API_PORT`, default `3000`).

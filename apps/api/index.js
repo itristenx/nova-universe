@@ -9,6 +9,9 @@ import rolesRouter from './routes/roles.js';
 import searchRouter from './routes/search.js';
 import serverRouter from './routes/server.js';
 import logsRouter from './routes/logs.js'; // Import logsRouter
+import emailAccountsRouter from './routes/emailAccounts.js';
+import emailRouter from './routes/email.js';
+import M365EmailService from './services/m365EmailService.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -1207,6 +1210,8 @@ app.use('/api/v1/roles', rolesRouter);
 app.use('/api/v1/assets', assetsRouter);
 app.use('/api/v1/inventory', inventoryRouter);
 app.use('/api/v1/integrations', integrationsRouter);
+app.use('/api/v1/email-accounts', emailAccountsRouter);
+app.use('/email', emailRouter);
 app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
@@ -1226,6 +1231,15 @@ export async function createApp() {
   // (from dotenv.config() through all middleware, routers, etc.)
   // Setup Apollo GraphQL server
   await setupGraphQL(app);
+
+  // Start Microsoft 365 email polling service if credentials provided
+  if (process.env.M365_TOKEN) {
+    const service = new M365EmailService({
+      tokenProvider: async () => process.env.M365_TOKEN,
+      pollInterval: parseInt(process.env.GRAPH_POLL_INTERVAL || '300000')
+    });
+    service.start();
+  }
   // Do not call app.listen here
   return app;
 }
