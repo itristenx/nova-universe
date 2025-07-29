@@ -64,3 +64,15 @@ export interface XpEvent {
   reason?: string
   createdAt: string
 }
+
+export interface LeaderboardEntry {
+  userId: string
+  name: string
+  department?: string
+  xpTotal: number
+}
+
+export interface TeamRanking {
+  team: string | null
+  xpTotal: number
+}

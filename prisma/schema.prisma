@@ -311,3 +311,22 @@ model AssetAssignment {
 
   @@map("asset_assignments")
 }
+
+model XpEvent {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  amount    Int
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("xp_events")
+}
+
+model Leaderboard {
+  userId  String @id @map("user_id")
+  xpTotal Int    @default(0) @map("xp_total")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("leaderboard")
+}

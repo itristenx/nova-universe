@@ -882,6 +882,27 @@ router.get('/inventory',
   }
 );
 
+// Get XP leaderboard and user totals
+router.get('/xp',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { rows } = await db.query(
+        'SELECT u.id, u.name, u.department, l.xp_total FROM leaderboard l JOIN users u ON u.id = l.user_id ORDER BY l.xp_total DESC LIMIT 20'
+      )
+      const { rows: teamRows } = await db.query(
+        'SELECT u.department AS team, SUM(l.xp_total) AS xp_total FROM leaderboard l JOIN users u ON l.user_id = u.id GROUP BY u.department ORDER BY xp_total DESC'
+      )
+      const myRes = await db.query('SELECT xp_total FROM leaderboard WHERE user_id = $1', [req.user.id])
+      const myXp = myRes.rows[0] ? parseInt(myRes.rows[0].xp_total, 10) : 0
+      res.json({ success: true, leaderboard: rows, teams: teamRows, me: { xp: myXp } })
+    } catch (err) {
+      logger.error('Error fetching leaderboard:', err)
+      res.status(500).json({ success: false, error: 'Failed to fetch leaderboard', errorCode: 'LEADERBOARD_ERROR' })
+    }
+  }
+)
+
 // XP event logging
 router.post('/xp',
   authenticateJWT,
@@ -892,8 +913,14 @@ router.post('/xp',
       if (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || parsedAmount > MAX_XP_AMOUNT) {
         return res.status(400).json({ success: false, error: 'Invalid amount', errorCode: 'INVALID_AMOUNT' })
       }
-      await db.run('INSERT INTO xp_events (user_id, amount, reason, created_at) VALUES ($1, $2, $3, $4)',
-        [req.user.id, parsedAmount, reason || null, new Date().toISOString()])
+      await db.run(
+        'INSERT INTO xp_events (user_id, amount, reason, created_at) VALUES ($1, $2, $3, $4)',
+        [req.user.id, parsedAmount, reason || null, new Date().toISOString()]
+      )
+      await db.run(
+        'INSERT INTO leaderboard (user_id, xp_total) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET xp_total = leaderboard.xp_total + EXCLUDED.xp_total',
+        [req.user.id, parsedAmount]
+      )
       res.json({ success: true })
     } catch (err) {
       logger.error('Error logging XP event:', err)
