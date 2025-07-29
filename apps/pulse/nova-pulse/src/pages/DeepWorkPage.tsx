@@ -5,7 +5,7 @@ import { getTickets, updateTicket, getAssetsForUser } from '../lib/api'
 
 export const DeepWorkPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>()
-  const { data } = useQuery({ queryKey: { key: 'ticket', ticketId }, queryFn: () => getTickets({ ticketId }).then(t => t[0]), enabled: !!ticketId })
+  const { data } = useQuery({ queryKey: ['ticket', ticketId], queryFn: () => getTickets({ ticketId }).then(t => t[0]), enabled: !!ticketId })
   const { data: assets = [] } = useQuery({
     queryKey: ['ticketAssets', data?.requestedBy.id],
     queryFn: () => getAssetsForUser(data!.requestedBy.id),
