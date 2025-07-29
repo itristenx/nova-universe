@@ -39,7 +39,25 @@ router.get('/:id', authenticateJWT, async (req, res) => {
 router.post('/', authenticateJWT, async (req, res) => {
   try {
     const fields = [
-      'asset_tag','type_id','serial_number','model','vendor_id','purchase_date','warranty_expiry','assigned_to_user_id','assigned_to_org_id','assigned_to_customer_id','department','status','location_id','kiosk_id','custom_fields','notes','created_by','updated_by'];
+      'asset_tag',
+      'type_id',
+      'serial_number',
+      'model',
+      'vendor_id',
+      'purchase_date',
+      'warranty_expiry',
+      'assigned_to_user_id',
+      'assigned_to_org_id',
+      'assigned_to_customer_id',
+      'department',
+      'status',
+      'location_id',
+      'kiosk_id',
+      'custom_fields',
+      'notes',
+      'created_by',
+      'updated_by'
+    ];
     const values = fields.map(f => req.body[f] ?? null);
     const placeholders = fields.map((_, i) => '$' + (i + 1)).join(',');
     const { rows } = await db.query(
