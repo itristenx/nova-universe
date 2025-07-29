@@ -140,5 +140,9 @@ export async function sendCosmoMessage(token: string, message: string) {
     body: JSON.stringify({ message }),
     credentials: 'include'
   });
+  if (!res.ok) {
+    const errorDetails = await res.text(); // Attempt to extract error details
+    throw new Error(`Failed to send message: ${res.status} ${res.statusText} - ${errorDetails}`);
+  }
   return res.json();
 }
