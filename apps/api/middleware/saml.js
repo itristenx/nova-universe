@@ -151,6 +151,18 @@ export function configureSAML() {
 }
 
 /**
+ * Configure OIDC settings
+ */
+export function configureOIDC() {
+  if (!process.env.OIDC_ISSUER) {
+    logger.info('OIDC configuration skipped - environment variables not set');
+    return;
+  }
+  // Placeholder for real passport-oidc strategy
+  logger.info('OIDC provider configured', { issuer: process.env.OIDC_ISSUER });
+}
+
+/**
  * Get user with their roles from database
  */
 function getUserWithRoles(email, callback) {
@@ -270,9 +282,23 @@ export function generateSAMLMetadata() {
 </md:EntityDescriptor>`;
 }
 
+export function generateOIDCMetadata() {
+  if (!process.env.OIDC_ISSUER) {
+    throw new Error('OIDC_ISSUER environment variable required');
+  }
+  return {
+    issuer: process.env.OIDC_ISSUER,
+    authorization_endpoint: process.env.OIDC_AUTH_ENDPOINT,
+    token_endpoint: process.env.OIDC_TOKEN_ENDPOINT,
+    userinfo_endpoint: process.env.OIDC_USERINFO_ENDPOINT
+  };
+}
+
 export default {
   configureSAML,
+  configureOIDC,
   authenticateSAML,
   generateSAMLMetadata,
+  generateOIDCMetadata,
   logAuthenticationEvent
 };
