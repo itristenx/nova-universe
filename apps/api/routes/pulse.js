@@ -9,7 +9,7 @@ import { createRateLimit } from '../middleware/rateLimiter.js';
 import { checkQueueAccess } from '../middleware/queueAccess.js';
 
 // Maximum XP that can be awarded in a single event
-const MAX_XP_AMOUNT = 1000;
+export const MAX_XP_AMOUNT = 1000;
 
 const router = express.Router();
 
