@@ -3,6 +3,7 @@ import db from '../db.js';
 import { logger } from '../logger.js';
 
 const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
+export const envTokenProvider = async () => process.env.M365_TOKEN;
 
 function buildAuthHeader(token) {
   return { Authorization: `Bearer ${token}` };
@@ -26,7 +27,9 @@ export default class M365EmailService {
 
   async poll() {
     try {
-      const accounts = await db.query('SELECT * FROM email_accounts WHERE enabled = true');
+      const accounts = await db.query(
+        'SELECT id, address, queue FROM email_accounts WHERE enabled = true'
+      );
       for (const acct of accounts.rows) {
         await this.checkAccount(acct);
       }
@@ -56,7 +59,8 @@ export default class M365EmailService {
         { headers: buildAuthHeader(token) }
       );
 
-      await axios.post('http://localhost:3000/api/v1/synth/email-ingest', {
+      const base = process.env.API_BASE_URL || 'http://localhost:3000';
+      await axios.post(`${base}/api/v1/synth/email-ingest`, {
         accountId: acct.id,
         queue: acct.queue,
         subject: msg.subject,

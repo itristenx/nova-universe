@@ -11,7 +11,7 @@ import serverRouter from './routes/server.js';
 import logsRouter from './routes/logs.js'; // Import logsRouter
 import emailAccountsRouter from './routes/emailAccounts.js';
 import emailRouter from './routes/email.js';
-import M365EmailService from './services/m365EmailService.js';
+import M365EmailService, { envTokenProvider } from './services/m365EmailService.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -1235,7 +1235,7 @@ export async function createApp() {
   // Start Microsoft 365 email polling service if credentials provided
   if (process.env.M365_TOKEN) {
     const service = new M365EmailService({
-      tokenProvider: async () => process.env.M365_TOKEN,
+      tokenProvider: envTokenProvider,
       pollInterval: parseInt(process.env.GRAPH_POLL_INTERVAL || '300000')
     });
     service.start();

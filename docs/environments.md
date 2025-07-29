@@ -44,6 +44,7 @@ When deploying to a live environment you must update each `.env` file with real 
 - Set `SMTP_SECURE` to `true` when using TLS in production.
 - Set `M365_TOKEN` for Microsoft Graph email integration and adjust
   `GRAPH_POLL_INTERVAL` as needed.
+- Set `API_BASE_URL` to the Nova API base URL for internal callbacks.
 - Use HTTPS URLs for all services and SAML configuration.
 - Set a strong random `SESSION_SECRET` for the API.
 - Replace Slack tokens and signing secret with the real app credentials.

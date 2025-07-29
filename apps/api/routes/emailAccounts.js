@@ -2,6 +2,7 @@ import express from 'express';
 import db from '../db.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { logger } from '../logger.js';
+import { body, param, validationResult } from 'express-validator';
 
 const router = express.Router();
 
@@ -31,20 +32,39 @@ router.post('/', authenticateJWT, async (req, res) => {
 });
 
 // Update account
-router.put('/:id', authenticateJWT, async (req, res) => {
-  const { id } = req.params;
-  const { queue, address, displayName, enabled, graphImpersonation, autoCreateTickets, webhookMode, lastSynced } = req.body;
-  try {
-    const result = await db.query(
-      `UPDATE email_accounts SET queue=$1, address=$2, display_name=$3, enabled=$4, graph_impersonation=$5, auto_create_tickets=$6, webhook_mode=$7, last_synced=$8 WHERE id=$9 RETURNING *`,
-      [queue, address, displayName, enabled, graphImpersonation, autoCreateTickets, webhookMode, lastSynced, id]
-    );
-    res.json({ success: true, account: result.rows[0] });
-  } catch (err) {
-    logger.error('Update account error', err);
-    res.status(500).json({ success: false, error: 'DB_ERROR' });
+router.put(
+  '/:id',
+  authenticateJWT,
+  [
+    param('id').isUUID(),
+    body('queue').optional().isIn(['IT', 'HR', 'OPS', 'CYBER']),
+    body('address').optional().isEmail(),
+    body('displayName').optional().isString(),
+    body('enabled').optional().isBoolean(),
+    body('graphImpersonation').optional().isBoolean(),
+    body('autoCreateTickets').optional().isBoolean(),
+    body('webhookMode').optional().isBoolean(),
+    body('lastSynced').optional().isISO8601()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, error: 'VALIDATION_ERROR', details: errors.array() });
+    }
+    const { id } = req.params;
+    const { queue, address, displayName, enabled, graphImpersonation, autoCreateTickets, webhookMode, lastSynced } = req.body;
+    try {
+      const result = await db.query(
+        `UPDATE email_accounts SET queue=$1, address=$2, display_name=$3, enabled=$4, graph_impersonation=$5, auto_create_tickets=$6, webhook_mode=$7, last_synced=$8 WHERE id=$9 RETURNING *`,
+        [queue, address, displayName, enabled, graphImpersonation, autoCreateTickets, webhookMode, lastSynced, id]
+      );
+      res.json({ success: true, account: result.rows[0] });
+    } catch (err) {
+      logger.error('Update account error', err);
+      res.status(500).json({ success: false, error: 'DB_ERROR' });
+    }
   }
-});
+);
 
 // Delete account
 router.delete('/:id', authenticateJWT, async (req, res) => {

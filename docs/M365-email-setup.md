@@ -9,7 +9,8 @@ This module enables Nova Universe to send and receive mail directly via the Micr
 4. Start the API and ensure the polling service is running.
 
 ## Environment Variables
-- `M365_TOKEN` – OAuth token with access to all managed mailboxes.
-- `GRAPH_POLL_INTERVAL` – how often to poll for new messages (ms).
+ - `M365_TOKEN` – OAuth token with access to all managed mailboxes.
+ - `GRAPH_POLL_INTERVAL` – how often to poll for new messages (ms).
+ - `API_BASE_URL` – base URL of Nova API used for ticket creation.
 
 Accounts can be managed via the `/api/v1/email-accounts` endpoints. Outbound emails are sent through `/email/send`.
