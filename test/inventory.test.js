@@ -28,9 +28,10 @@ describe('Inventory CRUD', () => {
 
 describe('CSV import parser', () => {
   it('parses CSV text', () => {
-    const csv = 'asset_tag,serial_number\nA1,S1\nA2,S2';
+    const csv = 'asset_tag,serial_number,notes\n"A,1",S1,"test, note"\nA2,S2,';
     const records = parseCsv(csv);
     assert.strictEqual(records.length, 2);
-    assert.strictEqual(records[0].asset_tag, 'A1');
+    assert.strictEqual(records[0].asset_tag, 'A,1');
+    assert.strictEqual(records[0].notes, 'test, note');
   });
 });

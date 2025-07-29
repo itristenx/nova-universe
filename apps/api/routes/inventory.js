@@ -7,15 +7,59 @@ import { authenticateJWT } from '../middleware/auth.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
+const allowedFields = [
+  'asset_tag',
+  'type_id',
+  'serial_number',
+  'model',
+  'vendor_id',
+  'purchase_date',
+  'warranty_expiry',
+  'assigned_to_user_id',
+  'assigned_to_org_id',
+  'assigned_to_customer_id',
+  'department',
+  'status',
+  'location_id',
+  'kiosk_id',
+  'custom_fields',
+  'notes',
+  'created_by',
+  'updated_by'
+];
 
 export function parseCsv(text) {
+  const parseLine = (line) => {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current);
+    return result.map(v => v.trim());
+  };
+
   const lines = text.trim().split(/\r?\n/);
-  const headers = lines.shift().split(',').map(h => h.trim());
+  const headers = parseLine(lines.shift());
   return lines.filter(l => l.trim()).map(line => {
-    const values = line.split(',');
+    const values = parseLine(line);
     const record = {};
     headers.forEach((h, i) => {
-      record[h] = values[i] ? values[i].trim() : null;
+      record[h] = values[i] !== undefined ? values[i] : null;
     });
     return record;
   });
@@ -48,7 +92,8 @@ router.post('/import', authenticateJWT, upload.single('file'), async (req, res) 
     const records = parseCsv(csv);
     let inserted = 0;
     for (const record of records) {
-      const fields = Object.keys(record);
+      const fields = Object.keys(record).filter(f => allowedFields.includes(f));
+      if (!fields.length) continue;
       const placeholders = fields.map((_, i) => `$${i + 1}`).join(',');
       const values = fields.map(f => record[f] || null);
       await db.query(
@@ -59,7 +104,7 @@ router.post('/import', authenticateJWT, upload.single('file'), async (req, res) 
     }
     res.json({ success: true, inserted });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Import failed', errorCode: 'INVENTORY_ERROR' });
+    res.status(400).json({ success: false, error: `Import failed: ${err.message}` });
   }
 });
 

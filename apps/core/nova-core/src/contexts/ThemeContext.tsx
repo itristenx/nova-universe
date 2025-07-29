@@ -25,10 +25,12 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [mode, setMode] = useState<ThemeMode>(() => {
+  const [mode, setMode] = useState<ThemeMode>('system');
+
+  useEffect(() => {
     const stored = localStorage.getItem('theme-mode');
-    return (stored as ThemeMode) || 'system';
-  });
+    if (stored) setMode(stored as ThemeMode);
+  }, []);
 
   const [isDark, setIsDark] = useState(false);
 

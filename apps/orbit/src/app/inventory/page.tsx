@@ -11,9 +11,16 @@ async function getAssets(token: string) {
 export default function InventoryLookupPage() {
   const [assets, setAssets] = useState<InventoryAsset[]>([]);
   const [query, setQuery] = useState("");
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const [token, setToken] = useState("");
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      setToken(localStorage.getItem("token") || "");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
     getAssets(token).then(setAssets).catch(() => setAssets([]));
   }, [token]);
 
