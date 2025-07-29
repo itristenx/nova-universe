@@ -5,7 +5,8 @@ import { authenticateJWT } from '../middleware/auth.js';
 const router = express.Router();
 
 function requireAdmin(req, res, next) {
-  if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
+  const roles = Array.isArray(req.user?.roles) ? req.user.roles : [];
+  if (!roles.includes('admin') && !roles.includes('superadmin')) {
     return res.status(403).json({ error: 'Admin role required' });
   }
   next();
