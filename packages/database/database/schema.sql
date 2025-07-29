@@ -33,7 +33,7 @@ CREATE TABLE audit_logs (
 -- XP Events Table
 CREATE TABLE xp_events (
     id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES users(id),
+    user_id TEXT REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     amount INT NOT NULL,
     reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -41,6 +41,6 @@ CREATE TABLE xp_events (
 
 -- Leaderboard Table
 CREATE TABLE leaderboard (
-    user_id TEXT PRIMARY KEY REFERENCES users(id),
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     xp_total INT NOT NULL DEFAULT 0
 );
