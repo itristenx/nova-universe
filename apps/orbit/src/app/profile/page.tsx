@@ -14,6 +14,7 @@ export default function ProfilePage() {
   });
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState(profile);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -39,10 +40,13 @@ export default function ProfilePage() {
   }
   function handleSave() {
     if (!token || !userId) return;
-    updateProfile(token, userId, form).then(() => {
-      setProfile(form);
-      setEditing(false);
-    });
+    setError(null);
+    updateProfile(token, userId, form)
+      .then(() => {
+        setProfile(form);
+        setEditing(false);
+      })
+      .catch(() => setError("Failed to update profile"));
   }
 
   return (
@@ -106,6 +110,11 @@ export default function ProfilePage() {
             <Button onClick={handleEdit}>Edit</Button>
           )}
         </div>
+        {error && (
+          <div className="text-destructive text-sm" role="alert">
+            {error}
+          </div>
+        )}
       </div>
     </main>
   );
