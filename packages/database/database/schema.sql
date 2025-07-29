@@ -9,7 +9,8 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "isDefault" BOOLEAN DEFAULT false,
     is_vip BOOLEAN DEFAULT false,
-    vip_level VARCHAR(50)
+    vip_level VARCHAR(50),
+    vip_sla_override JSON
 );
 
 -- Tickets Table
@@ -20,7 +21,9 @@ CREATE TABLE tickets (
     status VARCHAR(20) DEFAULT 'open',
     priority VARCHAR(20) DEFAULT 'medium',
     created_by INT REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    vip_priority_score INT DEFAULT 0,
+    vip_trigger_source VARCHAR(20)
 );
 
 -- Audit Logs Table

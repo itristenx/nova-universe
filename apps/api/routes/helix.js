@@ -1118,4 +1118,43 @@ router.get('/sso/saml/metadata', async (req, res) => {
 router.use('/scim/v2', scimRouter);
 router.use('/roles', rolesRouter);
 
+// Update VIP status for a user
+router.put('/users/:id/vip',
+  authenticateJWT,
+  createRateLimit(15 * 60 * 1000, 20),
+  [
+    body('isVip').isBoolean().withMessage('isVip must be boolean'),
+    body('vipLevel').optional().isIn(['gold', 'exec', 'priority']).withMessage('Invalid VIP level')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, error: 'Invalid input', details: errors.array(), errorCode: 'VALIDATION_ERROR' });
+      }
+
+      const adminRoles = req.user?.roles || [];
+      if (!adminRoles.includes('admin') && !adminRoles.includes('superadmin')) {
+        return res.status(403).json({ success: false, error: 'Admin access required', errorCode: 'ADMIN_ACCESS_REQUIRED' });
+      }
+
+      const { id } = req.params;
+      const { isVip, vipLevel } = req.body;
+      const now = new Date().toISOString();
+
+      await db.none(
+        'UPDATE users SET is_vip = $1, vip_level = $2, updated_at = $3 WHERE id = $4',
+        [isVip ? 1 : 0, vipLevel || null, now, id]
+      );
+
+      await db.createAuditLog('VIP_ASSIGN', req.user.id, { targetUserId: id, isVip, vipLevel });
+
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Error assigning VIP status:', error);
+      res.status(500).json({ success: false, error: 'Failed to assign VIP', errorCode: 'VIP_ASSIGN_ERROR' });
+    }
+  }
+);
+
 export default router;

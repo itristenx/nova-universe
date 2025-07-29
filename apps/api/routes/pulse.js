@@ -8,6 +8,7 @@ import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 import { checkQueueAccess } from '../middleware/queueAccess.js';
 import { calculateVipWeight } from '../utils/utils.js';
+import { notifyCosmoEscalation } from '../utils/cosmo.js';
 
 // Maximum XP that can be awarded in a single event
 export const MAX_XP_AMOUNT = 1000;
@@ -284,6 +285,84 @@ router.get('/dashboard',
         error: 'Failed to fetch dashboard data',
         errorCode: 'DASHBOARD_ERROR'
       });
+    }
+  }
+);
+
+// Create a ticket on behalf of a user
+router.post('/tickets',
+  authenticateJWT,
+  createRateLimit(15 * 60 * 1000, 20),
+  [
+    body('title').isLength({ min: 1, max: 255 }).withMessage('Title required'),
+    body('description').isLength({ min: 1 }).withMessage('Description required'),
+    body('priority').isIn(['low','medium','high','critical']).withMessage('Invalid priority'),
+    body('requestedById').isString().withMessage('requestedById required')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success:false, error:'Invalid input', details: errors.array(), errorCode:'VALIDATION_ERROR' });
+      }
+
+      const { title, description, priority, requestedById } = req.body;
+      const now = new Date();
+
+      db.get('SELECT is_vip, vip_level FROM users WHERE id = $1', [requestedById], (vipErr, vipRow) => {
+        if (vipErr) {
+          logger.error('Error checking VIP status:', vipErr);
+          return res.status(500).json({ success:false, error:'Failed to create ticket', errorCode:'VIP_CHECK_ERROR' });
+        }
+
+        const dueDate = new Date(now);
+        switch (priority) {
+          case 'critical':
+            dueDate.setHours(now.getHours() + 4); break;
+          case 'high':
+            dueDate.setDate(now.getDate() + 1); break;
+          case 'medium':
+            dueDate.setDate(now.getDate() + 3); break;
+          default:
+            dueDate.setDate(now.getDate() + 7);
+        }
+
+        if (vipRow?.is_vip) {
+          switch (vipRow.vip_level) {
+            case 'exec':
+              dueDate.setHours(now.getHours() + 2); break;
+            case 'gold':
+              dueDate.setHours(now.getHours() + 4); break;
+            default:
+              dueDate.setHours(now.getHours() + 8);
+          }
+        }
+
+        const vipWeight = calculateVipWeight(vipRow?.is_vip, vipRow?.vip_level);
+
+        const newId = require('uuid').v4();
+        const ticketId = `TKT-${Date.now().toString().slice(-5)}`;
+
+        db.run(
+          'INSERT INTO tickets (id, ticket_id, title, description, priority, status, requested_by_id, assigned_to_id, due_date, created_at, updated_at, vip_priority_score, vip_trigger_source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
+          [newId, ticketId, title, description, priority, 'open', requestedById, req.user.id, dueDate.toISOString(), now.toISOString(), now.toISOString(), vipWeight, 'api'],
+          async (err) => {
+            if (err) {
+              logger.error('Error creating ticket:', err);
+              return res.status(500).json({ success:false, error:'Failed to create ticket', errorCode:'TICKET_CREATE_ERROR' });
+            }
+
+            if (vipRow?.is_vip && dueDate.getTime() - now.getTime() < 60*60*1000) {
+              await notifyCosmoEscalation(ticketId, 'sla_risk');
+            }
+
+            res.status(201).json({ success:true, ticketId, vipWeight });
+          }
+        );
+      });
+    } catch (error) {
+      logger.error('Error creating ticket:', error);
+      res.status(500).json({ success:false, error:'Failed to create ticket', errorCode:'TICKET_CREATE_ERROR' });
     }
   }
 );

@@ -2,10 +2,9 @@ export default {
   verbose: true,
   testEnvironment: 'node',
   transform: {
-    '^.+\\.ts$': ['ts-jest', { useESM: true }],
     '^.+\\.js$': 'babel-jest'
   },
-  extensionsToTreatAsEsm: ['.ts', '.js'],
+  extensionsToTreatAsEsm: [],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   }
