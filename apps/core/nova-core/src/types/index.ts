@@ -107,7 +107,7 @@ export interface Config {
   statusOpenMsg: string;
   statusClosedMsg: string;
   statusErrorMsg: string;
-  rateLimitWindow: string;
+  rateLimitWindow: number;
   rateLimitMax: number;
   systems?: string;
   urgencies?: string;
