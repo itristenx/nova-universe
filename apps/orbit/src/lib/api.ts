@@ -116,6 +116,9 @@ export async function searchKnowledge(token: string, query: string) {
     headers: { Authorization: `Bearer ${token}` },
     credentials: 'include'
   });
+  if (!res.ok) {
+    throw new Error(`Failed to search knowledge: ${res.status} ${res.statusText}`);
+  }
   return res.json();
 }
 
