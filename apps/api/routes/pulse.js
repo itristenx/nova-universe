@@ -886,7 +886,7 @@ router.post('/xp',
     try {
       const { amount = 0, reason } = req.body
       const parsedAmount = Number(amount)
-      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || parsedAmount > 10000) {
+      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || parsedAmount > MAX_XP_AMOUNT) {
         return res.status(400).json({ success: false, error: 'Invalid amount', errorCode: 'INVALID_AMOUNT' })
       }
       await db.run('INSERT INTO xp_events (user_id, amount, reason, created_at) VALUES ($1, $2, $3, $4)',
