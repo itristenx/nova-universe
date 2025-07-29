@@ -3,6 +3,12 @@ export function checkQueueAccess(queueGetter) {
     const queue = typeof queueGetter === 'function' ? queueGetter(req) : queueGetter
     const sanitizedQueue = typeof queue === 'string' ? queue.trim() : ''
 
+    if (sanitizedQueue === '') {
+      return res.status(400).json({
+        error: 'Invalid queue parameter',
+        errorCode: 'INVALID_QUEUE'
+      })
+    }
     if (!/^[A-Za-z0-9_-]+$/.test(sanitizedQueue)) {
       return res.status(400).json({
         error: 'Invalid queue parameter',
