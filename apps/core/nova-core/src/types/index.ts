@@ -200,6 +200,23 @@ export interface ActivityLog {
   timestamp: string;
 }
 
+export interface KnowledgeArticle {
+  id: string;
+  kbId: string;
+  title: string;
+  content: string;
+  visibility: string;
+  tags: string[];
+  systemContext?: string;
+  verifiedSolution: boolean;
+  helpfulCount: number;
+  unhelpfulCount: number;
+  viewCount: number;
+  createdBy: { id: string; name: string };
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SecuritySettings {
   passwordMinLength: number;
   sessionTimeout: number;

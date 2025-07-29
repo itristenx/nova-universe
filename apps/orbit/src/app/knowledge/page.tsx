@@ -1,33 +1,33 @@
 "use client";
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
+import { searchKB } from "../../lib/api";
 
-// TODO: Replace with real KB search API
 export default function KnowledgePage() {
   const [query, setQuery] = useState("");
-interface KnowledgeResult {
-  id: string;
-  title: string;
-  summary: string;
-  url: string;
-}
-const [results, setResults] = useState<KnowledgeResult[]>([]);
+  interface KnowledgeResult {
+    id: string;
+    title: string;
+    summary: string;
+    kbId: string;
+  }
+  const [results, setResults] = useState<KnowledgeResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "demo-token" : "";
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setResults([]);
-    // TODO: Call real KB search API
-    setTimeout(() => {
-      setResults([
-        { id: "1", title: "How to reset your password", summary: "Go to profile > security...", url: "#" },
-        { id: "2", title: "VPN setup guide", summary: "Download the VPN client...", url: "#" },
-      ]);
-      setLoading(false);
-    }, 800);
+    const res = await searchKB(token, query);
+    if (res.success) {
+      setResults(res.results);
+    } else {
+      setError(res.error || "Search failed");
+    }
+    setLoading(false);
   }
 
   return (
@@ -52,8 +52,10 @@ const [results, setResults] = useState<KnowledgeResult[]>([]);
         <ul className="space-y-4">
           {results.map(r => (
             <li key={r.id} className="p-4 border rounded bg-muted">
-              <div className="font-semibold mb-1">{r.title}</div>
-              <div className="text-sm text-muted-foreground">{r.summary}</div>
+              <a href={`/knowledge/${r.kbId}`} className="block">
+                <div className="font-semibold mb-1">{r.title}</div>
+                <div className="text-sm text-muted-foreground">{r.summary}</div>
+              </a>
             </li>
           ))}
         </ul>

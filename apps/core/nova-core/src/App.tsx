@@ -23,6 +23,7 @@ const NotificationsPage = React.lazy(() => import('@/pages/NotificationsPage').t
 const SettingsPage = React.lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const IntegrationsPage = React.lazy(() => import('@/pages/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
 const KioskActivationPage = React.lazy(() => import('@/pages/KioskActivationPage').then(m => ({ default: m.KioskActivationPage })));
+const KnowledgeBasePage = React.lazy(() => import('@/pages/KnowledgeBasePage').then(m => ({ default: m.KnowledgeBasePage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -169,6 +170,14 @@ const AppRoutes: React.FC = () => {
           element={
             <React.Suspense fallback={<div>Loading...</div>}>
               <IntegrationsPage />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path="knowledge"
+          element={
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <KnowledgeBasePage />
             </React.Suspense>
           }
         />

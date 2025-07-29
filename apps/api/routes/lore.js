@@ -427,6 +427,11 @@ router.post('/articles',
       } = req.body;
 
       const userId = req.user.id;
+      const userRoles = req.user.roles || [];
+      const canCreate = userRoles.some(r => ['technician','hr_user','ops_user','tech_lead','admin','superadmin'].includes(r));
+      if (!canCreate) {
+        return res.status(403).json({ success:false, error:'Insufficient permissions', errorCode:'INSUFFICIENT_PERMISSIONS' });
+      }
 
       // Generate KB ID
       const row = await db.one(`
@@ -501,6 +506,100 @@ router.post('/articles',
         error: 'Failed to create article',
         errorCode: 'ARTICLE_CREATE_ERROR'
       });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v1/lore/articles/{kbId}:
+ *   put:
+ *     summary: Update a knowledge base article
+ *     description: Edit an existing knowledge base article
+ *     tags: [Lore - Knowledge Base]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: kbId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Knowledge base ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               visibility:
+ *                 type: string
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               systemContext:
+ *                 type: string
+ *               verifiedSolution:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Article updated
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Article not found
+ */
+router.put('/articles/:kbId',
+  authenticateJWT,
+  createRateLimit(15 * 60 * 1000, 20),
+  async (req, res) => {
+    try {
+      const { kbId } = req.params;
+      const userRoles = req.user.roles || [];
+      const canEditAll = userRoles.some(r => ['admin', 'superadmin', 'tech_lead'].includes(r));
+      const canEditOwn = userRoles.some(r => ['technician', 'hr_user', 'ops_user'].includes(r));
+
+      const article = await db.oneOrNone('SELECT * FROM kb_articles WHERE kb_id = $1 AND deleted_at IS NULL', [kbId]);
+
+      if (!article) {
+        return res.status(404).json({ success: false, error: 'Article not found', errorCode: 'ARTICLE_NOT_FOUND' });
+      }
+
+      if (!canEditAll && !(canEditOwn && article.created_by_id === req.user.id)) {
+        return res.status(403).json({ success: false, error: 'Insufficient permissions', errorCode: 'INSUFFICIENT_PERMISSIONS' });
+      }
+
+      const {
+        title = article.title,
+        content = article.body_markdown,
+        visibility = article.visibility,
+        tags = article.tags ? JSON.parse(article.tags) : [],
+        systemContext = article.system_context,
+        verifiedSolution = article.verified_solution
+      } = req.body;
+
+      const now = new Date().toISOString();
+
+      await db.none(
+        `UPDATE kb_articles SET title=$1, body_markdown=$2, visibility=$3, tags=$4, system_context=$5, verified_solution=$6, last_modified_by_id=$7, version=version+1, updated_at=$8 WHERE id=$9`,
+        [title, content, visibility, JSON.stringify(tags), systemContext, verifiedSolution ? 1 : 0, req.user.id, now, article.id]
+      );
+
+      await db.none(
+        'INSERT INTO kb_article_versions (id, article_id, version, body_markdown, modified_by_id, created_at) VALUES ($1,$2,$3,$4,$5,$6)',
+        [require('uuid').v4(), article.id, article.version + 1, content, req.user.id, now]
+      );
+
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Error updating article:', error);
+      res.status(500).json({ success: false, error: 'Failed to update article', errorCode: 'ARTICLE_UPDATE_ERROR' });
     }
   }
 );

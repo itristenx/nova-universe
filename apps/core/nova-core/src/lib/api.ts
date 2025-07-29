@@ -17,6 +17,7 @@ import type {
   AuthToken,
   DashboardStats,
   ActivityLog,
+  KnowledgeArticle,
 } from '@/types';
 import {
   mockUsers,
@@ -1171,6 +1172,27 @@ class ApiClient {
     }
 
     const response = await this.client.post<ApiResponse>('/api/smtp/test', { email: testEmail });
+    return response.data;
+  }
+
+  // Knowledge Base
+  async getKBArticles(): Promise<KnowledgeArticle[]> {
+    const response = await this.client.get<KnowledgeArticle[]>('/api/v1/lore/articles');
+    return response.data;
+  }
+
+  async getKBArticle(kbId: string): Promise<KnowledgeArticle> {
+    const response = await this.client.get<KnowledgeArticle>(`/api/v1/lore/articles/${kbId}`);
+    return response.data;
+  }
+
+  async createKBArticle(article: Partial<KnowledgeArticle>): Promise<KnowledgeArticle> {
+    const response = await this.client.post<KnowledgeArticle>('/api/v1/lore/articles', article);
+    return response.data;
+  }
+
+  async updateKBArticle(kbId: string, article: Partial<KnowledgeArticle>): Promise<ApiResponse> {
+    const response = await this.client.put<ApiResponse>(`/api/v1/lore/articles/${kbId}`, article);
     return response.data;
   }
 }
