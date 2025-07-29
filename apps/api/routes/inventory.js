@@ -74,7 +74,24 @@ router.post('/', authenticateJWT, async (req, res) => {
 router.put('/:id', authenticateJWT, async (req, res) => {
   try {
     const fields = [
-      'asset_tag','type_id','serial_number','model','vendor_id','purchase_date','warranty_expiry','assigned_to_user_id','assigned_to_org_id','assigned_to_customer_id','department','status','location_id','kiosk_id','custom_fields','notes','updated_by'];
+      'asset_tag',
+      'type_id',
+      'serial_number',
+      'model',
+      'vendor_id',
+      'purchase_date',
+      'warranty_expiry',
+      'assigned_to_user_id',
+      'assigned_to_org_id',
+      'assigned_to_customer_id',
+      'department',
+      'status',
+      'location_id',
+      'kiosk_id',
+      'custom_fields',
+      'notes',
+      'updated_by'
+    ];
     const set = fields.map((f,i)=> `${f} = $${i+1}`).join(',');
     const values = fields.map(f=> req.body[f] ?? null);
     values.push(req.params.id);
