@@ -1,7 +1,13 @@
 export function checkQueueAccess(queueGetter) {
   return (req, res, next) => {
     const queue = typeof queueGetter === 'function' ? queueGetter(req) : queueGetter
-    const sanitizedQueue = typeof queue === 'string' ? queue.trim() : ''
+    if (typeof queue !== 'string') {
+      return res.status(400).json({
+        error: 'Queue parameter must be a string',
+        errorCode: 'INVALID_QUEUE_TYPE'
+      })
+    }
+    const sanitizedQueue = queue.trim()
 
     if (sanitizedQueue === '') {
       return res.status(400).json({
