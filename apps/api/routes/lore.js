@@ -586,14 +586,14 @@ router.put('/articles/:kbId',
 
       const now = new Date().toISOString();
 
-      await db.none(
-        `UPDATE kb_articles SET title=$1, body_markdown=$2, visibility=$3, tags=$4, system_context=$5, verified_solution=$6, last_modified_by_id=$7, version=version+1, updated_at=$8 WHERE id=$9`,
+      const updateRow = await db.one(
+        `UPDATE kb_articles SET title=$1, body_markdown=$2, visibility=$3, tags=$4, system_context=$5, verified_solution=$6, last_modified_by_id=$7, version=version+1, updated_at=$8 WHERE id=$9 RETURNING version`,
         [title, content, visibility, JSON.stringify(tags), systemContext, verifiedSolution ? 1 : 0, req.user.id, now, article.id]
       );
 
       await db.none(
         'INSERT INTO kb_article_versions (id, article_id, version, body_markdown, modified_by_id, created_at) VALUES ($1,$2,$3,$4,$5,$6)',
-        [require('uuid').v4(), article.id, article.version + 1, content, req.user.id, now]
+        [require('uuid').v4(), article.id, updateRow.version, content, req.user.id, now]
       );
 
       res.json({ success: true });

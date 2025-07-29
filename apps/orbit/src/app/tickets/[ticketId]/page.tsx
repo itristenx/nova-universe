@@ -42,7 +42,10 @@ export default function TicketDetailPage() {
           setSuggestions(res.analysis.knowledgeBaseRecommendations);
         }
       })
-      .catch(() => {});
+      .catch(err => {
+        console.error('Error analyzing ticket:', err);
+        setSuggestions([]);
+      });
   }, [ticketId, token]);
 
   if (loading) return <div className="p-8 text-center">Loading ticket...</div>;

@@ -21,13 +21,19 @@ export default function KnowledgePage() {
     setLoading(true);
     setError(null);
     setResults([]);
-    const res = await searchKB(token, query);
-    if (res.success) {
-      setResults(res.results);
-    } else {
-      setError(res.error || "Search failed");
+    try {
+      const res = await searchKB(token, query);
+      if (res.success) {
+        setResults(res.results);
+      } else {
+        setError(res.error || "Search failed");
+      }
+    } catch (err) {
+      console.error('KB search failed:', err);
+      setError('Search failed');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
