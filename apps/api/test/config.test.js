@@ -16,6 +16,8 @@ const defaults = {
   faviconUrl: '/vite.svg',
   welcomeMessage: 'Welcome to the Help Desk',
   helpMessage: 'Need to report an issue?',
+  rateLimitWindow: '900000',
+  rateLimitMax: '100'
 };
 const adminHash = bcrypt.hashSync('admin', 12);
 
@@ -46,12 +48,13 @@ describe('Config endpoints', function () {
   });
 
   it('PUT /api/config updates and persists values', async function () {
-    const updates = { logoUrl: 'new.png', welcomeMessage: 'Hi' };
+    const updates = { logoUrl: 'new.png', welcomeMessage: 'Hi', rateLimitMax: '50' };
     await request(app).put('/api/v1/config').send(updates).expect(200);
 
     const res = await request(app).get('/api/v1/config').expect(200);
     assert.strictEqual(res.body.logoUrl, 'new.png');
     assert.strictEqual(res.body.welcomeMessage, 'Hi');
+    assert.strictEqual(res.body.rateLimitMax, '50');
   });
 
   it('POST /api/verify-password validates stored hash', async function () {

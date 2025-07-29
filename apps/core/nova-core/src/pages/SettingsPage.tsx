@@ -452,7 +452,7 @@ export const SettingsPage: React.FC = () => {
                         helperText="Upload a favicon for browser tabs (ICO, PNG recommended, 16x16 or 32x32 pixels)"
                       />
                       
-                      {config?.faviconUrl && (
+                    {config?.faviconUrl && (
                         <div className="mt-4">
                           <label className="block text-sm font-medium text-gray-700 mb-2">Current Favicon</label>
                           <div className="flex items-center space-x-4">
@@ -473,8 +473,28 @@ export const SettingsPage: React.FC = () => {
                             />
                           </div>
                         </div>
-                      )}
-                    </div>
+                    )}
+                  </div>
+
+                  {/* Welcome and Help Messages */}
+                  <div className="border-t border-gray-200 pt-6 grid grid-cols-1 gap-6">
+                    <Input
+                      label="Welcome Message"
+                      value={config?.welcomeMessage || ''}
+                      onChange={(e) =>
+                        setConfig((prev) => (prev ? { ...prev, welcomeMessage: e.target.value } : null))
+                      }
+                      helperText="Message shown at the top of the kiosk"
+                    />
+                    <Input
+                      label="Help Message"
+                      value={config?.helpMessage || ''}
+                      onChange={(e) =>
+                        setConfig((prev) => (prev ? { ...prev, helpMessage: e.target.value } : null))
+                      }
+                      helperText="Short instruction for users"
+                    />
+                  </div>
 
                     {/* Theme Colors */}
                     <div className="border-t border-gray-200 pt-6">
@@ -682,10 +702,34 @@ export const SettingsPage: React.FC = () => {
                       isLoading={restarting}
                       className="w-auto"
                     >
-                      {restarting ? 'Restarting...' : 'Restart Server'}
-                    </Button>
-                  </Card>
-                </div>
+                    {restarting ? 'Restarting...' : 'Restart Server'}
+                  </Button>
+                </Card>
+
+                <Card className="p-6">
+                  <h4 className="text-md font-medium text-gray-900 mb-4">Rate Limiting</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      label="Window (ms)"
+                      type="number"
+                      value={config?.rateLimitWindow || ''}
+                      onChange={(e) =>
+                        setConfig((prev) => (prev ? { ...prev, rateLimitWindow: e.target.value } : null))
+                      }
+                      helperText="Time window for rate limits"
+                    />
+                    <Input
+                      label="Max Requests"
+                      type="number"
+                      value={config?.rateLimitMax || ''}
+                      onChange={(e) =>
+                        setConfig((prev) => (prev ? { ...prev, rateLimitMax: e.target.value } : null))
+                      }
+                      helperText="Requests allowed per window"
+                    />
+                  </div>
+                </Card>
+              </div>
               )}
             </div>
           </Card>

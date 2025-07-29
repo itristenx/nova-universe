@@ -143,6 +143,8 @@ export const mockConfig: Config = {
   statusOpenMsg: 'IT Support is available',
   statusClosedMsg: 'IT Support is currently closed',
   statusErrorMsg: 'There is a system error, please try again later',
+  rateLimitWindow: '900000',
+  rateLimitMax: '100',
   systems: 'Desktop,Laptop,Mobile,Network,Printer',
   urgencies: 'Low,Medium,High,Critical',
   directoryEnabled: true,
