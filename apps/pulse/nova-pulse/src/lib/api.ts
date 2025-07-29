@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Ticket, DashboardData, TimesheetEntry, TicketUpdate } from '../types'
+import type { Ticket, DashboardData, TimesheetEntry, TicketUpdate, Alert, Asset, XpEvent } from '../types'
 
 const client = axios.create({ baseURL: '/api/v1/pulse' })
 
@@ -21,4 +21,19 @@ export const updateTicket = async (ticketId: string, updates: TicketUpdate) => {
 export const getTimesheet = async (params?: Record<string, string>) => {
   const { data } = await client.get<{ success: boolean; timesheet: TimesheetEntry[] }>('/timesheet', { params })
   return data.timesheet
+}
+
+export const getAlerts = async (params?: Record<string, string>) => {
+  const { data } = await client.get<{ success: boolean; alerts: Alert[] }>('/alerts', { params })
+  return data.alerts
+}
+
+export const getInventory = async () => {
+  const { data } = await client.get<{ success: boolean; assets: Asset[] }>('/inventory')
+  return data.assets
+}
+
+export const postXpEvent = async (event: Partial<XpEvent>) => {
+  const { data } = await client.post('/xp', event)
+  return data
 }

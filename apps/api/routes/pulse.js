@@ -6,6 +6,7 @@ import db from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
+import { checkQueueAccess } from '../middleware/queueAccess.js';
 
 const router = express.Router();
 
@@ -345,6 +346,7 @@ router.get('/dashboard',
  */
 router.get('/tickets',
   authenticateJWT,
+  checkQueueAccess(req => req.query.queue),
   createRateLimit(15 * 60 * 1000, 100), // 100 requests per 15 minutes
   async (req, res) => {
     try {
@@ -406,7 +408,7 @@ router.get('/tickets',
           });
         }
 
-        const tickets = (rows || []).map(row => ({
+        let tickets = (rows || []).map(row => ({
           id: row.id,
           ticketId: row.ticket_id,
           title: row.title,
@@ -429,8 +431,13 @@ router.get('/tickets',
           },
           createdAt: row.created_at,
           updatedAt: row.updated_at,
-          dueDate: row.due_date
+          dueDate: row.due_date,
+          slaRemaining: row.due_date ?
+            Math.round((new Date(row.due_date) - Date.now()) / 60000) : null,
+          vipWeight: row.vip_weight || 0
         }));
+
+        tickets = tickets.sort((a, b) => b.vipWeight - a.vipWeight);
 
         const total = rows.length > 0 ? rows[0].total_count : 0;
         const hasMore = parseInt(offset) + parseInt(limit) < total;
@@ -826,6 +833,64 @@ router.get('/timesheet',
         error: 'Failed to fetch timesheet',
         errorCode: 'TIMESHEET_ERROR'
       });
+    }
+  }
+);
+
+// Alerts feed - proxies Nova Core alerts
+router.get('/alerts',
+  authenticateJWT,
+  [
+    check('queue')
+      .isString().withMessage('Queue must be a string')
+      .trim()
+      .escape()
+      .notEmpty().withMessage('Queue parameter is required'),
+  ],
+  checkQueueAccess(req => req.query.queue),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    try {
+      const sanitizedQueue = req.query.queue;
+      const alerts = await db.findDocuments('alerts', { queue: sanitizedQueue });
+      res.json({ success: true, alerts });
+    } catch (err) {
+      logger.error('Error fetching alerts:', err);
+      res.status(500).json({ success: false, error: 'Failed to fetch alerts', errorCode: 'ALERTS_ERROR' });
+    }
+  }
+);
+
+// Inventory lookup
+router.get('/inventory',
+  authenticateJWT,
+  checkQueueAccess(req => req.query.queue),
+  async (req, res) => {
+    try {
+      const assets = await db.findDocuments('assets', {})
+      res.json({ success: true, assets })
+    } catch (err) {
+      logger.error('Error fetching inventory:', err)
+      res.status(500).json({ success: false, error: 'Failed to fetch inventory', errorCode: 'INVENTORY_ERROR' })
+    }
+  }
+);
+
+// XP event logging
+router.post('/xp',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { amount = 0, reason } = req.body
+      await db.run('INSERT INTO xp_events (user_id, amount, reason, created_at) VALUES ($1, $2, $3, $4)',
+        [req.user.id, amount, reason || null, new Date().toISOString()])
+      res.json({ success: true })
+    } catch (err) {
+      logger.error('Error logging XP event:', err)
+      res.status(500).json({ success: false, error: 'Failed to record XP', errorCode: 'XP_ERROR' })
     }
   }
 );
