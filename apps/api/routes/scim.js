@@ -97,7 +97,7 @@ router.get('/Users', authenticateSCIM, async (req, res) => {
     const { filter, startIndex = 1, count = 50 } = req.query;
     
     let query = `
-      SELECT u.*, 
+      SELECT u.*, u.is_vip, u.vip_level,
              string_agg(r.name, ',') as roles
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
@@ -201,7 +201,7 @@ router.get('/Users/:id', authenticateSCIM, async (req, res) => {
     const { id } = req.params;
 
     const query = `
-      SELECT u.*, 
+      SELECT u.*, u.is_vip, u.vip_level,
              string_agg(r.name, ',') as roles
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
@@ -301,6 +301,9 @@ router.post('/Users',
       }
 
       const { userName, name, emails, active = true } = req.body;
+      const vipExt = req.body['urn:nova:vip:1.0:User'] || {};
+      const isVip = !!vipExt.isVip;
+      const vipLevel = vipExt.vipLevel || null;
       const primaryEmail = emails?.find(e => e.primary)?.value || userName;
       const displayName = name ? `${name.givenName || ''} ${name.familyName || ''}`.trim() : userName;
       const now = new Date().toISOString();
@@ -321,9 +324,10 @@ router.post('/Users',
         // Create new user
         const insertQuery = `
           INSERT INTO users (
-            id, email, name, auth_method, active, 
+            id, email, name, auth_method, active,
+            is_vip, vip_level,
             created_at, updated_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         `;
         await db.none(insertQuery, [
           userId,
@@ -331,6 +335,8 @@ router.post('/Users',
           displayName,
           'scim',
           active ? 1 : 0,
+          isVip ? 1 : 0,
+          vipLevel,
           now,
           now
         ]);
@@ -386,6 +392,9 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
   try {
     const { id } = req.params;
     const { userName, name, emails, active } = req.body;
+    const vipExt = req.body['urn:nova:vip:1.0:User'] || {};
+    const isVip = vipExt.isVip;
+    const vipLevel = vipExt.vipLevel;
     const now = new Date().toISOString();
 
     // Check if user exists
@@ -414,6 +423,14 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
     if (typeof active === 'boolean') {
       updates.push(`active = $${paramIndex++}`);
       params.push(active ? 1 : 0);
+    }
+    if (typeof isVip === 'boolean') {
+      updates.push(`is_vip = $${paramIndex++}`);
+      params.push(isVip ? 1 : 0);
+    }
+    if (vipLevel !== undefined) {
+      updates.push(`vip_level = $${paramIndex++}`);
+      params.push(vipLevel);
     }
     updates.push(`updated_at = $${paramIndex++}`);
     params.push(now);
@@ -500,7 +517,7 @@ function formatUserForSCIM(user) {
   const familyName = nameParts.slice(1).join(' ') || '';
 
   return {
-    schemas: ['urn:ietf:params:scim:schemas:core:2.0:User'],
+    schemas: ['urn:ietf:params:scim:schemas:core:2.0:User', 'urn:nova:vip:1.0:User'],
     id: user.id,
     userName: user.email,
     name: {
@@ -513,6 +530,10 @@ function formatUserForSCIM(user) {
       primary: true
     }],
     active: user.active === 1,
+    'urn:nova:vip:1.0:User': {
+      isVip: !!user.is_vip,
+      vipLevel: user.vip_level || null
+    },
     meta: {
       resourceType: 'User',
       created: user.created_at,

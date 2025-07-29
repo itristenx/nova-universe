@@ -278,8 +278,14 @@ router.post('/tickets',
 
       const userId = req.user.id;
 
-      // Generate ticket ID
-      db.get('SELECT MAX(CAST(SUBSTR(ticket_id, 5) AS INTEGER)) as max_id FROM tickets', [], (err, row) => {
+      db.get('SELECT is_vip, vip_level FROM users WHERE id = $1', [userId], (vipErr, vipRow) => {
+        if (vipErr) {
+          logger.error('Error checking VIP status:', vipErr);
+          return res.status(500).json({ success: false, error: 'Failed to create ticket', errorCode: 'VIP_CHECK_ERROR' });
+        }
+
+        // Generate ticket ID
+        db.get('SELECT MAX(CAST(SUBSTR(ticket_id, 5) AS INTEGER)) as max_id FROM tickets', [], (err, row) => {
         if (err) {
           logger.error('Error generating ticket ID:', err);
           return res.status(500).json({
@@ -309,6 +315,21 @@ router.post('/tickets',
             dueDate.setDate(now.getDate() + 7); // 7 days
             break;
         }
+
+        if (vipRow?.is_vip) {
+          switch (vipRow.vip_level) {
+            case 'exec':
+              dueDate.setHours(now.getHours() + 2);
+              break;
+            case 'gold':
+              dueDate.setHours(now.getHours() + 4);
+              break;
+            default:
+              dueDate.setHours(now.getHours() + 8);
+          }
+        }
+
+        const vipWeight = vipRow?.is_vip ? (vipRow.vip_level === 'exec' ? 3 : vipRow.vip_level === 'gold' ? 2 : 1) : 0;
 
         // Insert new ticket
         const insertQuery = `
@@ -395,7 +416,8 @@ router.post('/tickets',
               assignedTo: null,
               createdAt: now_iso,
               updatedAt: now_iso,
-              estimatedResolution: dueDate.toISOString()
+              estimatedResolution: dueDate.toISOString(),
+              vipWeight
             };
 
             res.status(201).json({
@@ -408,9 +430,10 @@ router.post('/tickets',
             res.status(500).json({
               success: false,
               error: 'Failed to create ticket',
-              errorCode: 'TICKET_CREATE_ERROR'
-            });
-          });
+          errorCode: 'TICKET_CREATE_ERROR'
+        });
+      });
+    });
       });
     } catch (error) {
       logger.error('Error creating ticket:', error);

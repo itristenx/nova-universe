@@ -7,7 +7,9 @@ CREATE TABLE users (
     passwordHash VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "isDefault" BOOLEAN DEFAULT false
+    "isDefault" BOOLEAN DEFAULT false,
+    is_vip BOOLEAN DEFAULT false,
+    vip_level VARCHAR(50)
 );
 
 -- Tickets Table
