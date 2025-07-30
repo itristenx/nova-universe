@@ -14,8 +14,8 @@
   "dependencies": {
     "@headlessui/react": "^2.0.4",
     "@heroicons/react": "^2.1.5",
-    "@nova-universe/theme": "file:../packages/theme",
-    "@nova-universe/ui": "file:../packages/ui",
+    "@nova-universe/theme": "file:../../../packages/theme",
+    "@nova-universe/ui": "file:../../../packages/ui",
     "@tanstack/react-query": "^5.83.0",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",

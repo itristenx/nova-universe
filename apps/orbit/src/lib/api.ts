@@ -149,3 +149,75 @@ export async function sendCosmoMessage(token: string, message: string) {
   }
   return res.json();
 }
+
+export async function getKnowledgeArticle(token: string, slug: string) {
+  const res = await fetch(`/api/v1/lore/articles/${slug}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
+  });
+  if (!res.ok) throw new Error(`Failed to fetch article: ${res.status}`);
+  return res.json();
+}
+
+export async function getKnowledgeArticles(token: string, params: { search?: string } = {}) {
+  const url = new URL('/api/lore/articles', window.location.origin);
+  if (params.search) url.searchParams.set('search', params.search);
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return await res.json();
+}
+
+export async function getKnowledgeVersions(token: string, articleId: number) {
+  const res = await fetch(`/api/v1/lore/articles/${articleId}/versions`, {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
+  });
+  if (!res.ok) throw new Error(`Failed to fetch versions: ${res.status}`);
+  return res.json();
+}
+
+export async function getKnowledgeComments(token: string, articleId: number) {
+  const res = await fetch(`/api/v1/lore/articles/${articleId}/comments`, {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
+  });
+  if (!res.ok) throw new Error(`Failed to fetch comments: ${res.status}`);
+  return res.json();
+}
+
+export async function createKnowledgeArticle(token: string, data: { title: string; content: string; tags?: string[] }) {
+  const res = await fetch(`/api/lore/articles`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return await res.json();
+}
+
+export async function createKnowledgeVersion(token: string, slug: string, data: { content: string; tags?: string[] }) {
+  const res = await fetch(`/api/lore/articles/${slug}/versions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return await res.json();
+}
+
+export async function deleteKnowledgeArticle(token: string, slug: string) {
+  const res = await fetch(`/api/lore/articles/${slug}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return await res.json();
+}

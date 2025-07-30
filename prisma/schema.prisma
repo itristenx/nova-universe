@@ -36,6 +36,11 @@ model User {
   support_tickets_support_tickets_userIdTousers     SupportTicket[] @relation("support_tickets_userIdTousers")
   roles                 UserRole[]
   scimMappings          ScimMapping[]
+  kbArticlesAuthored         KbArticle[]         @relation("UserAuthoredArticles")
+  kbArticleVersionsAuthored  KbArticleVersion[]  @relation("UserAuthoredVersions")
+  kbArticleComments          KbArticleComment[]
+  xpEvents              XpEvent[]
+  leaderboard            Leaderboard?
 
   @@map("users")
 }
@@ -234,13 +239,56 @@ model AdminPin {
   @@map("admin_pins")
 }
 
-model KnowledgeBaseArticle {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
-  @@map("knowledge_base_articles")
+model KbArticle {
+  id          Int       @id @default(autoincrement())
+  slug        String    @unique
+  title       String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  authorId    String?   @map("author_id")
+  author      User?     @relation("UserAuthoredArticles", fields: [authorId], references: [id])
+  versions    KbArticleVersion[]
+  comments    KbArticleComment[]
+  currentVersionId Int? @map("current_version_id")
+  currentVersion    KbArticleVersion? @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  isPublished Boolean @default(false) @map("is_published")
+  tags        String[]
+  // Add tenantId if multi-tenant
+  // tenantId    String?   @map("tenant_id")
+
+  @@map("kb_articles")
+}
+
+model KbArticleVersion {
+  id          Int       @id @default(autoincrement())
+  articleId   Int       @map("article_id")
+  article     KbArticle @relation(fields: [articleId], references: [id])
+  content     String
+  summary     String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  authorId    String?   @map("author_id")
+  author      User?     @relation("UserAuthoredVersions", fields: [authorId], references: [id])
+  version     Int       @default(1)
+  isApproved  Boolean   @default(false) @map("is_approved")
+  currentForArticle KbArticle[] @relation("CurrentVersion")
+
+  @@unique([articleId, version])
+  @@map("kb_article_versions")
+}
+
+model KbArticleComment {
+  id          Int       @id @default(autoincrement())
+  articleId   Int       @map("article_id")
+  article     KbArticle @relation(fields: [articleId], references: [id])
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+  content     String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  isDeleted   Boolean   @default(false) @map("is_deleted")
+
+  @@map("kb_article_comments")
 }
 
 model SupportTicket {

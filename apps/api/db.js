@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+import { PrismaClient } from '@prisma/client';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -293,6 +294,7 @@ class DatabaseWrapper {
 
 // Create and export the database wrapper
 const dbWrapper = new DatabaseWrapper();
+const prisma = new PrismaClient();
 
 // Initialize the database
 initializeDatabase().catch(error => {
@@ -300,6 +302,7 @@ initializeDatabase().catch(error => {
 });
 
 export default dbWrapper;
+export { prisma };
 
 // Gracefully close all database connections
 async function closeDatabase() {
