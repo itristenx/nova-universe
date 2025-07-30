@@ -76,7 +76,12 @@ export const LoginPage: React.FC = () => {
     };
 
     checkSSOAndToken();
-    api.getOrganizationBranding().then(setBranding).catch(() => {});
+    api.getOrganizationBranding()
+      .then(setBranding)
+      .catch((error) => {
+        console.error('Failed to fetch organization branding:', error);
+        setBranding({ logo: null, themeColor: '#000000' }); // Fallback branding
+      });
   }, [login, navigate, addToast]);
 
   const handlePasskeyLogin = async () => {
