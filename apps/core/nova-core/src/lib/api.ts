@@ -529,7 +529,7 @@ class ApiClient {
   // Catalog Items
   async getCatalogItems(): Promise<RequestCatalogItem[]> {
     const response = await this.client.get<RequestCatalogItem[]>('/api/v1/orbit/catalog');
-    return response.data.items;
+    return response.data;
   }
 
   async createCatalogItem(data: Omit<RequestCatalogItem, 'id'>): Promise<RequestCatalogItem> {
