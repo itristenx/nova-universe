@@ -1317,3 +1317,19 @@ app.use((err, req, res, next) => {
     : { error: err.message || 'Internal Server Error', stack: err.stack };
   res.status(err.status || 500).json(errorResponse);
 });
+
+// --- Kiosks Router ---
+const kiosksRouter = express.Router();
+
+// Minimal GET endpoint for kiosks
+kiosksRouter.get('/', async (req, res) => {
+  try {
+    const { rows: kiosks } = await db.query("SELECT * FROM kiosks");
+    res.json(kiosks);
+  } catch (err) {
+    res.status(500).json({ error: "DB error" });
+  }
+});
+// --- END Kiosks Router ---
+
+// --- END: Move all direct /api/* endpoint definitions to v1Router ---

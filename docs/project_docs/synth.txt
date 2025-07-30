@@ -1,0 +1,314 @@
+Here’s a complete breakdown of the Nova Synth API layer and Cosmo, covering how Synth works within the Nova Universe, its architecture, endpoints, AI behaviors, and how Cosmo (the user-facing assistant) integrates with it.
+
+⸻
+
+Nova Synth API Layer & Cosmo Specification
+
+1. Overview
+
+Nova Synth is the AI orchestration engine for the Nova Universe. It provides:
+	•	AI API layer for all modules (Pulse, Orbit, Core, Helix, Deck, Lore, Comms, Beacon).
+	•	Cosmo, the branded user-facing assistant, built on top of Synth.
+	•	Multi-model orchestration (LLMs, classification models, workflow engines).
+	•	Secure API, integrated with Nova Helix (identity) for RBAC, auditing, and SCIM provisioning.
+	•	Event-driven automation for tickets, knowledge base, workflows, and gamification.
+
+Cosmo is simply the “persona and front-end experience” for Synth. Synth is the engine.
+
+⸻
+
+2. Core Functions of Nova Synth
+
+Function	Description	Consumer Modules
+Intent Classification	NLP-based classification of messages into tickets, requests, commands, or queries.	Pulse, Orbit, Comms, Beacon
+Workflow Orchestration	Automates ticket actions, approvals, routing, and alerting.	Pulse, Core
+Knowledge Retrieval	AI-driven query and response from Nova Lore (KB) with contextual ranking.	Orbit, Pulse, Cosmo
+Gamification Engine	XP tracking, leaderboards, and gamified interactions for technicians and users.	Pulse, Orbit
+Event Hooks	AI-driven event listeners that trigger webhooks or API calls for third-party systems.	Core, API
+Conversation Layer	Conversational assistant (Cosmo) for end-users, technicians, and admins.	Orbit, Comms, Pulse
+Auto Ticket Creation	Email, Slack, and kiosk input converted to structured tickets.	Core API, Pulse
+Multi-Agent Reasoning	Task decomposition for complex workflows.	All modules
+
+
+⸻
+
+3. API Architecture
+
+Synth is a microservice exposed via Nova’s unified API gateway.
+
+[Client/UI] → [Nova API Gateway] → [Nova Synth Service] → [AI Orchestration + Model Router]  
+                                            ↓
+                                      [Nova Core API]
+                                      [Nova Helix API]
+                                      [Nova Lore API]
+                                      [External Integrations]
+
+Components:
+	1.	Nova Synth API Service
+	•	/v2/synth namespace within Nova API.
+	•	Stateless API with Redis-backed context cache for conversation history.
+	•	Event bus (Kafka/NATS) for async workflows.
+	2.	Cosmo Layer
+	•	UI SDK for embedding Cosmo in Orbit, Pulse, Comms, and Beacon.
+	•	WebSocket-based for real-time updates.
+	•	User-scoped context powered by Nova Helix.
+	3.	AI Model Router
+	•	Routes requests to the correct model (LLM for conversation, classifier for tickets, vector search for Lore).
+	•	Configurable per-tenant in Nova Core.
+	4.	Integration Layer
+	•	Webhooks and outbound API calls (ServiceNow, Jira, M365, GoAlert, etc.).
+	•	Can trigger workflows defined in Nova Core.
+
+⸻
+
+4. API Endpoints
+
+1. Conversation Management
+
+Method	Endpoint	Description
+POST	/v2/synth/conversation/start	Starts a new conversation with Cosmo
+POST	/v2/synth/conversation/:id/send	Sends a message to an active convo
+GET	/v2/synth/conversation/:id	Retrieves conversation state/history
+DELETE	/v2/synth/conversation/:id	Ends and archives conversation
+
+
+⸻
+
+2. Intent & Ticket Classification
+
+Method	Endpoint	Description
+POST	/v2/synth/intent/classify	Classifies input into ticket/command
+POST	/v2/synth/ticket/auto-create	Auto-creates a ticket based on intent
+
+
+⸻
+
+3. Knowledge Retrieval (Lore)
+
+Method	Endpoint	Description
+POST	/v2/synth/lore/query	Semantic KB search
+POST	/v2/synth/lore/feedback	Submit AI result feedback for training
+
+
+⸻
+
+4. Workflow Automation
+
+Method	Endpoint	Description
+POST	/v2/synth/workflow/execute	Executes a predefined workflow
+POST	/v2/synth/workflow/custom	Executes an ad-hoc workflow
+
+
+⸻
+
+5. Gamification (Nova Ascend)
+
+Method	Endpoint	Description
+POST	/v2/synth/gamification/xp	Grants or deducts XP
+GET	/v2/synth/gamification/profile	Retrieves user XP, badges, leaderboard
+
+
+⸻
+
+6. Integration Hooks
+
+Method	Endpoint	Description
+POST	/v2/synth/hook/register	Registers an event hook
+POST	/v2/synth/hook/trigger	Triggers a hook manually
+
+
+⸻
+
+5. Cosmo (Front-End Layer)
+
+Cosmo is Synth’s user experience layer:
+	•	Persona: Friendly, professional, space-themed assistant with subtle gamification.
+	•	Deployment:
+	•	Orbit → End-user support
+	•	Pulse → Technician assistant (deep work view)
+	•	Comms → Slack app AI assistant
+	•	Beacon → Kiosk ticket helper
+	•	Features:
+	•	Context-aware AI with persistent memory (per tenant + per user).
+	•	Multi-modal input (Slack, web, email, kiosk).
+	•	Inline actions (approve requests, update tickets, trigger workflows).
+	•	Fun interactions (XP boosts, badges, trivia via Slack).
+
+⸻
+
+6. Security
+	•	Authentication: All API calls secured by Nova Helix OAuth2 / SCIM roles.
+	•	Context Isolation: Tenant-aware request routing.
+	•	Audit Logging: Every AI decision logged in Nova Core for compliance.
+	•	Configurable Privacy: Tenants can toggle AI memory, model providers, and compliance settings.
+
+⸻
+
+7. Data Flow (Example: Slack → Cosmo → Ticket)
+	1.	User sends message /it-help in Slack.
+	2.	Comms relays request → Synth API /intent/classify.
+	3.	Synth classifies as “INCIDENT → Pulse:IT”.
+	4.	Synth calls /ticket/auto-create → Nova Core.
+	5.	Core creates ticket → Cosmo responds in Slack with ticket link.
+	6.	XP reward issued via /gamification/xp.
+
+⸻
+
+8. Future Enhancements
+	•	Agent Marketplace: Custom AI agents running inside Synth (e.g. HR bot, Cyber bot).
+	•	Voice support for kiosk and mobile apps.
+	•	Advanced analytics on AI impact (ticket deflection, time saved).
+	•	Configurable personalities per module (Cosmo in Ops vs. Cosmo in HR).
+
+⸻
+
+Here’s a detailed breakdown of MCP (Model Context Protocol) support in Nova Synth, fully integrated with the API layer and Cosmo:
+
+⸻
+
+Nova Synth MCP (Model Context Protocol) Support
+
+1. Overview
+
+The Model Context Protocol (MCP) is a standardized protocol for connecting LLMs to external tools, APIs, and data sources. In Nova, MCP is built into Synth to give Cosmo and other Nova modules secure, pluggable, and auditable AI tool access.
+
+Purpose	Benefit in Nova
+Standardized AI tool calling	Models interact with APIs via a single, consistent interface
+Context sharing	MCP sessions share context across modules (Pulse, Orbit, Core, etc.)
+Tenant isolation	Each tenant gets sandboxed MCP sessions
+Pluggable tools	Admins can add or remove MCP endpoints (e.g., Slack, M365)
+Compliance & audit logging	Every MCP request is tracked in Nova Core
+
+
+⸻
+
+2. Architecture
+
+[Cosmo UI] → [Nova Synth API] → [MCP Runtime] → [Registered Tools (Nova + External)]
+
+Key Components:
+	1.	MCP Runtime (in Synth)
+	•	Handles MCP session lifecycle.
+	•	Maps MCP tools to Nova API endpoints or external APIs.
+	•	Enforces Helix RBAC and tenant isolation.
+	2.	Tool Registry
+	•	Each tool is registered in Nova Core.
+	•	Tools can be:
+	•	Native Nova Tools (ticket actions, knowledge search, gamification)
+	•	External Tools (Slack admin API, GoAlert proxy, M365 Graph)
+	•	Custom Tools (per-tenant integrations)
+	3.	Context Engine
+	•	Injects contextual metadata into each MCP session:
+	•	User info (from Helix)
+	•	Tenant config (from Core)
+	•	Conversation history
+	•	Relevant ticket or KB context
+
+⸻
+
+3. MCP Workflow in Nova
+	1.	User interacts with Cosmo (e.g., “Create a high-priority Ops ticket for package delivery”).
+	2.	Cosmo → Synth API /v2/synth/conversation/:id/send.
+	3.	Synth classifies intent and spawns an MCP session.
+	4.	MCP runtime calls:
+	•	nova.tickets.create (Nova internal tool)
+	•	nova.gamification.xp (XP reward)
+	5.	MCP session logs actions in Core → Cosmo responds with result.
+
+⸻
+
+4. MCP Session Structure
+
+An MCP session is scoped to:
+	•	User (Helix ID)
+	•	Tenant
+	•	Conversation
+	•	Allowed tools (determined by RBAC and tenant config)
+
+{
+  "session_id": "mcp_12345",
+  "user_id": "helix:usr_abc",
+  "tenant_id": "tnt_xyz",
+  "tools": ["nova.tickets", "nova.lore", "m365.graph", "goalalert.proxy"],
+  "context": {
+    "active_ticket": "INC-12345",
+    "recent_xp": 50
+  }
+}
+
+
+⸻
+
+5. MCP Tools in Nova
+
+Tool	Description	Example MCP Call
+nova.tickets	Create, update, or link tickets	tickets.create({type:"INC"})
+nova.lore	Query knowledge base	lore.search({query:"VPN issue"})
+nova.gamification	Grant XP, badges	gamification.grantXP({amount:10})
+nova.workflows	Trigger predefined workflows	workflows.execute({id:"wf-ops"})
+m365.graph	Send/receive email, calendar events	m365.mail.send({...})
+goalalert.proxy	Trigger alert escalation	goalalert.trigger({team:"Ops"})
+
+Admins can add custom tools per tenant via Core’s MCP registry.
+
+⸻
+
+6. Security & Compliance
+	•	RBAC: Helix enforces per-tool and per-action permissions.
+	•	Session Isolation: Tools are scoped per MCP session, no cross-tenant access.
+	•	Audit Logging: Each MCP call is logged in Core (who, what, when, result).
+	•	Model Sandbox: Models cannot call APIs directly; they request MCP calls via Synth, which validates and executes them.
+
+⸻
+
+7. Cosmo + MCP
+
+Cosmo automatically uses MCP under the hood:
+	•	In Pulse: Cosmo can trigger MCP tools like nova.tickets.linkCI.
+	•	In Orbit: Cosmo uses MCP for KB searches and request fulfillment.
+	•	In Comms (Slack): Cosmo MCP sessions run in ephemeral Slack threads for security.
+	•	In Beacon: MCP enables kiosk flows (e.g., “Report broken kiosk”).
+
+⸻
+
+8. MCP API Endpoints
+
+Method	Endpoint	Description
+POST	/v2/synth/mcp/session	Start an MCP session
+POST	/v2/synth/mcp/tool/:name	Execute MCP tool action
+GET	/v2/synth/mcp/session/:id	Retrieve MCP session context
+DELETE	/v2/synth/mcp/session/:id	End MCP session
+
+
+⸻
+
+9. Example: Cosmo Using MCP
+
+sequenceDiagram
+  participant User
+  participant Cosmo
+  participant Synth
+  participant MCP
+  participant NovaTickets
+
+  User->>Cosmo: "Create a high priority HR ticket"
+  Cosmo->>Synth: classifyIntent()
+  Synth->>MCP: startSession()
+  MCP->>NovaTickets: tickets.create({type:"HR", priority:"High"})
+  NovaTickets->>MCP: success
+  MCP->>Synth: response
+  Synth->>Cosmo: "Ticket HR-123 created!"
+  Cosmo->>User: "Done! 🚀"
+
+
+⸻
+
+10. Future Enhancements
+	•	Streaming MCP Calls: Live updates from tools (e.g. real-time workflow progress).
+	•	Cross-Tenant MCP Tools: For managed service providers (MSPs).
+	•	AI-Generated Tools: Cosmo can auto-generate MCP tools for repeat workflows.
+	•	MCP Marketplace: Admins can install pre-built MCP tools from Nova Core.
+
+⸻
+
+Would you like me to merge this into a single Markdown implementation file for “Nova Synth + Cosmo + MCP” (with diagrams and endpoint tables formatted for the official Nova docs)? This would align with your other specs.

@@ -68,5 +68,7 @@ describe('Notifications API', function() {
 
   afterAll(async () => {
     await closeDatabase();
+    const { prisma } = await import('../db.js');
+    await prisma.$disconnect();
   });
 });

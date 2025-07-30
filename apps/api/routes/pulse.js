@@ -1,7 +1,7 @@
 // nova-api/routes/pulse.js
 // Nova Pulse - Technician Portal Routes
 import express from 'express';
-import { body, validationResult } from 'express-validator';
+import { body, check, validationResult } from 'express-validator';
 import db from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';

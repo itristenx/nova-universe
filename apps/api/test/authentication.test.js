@@ -310,5 +310,7 @@ describe('Nova Helix Authentication Features', () => {
 
   afterAll(async () => {
     await closeDatabase();
+    const { prisma } = await import('../db.js');
+    await prisma.$disconnect();
   });
 });

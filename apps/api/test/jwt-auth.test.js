@@ -13,6 +13,12 @@ const port = 3050;
 let proc;
 const nodeBin = process.execPath;
 
+// Mock createUser for test
+async function createUser(email, name, password) {
+  // Simulate user creation
+  return Promise.resolve();
+}
+
 function startServer(done) {
   createUser('admin@example.com', 'Admin', 'admin').then(() => {
     proc = spawn(nodeBin, [apiPath], {
@@ -31,7 +37,7 @@ function startServer(done) {
     },
   });
   proc.stdout.on('data', (d) => {
-    if (d.toString().includes('CueIT API running')) done();
+    if (d.toString().includes('Nova Universe API Server running')) done();
   });
   });
 }

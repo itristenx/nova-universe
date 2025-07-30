@@ -35,3 +35,9 @@ describe('Log cleanup', () => {
     assert.strictEqual(rows[0].ticket_id, 'new');
   });
 });
+
+afterAll(async () => {
+  const { prisma, closeDatabase } = await import('../db.js');
+  await prisma.$disconnect();
+  await closeDatabase();
+});

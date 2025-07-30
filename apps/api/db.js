@@ -296,11 +296,6 @@ class DatabaseWrapper {
 const dbWrapper = new DatabaseWrapper();
 const prisma = new PrismaClient();
 
-// Initialize the database
-initializeDatabase().catch(error => {
-  logger.error('Failed to initialize database:', error);
-});
-
 export default dbWrapper;
 export { prisma };
 

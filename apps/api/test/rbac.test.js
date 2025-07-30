@@ -40,7 +40,7 @@ function startServer(done) {
       },
     });
     proc.stdout.on('data', (d) => {
-      if (d.toString().includes('CueIT API running')) done();
+      if (d.toString().includes('Nova Universe API Server running')) done();
     });
   });
 }
