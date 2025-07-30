@@ -79,7 +79,7 @@ CREATE TABLE vip_proxies (
 CREATE TABLE vip_sla_history (
     id SERIAL PRIMARY KEY,
     user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-    sla JSON NOT NULL,
+    sla JSONB NOT NULL,
     effective_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ended_at TIMESTAMP
 );
