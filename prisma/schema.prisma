@@ -460,3 +460,23 @@ model ProxyAuthorization {
 
   @@map("proxy_authorizations")
 }
+model RequestCatalogItem {
+  id          Int      @id @default(autoincrement())
+  name        String
+  formSchema  Json?    @map("form_schema")
+  workflowId  Int?     @map("workflow_id")
+  ritms       RITM[]
+
+  @@map("request_catalog_items")
+}
+
+model RITM {
+  id            Int      @id @default(autoincrement())
+  reqId         Int      @map("req_id")
+  catalogItemId Int      @map("catalog_item_id")
+  status        String   @default("open")
+  ticket        SupportTicket   @relation(fields: [reqId], references: [id])
+  catalogItem   RequestCatalogItem @relation(fields: [catalogItemId], references: [id])
+
+  @@map("ritms")
+}
