@@ -61,7 +61,7 @@ CREATE TABLE request_catalog_items (
 -- RITMs Table
 CREATE TABLE ritms (
     id SERIAL PRIMARY KEY,
-    req_id INT REFERENCES tickets(id),
+    req_id INT REFERENCES SupportTicket(id),
     catalog_item_id INT REFERENCES request_catalog_items(id),
     status VARCHAR(20) DEFAULT 'open'
 );
