@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR/.."
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$REPO_ROOT"
 
 # Ensure Node.js 18+ is installed
 if ! command -v node >/dev/null 2>&1 || \
@@ -42,7 +43,7 @@ for dir in "$nova_api_dir" "$nova_core_dir" "$nova_comms_dir"; do
 done
 if [ "$missing_env" = true ]; then
   echo "Initializing .env files..."
-  ./scripts/init-env.sh
+  ./tools/scripts/scripts/init-env.sh
 fi
 
 echo "Setup complete. Edit the .env files before starting the services."
