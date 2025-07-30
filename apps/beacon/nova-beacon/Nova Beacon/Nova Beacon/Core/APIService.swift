@@ -94,8 +94,7 @@ class APIService {
         return nil
     }
     
-    // MARK: - Status Configuration (TODO: Implement when types are resolved)
-    /*
+    // MARK: - Status Configuration
     func getStatusConfiguration(kioskId: String, serverURL: String) async -> StatusConfiguration? {
         guard let url = URL(string: "\(serverURL)/api/status-config?kioskId=\(kioskId)") else { return nil }
         
@@ -145,7 +144,6 @@ class APIService {
         
         return false
     }
-    */
     
     // MARK: - Activation
     func activateKiosk(id: String, activationCode: String, serverURL: String) async -> Bool {
@@ -234,7 +232,6 @@ class APIService {
         return Bundle.main.object(forInfoDictionaryKey: "KIOSK_TOKEN") as? String ?? ""
     }
     
-    /*
     private func parseStatusConfiguration(from data: [String: Any]) -> StatusConfiguration {
         return StatusConfiguration(
             availableMessage: data["availableMessage"] as? String ?? "Ready to help",
@@ -245,5 +242,4 @@ class APIService {
             unavailableMessage: data["unavailableMessage"] as? String ?? "Status unknown"
         )
     }
-    */
 }

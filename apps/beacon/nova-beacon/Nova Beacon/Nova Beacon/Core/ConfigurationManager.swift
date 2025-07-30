@@ -56,8 +56,12 @@ class ConfigurationManager: ObservableObject {
     func activateKiosk(with code: String) async -> Bool {
         guard let serverConfig = serverConfiguration else { return false }
         
-        // TODO: Implement proper API call
-        let success = await APIService.shared.testConnection(serverURL: serverConfig.baseURL)
+        let kioskId = getKioskId()
+        let success = await APIService.shared.activateKiosk(
+            id: kioskId,
+            activationCode: code,
+            serverURL: serverConfig.baseURL
+        )
         
         if success {
             isActivated = true
@@ -73,13 +77,12 @@ class ConfigurationManager: ObservableObject {
     func refreshConfiguration() async {
         guard serverConfiguration != nil, isActivated else { return }
         
-        // TODO: Implement proper API call to get kiosk configuration
-        // For now, create a basic configuration
-        let _ = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
-        
-        // Create a basic configuration if none exists
-        if kioskConfiguration == nil {
-            // We'll need to create this when we have the proper structure
+        guard let serverConfig = serverConfiguration else { return }
+
+        if let configJSON = await APIService.shared.getKioskConfiguration(id: getKioskId(), serverURL: serverConfig.baseURL),
+           let data = try? JSONSerialization.data(withJSONObject: configJSON),
+           let config = try? JSONDecoder().decode(KioskConfiguration.self, from: data) {
+            kioskConfiguration = config
             lastConfigUpdate = Date()
             userDefaults.set(lastConfigUpdate, forKey: UserDefaultsKeys.lastConfigUpdate)
         }
@@ -171,18 +174,23 @@ class ConfigurationManager: ObservableObject {
     }
     
     private func setupConfigUpdateTimer() {
-        // TODO: Implement periodic configuration updates from server
-        // This would periodically check if the kiosk has been deactivated
+        configUpdateTimer?.invalidate()
         configUpdateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
             Task {
+                await self.refreshConfiguration()
                 await self.checkServerStatus()
             }
         }
     }
-    
+
     private func checkServerStatus() async {
-        // TODO: Check with server if kiosk is still activated
-        // If deactivated, call deactivateKiosk()
+        guard let serverConfig = serverConfiguration, isActivated else { return }
+
+        if let statusInfo = await APIService.shared.checkKioskStatus(id: getKioskId(), serverURL: serverConfig.baseURL),
+           let active = statusInfo["active"] as? Bool,
+           active == false {
+            await deactivateKiosk()
+        }
     }
     
     // MARK: - Kiosk Controller Methods

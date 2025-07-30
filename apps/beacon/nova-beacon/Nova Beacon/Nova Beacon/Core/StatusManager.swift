@@ -194,18 +194,37 @@ class StatusManager: ObservableObject {
             return
         }
         
-        // TODO: Implement status sync when API types are resolved
-        print("Would sync status to backend: \(currentStatus.rawValue)")
+        guard let serverConfig = configManager.serverConfiguration else { return }
+
+        let kioskId = configManager.getKioskId()
+        let success = await apiService.updateKioskStatus(
+            kioskId: kioskId,
+            status: currentStatus,
+            serverURL: serverConfig.baseURL
+        )
+        if success {
+            lastUpdate = Date()
+            saveStatus()
+        }
     }
-    
+
     private func fetchStatusConfiguration(serverURL: String) async {
-        // TODO: Implement status configuration fetch when API types are resolved
-        print("Would fetch status configuration from: \(serverURL)")
+        let kioskId = configManager.getKioskId()
+        if let config = await apiService.getStatusConfiguration(kioskId: kioskId, serverURL: serverURL) {
+            statusConfiguration = config
+            saveStatusConfiguration()
+        }
     }
-    
+
     private func fetchCurrentStatus(serverURL: String) async {
-        // TODO: Implement API call to fetch current status
-        // For now, keep current status
+        let kioskId = configManager.getKioskId()
+        if let statusInfo = await apiService.checkKioskStatus(id: kioskId, serverURL: serverURL),
+           let statusString = statusInfo["status"] as? String,
+           let status = KioskStatus(rawValue: statusString) {
+            currentStatus = status
+            lastUpdate = Date()
+            saveStatus()
+        }
     }
     
     private func saveStatus() {

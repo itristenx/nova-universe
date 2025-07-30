@@ -128,18 +128,16 @@ struct ActivationView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Colors.base.ignoresSafeArea())
         .fullScreenCover(isPresented: $showingQRScanner) {
-            // TODO: Implement QR scanner when CodeScanner package is available
-            VStack {
-                Text("QR Scanner")
-                    .font(.title)
-                Text("CodeScanner package not available")
-                    .foregroundColor(.secondary)
-                Button("Cancel") {
-                    showingQRScanner = false
+            CodeScannerView { result in
+                showingQRScanner = false
+                switch result {
+                case .success(let scan):
+                    activationCode = scan.string
+                    Task { await activateWithCode() }
+                case .failure:
+                    break
                 }
-                .padding()
             }
-            .padding()
         }
         .sheet(isPresented: $showingServerConfig) {
             ServerSetupView()
