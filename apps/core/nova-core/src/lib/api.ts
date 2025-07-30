@@ -414,7 +414,7 @@ class ApiClient {
     return response.data;
   }
 
-  async getOrganizationBranding(): Promise<any> {
+  async getOrganizationBranding(): Promise<OrganizationBranding> {
     if (this.useMockMode) {
       return this.mockRequest({
         logoUrl: '/logo.png',
