@@ -162,6 +162,31 @@ export interface Asset {
   uploadedAt: string;
 }
 
+export interface KnowledgeArticle {
+  id: number;
+  slug: string;
+  kbId?: string;
+  title: string;
+  content: string;
+  excerpt?: string;
+  tags?: string[];
+  isPublished?: boolean;
+  verifiedSolution?: boolean;
+  createdBy?: { id: string; name: string } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KnowledgeArticleVersion {
+  id: number;
+  articleId: number;
+  content: string;
+  version: number;
+  author?: { id: string; name: string };
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiResponse<T = unknown> {
   data?: T;
   message?: string;

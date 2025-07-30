@@ -25,6 +25,9 @@ const SettingsPage = React.lazy(() => import('@/pages/SettingsPage').then(m => (
 const IntegrationsPage = React.lazy(() => import('@/pages/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
 const KioskActivationPage = React.lazy(() => import('@/pages/KioskActivationPage').then(m => ({ default: m.KioskActivationPage })));
 const CatalogItemsPage = React.lazy(() => import('@/pages/CatalogItemsPage').then(m => ({ default: m.CatalogItemsPage })));
+const KnowledgeListPage = React.lazy(() => import('@/pages/knowledge/KnowledgeListPage').then(m => ({ default: m.default })));
+const KnowledgeDetailPage = React.lazy(() => import('@/pages/knowledge/KnowledgeDetailPage').then(m => ({ default: m.default })));
+const KnowledgeEditPage = React.lazy(() => import('@/pages/knowledge/KnowledgeEditPage').then(m => ({ default: m.default })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -183,6 +186,38 @@ const AppRoutes: React.FC = () => {
           element={
             <React.Suspense fallback={<div>Loading...</div>}>
               <CatalogItemsPage />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path="knowledge"
+          element={
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <KnowledgeListPage />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path="knowledge/new"
+          element={
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <KnowledgeEditPage />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path="knowledge/:slug"
+          element={
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <KnowledgeDetailPage />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path="knowledge/:slug/edit"
+          element={
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <KnowledgeEditPage />
             </React.Suspense>
           }
         />
