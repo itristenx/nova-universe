@@ -27,7 +27,7 @@ router.post('/proxies',
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ success:false, error:'Invalid input', details: errors.array(), errorCode:'VALIDATION_ERROR' });
+        return res.status(400).json({ success: false, error: 'Invalid input', details: errors.array(), errorCode: 'VALIDATION_ERROR' });
       }
       const { vipId, proxyId, expiresAt } = req.body;
       await db.none('INSERT INTO vip_proxies (vip_id, proxy_id, created_at, expires_at) VALUES ($1,$2, CURRENT_TIMESTAMP, $3)', [vipId, proxyId, expiresAt || null]);
