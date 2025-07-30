@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui';
+import { api } from '@/lib/api';
 import { ChartBarIcon } from '@heroicons/react/24/outline';
 
+interface HeatmapEntry {
+  day: string;
+  count: number;
+}
+
 export const AnalyticsPage: React.FC = () => {
+  const [heatmap, setHeatmap] = useState<HeatmapEntry[]>([]);
+  useEffect(() => { load(); }, []);
+
+  const load = async () => {
+    try {
+      const data = await api.getVipHeatmap();
+      setHeatmap(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -43,6 +61,25 @@ export const AnalyticsPage: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {heatmap.length > 0 && (
+        <Card>
+          <h3 className="text-lg font-semibold mb-2">VIP Heatmap</h3>
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr><th className="px-2 py-1">Day</th><th className="px-2 py-1">Tickets</th></tr>
+            </thead>
+            <tbody>
+              {heatmap.map(h => (
+                <tr key={h.day}>
+                  <td className="border px-2 py-1">{h.day}</td>
+                  <td className="border px-2 py-1">{h.count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
     </div>
   );
 };

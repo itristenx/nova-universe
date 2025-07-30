@@ -480,3 +480,26 @@ model RITM {
 
   @@map("ritms")
 }
+
+model VipProxy {
+  id        Int      @id @default(autoincrement())
+  vipId     String   @map("vip_id")
+  proxyId   String   @map("proxy_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime? @map("expires_at")
+  vip       User     @relation("VipProxyVip", fields: [vipId], references: [id])
+  proxy     User     @relation("VipProxyUser", fields: [proxyId], references: [id])
+
+  @@map("vip_proxies")
+}
+
+model VipSlaHistory {
+  id          Int      @id @default(autoincrement())
+  userId      String   @map("user_id")
+  sla         Json     @map("sla")
+  effectiveAt DateTime @default(now()) @map("effective_at")
+  endedAt     DateTime? @map("ended_at")
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("vip_sla_history")
+}

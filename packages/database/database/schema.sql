@@ -65,3 +65,21 @@ CREATE TABLE ritms (
     catalog_item_id INT REFERENCES request_catalog_items(id),
     status VARCHAR(20) DEFAULT 'open'
 );
+
+-- VIP Proxy Delegation Table
+CREATE TABLE vip_proxies (
+    id SERIAL PRIMARY KEY,
+    vip_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    proxy_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP
+);
+
+-- VIP SLA History Table
+CREATE TABLE vip_sla_history (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    sla JSONB NOT NULL,
+    effective_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ended_at TIMESTAMP
+);
