@@ -16,6 +16,6 @@ export const defaultBranding: BrandingConfig = {
   primaryColor: '#3b82f6',
   secondaryColor: '#6366f1',
   welcomeMessage: 'Welcome to Nova Orbit!',
-  helpText: 'Welcome to Nova Orbit!',
+  helpText: 'Need help? Explore our documentation or contact support.',
   fallbackToNova: true,
 };
