@@ -3,9 +3,13 @@ import { Card } from '@/components/ui';
 import { api } from '@/lib/api';
 import { ChartBarIcon } from '@heroicons/react/24/outline';
 
-export const AnalyticsPage: React.FC = () => {
-  const [heatmap, setHeatmap] = useState<any[]>([]);
+interface HeatmapEntry {
+  day: string;
+  count: number;
+}
 
+export const AnalyticsPage: React.FC = () => {
+  const [heatmap, setHeatmap] = useState<HeatmapEntry[]>([]);
   useEffect(() => { load(); }, []);
 
   const load = async () => {
