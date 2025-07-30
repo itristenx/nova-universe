@@ -211,10 +211,10 @@ See [SECURITY_FIXES.md](SECURITY_FIXES.md) for detailed security implementation.
 
 ### Testing
 ```bash
-# Run tests for each component
-cd cueit-api && npm test
-cd cueit-admin && npm test
-cd cueit-slack && npm test
+# Run tests for each component from the repository root
+pnpm --filter cueit-api test
+pnpm --filter cueit-admin test
+pnpm --filter cueit-slack test
 ```
 
 ### Development Scripts

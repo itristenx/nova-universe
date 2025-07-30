@@ -248,15 +248,15 @@ Nova Universe includes automated test suites for the backend API and the admin U
 
 ### nova-api
 
-1. `cd nova-api`
-2. `pnpm test`
+Run from the repository root:
+1. `pnpm --filter nova-universe-api test`
 
 The API tests are written with Mocha and exercise the main Express endpoints.
 
 ### nova-core
 
-1. `cd nova-core`
-2. `pnpm test`
+Run from the repository root:
+1. `pnpm --filter nova-core-admin test`
 
 This suite uses Jest and React Testing Library to validate the UI.
 

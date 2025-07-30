@@ -250,13 +250,13 @@ const health = await db.healthCheck();
 ### Running Tests
 ```bash
 # Run all database tests
-npm test test/database.test.js
+pnpm test test/database.test.js
 
 # Verify setup
 node test-db-setup.js
 
 # Integration testing
-npm test
+pnpm test
 ```
 
 ## 🚀 Production Deployment

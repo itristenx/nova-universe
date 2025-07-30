@@ -208,7 +208,7 @@ docker-compose up -d postgres mongodb elasticsearch
 npx prisma db push
 
 # 5. Test setup
-npm test test/database-setup.test.js
+pnpm test test/database-setup.test.js
 ```
 
 ### 🔧 Database Management

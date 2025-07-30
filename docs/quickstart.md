@@ -5,6 +5,7 @@ Get CueIT running in 5 minutes.
 ## Prerequisites
 - [Node.js](https://nodejs.org/) 18+
 - npm
+- [pnpm](https://pnpm.io/installation) (install with `npm install -g pnpm`)
 - SQLite3
 
 ## Quick Setup

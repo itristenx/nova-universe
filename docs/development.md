@@ -16,8 +16,8 @@
 ## Testing
 - Run `./setup.sh` to install Node.js, SQLite and all project dependencies if needed
 - Each package has its own test suite
-- Navigate to a package and run `npm test`
-- Run `npm run lint` before committing changes
+- Navigate to a package and run `pnpm test` or run `pnpm --filter <workspace> test` from the repository root
+- Run `pnpm run lint` before committing changes
 - Installer and upgrade scripts live in `installers/` and must include basic tests
 
 ## Linting
