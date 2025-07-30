@@ -416,6 +416,21 @@ class ApiClient {
     return response.data;
   }
 
+  async getOrganizationBranding(): Promise<OrganizationBranding> {
+    if (this.useMockMode) {
+      return this.mockRequest({
+        logoUrl: '/logo.png',
+        welcomeMessage: 'Welcome',
+        helpMessage: 'Need help?',
+        primaryColor: '#1D4ED8',
+        secondaryColor: '#9333EA'
+      });
+    }
+
+    const response = await this.client.get('/api/v1/organizations/config');
+    return response.data;
+  }
+
   // Notifications
   async getNotifications(): Promise<Notification[]> {
     if (this.useMockMode) {

@@ -422,6 +422,8 @@ struct BrandingManagementView: View {
     @State private var logoUrl: String = ""
     @State private var welcomeMessage: String = ""
     @State private var helpMessage: String = ""
+    @State private var primaryColor: String = "#1D4ED8"
+    @State private var secondaryColor: String = "#9333EA"
     
     var body: some View {
         Form {
@@ -444,8 +446,15 @@ struct BrandingManagementView: View {
             Section("Messages") {
                 TextField("Welcome Message", text: $welcomeMessage)
                     .textFieldStyle(.roundedBorder)
-                
+
                 TextField("Help Message", text: $helpMessage)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            Section("Colors") {
+                TextField("Primary Color", text: $primaryColor)
+                    .textFieldStyle(.roundedBorder)
+                TextField("Secondary Color", text: $secondaryColor)
                     .textFieldStyle(.roundedBorder)
             }
             
@@ -455,7 +464,9 @@ struct BrandingManagementView: View {
                         let updates = [
                             "logoUrl": logoUrl,
                             "welcomeMessage": welcomeMessage,
-                            "helpMessage": helpMessage
+                            "helpMessage": helpMessage,
+                            "primaryColor": primaryColor,
+                            "secondaryColor": secondaryColor
                         ]
                         await configService.updateLocalConfig(updates, source: "kiosk")
                     }
@@ -467,6 +478,8 @@ struct BrandingManagementView: View {
             logoUrl = configService.localConfig?.logoUrl ?? ""
             welcomeMessage = configService.localConfig?.welcomeMessage ?? ""
             helpMessage = configService.localConfig?.helpMessage ?? ""
+            primaryColor = configService.localConfig?.theme.primaryColor ?? "#1D4ED8"
+            secondaryColor = configService.localConfig?.theme.secondaryColor ?? "#9333EA"
         }
     }
 }

@@ -509,7 +509,10 @@ export const SettingsPage: React.FC = () => {
                               id="primary-color"
                               type="color"
                               className="w-full h-10 border border-gray-300 rounded-md"
-                              defaultValue="#3B82F6"
+                              value={config?.primaryColor || '#3B82F6'}
+                              onChange={(e) =>
+                                setConfig(prev => prev ? { ...prev, primaryColor: e.target.value } : null)
+                              }
                               title="Primary theme color"
                             />
                           </div>
@@ -521,7 +524,10 @@ export const SettingsPage: React.FC = () => {
                               id="secondary-color"
                               type="color"
                               className="w-full h-10 border border-gray-300 rounded-md"
-                              defaultValue="#6B7280"
+                              value={config?.secondaryColor || '#6B7280'}
+                              onChange={(e) =>
+                                setConfig(prev => prev ? { ...prev, secondaryColor: e.target.value } : null)
+                              }
                               title="Secondary theme color"
                             />
                           </div>

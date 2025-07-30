@@ -17,6 +17,7 @@ export const LoginPage: React.FC = () => {
   const [ssoAvailable, setSsoAvailable] = useState(false);
   const [ssoLoginUrl, setSsoLoginUrl] = useState<string | null>(null);
   const [passkeyAvailable, setPasskeyAvailable] = useState(false);
+  const [branding, setBranding] = useState<Branding>({});
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const { addToast } = useToastStore();
@@ -75,6 +76,12 @@ export const LoginPage: React.FC = () => {
     };
 
     checkSSOAndToken();
+    api.getOrganizationBranding()
+      .then(setBranding)
+      .catch((error) => {
+        console.error('Failed to fetch organization branding:', error);
+        setBranding({ logo: null, themeColor: '#000000' }); // Fallback branding
+      });
   }, [login, navigate, addToast]);
 
   const handlePasskeyLogin = async () => {
@@ -240,18 +247,18 @@ export const LoginPage: React.FC = () => {
           <div className="mx-auto h-24 w-48 flex items-center justify-center mb-8">
             <img
               className="h-20 w-auto max-w-full object-contain"
-              src="/logo.png"
-              alt="Nova Universe"
+              src={branding.logoUrl || '/logo.png'}
+              alt="Organization logo"
               onError={(e) => {
                 e.currentTarget.src = '/vite.svg';
               }}
             />
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Sign in to Nova Universe Portal
+            {branding.welcomeMessage || 'Sign in to Nova Universe Portal'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Manage your kiosks, users, and support tickets
+            {branding.helpMessage || 'Manage your kiosks, users, and support tickets'}
           </p>
         </div>
 
