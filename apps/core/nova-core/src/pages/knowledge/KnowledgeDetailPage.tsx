@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import DOMPurify from 'dompurify';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Textarea } from '@/components/ui';
 import { api } from '@/lib/api';
@@ -38,14 +39,9 @@ const KnowledgeDetailPage: React.FC = () => {
     load();
   }, [slug]);
 
-  const addComment = () => {
+  const addComment = async () => {
     if (!comment.trim() || !user || !article) return;
-    const newComment = {
-      id: Date.now(),
-      user: { id: user.id, name: user.name },
-      content: comment,
-      createdAt: new Date().toISOString(),
-    };
+    const newComment = await api.addKnowledgeComment(article.id, { content: comment });
     setComments([...comments, newComment]);
     setComment('');
   };
@@ -73,7 +69,10 @@ const KnowledgeDetailPage: React.FC = () => {
       </div>
 
       <Card className="p-4 space-y-4">
-        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: article.content }} />
+        <div
+          className="prose max-w-none"
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
+        />
       </Card>
 
       {versions.length > 0 && (

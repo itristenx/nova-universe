@@ -1230,6 +1230,21 @@ class ApiClient {
     return response.data.comments;
   }
 
+  async addKnowledgeComment(articleId: number, data: { content: string }): Promise<any> {
+    if (this.useMockMode) {
+      const mockComment = {
+        id: crypto.randomUUID(),
+        user: { id: '1', name: 'Mock User' },
+        content: data.content,
+        createdAt: new Date().toISOString(),
+      };
+      return this.mockRequest(mockComment);
+    }
+
+    const response = await this.client.post<{ comment: any }>(`/api/v1/lore/articles/${articleId}/comments`, data);
+    return response.data.comment;
+  }
+
   async createKnowledgeArticle(data: { title: string; content: string; tags?: string[] }): Promise<KnowledgeArticle> {
     const response = await this.client.post<{ article: KnowledgeArticle }>('/api/v1/lore/articles', data);
     return response.data.article;
