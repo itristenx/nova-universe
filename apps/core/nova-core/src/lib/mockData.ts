@@ -138,6 +138,8 @@ export const mockLogs: Log[] = [
 export const mockConfig: Config = {
   logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=CueIT',
   faviconUrl: 'https://via.placeholder.com/32x32/3B82F6/FFFFFF?text=C',
+  primaryColor: '#1D4ED8',
+  secondaryColor: '#9333EA',
   welcomeMessage: 'Welcome to CueIT Support',
   helpMessage: 'Please describe your issue and we will help you',
   statusOpenMsg: 'IT Support is available',

@@ -4,6 +4,7 @@ export type BrandingConfig = {
   logoUrl: string;
   primaryColor: string;
   secondaryColor: string;
+  welcomeMessage?: string;
   helpText: string;
   fallbackToNova: boolean;
 };
@@ -14,6 +15,7 @@ export const defaultBranding: BrandingConfig = {
   logoUrl: '/nova-logo-light.png',
   primaryColor: '#3b82f6',
   secondaryColor: '#6366f1',
+  welcomeMessage: 'Welcome to Nova Orbit!',
   helpText: 'Welcome to Nova Orbit!',
   fallbackToNova: true,
 };

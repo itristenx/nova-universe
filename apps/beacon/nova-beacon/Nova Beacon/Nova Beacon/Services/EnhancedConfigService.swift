@@ -191,6 +191,10 @@ class EnhancedConfigService: ObservableObject {
                 config.welcomeMessage = value as? String ?? config.welcomeMessage
             case "helpMessage":
                 config.helpMessage = value as? String ?? config.helpMessage
+            case "primaryColor":
+                config.theme.primaryColor = value as? String ?? config.theme.primaryColor
+            case "secondaryColor":
+                config.theme.secondaryColor = value as? String ?? config.theme.secondaryColor
             default:
                 break
             }

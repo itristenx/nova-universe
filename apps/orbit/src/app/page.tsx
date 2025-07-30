@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { defaultBranding } from "../lib/branding";
 
 export default function HomePage() {
   return (
@@ -14,10 +15,10 @@ export default function HomePage() {
           height={38}
           priority
         />
-        <h1 className="text-3xl font-bold mb-2">Welcome to Nova Orbit</h1>
-        <p className="mb-6 text-muted-foreground">
-          Your unified portal for IT support, knowledge, and service status.
-        </p>
+        <h1 className="text-3xl font-bold mb-2">
+          {defaultBranding.welcomeMessage || 'Welcome to Nova Orbit'}
+        </h1>
+        <p className="mb-6 text-muted-foreground">{defaultBranding.helpText}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <Link
             href="/tickets"

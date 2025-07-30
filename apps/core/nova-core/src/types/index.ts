@@ -102,6 +102,8 @@ export interface Config {
   logoUrl: string;
   faviconUrl: string;
   kioskLogoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
   welcomeMessage: string;
   helpMessage: string;
   statusOpenMsg: string;
@@ -299,6 +301,8 @@ export interface KioskConfiguration {
     override: ConfigOverride;
     logoUrl?: string;
     backgroundUrl?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
     welcomeMessage?: string;
     helpMessage?: string;
   };
@@ -324,6 +328,8 @@ export interface GlobalConfiguration {
   defaultBranding: {
     logoUrl: string;
     backgroundUrl?: string;
+    primaryColor: string;
+    secondaryColor: string;
     welcomeMessage: string;
     helpMessage: string;
   };

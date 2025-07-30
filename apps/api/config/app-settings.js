@@ -19,6 +19,8 @@ const DEFAULT_CONFIG = {
     name: 'Nova Universe',
     logoUrl: '/logo.png',
     faviconUrl: '/vite.svg',
+    primaryColor: '#1D4ED8',
+    secondaryColor: '#9333EA',
     welcomeMessage: 'Welcome to the Help Desk',
     helpMessage: 'Need to report an issue?'
   },
@@ -231,6 +233,22 @@ class ConfigurationManager {
       config.organization = config.organization || {};
       config.organization.faviconUrl = process.env.FAVICON_URL;
     }
+    if (process.env.PRIMARY_COLOR) {
+      config.organization = config.organization || {};
+      config.organization.primaryColor = process.env.PRIMARY_COLOR;
+    }
+    if (process.env.SECONDARY_COLOR) {
+      config.organization = config.organization || {};
+      config.organization.secondaryColor = process.env.SECONDARY_COLOR;
+    }
+    if (process.env.WELCOME_MESSAGE) {
+      config.organization = config.organization || {};
+      config.organization.welcomeMessage = process.env.WELCOME_MESSAGE;
+    }
+    if (process.env.HELP_MESSAGE) {
+      config.organization = config.organization || {};
+      config.organization.helpMessage = process.env.HELP_MESSAGE;
+    }
 
     // Security settings
     if (process.env.MIN_PIN_LENGTH) {
@@ -307,6 +325,9 @@ class ConfigurationManager {
       }
       if (key.includes('Url')) {
         return typeof value === 'string' && (value.startsWith('/') || value.startsWith('http'));
+      }
+      if (key === 'organization.primaryColor' || key === 'organization.secondaryColor') {
+        return typeof value === 'string' && /^#([0-9A-Fa-f]{3}){1,2}$/.test(value);
       }
 
       // Rate limiting validation

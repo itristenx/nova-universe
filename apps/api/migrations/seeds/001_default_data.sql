@@ -49,6 +49,8 @@ INSERT INTO config (key, value, value_type, description, is_public, category) VA
 ('organization_name', COALESCE(NULLIF(current_setting('app.organization_name', true), ''), 'Your Organization'), 'string', 'Organization name displayed throughout the application', true, 'general'),
 ('logo_url', COALESCE(NULLIF(current_setting('app.logo_url', true), ''), '/logo.png'), 'string', 'URL to organization logo', true, 'branding'),
 ('favicon_url', COALESCE(NULLIF(current_setting('app.favicon_url', true), ''), '/vite.svg'), 'string', 'URL to site favicon', true, 'branding'),
+('primary_color', COALESCE(NULLIF(current_setting('app.primary_color', true), ''), '#1D4ED8'), 'string', 'Primary theme color', true, 'branding'),
+('secondary_color', COALESCE(NULLIF(current_setting('app.secondary_color', true), ''), '#9333EA'), 'string', 'Secondary theme color', true, 'branding'),
 ('welcome_message', 'Welcome to the Help Desk', 'string', 'Welcome message displayed on kiosks', true, 'kiosk'),
 ('help_message', 'Need to report an issue?', 'string', 'Help message displayed on kiosks', true, 'kiosk'),
 ('status_open_msg', 'Open', 'string', 'Message displayed when status is open', true, 'kiosk'),
