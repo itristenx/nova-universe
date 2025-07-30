@@ -69,4 +69,19 @@ router.get('/insights', (req, res) => {
   res.json(insights);
 });
 
+// Simple VIP heatmap endpoint
+router.get('/vip-heatmap', async (req, res) => {
+  try {
+    const rows = await db.any(`
+      SELECT to_char(created_at, 'YYYY-MM-DD') as day, COUNT(*) as count
+      FROM support_tickets
+      WHERE vip_priority_score > 0
+      GROUP BY day ORDER BY day
+    `);
+    res.json({ success: true, heatmap: rows });
+  } catch (err) {
+    res.status(500).json({ success:false, error:'Failed to load heatmap', errorCode:'HEATMAP_ERROR' });
+  }
+});
+
 export default router;

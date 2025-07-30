@@ -309,7 +309,7 @@ router.post('/tickets',
       const { title, description, priority, requestedById } = req.body;
       const now = new Date();
 
-      const vipRow = await db.oneOrNone('SELECT is_vip, vip_level FROM users WHERE id = $1', [requestedById]);
+      const vipRow = await db.oneOrNone('SELECT is_vip, vip_level, vip_sla_override FROM users WHERE id = $1', [requestedById]);
 
       const dueDate = new Date(now);
       switch (priority) {
@@ -324,13 +324,18 @@ router.post('/tickets',
       }
 
       if (vipRow?.is_vip) {
-        switch (vipRow.vip_level) {
-          case 'exec':
-            dueDate.setHours(now.getHours() + 2); break;
-          case 'gold':
-            dueDate.setHours(now.getHours() + 4); break;
-          default:
-            dueDate.setHours(now.getHours() + 8);
+        const sla = vipRow.vip_sla_override || null;
+        if (sla && sla.responseMinutes) {
+          dueDate.setMinutes(now.getMinutes() + parseInt(sla.responseMinutes));
+        } else {
+          switch (vipRow.vip_level) {
+            case 'exec':
+              dueDate.setHours(now.getHours() + 2); break;
+            case 'gold':
+              dueDate.setHours(now.getHours() + 4); break;
+            default:
+              dueDate.setHours(now.getHours() + 8);
+          }
         }
       }
 
@@ -344,8 +349,9 @@ router.post('/tickets',
         [newId, ticketId, title, description, priority, 'open', requestedById, req.user.id, dueDate.toISOString(), now.toISOString(), now.toISOString(), vipWeight, 'api']
       );
 
-      if (vipRow?.is_vip && dueDate.getTime() - now.getTime() < 60*60*1000) {
-        await notifyCosmoEscalation(ticketId, 'sla_risk');
+      const failoverWindow = vipRow?.vip_sla_override?.failoverMinutes || 60;
+      if (vipRow?.is_vip && dueDate.getTime() - now.getTime() < failoverWindow*60000) {
+        await notifyCosmoEscalation(ticketId, 'failover_escalation');
       }
 
       res.status(201).json({ success:true, ticketId, vipWeight });

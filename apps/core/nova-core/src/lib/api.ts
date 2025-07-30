@@ -174,6 +174,26 @@ class ApiClient {
     return response.data;
   }
 
+  async getVipProxies(): Promise<any[]> {
+    const response = await this.client.get<{ proxies: any[] }>('/api/v1/vip/proxies');
+    return response.data.proxies;
+  }
+
+  async createVipProxy(data: { vipId: string; proxyId: string; expiresAt?: string }): Promise<ApiResponse> {
+    const response = await this.client.post<ApiResponse>('/api/v1/vip/proxies', data);
+    return response.data;
+  }
+
+  async deleteVipProxy(id: number): Promise<ApiResponse> {
+    const response = await this.client.delete<ApiResponse>(`/api/v1/vip/proxies/${id}`);
+    return response.data;
+  }
+
+  async getVipHeatmap(): Promise<any[]> {
+    const response = await this.client.get<{ heatmap: any[] }>('/api/reports/vip-heatmap');
+    return response.data.heatmap;
+  }
+
   // Roles and Permissions
   async getRoles(): Promise<Role[]> {
     if (this.useMockMode) {
