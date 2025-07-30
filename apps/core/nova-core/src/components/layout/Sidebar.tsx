@@ -8,6 +8,7 @@ import {
   CogIcon,
   ChartBarIcon,
   BellIcon,
+  BookOpenIcon,
   ArrowRightOnRectangleIcon,
   Cog6ToothIcon,
   QrCodeIcon,
@@ -18,6 +19,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
   { name: 'Tickets', href: '/tickets', icon: DocumentTextIcon },
+  { name: 'Knowledge', href: '/knowledge', icon: BookOpenIcon },
   { name: 'Kiosks', href: '/kiosks', icon: ComputerDesktopIcon },
   { name: 'Kiosk Management', href: '/kiosk-activation', icon: QrCodeIcon },
   { name: 'Users', href: '/users', icon: UsersIcon },

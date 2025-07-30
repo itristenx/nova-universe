@@ -12,6 +12,8 @@ import type {
   KioskActivation,
   KioskConfig,
   Asset,
+  KnowledgeArticle,
+  KnowledgeArticleVersion,
   ApiResponse,
   LoginCredentials,
   AuthToken,
@@ -1201,6 +1203,41 @@ class ApiClient {
 
     const response = await this.client.post<ApiResponse>('/api/smtp/test', { email: testEmail });
     return response.data;
+  }
+
+  // Knowledge Base (Nova Lore)
+  async getKnowledgeArticles(params: { search?: string } = {}): Promise<KnowledgeArticle[]> {
+    if (this.useMockMode) {
+      return this.mockRequest([]);
+    }
+
+    const response = await this.client.get<{ articles: KnowledgeArticle[] }>('/api/v1/lore/articles', { params });
+    return response.data.articles;
+  }
+
+  async getKnowledgeArticle(slug: string): Promise<KnowledgeArticle> {
+    const response = await this.client.get<{ article: KnowledgeArticle }>(`/api/v1/lore/articles/${slug}`);
+    return response.data.article;
+  }
+
+  async getKnowledgeVersions(articleId: number): Promise<KnowledgeArticleVersion[]> {
+    const response = await this.client.get<{ versions: KnowledgeArticleVersion[] }>(`/api/v1/lore/articles/${articleId}/versions`);
+    return response.data.versions;
+  }
+
+  async getKnowledgeComments(articleId: number): Promise<any[]> {
+    const response = await this.client.get<{ comments: any[] }>(`/api/v1/lore/articles/${articleId}/comments`);
+    return response.data.comments;
+  }
+
+  async createKnowledgeArticle(data: { title: string; content: string; tags?: string[] }): Promise<KnowledgeArticle> {
+    const response = await this.client.post<{ article: KnowledgeArticle }>('/api/v1/lore/articles', data);
+    return response.data.article;
+  }
+
+  async createKnowledgeVersion(articleId: number, data: { content: string }): Promise<KnowledgeArticleVersion> {
+    const response = await this.client.post<{ version: KnowledgeArticleVersion }>(`/api/v1/lore/articles/${articleId}/versions`, data);
+    return response.data.version;
   }
 }
 
