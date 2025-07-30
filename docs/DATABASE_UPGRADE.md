@@ -86,7 +86,7 @@ This will start:
 
 Install the required database drivers:
 ```bash
-npm install
+pnpm install
 ```
 
 ### 5. Run Migrations

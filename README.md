@@ -126,7 +126,8 @@ Open http://localhost:5173 to access the admin interface.
 
 ## Setup
 
-Run `./installers/setup.sh` to install Node.js and all project dependencies in one step.
+Run `./installers/setup.sh` to install Node.js.
+Then run `pnpm install` from the repository root to install dependencies across all workspaces.
 Copy `.env.local.example` to `.env.local` and adjust any values for your machine.
 Next run `./scripts/init-env.sh` to create the `.env` files for each app (edit them before launching).
 You can also follow the manual instructions below.
@@ -134,7 +135,7 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
 
 ### Platform API
 1. Navigate to `nova-api`.
-2. Run `npm install` to install dependencies.
+2. Dependencies should already be installed from the repository root with `pnpm install`.
 3. Edit the `.env` file with your SMTP configuration and `HELPDESK_EMAIL`.
    To send tickets directly to HelpScout instead, provide
    `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` (optionally set
@@ -158,7 +159,7 @@ query {
 
 ### Core Admin UI
 1. Navigate to `nova-core`.
-2. Run `npm install` to install dependencies.
+2. Dependencies should already be installed from the repository root with `pnpm install`.
 3. Edit the `.env` file and set `VITE_API_URL`. You can also set `VITE_LOGO_URL`.
 4. Start the development server with `npm run dev` and open `http://localhost:5173`.
 
@@ -174,7 +175,7 @@ Configuration values are stored in the same database and can be edited from the 
 
 ### Comms (Slack Service)
 1. Create a Slack app following [Slack's app setup guide](https://api.slack.com/apps) and add a `/new-ticket` slash command (see [Slash commands documentation](https://api.slack.com/interactivity/slash-commands)). Set its request URL to this service.
-2. Navigate to `nova-comms` and run `npm install`.
+2. Navigate to `nova-comms` (dependencies were installed from the repository root with `pnpm install`).
 3. Edit the `.env` file and set:
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
@@ -248,16 +249,14 @@ Nova Universe includes automated test suites for the backend API and the admin U
 ### nova-api
 
 1. `cd nova-api`
-2. `npm install`
-3. `npm test`
+2. `pnpm test`
 
 The API tests are written with Mocha and exercise the main Express endpoints.
 
 ### nova-core
 
 1. `cd nova-core`
-2. `npm install`
-3. `npm test`
+2. `pnpm test`
 
 This suite uses Jest and React Testing Library to validate the UI.
 

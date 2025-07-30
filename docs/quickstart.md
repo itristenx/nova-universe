@@ -13,7 +13,7 @@ Get CueIT running in 5 minutes.
    ```bash
    git clone https://github.com/your-org/CueIT.git
    cd CueIT
-   ./installers/setup.sh
+   pnpm install
    ```
 
 2. **Configure**
@@ -67,7 +67,7 @@ HELPDESK_EMAIL=helpdesk@company.com
 **Services won't start?**
 - Check that ports 3000 and 5173 are available
 - Ensure Node.js 18+ is installed
-- Run `npm install` in each service directory
+- Run `pnpm install` from the repository root to install workspace dependencies
 
 **Can't connect to admin interface?**
 - Verify the API is running at http://localhost:3000/api/health (see also /api/version for version info)

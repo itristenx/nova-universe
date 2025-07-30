@@ -98,8 +98,8 @@ node migrate-database.js --source ./nova-api/log.sqlite --target both
 
 ### 4. Start Application
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 ## 🔧 Technical Implementation

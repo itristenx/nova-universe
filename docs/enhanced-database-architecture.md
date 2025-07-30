@@ -196,7 +196,7 @@ docker-compose up elasticsearch kibana  # Elasticsearch + Kibana
 ### 🚀 Setup and Initialization
 ```bash
 # 1. Install dependencies
-npm install
+pnpm install
 
 # 2. Generate Prisma client
 npx prisma generate
