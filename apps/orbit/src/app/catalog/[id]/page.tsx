@@ -42,7 +42,7 @@ export default function CatalogItemPage({ params }: { params: { id: string } }) 
     <main className="p-8 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Request Item</h1>
       <form className="space-y-4" onSubmit={handleSubmit}>
-        {schema?.fields?.map((f: any) => (
+        {schema?.fields?.map((f: FormField) => (
           <input
             key={f.name}
             className="border p-2 w-full"
