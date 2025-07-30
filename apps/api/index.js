@@ -4,6 +4,7 @@ import assetsRouter from './routes/assets.js';
 import configurationRouter from './routes/configuration.js';
 import directoryRouter from './routes/directory.js';
 import integrationsRouter from './routes/integrations.js';
+import catalogItemsRouter from './routes/catalogItems.js';
 import organizationsRouter from './routes/organizations.js';
 import rolesRouter from './routes/roles.js';
 import searchRouter from './routes/search.js';
@@ -1257,6 +1258,7 @@ app.use('/api/v1/roles', rolesRouter);
 app.use('/api/v1/assets', assetsRouter);
 app.use('/api/v1/inventory', inventoryRouter);
 app.use('/api/v1/integrations', integrationsRouter);
+app.use('/api/catalog-items', catalogItemsRouter);
 app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info

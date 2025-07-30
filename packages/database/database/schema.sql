@@ -49,3 +49,19 @@ CREATE TABLE leaderboard (
     user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     xp_total INT NOT NULL DEFAULT 0
 );
+
+-- Request Catalog Items Table
+CREATE TABLE request_catalog_items (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    form_schema JSON,
+    workflow_id INT
+);
+
+-- RITMs Table
+CREATE TABLE ritms (
+    id SERIAL PRIMARY KEY,
+    req_id INT REFERENCES tickets(id),
+    catalog_item_id INT REFERENCES request_catalog_items(id),
+    status VARCHAR(20) DEFAULT 'open'
+);

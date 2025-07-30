@@ -68,6 +68,27 @@ export async function getCategories(token: string) {
   return res.json();
 }
 
+export async function getCatalogItems(token: string) {
+  const res = await fetch(`${API_BASE}/catalog`, {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
+  });
+  return res.json();
+}
+
+export async function submitCatalogItem(token: string, id: number, data: any) {
+  const res = await fetch(`${API_BASE}/catalog/${id}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(data),
+    credentials: 'include'
+  });
+  return res.json();
+}
+
 export async function submitFeedback(token: string, data: FeedbackData) {
   const res = await fetch(`${API_BASE}/feedback`, {
     method: "POST",

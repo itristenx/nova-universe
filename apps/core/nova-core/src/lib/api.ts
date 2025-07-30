@@ -517,12 +517,33 @@ class ApiClient {
     if (this.useMockMode) {
       const integration = mockIntegrations.find(i => i.id === id);
       const success = integration?.working !== false;
-      return this.mockRequest({ 
+      return this.mockRequest({
         message: success ? 'Integration test successful' : 'Integration test failed'
       });
     }
 
     const response = await this.client.post<ApiResponse>(`/api/integrations/${id}/test`);
+    return response.data;
+  }
+
+  // Catalog Items
+  async getCatalogItems(): Promise<RequestCatalogItem[]> {
+    const response = await this.client.get<RequestCatalogItem[]>('/api/v1/orbit/catalog');
+    return response.data.items;
+  }
+
+  async createCatalogItem(data: Omit<RequestCatalogItem, 'id'>): Promise<RequestCatalogItem> {
+    const response = await this.client.post<RequestCatalogItem>('/api/catalog-items', data);
+    return response.data;
+  }
+
+  async updateCatalogItem(id: number, data: Partial<RequestCatalogItem>): Promise<ApiResponse> {
+    const response = await this.client.put<ApiResponse>(`/api/catalog-items/${id}`, data);
+    return response.data;
+  }
+
+  async deleteCatalogItem(id: number): Promise<ApiResponse> {
+    const response = await this.client.delete<ApiResponse>(`/api/catalog-items/${id}`);
     return response.data;
   }
 

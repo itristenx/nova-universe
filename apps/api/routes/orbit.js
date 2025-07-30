@@ -7,6 +7,7 @@ import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 import { calculateVipWeight } from '../utils/utils.js';
+import { triggerWorkflow } from './workflows.js';
 
 const router = express.Router();
 
@@ -669,6 +670,52 @@ router.get('/categories',
         error: 'Failed to fetch categories',
         errorCode: 'CATEGORIES_ERROR'
       });
+    }
+  }
+);
+
+/**
+ * List request catalog items
+ */
+router.get('/catalog',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const result = await db.query('SELECT id, name, form_schema, workflow_id FROM request_catalog_items');
+      res.json({ success: true, items: result.rows });
+    } catch (error) {
+      logger.error('Error fetching catalog items:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch catalog items' });
+    }
+  }
+);
+
+/**
+ * Submit a catalog request item
+ */
+router.post('/catalog/:id',
+  authenticateJWT,
+  async (req, res) => {
+    const catalogId = parseInt(req.params.id, 10);
+    const { reqId } = req.body || {};
+    try {
+      const itemRes = await db.query('SELECT workflow_id FROM request_catalog_items WHERE id = $1', [catalogId]);
+      if (itemRes.rowCount === 0) {
+        return res.status(404).json({ success: false, error: 'Catalog item not found' });
+      }
+      const insert = await db.query(
+        'INSERT INTO ritms (req_id, catalog_item_id, status) VALUES ($1,$2,$3) RETURNING id',
+        [reqId || null, catalogId, 'open']
+      );
+      const ritmId = insert.rows[0].id;
+      const workflowId = itemRes.rows[0].workflow_id;
+      if (workflowId) {
+        triggerWorkflow(String(workflowId));
+      }
+      res.status(201).json({ success: true, ritmId });
+    } catch (error) {
+      logger.error('Error submitting catalog item:', error);
+      res.status(500).json({ success: false, error: 'Failed to submit request item' });
     }
   }
 );

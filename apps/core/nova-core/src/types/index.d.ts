@@ -125,6 +125,20 @@ export interface Integration {
     working?: boolean;
     lastError?: string;
 }
+
+export interface RequestCatalogItem {
+    id: number;
+    name: string;
+    formSchema?: any;
+    workflowId?: number;
+}
+
+export interface RITM {
+    id: number;
+    reqId: number;
+    catalogItemId: number;
+    status: string;
+}
 export interface KioskActivation {
     id: string;
     code: string;

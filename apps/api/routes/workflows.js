@@ -3,6 +3,13 @@ import express from 'express';
 const router = express.Router();
 const runs = [];
 
+export function triggerWorkflow(workflow) {
+  const id = runs.length + 1;
+  const record = { id, workflow, status: 'queued', triggeredAt: new Date().toISOString() };
+  runs.push(record);
+  return record;
+}
+
 /**
  * @swagger
  * /api/workflows/trigger:
@@ -37,10 +44,8 @@ router.post('/trigger', (req, res) => {
   if (!workflow) {
     return res.status(400).json({ error: 'Missing workflow' });
   }
-  const id = runs.length + 1;
-  const record = { id, workflow, status: 'queued', triggeredAt: new Date().toISOString() };
-  runs.push(record);
-  res.json({ runId: id, status: record.status });
+  const record = triggerWorkflow(workflow);
+  res.json({ runId: record.id, status: record.status });
 });
 
 /**
