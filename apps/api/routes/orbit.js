@@ -698,6 +698,9 @@ router.post('/catalog/:id',
   async (req, res) => {
     const catalogId = parseInt(req.params.id, 10);
     const { reqId } = req.body || {};
+    if (!reqId) {
+      return res.status(400).json({ success: false, error: 'reqId is required in the request body' });
+    }
     try {
       const itemRes = await db.query('SELECT workflow_id FROM request_catalog_items WHERE id = $1', [catalogId]);
       if (itemRes.rowCount === 0) {
