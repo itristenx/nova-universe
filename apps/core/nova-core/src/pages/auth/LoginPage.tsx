@@ -17,7 +17,7 @@ export const LoginPage: React.FC = () => {
   const [ssoAvailable, setSsoAvailable] = useState(false);
   const [ssoLoginUrl, setSsoLoginUrl] = useState<string | null>(null);
   const [passkeyAvailable, setPasskeyAvailable] = useState(false);
-  const [branding, setBranding] = useState<any>({});
+  const [branding, setBranding] = useState<Branding>({});
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const { addToast } = useToastStore();
