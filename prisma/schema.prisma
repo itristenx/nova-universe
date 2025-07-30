@@ -41,6 +41,10 @@ model User {
   kbArticleComments          KbArticleComment[]
   xpEvents              XpEvent[]
   leaderboard            Leaderboard?
+  mailroomPackages        MailroomPackage[]        @relation("MailroomPackageRecipient")
+  deliveryEvents          DeliveryEvent[]          @relation("DeliveryEventUser")
+  proxyAuthorizationsAsRecipient ProxyAuthorization[] @relation("ProxyRecipient")
+  proxyAuthorizationsAsProxy     ProxyAuthorization[] @relation("ProxyUser")
 
   @@map("users")
 }
@@ -304,6 +308,7 @@ model SupportTicket {
   users_support_tickets_userIdTousers     User?    @relation("support_tickets_userIdTousers", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   vipPriorityScore Int?    @map("vip_priority_score")
   vipTriggerSource String? @map("vip_trigger_source")
+  mailroomPackages MailroomPackage[]
 
   @@map("support_tickets")
 }
@@ -334,6 +339,7 @@ model InventoryAsset {
   updatedAt         DateTime @updatedAt @map("updated_at")
   statusLogs        AssetStatusLog[]
   assignments       AssetAssignment[]
+  mailroomPackages MailroomPackage[]
 
   @@map("inventory_assets")
 }
@@ -395,4 +401,62 @@ model ScimMapping {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("scim_mappings")
+}
+
+model MailroomPackage {
+  id                Int      @id @default(autoincrement())
+  trackingNumber    String   @map("tracking_number")
+  carrier           String
+  sender            String?
+  recipientId       String   @map("recipient_id")
+  department        String?
+  packageType       String?  @map("package_type")
+  status            String
+  assignedLocation  String?  @map("assigned_location")
+  linkedTicketId    Int?     @map("linked_ticket_id")
+  linkedAssetId     Int?     @map("linked_asset_id")
+  flags             String[]
+  intakePhotoUrl    String?  @map("intake_photo_url")
+  deliveryPhotoUrl  String?  @map("delivery_photo_url")
+  signatureUrl      String?  @map("signature_url")
+  intakeLocation    String?  @map("intake_location")
+  deliveryLocation  String?  @map("delivery_location")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  recipient         User     @relation("MailroomPackageRecipient", fields: [recipientId], references: [id])
+  ticket            SupportTicket? @relation(fields: [linkedTicketId], references: [id])
+  asset             InventoryAsset? @relation(fields: [linkedAssetId], references: [id])
+  deliveryEvents    DeliveryEvent[]
+  proxyAuthorizations ProxyAuthorization[]
+
+  @@map("mailroom_packages")
+}
+
+model DeliveryEvent {
+  id           Int      @id @default(autoincrement())
+  packageId    Int      @map("package_id")
+  eventType    String   @map("event_type")
+  performedBy  String   @map("performed_by")
+  location     String?
+  timestamp    DateTime @default(now())
+  photoUrl     String?  @map("photo_url")
+  signatureBlob Bytes?  @map("signature_blob")
+  package      MailroomPackage @relation(fields: [packageId], references: [id])
+  user         User     @relation("DeliveryEventUser", fields: [performedBy], references: [id])
+
+  @@map("delivery_events")
+}
+
+model ProxyAuthorization {
+  id          Int      @id @default(autoincrement())
+  recipientId String   @map("recipient_id")
+  proxyId     String   @map("proxy_id")
+  packageId   Int      @map("package_id")
+  expiration  DateTime?
+  status      String
+  recipient   User     @relation("ProxyRecipient", fields: [recipientId], references: [id])
+  proxy       User     @relation("ProxyUser", fields: [proxyId], references: [id])
+  package     MailroomPackage @relation(fields: [packageId], references: [id])
+
+  @@map("proxy_authorizations")
 }
