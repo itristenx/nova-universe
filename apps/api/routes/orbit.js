@@ -712,6 +712,7 @@ router.post('/catalog/:id',
       );
       const ritmId = insert.rows[0].id;
       const workflowId = itemRes.rows[0].workflow_id;
+      // Ensure workflowId is a string before passing it to triggerWorkflow
       if (workflowId) {
         triggerWorkflow(String(workflowId));
       }
