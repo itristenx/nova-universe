@@ -98,8 +98,8 @@ node migrate-database.js --source ./nova-api/log.sqlite --target both
 
 ### 4. Start Application
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 ## 🔧 Technical Implementation
@@ -250,13 +250,13 @@ const health = await db.healthCheck();
 ### Running Tests
 ```bash
 # Run all database tests
-npm test test/database.test.js
+pnpm test test/database.test.js
 
 # Verify setup
 node test-db-setup.js
 
 # Integration testing
-npm test
+pnpm test
 ```
 
 ## 🚀 Production Deployment

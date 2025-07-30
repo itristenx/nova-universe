@@ -86,7 +86,7 @@ This will start:
 
 Install the required database drivers:
 ```bash
-npm install
+pnpm install
 ```
 
 ### 5. Run Migrations
@@ -444,13 +444,13 @@ db.system.profile.find().limit(5).sort({ ts: -1 });
 
 ```bash
 # Full test suite
-npm test
+pnpm test
 
 # Database-specific tests
-npm test test/database.test.js
+pnpm test test/database.test.js
 
 # Integration tests
-npm test test/integration.test.js
+pnpm test test/integration.test.js
 ```
 
 ### Test Configuration
@@ -558,7 +558,7 @@ When reporting issues, include:
 ### Contributing
 
 Contributions are welcome! Please:
-1. Run tests: `npm test`
+1. Run tests: `pnpm test`
 2. Follow code style guidelines
 3. Add tests for new features
 4. Update documentation

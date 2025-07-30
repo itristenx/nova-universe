@@ -17,24 +17,13 @@ if ! command -v mailpit >/dev/null 2>&1; then
   echo "Mailpit not found – install from https://github.com/axllent/mailpit if needed."
 fi
 
-# Install Node dependencies for backend, admin, and comms service
+# Workspace directories
 nova_api_dir="apps/api"
 nova_core_dir="apps/core/nova-core"
 nova_comms_dir="apps/comms/nova-comms"
 
-pushd "$nova_api_dir" >/dev/null
-npm ci
-popd >/dev/null
-
-pushd "$nova_core_dir" >/dev/null
-npm ci
-popd >/dev/null
-
-if [ -d "$nova_comms_dir" ]; then
-  pushd "$nova_comms_dir" >/dev/null
-  npm ci
-  popd >/dev/null
-fi
+# Install dependencies for all workspaces
+pnpm install
 
 # Automatically create .env files if they do not exist
 missing_env=false

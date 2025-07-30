@@ -196,7 +196,7 @@ docker-compose up elasticsearch kibana  # Elasticsearch + Kibana
 ### 🚀 Setup and Initialization
 ```bash
 # 1. Install dependencies
-npm install
+pnpm install
 
 # 2. Generate Prisma client
 npx prisma generate
@@ -208,7 +208,7 @@ docker-compose up -d postgres mongodb elasticsearch
 npx prisma db push
 
 # 5. Test setup
-npm test test/database-setup.test.js
+pnpm test test/database-setup.test.js
 ```
 
 ### 🔧 Database Management
