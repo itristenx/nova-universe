@@ -54,7 +54,16 @@ export const APIDocsPage: React.FC = () => {
             {keys.map(k => (
               <tr key={k.id}>
                 <td className="border px-2 py-1">{k.name}</td>
-                <td className="border px-2 py-1 font-mono">{k.key}</td>
+                <td className="border px-2 py-1 font-mono">
+                  {k.key.slice(0, 4) + '****' + k.key.slice(-4)}
+                  <Button
+                    variant="secondary"
+                    className="ml-2"
+                    onClick={() => navigator.clipboard.writeText(k.key)}
+                  >
+                    Copy
+                  </Button>
+                </td>
                 <td className="border px-2 py-1">
                   <Button variant="secondary" onClick={() => deleteKey(k.id)}>Delete</Button>
                 </td>
