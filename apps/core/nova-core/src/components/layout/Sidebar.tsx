@@ -26,6 +26,7 @@ const navigation = [
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: 'Notifications', href: '/notifications', icon: BellIcon },
   { name: 'Integrations', href: '/integrations', icon: Cog6ToothIcon },
+  { name: 'Modules', href: '/modules', icon: Cog6ToothIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
 ];
 
