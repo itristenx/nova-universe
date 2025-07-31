@@ -147,6 +147,18 @@ export interface Integration {
   lastError?: string;
 }
 
+export interface EmailAccount {
+  id: number;
+  queue: 'IT' | 'HR' | 'OPS' | 'CYBER';
+  address: string;
+  displayName?: string;
+  enabled: boolean;
+  graphImpersonation: boolean;
+  autoCreateTickets: boolean;
+  webhookMode: boolean;
+  lastSynced?: string;
+}
+
 export interface KioskActivation {
   id: string;
   code: string;

@@ -82,8 +82,12 @@ INSERT INTO config (key, value, value_type, description, is_public, category) VA
 ON CONFLICT (key) DO NOTHING;
 
 -- Insert default SMTP integration configuration
-INSERT INTO config (key, value, value_type, description, is_public, category) VALUES 
+INSERT INTO config (key, value, value_type, description, is_public, category) VALUES
 ('integration_smtp', '{"enabled": true, "config": {"host": "", "port": 587, "secure": false, "username": "", "password": ""}, "updatedAt": "' || CURRENT_TIMESTAMP || '"}', 'json', 'SMTP email integration configuration', false, 'integrations')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO config (key, value, value_type, description, is_public, category) VALUES
+('integration_m365', '{"enabled": false, "config": {"clientId": "", "tenantId": ""}, "updatedAt": "' || CURRENT_TIMESTAMP || '"}', 'json', 'Microsoft 365 integration configuration', false, 'integrations')
 ON CONFLICT (key) DO NOTHING;
 
 -- Insert default directory integration

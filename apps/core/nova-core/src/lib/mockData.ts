@@ -1,4 +1,4 @@
-import type { User, Kiosk, Log, Config, Notification, Integration, DashboardStats, Role, Permission } from '@/types';
+import type { User, Kiosk, Log, Config, Notification, Integration, EmailAccount, DashboardStats, Role, Permission } from '@/types';
 import type { ModuleStatus } from '@/types';
 
 // Mock data for development when API is not available
@@ -184,6 +184,20 @@ export const mockIntegrations: Integration[] = [
     },
     working: true
   }
+];
+
+export const mockEmailAccounts: EmailAccount[] = [
+  {
+    id: 1,
+    queue: 'IT',
+    address: 'it@company.com',
+    displayName: 'IT Queue',
+    enabled: true,
+    graphImpersonation: false,
+    autoCreateTickets: true,
+    webhookMode: false,
+    lastSynced: new Date().toISOString(),
+  },
 ];
 
 export const mockModules: Record<string, boolean> = {

@@ -143,6 +143,14 @@ async function setupDefaultConfig() {
           password: process.env.SMTP_PASS || ''
         },
         updatedAt: new Date().toISOString()
+      }),
+      integration_m365: JSON.stringify({
+        enabled: false,
+        config: {
+          clientId: process.env.M365_CLIENT_ID || '',
+          tenantId: process.env.M365_TENANT_ID || '',
+        },
+        updatedAt: new Date().toISOString()
       })
     };
     defaults.adminPassword = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 12);
