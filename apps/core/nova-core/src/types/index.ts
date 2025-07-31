@@ -511,3 +511,9 @@ export interface ModuleStatus {
   key: string;
   enabled: boolean;
 }
+
+export interface ApiKey {
+  key: string;
+  createdAt: string;
+  description?: string;
+}
