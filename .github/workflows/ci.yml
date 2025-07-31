@@ -29,11 +29,24 @@ jobs:
           node-version: 20
           cache: 'pnpm'
       - name: Setup pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+          run_install: false
       - name: Install dependencies
         run: pnpm install --ignore-scripts
+      - name: Prepare test environment
+        run: |
+          for dir in apps/api apps/core/nova-core apps/comms/nova-comms; do
+            cp .env.example "$dir/.env"
+            {
+              echo DATABASE_URL=postgresql://nova_admin:postgres@localhost:5432/nova_universe
+              echo POSTGRES_USER=nova_admin
+              echo POSTGRES_PASSWORD=postgres
+              echo POSTGRES_DB=nova_universe
+              echo MONGO_ENABLED=false
+            } >> "$dir/.env"
+          done
       - name: Lint
         run: pnpm -r lint
       - name: Test
