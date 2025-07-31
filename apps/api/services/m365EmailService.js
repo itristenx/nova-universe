@@ -105,7 +105,11 @@ class M365EmailService {
   async subscribeWebhooks() {
     const token = await this.getToken();
     const accounts = await db.any('SELECT * FROM email_accounts WHERE enabled = TRUE AND webhook_mode = TRUE');
-    const baseUrl = process.env.PUBLIC_URL || process.env.API_URL || 'http://localhost:3000';
+    if (!process.env.PUBLIC_URL) {
+      logger.error('PUBLIC_URL must be set when webhook_mode is enabled.');
+      throw new Error('PUBLIC_URL is required for webhook configuration.');
+    }
+    const baseUrl = process.env.PUBLIC_URL;
     for (const account of accounts) {
       try {
         const subscriptionPayload = {
