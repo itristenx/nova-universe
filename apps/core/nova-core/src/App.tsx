@@ -9,6 +9,10 @@ import { NovaDashboard } from '@/pages/NovaDashboard';
 import { SAMLConfigurationPage } from '@/pages/SAMLConfigurationPage';
 import { UserManagementPage } from '@/pages/UserManagementPage';
 import { VIPManagementPage } from '@/pages/VIPManagementPage';
+import SCIMProvisioningMonitor from '@/pages/SCIMProvisioningMonitor';
+import { ConfigurationPage } from '@/pages/ConfigurationPage';
+import { APIDocsPage } from '@/pages/APIDocsPage';
+import { ModuleManagementPage } from '@/pages/ModuleManagementPage';
 import { useAuthStore } from '@/stores/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
@@ -181,6 +185,10 @@ const AppRoutes: React.FC = () => {
             </React.Suspense>
           }
         />
+        <Route path="modules" element={<ModuleManagementPage />} />
+        <Route path="configuration" element={<ConfigurationPage />} />
+        <Route path="api-docs" element={<APIDocsPage />} />
+        <Route path="scim-monitor" element={<SCIMProvisioningMonitor />} />
         <Route
           path="catalog-items"
           element={

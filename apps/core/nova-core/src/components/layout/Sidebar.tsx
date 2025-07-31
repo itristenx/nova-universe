@@ -27,6 +27,10 @@ const navigation = [
   { name: 'Notifications', href: '/notifications', icon: BellIcon },
   { name: 'Integrations', href: '/integrations', icon: Cog6ToothIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
+  { name: 'Modules', href: '/modules', icon: Cog6ToothIcon },
+  { name: 'Configuration', href: '/configuration', icon: CogIcon },
+  { name: 'SCIM Monitor', href: '/scim-monitor', icon: UsersIcon },
+  { name: 'API Docs', href: '/api-docs', icon: DocumentTextIcon },
 ];
 
 interface SidebarProps {
