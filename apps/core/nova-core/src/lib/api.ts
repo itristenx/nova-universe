@@ -568,7 +568,7 @@ class ApiClient {
       return this.mockRequest(mockModules);
     }
 
-    const response = await this.client.get<{ modules: Record<string, boolean> }>('/api/modules');
+    const response = await this.client.get<{ modules: Record<string, boolean> }>('/api/v1/modules');
     return response.data.modules;
   }
 
