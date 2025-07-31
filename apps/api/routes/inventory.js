@@ -1,6 +1,7 @@
 import express from 'express';
 import db from '../db.js';
 import { authenticateJWT } from '../middleware/auth.js';
+import { encrypt, decrypt } from '../utils/encryption.js';
 
 const router = express.Router();
 
@@ -8,7 +9,11 @@ const router = express.Router();
 router.get('/', authenticateJWT, async (req, res) => {
   try {
     const { rows } = await db.query('SELECT * FROM inventory_assets ORDER BY id');
-    res.json({ success: true, assets: rows });
+    const assets = rows.map(a => ({
+      ...a,
+      serial_number: a.serial_number_enc ? decrypt(a.serial_number_enc) : null
+    }));
+    res.json({ success: true, assets });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to fetch assets', errorCode: 'INVENTORY_ERROR' });
   }
@@ -18,7 +23,11 @@ router.get('/', authenticateJWT, async (req, res) => {
 router.get('/user/:userId', authenticateJWT, async (req, res) => {
   try {
     const { rows } = await db.query('SELECT * FROM inventory_assets WHERE assigned_to_user_id = $1', [req.params.userId]);
-    res.json({ success: true, assets: rows });
+    const assets = rows.map(a => ({
+      ...a,
+      serial_number: a.serial_number_enc ? decrypt(a.serial_number_enc) : null
+    }));
+    res.json({ success: true, assets });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to fetch assets', errorCode: 'INVENTORY_ERROR' });
   }
@@ -29,7 +38,18 @@ router.get('/:id', authenticateJWT, async (req, res) => {
   try {
     const { rows } = await db.query('SELECT * FROM inventory_assets WHERE id = $1', [req.params.id]);
     if (!rows[0]) return res.status(404).json({ success: false, error: 'Not found' });
-    res.json({ success: true, asset: rows[0] });
+    const asset = {
+      ...rows[0],
+      serial_number: rows[0].serial_number_enc ? decrypt(rows[0].serial_number_enc) : null
+    };
+    // Warranty alert if within 30 days
+    let warrantyAlert = false;
+    if (asset.warranty_expiry) {
+      const exp = new Date(asset.warranty_expiry);
+      const diff = exp - new Date();
+      warrantyAlert = diff > 0 && diff <= 30 * 24 * 60 * 60 * 1000;
+    }
+    res.json({ success: true, asset, warrantyAlert });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to fetch asset', errorCode: 'INVENTORY_ERROR' });
   }
@@ -41,7 +61,7 @@ router.post('/', authenticateJWT, async (req, res) => {
     const fields = [
       'asset_tag',
       'type_id',
-      'serial_number',
+      'serial_number_enc',
       'model',
       'vendor_id',
       'purchase_date',
@@ -58,7 +78,12 @@ router.post('/', authenticateJWT, async (req, res) => {
       'created_by',
       'updated_by'
     ];
-    const values = fields.map(f => req.body[f] ?? null);
+    const values = fields.map(f => {
+      if (f === 'serial_number_enc') {
+        return req.body.serial_number ? encrypt(req.body.serial_number) : null;
+      }
+      return req.body[f] ?? null;
+    });
     const placeholders = fields.map((_, i) => '$' + (i + 1)).join(',');
     const { rows } = await db.query(
       `INSERT INTO inventory_assets (${fields.join(',')}) VALUES (${placeholders}) RETURNING *`,
@@ -76,7 +101,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
     const fields = [
       'asset_tag',
       'type_id',
-      'serial_number',
+      'serial_number_enc',
       'model',
       'vendor_id',
       'purchase_date',
@@ -93,7 +118,12 @@ router.put('/:id', authenticateJWT, async (req, res) => {
       'updated_by'
     ];
     const set = fields.map((f, i) => `${f} = $${i+1}`).join(',');
-    const values = fields.map(f => req.body[f] ?? null);
+    const values = fields.map(f => {
+      if (f === 'serial_number_enc') {
+        return req.body.serial_number ? encrypt(req.body.serial_number) : null;
+      }
+      return req.body[f] ?? null;
+    });
     values.push(req.params.id);
     const { rows } = await db.query(
       `UPDATE inventory_assets SET ${set} WHERE id = $${fields.length+1} RETURNING *`,
@@ -157,6 +187,51 @@ router.post('/:id/assign', authenticateJWT, async (req, res) => {
     res.json({ success: true, assignment: rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to assign asset', errorCode: 'INVENTORY_ERROR' });
+  }
+});
+
+// Import assets via CSV or JSON
+router.post('/import', authenticateJWT, async (req, res) => {
+  try {
+    const { format, data } = req.body;
+    const records = [];
+    if (format === 'csv') {
+      const lines = data.trim().split(/\r?\n/);
+      const headers = lines.shift().split(',');
+      for (const line of lines) {
+        const cols = line.split(',');
+        const obj = {};
+        headers.forEach((h, i) => obj[h.trim()] = cols[i]?.trim());
+        records.push(obj);
+      }
+    } else if (format === 'json') {
+      records.push(...JSON.parse(data));
+    } else {
+      return res.status(400).json({ error: 'Unsupported format' });
+    }
+
+    await db.query('BEGIN');
+    try {
+      for (const rec of records) {
+        await db.query(
+          'INSERT INTO inventory_assets (asset_tag, serial_number_enc) VALUES ($1,$2)',
+          [rec.asset_tag, rec.serial_number ? encrypt(rec.serial_number) : null]
+        );
+      }
+      await db.query('COMMIT');
+    } catch (e) {
+      await db.query('ROLLBACK');
+      throw e;
+    }
+
+    res.json({ success: true, imported: records.length });
+  } catch (err) {
+    console.error('Error during asset import:', err); // Log the full error for debugging
+    res.status(500).json({ 
+      success: false, 
+      error: 'Import failed due to a server error. Please check the data and try again.', 
+      errorCode: 'IMPORT_ERROR' 
+    });
   }
 });
 

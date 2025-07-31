@@ -31,6 +31,7 @@ if (missing.length) {
 const config = {
   sessionSecret: process.env.SESSION_SECRET,
   jwtSecret: process.env.JWT_SECRET,
+  assetEncryptionKey: process.env.ASSET_ENCRYPTION_KEY,
   smtp: {
     host: process.env.SMTP_HOST,
     user: process.env.SMTP_USER,
