@@ -18,7 +18,7 @@ export function encrypt(text) {
 
 export function decrypt(payload) {
   if (!config.assetEncryptionKey) {
-    return payload;
+    throw new Error('Decryption failed: Encryption key is not configured.');
   }
   const data = Buffer.from(payload, 'base64');
   const key = Buffer.from(config.assetEncryptionKey, 'hex');
