@@ -11,10 +11,13 @@ const config: JestConfigWithTsJest = {
     '^.+\\.js$': 'babel-jest',
     '^.+\\.mjs$': 'babel-jest'
   },
-  extensionsToTreatAsEsm: ['.ts', '.mjs'],
+  extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(\\.prisma/client)/)'
+  ]
 };
 
 export default config;
