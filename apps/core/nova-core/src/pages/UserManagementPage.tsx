@@ -545,7 +545,7 @@ export const UserManagementPage: React.FC = () => {
         </div>
         <div className="flex justify-end space-x-3 mt-6">
           <Button variant="secondary" onClick={closeModals}>Cancel</Button>
-          <Button variant="primary" onClick={submitCreateUser} disabled={!formData.name || !formData.email || !formData.password}>Create</Button>
+          <Button variant="primary" onClick={submitCreateUser} disabled={!isFormValid(formData, true)}>Create</Button>
         </div>
       </Modal>
 
