@@ -48,6 +48,14 @@ export default function TicketsPage() {
           ? localStorage.getItem("token") || ""
           : "";
 
+  if (!token) {
+    return (
+      <main className="p-8 max-w-4xl mx-auto">
+        <p>Please log in to view your tickets.</p>
+      </main>
+    );
+  }
+
   const router = useRouter();
 
   useEffect(() => {

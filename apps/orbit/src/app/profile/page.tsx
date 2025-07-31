@@ -6,6 +6,13 @@ import { getSession, updateProfile } from "../../lib/api";
 export default function ProfilePage() {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  if (!token) {
+    return (
+      <main className="p-8 max-w-lg mx-auto">
+        <p>You must be logged in to view this page.</p>
+      </main>
+    );
+  }
   const [userId, setUserId] = useState<string>("");
   const [profile, setProfile] = useState({
     name: "",

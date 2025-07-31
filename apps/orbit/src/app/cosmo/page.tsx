@@ -6,13 +6,21 @@ export default function CosmoPage() {
   const [messages, setMessages] = useState<{from: string, text: string}[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+
+  if (!token) {
+    return (
+      <main className="p-8 max-w-lg mx-auto">
+        <p>Please log in to chat with Cosmo.</p>
+      </main>
+    );
+  }
 
   async function handleSend() {
     if (!input.trim()) return;
     setLoading(true);
     setMessages(msgs => [...msgs, { from: "user", text: input }]);
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
     try {
       const res = await sendCosmoMessage(token, input);
       if (res.success) {
