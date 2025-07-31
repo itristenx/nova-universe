@@ -354,7 +354,7 @@ export const UserManagementPage: React.FC = () => {
     toggleUserStatus
   } = useUsers(filters, currentPage, pageSize);
 
-  React.useEffect(() => {
+  useEffect(() => {
     api.getRoles().then(setRoles).catch((e) => {
       console.error('Failed to load roles:', e);
       addToast({
