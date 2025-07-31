@@ -7,7 +7,7 @@ import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 import { checkQueueAccess } from '../middleware/queueAccess.js';
-import { calculateVipWeight } from '../utils/utils.js';
+import { calculateVipWeight, calculateVipDueDate } from '../utils/utils.js';
 import { notifyCosmoEscalation } from '../utils/cosmo.js';
 
 // Maximum XP that can be awarded in a single event
@@ -311,33 +311,7 @@ router.post('/tickets',
 
       const vipRow = await db.oneOrNone('SELECT is_vip, vip_level, vip_sla_override FROM users WHERE id = $1', [requestedById]);
 
-      const dueDate = new Date(now);
-      switch (priority) {
-        case 'critical':
-          dueDate.setHours(now.getHours() + 4); break;
-        case 'high':
-          dueDate.setDate(now.getDate() + 1); break;
-        case 'medium':
-          dueDate.setDate(now.getDate() + 3); break;
-        default:
-          dueDate.setDate(now.getDate() + 7);
-      }
-
-      if (vipRow?.is_vip) {
-        const sla = vipRow.vip_sla_override || null;
-        if (sla && sla.responseMinutes) {
-          dueDate.setMinutes(now.getMinutes() + parseInt(sla.responseMinutes));
-        } else {
-          switch (vipRow.vip_level) {
-            case 'exec':
-              dueDate.setHours(now.getHours() + 2); break;
-            case 'gold':
-              dueDate.setHours(now.getHours() + 4); break;
-            default:
-              dueDate.setHours(now.getHours() + 8);
-          }
-        }
-      }
+      const dueDate = calculateVipDueDate(priority, now, vipRow);
 
       const vipWeight = calculateVipWeight(vipRow?.is_vip, vipRow?.vip_level);
 

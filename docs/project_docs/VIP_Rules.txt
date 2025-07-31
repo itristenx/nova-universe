@@ -120,13 +120,13 @@ VIP status can be assigned based on:
 
 ## 🚦 Next Steps for Agent Execution
 
-- [ ] Ensure user schema supports `is_vip`, `vip_level`, and SCIM sync
-- [ ] Update ticket creation logic to check for VIPs and apply SLA/queue logic
-- [ ] Adjust Nova Pulse sorting algorithm to include VIP weighting
-- [ ] Create admin UI in Nova Core for VIP management
-- [ ] Add audit logging and visibility rules
-- [ ] Integrate Cosmo assistant escalation and alerts for VIP tickets
-- [ ] Test VIP tickets end-to-end with SLA violation simulations
-- [ ] Document behavior for support and tech teams
+- [x] Ensure user schema supports `is_vip`, `vip_level`, and SCIM sync
+- [x] Update ticket creation logic to check for VIPs and apply SLA/queue logic
+- [x] Adjust Nova Pulse sorting algorithm to include VIP weighting
+- [x] Create admin UI in Nova Core for VIP management
+- [x] Add audit logging and visibility rules
+- [x] Integrate Cosmo assistant escalation and alerts for VIP tickets
+- [x] Test VIP tickets end-to-end with SLA violation simulations
+- [x] Document behavior for support and tech teams
 
 ---

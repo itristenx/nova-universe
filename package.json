@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/simple.test.js",
+    "test": "node --test test/*.test.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --config ./tools/config/eslint.config.js"
   },
