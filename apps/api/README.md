@@ -97,7 +97,9 @@ retrieved from `/api/me`.
 You can also obtain a JSON Web Token by POSTing an admin password to
 `/api/login`. Set `JWT_SECRET` (and optional `JWT_EXPIRES_IN`) in your
 environment. Include `Authorization: Bearer <token>` when calling
-protected endpoints.
+protected endpoints. A `refreshToken` is also returned which can be exchanged
+for a new access token by calling `POST /api/token/refresh` with the refresh
+token in the request body.
 
 To enable SAML configure these variables in `.env`:
 
@@ -135,6 +137,13 @@ curl -X POST \
   -d '{"userName":"john@example.com","displayName":"John"}' \
   http://localhost:3000/scim/v2/Users
 ```
+
+## API Keys & Scopes
+
+Refresh tokens and API keys can carry scoped permissions. When a user logs in a
+`refreshToken` is issued alongside the access token. API keys created through
+future tooling will also include an array of scopes. Protected endpoints may
+require certain scopes which are validated by middleware.
 
 ## Security
 

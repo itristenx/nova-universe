@@ -45,6 +45,8 @@ model User {
   deliveryEvents          DeliveryEvent[]          @relation("DeliveryEventUser")
   proxyAuthorizationsAsRecipient ProxyAuthorization[] @relation("ProxyRecipient")
   proxyAuthorizationsAsProxy     ProxyAuthorization[] @relation("ProxyUser")
+  refreshTokens          RefreshToken[]
+  apiKeys                ApiKey[]
 
   @@map("users")
 }
@@ -502,4 +504,28 @@ model VipSlaHistory {
   user        User     @relation(fields: [userId], references: [id])
 
   @@map("vip_sla_history")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("refresh_tokens")
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  name      String?
+  userId    String?  @map("user_id")
+  scopes    String[]
+  createdAt DateTime @default(now()) @map("created_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@map("api_keys")
 }

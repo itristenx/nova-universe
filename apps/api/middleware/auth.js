@@ -33,6 +33,22 @@ export function requireRole(role) {
 }
 
 /**
+ * Middleware to require token scopes
+ */
+export function requireScopes(scopes = []) {
+  return (req, res, next) => {
+    if (!req.user || !Array.isArray(req.user.scopes)) {
+      return res.status(403).json({ error: 'Insufficient scope', errorCode: 'INSUFFICIENT_SCOPE' });
+    }
+    const missing = scopes.filter(s => !req.user.scopes.includes(s));
+    if (missing.length > 0) {
+      return res.status(403).json({ error: 'Insufficient scope', errorCode: 'INSUFFICIENT_SCOPE' });
+    }
+    next();
+  };
+}
+
+/**
  * Helper to issue a JWT for a user object
  */
 export function issueJWT(user) {

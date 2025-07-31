@@ -3,8 +3,9 @@
 import bcrypt from 'bcryptjs';
 import express from 'express';
 import { body, validationResult } from 'express-validator';
-import db from '../db.js';
+import db, { prisma } from '../db.js';
 import { sign } from '../jwt.js';
+import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
@@ -236,12 +237,17 @@ router.post('/login',
               id: user.id,
               name: user.name,
               email: user.email,
-              roles: userRoles
+              roles: userRoles,
+              scopes: ['user']
             });
+
+            const refreshTokenValue = uuidv4();
+            await prisma.refreshToken.create({ data: { token: refreshTokenValue, userId: user.id } });
 
             res.json({
               success: true,
               token,
+              refreshToken: refreshTokenValue,
               user: {
                 id: user.id,
                 name: user.name,
@@ -262,6 +268,42 @@ router.post('/login',
         error: 'Authentication failed',
         errorCode: 'LOGIN_ERROR'
       });
+    }
+  }
+);
+
+// Exchange a refresh token for a new JWT
+router.post('/token/refresh',
+  [body('refreshToken').notEmpty()],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, error: 'Invalid input', details: errors.array(), errorCode: 'VALIDATION_ERROR' });
+      }
+
+      const { refreshToken } = req.body;
+      const stored = await prisma.refreshToken.findUnique({ where: { token: refreshToken } });
+      if (!stored || stored.revoked) {
+        return res.status(401).json({ success: false, error: 'Invalid refresh token', errorCode: 'INVALID_REFRESH_TOKEN' });
+      }
+
+      const user = await prisma.user.findUnique({ where: { id: stored.userId }, include: { roles: { include: { role: true } } } });
+      if (!user) {
+        return res.status(401).json({ success: false, error: 'Invalid refresh token', errorCode: 'INVALID_REFRESH_TOKEN' });
+      }
+
+      await prisma.refreshToken.update({ where: { token: refreshToken }, data: { revoked: true } });
+      const newRefreshToken = uuidv4();
+      await prisma.refreshToken.create({ data: { token: newRefreshToken, userId: user.id } });
+
+      const roles = user.roles.map(r => r.role.name);
+      const token = sign({ id: user.id, name: user.name, email: user.email, roles, scopes: ['user'] });
+
+      res.json({ success: true, token, refreshToken: newRefreshToken, expiresIn: process.env.JWT_EXPIRES_IN || '1h' });
+    } catch (error) {
+      logger.error('Error refreshing token:', error);
+      res.status(500).json({ success: false, error: 'Token refresh failed', errorCode: 'REFRESH_ERROR' });
     }
   }
 );
@@ -1047,13 +1089,16 @@ router.post('/sso/saml/callback', (req, res, next) => {
 
       try {
         // Generate JWT token for authenticated user
-        const token = sign({ userId: user.id, email: user.email, roles: user.roles });
+        const token = sign({ userId: user.id, email: user.email, roles: user.roles, scopes: ['user'] });
+        const refreshTokenValue = uuidv4();
+        await prisma.refreshToken.create({ data: { token: refreshTokenValue, userId: user.id } });
         
         logger.info(`SAML SSO successful for user: ${user.email}`);
         
         res.json({
           success: true,
           token,
+          refreshToken: refreshTokenValue,
           user: {
             id: user.id,
             email: user.email,
