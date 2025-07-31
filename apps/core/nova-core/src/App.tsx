@@ -23,6 +23,7 @@ const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(m =>
 const NotificationsPage = React.lazy(() => import('@/pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const SettingsPage = React.lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const IntegrationsPage = React.lazy(() => import('@/pages/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
+const EmailAccountsPage = React.lazy(() => import('@/pages/EmailAccountsPage').then(m => ({ default: m.EmailAccountsPage })));
 const ModuleManagementPage = React.lazy(() => import('@/pages/ModuleManagementPage').then(m => ({ default: m.ModuleManagementPage }))); 
 const KioskActivationPage = React.lazy(() => import('@/pages/KioskActivationPage').then(m => ({ default: m.KioskActivationPage }))); 
 const CatalogItemsPage = React.lazy(() => import('@/pages/CatalogItemsPage').then(m => ({ default: m.CatalogItemsPage }))); 
@@ -180,6 +181,14 @@ const AppRoutes: React.FC = () => {
           element={
             <React.Suspense fallback={<div>Loading...</div>}>
               <IntegrationsPage />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path="email-accounts"
+          element={
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <EmailAccountsPage />
             </React.Suspense>
           }
         />

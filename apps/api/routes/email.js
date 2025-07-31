@@ -2,19 +2,35 @@
 import express from 'express';
 import db from '../db.js';
 import { authenticateJWT } from '../middleware/auth.js';
-// TODO: Import MSAL/Graph helper
+import m365EmailService from '../services/m365EmailService.js';
 
 const router = express.Router();
 
 // POST /email/send
 router.post('/send', authenticateJWT, async (req, res) => {
   const { from, to, subject, html, queue } = req.body;
-  // TODO: Lookup account config, get Graph token, send mail via Graph API
-  // Example Graph API call: POST /users/{from}/sendMail
-  // Use MSAL to get access token for the account
-  // If success, log and return 200
-  // If error, return 500
-  res.status(501).json({ error: 'Not implemented: Graph sendMail' });
+  try {
+    let sender = from;
+    if (!sender && queue) {
+      const account = await db.oneOrNone(
+        'SELECT address FROM email_accounts WHERE queue=$1 AND enabled=TRUE',
+        [queue]
+      );
+      if (!account) {
+        return res.status(400).json({ error: 'Unknown queue' });
+      }
+      sender = account.address;
+    }
+
+    if (!sender) {
+      return res.status(400).json({ error: 'Sender required' });
+    }
+
+    await m365EmailService.sendEmail({ from: sender, to, subject, html });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to send email', details: err.message });
+  }
 });
 
 export default router;

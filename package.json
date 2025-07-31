@@ -3,11 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/simple.test.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules node --test test/*.test.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --config ./tools/config/eslint.config.js"
   },
   "devDependencies": {
+    "esmock": "^2.7.1",
     "@babel/preset-env": "^7.28.0",
     "@babel/preset-typescript": "^7.27.1",
     "@elastic/elasticsearch": "^9.0.3",

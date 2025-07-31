@@ -30,18 +30,42 @@ export function getHelpScoutConfig() {
   };
 }
 
+export function isM365Configured() {
+  return (
+    !!process.env.M365_CLIENT_ID &&
+    !!process.env.M365_CLIENT_SECRET &&
+    !!process.env.M365_TENANT_ID
+  );
+}
+
+export function getM365Config() {
+  if (!isM365Configured()) return null;
+  return {
+    clientId: process.env.M365_CLIENT_ID,
+    clientSecret: process.env.M365_CLIENT_SECRET,
+    tenantId: process.env.M365_TENANT_ID,
+    scopes: (process.env.M365_GRAPH_SCOPES ||
+      'Mail.ReadWrite Mail.Send MailboxSettings.Read User.Read.All').split(' '),
+  };
+}
+
 /**
  * Determines email sending strategy based on configuration
  * @returns {Object} Email strategy configuration
  */
 export function getEmailStrategy() {
   const helpScoutConfig = getHelpScoutConfig();
+  const m365Config = getM365Config();
   const sendViaHelpScout = !!helpScoutConfig;
-  const sendViaSmtp = !sendViaHelpScout || (helpScoutConfig && helpScoutConfig.smtpFallback);
-  
+  const sendViaM365 = !!m365Config;
+  const sendViaSmtp = (!sendViaHelpScout && !sendViaM365) ||
+    (helpScoutConfig && helpScoutConfig.smtpFallback);
+
   return {
     helpScout: helpScoutConfig,
+    m365: m365Config,
     sendViaHelpScout,
+    sendViaM365,
     sendViaSmtp
   };
 }

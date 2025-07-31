@@ -21,6 +21,7 @@ import type {
   AuthToken,
   DashboardStats,
   ActivityLog,
+  EmailAccount,
 } from '@/types';
 import {
   mockUsers,
@@ -28,6 +29,7 @@ import {
   mockLogs,
   mockConfig,
   mockIntegrations,
+  mockEmailAccounts,
   mockModules,
   mockRoles,
   mockPermissions,
@@ -561,6 +563,41 @@ class ApiClient {
 
     const response = await this.client.post<ApiResponse>(`/api/integrations/${id}/test`);
     return response.data;
+  }
+
+  // Email accounts
+  async getEmailAccounts(): Promise<EmailAccount[]> {
+    if (this.useMockMode) {
+      return this.mockRequest(mockEmailAccounts);
+    }
+    const res = await this.client.get<EmailAccount[]>('/api/email-accounts');
+    return res.data;
+  }
+
+  async createEmailAccount(account: Omit<EmailAccount, 'id'>): Promise<EmailAccount> {
+    if (this.useMockMode) {
+      const newAcc = { ...account, id: Date.now() } as EmailAccount;
+      return this.mockRequest(newAcc);
+    }
+    const res = await this.client.post<EmailAccount>('/api/email-accounts', account);
+    return res.data;
+  }
+
+  async updateEmailAccount(id: number, account: Partial<EmailAccount>): Promise<EmailAccount> {
+    if (this.useMockMode) {
+      const existing = mockEmailAccounts[0];
+      const updated = { ...existing, ...account } as EmailAccount;
+      return this.mockRequest(updated);
+    }
+    const res = await this.client.put<EmailAccount>(`/api/email-accounts/${id}`, account);
+    return res.data;
+  }
+
+  async deleteEmailAccount(id: number): Promise<void> {
+    if (this.useMockMode) {
+      return this.mockRequest(undefined as any);
+    }
+    await this.client.delete(`/api/email-accounts/${id}`);
   }
 
   // Modules
