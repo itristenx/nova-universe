@@ -1,4 +1,3 @@
-import React from 'react';
 import { colors, spacing, fontSizes } from './tokens';
 
 export default function Button({ children, type = 'primary', ...props }) {

@@ -3,7 +3,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useToastStore } from '../../stores/toast';
 
 
-interface Toast {
+interface ToastData {
   id: string;
   type: 'success' | 'error' | 'warning' | 'info';
   title: string;
@@ -11,7 +11,7 @@ interface Toast {
 }
 
 interface ToastProps {
-  toast: Toast;
+  toast: ToastData;
   onRemove: (id: string) => void;
 }
 
@@ -99,7 +99,7 @@ export const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
 };
 
 interface ToastContainerProps {
-  toasts: Toast[];
+  toasts: ToastData[];
   onRemove: (id: string) => void;
 }
 

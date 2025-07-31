@@ -1,17 +1,17 @@
 import React from 'react';
-interface Toast {
+interface ToastData {
     id: string;
     type: 'success' | 'error' | 'warning' | 'info';
     title: string;
     description?: string;
 }
 interface ToastProps {
-    toast: Toast;
+    toast: ToastData;
     onRemove: (id: string) => void;
 }
 export declare const Toast: React.FC<ToastProps>;
 interface ToastContainerProps {
-    toasts: Toast[];
+    toasts: ToastData[];
     onRemove: (id: string) => void;
 }
 export declare const ToastContainer: React.FC<ToastContainerProps>;

@@ -47,15 +47,15 @@ export class PostgreSQLManager {
       });
 
       // Set up pool event handlers
-      this.pool.on('connect', (client) => {
+      this.pool.on('connect', () => {
         logger.debug('PostgreSQL client connected');
       });
 
-      this.pool.on('error', (err, client) => {
+      this.pool.on('error', (err) => {
         logger.error('PostgreSQL pool error:', err);
       });
 
-      this.pool.on('remove', (client) => {
+      this.pool.on('remove', () => {
         logger.debug('PostgreSQL client removed');
       });
 

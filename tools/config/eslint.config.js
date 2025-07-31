@@ -16,7 +16,7 @@ export default defineConfig([
       },
     },
     rules: {
-      // Add custom rules here
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
   {
@@ -57,11 +57,53 @@ export default defineConfig([
       globals: {
         ...globals.browser,
         ...globals.es2021,
+        React: true,
       },
     },
   },
   {
-    files: ["**/*.jsx", "**/*.tsx"],
+    files: [
+      "packages/**/*.js",
+      "packages/**/*.jsx",
+      "packages/**/*.ts",
+      "packages/**/*.tsx",
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+        React: true,
+      },
+    },
+  },
+  {
+    files: [
+      "apps/**/*.js",
+      "apps/**/*.jsx",
+      "apps/**/*.ts",
+      "apps/**/*.tsx",
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+        React: true,
+      },
+    },
+  },
+  {
+    files: ["tools/scripts/scripts/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+        db: true,
+        print: true,
+      },
+    },
+  },
+  {
+    files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"],
     languageOptions: {
       parserOptions: {
         ecmaFeatures: {
@@ -84,6 +126,13 @@ export default defineConfig([
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  {
+    files: ["**/*.d.ts"],
+    rules: {
+      "no-redeclare": "off",
     },
   },
 ]);

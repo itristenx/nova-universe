@@ -719,7 +719,7 @@ class ElasticsearchManager {
       await this.ensureInitialized();
       
       const suggestions: any[] = [];
-      const { type = 'all', limit = 10, userId } = options;
+      const { type = 'all', limit = 10 } = options;
 
       // Get suggestions from different indexes based on type
       const searchPromises: Promise<{ type: string; suggestions: any[] }>[] = [];

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Button } from '@nova-universe/ui'
 
 export const CosmoAssistant: React.FC = () => {
+  const RESPONSE_DELAY = 1000
   const [messages, setMessages] = useState<{ from: string; text: string }[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
