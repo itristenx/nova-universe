@@ -2,7 +2,8 @@
 // Nova Lore - Knowledge Base Routes
 import express from 'express';
 import { body, validationResult } from 'express-validator';
-import db, { prisma } from '../db.js';
+import db from '../db.js';
+import { prisma } from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
