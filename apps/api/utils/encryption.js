@@ -6,7 +6,7 @@ const IV_LENGTH = 12; // GCM recommended
 
 export function encrypt(text) {
   if (!config.assetEncryptionKey) {
-    return text;
+    throw new Error('Encryption key is not configured. Unable to encrypt data.');
   }
   const key = Buffer.from(config.assetEncryptionKey, 'hex');
   const iv = crypto.randomBytes(IV_LENGTH);
