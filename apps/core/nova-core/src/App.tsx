@@ -23,12 +23,13 @@ const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(m =>
 const NotificationsPage = React.lazy(() => import('@/pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const SettingsPage = React.lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const IntegrationsPage = React.lazy(() => import('@/pages/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
-const ModuleManagementPage = React.lazy(() => import('@/pages/ModuleManagementPage').then(m => ({ default: m.ModuleManagementPage })));
+const ModuleManagementPage = React.lazy(() => import('@/pages/ModuleManagementPage').then(m => ({ default: m.ModuleManagementPage }))); 
 const KioskActivationPage = React.lazy(() => import('@/pages/KioskActivationPage').then(m => ({ default: m.KioskActivationPage }))); 
-const CatalogItemsPage = React.lazy(() => import('@/pages/CatalogItemsPage').then(m => ({ default: m.CatalogItemsPage })));
-const KnowledgeListPage = React.lazy(() => import('@/pages/knowledge/KnowledgeListPage').then(m => ({ default: m.default })));
-const KnowledgeDetailPage = React.lazy(() => import('@/pages/knowledge/KnowledgeDetailPage').then(m => ({ default: m.default })));
+const CatalogItemsPage = React.lazy(() => import('@/pages/CatalogItemsPage').then(m => ({ default: m.CatalogItemsPage }))); 
+const KnowledgeListPage = React.lazy(() => import('@/pages/knowledge/KnowledgeListPage').then(m => ({ default: m.default }))); 
+const KnowledgeDetailPage = React.lazy(() => import('@/pages/knowledge/KnowledgeDetailPage').then(m => ({ default: m.default }))); 
 const KnowledgeEditPage = React.lazy(() => import('@/pages/knowledge/KnowledgeEditPage').then(m => ({ default: m.default })));
+const APIDocumentationPage = React.lazy(() => import('@/pages/APIDocumentationPage').then(m => ({ default: m.APIDocumentationPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -187,6 +188,14 @@ const AppRoutes: React.FC = () => {
           element={
             <React.Suspense fallback={<div>Loading...</div>}>
               <ModuleManagementPage />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path="api-docs"
+          element={
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <APIDocumentationPage />
             </React.Suspense>
           }
         />

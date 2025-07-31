@@ -1,4 +1,4 @@
-import type { User, Role, Permission, Kiosk, Log, Config, Notification, DirectoryUser, Integration, KioskActivation, KioskConfig, Asset, ApiResponse, LoginCredentials, AuthToken, DashboardStats, ActivityLog } from '@/types';
+import type { User, Role, Permission, Kiosk, Log, Config, Notification, DirectoryUser, Integration, KioskActivation, KioskConfig, Asset, ApiResponse, LoginCredentials, AuthToken, DashboardStats, ActivityLog, ApiKey } from '@/types';
 declare class ApiClient {
     private client;
     private useMockMode;
@@ -110,6 +110,9 @@ declare class ApiClient {
     }): Promise<ApiResponse>;
     getKioskScheduleConfig(kioskId: string): Promise<any>;
     testSMTP(testEmail: string): Promise<ApiResponse>;
+    getApiKeys(): Promise<ApiKey[]>;
+    createApiKey(description?: string): Promise<{ apiKey: ApiKey }>;
+    deleteApiKey(key: string): Promise<ApiResponse>;
 }
 export declare const api: ApiClient;
 export {};

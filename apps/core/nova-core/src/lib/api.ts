@@ -15,6 +15,7 @@ import type {
   Asset,
   KnowledgeArticle,
   KnowledgeArticleVersion,
+  ApiKey,
   ApiResponse,
   LoginCredentials,
   AuthToken,
@@ -1307,6 +1308,22 @@ class ApiClient {
   async createKnowledgeVersion(articleId: number, data: { content: string }): Promise<KnowledgeArticleVersion> {
     const response = await this.client.post<{ version: KnowledgeArticleVersion }>(`/api/v1/lore/articles/${articleId}/versions`, data);
     return response.data.version;
+  }
+
+  // API Keys
+  async getApiKeys(): Promise<ApiKey[]> {
+    const response = await this.client.get<{ apiKeys: ApiKey[] }>('/api/v1/api-keys');
+    return response.data.apiKeys;
+  }
+
+  async createApiKey(description?: string): Promise<{ apiKey: ApiKey }> {
+    const response = await this.client.post<{ apiKey: ApiKey }>('/api/v1/api-keys', { description });
+    return response.data;
+  }
+
+  async deleteApiKey(key: string): Promise<ApiResponse> {
+    const response = await this.client.delete<ApiResponse>(`/api/v1/api-keys/${key}`);
+    return response.data;
   }
 }
 
