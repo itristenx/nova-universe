@@ -27,6 +27,7 @@ import {
   mockLogs,
   mockConfig,
   mockIntegrations,
+  mockModules,
   mockRoles,
   mockPermissions,
   mockNotifications,
@@ -558,6 +559,26 @@ class ApiClient {
     }
 
     const response = await this.client.post<ApiResponse>(`/api/integrations/${id}/test`);
+    return response.data;
+  }
+
+  // Modules
+  async getModules(): Promise<Record<string, boolean>> {
+    if (this.useMockMode) {
+      return this.mockRequest(mockModules);
+    }
+
+    const response = await this.client.get<{ modules: Record<string, boolean> }>('/api/modules');
+    return response.data.modules;
+  }
+
+  async updateModule(key: string, enabled: boolean): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      mockModules[key] = enabled;
+      return this.mockRequest({ message: 'Module updated' });
+    }
+
+    const response = await this.client.put<ApiResponse>(`/api/modules/${key}`, { enabled });
     return response.data;
   }
 

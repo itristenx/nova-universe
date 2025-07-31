@@ -505,3 +505,8 @@ export interface SCIMConfig {
   };
   groupMapping?: Record<string, string>;
 }
+
+export interface ModuleStatus {
+  key: string;
+  enabled: boolean;
+}
