@@ -409,7 +409,7 @@ export const UserManagementPage: React.FC = () => {
       email: formData.email,
       password: formData.password,
       roles: formData.roles,
-    } as any);
+    } as CreateUserInput);
     if (newUser) {
       addToast({ type: 'success', title: 'User Created', description: 'User created successfully' });
       setShowCreateModal(false);
