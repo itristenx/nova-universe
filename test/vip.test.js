@@ -17,11 +17,14 @@ test('VIP due date respects level and overrides', () => {
   assert.equal(base.toISOString(), new Date('2024-01-08T00:00:00.000Z').toISOString());
 
   const execDue = calculateVipDueDate('low', now, { is_vip: true, vip_level: 'exec' });
-  assert.equal(execDue.toISOString(), new Date('2024-01-08T02:00:00.000Z').toISOString());
+  assert.equal(execDue.toISOString(), new Date(new Date(now).getTime() + 2 * 60 * 60 * 1000).toISOString());
 
   const goldDue = calculateVipDueDate('low', now, { is_vip: true, vip_level: 'gold' });
   assert.equal(goldDue.toISOString(), new Date(new Date(now).getTime() + 4 * 60 * 60 * 1000).toISOString());
 
+  const defaultVipDue = calculateVipDueDate('low', now, { is_vip: true, vip_level: 'priority' });
+  assert.equal(defaultVipDue.toISOString(), new Date(new Date(now).getTime() + 8 * 60 * 60 * 1000).toISOString());
+
   const overrideDue = calculateVipDueDate('low', now, { is_vip: true, vip_level: 'priority', vip_sla_override: { responseMinutes: 15 } });
-  assert.equal(overrideDue.toISOString(), new Date('2024-01-08T00:15:00.000Z').toISOString());
+  assert.equal(overrideDue.toISOString(), new Date(new Date(now).getTime() + 15 * 60 * 1000).toISOString());
 });
