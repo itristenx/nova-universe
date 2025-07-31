@@ -209,7 +209,7 @@ router.post('/import', authenticateJWT, async (req, res) => {
         return res.status(400).json({ error: 'Invalid CSV data' });
       }
     } else if (format === 'json') {
-      if (typeof data !== 'string' || data.length > 50000) {
+      if (typeof data !== 'string' || data.length > MAX_JSON_DATA_LENGTH) {
         return res.status(400).json({ error: 'Invalid JSON data' });
       }
       try {
