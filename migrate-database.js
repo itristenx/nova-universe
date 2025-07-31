@@ -20,7 +20,6 @@ import { logger } from './apps/api/logger.js';
 import { MigrationManager } from './apps/api/database/migrations.js';
 import { DatabaseFactory } from './apps/api/database/factory.js';
 import fs from 'fs';
-import path from 'path';
 
 const program = new Command();
 

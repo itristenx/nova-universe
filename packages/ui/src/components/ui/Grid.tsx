@@ -8,7 +8,7 @@ export interface GridProps extends React.HTMLAttributes<HTMLDivElement> {
   spacing?: number;
   sx?: React.CSSProperties;
 }
-export const Grid: React.FC<GridProps> = ({ container, item, xs, sm, md, spacing, className, style, sx = {}, children, ...props }) => {
+export const Grid: React.FC<GridProps> = ({ container, item, spacing, className, style, sx = {}, children, ...props }) => {
   const classes = [className, container ? 'grid-container' : '', item ? 'grid-item' : '']
     .filter(Boolean).join(' ');
   const gridStyle = {

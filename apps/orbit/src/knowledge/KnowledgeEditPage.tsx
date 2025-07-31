@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getKnowledgeArticle, getKnowledgeVersions, createKnowledgeArticle, createKnowledgeVersion } from '../lib/api';
+import { getKnowledgeArticle, createKnowledgeArticle, createKnowledgeVersion } from '../lib/api';
 
 const KnowledgeEditPage: React.FC = () => {
   const { slug } = useParams<{ slug?: string }>();
