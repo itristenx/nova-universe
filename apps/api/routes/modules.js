@@ -2,14 +2,18 @@ import express from 'express';
 
 const router = express.Router();
 
-// Simple in-memory list of modules and whether they are enabled
-const modules = [
-  { name: 'helix', displayName: 'Helix (Identity)', enabled: true },
-  { name: 'lore', displayName: 'Lore (Knowledge Base)', enabled: true },
-  { name: 'pulse', displayName: 'Pulse (Technician Portal)', enabled: true },
-  { name: 'comms', displayName: 'Comms (Slack)', enabled: false },
-];
+// Load modules from configuration file
+import fs from 'fs';
+import path from 'path';
 
+const modulesFilePath = path.resolve(__dirname, '../../config/modules.json');
+let modules = [];
+try {
+  const data = fs.readFileSync(modulesFilePath, 'utf-8');
+  modules = JSON.parse(data);
+} catch (error) {
+  console.error('Failed to load modules configuration:', error);
+}
 router.get('/api/v1/modules', (req, res) => {
   res.json(modules);
 });
