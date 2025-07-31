@@ -48,7 +48,7 @@ export const APIDocumentationPage: React.FC = () => {
         <p className="mt-1 text-sm text-gray-600">Explore the Nova Universe API and manage your API keys.</p>
       </div>
       <Card className="p-4">
-        <iframe src={`${apiUrl}/api-docs`} title="API Docs" className="w-full h-[600px] border rounded" />
+        <iframe src={`${apiUrl}/api-docs`} title="API Docs" className="w-full h-[600px] border rounded" sandbox="allow-scripts allow-same-origin" />
       </Card>
       <Card className="p-4">
         <div className="flex items-center justify-between mb-2">
