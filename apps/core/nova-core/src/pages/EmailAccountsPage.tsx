@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input, Modal, Checkbox } from '@/components/ui';
+import { Button, Card, Input, Modal, Checkbox, Select } from '@/components/ui';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
@@ -95,7 +95,17 @@ export const EmailAccountsPage: React.FC = () => {
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Email Account">
         <div className="space-y-4">
-          <Input label="Queue" value={formData.queue} onChange={e => setFormData({ ...formData, queue: e.target.value as any })} />
+          <Select
+            label="Queue"
+            value={formData.queue}
+            onChange={value => setFormData({ ...formData, queue: value as AccountForm['queue'] })}
+            options={[
+              { value: 'IT', label: 'IT' },
+              { value: 'HR', label: 'HR' },
+              { value: 'OPS', label: 'OPS' },
+              { value: 'CYBER', label: 'CYBER' },
+            ]}
+          />
           <Input label="Address" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
           <Input label="Display Name" value={formData.displayName} onChange={e => setFormData({ ...formData, displayName: e.target.value })} />
           <Checkbox label="Enabled" checked={formData.enabled} onChange={v => setFormData({ ...formData, enabled: v })} />

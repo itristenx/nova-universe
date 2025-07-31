@@ -84,8 +84,9 @@ class M365EmailService {
   }
 
   async handleNewMessage(message, account) {
+    const apiBase = process.env.API_URL || 'http://localhost:3000';
     try {
-      await axios.post('http://localhost:3000/api/v1/synth/email-ticket', {
+      await axios.post(`${apiBase}/api/v1/synth/email-ticket`, {
         account: account.queue,
         message,
       });
@@ -104,19 +105,22 @@ class M365EmailService {
   async subscribeWebhooks() {
     const token = await this.getToken();
     const accounts = await db.any('SELECT * FROM email_accounts WHERE enabled = TRUE AND webhook_mode = TRUE');
+    if (!process.env.PUBLIC_URL) {
+      logger.error('PUBLIC_URL must be set when webhook_mode is enabled.');
+      throw new Error('PUBLIC_URL is required for webhook configuration.');
+    }
+    const baseUrl = process.env.PUBLIC_URL;
     for (const account of accounts) {
       try {
-        await axios.post(
-          `${GRAPH_BASE}/subscriptions`,
-          {
-            changeType: 'created',
-            resource: `users/${account.address}/mailFolders('inbox')/messages`,
-            notificationUrl: `${process.env.PUBLIC_URL || ''}/api/graph-email-webhook`,
-            expirationDateTime: new Date(Date.now() + 86400000).toISOString(),
-            clientState: process.env.M365_WEBHOOK_SECRET,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const subscriptionPayload = {
+          changeType: 'created',
+          resource: `users/${account.address}/mailFolders('inbox')/messages`,
+          notificationUrl: `${baseUrl}/api/graph-email-webhook`,
+          expirationDateTime: new Date(Date.now() + 86400000).toISOString(),
+          clientState: process.env.M365_WEBHOOK_SECRET,
+        };
+        const headers = { headers: { Authorization: `Bearer ${token}` } };
+        await axios.post(`${GRAPH_BASE}/subscriptions`, subscriptionPayload, headers);
       } catch (err) {
         logger.error('Failed to subscribe webhook', err.message);
       }
@@ -130,7 +134,12 @@ class M365EmailService {
       `${GRAPH_BASE}/${notification.resource}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    const account = await db.oneOrNone('SELECT * FROM email_accounts WHERE address=$1', [data.toRecipients[0].emailAddress.address]);
+    const recipient = data.toRecipients?.[0]?.emailAddress?.address;
+    if (!recipient) {
+      logger.warn('Webhook notification missing recipient information');
+      return;
+    }
+    const account = await db.oneOrNone('SELECT * FROM email_accounts WHERE address=$1', [recipient]);
     if (account) {
       await this.handleNewMessage(data, account);
     }
