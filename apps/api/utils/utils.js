@@ -32,20 +32,22 @@ export function calculateVipDueDate(priority, now, vipRow) {
 
   if (vipRow?.is_vip) {
     const sla = vipRow.vip_sla_override || null;
+    const vipDueDate = new Date(now); // Reset due date to current time for VIP users
     if (sla && sla.responseMinutes) {
-      dueDate.setMinutes(now.getMinutes() + parseInt(sla.responseMinutes));
+      vipDueDate.setMinutes(now.getMinutes() + parseInt(sla.responseMinutes));
     } else {
       switch (vipRow.vip_level) {
         case 'exec':
-          dueDate.setHours(now.getHours() + 2);
+          vipDueDate.setHours(now.getHours() + 2);
           break;
         case 'gold':
-          dueDate.setHours(now.getHours() + 4);
+          vipDueDate.setHours(now.getHours() + 4);
           break;
         default:
-          dueDate.setHours(now.getHours() + 8);
+          vipDueDate.setHours(now.getHours() + 8);
       }
     }
+    return vipDueDate; // Return the VIP-specific due date
   }
 
   return dueDate;
