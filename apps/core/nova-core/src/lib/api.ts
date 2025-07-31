@@ -578,7 +578,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Module updated' });
     }
 
-    const response = await this.client.put<ApiResponse>(`/api/modules/${key}`, { enabled });
+    const response = await this.client.put<ApiResponse>(`/api/v1/modules/${key}`, { enabled });
     return response.data;
   }
 
