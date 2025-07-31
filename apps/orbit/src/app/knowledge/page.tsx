@@ -6,6 +6,13 @@ import { searchKnowledge } from "../../lib/api";
 export default function KnowledgePage() {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  if (!token) {
+    return (
+      <main className="p-8 max-w-2xl mx-auto">
+        <p>Please log in to search the knowledge base.</p>
+      </main>
+    );
+  }
   const [query, setQuery] = useState("");
 interface KnowledgeResult {
   id: string;

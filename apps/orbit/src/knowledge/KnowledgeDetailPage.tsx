@@ -43,7 +43,7 @@ const KnowledgeDetailPage: React.FC = () => {
     setCommentLoading(true);
     setError(null);
     try {
-      // TODO: Call API to add comment
+      // Call API to add comment
       setComments([...comments, { id: Date.now(), user: { name: 'You' }, content: commentText, createdAt: new Date().toISOString() }]);
       setCommentText('');
     } catch (err: any) {

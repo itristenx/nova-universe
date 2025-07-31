@@ -1,7 +1,10 @@
 // API utility for Nova Orbit frontend
 // Handles ticket CRUD and feedback endpoints
 
-const API_BASE = process.env.NEXT_PUBLIC_ORBIT_API_BASE || "/api/v1/orbit";
+const ORBIT_BASE = process.env.NEXT_PUBLIC_ORBIT_API_BASE || "/api/v1/orbit";
+const HELIX_BASE = process.env.NEXT_PUBLIC_HELIX_API_BASE || "/api/v1/helix";
+const LORE_BASE = process.env.NEXT_PUBLIC_LORE_API_BASE || "/api/v1/lore";
+const SYNTH_BASE = process.env.NEXT_PUBLIC_SYNTH_API_BASE || "/api/v1/synth";
 
 // Types for API data
 export type TicketParams = {
@@ -30,7 +33,7 @@ export type FeedbackData = {
 };
 
 export async function getTickets(token: string, params: TicketParams = {}) {
-  const url = new URL(`${API_BASE}/tickets`, window.location.origin);
+  const url = new URL(`${ORBIT_BASE}/tickets`, window.location.origin);
   Object.entries(params).forEach(([key, value]) => url.searchParams.append(key, String(value)));
   const res = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${token}` },
@@ -40,7 +43,7 @@ export async function getTickets(token: string, params: TicketParams = {}) {
 }
 
 export async function getTicket(token: string, ticketId: string) {
-  const res = await fetch(`${API_BASE}/tickets/${ticketId}`, {
+  const res = await fetch(`${ORBIT_BASE}/tickets/${ticketId}`, {
     headers: { Authorization: `Bearer ${token}` },
     credentials: "include"
   });
@@ -48,7 +51,7 @@ export async function getTicket(token: string, ticketId: string) {
 }
 
 export async function createTicket(token: string, data: TicketCreateData) {
-  const res = await fetch(`${API_BASE}/tickets`, {
+  const res = await fetch(`${ORBIT_BASE}/tickets`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -61,7 +64,7 @@ export async function createTicket(token: string, data: TicketCreateData) {
 }
 
 export async function getCategories(token: string) {
-  const res = await fetch(`${API_BASE}/categories`, {
+  const res = await fetch(`${ORBIT_BASE}/categories`, {
     headers: { Authorization: `Bearer ${token}` },
     credentials: "include"
   });
@@ -69,7 +72,7 @@ export async function getCategories(token: string) {
 }
 
 export async function getCatalogItems(token: string) {
-  const res = await fetch(`${API_BASE}/catalog`, {
+  const res = await fetch(`${ORBIT_BASE}/catalog`, {
     headers: { Authorization: `Bearer ${token}` },
     credentials: 'include'
   });
@@ -77,7 +80,7 @@ export async function getCatalogItems(token: string) {
 }
 
 export async function submitCatalogItem(token: string, id: number, data: any) {
-  const res = await fetch(`${API_BASE}/catalog/${id}`, {
+  const res = await fetch(`${ORBIT_BASE}/catalog/${id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -90,7 +93,7 @@ export async function submitCatalogItem(token: string, id: number, data: any) {
 }
 
 export async function submitFeedback(token: string, data: FeedbackData) {
-  const res = await fetch(`${API_BASE}/feedback`, {
+  const res = await fetch(`${ORBIT_BASE}/feedback`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -103,7 +106,7 @@ export async function submitFeedback(token: string, data: FeedbackData) {
 }
 
 export async function getSession(token: string) {
-  const res = await fetch('/api/v1/helix/session', {
+  const res = await fetch(`${HELIX_BASE}/session`, {
     headers: { Authorization: `Bearer ${token}` },
     credentials: 'include'
   });
@@ -114,7 +117,7 @@ export async function getSession(token: string) {
 }
 
 export async function updateProfile(token: string, id: string, data: { name: string; email: string; org: string }) {
-  const res = await fetch(`/api/users/${id}`, {
+  const res = await fetch(`${HELIX_BASE}/users/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -131,7 +134,7 @@ export async function updateProfile(token: string, id: string, data: { name: str
 }
 
 export async function searchKnowledge(token: string, query: string) {
-  const url = new URL('/api/v1/lore/search', window.location.origin);
+  const url = new URL(`${LORE_BASE}/search`, window.location.origin);
   url.searchParams.set('q', query);
   const res = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${token}` },
@@ -155,7 +158,7 @@ export async function getServiceStatus(token: string) {
 }
 
 export async function sendCosmoMessage(token: string, message: string) {
-  const res = await fetch('/api/v1/synth/chat', {
+  const res = await fetch(`${SYNTH_BASE}/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -172,7 +175,7 @@ export async function sendCosmoMessage(token: string, message: string) {
 }
 
 export async function getKnowledgeArticle(token: string, slug: string) {
-  const res = await fetch(`/api/v1/lore/articles/${slug}`, {
+  const res = await fetch(`${LORE_BASE}/articles/${slug}`, {
     headers: { Authorization: `Bearer ${token}` },
     credentials: 'include'
   });
@@ -181,7 +184,7 @@ export async function getKnowledgeArticle(token: string, slug: string) {
 }
 
 export async function getKnowledgeArticles(token: string, params: { search?: string } = {}) {
-  const url = new URL('/api/lore/articles', window.location.origin);
+  const url = new URL(`${LORE_BASE}/articles`, window.location.origin);
   if (params.search) url.searchParams.set('search', params.search);
   const res = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${token}` },
@@ -191,7 +194,7 @@ export async function getKnowledgeArticles(token: string, params: { search?: str
 }
 
 export async function getKnowledgeVersions(token: string, articleId: number) {
-  const res = await fetch(`/api/v1/lore/articles/${articleId}/versions`, {
+  const res = await fetch(`${LORE_BASE}/articles/${articleId}/versions`, {
     headers: { Authorization: `Bearer ${token}` },
     credentials: 'include'
   });
@@ -200,7 +203,7 @@ export async function getKnowledgeVersions(token: string, articleId: number) {
 }
 
 export async function getKnowledgeComments(token: string, articleId: number) {
-  const res = await fetch(`/api/v1/lore/articles/${articleId}/comments`, {
+  const res = await fetch(`${LORE_BASE}/articles/${articleId}/comments`, {
     headers: { Authorization: `Bearer ${token}` },
     credentials: 'include'
   });
@@ -209,7 +212,7 @@ export async function getKnowledgeComments(token: string, articleId: number) {
 }
 
 export async function createKnowledgeArticle(token: string, data: { title: string; content: string; tags?: string[] }) {
-  const res = await fetch(`/api/lore/articles`, {
+  const res = await fetch(`${LORE_BASE}/articles`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -222,7 +225,7 @@ export async function createKnowledgeArticle(token: string, data: { title: strin
 }
 
 export async function createKnowledgeVersion(token: string, slug: string, data: { content: string; tags?: string[] }) {
-  const res = await fetch(`/api/lore/articles/${slug}/versions`, {
+  const res = await fetch(`${LORE_BASE}/articles/${slug}/versions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -235,7 +238,7 @@ export async function createKnowledgeVersion(token: string, slug: string, data: 
 }
 
 export async function deleteKnowledgeArticle(token: string, slug: string) {
-  const res = await fetch(`/api/lore/articles/${slug}`, {
+  const res = await fetch(`${LORE_BASE}/articles/${slug}`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` },
   });

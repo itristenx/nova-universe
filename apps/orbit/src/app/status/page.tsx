@@ -13,6 +13,13 @@ export default function StatusPage() {
   const [loading, setLoading] = useState(false);
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  if (!token) {
+    return (
+      <main className="p-8 max-w-2xl mx-auto">
+        <p>Please log in to view service status.</p>
+      </main>
+    );
+  }
 
   useEffect(() => {
     setLoading(true);
