@@ -37,13 +37,14 @@ router.post('/',
         return res.status(400).json({ success: false, error: 'Invalid input', details: errors.array(), errorCode: 'VALIDATION_ERROR' });
       }
       const key = uuidv4();
+      const createdAt = new Date().toISOString();
       const apiKeys = await ConfigurationManager.get('apiKeys', []);
-      apiKeys.push({ key, description: req.body.description || '', createdAt: new Date().toISOString() });
+      apiKeys.push({ key, description: req.body.description || '', createdAt });
       const success = await ConfigurationManager.set('apiKeys', apiKeys, req.user.id);
       if (!success) {
         return res.status(500).json({ success: false, error: 'Failed to save API key', errorCode: 'API_KEYS_SAVE_ERROR' });
       }
-      res.json({ success: true, apiKey: { key, createdAt: new Date().toISOString(), description: req.body.description || '' } });
+      res.json({ success: true, apiKey: { key, createdAt, description: req.body.description || '' } });
     } catch (err) {
       logger.error('Error creating API key:', err);
       res.status(500).json({ success: false, error: 'Failed to create API key', errorCode: 'API_KEYS_ERROR' });
