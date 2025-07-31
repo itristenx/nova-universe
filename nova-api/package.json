@@ -37,7 +37,7 @@
     "fs-extra": "^11.3.0",
     "helmet": "^8.1.0",
     "inquirer": "^12.8.2",
-    "ioredis": "^5.4.1",
+    "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
     "listr2": "^9.0.1",
     "mongodb": "^6.10.0",
