@@ -225,7 +225,6 @@ router.post('/import', authenticateJWT, async (req, res) => {
       return res.status(400).json({ error: 'Unsupported format' });
     }
 
-    const assetTagRegex = /^[A-Za-z0-9_-]{3,50}$/;
     for (const rec of records) {
       if (!rec.asset_tag || !assetTagRegex.test(rec.asset_tag)) {
         return res.status(400).json({ error: `Invalid asset_tag: ${rec.asset_tag}` });
