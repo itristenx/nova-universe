@@ -357,6 +357,10 @@ export const UserManagementPage: React.FC = () => {
   React.useEffect(() => {
     api.getRoles().then(setRoles).catch((e) => {
       console.error('Failed to load roles:', e);
+      addToast({
+        type: 'error',
+        message: 'Failed to load roles. Please try again later.',
+      });
     });
   }, []);
 
