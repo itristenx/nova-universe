@@ -226,7 +226,7 @@ router.post('/import', authenticateJWT, async (req, res) => {
     }
 
     for (const rec of records) {
-      if (!rec.asset_tag || !assetTagRegex.test(rec.asset_tag)) {
+      if (typeof rec.asset_tag !== 'string' || !assetTagRegex.test(rec.asset_tag)) {
         return res.status(400).json({ error: `Invalid asset_tag: ${rec.asset_tag}` });
       }
     }
