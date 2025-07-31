@@ -26,7 +26,7 @@ router.post('/api/v1/api-keys', (req, res) => {
   const key = {
     id: uuidv4(),
     name,
-    key: uuidv4().replace(/-/g, ''),
+    key: crypto.randomBytes(32).toString('hex'),
   };
   apiKeys.push(key);
   res.status(201).json(key);
