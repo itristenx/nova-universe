@@ -15,29 +15,15 @@
  * - VITE_ADMIN_URL: Admin panel URL for ticket links
  */
 
-import dotenv from 'dotenv';
 import { App } from '@slack/bolt';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
+import { validateEnv } from './environment.js';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
-const PORT = process.env.SLACK_PORT || 3001;
-
-// Validate required environment variables
-const requiredEnvVars = [
-  'SLACK_SIGNING_SECRET',
-  'SLACK_BOT_TOKEN', 
-  'API_URL',
-  'JWT_SECRET'
-];
-
-// for (const envVar of requiredEnvVars) {
-//   if (!process.env[envVar]) {
-//     console.error(`Missing required environment variable: ${envVar}`);
-//     process.exit(1);
-//   }
-// }
+const { port: PORT, jwtExpiresIn } = validateEnv();
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -126,7 +112,7 @@ app.command('/new-ticket', async ({ ack, body, client }) => {
     const token = jwt.sign(
       { type: 'slack' },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+      { expiresIn: jwtExpiresIn }
     );
     const res = await axios.get(`${process.env.API_URL}/api/config`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -172,7 +158,7 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
     const token = jwt.sign(
       { type: 'slack' },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+      { expiresIn: jwtExpiresIn }
     );
     const res = await axios.post(
       `${process.env.API_URL}/submit-ticket`,

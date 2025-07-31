@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { getEnv } from './env';
 import type {
   User,
   Role,
@@ -34,8 +35,8 @@ import {
   shouldSimulateError,
 } from './mockData';
 
-// Check if we should use mock mode (when API is not available or VITE_USE_MOCK_API is true)
-const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true';
+// Load environment settings
+const { apiUrl, useMockApi: USE_MOCK_API } = getEnv();
 
 class ApiClient {
   private client: AxiosInstance;
@@ -88,11 +89,8 @@ class ApiClient {
   // Get the current server URL from localStorage or environment
   private getServerUrl(): string {
     const storedUrl = localStorage.getItem('api_server_url');
-    const envUrl = import.meta.env.VITE_API_URL;
-    const defaultUrl = 'http://localhost:3000';
-    
-    // Use stored URL if available, otherwise environment URL, otherwise default
-    return storedUrl || envUrl || defaultUrl;
+    // Use stored URL if available, otherwise value from environment helper
+    return storedUrl || apiUrl;
   }
 
   // Mock method helper

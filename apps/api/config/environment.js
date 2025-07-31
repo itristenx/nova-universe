@@ -1,10 +1,22 @@
 import dotenv from 'dotenv';
+import { validateDatabaseConfig } from './database.js';
 dotenv.config();
 
 const required = [
   'SESSION_SECRET',
-  'JWT_SECRET'
+  'JWT_SECRET',
+  'KIOSK_TOKEN',
+  'SCIM_TOKEN'
 ];
+
+// Database configuration
+if (!process.env.DATABASE_URL) {
+  required.push('POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB');
+}
+
+if (process.env.MONGO_ENABLED === 'true') {
+  required.push('MONGO_HOST', 'MONGO_DB');
+}
 
 // Only require SMTP in production
 if (process.env.NODE_ENV === 'production') {
@@ -47,6 +59,9 @@ export const validateEnvironment = () => {
     console.warn('⚠️  Environment warnings:');
     warnings.forEach(warning => console.warn(`   - ${warning}`));
   }
+
+  // Validate database configuration separately
+  validateDatabaseConfig();
   
   return {
     environment: env,
