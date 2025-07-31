@@ -19,10 +19,7 @@ import { App } from '@slack/bolt';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { validateEnv } from './environment.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
+// Removed redundant dotenv import and config call
 const { port: PORT, jwtExpiresIn } = validateEnv();
 
 const app = new App({
