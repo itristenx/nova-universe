@@ -141,7 +141,7 @@ See [Local vs Production Setup](docs/environments.md) for details on configuring
    `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` (optionally set
    `HELPSCOUT_SMTP_FALLBACK=true` to also send email).
    **Note:** ServiceNow integration has been fully deprecated and removed.
-   You can customize `API_PORT`, `LOGO_URL` and other defaults.
+   You can customize `API_PORT`, `LOGO_URL`, `FAVICON_URL` and `ORGANIZATION_NAME`.
 4. Start the server with `node index.js` (uses `API_PORT`, default `3000`).
 
 The API also exposes a GraphQL endpoint at `/api/v2/graphql` for internal tools.
@@ -340,7 +340,7 @@ Each app relies on a few environment variables:
 - `HELPSCOUT_SMTP_FALLBACK` – set to `true` to also send email via SMTP.
 - `SESSION_SECRET`, `SAML_ENTRY_POINT`, `SAML_ISSUER`, `SAML_CERT`,
   `SAML_CALLBACK_URL`, `ADMIN_URL` – required for SAML login.
-- Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.
+ - Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`, `ORGANIZATION_NAME`.
 - Optional: set `TLS_CERT_PATH` and `TLS_KEY_PATH` to enable HTTPS.
 - `ADMIN_PASSWORD` – seeds the initial admin password for kiosk login and the
   password management endpoints.

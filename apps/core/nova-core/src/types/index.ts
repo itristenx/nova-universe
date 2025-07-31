@@ -99,6 +99,7 @@ export interface Log {
 }
 
 export interface Config {
+  organizationName: string;
   logoUrl: string;
   faviconUrl: string;
   kioskLogoUrl?: string;

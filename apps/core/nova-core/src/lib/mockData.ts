@@ -136,6 +136,7 @@ export const mockLogs: Log[] = [
 ];
 
 export const mockConfig: Config = {
+  organizationName: 'CueIT',
   logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=CueIT',
   faviconUrl: 'https://via.placeholder.com/32x32/3B82F6/FFFFFF?text=C',
   primaryColor: '#1D4ED8',
