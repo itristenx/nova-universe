@@ -29,7 +29,7 @@ const CatalogItemsPage = React.lazy(() => import('@/pages/CatalogItemsPage').the
 const KnowledgeListPage = React.lazy(() => import('@/pages/knowledge/KnowledgeListPage').then(m => ({ default: m.default }))); 
 const KnowledgeDetailPage = React.lazy(() => import('@/pages/knowledge/KnowledgeDetailPage').then(m => ({ default: m.default }))); 
 const KnowledgeEditPage = React.lazy(() => import('@/pages/knowledge/KnowledgeEditPage').then(m => ({ default: m.default })));
-const APIDocumentationPage = React.lazy(() => import('@/pages/APIDocumentationPage').then(m => ({ default: m.APIDocumentationPage })));
+const APIDocumentationPage = React.lazy(() => import('@/pages/APIDocumentationPage').then(m => ({ default: m.default })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
