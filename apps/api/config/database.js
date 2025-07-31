@@ -8,16 +8,16 @@ import { logger } from '../logger.js';
 
 export const databaseConfig = {
   // Default to PostgreSQL for primary operations
-  primary: process.env.PRIMARY_DB || 'postgresql',
-  
-  postgresql: {
+  primary: process.env.PRIMARY_DB || 'core_db',
+
+  core_db: {
     // Connection pool configuration
-    host: process.env.POSTGRES_HOST || 'localhost',
-    port: parseInt(process.env.POSTGRES_PORT || '5432'),
-    database: process.env.POSTGRES_DB || 'nova_universe',
-    user: process.env.POSTGRES_USER || 'nova_admin',
+    host: process.env.CORE_DB_HOST || 'localhost',
+    port: parseInt(process.env.CORE_DB_PORT || '5432'),
+    database: process.env.CORE_DB_NAME || 'nova_core',
+    user: process.env.CORE_DB_USER || 'nova_admin',
     password: (() => {
-      const password = process.env.POSTGRES_PASSWORD;
+      const password = process.env.CORE_DB_PASSWORD;
       if (!password) {
         logger.error('POSTGRES_PASSWORD is not set. Generating a temporary password.');
         return generateSecurePassword();
@@ -50,14 +50,46 @@ export const databaseConfig = {
     query_timeout: parseInt(process.env.POSTGRES_QUERY_TIMEOUT || '30000'),
     connectionTimeoutMillis: parseInt(process.env.POSTGRES_CONNECTION_TIMEOUT || '5000'),
   },
-  
-  mongodb: {
+
+  auth_db: {
+    host: process.env.AUTH_DB_HOST || 'localhost',
+    port: parseInt(process.env.AUTH_DB_PORT || '5432'),
+    database: process.env.AUTH_DB_NAME || 'nova_auth',
+    user: process.env.AUTH_DB_USER || 'nova_admin',
+    password: (() => {
+      const password = process.env.AUTH_DB_PASSWORD;
+      if (!password) {
+        logger.error('AUTH_DB_PASSWORD is not set. Generating a temporary password.');
+        return generateSecurePassword();
+      }
+      return password;
+    })(),
+    ssl: process.env.NODE_ENV === 'production' ? {
+      rejectUnauthorized: process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false',
+      ca: process.env.POSTGRES_SSL_CA,
+      cert: process.env.POSTGRES_SSL_CERT,
+      key: process.env.POSTGRES_SSL_KEY,
+    } : false,
+    pool: {
+      min: parseInt(process.env.POSTGRES_POOL_MIN || '2'),
+      max: parseInt(process.env.POSTGRES_POOL_MAX || '20'),
+      acquireTimeoutMillis: parseInt(process.env.POSTGRES_POOL_ACQUIRE_TIMEOUT || '60000'),
+      idleTimeoutMillis: parseInt(process.env.POSTGRES_POOL_IDLE_TIMEOUT || '30000'),
+      createTimeoutMillis: parseInt(process.env.POSTGRES_POOL_CREATE_TIMEOUT || '30000'),
+      destroyTimeoutMillis: parseInt(process.env.POSTGRES_POOL_DESTROY_TIMEOUT || '5000'),
+      reapIntervalMillis: parseInt(process.env.POSTGRES_POOL_REAP_INTERVAL || '1000'),
+      createRetryIntervalMillis: parseInt(process.env.POSTGRES_POOL_CREATE_RETRY_INTERVAL || '200'),
+    },
+    statement_timeout: parseInt(process.env.POSTGRES_STATEMENT_TIMEOUT || '30000'),
+    query_timeout: parseInt(process.env.POSTGRES_QUERY_TIMEOUT || '30000'),
+    connectionTimeoutMillis: parseInt(process.env.POSTGRES_CONNECTION_TIMEOUT || '5000'),
+  },
+
+  audit_db: {
     // Connection configuration
-    host: process.env.MONGO_HOST || 'localhost',
-    port: parseInt(process.env.MONGO_PORT || '27017'),
-    database: process.env.MONGO_DB || 'nova_universe',
-    username: process.env.MONGO_USERNAME || 'nova_admin',
-    password: process.env.MONGO_PASSWORD || generateSecurePassword(),
+    uri: process.env.AUDIT_DATABASE_URL || 'mongodb://localhost:27017/nova_audit',
+    username: process.env.AUDIT_DB_USER || 'nova_admin',
+    password: process.env.AUDIT_DB_PASSWORD || generateSecurePassword(),
     
     // Connection URI without credentials for security
     // Note: Credentials (username and password) are intentionally excluded from the URI
@@ -65,7 +97,7 @@ export const databaseConfig = {
     // Authentication should be handled separately via the `options` object below.
     get uri() {
       const sslOptions = process.env.NODE_ENV === 'production' ? '&ssl=true' : '';
-      return `mongodb://${this.host}:${this.port}/${this.database}?retryWrites=true&w=majority${sslOptions}`;
+      return `${this.uri}${sslOptions}`;
     },
     
     // MongoDB client options
@@ -126,30 +158,31 @@ function generateSecurePassword() {
  */
 export function validateDatabaseConfig() {
   const errors = [];
-  
-  // Check required PostgreSQL config
-  if (databaseConfig.primary === 'postgresql' || process.env.POSTGRES_ENABLED === 'true') {
-    if (!databaseConfig.postgresql.host) errors.push('POSTGRES_HOST is required');
-    if (!databaseConfig.postgresql.database) errors.push('POSTGRES_DB is required');
-    if (!databaseConfig.postgresql.user) errors.push('POSTGRES_USER is required');
-    if (!databaseConfig.postgresql.password) errors.push('POSTGRES_PASSWORD is required');
-  }
-  
-  // Check required MongoDB config if enabled
-  if (process.env.MONGO_ENABLED === 'true') {
-    if (!databaseConfig.mongodb.host) errors.push('MONGO_HOST is required');
-    if (!databaseConfig.mongodb.database) errors.push('MONGO_DB is required');
-  }
+
+  if (!databaseConfig.core_db.host) errors.push('CORE_DB_HOST is required');
+  if (!databaseConfig.core_db.database) errors.push('CORE_DB_NAME is required');
+  if (!databaseConfig.core_db.user) errors.push('CORE_DB_USER is required');
+  if (!databaseConfig.core_db.password) errors.push('CORE_DB_PASSWORD is required');
+
+  if (!databaseConfig.auth_db.host) errors.push('AUTH_DB_HOST is required');
+  if (!databaseConfig.auth_db.database) errors.push('AUTH_DB_NAME is required');
+  if (!databaseConfig.auth_db.user) errors.push('AUTH_DB_USER is required');
+  if (!databaseConfig.auth_db.password) errors.push('AUTH_DB_PASSWORD is required');
+
+  if (!databaseConfig.audit_db.uri) errors.push('AUDIT_DATABASE_URL is required');
   
   // Production security checks
   if (process.env.NODE_ENV === 'production') {
-    if (databaseConfig.postgresql.password === 'dev_password_123!') {
-      errors.push('Production PostgreSQL password must be set via POSTGRES_PASSWORD');
+    if (databaseConfig.core_db.password === 'dev_password_123!') {
+      errors.push('Production PostgreSQL password must be set via CORE_DB_PASSWORD');
     }
-    if (databaseConfig.mongodb.password === 'dev_password_123!') {
-      errors.push('Production MongoDB password must be set via MONGO_PASSWORD');
+    if (databaseConfig.auth_db.password === 'dev_password_123!') {
+      errors.push('Production PostgreSQL password must be set via AUTH_DB_PASSWORD');
     }
-    if (!databaseConfig.postgresql.ssl) {
+    if (databaseConfig.audit_db.password === 'dev_password_123!') {
+      errors.push('Production MongoDB password must be set via AUDIT_DB_PASSWORD');
+    }
+    if (!databaseConfig.core_db.ssl) {
       logger.warn('⚠️  PostgreSQL SSL is disabled in production');
     }
   }

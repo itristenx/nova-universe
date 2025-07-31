@@ -8,7 +8,8 @@ import { databaseConfig, validateDatabaseConfig } from '../config/database.js';
  * Provides secure connections, authentication, and best practices for MongoDB
  */
 class MongoDBManager {
-  constructor() {
+  constructor(config = databaseConfig.audit_db) {
+    this.config = config;
     this.client = null;
     this.database = null;
     this.isConnected = false;
@@ -30,11 +31,11 @@ class MongoDBManager {
       validateDatabaseConfig();
 
       const options = {
-        ...databaseConfig.mongodb.options,
+        ...this.config.options,
         
         // Security options
-        authSource: databaseConfig.mongodb.options.authSource,
-        authMechanism: databaseConfig.mongodb.options.authMechanism,
+        authSource: this.config.options.authSource,
+        authMechanism: this.config.options.authMechanism,
         
         // Use latest stable API version
         serverApi: {
@@ -52,7 +53,7 @@ class MongoDBManager {
         tlsAllowInvalidHostnames: process.env.NODE_ENV !== 'production',
       };
 
-      this.client = new MongoClient(databaseConfig.mongodb.uri, options);
+      this.client = new MongoClient(this.config.uri, options);
 
       // Set up event handlers
       this.setupEventHandlers();
@@ -61,7 +62,7 @@ class MongoDBManager {
       await this.client.connect();
 
       // Get database instance
-      this.database = this.client.db(databaseConfig.mongodb.database);
+      this.database = this.client.db(this.config.database);
 
       // Test connection
       await this.testConnection();
@@ -71,7 +72,7 @@ class MongoDBManager {
 
       if (!process.env.CLI_MODE) {
         logger.info('✅ MongoDB connection established successfully');
-        logger.info(`📊 Connected to database: ${databaseConfig.mongodb.database}`);
+        logger.info(`📊 Connected to database: ${this.config.database}`);
       }
 
       // Set up collections with proper indexes
@@ -398,8 +399,8 @@ class MongoDBManager {
   }
 }
 
-// Create singleton instance
-const mongoManager = new MongoDBManager();
+// Create singleton instance for the audit database
+const mongoManager = new MongoDBManager(databaseConfig.audit_db);
 
 export default mongoManager;
 export { MongoDBManager };

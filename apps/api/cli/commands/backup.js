@@ -244,9 +244,9 @@ async function createBackup(options) {
 async function backupDatabase(backupPath) {
   try {
     // Try to get database URL from environment
-    const dbUrl = process.env.DATABASE_URL;
+    const dbUrl = process.env.CORE_DATABASE_URL || process.env.DATABASE_URL;
     if (!dbUrl) {
-      throw new Error('DATABASE_URL not found in environment');
+      throw new Error('CORE_DATABASE_URL not found in environment');
     }
 
     const dbBackupPath = path.join(backupPath, 'database.sql');
@@ -555,13 +555,13 @@ async function restoreDatabase(backupPath, dryRun = false) {
   try {
     if (existsSync(dbSqlPath)) {
       // PostgreSQL restore
-      const dbUrl = process.env.DATABASE_URL;
+      const dbUrl = process.env.CORE_DATABASE_URL || process.env.DATABASE_URL;
       if (dbUrl && dbUrl.includes('postgresql://')) {
         await runCommand('psql', [dbUrl, '-f', dbSqlPath], { silent: true });
       }
     } else if (existsSync(mongoPath)) {
       // MongoDB restore
-      const dbUrl = process.env.DATABASE_URL;
+      const dbUrl = process.env.AUDIT_DATABASE_URL || process.env.DATABASE_URL;
       if (dbUrl && dbUrl.includes('mongodb://')) {
         await runCommand('mongorestore', ['--uri', dbUrl, '--drop', mongoPath], { silent: true });
       }

@@ -10,7 +10,8 @@ const { Pool } = pg;
  * Provides secure connection pooling, SSL encryption, and best practices
  */
 class PostgreSQLManager {
-  constructor() {
+  constructor(config = databaseConfig.core_db) {
+    this.config = config;
     this.pool = null;
     this.isConnected = false;
     this.connectionAttempts = 0;
@@ -26,23 +27,23 @@ class PostgreSQLManager {
       validateDatabaseConfig();
       
       const config = {
-        ...databaseConfig.postgresql,
+        ...this.config,
         // Connection string for easier deployment
         connectionString: this.buildConnectionString(),
         
         // Security settings
-        ssl: databaseConfig.postgresql.ssl,
+        ssl: this.config.ssl,
         
         // Performance settings
-        max: databaseConfig.postgresql.pool.max,
-        min: databaseConfig.postgresql.pool.min,
-        acquireTimeoutMillis: databaseConfig.postgresql.pool.acquireTimeoutMillis,
-        idleTimeoutMillis: databaseConfig.postgresql.pool.idleTimeoutMillis,
-        connectionTimeoutMillis: databaseConfig.postgresql.connectionTimeoutMillis,
+        max: this.config.pool.max,
+        min: this.config.pool.min,
+        acquireTimeoutMillis: this.config.pool.acquireTimeoutMillis,
+        idleTimeoutMillis: this.config.pool.idleTimeoutMillis,
+        connectionTimeoutMillis: this.config.connectionTimeoutMillis,
         
         // Query settings
-        statement_timeout: databaseConfig.postgresql.statement_timeout,
-        query_timeout: databaseConfig.postgresql.query_timeout,
+        statement_timeout: this.config.statement_timeout,
+        query_timeout: this.config.query_timeout,
         
         // Application name for monitoring
         application_name: 'nova-universe-api',
@@ -89,7 +90,7 @@ class PostgreSQLManager {
    * Build secure connection string
    */
   buildConnectionString() {
-    const config = databaseConfig.postgresql;
+    const config = this.config;
     const sslMode = config.ssl ? '?sslmode=require' : '?sslmode=disable';
     return `postgresql://${config.user}:${config.password}@${config.host}:${config.port}/${config.database}${sslMode}`;
   }
@@ -292,16 +293,8 @@ class PostgreSQLManager {
   }
 }
 
-// Create singleton instance
-const postgresManager = new PostgreSQLManager();
-
-console.log('DEBUG POSTGRES ENV:', {
-  POSTGRES_USER: process.env.POSTGRES_USER,
-  POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
-  POSTGRES_HOST: process.env.POSTGRES_HOST,
-  POSTGRES_PORT: process.env.POSTGRES_PORT,
-  POSTGRES_DB: process.env.POSTGRES_DB,
-});
+// Create singleton instance for the core database
+const postgresManager = new PostgreSQLManager(databaseConfig.core_db);
 
 export default postgresManager;
 export { PostgreSQLManager };
