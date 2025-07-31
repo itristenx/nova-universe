@@ -2,6 +2,7 @@ import express from 'express';
 import db from '../db.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { encrypt, decrypt } from '../utils/encryption.js';
+import { parse as parseCsv } from 'csv-parse/sync';
 
 const router = express.Router();
 
@@ -196,18 +197,39 @@ router.post('/import', authenticateJWT, async (req, res) => {
     const { format, data } = req.body;
     const records = [];
     if (format === 'csv') {
-      const lines = data.trim().split(/\r?\n/);
-      const headers = lines.shift().split(',');
-      for (const line of lines) {
-        const cols = line.split(',');
-        const obj = {};
-        headers.forEach((h, i) => obj[h.trim()] = cols[i]?.trim());
-        records.push(obj);
+      try {
+        records.push(
+          ...parseCsv(data, {
+            columns: true,
+            skip_empty_lines: true,
+            trim: true
+          })
+        );
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid CSV data' });
       }
     } else if (format === 'json') {
-      records.push(...JSON.parse(data));
+      if (typeof data !== 'string' || data.length > 50000) {
+        return res.status(400).json({ error: 'Invalid JSON data' });
+      }
+      try {
+        const parsed = JSON.parse(data);
+        if (!Array.isArray(parsed)) {
+          return res.status(400).json({ error: 'JSON must be an array of records' });
+        }
+        records.push(...parsed);
+      } catch {
+        return res.status(400).json({ error: 'Invalid JSON data' });
+      }
     } else {
       return res.status(400).json({ error: 'Unsupported format' });
+    }
+
+    const assetTagRegex = /^[A-Za-z0-9_-]{3,50}$/;
+    for (const rec of records) {
+      if (!rec.asset_tag || !assetTagRegex.test(rec.asset_tag)) {
+        return res.status(400).json({ error: `Invalid asset_tag: ${rec.asset_tag}` });
+      }
     }
 
     await db.query('BEGIN');
