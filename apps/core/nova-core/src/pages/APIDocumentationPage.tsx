@@ -23,8 +23,12 @@ export const APIDocumentationPage: React.FC = () => {
   useEffect(() => { load(); }, []);
 
   const createKey = async () => {
-    const { apiKey } = await api.createApiKey();
-    setKeys(prev => [...prev, apiKey]);
+    try {
+      const { apiKey } = await api.createApiKey();
+      setKeys(prev => [...prev, apiKey]);
+    } catch (err) {
+      console.error("Failed to create API key:", err);
+    }
   };
 
   const deleteKey = async (key: string) => {
