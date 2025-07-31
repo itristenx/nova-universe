@@ -121,9 +121,8 @@ export const DeepWorkPage: React.FC = () => {
                 </div>
               </div>
             )
-          },
-          {
-          {
+        },
+        {
             label: 'Assets',
             content: (
               <ul className="list-disc pl-5 text-sm">
