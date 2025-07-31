@@ -1,6 +1,8 @@
-import { Card } from '@/components/ui/Card';
+import { Button, Card, Checkbox, Input, Modal } from '@/components/ui';
 import { UserFilters, useUsers } from '@/hooks/useUsers';
-import type { User } from '@/types';
+import type { User, Role } from '@/types';
+import { api } from '@/lib/api';
+import { useToastStore } from '@/stores/toast';
 import {
     MagnifyingGlassIcon,
     PencilIcon,
@@ -328,26 +330,61 @@ export const UserManagementPage: React.FC = () => {
   const [filters, setFilters] = useState<UserFilters>({});
   const pageSize = 10;
 
-  const { 
-    users, 
-    loading, 
-    error, 
-    total, 
-    totalPages, 
-    deleteUser, 
-    toggleUserStatus 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [roleUser, setRoleUser] = useState<User | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    roles: [] as string[],
+  });
+  const [roles, setRoles] = useState<Role[]>([]);
+  const { addToast } = useToastStore();
+
+  const {
+    users,
+    loading,
+    error,
+    total,
+    totalPages,
+    createUser,
+    updateUser,
+    deleteUser,
+    toggleUserStatus
   } = useUsers(filters, currentPage, pageSize);
 
+  useEffect(() => {
+    api.getRoles().then(setRoles).catch((e) => {
+      console.error('Failed to load roles:', e);
+      addToast({
+        type: 'error',
+        message: 'Failed to load roles. Please try again later.',
+      });
+    });
+  }, []);
+
+  const resetForm = () => {
+    setFormData({ name: '', email: '', password: '', roles: [] });
+  };
+
   const handleEdit = (user: User) => {
-    // TODO: Open edit modal
-    console.log('Edit user:', user);
+    setEditingUser(user);
+    setFormData({
+      name: user.name || '',
+      email: user.email || '',
+      password: '',
+      roles: user.roles || [],
+    });
   };
 
   const handleDelete = async (user: User) => {
     if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
       const success = await deleteUser(user.id);
       if (success) {
-        console.log('User deleted successfully');
+        addToast({ type: 'success', title: 'Deleted', description: 'User deleted successfully' });
+      } else {
+        addToast({ type: 'error', title: 'Error', description: 'Failed to delete user' });
       }
     }
   };
@@ -355,18 +392,71 @@ export const UserManagementPage: React.FC = () => {
   const handleToggleStatus = async (user: User) => {
     const success = await toggleUserStatus(user.id);
     if (success) {
-      console.log(`User ${user.disabled ? 'enabled' : 'disabled'} successfully`);
+      addToast({ type: 'success', title: 'Updated', description: `User ${user.disabled ? 'enabled' : 'disabled'} successfully` });
+    } else {
+      addToast({ type: 'error', title: 'Error', description: 'Failed to update user status' });
     }
   };
 
   const handleAssignRole = (user: User) => {
-    // TODO: Open role assignment modal
-    console.log('Assign role to user:', user);
+    setRoleUser(user);
+    setFormData({ name: '', email: '', password: '', roles: user.roles || [] });
   };
 
   const handleCreateUser = () => {
-    // TODO: Open create user modal
-    console.log('Create new user');
+    setShowCreateModal(true);
+  };
+
+  const submitCreateUser = async () => {
+    const newUser = await createUser({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      roles: formData.roles,
+    } as CreateUserInput);
+    if (newUser) {
+      addToast({ type: 'success', title: 'User Created', description: 'User created successfully' });
+      setShowCreateModal(false);
+      resetForm();
+    } else {
+      addToast({ type: 'error', title: 'Error', description: 'Failed to create user' });
+    }
+  };
+
+  const submitUpdateUser = async () => {
+    if (!editingUser) return;
+    const updated = await updateUser(editingUser.id, {
+      name: formData.name,
+      email: formData.email,
+      roles: formData.roles,
+      ...(formData.password ? { password: formData.password } : {}),
+    });
+    if (updated) {
+      addToast({ type: 'success', title: 'Updated', description: 'User updated successfully' });
+      setEditingUser(null);
+      resetForm();
+    } else {
+      addToast({ type: 'error', title: 'Error', description: 'Failed to update user' });
+    }
+  };
+
+  const saveRoles = async () => {
+    if (!roleUser) return;
+    const updated = await updateUser(roleUser.id, { roles: formData.roles });
+    if (updated) {
+      addToast({ type: 'success', title: 'Roles Updated', description: 'Roles updated successfully' });
+      setRoleUser(null);
+      resetForm();
+    } else {
+      addToast({ type: 'error', title: 'Error', description: 'Failed to update roles' });
+    }
+  };
+
+  const closeModals = () => {
+    setShowCreateModal(false);
+    setEditingUser(null);
+    setRoleUser(null);
+    resetForm();
   };
 
   return (
@@ -422,6 +512,106 @@ export const UserManagementPage: React.FC = () => {
           onPageChange={setCurrentPage}
         />
       </Card>
+
+      {/* Create User Modal */}
+      <Modal
+        isOpen={showCreateModal}
+        onClose={closeModals}
+        title="Create User"
+      >
+        <div className="space-y-4">
+          <Input label="Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+          <Input label="Email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
+          <Input label="Password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Roles</label>
+            <div className="space-y-2">
+              {roles.map((role) => (
+                <Checkbox
+                  key={role.id}
+                  label={role.name}
+                  checked={formData.roles.includes(role.name)}
+                  onChange={(checked) => {
+                    if (checked) {
+                      setFormData({ ...formData, roles: [...formData.roles, role.name] });
+                    } else {
+                      setFormData({ ...formData, roles: formData.roles.filter((r) => r !== role.name) });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button variant="secondary" onClick={closeModals}>Cancel</Button>
+          <Button variant="primary" onClick={submitCreateUser} disabled={!isFormValid(formData, true)}>Create</Button>
+        </div>
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal
+        isOpen={!!editingUser}
+        onClose={closeModals}
+        title={editingUser ? `Edit ${editingUser.name}` : 'Edit User'}
+      >
+        <div className="space-y-4">
+          <Input label="Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+          <Input label="Email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
+          <Input label="Password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} placeholder="Leave blank to keep current" />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Roles</label>
+            <div className="space-y-2">
+              {roles.map((role) => (
+                <Checkbox
+                  key={role.id}
+                  label={role.name}
+                  checked={formData.roles.includes(role.name)}
+                  onChange={(checked) => {
+                    if (checked) {
+                      setFormData({ ...formData, roles: [...formData.roles, role.name] });
+                    } else {
+                      setFormData({ ...formData, roles: formData.roles.filter((r) => r !== role.name) });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button variant="secondary" onClick={closeModals}>Cancel</Button>
+          <Button variant="primary" onClick={submitUpdateUser} disabled={!formData.name || !formData.email}>Save</Button>
+        </div>
+      </Modal>
+
+      {/* Role Assignment Modal */}
+      <Modal
+        isOpen={!!roleUser}
+        onClose={closeModals}
+        title={roleUser ? `Roles for ${roleUser.name}` : 'Assign Roles'}
+      >
+        <div className="space-y-4">
+          {roles.map((role) => (
+            <Checkbox
+              key={role.id}
+              label={role.name}
+              checked={formData.roles.includes(role.name)}
+              onChange={(checked) => {
+                if (checked) {
+                  setFormData({ ...formData, roles: [...formData.roles, role.name] });
+                } else {
+                  setFormData({ ...formData, roles: formData.roles.filter((r) => r !== role.name) });
+                }
+              }}
+            />
+          ))}
+        </div>
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button variant="secondary" onClick={closeModals}>Cancel</Button>
+          <Button variant="primary" onClick={saveRoles}>Save</Button>
+        </div>
+      </Modal>
     </div>
   );
 };
