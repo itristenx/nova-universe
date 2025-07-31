@@ -226,7 +226,12 @@ router.post('/import', authenticateJWT, async (req, res) => {
 
     res.json({ success: true, imported: records.length });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Import failed' });
+    console.error('Error during asset import:', err); // Log the full error for debugging
+    res.status(500).json({ 
+      success: false, 
+      error: 'Import failed due to a server error. Please check the data and try again.', 
+      errorCode: 'IMPORT_ERROR' 
+    });
   }
 });
 
