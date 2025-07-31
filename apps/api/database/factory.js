@@ -1,8 +1,8 @@
 // Database factory and abstraction layer
 import { logger } from '../logger.js';
 import { databaseConfig } from '../config/database.js';
-import postgresManager from './postgresql.js';
-import mongoManager from './mongodb.js';
+import postgresManager, { PostgreSQLManager } from './postgresql.js';
+import mongoManager, { MongoDBManager } from './mongodb.js';
 
 /**
  * Database Factory
@@ -12,7 +12,9 @@ class DatabaseFactory {
   constructor() {
     this.initialized = false;
     this.primaryDb = null;
-    this.mongodb = null;
+    this.coreDb = postgresManager;
+    this.authDb = new PostgreSQLManager(databaseConfig.auth_db);
+    this.auditDb = mongoManager;
     this.availableDatabases = new Set();
   }
 
@@ -27,12 +29,9 @@ class DatabaseFactory {
     logger.info('🚀 Initializing database connections...');
 
     try {
-      // Initialize primary database (PostgreSQL by default)
-      if (databaseConfig.primary === 'postgresql' || process.env.POSTGRES_ENABLED === 'true') {
-        await this.initializePostgreSQL();
-      }
+      await this.initializePostgreSQL();
+      await this.initializeAuthPostgreSQL();
 
-      // Initialize MongoDB if enabled
       if (process.env.MONGO_ENABLED === 'true') {
         await this.initializeMongoDB();
       }
@@ -56,11 +55,11 @@ class DatabaseFactory {
    */
   async initializePostgreSQL() {
     try {
-      const success = await postgresManager.initialize();
+      const success = await this.coreDb.initialize();
       if (success) {
-        this.primaryDb = postgresManager;
-        this.availableDatabases.add('postgresql');
-        logger.info('✅ PostgreSQL initialized as primary database');
+        this.primaryDb = this.coreDb;
+        this.availableDatabases.add('core_db');
+        logger.info('✅ Core PostgreSQL initialized');
       }
     } catch (error) {
       logger.error('❌ PostgreSQL initialization failed:', error.message);
@@ -70,16 +69,27 @@ class DatabaseFactory {
     }
   }
 
+  async initializeAuthPostgreSQL() {
+    try {
+      const success = await this.authDb.initialize();
+      if (success) {
+        this.availableDatabases.add('auth_db');
+        logger.info('✅ Auth PostgreSQL initialized');
+      }
+    } catch (error) {
+      logger.error('❌ Auth PostgreSQL initialization failed:', error.message);
+    }
+  }
+
   /**
    * Initialize MongoDB
    */
   async initializeMongoDB() {
     try {
-      const success = await mongoManager.initialize();
+      const success = await this.auditDb.initialize();
       if (success) {
-        this.mongodb = mongoManager;
-        this.availableDatabases.add('mongodb');
-        logger.info('✅ MongoDB initialized');
+        this.availableDatabases.add('audit_db');
+        logger.info('✅ MongoDB audit database initialized');
       }
     } catch (error) {
       logger.error('❌ MongoDB initialization failed:', error.message);
@@ -105,16 +115,16 @@ class DatabaseFactory {
   /**
    * Get MongoDB instance
    */
-  getMongoDB() {
+  getAuditDB() {
     if (!this.initialized) {
       throw new Error('Database factory not initialized. Call initialize() first.');
     }
 
-    if (!this.mongodb) {
+    if (!this.auditDb) {
       throw new Error('MongoDB not available');
     }
 
-    return this.mongodb;
+    return this.auditDb;
   }
 
   /**
@@ -148,9 +158,9 @@ class DatabaseFactory {
     }
 
     // Check MongoDB health
-    if (this.isDatabaseAvailable('mongodb')) {
+    if (this.isDatabaseAvailable('audit_db')) {
       try {
-        status.health_checks.mongodb = await mongoManager.healthCheck();
+        status.health_checks.mongodb = await this.auditDb.healthCheck();
       } catch (error) {
         status.health_checks.mongodb = {
           status: 'error',
@@ -178,7 +188,7 @@ class DatabaseFactory {
       logger.error('❌ Primary database query failed:', error.message);
       
       // Try fallback to MongoDB if available and not already using it
-      if (primaryDb !== this.mongodb && this.isDatabaseAvailable('mongodb')) {
+      if (primaryDb !== this.auditDb && this.isDatabaseAvailable('audit_db')) {
         logger.warn('🔄 Falling back to MongoDB');
         const collectionName = sql.split(' ')[2]; // Extract collection name from SQL (naive approach)
         return await this.getDocuments(collectionName, params[0]);
@@ -192,11 +202,11 @@ class DatabaseFactory {
    * Store document in MongoDB (if available)
    */
   async storeDocument(collection, document) {
-    if (!this.isDatabaseAvailable('mongodb')) {
+    if (!this.isDatabaseAvailable('audit_db')) {
       throw new Error('MongoDB not available for document storage');
     }
 
-    const mongoCollection = this.mongodb.collection(collection);
+    const mongoCollection = this.auditDb.collection(collection);
     return await mongoCollection.insertOne({
       ...document,
       created_at: new Date(),
@@ -208,11 +218,11 @@ class DatabaseFactory {
    * Retrieve documents from MongoDB
    */
   async getDocuments(collection, filter = {}, options = {}) {
-    if (!this.isDatabaseAvailable('mongodb')) {
+    if (!this.isDatabaseAvailable('audit_db')) {
       throw new Error('MongoDB not available for document retrieval');
     }
 
-    const mongoCollection = this.mongodb.collection(collection);
+    const mongoCollection = this.auditDb.collection(collection);
     return await mongoCollection.find(filter, options).toArray();
   }
 
@@ -220,8 +230,8 @@ class DatabaseFactory {
    * Create audit log entry
    */
   async createAuditLog(action, userId, details = {}) {
-    if (this.isDatabaseAvailable('mongodb')) {
-      await this.mongodb.logAudit(action, userId, details);
+    if (this.isDatabaseAvailable('audit_db')) {
+      await this.auditDb.logAudit(action, userId, details);
     } else {
       // Fallback to primary database audit table
       try {
@@ -243,12 +253,16 @@ class DatabaseFactory {
 
     const closePromises = [];
 
-    if (this.primaryDb === postgresManager) {
-      closePromises.push(postgresManager.close());
+    if (this.coreDb) {
+      closePromises.push(this.coreDb.close());
     }
 
-    if (this.mongodb) {
-      closePromises.push(mongoManager.close());
+    if (this.authDb) {
+      closePromises.push(this.authDb.close());
+    }
+
+    if (this.auditDb) {
+      closePromises.push(this.auditDb.close());
     }
 
     await Promise.all(closePromises);
