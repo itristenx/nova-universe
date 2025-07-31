@@ -32,8 +32,13 @@ export const APIDocumentationPage: React.FC = () => {
   };
 
   const deleteKey = async (key: string) => {
-    await api.deleteApiKey(key);
-    setKeys(prev => prev.filter(k => k.key !== key));
+    try {
+      await api.deleteApiKey(key);
+      setKeys(prev => prev.filter(k => k.key !== key));
+    } catch (err) {
+      console.error("Failed to delete API key:", err);
+      alert("An error occurred while deleting the API key. Please try again.");
+    }
   };
 
   return (
