@@ -93,7 +93,8 @@ export const getConfig = () => {
     SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
     HELPSCOUT_API_KEY: process.env.HELPSCOUT_API_KEY,
     HELPSCOUT_MAILBOX_ID: process.env.HELPSCOUT_MAILBOX_ID,
-    HELPSCOUT_SMTP_FALLBACK: process.env.HELPSCOUT_SMTP_FALLBACK === 'true'
+    HELPSCOUT_SMTP_FALLBACK: process.env.HELPSCOUT_SMTP_FALLBACK === 'true',
+    COSMO_API_URL: process.env.COSMO_API_URL
   };
 };
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@nova-universe/ui'
+import { sendCosmoMessage } from '../lib/api'
 
 export const CosmoAssistant: React.FC = () => {
   const [messages, setMessages] = useState<{ from: string; text: string }[]>([])
@@ -10,11 +11,21 @@ export const CosmoAssistant: React.FC = () => {
     if (!input.trim()) return
     setLoading(true)
     setMessages(msgs => [...msgs, { from: 'user', text: input }])
-    // TODO: integrate real Cosmo SDK
-    setTimeout(() => {
-      setMessages(msgs => [...msgs, { from: 'cosmo', text: 'This is a placeholder response from Cosmo.' }])
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
+
+    try {
+      const res = await sendCosmoMessage(token, input)
+      if (res.success) {
+        setMessages(msgs => [...msgs, { from: 'cosmo', text: res.message }])
+      } else {
+        setMessages(msgs => [...msgs, { from: 'cosmo', text: 'Sorry, something went wrong.' }])
+      }
+    } catch (err) {
+      setMessages(msgs => [...msgs, { from: 'cosmo', text: 'Sorry, something went wrong.' }])
+    } finally {
       setLoading(false)
-    }, RESPONSE_DELAY)
+    }
     setInput('')
   }
 

@@ -57,3 +57,11 @@ export const getXpLeaderboard = async () => {
   const { data } = await client.get<{ success: boolean; leaderboard: LeaderboardEntry[]; teams: TeamRanking[]; me: { xp: number } }>('/xp')
   return data
 }
+
+export const sendCosmoMessage = async (token: string, message: string) => {
+  const { data } = await axios.post('/api/v1/synth/chat', { message }, {
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true
+  })
+  return data
+}

@@ -607,7 +607,10 @@ router.put('/tickets/:ticketId/update',
       const userId = req.user.id;
 
       // Check if ticket exists and is assigned to this user
-      db.get('SELECT * FROM tickets WHERE ticket_id = $1 AND assigned_to_id = $2 AND deleted_at IS NULL', 
+      db.get(`SELECT t.*, u.is_vip, u.vip_level, u.vip_sla_override
+               FROM tickets t
+               JOIN users u ON t.requested_by_id = u.id
+               WHERE t.ticket_id = $1 AND t.assigned_to_id = $2 AND t.deleted_at IS NULL`,
         [ticketId, userId], (err, ticket) => {
         if (err) {
           logger.error('Error checking ticket:', err);
@@ -691,6 +694,15 @@ router.put('/tickets/:ticketId/update',
               }
             );
 
+            const newStatus = status || ticket.status;
+            const failoverWindow = ticket.vip_sla_override?.failoverMinutes || 60;
+            if (ticket.is_vip && ticket.due_date) {
+              const remaining = new Date(ticket.due_date).getTime() - Date.now();
+              if (remaining <= failoverWindow * 60000 && newStatus !== 'resolved') {
+                notifyCosmoEscalation(ticket.ticket_id, 'sla_risk');
+              }
+            }
+
             res.json({
               success: true,
               message: 'Ticket updated successfully'
@@ -749,7 +761,9 @@ router.post('/tickets/:ticketId/claim',
       const userId = req.user.id;
 
       // Check if ticket exists and is unassigned
-      db.get('SELECT * FROM tickets WHERE ticket_id = $1 AND deleted_at IS NULL', [ticketId], (err, ticket) => {
+      db.get(`SELECT t.*, u.is_vip, u.vip_level, u.vip_sla_override FROM tickets t
+              JOIN users u ON t.requested_by_id = u.id
+              WHERE t.ticket_id = $1 AND t.deleted_at IS NULL`, [ticketId], (err, ticket) => {
         if (err) {
           logger.error('Error checking ticket:', err);
           return res.status(500).json({
@@ -799,6 +813,14 @@ router.post('/tickets/:ticketId/claim',
                 }
               }
             );
+
+            const failoverWindow = ticket.vip_sla_override?.failoverMinutes || 60;
+            if (ticket.is_vip && ticket.due_date) {
+              const remaining = new Date(ticket.due_date).getTime() - Date.now();
+              if (remaining <= failoverWindow * 60000) {
+                notifyCosmoEscalation(ticket.ticket_id, 'claimed_near_due');
+              }
+            }
 
             res.json({
               success: true,
