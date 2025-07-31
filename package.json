@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config apps/api/jest.config.ts",
+    "test": "node --test test/simple.test.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --config ./tools/config/eslint.config.js"
   },
@@ -13,6 +13,8 @@
     "@elastic/elasticsearch": "^9.0.3",
     "@eslint/js": "^9.32.0",
     "@prisma/client": "^6.12.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
     "assert": "^2.1.0",
     "axios": "^1.11.0",
     "babel-jest": "^30.0.5",
@@ -25,13 +27,12 @@
     "nodemailer": "^7.0.5",
     "prisma": "^6.12.0",
     "supertest": "^7.1.4",
+    
     "ts-node": "^10.9.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vite": "^7.0.6",
-    "vitest": "^3.2.4",
-    "@typescript-eslint/parser": "^8.38.0",
-    "@typescript-eslint/eslint-plugin": "^8.38.0"
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@apollo/server": "^5.0.0",
