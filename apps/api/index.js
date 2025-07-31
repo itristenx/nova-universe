@@ -559,6 +559,7 @@ v1Router.get('/config', ensureAuth, (req, res) => {
     const defaults = {
       logoUrl: '/logo.png',
       faviconUrl: '/vite.svg',
+      organizationName: 'Your Organization',
       welcomeMessage: 'Welcome to the Help Desk',
       helpMessage: 'Need to report an issue?',
       statusOpenMsg: 'Open',
@@ -575,6 +576,7 @@ v1Router.get('/config', ensureAuth, (req, res) => {
     const envConfig = {
       logoUrl: process.env.LOGO_URL,
       faviconUrl: process.env.FAVICON_URL,
+      organizationName: process.env.ORGANIZATION_NAME,
       welcomeMessage: process.env.WELCOME_MESSAGE,
       helpMessage: process.env.HELP_MESSAGE,
       statusOpenMsg: process.env.STATUS_OPEN_MSG,
@@ -610,9 +612,24 @@ v1Router.put('/api/config', ensureAuth, (req, res) => {
         const dbConfig = Object.fromEntries(rows.map((r) => [r.key, r.value]));
         delete dbConfig.adminPassword;
 
-        const defaults = DEFAULT_CONFIG;
+        const defaults = DEFAULTS;
 
-        const envConfig = getEnvConfig();
+        const envConfig = {
+          logoUrl: process.env.LOGO_URL,
+          faviconUrl: process.env.FAVICON_URL,
+          organizationName: process.env.ORGANIZATION_NAME,
+          welcomeMessage: process.env.WELCOME_MESSAGE,
+          helpMessage: process.env.HELP_MESSAGE,
+          statusOpenMsg: process.env.STATUS_OPEN_MSG,
+          statusClosedMsg: process.env.STATUS_CLOSED_MSG,
+          statusErrorMsg: process.env.STATUS_ERROR_MSG,
+          statusMeetingMsg: process.env.STATUS_MEETING_MSG,
+          statusBrbMsg: process.env.STATUS_BRB_MSG,
+          statusLunchMsg: process.env.STATUS_LUNCH_MSG,
+          statusUnavailableMsg: process.env.STATUS_UNAVAILABLE_MSG,
+          rateLimitWindow: process.env.RATE_LIMIT_WINDOW,
+          rateLimitMax: process.env.RATE_LIMIT_MAX
+        };
 
         const config = { ...defaults, ...dbConfig, ...envConfig };
         res.json(config);

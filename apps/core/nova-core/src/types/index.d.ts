@@ -84,6 +84,7 @@ export interface Log {
     emailStatus: 'success' | 'fail';
 }
 export interface Config {
+    organizationName: string;
     logoUrl: string;
     faviconUrl: string;
     kioskLogoUrl?: string;

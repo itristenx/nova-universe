@@ -372,6 +372,15 @@ export const SettingsPage: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 gap-6">
+                    <Input
+                      label="Organization Name"
+                      value={config?.organizationName || ''}
+                      onChange={(e) =>
+                        setConfig(prev => prev ? { ...prev, organizationName: e.target.value } : null)
+                      }
+                      helperText="Displayed across the admin interface"
+                    />
+
                     {/* Logo Upload */}
                     <div>
                       <FileInput
