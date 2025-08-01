@@ -53,9 +53,8 @@ The `design/theme.js` file defines shared colors, fonts and spacing. Frontends i
 ```bash
 git clone https://github.com/itristenx/nova-universe.git
 cd nova-universe
-./installers/setup.sh
-./scripts/init-env.sh
-./installers/start-all.sh
+./scripts/setup.sh
+./scripts/start-all.sh
 ```
 
 Open http://localhost:5173 to access the admin interface.
@@ -110,26 +109,12 @@ For questions, suggestions, or support, please use [GitHub Discussions](https://
 - [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
 - PostgreSQL 15 or higher
 
-## Quick Start
-
-```bash
-git clone https://github.com/itristenx/nova-universe.git
-cd nova-universe
-./installers/setup.sh
-./scripts/init-env.sh
-./installers/start-all.sh
-```
-
-Open http://localhost:5173 to access the admin interface.
-
-**Default login:** admin@example.com / admin
 
 ## Setup
 
-Run `./installers/setup.sh` to install Node.js.
-Then run `pnpm install` from the repository root to install dependencies across all workspaces.
+Run `./scripts/setup.sh` to install Node.js.
 Copy `.env.local.example` to `.env.local` and adjust any values for your machine.
-Next run `./scripts/init-env.sh` to create the `.env` files for each app (edit them before launching).
+`setup.sh` creates missing `.env` files automatically. You can rerun `./scripts/init-env.sh` to regenerate them.
 You can also follow the manual instructions below.
 See [Local vs Production Setup](docs/environments.md) for details on configuring the environment variables used by each service.
 
@@ -210,7 +195,7 @@ dependencies if the `node_modules` directory is missing. Each service is
 started with `npm start` so its environment file loads correctly.
 
 ```powershell
-./installers/start-all.ps1
+./scripts/start-all.ps1
 ```
 
 ### Windows Installer
@@ -219,7 +204,7 @@ Install [Inno Setup](https://jrsoftware.org/isinfo.php) along with Node.js and n
 Run the following command to generate `Nova-<version>.exe`:
 
 ```powershell
-./installers/make-windows-installer.ps1 -Version 1.0.0
+./tools/scripts/scripts/make-windows-installer.ps1 -Version 1.0.0
 ```
 
 Run the generated `.exe` to install Nova Universe.
@@ -235,12 +220,12 @@ npm install -g electron-installer-appimage
 Then build the AppImage:
 
 ```bash
-./installers/make-linux-installer.sh 1.0.0
+./tools/scripts/scripts/make-linux-installer.sh 1.0.0
 ```
 
 Mark the output file executable and run it to start the application.
 
-All installer and upgrade scripts live in `installers/` and should include basic tests to verify they work.
+All installer and upgrade scripts live in `tools/scripts/scripts/` and should include basic tests to verify they work.
 
 ## Running Tests
 

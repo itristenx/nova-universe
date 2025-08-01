@@ -30,10 +30,10 @@ Nova Universe is an internal help desk application for submitting and tracking I
 # Clone and setup
 git clone <repository-url>
 cd nova-universe
-./installers/setup.sh
+./scripts/setup.sh
 
 # Start all services
-./installers/start-all.sh
+./scripts/start-all.sh
 ```
 
 ### Default Access
@@ -117,7 +117,7 @@ Native macOS launcher application.
 
 ### Automated Setup
 ```bash
-./installers/setup.sh
+./scripts/setup.sh
 ```
 
 ### Manual Setup
@@ -131,15 +131,15 @@ cd ../nova-slack && npm ci
 ./scripts/init-env.sh
 
 # Start services individually
-cd cueit-api && npm start &
-cd cueit-admin && npm run dev &
-cd cueit-slack && npm start &
+cd apps/api && npm start &
+cd apps/core/nova-core && npm run dev &
+cd apps/comms/nova-comms && npm start &
 ```
 
 ### Environment Configuration
 Edit the `.env` files in each component directory:
 
-#### cueit-api/.env
+#### apps/api/.env
 ```
 API_PORT=3000
 SESSION_SECRET=your-secure-secret
@@ -148,10 +148,10 @@ ADMIN_PASSWORD=your-secure-password
 KIOSK_TOKEN=your-kiosk-token
 SMTP_HOST=your-smtp-server
 HELPDESK_EMAIL=helpdesk@example.com
-DATABASE_URL=postgres://user:password@localhost:5432/cueit
+DATABASE_URL=postgres://user:password@localhost:5432/nova_universe
 ```
 
-#### cueit-admin/.env
+#### apps/core/nova-core/.env
 ```
 VITE_API_URL=http://localhost:3000
 VITE_ADMIN_URL=http://localhost:5173
@@ -161,7 +161,7 @@ VITE_ADMIN_URL=http://localhost:5173
 
 1. **Install Dependencies**
    ```bash
-   ./installers/setup.sh
+   ./scripts/setup.sh
    ```
 
 2. **Configure Environment**
@@ -172,11 +172,11 @@ VITE_ADMIN_URL=http://localhost:5173
 
 3. **Start Services**
    ```bash
-   ./installers/start-all.sh
+   ./scripts/start-all.sh
    ```
 
 4. **Access Applications**
-   - CueIT Portal: http://localhost:5173
+   - Admin UI: http://localhost:5173
    - API: http://localhost:3000
    - Kiosk: Build and run in Xcode
 
@@ -212,21 +212,18 @@ See [SECURITY_FIXES.md](SECURITY_FIXES.md) for detailed security implementation.
 ### Testing
 ```bash
 # Run tests for each component from the repository root
-pnpm --filter cueit-api test
-pnpm --filter cueit-admin test
+pnpm --filter nova-universe-api test
+pnpm --filter nova-core-admin test
 pnpm --filter cueit-slack test
 ```
 
 ### Development Scripts
 ```bash
 # Start development environment
-./cueit-dev.sh
-
-# Test local setup
-./test-local-setup.sh
+./scripts/start-all.sh
 
 # Clean iOS build (if needed)
-cd cueit-kiosk && ./clean-build.sh
+cd apps/beacon/nova-beacon && ./clean-build.sh
 ```
 
 ## Deployment
@@ -234,8 +231,8 @@ cd cueit-kiosk && ./clean-build.sh
 ### Production Deployment
 1. Build all components:
    ```bash
-   cd cueit-admin && npm run build
-   cd cueit-api && npm run build # if applicable
+   cd apps/core/nova-core && npm run build
+   cd apps/api && npm run build # if applicable
    ```
 
 2. Configure production environment variables
@@ -245,9 +242,9 @@ cd cueit-kiosk && ./clean-build.sh
 6. Configure log rotation
 
 ### Platform-Specific Installers
-- **Windows**: `installers/make-windows-installer.ps1`
-- **macOS**: `installers/make-installer.sh`
-- **Linux**: `installers/make-linux-installer.sh`
+- **Windows**: `tools/scripts/scripts/make-windows-installer.ps1`
+- **macOS**: `tools/scripts/scripts/make-installer.sh`
+- **Linux**: `tools/scripts/scripts/make-linux-installer.sh`
 
 ## Troubleshooting
 
@@ -259,14 +256,14 @@ cd cueit-kiosk && ./clean-build.sh
 3. Check database connection and migrations
 
 #### iOS Kiosk Build Issues
-1. Clean build: `cd cueit-kiosk && ./clean-build.sh`
+1. Clean build: `cd apps/beacon/nova-beacon && ./clean-build.sh`
 2. Check Xcode version compatibility
 3. Verify iOS simulator connectivity to localhost
 
 #### Authentication Problems
 1. Check session secret is set
-2. Verify admin user exists: `cd cueit-api && node cli.js list`
-3. Reset admin password: `cd cueit-api && node cli.js update-password`
+2. Verify admin user exists: `cd apps/api && node cli.js list`
+3. Reset admin password: `cd apps/api && node cli.js update-password`
 
 ### Log Locations
 - API logs: Check console output or configured log file
@@ -286,8 +283,7 @@ cd cueit-kiosk && ./clean-build.sh
 - See [development guide](development.md) for contributing
 
 ## Component Documentation
-- [API Documentation](cueit-api/README.md)
-- [Admin UI Documentation](cueit-admin/README.md)
-- [iOS Kiosk Documentation](cueit-kiosk/README.md)
-- [Slack Integration](cueit-slack/README.md)
-- [macOS Launcher](cueit-macos-swift/README.md)
+- [API Documentation](../apps/api/README.md)
+- [Admin UI Documentation](../apps/core/nova-core/README.md)
+- [iOS Kiosk Documentation](../apps/beacon/nova-beacon/README.md)
+- [Slack Integration](../apps/comms/nova-comms/README.md)

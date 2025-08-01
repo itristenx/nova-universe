@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get CueIT running in 5 minutes.
+Get Nova Universe running in 5 minutes.
 
 ## Prerequisites
 - [Node.js](https://nodejs.org/) 18+
@@ -12,20 +12,21 @@ Get CueIT running in 5 minutes.
 
 1. **Clone and Install**
    ```bash
-   git clone https://github.com/your-org/CueIT.git
-   cd CueIT
-   pnpm install
+   git clone https://github.com/itristenx/nova-universe.git
+   cd nova-universe
+   ./scripts/setup.sh
    ```
 
 2. **Configure**
    ```bash
    cp .env.local.example .env.local
+   # Optional: regenerate environment files
    ./scripts/init-env.sh
    ```
 
 3. **Start All Services**
    ```bash
-   ./installers/start-all.sh
+   ./scripts/start-all.sh
    ```
 
 4. **Access the Admin Interface**
