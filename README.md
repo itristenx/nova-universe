@@ -1,3 +1,4 @@
+<p align="center"><img src="nova-core/public/logo.png" alt="Nova Universe logo" width="50"/></p>
 # Nova Universe
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/itristenx/nova-universe/ci.yml?branch=main)](https://github.com/itristenx/nova-universe/actions)
@@ -39,7 +40,7 @@ The `design/theme.js` file defines shared colors, fonts and spacing. Frontends i
 
 ---
 
-## Getting Started
+## Quick Start
 
 ### Requirements
 - [Node.js](https://nodejs.org/) 18 or higher
@@ -47,7 +48,7 @@ The `design/theme.js` file defines shared colors, fonts and spacing. Frontends i
 - sqlite3
 - [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
 
-### Quick Start
+### Steps
 
 ```bash
 git clone https://github.com/itristenx/nova-universe.git
@@ -101,27 +102,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 For questions, suggestions, or support, please use [GitHub Discussions](https://github.com/itristenx/nova-universe/discussions) or open an issue.
 
----
-
-## Requirements
-- [Node.js](https://nodejs.org/) 18 or higher
-- npm
-- sqlite3
-- [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
-
-## Quick Start
-
-```bash
-git clone https://github.com/itristenx/nova-universe.git
-cd nova-universe
-./scripts/setup.sh
-./scripts/init-env.sh
-./scripts/start-all.sh
-```
-
-Open http://localhost:5173 to access the admin interface.
-
-**Default login:** admin@example.com / admin
 
 ## Setup
 
