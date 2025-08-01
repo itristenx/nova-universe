@@ -48,8 +48,7 @@ The Nova Universe database upgrade has been successfully implemented with a comp
 - `scripts/pgadmin-servers.json` - pgAdmin configuration
 
 ### Integration & Compatibility
-- `nova-api/db.js` - Enhanced database layer with backward compatibility
-- `nova-api/db-legacy.js` - Original SQLite implementation backup
+- `nova-api/db.js` - Consolidated database layer with backward compatibility
 
 ### Testing & Documentation
 - `test/database.test.js` - Comprehensive test suite

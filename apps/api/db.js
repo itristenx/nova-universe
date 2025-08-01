@@ -1,4 +1,5 @@
-// db.js - Enhanced database layer with PostgreSQL/MongoDB support
+// db.js - Consolidated database layer with PostgreSQL/MongoDB support
+// (merged from the former db.js and db-new.js implementations)
 import { logger } from './logger.js';
 import { DatabaseFactory } from './database/factory.js';
 import bcrypt from 'bcryptjs';
