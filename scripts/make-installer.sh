@@ -9,7 +9,7 @@ VERSION="${1:-1.0.0}"
 RES_DIR="./dist/resources"
 mkdir -p "$RES_DIR/installers"
 cp -R nova-api nova-core nova-comms design "$RES_DIR/"
-cp installers/start-all.sh "$RES_DIR/installers/"
+cp scripts/start-all.sh "$RES_DIR/installers/"
 # copy .env.example to .env so the launcher does not need to write inside
 # the application bundle on first run
 for pkg in nova-api nova-core nova-comms; do

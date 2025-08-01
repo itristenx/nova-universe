@@ -11,7 +11,7 @@ npm --prefix nova-core run build
 RES_DIR="./dist/resources"
 mkdir -p "$RES_DIR/installers"
 cp -R nova-api nova-core nova-comms design "$RES_DIR/"
-cp installers/start-all.sh "$RES_DIR/installers/"
+cp scripts/start-all.sh "$RES_DIR/installers/"
 for pkg in nova-api nova-core nova-comms; do
   cp "$pkg/.env.example" "$RES_DIR/$pkg/.env"
 done
