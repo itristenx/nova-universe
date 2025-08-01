@@ -171,7 +171,7 @@ VITE_ADMIN_URL=http://localhost:5173
 
 3. **Start Services**
    ```bash
-./scripts/start-all.sh
+   ./scripts/start-all.sh
    ```
 
 4. **Access Applications**
