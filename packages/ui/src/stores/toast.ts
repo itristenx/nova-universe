@@ -1,16 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-
-interface ToastState {
-  toasts: Array<{
-    id: string;
-    type: 'success' | 'error' | 'warning' | 'info';
-    title: string;
-    description?: string;
-  }>;
-  addToast: (toast: Omit<ToastState['toasts'][0], 'id'>) => void;
-  removeToast: (id: string) => void;
-}
+import type { ToastState } from './toast.types';
 
 export const useToastStore = create<ToastState>()(
   devtools(
