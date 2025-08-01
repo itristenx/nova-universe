@@ -12,7 +12,7 @@ $RES_DIR = Join-Path (Get-Location) 'dist\resources'
 if (-not (Test-Path $RES_DIR)) { New-Item -ItemType Directory -Path $RES_DIR | Out-Null }
 
 Copy-Item nova-api, nova-core, nova-comms, design -Destination $RES_DIR -Recurse -Force
-Copy-Item installers\start-all.sh $RES_DIR\installers -Force
+Copy-Item scripts\start-all.sh $RES_DIR\installers -Force
 
 foreach ($pkg in 'nova-api','nova-core','nova-comms') {
   Copy-Item (Join-Path $pkg '.env.example') (Join-Path $RES_DIR $pkg '.env') -Force
