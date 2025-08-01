@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { api } from '@/lib/api';
 import {
   Button,
   Card,
@@ -187,7 +188,7 @@ export default function SCIMProvisioningMonitor() {
   // Load SCIM Configuration
   const loadSCIMConfig = useCallback(async () => {
     try {
-      const response = await apiClient.get<SCIMConfig>('/api/scim-config');
+      const response = await api.get<SCIMConfig>('/api/scim-config');
       setSCIMConfig(response.data);
     } catch (err) {
       console.error('Failed to load SCIM config:', err);
@@ -201,7 +202,7 @@ export default function SCIMProvisioningMonitor() {
     
     try {
       setRefreshing(true);
-      const response = await apiClient.get<{ Resources: SCIMUser[] }>('/scim/v2/Users');
+      const response = await api.get<{ Resources: SCIMUser[] }>('/scim/v2/Users');
       if (response.data && response.data.Resources) {
         setSCIMUsers(response.data.Resources);
       }
@@ -218,7 +219,7 @@ export default function SCIMProvisioningMonitor() {
     if (!scimConfig.enabled || !scimConfig.groupSyncEnabled) return;
     
     try {
-      const response = await apiClient.get<{ Resources: SCIMGroup[] }>('/scim/v2/Groups');
+      const response = await api.get<{ Resources: SCIMGroup[] }>('/scim/v2/Groups');
       if (response.data && response.data.Resources) {
         setSCIMGroups(response.data.Resources);
       }

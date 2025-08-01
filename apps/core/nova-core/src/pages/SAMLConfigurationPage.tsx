@@ -237,7 +237,7 @@ export const SAMLConfigurationPage: React.FC = () => {
         title: 'Success',
         description: 'IdP metadata parsed successfully'
       });
-    } catch (error) {
+    } catch {
       addToast({
         type: 'error',
         title: 'Error',
