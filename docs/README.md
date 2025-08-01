@@ -1,6 +1,6 @@
-# CueIT Documentation
+# Nova Universe Documentation
 
-CueIT is an internal help desk application for submitting and tracking IT tickets.
+Nova Universe is an internal help desk application for submitting and tracking IT tickets.
 
 ## Table of Contents
 - [Quick Start Guide](#quick-start-guide)
@@ -29,11 +29,11 @@ CueIT is an internal help desk application for submitting and tracking IT ticket
 ```bash
 # Clone and setup
 git clone <repository-url>
-cd CueIT
-./installers/setup.sh
+cd nova-universe
+./scripts/setup.sh
 
 # Start all services
-./installers/start-all.sh
+./scripts/start-all.sh
 ```
 
 ### Default Access
@@ -43,7 +43,7 @@ cd CueIT
 
 ## Project Overview
 
-CueIT is a comprehensive IT help desk system with multiple components:
+Nova Universe is a comprehensive IT help desk system with multiple components:
 
 ### Core Components
 - **cueit-api** - Backend API server (Node.js/Express/SQLite)
@@ -117,7 +117,7 @@ Native macOS launcher application.
 
 ### Automated Setup
 ```bash
-./installers/setup.sh
+./scripts/setup.sh
 ```
 
 ### Manual Setup
@@ -160,7 +160,7 @@ VITE_ADMIN_URL=http://localhost:5173
 
 1. **Install Dependencies**
    ```bash
-   ./installers/setup.sh
+   ./scripts/setup.sh
    ```
 
 2. **Configure Environment**
@@ -171,11 +171,11 @@ VITE_ADMIN_URL=http://localhost:5173
 
 3. **Start Services**
    ```bash
-   ./installers/start-all.sh
+./scripts/start-all.sh
    ```
 
 4. **Access Applications**
-   - CueIT Portal: http://localhost:5173
+   - Nova Universe Portal: http://localhost:5173
    - API: http://localhost:3000
    - Kiosk: Build and run in Xcode
 

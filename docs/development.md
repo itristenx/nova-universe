@@ -8,7 +8,7 @@
 
 ## Getting Started
 1. Clone the repository
-2. Run `./installers/setup.sh` to install dependencies
+2. Run `./scripts/setup.sh` to install dependencies
 3. Copy `.env.local.example` to `.env.local`
 4. Run `./scripts/init-env.sh` to create environment files
 5. Edit the `.env` files as needed
