@@ -52,9 +52,9 @@ The `design/theme.js` file defines shared colors, fonts and spacing. Frontends i
 ```bash
 git clone https://github.com/itristenx/nova-universe.git
 cd nova-universe
-./installers/setup.sh
+./scripts/setup.sh
 ./scripts/init-env.sh
-./installers/start-all.sh
+./scripts/start-all.sh
 ```
 
 Open http://localhost:5173 to access the admin interface.
@@ -114,9 +114,9 @@ For questions, suggestions, or support, please use [GitHub Discussions](https://
 ```bash
 git clone https://github.com/itristenx/nova-universe.git
 cd nova-universe
-./installers/setup.sh
+./scripts/setup.sh
 ./scripts/init-env.sh
-./installers/start-all.sh
+./scripts/start-all.sh
 ```
 
 Open http://localhost:5173 to access the admin interface.
@@ -125,7 +125,7 @@ Open http://localhost:5173 to access the admin interface.
 
 ## Setup
 
-Run `./installers/setup.sh` to install Node.js, SQLite and all project dependencies in one step.
+Run `./scripts/setup.sh` to install Node.js, SQLite and all project dependencies in one step.
 Copy `.env.local.example` to `.env.local` and adjust any values for your machine.
 Next run `./scripts/init-env.sh` to create the `.env` files for each app (edit them before launching).
 You can also follow the manual instructions below.
