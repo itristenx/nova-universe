@@ -1,6 +1,6 @@
 # Security
 
-CueIT includes comprehensive security features designed for enterprise deployment.
+Nova Universe includes comprehensive security features designed for enterprise deployment.
 
 ## Security Features
 
@@ -28,7 +28,7 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Token-based kiosk authentication
 - Auto-expiring activation codes (1 hour)
 
-## CueIT Security Fixes and Bug Fixes
+## Nova Universe Security Fixes and Bug Fixes
 
 ### Summary of Issues Fixed
 
@@ -60,7 +60,7 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 
 **Files Modified**:
 - `cueit-api/index.js` - Enhanced activation endpoints
-- `cueit-kiosk/CueIT Kiosk/CueIT Kiosk/Services/KioskService.swift` - Improved iOS validation
+- `cueit-kiosk/Nova Universe Kiosk/CueIT Kiosk/Services/KioskService.swift` - Improved iOS validation
 
 #### 3. Password Security Vulnerabilities (High Risk)
 **Issues**: 
