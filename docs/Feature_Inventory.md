@@ -87,5 +87,5 @@ This document provides a comprehensive inventory of features, modules, and submo
 ---
 
 ## References
-- Legacy Codebase: `/nova-api/db-legacy.js`
+- Legacy SQLite module (formerly `/nova-api/db-legacy.js`, now removed)
 - Documentation: `/docs/IMPLEMENTATION_PROGRESS.md`, `/project_docs/Project_Overview.txt`
