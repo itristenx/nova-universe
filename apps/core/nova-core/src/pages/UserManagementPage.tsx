@@ -13,7 +13,7 @@ import {
     UserPlusIcon,
     UsersIcon
 } from '@heroicons/react/24/outline';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface UserTableProps {
   users: User[];
@@ -354,6 +354,12 @@ export const UserManagementPage: React.FC = () => {
     toggleUserStatus
   } = useUsers(filters, currentPage, pageSize);
 
+  const isFormValid = (data: { name: string; email: string; password: string; roles: string[] }, requirePassword = false) => {
+    if (!data.name || !data.email) return false;
+    if (requirePassword && !data.password) return false;
+    return true;
+  };
+
   useEffect(() => {
     api.getRoles().then(setRoles).catch((e) => {
       console.error('Failed to load roles:', e);
@@ -413,7 +419,7 @@ export const UserManagementPage: React.FC = () => {
       email: formData.email,
       password: formData.password,
       roles: formData.roles,
-    } as CreateUserInput);
+    });
     if (newUser) {
       addToast({ type: 'success', title: 'User Created', description: 'User created successfully' });
       setShowCreateModal(false);

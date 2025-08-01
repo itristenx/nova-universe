@@ -8,6 +8,11 @@ import { useApiHealth } from '@/hooks/useApiHealth';
 import { ServerConnectionModal } from '@/components/ServerConnectionModal';
 import { api } from '@/lib/api';
 
+interface Branding {
+  logo?: string | null;
+  themeColor?: string;
+}
+
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

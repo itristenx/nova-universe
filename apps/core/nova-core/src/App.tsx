@@ -75,7 +75,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
         try {
           const user = await api.me(token);
           login(token, user);
-        } catch (error) {
+        } catch {
           localStorage.removeItem('auth_token');
         }
       }
