@@ -1,4 +1,5 @@
-<img src="assets/branding/Nova_Universe_Dark.png" alt="Nova Universe Logo" width="100">
+<img src="assets/branding/Nova_Universe_Dark.png" alt="Nova Universe Logo" width="200">
+
 # Nova Universe
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/itristenx/nova-universe/ci.yml?branch=main)](https://github.com/itristenx/nova-universe/actions)
