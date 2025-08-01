@@ -179,7 +179,7 @@ export const KiosksPage: React.FC = () => {
         title: 'Copied',
         description: 'Activation code copied to clipboard',
       });
-    } catch (error) {
+    } catch {
       addToast({
         type: 'error',
         title: 'Error',

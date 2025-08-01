@@ -17,7 +17,6 @@ interface AccountForm {
 
 export const EmailAccountsPage: React.FC = () => {
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<EmailAccount | null>(null);
   const { addToast } = useToastStore();
@@ -36,12 +35,11 @@ export const EmailAccountsPage: React.FC = () => {
 
   const load = async () => {
     try {
-      setLoading(true);
       const data = await api.getEmailAccounts();
       setAccounts(data);
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', title: 'Error', description: 'Failed to load accounts' });
-    } finally { setLoading(false); }
+    }
   };
 
   const save = async () => {
@@ -55,7 +53,7 @@ export const EmailAccountsPage: React.FC = () => {
       setEditing(null);
       await load();
       addToast({ type: 'success', title: 'Saved', description: 'Email account saved' });
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', title: 'Error', description: 'Failed to save account' });
     }
   };

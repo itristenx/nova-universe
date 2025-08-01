@@ -273,14 +273,14 @@ async function backupDatabase(backupPath) {
       for (const collection of collections) {
         try {
           data[collection] = await db.collection(collection).find({}).toArray();
-        } catch (err) {
+        } catch {
           // Collection might not exist
           data[collection] = [];
         }
       }
       
       require('fs').writeFileSync(dbBackupPath, JSON.stringify(data, null, 2));
-    } catch (fallbackError) {
+    } catch {
       throw new Error(`Database backup failed: ${error.message}`);
     }
   }
@@ -399,7 +399,7 @@ async function listBackups(options) {
           const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
           backup.manifest = manifest;
         }
-      } catch (err) {
+      } catch {
         // Manifest not readable, continue
       }
 
@@ -440,7 +440,7 @@ async function listBackups(options) {
 // Restore backup
 async function restoreBackup(backupName, options) {
   const projectRoot = getProjectRoot();
-  const backupPath = path.resolve(backupName);
+  let backupPath = path.resolve(backupName);
 
   if (!existsSync(backupPath)) {
     // Try in backups directory
@@ -696,7 +696,7 @@ async function showBackupInfo(backupName, options) {
     if (existsSync(manifestPath)) {
       try {
         info.manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
-      } catch (err) {
+      } catch {
         // Manifest not readable
       }
     }
@@ -879,7 +879,7 @@ async function getFolderSize(folderPath) {
   try {
     const { stdout } = await runCommand('du', ['-sb', folderPath], { silent: true });
     return parseInt(stdout.split('\t')[0]);
-  } catch (error) {
+  } catch {
     return 0;
   }
 }

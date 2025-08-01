@@ -8,15 +8,13 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import path from 'path';
-import { existsSync, readFileSync } from 'fs';
-import { 
-  logger, 
-  createSpinner, 
+import { existsSync } from 'fs';
+import {
+  logger,
+  createSpinner,
   getProjectRoot,
   checkServiceStatus,
-  connectDatabase,
-  formatFileSize,
-  formatDuration
+  connectDatabase
 } from '../utils/index.js';
 
 export const dashboardCommand = new Command('dashboard')
@@ -107,7 +105,7 @@ async function startDashboard(options) {
       try {
         const { default: open } = await import('open');
         await open(dashboardUrl);
-      } catch (error) {
+      } catch {
         console.log(chalk.yellow('Could not open browser automatically'));
         console.log(chalk.gray(`Please open ${dashboardUrl} manually`));
       }
@@ -332,7 +330,7 @@ async function getRecentLogs(service, lines) {
           }));
 
         logs.push(...logLines);
-      } catch (error) {
+      } catch {
         // Log file might not exist or be readable
       }
     }

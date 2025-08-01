@@ -2,10 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 import db from '../db.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = express.Router();
 
 // Create uploads directory if it doesn't exist

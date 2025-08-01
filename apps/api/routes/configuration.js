@@ -4,7 +4,7 @@ import express from 'express';
 import ConfigurationManager from '../config/app-settings.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
-import { body, query, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 import { logger } from '../logger.js';
 
 const router = express.Router();

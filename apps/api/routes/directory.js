@@ -32,7 +32,7 @@ router.get('/config', async (req, res) => {
   try {
     const cfg = await getConfig();
     res.json(cfg);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
   }
 });
@@ -78,7 +78,7 @@ router.get('/search', async (req, res) => {
     const q = (req.query.q || '').toLowerCase();
     const results = await searchDirectory(q);
     res.json(results);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Directory search failed', errorCode: 'DIRECTORY_SEARCH_ERROR' });
   }
 });
@@ -148,7 +148,7 @@ router.post('/user', async (req, res) => {
   try {
     const id = await createUser(name, email);
     res.json({ id, name, email });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to create user', errorCode: 'CREATE_USER_ERROR' });
   }
 });
