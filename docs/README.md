@@ -219,13 +219,10 @@ cd cueit-slack && npm test
 ### Development Scripts
 ```bash
 # Start development environment
-./cueit-dev.sh
-
-# Test local setup
-./test-local-setup.sh
+./scripts/start-all.sh
 
 # Clean iOS build (if needed)
-cd cueit-kiosk && ./clean-build.sh
+cd nova-beacon && ./clean-build.sh
 ```
 
 ## Deployment
@@ -258,7 +255,7 @@ cd cueit-kiosk && ./clean-build.sh
 3. Check database file permissions
 
 #### iOS Kiosk Build Issues
-1. Clean build: `cd cueit-kiosk && ./clean-build.sh`
+1. Clean build: `cd nova-beacon && ./clean-build.sh`
 2. Check Xcode version compatibility
 3. Verify iOS simulator connectivity to localhost
 
