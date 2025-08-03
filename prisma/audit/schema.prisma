@@ -1,0 +1,10 @@
+datasource audit_db {
+  provider = "mongodb"
+  url      = env("AUDIT_DATABASE_URL")
+}
+
+generator auditClient {
+  provider   = "prisma-client-js"
+  datasource = "audit_db"
+  output     = "../generated/audit"
+}
