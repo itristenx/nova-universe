@@ -5,7 +5,10 @@
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules node --test test/*.test.js",
     "type-check": "tsc --noEmit",
-    "lint": "eslint . --config ./tools/config/eslint.config.js"
+    "lint": "eslint . --config ./tools/config/eslint.config.js",
+    "prisma:generate:core": "prisma generate --schema prisma/core/schema.prisma",
+    "prisma:generate:auth": "prisma generate --schema prisma/auth/schema.prisma",
+    "prisma:generate:audit": "prisma generate --schema prisma/audit/schema.prisma"
   },
   "devDependencies": {
     "esmock": "^2.7.1",
