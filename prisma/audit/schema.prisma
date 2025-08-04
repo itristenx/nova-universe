@@ -5,6 +5,5 @@ datasource audit_db {
 
 generator auditClient {
   provider   = "prisma-client-js"
-  datasource = "audit_db"
   output     = "../generated/audit"
 }

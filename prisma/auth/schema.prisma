@@ -5,6 +5,5 @@ datasource auth_db {
 
 generator authClient {
   provider   = "prisma-client-js"
-  datasource = "auth_db"
   output     = "../generated/auth"
 }
