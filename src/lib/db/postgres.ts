@@ -1,6 +1,6 @@
 // src/lib/db/postgres.ts
 // Prisma client for PostgreSQL core data
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../../prisma/generated/core';
 import { logger } from '../../../apps/api/logger.js';
 
 declare global {
