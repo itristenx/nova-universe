@@ -1,7 +1,7 @@
 // Nova Mailroom API routes
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../../../prisma/generated/core');
 const prisma = new PrismaClient();
 const { requireRole } = require('../middleware/rbac');
 const { logAudit } = require('../middleware/audit');
