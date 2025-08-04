@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/branding/Nova_Universe_Dark.png" alt="Nova Universe logo" width="50"/></p>
+<p align="center"><img src="assets/branding/Nova_Universe_Dark.png" alt="Nova Universe logo" width="200"/></p>
 
 # Nova Universe
 
