@@ -36,7 +36,7 @@ export const mockKiosks: Kiosk[] = [
     hasOverrides: false,
     overrideCount: 0,
     effectiveConfig: {
-      logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=CueIT',
+      logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=Nova+Universe',
       bgUrl: '',
       statusEnabled: true,
       currentStatus: 'open',
@@ -92,7 +92,7 @@ export const mockKiosks: Kiosk[] = [
     hasOverrides: true,
     overrideCount: 1,
     effectiveConfig: {
-      logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=CueIT',
+      logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=Nova+Universe',
       bgUrl: '',
       statusEnabled: false,
       currentStatus: 'closed',
@@ -137,18 +137,18 @@ export const mockLogs: Log[] = [
 ];
 
 export const mockConfig: Config = {
-  organizationName: 'CueIT',
-  logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=CueIT',
-  faviconUrl: 'https://via.placeholder.com/32x32/3B82F6/FFFFFF?text=C',
+  organizationName: 'Nova Universe',
+  logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=Nova+Universe',
+  faviconUrl: 'https://via.placeholder.com/32x32/3B82F6/FFFFFF?text=N',
   primaryColor: '#1D4ED8',
   secondaryColor: '#9333EA',
-  welcomeMessage: 'Welcome to CueIT Support',
+  welcomeMessage: 'Welcome to Nova Universe Support',
   helpMessage: 'Please describe your issue and we will help you',
   statusOpenMsg: 'IT Support is available',
   statusClosedMsg: 'IT Support is currently closed',
   statusErrorMsg: 'There is a system error, please try again later',
-  rateLimitWindow: '900000',
-  rateLimitMax: '100',
+  rateLimitWindow: 900000,
+  rateLimitMax: 100,
   systems: 'Desktop,Laptop,Mobile,Network,Printer',
   urgencies: 'Low,Medium,High,Critical',
   directoryEnabled: true,

@@ -1,6 +1,6 @@
 //
 //  StatusBar.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Top status bar showing connection, time, and system status
 //

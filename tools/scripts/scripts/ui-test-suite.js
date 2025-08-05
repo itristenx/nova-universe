@@ -1,4 +1,4 @@
-// Comprehensive UI Test Script for CueIT Portal
+// Comprehensive UI Test Script for Nova Universe Portal
 // Run this in the browser console at http://localhost:5173
 
 console.log('🧪 Starting comprehensive UI test suite...');
@@ -34,7 +34,7 @@ function sleep(ms) {
 // Test suite
 async function runUITests() {
   try {
-    console.log('📋 Test Suite: CueIT Portal UI Functionality');
+    console.log('📋 Test Suite: Nova Universe Portal UI Functionality');
     
     // Clear any existing auth
     localStorage.clear();

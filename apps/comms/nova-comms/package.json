@@ -1,5 +1,5 @@
 {
-  "name": "cueit-slack",
+  "name": "nova-comms",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",

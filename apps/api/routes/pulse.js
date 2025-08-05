@@ -9,6 +9,7 @@ import { createRateLimit } from '../middleware/rateLimiter.js';
 import { checkQueueAccess } from '../middleware/queueAccess.js';
 import { calculateVipWeight } from '../utils/utils.js';
 import { notifyCosmoEscalation } from '../utils/cosmo.js';
+import pulseInventoryRouter from './pulse-inventory.js';
 
 // Maximum XP that can be awarded in a single event
 export const MAX_XP_AMOUNT = 1000;
@@ -195,6 +196,7 @@ router.get('/dashboard',
             AND t.status IN ('open', 'in_progress')
             AND t.deleted_at IS NULL
             ORDER BY 
+              COALESCE(t.vip_priority_score, 0) DESC,
               CASE t.priority 
                 WHEN 'critical' THEN 1
                 WHEN 'high' THEN 2
@@ -349,9 +351,47 @@ router.post('/tickets',
         [newId, ticketId, title, description, priority, 'open', requestedById, req.user.id, dueDate.toISOString(), now.toISOString(), now.toISOString(), vipWeight, 'api']
       );
 
+      // Add audit logging for VIP ticket creation
+      if (vipRow?.is_vip) {
+        await db.none(
+          'INSERT INTO audit_logs (id, action, user_id, ticket_id, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+          [
+            require('uuid').v4(),
+            'vip_ticket_created',
+            req.user.id,
+            newId,
+            JSON.stringify({
+              vip_level: vipRow.vip_level,
+              vip_priority_score: vipWeight,
+              sla_override: vipRow.vip_sla_override,
+              original_due_date: dueDate.toISOString(),
+              trigger_source: 'api'
+            }),
+            now.toISOString()
+          ]
+        );
+      }
+
       const failoverWindow = vipRow?.vip_sla_override?.failoverMinutes || 60;
       if (vipRow?.is_vip && dueDate.getTime() - now.getTime() < failoverWindow*60000) {
         await notifyCosmoEscalation(ticketId, 'failover_escalation');
+        
+        // Add audit logging for Cosmo escalation
+        await db.none(
+          'INSERT INTO audit_logs (id, action, user_id, ticket_id, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+          [
+            require('uuid').v4(),
+            'vip_cosmo_escalation',
+            req.user.id,
+            newId,
+            JSON.stringify({
+              reason: 'failover_escalation',
+              failover_window_minutes: failoverWindow,
+              time_to_due: Math.round((dueDate.getTime() - now.getTime()) / 60000)
+            }),
+            now.toISOString()
+          ]
+        );
       }
 
       res.status(201).json({ success:true, ticketId, vipWeight });
@@ -465,6 +505,7 @@ router.get('/tickets',
       }
 
       query += ` ORDER BY 
+        COALESCE(t.vip_priority_score, 0) DESC,
         CASE t.priority 
           WHEN 'critical' THEN 1
           WHEN 'high' THEN 2
@@ -607,8 +648,8 @@ router.put('/tickets/:ticketId/update',
       const userId = req.user.id;
 
       // Check if ticket exists and is assigned to this user
-      db.get('SELECT * FROM tickets WHERE ticket_id = $1 AND assigned_to_id = $2 AND deleted_at IS NULL', 
-        [ticketId, userId], (err, ticket) => {
+      db.get('SELECT t.*, u.is_vip, u.vip_level FROM tickets t LEFT JOIN users u ON t.requested_by_id = u.id WHERE t.ticket_id = $1 AND t.assigned_to_id = $2 AND t.deleted_at IS NULL', 
+        [ticketId, userId], async (err, ticket) => {
         if (err) {
           logger.error('Error checking ticket:', err);
           return res.status(500).json({
@@ -661,7 +702,7 @@ router.put('/tickets/:ticketId/update',
           params.push(ticket.id);
           const updateQuery = `UPDATE tickets SET ${updates.join(', ')} WHERE id = $7`;
 
-          db.run(updateQuery, params, (updateErr) => {
+          db.run(updateQuery, params, async (updateErr) => {
             if (updateErr) {
               logger.error('Error updating ticket:', updateErr);
               return res.status(500).json({
@@ -690,6 +731,53 @@ router.put('/tickets/:ticketId/update',
                 }
               }
             );
+
+            // Add VIP-specific audit logging
+            if (ticket.is_vip) {
+              try {
+                await db.none(
+                  'INSERT INTO audit_logs (id, action, user_id, ticket_id, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+                  [
+                    require('uuid').v4(),
+                    'vip_ticket_updated',
+                    userId,
+                    ticket.id,
+                    JSON.stringify({
+                      vip_level: ticket.vip_level,
+                      status_change: status,
+                      work_note: workNote,
+                      time_spent: timeSpent,
+                      resolution: resolution,
+                      previous_status: ticket.status
+                    }),
+                    new Date().toISOString()
+                  ]
+                );
+
+                // Check for VIP escalation conditions
+                if (status === 'on_hold' || (status === 'resolved' && ticket.vip_level === 'exec')) {
+                  await notifyCosmoEscalation(ticketId, status === 'on_hold' ? 'vip_hold_escalation' : 'vip_resolution_confirmation');
+                  
+                  await db.none(
+                    'INSERT INTO audit_logs (id, action, user_id, ticket_id, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+                    [
+                      require('uuid').v4(),
+                      'vip_cosmo_escalation',
+                      userId,
+                      ticket.id,
+                      JSON.stringify({
+                        reason: status === 'on_hold' ? 'vip_hold_escalation' : 'vip_resolution_confirmation',
+                        vip_level: ticket.vip_level,
+                        status: status
+                      }),
+                      new Date().toISOString()
+                    ]
+                  );
+                }
+              } catch (auditErr) {
+                logger.error('Error logging VIP audit activity:', auditErr);
+              }
+            }
 
             res.json({
               success: true,
@@ -1079,5 +1167,8 @@ router.post('/xp',
     }
   }
 );
+
+// Mount enhanced inventory routes
+router.use('/inventory', pulseInventoryRouter);
 
 export default router;

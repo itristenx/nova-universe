@@ -21,6 +21,8 @@ https://github.com/target/goalert
 	•	Nova API (v2)
 	•	Maintain RBAC parity with Nova Helix
 	•	Maintain full auditability, security, and visibility from Nova Pulse and Core
+	•	Ensure tickets are assigned / assosiated to alerts. 
+	•	Match 1:1 UI feature partiy as you intergrate into Nova. 
 
 ⸻
 
@@ -188,3 +190,4 @@ GoAlert is a powerful alerting backend, but Nova controls:
 
 Direct usage of GoAlert’s native UI is prohibited — all interactions must be mediated through Nova’s ecosystem.
 
+All GoAlert UI features should match 1:1 in Nova. 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Generate secure random secrets for CueIT environment
+# Generate secure random secrets for Nova Universe environment
 
 set -e
 

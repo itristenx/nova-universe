@@ -1,6 +1,6 @@
 //
 //  StatusManager.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Manages kiosk status with backend sync and manual override
 //

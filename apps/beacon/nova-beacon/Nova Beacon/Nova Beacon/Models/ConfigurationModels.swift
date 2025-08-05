@@ -1,6 +1,6 @@
 //
 //  ConfigurationModels.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Configuration data models for the kiosk application
 //
@@ -55,7 +55,7 @@ struct ServerConfiguration: Codable {
     let isSecure: Bool
     let lastTested: Date
     
-    init(baseURL: String, name: String = "CueIT Server") {
+    init(baseURL: String, name: String = "Nova Universe Server") {
         self.baseURL = baseURL
         self.name = name
         self.isSecure = baseURL.hasPrefix("https")

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card } from '@/components/ui';
+import { Card, CardBody, CardHeader } from '@heroui/react';
 import {
   ComputerDesktopIcon,
   DocumentTextIcon,
@@ -18,28 +18,30 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, change }) => {
   return (
-    <Card className="p-6">
-      <div className="flex items-center">
-        <div className={`p-3 rounded-lg ${color}`}>
-          <Icon className="h-6 w-6 text-white" />
-        </div>
-        <div className="ml-4 flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <div className="flex items-baseline">
-            <p className="text-2xl font-semibold text-gray-900">{value.toLocaleString()}</p>
-            {change !== undefined && (
-              <span
-                className={`ml-2 text-sm font-medium ${
-                  change >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}
-              >
-                {change >= 0 ? '+' : ''}
-                {change}%
-              </span>
-            )}
+    <Card>
+      <CardBody className="p-6">
+        <div className="flex items-center">
+          <div className={`p-3 rounded-lg ${color}`}>
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+          <div className="ml-4 flex-1">
+            <p className="text-sm font-medium text-gray-600">{title}</p>
+            <div className="flex items-baseline">
+              <p className="text-2xl font-semibold text-gray-900">{value.toLocaleString()}</p>
+              {change !== undefined && (
+                <span
+                  className={`ml-2 text-sm font-medium ${
+                    change >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}
+                >
+                  {change >= 0 ? '+' : ''}
+                  {change}%
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </CardBody>
     </Card>
   );
 };
@@ -126,68 +128,84 @@ export const DashboardPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Tickets */}
-        <Card title="Recent Tickets" description="Latest support requests">
-          <div className="space-y-3">
-            {recentTickets.length === 0 ? (
-              <p className="text-sm text-gray-500">No recent tickets</p>
-            ) : (
-              recentTickets.map((ticket) => (
-                <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900">{ticket.title}</h4>
-                    <p className="text-xs text-gray-600">{ticket.name} • {ticket.email}</p>
+        <Card>
+          <CardHeader>
+            <div>
+              <h3 className="text-lg font-semibold">Recent Tickets</h3>
+              <p className="text-sm text-gray-600">Latest support requests</p>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="space-y-3">
+              {recentTickets.length === 0 ? (
+                <p className="text-sm text-gray-500">No recent tickets</p>
+              ) : (
+                recentTickets.map((ticket) => (
+                  <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-gray-900">{ticket.title}</h4>
+                      <p className="text-xs text-gray-600">{ticket.name} • {ticket.email}</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        ticket.urgency === 'Critical' ? 'bg-red-100 text-red-800' :
+                        ticket.urgency === 'High' ? 'bg-orange-100 text-orange-800' :
+                        ticket.urgency === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {ticket.urgency}
+                      </span>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        ticket.emailStatus === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {ticket.emailStatus}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      ticket.urgency === 'Critical' ? 'bg-red-100 text-red-800' :
-                      ticket.urgency === 'High' ? 'bg-orange-100 text-orange-800' :
-                      ticket.urgency === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {ticket.urgency}
-                    </span>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      ticket.emailStatus === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {ticket.emailStatus}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          </CardBody>
         </Card>
 
         {/* Kiosk Status */}
-        <Card title="Kiosk Status" description="Real-time status of your kiosks">
-          <div className="space-y-3">
-            {kiosks.length === 0 ? (
-              <p className="text-sm text-gray-500">No kiosks registered</p>
-            ) : (
-              kiosks.slice(0, 5).map((kiosk) => (
-                <div key={kiosk.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900">Kiosk {kiosk.id}</h4>
-                    <p className="text-xs text-gray-600">Last seen: {new Date(kiosk.lastSeen).toLocaleDateString()}</p>
+        <Card>
+          <CardHeader>
+            <div>
+              <h3 className="text-lg font-semibold">Kiosk Status</h3>
+              <p className="text-sm text-gray-600">Real-time status of your kiosks</p>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="space-y-3">
+              {kiosks.length === 0 ? (
+                <p className="text-sm text-gray-500">No kiosks registered</p>
+              ) : (
+                kiosks.slice(0, 5).map((kiosk) => (
+                  <div key={kiosk.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-gray-900">Kiosk {kiosk.id}</h4>
+                      <p className="text-xs text-gray-600">Last seen: {new Date(kiosk.lastSeen).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        kiosk.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {kiosk.active ? 'Active' : 'Inactive'}
+                      </span>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        kiosk.effectiveConfig.currentStatus === 'open' ? 'bg-blue-100 text-blue-800' :
+                        kiosk.effectiveConfig.currentStatus === 'closed' ? 'bg-gray-100 text-gray-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {kiosk.effectiveConfig.currentStatus || 'Unknown'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      kiosk.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {kiosk.active ? 'Active' : 'Inactive'}
-                    </span>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      kiosk.effectiveConfig.currentStatus === 'open' ? 'bg-blue-100 text-blue-800' :
-                      kiosk.effectiveConfig.currentStatus === 'closed' ? 'bg-gray-100 text-gray-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {kiosk.effectiveConfig.currentStatus || 'Unknown'}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          </CardBody>
         </Card>
       </div>
     </div>

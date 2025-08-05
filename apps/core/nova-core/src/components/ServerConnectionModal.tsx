@@ -214,7 +214,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
             value={serverUrl}
             onChange={(e) => setServerUrl(e.target.value)}
             placeholder="http://localhost:3000"
-            helperText="Enter the full URL of your CueIT API server"
+            helperText="Enter the full URL of your Nova Universe API server"
           />
           
           <div className="flex items-center space-x-3">

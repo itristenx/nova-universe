@@ -1,4 +1,0 @@
-module CueIT_Kiosk {
-    header "/Users/tneibarger/Documents/GitHub/CueIT/cueit-kiosk/CueIT Kiosk/.build/arm64-apple-macosx/debug/CueIT_Kiosk.build/CueIT-Kiosk-Swift.h"
-    requires objc
-}

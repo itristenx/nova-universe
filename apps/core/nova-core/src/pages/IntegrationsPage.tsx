@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input, Modal, Select, Checkbox } from '@/components/ui';
+import { Button, Card, Input, Modal, Select, Checkbox } from '@heroui/react';
 import { 
   Cog6ToothIcon,
   CheckCircleIcon,
@@ -318,7 +318,7 @@ export const IntegrationsPage: React.FC = () => {
                 ...formData,
                 config: { ...formData.config, username: e.target.value }
               })}
-              placeholder="CueIT Bot"
+              placeholder="Nova Universe Bot"
             />
           </div>
         );

@@ -1,6 +1,6 @@
 //
 //  FeedbackSubmissionView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Feedback submission interface
 //

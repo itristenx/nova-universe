@@ -1,6 +1,6 @@
 //
 //  KioskController.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Central controller for the kiosk application
 //  Manages state transitions and coordination between components

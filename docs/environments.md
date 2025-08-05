@@ -4,7 +4,7 @@ This project ships with sample environment files for each app. A unified example
 
 ## Local Development
 
-1. `cueit-api/.env.example`
+1. `apps/api/.env.example`
    - Use the default `SMTP_HOST=localhost` and `SMTP_PORT=1025` with [Mailpit](https://github.com/axllent/mailpit).
    - Set `SMTP_SECURE` to `true` when your SMTP server requires TLS.
    - Set `HELPDESK_EMAIL` to any address for testing.
@@ -16,10 +16,10 @@ This project ships with sample environment files for each app. A unified example
    - `SUBMIT_TICKET_LIMIT` sets max submissions per window.
    - `API_LOGIN_LIMIT` limits `/api/login` requests per window.
    - `AUTH_LIMIT` limits `/login` routes per window.
-2. `cueit-admin/.env.example`
+2. `apps/core/.env.example`
    - `VITE_API_URL` should match your local API URL.
    - Leave `VITE_LOGO_URL` as provided or point to local resources.
-3. `cueit-slack/.env.example`
+3. `apps/comms/.env.example`
    - Use dummy values for `SLACK_SIGNING_SECRET` and `SLACK_BOT_TOKEN`.
    - `API_URL` should match the local API URL.
 

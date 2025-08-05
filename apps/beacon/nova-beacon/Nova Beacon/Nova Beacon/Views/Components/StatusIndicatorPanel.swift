@@ -1,6 +1,6 @@
 //
 //  StatusIndicatorPanel.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Status indicator component for showing office status
 //

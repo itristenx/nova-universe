@@ -1,6 +1,6 @@
 //
 //  EnhancedAdminLoginView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Enhanced admin login with offline PIN support and configuration sync
 //

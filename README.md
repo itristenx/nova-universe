@@ -343,6 +343,10 @@ Each app relies on a few environment variables:
 - `VITE_LOGO_URL` – default logo shown before configuration is loaded.
 - `VITE_FAVICON_URL` – default favicon for the page.
 
+### Pulse Performance Dashboard
+
+- `VITE_API_URL` – base URL of the backend API.
+
 ### Comms (Slack Service)
 
 - `SLACK_SIGNING_SECRET` – Slack app signing secret.
@@ -350,6 +354,33 @@ Each app relies on a few environment variables:
   messages.
   - `API_URL` – base URL of the backend API for ticket submission.
   - Optional: `SLACK_PORT` (default `3001`).
+
+## Theme-Based Logo Configuration
+
+Nova Universe applications automatically load appropriate logos based on the current theme:
+
+### Logo Assets Location
+- **Core Admin UI**: `apps/core/nova-core/public/`
+- **Pulse Dashboard**: `apps/pulse/public/`
+
+### Required Logo Files
+- `logo.png` – Logo for light theme
+- `logo-dark.png` – Logo for dark theme (automatically used when dark mode is enabled)
+
+### Logo Loading Behavior
+- Applications automatically detect the current theme setting
+- Light theme displays `logo.png`
+- Dark theme displays `logo-dark.png` 
+- Fallback: If `logo-dark.png` is missing, `logo.png` is used for all themes
+- Error fallback: If both logos fail to load, a default icon is displayed
+
+### Customizing Logos
+1. Replace the logo files in each app's `public/` directory
+2. Keep the same filenames: `logo.png` and `logo-dark.png`
+3. Recommended dimensions: 200x60px for optimal display
+4. Ensure both light and dark variants are provided for the best user experience
+
+The logo will be automatically updated in the application header and sidebar without requiring any configuration changes.
 
 ## Development
 

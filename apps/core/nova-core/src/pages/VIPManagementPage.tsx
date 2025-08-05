@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Select } from '@/components/ui';
+import { Card, Select } from '@heroui/react';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
 import type { User } from '@/types';

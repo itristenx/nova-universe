@@ -1,6 +1,6 @@
 //
 //  KioskHomeView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Main kiosk home view matching the requirements layout
 //

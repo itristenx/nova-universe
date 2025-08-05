@@ -1,6 +1,6 @@
 //
 //  KioskModels.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Core data models for the kiosk application
 //

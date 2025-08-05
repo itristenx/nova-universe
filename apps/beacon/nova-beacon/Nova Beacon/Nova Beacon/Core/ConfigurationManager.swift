@@ -1,6 +1,6 @@
 //
 //  ConfigurationManager.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Manages all kiosk configuration including server settings,
 //  activation status, and remote configuration updates

@@ -1,7 +1,7 @@
-// Simple JavaScript test for CueIT login
+// Simple JavaScript test for Nova Universe login
 // Run this in the browser console at http://localhost:5173
 
-console.log('🔍 Testing CueIT Authentication...');
+console.log('🔍 Testing Nova Universe Authentication...');
 
 // Clear any existing auth state
 localStorage.removeItem('auth_token');

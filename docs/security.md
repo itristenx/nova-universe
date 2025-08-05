@@ -41,7 +41,7 @@ Nova Universe includes comprehensive security features designed for enterprise d
 - Modified the admin creation logic to check for both email and superadmin role
 
 **Files Modified**:
-- `cueit-api/db.js` - Enhanced admin user creation logic
+- `apps/api/db.js` - Enhanced admin user creation logic
 
 #### 2. Kiosk Activation Security & Functionality (Critical Bug)
 **Issues**: 
@@ -59,8 +59,8 @@ Nova Universe includes comprehensive security features designed for enterprise d
 - Added timeout and better error messaging
 
 **Files Modified**:
-- `cueit-api/index.js` - Enhanced activation endpoints
-- `cueit-kiosk/Nova Universe Kiosk/CueIT Kiosk/Services/KioskService.swift` - Improved iOS validation
+- `apps/api/index.js` - Enhanced activation endpoints
+- `apps/beacon/nova-beacon/Nova Beacon/Nova Beacon/Services/KioskService.swift` - Improved iOS validation
 
 #### 3. Password Security Vulnerabilities (High Risk)
 **Issues**: 
@@ -75,9 +75,9 @@ Nova Universe includes comprehensive security features designed for enterprise d
 - Added email format validation
 
 **Files Modified**:
-- `cueit-api/db.js` - Increased salt rounds
-- `cueit-api/create-admin.js` - Added validation and stronger hashing
-- `cueit-api/cli.js` - Enhanced password strength requirements
+- `apps/api/db.js` - Increased salt rounds
+- `apps/api/create-admin.js` - Added validation and stronger hashing
+- `apps/api/cli.js` - Enhanced password strength requirements
 
 #### 4. Input Validation & SQL Injection Prevention (High Risk)
 **Issues**: 

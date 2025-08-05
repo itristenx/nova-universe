@@ -1,6 +1,6 @@
 //
 //  WallMountKioskView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  User-friendly kiosk interface optimized for wall mounting and conference room use
 //

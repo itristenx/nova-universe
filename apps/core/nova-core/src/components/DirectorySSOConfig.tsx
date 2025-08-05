@@ -227,7 +227,7 @@ export const DirectorySSOConfig: React.FC<DirectorySSOConfigProps> = ({ onConfig
             </h3>
             <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
               <p>Directory integration is read-only and pulls user information for display purposes only. 
-              CueIT will never modify user data in your directory.</p>
+              Nova Universe will never modify user data in your directory.</p>
             </div>
           </div>
         </div>

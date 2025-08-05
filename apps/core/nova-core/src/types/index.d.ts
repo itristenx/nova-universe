@@ -2,8 +2,6 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    is_vip?: boolean;
-    vip_level?: string;
     disabled?: boolean;
     isDefault?: boolean;
     roles?: string[];
@@ -88,13 +86,15 @@ export interface Config {
     logoUrl: string;
     faviconUrl: string;
     kioskLogoUrl?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
     welcomeMessage: string;
     helpMessage: string;
     statusOpenMsg: string;
     statusClosedMsg: string;
     statusErrorMsg: string;
-    rateLimitWindow: string;
-    rateLimitMax: string;
+    rateLimitWindow: number;
+    rateLimitMax: number;
     systems?: string;
     urgencies?: string;
     directoryEnabled: boolean;
@@ -126,7 +126,6 @@ export interface Integration {
     working?: boolean;
     lastError?: string;
 }
-
 export interface EmailAccount {
     id: number;
     queue: 'IT' | 'HR' | 'OPS' | 'CYBER';
@@ -137,20 +136,6 @@ export interface EmailAccount {
     autoCreateTickets: boolean;
     webhookMode: boolean;
     lastSynced?: string;
-}
-
-export interface RequestCatalogItem {
-    id: number;
-    name: string;
-    formSchema?: any;
-    workflowId?: number;
-}
-
-export interface RITM {
-    id: number;
-    reqId: number;
-    catalogItemId: number;
-    status: string;
 }
 export interface KioskActivation {
     id: string;
@@ -167,6 +152,35 @@ export interface Asset {
     type: 'logo' | 'favicon' | 'background';
     url: string;
     uploadedAt: string;
+}
+export interface KnowledgeArticle {
+    id: number;
+    slug: string;
+    kbId?: string;
+    title: string;
+    content: string;
+    excerpt?: string;
+    tags?: string[];
+    isPublished?: boolean;
+    verifiedSolution?: boolean;
+    createdBy?: {
+        id: string;
+        name: string;
+    } | null;
+    createdAt: string;
+    updatedAt: string;
+}
+export interface KnowledgeArticleVersion {
+    id: number;
+    articleId: number;
+    content: string;
+    version: number;
+    author?: {
+        id: string;
+        name: string;
+    };
+    createdAt: string;
+    updatedAt: string;
 }
 export interface ApiResponse<T = unknown> {
     data?: T;
@@ -284,6 +298,8 @@ export interface KioskConfiguration {
         override: ConfigOverride;
         logoUrl?: string;
         backgroundUrl?: string;
+        primaryColor?: string;
+        secondaryColor?: string;
         welcomeMessage?: string;
         helpMessage?: string;
     };
@@ -305,6 +321,8 @@ export interface GlobalConfiguration {
     defaultBranding: {
         logoUrl: string;
         backgroundUrl?: string;
+        primaryColor: string;
+        secondaryColor: string;
         welcomeMessage: string;
         helpMessage: string;
     };
@@ -439,5 +457,14 @@ export interface SCIMConfig {
         groups?: string;
     };
     groupMapping?: Record<string, string>;
+}
+export interface ModuleStatus {
+    key: string;
+    enabled: boolean;
+}
+export interface ApiKey {
+    key: string;
+    createdAt: string;
+    description?: string;
 }
 //# sourceMappingURL=index.d.ts.map

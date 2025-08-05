@@ -78,14 +78,14 @@ config.timeoutIntervalForResource = 30
 
 ### 1. Start API Server (if not running)
 ```bash
-cd /Users/tneibarger/Documents/GitHub/CueIT/cueit-api
+cd /Users/tneibarger/Documents/GitHub/nova-universe/apps/api
 npm start
 ```
 
 ### 2. Open iOS Simulator
 ```bash
-cd /Users/tneibarger/Documents/GitHub/CueIT/cueit-kiosk
-open "CueIT Kiosk.xcodeproj"
+cd /Users/tneibarger/Documents/GitHub/nova-universe/apps/beacon
+open "Nova Beacon.xcodeproj"
 # Build and run in iOS Simulator
 ```
 

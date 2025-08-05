@@ -1,6 +1,6 @@
 //
 //  BottomBar.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Bottom bar with admin access and settings
 //
@@ -120,7 +120,7 @@ struct BottomBar: View {
     
     private func showInfo() {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-        kioskController.showNotification(message: "CueIT Kiosk v\(version)")
+        kioskController.showNotification(message: "Nova Beacon v\(version)")
     }
 }
 

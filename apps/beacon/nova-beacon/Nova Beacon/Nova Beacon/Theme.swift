@@ -1,6 +1,6 @@
 //
 //  Theme.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Modern Apple UI Design System
 //

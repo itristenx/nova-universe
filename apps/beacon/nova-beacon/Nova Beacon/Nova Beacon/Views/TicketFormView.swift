@@ -1,6 +1,6 @@
 //
 //  TicketFormView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Created by Tristen Neibarger on 7/2/25.
 //

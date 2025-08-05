@@ -143,7 +143,7 @@ export function getProjectRoot() {
   while (current !== path.parse(current).root) {
     if (existsSync(path.join(current, 'package.json'))) {
       const pkg = JSON.parse(readFileSync(path.join(current, 'package.json'), 'utf8'));
-      if (pkg.name === 'cueit-api' || pkg.name?.includes('nova')) {
+      if (pkg.name === 'nova-api' || pkg.name?.includes('nova')) {
         return current;
       }
     }

@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 INSERT OR IGNORE INTO config (key, value) VALUES ('sso_enabled', '0');
 INSERT OR IGNORE INTO config (key, value) VALUES ('scim_enabled', '0');
 INSERT OR IGNORE INTO config (key, value) VALUES ('passkey_enabled', '1');
-INSERT OR IGNORE INTO config (key, value) VALUES ('webauthn_rp_name', 'CueIT Portal');
+INSERT OR IGNORE INTO config (key, value) VALUES ('webauthn_rp_name', 'Nova Universe Portal');
 INSERT OR IGNORE INTO config (key, value) VALUES ('webauthn_rp_id', 'localhost');
 
 -- Indices

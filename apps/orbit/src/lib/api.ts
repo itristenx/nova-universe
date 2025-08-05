@@ -4,7 +4,7 @@
 const ORBIT_BASE = process.env.NEXT_PUBLIC_ORBIT_API_BASE || "/api/v1/orbit";
 const HELIX_BASE = process.env.NEXT_PUBLIC_HELIX_API_BASE || "/api/v1/helix";
 const LORE_BASE = process.env.NEXT_PUBLIC_LORE_API_BASE || "/api/v1/lore";
-const SYNTH_BASE = process.env.NEXT_PUBLIC_SYNTH_API_BASE || "/api/v1/synth";
+const SYNTH_BASE = process.env.NEXT_PUBLIC_SYNTH_API_BASE || "/api/v2/synth";
 
 // Types for API data
 export type TicketParams = {

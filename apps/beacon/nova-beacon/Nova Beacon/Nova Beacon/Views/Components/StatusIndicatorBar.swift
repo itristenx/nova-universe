@@ -250,7 +250,7 @@ struct CompactStatusIndicator: View {
     .onAppear {
         let connectedStatus = ConnectionStatus()
         connectedStatus.updateStatus(.connected)
-        connectedStatus.setServerInfo(url: "https://api.cueit.com", kioskId: "KIOSK_001")
+        connectedStatus.setServerInfo(url: "https://api.nova-universe.com", kioskId: "KIOSK_001")
         
         let disconnectedStatus = ConnectionStatus()
         disconnectedStatus.updateStatus(.disconnected)

@@ -1,6 +1,6 @@
 //
 //  DeactivationView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Displays when the kiosk has been deactivated by the admin
 //

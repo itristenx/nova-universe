@@ -1,6 +1,6 @@
 //
 //  InitializationView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Modern loading screen shown during app initialization
 //
@@ -58,7 +58,7 @@ struct InitializationView: View {
                     }
                     
                     VStack(spacing: 8) {
-                        Text("CueIT Kiosk")
+                        Text("Nova Beacon")
                             .font(.system(size: 32, weight: .light, design: .rounded))
                             .foregroundColor(.primary)
                         

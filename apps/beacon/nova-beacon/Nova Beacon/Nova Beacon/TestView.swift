@@ -1,6 +1,6 @@
 //
 //  TestView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Test view to verify modern components work correctly
 //
@@ -16,7 +16,7 @@ struct TestView: View {
         VStack(spacing: Theme.Spacing.lg) {
             // Test Theme Colors and Typography
             VStack(spacing: Theme.Spacing.md) {
-                Text("CueIT Kiosk Modern Design")
+                Text("Nova Beacon Modern Design")
                     .font(Theme.Typography.title)
                     .foregroundColor(Theme.Colors.text)
                 

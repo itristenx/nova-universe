@@ -39,12 +39,12 @@ Get Nova Universe running in 5 minutes.
 ## What's Running?
 - **API**: http://localhost:3000 - Backend services
 - **Admin UI**: http://localhost:5173 - Management interface
-- **Database**: `cueit-api/log.sqlite` - Local SQLite database
+- **Database**: `api/log.sqlite` - Local SQLite database
 
 ## Next Steps
 
 ### Configure Email (Optional)
-Edit `cueit-api/.env`:
+Edit `api/.env`:
 ```bash
 SMTP_HOST=your-smtp-server
 SMTP_PORT=587
@@ -61,7 +61,7 @@ HELPDESK_EMAIL=helpdesk@company.com
 
 ### Configure Slack (Optional)
 1. Create a Slack app and get tokens
-2. Edit `cueit-slack/.env` with your tokens
+2. Edit `comms/.env` with your tokens
 3. Set the slash command URL to your server
 
 ## Troubleshooting
@@ -77,8 +77,8 @@ HELPDESK_EMAIL=helpdesk@company.com
 - Ensure authentication is disabled for development (`DISABLE_AUTH=true`)
 
 **Database issues?**
-- Delete `cueit-api/log.sqlite` and restart to recreate
-- Check file permissions in the cueit-api directory
+- Delete `api/log.sqlite` and restart to recreate
+- Check file permissions in the api directory
 
 ## Production Deployment
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input, Card } from '@/components/ui';
+import { Button, Input, Card } from '@heroui/react';
 import { KeyIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';

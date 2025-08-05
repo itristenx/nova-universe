@@ -1,6 +1,6 @@
 //
 //  AppCoordinator.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Main app coordinator with modern Apple UI design
 //
@@ -77,7 +77,7 @@ class AppCoordinator: ObservableObject {
     
     func handleDeepLink(url: URL) {
         // Handle activation URLs
-        if url.scheme == "cueit-kiosk" && url.host == "activate" {
+        if url.scheme == "nova-beacon" && url.host == "activate" {
             if let code = url.queryParameters["code"] {
                 Task {
                     await activateWithCode(code)

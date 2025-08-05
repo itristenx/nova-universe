@@ -155,7 +155,7 @@ function setupDashboardRoutes(app) {
   });
 
   // Logs endpoint
-  app.get('/api/logs/:service?', async (req, res) => {
+  app.get('/api/logs{/:service}', async (req, res) => {
     try {
       const { service } = req.params;
       const { lines = 50 } = req.query;

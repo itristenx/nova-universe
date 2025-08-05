@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Modal, Textarea, Select } from '@/components/ui';
+import { Button, Card, Modal, Textarea, Select } from '@heroui/react';
 import { 
   BellIcon, 
   PlusIcon, 

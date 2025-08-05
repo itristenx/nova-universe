@@ -15,6 +15,7 @@ import vipRouter from './routes/vip.js';
 import workflowsRouter from './routes/workflows.js';
 import modulesRouter from './routes/modules.js';
 import apiKeysRouter from './routes/apiKeys.js';
+import websocketRouter from './routes/websocket.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -35,10 +36,12 @@ import session from 'express-session';
 import { body, validationResult } from 'express-validator';
 import fs from 'fs';
 import helmet from 'helmet';
+import http from 'http';
 import nodemailer from 'nodemailer';
 import passport from 'passport';
 import path from 'path';
 import qrcode from 'qrcode';
+import { Server as SocketIOServer } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import ConfigurationManager from './config/app-settings.js';
@@ -56,6 +59,7 @@ import pulseRouter from './routes/pulse.js';
 import inventoryRouter from './routes/inventory.js';
 import scimRouter from './routes/scim.js';
 import synthRouter from './routes/synth.js';
+import synthV2Router from './routes/synth-v2.js';
 import { getEmailStrategy } from './utils/serviceHelpers.js';
 import { setupGraphQL } from './graphql.js';
 
@@ -68,6 +72,122 @@ dotenv.config();
 
 // Initialize Express app
 const app = express();
+
+// Create HTTP server and WebSocket server
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : "*",
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000
+});
+
+// WebSocket authentication middleware
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+    if (!token && !DISABLE_AUTH) {
+      return next(new Error('Authentication required'));
+    }
+    
+    if (token) {
+      const payload = verify(token);
+      if (payload) {
+        // Fetch user details from database
+        db.get('SELECT id, name, email FROM users WHERE id=$1', [payload.id], (err, user) => {
+          if (err || !user) {
+            return next(new Error('Invalid authentication'));
+          }
+          socket.userId = user.id;
+          socket.userEmail = user.email;
+          socket.userName = user.name;
+          next();
+        });
+      } else {
+        next(new Error('Invalid token'));
+      }
+    } else {
+      // Auth disabled - allow connection
+      next();
+    }
+  } catch (error) {
+    next(new Error('Authentication failed'));
+  }
+});
+
+// WebSocket connection handling
+io.on('connection', (socket) => {
+  logger.info(`WebSocket connected: ${socket.id} (User: ${socket.userName || 'anonymous'})`);
+  
+  // Join user to their personal room for targeted updates
+  if (socket.userId) {
+    socket.join(`user_${socket.userId}`);
+  }
+  
+  // Join admin room if user has admin permissions
+  if (socket.userId) {
+    // Check if user has admin permissions
+    db.all(
+      `SELECT r.name AS role, p.name AS perm
+       FROM user_roles ur
+       JOIN roles r ON ur.roleId=r.id
+       LEFT JOIN role_permissions rp ON r.id=rp."roleId"
+       LEFT JOIN permissions p ON rp."permissionId"=p.id
+       WHERE ur.userId=$1`,
+      [socket.userId],
+      (err, rows) => {
+        if (!err) {
+          const permissions = rows.map(r => r.perm).filter(Boolean);
+          const roles = rows.map(r => r.role);
+          
+          if (roles.includes('admin') || permissions.includes('admin')) {
+            socket.join('admin');
+            logger.info(`User ${socket.userName} joined admin room`);
+          }
+        }
+      }
+    );
+  }
+  
+  // Handle subscription to specific data types
+  socket.on('subscribe', (dataType) => {
+    const allowedSubscriptions = [
+      'tickets', 
+      'analytics', 
+      'kiosks', 
+      'users', 
+      'notifications',
+      'system_status',
+      'modules'
+    ];
+    
+    if (allowedSubscriptions.includes(dataType)) {
+      socket.join(dataType);
+      logger.info(`Socket ${socket.id} subscribed to ${dataType}`);
+    }
+  });
+  
+  // Handle unsubscription
+  socket.on('unsubscribe', (dataType) => {
+    socket.leave(dataType);
+    logger.info(`Socket ${socket.id} unsubscribed from ${dataType}`);
+  });
+  
+  socket.on('disconnect', (reason) => {
+    logger.info(`WebSocket disconnected: ${socket.id} (${reason})`);
+  });
+});
+
+// Export io for use in other modules
+app.io = io;
+
+// Initialize WebSocket manager
+import WebSocketManager from './websocket/events.js';
+const wsManager = new WebSocketManager(io);
+app.wsManager = wsManager;
 // --- Version helpers ---
 function getApiVersion() {
   try {
@@ -1288,13 +1408,15 @@ app.use('/api/v1/vip', vipRouter);
 app.use('/api/workflows', workflowsRouter);
 app.use('/api/v1/modules', modulesRouter);
 app.use('/api/v1/api-keys', apiKeysRouter);
+app.use('/api/v1/websocket', websocketRouter);
 
 // Nova module routes
 app.use('/api/v1/helix', helixRouter);     // Nova Helix - Identity Engine
 app.use('/api/v1/lore', loreRouter);       // Nova Lore - Knowledge Base
 app.use('/api/v1/pulse', pulseRouter);     // Nova Pulse - Technician Portal
 app.use('/api/v1/orbit', orbitRouter);     // Nova Orbit - End-User Portal
-app.use('/api/v1/synth', synthRouter);     // Nova Synth - AI Engine
+app.use('/api/v1/synth', synthRouter);     // Nova Synth - AI Engine (Legacy)
+app.use('/api/v2/synth', synthV2Router);   // Nova Synth - AI Engine (v2 - Full Spec)
 app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
 
 // Wrap all app setup in an async function
@@ -1303,17 +1425,18 @@ export async function createApp() {
   // (from dotenv.config() through all middleware, routers, etc.)
   // Setup Apollo GraphQL server
   await setupGraphQL(app);
-  // Do not call app.listen here
-  return app;
+  // Do not call server.listen here
+  return { app, server, io };
 }
 
 // Only start the server if not in test mode
 if (process.env.NODE_ENV !== 'test') {
-  createApp().then((app) => {
-    app.listen(PORT, () => {
+  createApp().then(({ app, server, io }) => {
+    server.listen(PORT, () => {
       console.log(`🚀 Nova Universe API Server running on port ${PORT}`);
       console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
       console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
+      console.log(`⚡ WebSocket server ready for real-time updates`);
     });
   });
 }

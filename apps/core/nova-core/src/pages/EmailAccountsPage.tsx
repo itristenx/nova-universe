@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input, Modal, Checkbox, Select } from '@/components/ui';
+import { Button, Card, Input, Modal, Checkbox, Select } from '@heroui/react';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';

@@ -1,6 +1,6 @@
 //
 //  AuthenticationManager.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Manages admin authentication and permissions
 //

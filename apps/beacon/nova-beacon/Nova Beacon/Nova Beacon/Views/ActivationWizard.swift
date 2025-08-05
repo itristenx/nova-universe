@@ -1,6 +1,6 @@
 //
 //  ActivationWizard.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Apple-style onboarding wizard for first-time kiosk setup
 //
@@ -47,7 +47,7 @@ struct ActivationWizard: View {
         var title: String {
             switch self {
             case .welcome:
-                return "Welcome to CueIT Kiosk"
+                return "Welcome to Nova Beacon"
             case .serverConnection:
                 return "Server Connection"
             case .activation:
@@ -66,9 +66,9 @@ struct ActivationWizard: View {
             case .welcome:
                 return "Let's get your kiosk setup!"
             case .serverConnection:
-                return "Connect to your organization's CueIT server"
+                return "Connect to your organization's Nova Universe server"
             case .activation:
-                return "Enter your activation code or scan the QR code from the CueIT Portal"
+                return "Enter your activation code or scan the QR code from the Nova Universe Portal"
             case .pinSetup:
                 return "Create a secure PIN for admin access"
             case .roomNameSetup:
@@ -396,7 +396,7 @@ struct ActivationWizard: View {
             }
             
             if httpResponse.statusCode == 404 {
-                throw NSError(domain: "ActivationWizard", code: 3, userInfo: [NSLocalizedDescriptionKey: "Server found but CueIT API not available. Check if the server is running CueIT."])
+                throw NSError(domain: "ActivationWizard", code: 3, userInfo: [NSLocalizedDescriptionKey: "Server found but Nova Universe API not available. Check if the server is running Nova Universe."])
             } else if httpResponse.statusCode != 200 {
                 throw NSError(domain: "ActivationWizard", code: 4, userInfo: [NSLocalizedDescriptionKey: "Server responded with error (HTTP \(httpResponse.statusCode))"])
             }
@@ -503,7 +503,7 @@ struct WelcomeStepView: View {
             .symbolEffect(.bounce, value: true)
             
             VStack(spacing: 12) {
-                Text("Welcome to CueIT")
+                Text("Welcome to Nova Universe")
                     .font(.system(size: 42, weight: .light, design: .rounded))
                     .multilineTextAlignment(.center)
                 
@@ -512,7 +512,7 @@ struct WelcomeStepView: View {
                     .foregroundColor(.blue)
                     .multilineTextAlignment(.center)
                 
-                Text("Let's setup CueIT Kiosk for your organanization")
+                Text("Let's setup Nova Beacon for your organanization")
                     .font(.system(size: 18, weight: .medium))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -523,7 +523,7 @@ struct WelcomeStepView: View {
                 .frame(height: 20)
             
             VStack(alignment: .leading, spacing: 16) {
-                FeatureRow(icon: "server.rack", text: "Connect to your CueIT Server")
+                FeatureRow(icon: "server.rack", text: "Connect to your Nova Universe Server")
                 FeatureRow(icon: "qrcode.viewfinder", text: "Activate your kiosk")
                 FeatureRow(icon: "shield.fill", text: "Secure admin access with PIN")
                 FeatureRow(icon: "location.fill", text: "Configure room assignment")

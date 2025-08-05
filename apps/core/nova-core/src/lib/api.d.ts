@@ -1,4 +1,4 @@
-import type { User, Role, Permission, Kiosk, Log, Config, Notification, DirectoryUser, Integration, KioskActivation, KioskConfig, Asset, ApiResponse, LoginCredentials, AuthToken, DashboardStats, ActivityLog, ApiKey } from '@/types';
+import type { User, Role, Permission, Kiosk, Log, Config, Notification, DirectoryUser, Integration, KioskActivation, KioskConfig, Asset, KnowledgeArticle, KnowledgeArticleVersion, ApiKey, ApiResponse, LoginCredentials, AuthToken, DashboardStats, ActivityLog, EmailAccount } from '@/types';
 declare class ApiClient {
     private client;
     private useMockMode;
@@ -11,6 +11,18 @@ declare class ApiClient {
     createUser(user: Omit<User, 'id'>): Promise<User>;
     updateUser(id: number, user: Partial<User>): Promise<User>;
     deleteUser(id: number): Promise<ApiResponse>;
+    updateVipStatus(id: number, data: {
+        isVip: boolean;
+        vipLevel?: string;
+    }): Promise<ApiResponse>;
+    getVipProxies(): Promise<any[]>;
+    createVipProxy(data: {
+        vipId: string;
+        proxyId: string;
+        expiresAt?: string;
+    }): Promise<ApiResponse>;
+    deleteVipProxy(id: number): Promise<ApiResponse>;
+    getVipHeatmap(): Promise<any[]>;
     getRoles(): Promise<Role[]>;
     getPermissions(): Promise<Permission[]>;
     createRole(role: Omit<Role, 'id'>): Promise<Role>;
@@ -36,6 +48,7 @@ declare class ApiClient {
     clearLogs(): Promise<ApiResponse>;
     getConfig(): Promise<Config>;
     updateConfig(config: Partial<Config>): Promise<Config>;
+    getOrganizationBranding(): Promise<OrganizationBranding>;
     getNotifications(): Promise<Notification[]>;
     createNotification(notification: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification>;
     deleteNotification(id: number): Promise<ApiResponse>;
@@ -45,6 +58,16 @@ declare class ApiClient {
     updateIntegration(id: number, integration: Partial<Integration>): Promise<Integration>;
     deleteIntegration(id: number): Promise<ApiResponse>;
     testIntegration(id: number): Promise<ApiResponse>;
+    getEmailAccounts(): Promise<EmailAccount[]>;
+    createEmailAccount(account: Omit<EmailAccount, 'id'>): Promise<EmailAccount>;
+    updateEmailAccount(id: number, account: Partial<EmailAccount>): Promise<EmailAccount>;
+    deleteEmailAccount(id: number): Promise<void>;
+    getModules(): Promise<Record<string, boolean>>;
+    updateModule(key: string, enabled: boolean): Promise<ApiResponse>;
+    getCatalogItems(): Promise<RequestCatalogItem[]>;
+    createCatalogItem(data: Omit<RequestCatalogItem, 'id'>): Promise<RequestCatalogItem>;
+    updateCatalogItem(id: number, data: Partial<RequestCatalogItem>): Promise<ApiResponse>;
+    deleteCatalogItem(id: number): Promise<ApiResponse>;
     getAssets(): Promise<Asset[]>;
     uploadAsset(file: File, type: Asset['type']): Promise<Asset>;
     deleteAsset(id: number): Promise<ApiResponse>;
@@ -110,8 +133,27 @@ declare class ApiClient {
     }): Promise<ApiResponse>;
     getKioskScheduleConfig(kioskId: string): Promise<any>;
     testSMTP(testEmail: string): Promise<ApiResponse>;
+    getKnowledgeArticles(params?: {
+        search?: string;
+    }): Promise<KnowledgeArticle[]>;
+    getKnowledgeArticle(slug: string): Promise<KnowledgeArticle>;
+    getKnowledgeVersions(articleId: number): Promise<KnowledgeArticleVersion[]>;
+    getKnowledgeComments(articleId: number): Promise<any[]>;
+    addKnowledgeComment(articleId: number, data: {
+        content: string;
+    }): Promise<any>;
+    createKnowledgeArticle(data: {
+        title: string;
+        content: string;
+        tags?: string[];
+    }): Promise<KnowledgeArticle>;
+    createKnowledgeVersion(articleId: number, data: {
+        content: string;
+    }): Promise<KnowledgeArticleVersion>;
     getApiKeys(): Promise<ApiKey[]>;
-    createApiKey(description?: string): Promise<{ apiKey: ApiKey }>;
+    createApiKey(description?: string): Promise<{
+        apiKey: ApiKey;
+    }>;
     deleteApiKey(key: string): Promise<ApiResponse>;
 }
 export declare const api: ApiClient;

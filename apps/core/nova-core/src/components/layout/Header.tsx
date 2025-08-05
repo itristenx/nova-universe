@@ -5,6 +5,7 @@ import { useApiHealth } from '@/hooks/useApiHealth';
 import { useConnectionNotifications } from '@/hooks/useConnectionNotifications';
 import { useToastStore } from '@/stores/toast';
 import { ServerConnectionModal } from '@/components/ServerConnectionModal';
+import { WebSocketStatus } from '@/components/WebSocketStatus';
 import { api } from '@/lib/api';
 
 interface HeaderProps {
@@ -153,6 +154,9 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
         {/* Right side */}
         <div className="flex items-center space-x-4">
+          {/* WebSocket Status */}
+          <WebSocketStatus />
+          
           {/* Indicator Status Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button

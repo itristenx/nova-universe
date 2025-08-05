@@ -1,6 +1,6 @@
 //
 //  MainKioskInterface.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Main kiosk interface inspired by modern conference room tablets
 //

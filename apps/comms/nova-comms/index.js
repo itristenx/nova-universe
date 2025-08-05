@@ -1,7 +1,7 @@
 /**
- * CueIT Slack Integration Service
+ * Nova Universe Slack Integration Service
  * 
- * This service provides Slack bot functionality for CueIT, allowing users to:
+ * This service provides Slack bot functionality for Nova Universe, allowing users to:
  * - Submit tickets via /new-ticket command
  * - Interact with modals for ticket creation
  * - Receive confirmations and status updates
@@ -9,7 +9,7 @@
  * Environment Variables Required:
  * - SLACK_SIGNING_SECRET: Slack app signing secret
  * - SLACK_BOT_TOKEN: Bot User OAuth token  
- * - API_URL: CueIT API base URL
+ * - API_URL: Nova Universe API base URL
  * - JWT_SECRET: Secret for JWT token generation
  * - JWT_EXPIRES_IN: JWT expiration time (default: 1h)
  * - VITE_ADMIN_URL: Admin panel URL for ticket links
@@ -179,7 +179,7 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
         elements: [
           {
             type: 'mrkdwn',
-            text: `<${adminUrl}|Open CueIT Portal>`,
+            text: `<${adminUrl}|Open Nova Universe Portal>`,
           },
         ],
       });
@@ -202,5 +202,5 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
 
 (async () => {
   await app.start(PORT);
-  console.log(`✅ CueIT Slack service running on port ${PORT}`);
+  console.log(`✅ Nova Universe Slack service running on port ${PORT}`);
 })();

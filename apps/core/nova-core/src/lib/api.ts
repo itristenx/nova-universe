@@ -649,7 +649,7 @@ class ApiClient {
           id: 1,
           name: 'Company Logo',
           type: 'logo',
-          url: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=CueIT',
+          url: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=Nova+Universe',
           uploadedAt: new Date().toISOString()
         },
         {
@@ -1056,7 +1056,7 @@ class ApiClient {
     if (this.useMockMode) {
       return this.mockRequest({
         challenge: 'mock-challenge',
-        rp: { name: 'CueIT Portal', id: 'localhost' },
+        rp: { name: 'Nova Universe Portal', id: 'localhost' },
         user: { id: 'mock-user-id', name: 'mock@example.com', displayName: 'Mock User' },
         pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
         timeout: 60000

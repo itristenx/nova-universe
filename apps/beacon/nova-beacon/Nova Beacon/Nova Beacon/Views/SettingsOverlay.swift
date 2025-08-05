@@ -1,6 +1,6 @@
 //
 //  SettingsOverlay.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Modern settings overlay with admin and server settings
 //
@@ -155,7 +155,7 @@ struct SettingsOverlay: View {
             
             Spacer()
             
-            Text("CueIT Kiosk v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+            Text("Nova Beacon v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.secondary)
         }

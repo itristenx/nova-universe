@@ -1,6 +1,6 @@
 //
 //  LoadingView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Loading screen shown while checking kiosk activation status
 //
@@ -20,7 +20,7 @@ struct LoadingView: View {
                     .scaleEffect(2.0)
                     .progressViewStyle(CircularProgressViewStyle(tint: Theme.Colors.primary))
                 
-                Text("CueIT Kiosk")
+                Text("Nova Beacon")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(Theme.Colors.primary)

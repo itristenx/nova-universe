@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Modern Conference Room Kiosk - Complete Rebuild
 //  Inspired by Zoom/Microsoft conference room scheduling tablets
@@ -40,7 +40,7 @@ struct ContentView: View {
                     DeactivationView()
                 case .error(let message):
                     ErrorStateView(
-                        error: NSError(domain: "CueITKiosk", code: 0, userInfo: [NSLocalizedDescriptionKey: message]),
+                        error: NSError(domain: "NovaBeacon", code: 0, userInfo: [NSLocalizedDescriptionKey: message]),
                     retryAction: {
                         kioskController.initialize()
                     }

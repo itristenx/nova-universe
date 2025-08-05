@@ -1,0 +1,285 @@
+Here is a **complete implementation document** for the **Nova Notification Platform (NNP)**, including **Helix user data expansions** required for GoAlert, Synth, and Sentinel.
+
+---
+
+# **Nova Notification Platform (NNP) Implementation Guide**
+
+**Version:** 1.0
+**Owner:** Nova Core
+**Modules Impacted:** Core, Helix, Pulse, Orbit, Sentinel, Alert, Inventory, Tickets, Ops (Mailroom), Comms, GoAlert, Synth
+
+---
+
+## **1. Objectives**
+
+* **Unified Service:** Central notification platform shared across all modules.
+* **Role & Identity-Aware:** Powered by Nova Helix for RBAC and user identity.
+* **Standards-Compliant:** ITIL, ISO 27001, SOC 2, GDPR-ready.
+* **AI-Enhanced:** Synth and Cosmo provide intelligent notification management.
+* **Extensible:** Supports future modules and third-party integrations (GoAlert, Sentinel).
+
+---
+
+## **2. Architecture Overview**
+
+```
+[Modules: Tickets, Inventory, Sentinel, GoAlert, Synth]
+        ↓
+[Event Bus: Kafka/RabbitMQ]
+        ↓
+[Notification Service: Nova API v2]
+        ↓
+[Helix: RBAC + User Data Expansion]
+        ↓
+[Preference Engine: Per-user, per-role]
+        ↓
+[Delivery Layer]
+        ├─ In-App WebSocket (Pulse, Orbit, Core, Deck)
+        ├─ Mobile Push (APNs, FCM)
+        ├─ Email (Graph API)
+        ├─ Browser Push
+        ├─ Comms (Slack/Teams)
+        ├─ Webhooks (external systems)
+        ↓
+[Audit Logs + Cosmo (Synth) Summarization]
+```
+
+---
+
+## **3. Core Components**
+
+### **3.1 Notification Event Bus**
+
+* **Technology:** Kafka or RabbitMQ.
+* **Producers:** All Nova modules (Tickets, Sentinel, Inventory, GoAlert, etc.).
+* **Consumers:** Notification Service.
+* **Event Schema:**
+
+```json
+{
+  "event_id": "uuid",
+  "module": "pulse.tickets",
+  "type": "sla_breach",
+  "priority": "high",
+  "title": "SLA Breach on Ticket #1234",
+  "message": "Ticket #1234 has breached SLA.",
+  "timestamp": "2025-08-04T22:00:00Z",
+  "recipient_roles": ["it_tech"],
+  "recipient_users": ["user-123"],
+  "actions": [{"label": "View Ticket", "url": "/pulse/tickets/1234"}],
+  "metadata": { "ticket_id": 1234 }
+}
+```
+
+---
+
+### **3.2 Notification Service (Nova API v2)**
+
+* Event processor and router.
+* Key modules:
+
+  * **RBAC Filter (Helix):** Filters notifications by user’s roles and permissions.
+  * **Preference Engine:** Checks user-level settings.
+  * **Delivery Layer:** Sends notifications through configured channels.
+  * **Audit Logger:** Logs every notification delivery attempt.
+  * **Synth Integrator:** Cosmo summarizes notifications.
+
+---
+
+### **3.3 Delivery Channels**
+
+| Channel      | Technology           | Description                                |
+| ------------ | -------------------- | ------------------------------------------ |
+| In-App (Web) | WebSocket            | Real-time UI updates across Nova UIs       |
+| Mobile Push  | APNs, FCM            | iOS/macOS/Android push                     |
+| Email        | Microsoft Graph API  | Tenant-branded transactional emails        |
+| Browser Push | Service Worker API   | Optional desktop browser alerts            |
+| Comms        | Slack/Teams Webhooks | Workflow and approval notifications        |
+| Webhooks     | Custom               | Integrations (SIEM, monitoring, analytics) |
+
+---
+
+## **4. Notification Types**
+
+| Category         | Description                                | Examples                      |
+| ---------------- | ------------------------------------------ | ----------------------------- |
+| System Alerts    | Major incidents or platform health changes | Sentinel outage               |
+| Operational      | Ticket, inventory, or package updates      | SLA breach, asset assigned    |
+| Approvals        | Requests requiring action                  | HR access request             |
+| Reminders        | Task and SLA deadlines                     | Pending ticket reminder       |
+| Informational    | Non-critical updates                       | Knowledge base article update |
+| Gamification     | Engagement notifications                   | Cosmo XP badge awarded        |
+| Security Events  | Authentication and policy events           | Helix new device login        |
+| External (Orbit) | End-user or customer-facing notifications  | Scheduled maintenance update  |
+
+---
+
+## **5. Notification Priority**
+
+| Level    | Delivery Logic                                    |
+| -------- | ------------------------------------------------- |
+| Critical | Immediate push, email, in-app, GoAlert escalation |
+| High     | Push, in-app, email                               |
+| Normal   | In-app, optional email digest                     |
+| Low      | In-app only                                       |
+
+---
+
+## **6. User Preferences**
+
+Stored in **Nova Core**, tied to **Helix user profiles**:
+
+```json
+{
+  "user_id": "uuid",
+  "preferences": {
+    "pulse.tickets": {
+      "sla_breach": ["push", "email"],
+      "updates": ["in_app"]
+    },
+    "sentinel": {
+      "system_alerts": ["push", "email"]
+    }
+  },
+  "digest": {
+    "frequency": "daily",
+    "channels": ["email"]
+  },
+  "dnd": {
+    "enabled": true,
+    "start": "22:00",
+    "end": "06:00"
+  }
+}
+```
+
+---
+
+## **7. Helix User Data Expansion**
+
+To support **GoAlert**, **Synth**, and **Sentinel**, Helix needs new attributes:
+
+### **7.1 Notification Preferences**
+
+* Per-module and per-event type.
+* Channels allowed per event type.
+* Digest configuration.
+
+### **7.2 GoAlert Integration**
+
+* On-call schedule mapping.
+* Escalation policy association.
+* Notification override permissions.
+
+```json
+{
+  "goalert": {
+    "on_call_schedules": ["it_ops_primary", "cyber_secondary"],
+    "escalation_policies": ["default_cyber"],
+    "pager_enabled": true
+  }
+}
+```
+
+### **7.3 Synth (Cosmo) AI Context**
+
+* Notification relevance scoring.
+* AI notification digest toggle.
+* Event grouping preferences.
+
+```json
+{
+  "synth": {
+    "ai_digest_enabled": true,
+    "grouping_level": "module",
+    "mute_repetitive_alerts": true
+  }
+}
+```
+
+### **7.4 Sentinel Integration**
+
+* Event subscriptions (what security events the user gets).
+* Compliance event visibility (e.g., security-only for Cyber team).
+
+```json
+{
+  "sentinel": {
+    "event_subscriptions": ["critical_incidents", "compliance_audits"],
+    "rbac_scope": ["cyber_team"]
+  }
+}
+```
+
+---
+
+## **8. Security & Compliance**
+
+* **RBAC Filtering:** All notifications filtered through Helix.
+* **Audit Logging:** Every event ID, recipient, and outcome logged.
+* **Encryption:** AES-256 at rest, TLS 1.3 in transit.
+* **Retention:** 90 days default, configurable by tenant.
+* **GDPR/CCPA:** Right to export or delete personal notification history.
+* **SOC 2:** Notification delivery and failure logs auditable.
+
+---
+
+## **9. Implementation Steps**
+
+### **Phase 1: Core Infrastructure**
+
+* [ ] Build Notification Service (API v2 microservice).
+* [ ] Integrate Event Bus (Kafka/RabbitMQ).
+* [ ] Create Notification schema.
+
+### **Phase 2: Helix Expansion**
+
+* [ ] Extend user schema for notification preferences.
+* [ ] Add GoAlert escalation mapping.
+* [ ] Add Synth AI preference flags.
+* [ ] Add Sentinel event subscription attributes.
+
+### **Phase 3: Delivery Channels**
+
+* [ ] Implement in-app WebSocket feed.
+* [ ] Integrate APNs/FCM push service.
+* [ ] Build email notification engine (Graph API).
+* [ ] Slack/Teams via Comms.
+* [ ] Webhooks for external integrations.
+
+### **Phase 4: Admin UI (Core)**
+
+* [ ] Global notification preference matrix.
+* [ ] Role-level defaults.
+* [ ] DND and digest scheduling.
+
+### **Phase 5: Audit & Compliance**
+
+* [ ] Build audit log storage.
+* [ ] Export/reporting for admins.
+* [ ] GDPR/CCPA endpoint support.
+
+### **Phase 6: AI & Enhancements**
+
+* [ ] Cosmo notification summarization.
+* [ ] AI-driven event grouping and prioritization.
+
+---
+
+## **10. Notification Preference Matrix (Default)**
+
+| Role       | Module         | Critical   | High        | Normal       | Low    |
+| ---------- | -------------- | ---------- | ----------- | ------------ | ------ |
+| IT Tech    | Pulse\:Tickets | Push+Email | Push+In-App | In-App       | In-App |
+| IT Lead    | Sentinel       | Push+Email | Push        | Email Digest | In-App |
+| Cyber Lead | GoAlert        | Push+Email | Push+In-App | Email        | -      |
+| HR Admin   | HR Tickets     | Push+Email | Push        | Email Digest | In-App |
+| End User   | Orbit          | Email      | In-App      | Digest       | -      |
+
+---
+
+✅ **Result:** All modules share a single, RBAC-aware notification engine with Helix as the identity backbone and Synth providing AI notification enhancements.
+
+---
+
+Would you like me to **add a text-only ERD** for the **Helix user schema changes (with notification, GoAlert, Synth, and Sentinel fields)** so developers can integrate it immediately? (This would show how to store and link all this data in the DB).

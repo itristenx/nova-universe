@@ -1,6 +1,8 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from './contexts/ThemeContext'
+import { Layout } from './components/layout'
 import { DashboardPage } from './pages/DashboardPage'
 import { TicketsPage } from './pages/TicketsPage'
 import { DeepWorkPage } from './pages/DeepWorkPage'
@@ -14,20 +16,24 @@ const queryClient = new QueryClient({
 })
 
 const App: React.FC = () => (
-  <QueryClientProvider client={queryClient}>
-    <Router>
-      <Routes>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/tickets" element={<TicketsPage />} />
-        <Route path="/tickets/:ticketId" element={<DeepWorkPage />} />
-        <Route path="/alerts" element={<AlertsPage />} />
-        <Route path="/inventory" element={<InventoryPage />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
-        <Route path="/gamification" element={<GamificationPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
-  </QueryClientProvider>
+  <ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/tickets" element={<TicketsPage />} />
+            <Route path="/tickets/:ticketId" element={<DeepWorkPage />} />
+            <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/gamification" element={<GamificationPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </QueryClientProvider>
+  </ThemeProvider>
 )
 
 export default App

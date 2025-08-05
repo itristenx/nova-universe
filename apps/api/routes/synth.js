@@ -6,6 +6,14 @@ import db from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
+import { 
+  startConversation, 
+  sendMessage, 
+  endConversation, 
+  getConversationHistory,
+  createEscalation,
+  handleMCPRequest 
+} from '../utils/cosmo.js';
 
 const router = express.Router();
 
@@ -44,7 +52,475 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/v1/synth/analyze/ticket/{ticketId}:
+ * /api/v2/synth/tickets/process:
+ *   post:
+ *     tags: [Synth v2 - AI Ticket Processing]
+ *     summary: Process ticket with AI analysis
+ *     description: Analyze and enhance ticket data using AI including classification, customer matching, and duplicate detection
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - description
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 minLength: 5
+ *                 maxLength: 200
+ *               description:
+ *                 type: string
+ *                 minLength: 10
+ *                 maxLength: 2000
+ *               category:
+ *                 type: string
+ *                 enum: [hardware, software, network, access, security, email, phone, other]
+ *               priority:
+ *                 type: string
+ *                 enum: [low, medium, high, critical]
+ *               requesterEmail:
+ *                 type: string
+ *                 format: email
+ *               requesterName:
+ *                 type: string
+ *               location:
+ *                 type: string
+ *               useAI:
+ *                 type: boolean
+ *                 default: true
+ *     responses:
+ *       200:
+ *         description: Ticket processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 processedTicket:
+ *                   type: object
+ *                 aiAnalysis:
+ *                   type: object
+ *                   properties:
+ *                     classification:
+ *                       type: object
+ *                     customerMatch:
+ *                       type: object
+ *                     duplicateAnalysis:
+ *                       type: object
+ *                     suggestions:
+ *                       type: array
+ *       400:
+ *         description: Invalid input data
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/tickets/process',
+  authenticateJWT,
+  createRateLimit(15 * 60 * 1000, 30), // 30 requests per 15 minutes
+  [
+    body('title').isLength({ min: 5, max: 200 }).withMessage('Title must be 5-200 characters'),
+    body('description').isLength({ min: 10, max: 2000 }).withMessage('Description must be 10-2000 characters'),
+    body('category').optional().isIn(['hardware', 'software', 'network', 'access', 'security', 'email', 'phone', 'other']),
+    body('priority').optional().isIn(['low', 'medium', 'high', 'critical']),
+    body('requesterEmail').optional().isEmail().withMessage('Valid email required'),
+    body('useAI').optional().isBoolean()
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { title, description, category, priority, requesterEmail, requesterName, location, useAI = true } = req.body;
+
+      // Get MCP server and ticket processor
+      const mcpServer = await initializeMCPServer();
+      
+      // Process ticket with AI if enabled
+      if (useAI) {
+        try {
+          const result = await mcpServer.callTool('nova.tickets.create', {
+            title,
+            description,
+            category,
+            priority,
+            location,
+            requesterEmail,
+            requesterName,
+            useAI: true
+          }, { userId: req.user.id });
+
+          res.json({
+            success: true,
+            message: 'Ticket processed with AI enhancement',
+            result: result.content[0].text,
+            timestamp: new Date().toISOString()
+          });
+        } catch (error) {
+          logger.error('AI ticket processing failed:', error);
+          res.status(500).json({
+            success: false,
+            error: 'AI processing failed',
+            fallback: 'Ticket will be created without AI enhancement'
+          });
+        }
+      } else {
+        // Process without AI
+        const result = await mcpServer.callTool('nova.tickets.create', {
+          title,
+          description,
+          category: category || 'other',
+          priority: priority || 'medium',
+          location,
+          useAI: false
+        }, { userId: req.user.id });
+
+        res.json({
+          success: true,
+          message: 'Ticket created successfully',
+          result: result.content[0].text,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      logger.error('Ticket processing error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to process ticket',
+        details: error.message
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/tickets/analyze:
+ *   post:
+ *     tags: [Synth v2 - AI Ticket Processing]
+ *     summary: Analyze ticket content with AI
+ *     description: Get AI analysis of ticket content without creating a ticket
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - description
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               requesterEmail:
+ *                 type: string
+ *                 format: email
+ *               requesterName:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Analysis completed
+ *       400:
+ *         description: Invalid input
+ */
+router.post('/tickets/analyze',
+  authenticateJWT,
+  createRateLimit(15 * 60 * 1000, 50), // 50 analyses per 15 minutes
+  [
+    body('title').notEmpty().withMessage('Title is required'),
+    body('description').notEmpty().withMessage('Description is required'),
+    body('requesterEmail').optional().isEmail()
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { title, description, requesterEmail, requesterName } = req.body;
+
+      const mcpServer = await initializeMCPServer();
+      const result = await mcpServer.callTool('nova.ai.analyze_ticket', {
+        title,
+        description,
+        requesterEmail,
+        requesterName
+      });
+
+      res.json({
+        success: true,
+        analysis: result.content[0].text,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Ticket analysis error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Analysis failed',
+        details: error.message
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/tickets/similar:
+ *   post:
+ *     tags: [Synth v2 - AI Ticket Processing]
+ *     summary: Find similar tickets
+ *     description: Find tickets similar to the provided content
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - description
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               limit:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 20
+ *                 default: 5
+ *     responses:
+ *       200:
+ *         description: Similar tickets found
+ *       400:
+ *         description: Invalid input
+ */
+router.post('/tickets/similar',
+  authenticateJWT,
+  createRateLimit(15 * 60 * 1000, 100), // 100 requests per 15 minutes
+  [
+    body('title').notEmpty().withMessage('Title is required'),
+    body('description').notEmpty().withMessage('Description is required'),
+    body('limit').optional().isInt({ min: 1, max: 20 })
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { title, description, limit = 5 } = req.body;
+
+      const mcpServer = await initializeMCPServer();
+      const result = await mcpServer.callTool('nova.ai.find_similar_tickets', {
+        title,
+        description,
+        limit
+      });
+
+      res.json({
+        success: true,
+        similarTickets: result.content[0].text,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Similar tickets search error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Similar tickets search failed',
+        details: error.message
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/tickets/trends:
+ *   get:
+ *     tags: [Synth v2 - AI Ticket Processing]
+ *     summary: Get ticket trends and patterns
+ *     description: Get AI-powered analysis of ticket trends and patterns
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: timeframe
+ *         schema:
+ *           type: string
+ *           enum: [daily, weekly, monthly]
+ *           default: daily
+ *     responses:
+ *       200:
+ *         description: Trends analysis retrieved
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/tickets/trends',
+  authenticateJWT,
+  createRateLimit(15 * 60 * 1000, 20), // 20 requests per 15 minutes
+  async (req, res) => {
+    try {
+      const { timeframe = 'daily' } = req.query;
+
+      if (!['daily', 'weekly', 'monthly'].includes(timeframe)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid timeframe. Must be daily, weekly, or monthly'
+        });
+      }
+
+      const mcpServer = await initializeMCPServer();
+      const result = await mcpServer.callTool('nova.ai.get_trends', {
+        timeframe
+      });
+
+      res.json({
+        success: true,
+        trends: result.content[0].text,
+        timeframe,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Trends analysis error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Trends analysis failed',
+        details: error.message
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/customers/add:
+ *   post:
+ *     tags: [Synth v2 - AI Ticket Processing]
+ *     summary: Add customer to AI database
+ *     description: Add a customer to the AI customer matching database
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - domain
+ *               - emails
+ *             properties:
+ *               name:
+ *                 type: string
+ *               domain:
+ *                 type: string
+ *               emails:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: email
+ *               contract:
+ *                 type: string
+ *                 enum: [standard, premium, enterprise]
+ *                 default: standard
+ *               priority:
+ *                 type: string
+ *                 enum: [low, medium, high]
+ *                 default: medium
+ *               location:
+ *                 type: string
+ *               department:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Customer added successfully
+ *       400:
+ *         description: Invalid input
+ */
+router.post('/customers/add',
+  authenticateJWT,
+  createRateLimit(60 * 60 * 1000, 10), // 10 customers per hour
+  [
+    body('name').notEmpty().withMessage('Customer name is required'),
+    body('domain').notEmpty().withMessage('Domain is required'),
+    body('emails').isArray({ min: 1 }).withMessage('At least one email is required'),
+    body('emails.*').isEmail().withMessage('Valid email addresses required'),
+    body('contract').optional().isIn(['standard', 'premium', 'enterprise']),
+    body('priority').optional().isIn(['low', 'medium', 'high'])
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { name, domain, emails, contract = 'standard', priority = 'medium', location, department } = req.body;
+
+      const mcpServer = await initializeMCPServer();
+      const result = await mcpServer.callTool('nova.ai.add_customer', {
+        name,
+        domain,
+        emails,
+        contract,
+        priority,
+        location,
+        department
+      });
+
+      res.json({
+        success: true,
+        message: result.content[0].text,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Add customer error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to add customer',
+        details: error.message
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/analyze/ticket/{ticketId}:
  *   post:
  *     summary: Analyze ticket with AI
  *     description: Analyze a ticket using AI to provide insights and suggestions
@@ -827,5 +1303,490 @@ async function detectPatterns(tickets, timeframe) {
 
   return patterns;
 }
+
+// ========================================================================
+// COSMO CONVERSATION ENDPOINTS
+// ========================================================================
+
+/**
+ * @swagger
+ * /api/v2/synth/conversation/start:
+ *   post:
+ *     summary: Start a new conversation with Cosmo
+ *     description: Initialize a new AI conversation session
+ *     tags: [Synth - Cosmo AI]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               conversationId:
+ *                 type: string
+ *               context:
+ *                 type: object
+ *                 properties:
+ *                   module:
+ *                     type: string
+ *                     enum: [pulse, orbit, comms, beacon]
+ *                   ticketId:
+ *                     type: string
+ *                   userRole:
+ *                     type: string
+ *                   capabilities:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *               initialMessage:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Conversation started successfully
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/conversation/start',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 10), // 10 conversations per minute
+  [
+    body('conversationId').isUUID().withMessage('Valid conversation ID required'),
+    body('context.module').isIn(['pulse', 'orbit', 'comms', 'beacon']).withMessage('Valid module required')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { conversationId, context, initialMessage } = req.body;
+      const userId = req.user.id;
+      const tenantId = req.user.tenant_id;
+
+      const conversation = await startConversation(conversationId, userId, tenantId, context, initialMessage);
+
+      res.json({
+        success: true,
+        conversation
+      });
+    } catch (error) {
+      logger.error('Error starting conversation:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to start conversation',
+        errorCode: 'CONVERSATION_START_ERROR'
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/conversation/{id}/send:
+ *   post:
+ *     summary: Send a message in a conversation
+ *     description: Send a message to Cosmo and get a response
+ *     tags: [Synth - Cosmo AI]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Conversation ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *               context:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Message sent and response received
+ *       404:
+ *         description: Conversation not found
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/conversation/:id/send',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 30), // 30 messages per minute
+  [
+    body('message').isString().isLength({ min: 1, max: 2000 }).withMessage('Message must be 1-2000 characters')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { id: conversationId } = req.params;
+      const { message, context } = req.body;
+      const userId = req.user.id;
+
+      const response = await sendMessage(conversationId, userId, message, context);
+
+      res.json({
+        success: true,
+        message: response.message,
+        metadata: response.metadata,
+        actions: response.actions
+      });
+    } catch (error) {
+      logger.error('Error sending message:', error);
+      
+      if (error.message.includes('not found')) {
+        return res.status(404).json({
+          success: false,
+          error: 'Conversation not found',
+          errorCode: 'CONVERSATION_NOT_FOUND'
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        error: 'Failed to send message',
+        errorCode: 'MESSAGE_SEND_ERROR'
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/conversation/{id}:
+ *   get:
+ *     summary: Get conversation history
+ *     description: Retrieve the history of a conversation
+ *     tags: [Synth - Cosmo AI]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Conversation ID
+ *     responses:
+ *       200:
+ *         description: Conversation history retrieved
+ *       404:
+ *         description: Conversation not found
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/conversation/:id',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { id: conversationId } = req.params;
+      const userId = req.user.id;
+
+      const conversation = await getConversationHistory(conversationId, userId);
+
+      res.json({
+        success: true,
+        conversation
+      });
+    } catch (error) {
+      logger.error('Error getting conversation history:', error);
+      
+      if (error.message.includes('not found')) {
+        return res.status(404).json({
+          success: false,
+          error: 'Conversation not found',
+          errorCode: 'CONVERSATION_NOT_FOUND'
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get conversation history',
+        errorCode: 'CONVERSATION_HISTORY_ERROR'
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/conversation/{id}:
+ *   delete:
+ *     summary: End a conversation
+ *     description: End and archive a conversation
+ *     tags: [Synth - Cosmo AI]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Conversation ID
+ *     responses:
+ *       200:
+ *         description: Conversation ended successfully
+ *       404:
+ *         description: Conversation not found
+ *       401:
+ *         description: Unauthorized
+ */
+router.delete('/conversation/:id',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { id: conversationId } = req.params;
+      const userId = req.user.id;
+
+      await endConversation(conversationId, userId);
+
+      res.json({
+        success: true,
+        message: 'Conversation ended successfully'
+      });
+    } catch (error) {
+      logger.error('Error ending conversation:', error);
+      
+      if (error.message.includes('not found')) {
+        return res.status(404).json({
+          success: false,
+          error: 'Conversation not found',
+          errorCode: 'CONVERSATION_NOT_FOUND'
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        error: 'Failed to end conversation',
+        errorCode: 'CONVERSATION_END_ERROR'
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/escalation/create:
+ *   post:
+ *     summary: Create an escalation
+ *     description: Create an escalation for technical support
+ *     tags: [Synth - Cosmo AI]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               conversationId:
+ *                 type: string
+ *               ticketId:
+ *                 type: string
+ *               level:
+ *                 type: string
+ *                 enum: [low, medium, high, critical]
+ *               reason:
+ *                 type: string
+ *               context:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Escalation created successfully
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/escalation/create',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 5), // 5 escalations per minute
+  [
+    body('conversationId').isUUID().withMessage('Valid conversation ID required'),
+    body('level').isIn(['low', 'medium', 'high', 'critical']).withMessage('Valid escalation level required'),
+    body('reason').isString().isLength({ min: 10, max: 500 }).withMessage('Reason must be 10-500 characters')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { conversationId, ticketId, level, reason, context } = req.body;
+      const userId = req.user.id;
+      const tenantId = req.user.tenant_id;
+
+      const escalation = await createEscalation(conversationId, userId, tenantId, {
+        ticketId,
+        level,
+        reason,
+        context
+      });
+
+      res.json({
+        success: true,
+        escalation
+      });
+    } catch (error) {
+      logger.error('Error creating escalation:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create escalation',
+        errorCode: 'ESCALATION_CREATE_ERROR'
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/chat:
+ *   post:
+ *     summary: Legacy chat endpoint
+ *     description: Legacy endpoint for simple chat interactions (backward compatibility)
+ *     tags: [Synth - Cosmo AI]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Chat response
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/chat',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 20), // 20 messages per minute
+  [
+    body('message').isString().isLength({ min: 1, max: 2000 }).withMessage('Message must be 1-2000 characters')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { message } = req.body;
+      const userId = req.user.id;
+      const tenantId = req.user.tenant_id;
+
+      // Create a temporary conversation for legacy support
+      const conversationId = require('uuid').v4();
+      const context = {
+        module: 'orbit',
+        userRole: req.user.role || 'user',
+        capabilities: ['basic_chat']
+      };
+
+      await startConversation(conversationId, userId, tenantId, context);
+      const response = await sendMessage(conversationId, userId, message, { legacy: true });
+
+      res.json({
+        success: true,
+        message: response.message
+      });
+    } catch (error) {
+      logger.error('Error in legacy chat endpoint:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to process chat message',
+        errorCode: 'CHAT_ERROR'
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v2/synth/mcp:
+ *   post:
+ *     summary: Model Context Protocol endpoint
+ *     description: Handle MCP requests for tool integration
+ *     tags: [Synth - MCP]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: MCP request handled
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/mcp',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 50), // 50 MCP requests per minute
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const tenantId = req.user.tenant_id;
+      const mcpRequest = req.body;
+
+      const response = await handleMCPRequest(userId, tenantId, mcpRequest);
+
+      res.json(response);
+    } catch (error) {
+      logger.error('Error handling MCP request:', error);
+      res.status(500).json({
+        jsonrpc: '2.0',
+        error: {
+          code: -32603,
+          message: 'Internal server error'
+        },
+        id: req.body.id || null
+      });
+    }
+  }
+);
 
 export default router;

@@ -303,12 +303,7 @@ sequenceDiagram
 
 ⸻
 
-10. Future Enhancements
-	•	Streaming MCP Calls: Live updates from tools (e.g. real-time workflow progress).
-	•	Cross-Tenant MCP Tools: For managed service providers (MSPs).
-	•	AI-Generated Tools: Cosmo can auto-generate MCP tools for repeat workflows.
-	•	MCP Marketplace: Admins can install pre-built MCP tools from Nova Core.
+10. Enhancements
+	•	Create a MCP server that allows Nova to connect to other AI tools. This should allow users to login via OAUTH matching the OpenAI standard. 
 
 ⸻
-
-Would you like me to merge this into a single Markdown implementation file for “Nova Synth + Cosmo + MCP” (with diagrams and endpoint tables formatted for the official Nova docs)? This would align with your other specs.

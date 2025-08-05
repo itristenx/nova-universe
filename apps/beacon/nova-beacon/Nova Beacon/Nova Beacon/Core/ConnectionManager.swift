@@ -1,6 +1,6 @@
 //
 //  ConnectionManager.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Manages network connectivity and server communication
 //

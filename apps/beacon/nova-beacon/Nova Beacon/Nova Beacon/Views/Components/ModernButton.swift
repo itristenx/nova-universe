@@ -1,6 +1,6 @@
 //
 //  ModernButton.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Modern button styles with Apple UI design
 //

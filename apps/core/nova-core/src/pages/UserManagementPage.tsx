@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Input, Modal } from '@/components/ui';
+import { Button, Card, Checkbox, Input, Modal } from '@heroui/react';
 import { UserFilters, useUsers } from '@/hooks/useUsers';
 import type { User, Role } from '@/types';
 import { api } from '@/lib/api';

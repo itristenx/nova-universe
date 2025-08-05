@@ -2,6 +2,7 @@
 // Nova Universe Enhanced Dashboard
 import { Card } from '@/components/ui/Card';
 import { api } from '@/lib/api';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import {
     AcademicCapIcon,
     BeakerIcon,
@@ -43,7 +44,49 @@ export const NovaDashboard: React.FC = () => {
   const [authStats, setAuthStats] = useState<AuthenticationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const progressBarRef = useRef<HTMLDivElement>(null);
+
+  // Setup WebSocket for real-time updates
+  const { isConnected } = useWebSocket({
+    subscriptions: ['system', 'users', 'analytics'],
+    onMessage: (message) => {
+      console.log('Dashboard received real-time update:', message);
+      setLastUpdate(new Date());
+      
+      switch (message.type) {
+        case 'system_health':
+          setSystemHealth(prev => ({
+            ...prev,
+            ...message.data
+          }));
+          break;
+        case 'user_stats':
+          setAuthStats(prev => ({
+            ...prev,
+            ...message.data
+          }));
+          break;
+        case 'module_status':
+          setSystemHealth(prev => prev ? ({
+            ...prev,
+            modules: {
+              ...prev.modules,
+              [message.data.module]: message.data.status === 'operational'
+            }
+          }) : null);
+          break;
+        default:
+          console.log('Unhandled real-time message type:', message.type);
+      }
+    },
+    onConnect: () => {
+      console.log('Dashboard WebSocket connected');
+    },
+    onDisconnect: (reason) => {
+      console.log('Dashboard WebSocket disconnected:', reason);
+    }
+  });
 
   // Calculate 2FA percentage for progress bar
   const twoFactorPercentage = useMemo(() => {
@@ -164,8 +207,23 @@ export const NovaDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-6">
-        <h1 className="text-3xl font-bold mb-2">Nova Universe Control Center</h1>
-        <p className="text-purple-100">Enterprise ITSM Platform - Phase 4 Enhanced Administration</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Nova Universe Control Center</h1>
+            <p className="text-purple-100">Enterprise ITSM Platform - Phase 4 Enhanced Administration</p>
+          </div>
+          <div className="text-right">
+            <div className="flex items-center space-x-2 text-purple-100">
+              <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
+              <span className="text-sm">
+                {isConnected ? 'Live Updates' : 'Offline'}
+              </span>
+            </div>
+            <p className="text-xs text-purple-200 mt-1">
+              Last updated: {lastUpdate.toLocaleTimeString()}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* System Health Overview */}

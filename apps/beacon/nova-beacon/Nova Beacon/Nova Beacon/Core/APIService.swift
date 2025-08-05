@@ -1,8 +1,8 @@
 //
 //  APIService.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
-//  Handles all API communication with the CueIT backend
+//  Handles all API communication with the Nova Universe backend
 //
 
 import Foundation

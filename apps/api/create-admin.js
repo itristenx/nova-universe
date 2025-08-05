@@ -15,7 +15,7 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(`
 Usage: node create-admin.js [email] [password] [name]
 
-Creates or updates an admin user in the CueIT database.
+Creates or updates an admin user in the Nova Universe database.
 
 Arguments:
   email     Email address (default: admin@example.com)

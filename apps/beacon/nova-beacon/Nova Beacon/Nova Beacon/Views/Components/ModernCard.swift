@@ -1,6 +1,6 @@
 //
 //  ModernCard.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Modern card component with Apple UI design
 //

@@ -245,3 +245,4 @@ Nova Helix is the heart of identity, roles, and access for the Nova Universe. It
 “Nova ID, powered by Helix — identity that scales with your galaxy.”
 
 ---
+

@@ -1,6 +1,6 @@
 //
 //  ServerSetupView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Modern server configuration interface
 //
@@ -22,7 +22,7 @@ struct ServerSetupView: View {
     private let serverPresets = [
         ServerPreset(name: "Local Development", url: "http://localhost:3000"),
         ServerPreset(name: "Local Network", url: "http://192.168.1.100:3000"),
-        ServerPreset(name: "CueIT Cloud", url: "https://cueit.example.com")
+        ServerPreset(name: "Nova Universe Cloud", url: "https://nova-universe.example.com")
     ]
     
     var body: some View {
@@ -52,7 +52,7 @@ struct ServerSetupView: View {
                                     .font(.system(size: 36, weight: .light, design: .rounded))
                                     .foregroundColor(.primary)
                                 
-                                Text("Connect to your CueIT server to continue")
+                                Text("Connect to your Nova Universe server to continue")
                                     .font(.system(size: 18, weight: .medium))
                                     .foregroundColor(.secondary)
                                     .multilineTextAlignment(.center)
@@ -106,7 +106,7 @@ struct ServerSetupView: View {
                                             .font(.system(size: 16, weight: .medium))
                                             .foregroundColor(.secondary)
                                         
-                                        TextField("My CueIT Server", text: $serverName)
+                                        TextField("My Nova Universe Server", text: $serverName)
                                             .textFieldStyle(.roundedBorder)
                                             .font(.system(size: 16, weight: .medium))
                                     }
@@ -227,7 +227,7 @@ struct ServerSetupView: View {
     private func saveConfiguration() {
         let config = ServerConfiguration(
             baseURL: serverURL,
-            name: serverName.isEmpty ? "CueIT Server" : serverName
+            name: serverName.isEmpty ? "Nova Universe Server" : serverName
         )
         
         configManager.setServerConfiguration(config)

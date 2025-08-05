@@ -1,0 +1,198 @@
+# 🔐 Nova Helix Real-Time Config Enforcement (Enterprise-Grade)
+
+## 1. Objective
+
+* **Instant device lockdown or config updates** from Helix → Kiosks behave like managed devices.
+* **Continuous validation loop** with cryptographic guarantees.
+* Full **security posture enforcement** (MFA, SCIM-driven roles, signed configs).
+* Offline-safe but **tamper-proof**.
+* Ensure offline kiosks get tickets opened automatically.
+
+---
+
+## 2. Real-Time Config Enforcement Architecture
+
+### Event Channels
+
+Helix uses **WebSockets** or **Server-Sent Events (SSE)** for push updates:
+
+* `helix://device/{id}/config`
+* Supports `config_update`, `lockdown`, and `revoke`.
+
+For example:
+
+```json
+{
+  "event": "config_update",
+  "device_id": "kiosk_1234",
+  "config_hash": "a84d93b...",
+  "timestamp": "2025-08-04T21:30:00Z"
+}
+```
+
+### Flow
+
+1. Kiosk connects securely to Helix WS channel at boot.
+2. Helix verifies device token (mutual TLS recommended for kiosks).
+3. Any change in Core triggers **instant push event**:
+
+   * Config update → device fetches new signed config.
+   * Lockdown → kiosk enters “Locked” state.
+   * Revoke → device wipes local token & config.
+
+---
+
+## 3. Security Enforcement Layers
+
+| Layer              | Kiosk (Strict)                                              | Mobile (Moderate)                                   |
+| ------------------ | ----------------------------------------------------------- | --------------------------------------------------- |
+| **Device Token**   | Bound to device hardware ID (Helix checks serial/UDID).     | Bound to user identity via SSO session.             |
+| **Signed Config**  | Mandatory, enforced every startup + push updates.           | Enforced on login and periodic refresh.             |
+| **TLS Pinning**    | Required to prevent MITM.                                   | Recommended.                                        |
+| **Device Posture** | Kiosks validated (jailbreak/root detection).                | Mobile optional, controlled by policy.              |
+| **MFA**            | Admin-initiated kiosk activation approval if flagged.       | Always required at login if tenant policy enforces. |
+| **Audit Trail**    | Every config fetch, drift detection, and push event logged. | Same, tied to user identity.                        |
+
+---
+
+## 4. Helix Device Security APIs
+
+### `POST /helix/device/lockdown`
+
+Force kiosk into lockdown mode.
+
+```json
+{
+  "device_id": "kiosk_1234",
+  "reason": "config_violation"
+}
+```
+
+### `POST /helix/device/revoke`
+
+Completely de-register device.
+
+```json
+{
+  "device_id": "kiosk_1234"
+}
+```
+
+### `POST /helix/device/config/refresh`
+
+Push immediate re-sync of config.
+
+```json
+{
+  "device_id": "kiosk_1234"
+}
+```
+
+---
+
+## 5. Config Drift Detection
+
+Helix validates config hash on every API call:
+
+* If `config_hash` from device ≠ Helix hash:
+
+  * Kiosk: **Immediate lockdown**.
+  * Mobile: User notified, must re-authenticate.
+
+### Example Validation Request:
+
+```json
+{
+  "device_id": "kiosk_1234",
+  "config_hash": "a84d93b..."
+}
+```
+
+Response:
+
+```json
+{
+  "status": "valid",
+  "enforcement": "none"
+}
+```
+
+If invalid:
+
+```json
+{
+  "status": "invalid",
+  "enforcement": "lockdown"
+}
+```
+
+---
+
+## 6. Offline Security Model
+
+* **Kiosk:**
+
+  * Can run only with **cached signed config** for up to `24h`.
+  * Config signature includes expiration.
+  * After expiry → enters “Offline Lockdown.”
+* **Mobile:**
+
+  * Grace period (e.g. 7 days) allowed for cached config.
+  * App requests refresh when connectivity returns.
+
+---
+
+## 7. Helix + Core Admin Controls
+
+From Nova Core:
+
+* View **real-time device posture** (status: active, drift, lockdown).
+* Force **immediate lockdown** or config push.
+* Revoke devices (instant token invalidation).
+* View security posture logs:
+
+  * Config hash changes.
+  * Device tampering attempts.
+  * WebSocket connection history.
+
+---
+
+## 8. Advanced Security Enhancements
+
+| Feature                      | Description                                                             |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| **Hardware Binding**         | Device tokens tied to hardware ID/UDID (for kiosks).                    |
+| **Attestation**              | Device sends signed attestation (e.g. Secure Enclave/Android Keystore). |
+| **Zero-Trust Config**        | Config is not trusted locally, always validated against Helix.          |
+| **Ephemeral QR Activation**  | QR codes expire immediately after single use.                           |
+| **Helix Key Rotation**       | Tenant keys rotated automatically every 90 days.                        |
+| **SSO-Integrated Approvals** | Activation approvals routed through SSO workflows for admins.           |
+
+---
+
+## 9. Full Real-Time Enforcement Flow (Swimlane)
+
+```
+[Core Admin]         [Helix]              [Kiosk]              [Mobile]
+    |                   |                     |                     |
+    | Generate QR       |                     |                     |
+    |------------------>|                     |                     |
+    |                   | Validate QR JWT     |                     |
+    |                   | Issue Activation    |                     |
+    |                   |-------------------->|                     |
+    |                   |                     | Startup validation  |
+    |                   |                     | WS connect          |
+    |                   |                     |<--------------------|
+    | Update Config     | Push config event   |                     |
+    |------------------>|====================>| Validate & Apply    |
+    |                   |                     |                     |
+    | Lockdown Device   | Push lockdown event | Lock device         |
+    |------------------>|====================>|                     |
+```
+
+---
+
+✅ **Outcome:**
+Helix now **enforces absolute device compliance** in real-time for kiosks and strong security checks for mobile, matching enterprise standards (similar to MDM but tenant-scoped, API-native, and fully integrated with Nova Core).
+
+---

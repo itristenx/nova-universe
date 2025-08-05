@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input } from '@/components/ui';
+import { Button, Card, Input, Chip } from '@heroui/react';
 import { MagnifyingGlassIcon, FunnelIcon, TrashIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { formatDate, getUrgencyColor, getStatusColor } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import type { Log } from '@/types';
 
 export const TicketsPage: React.FC = () => {
@@ -12,7 +13,38 @@ export const TicketsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [urgencyFilter, setUrgencyFilter] = useState('');
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const { addToast } = useToastStore();
+
+  // Setup WebSocket for real-time ticket updates
+  const { isConnected } = useWebSocket({
+    subscriptions: ['tickets'],
+    onMessage: (message) => {
+      console.log('Tickets page received update:', message);
+      setLastUpdate(new Date());
+      
+      switch (message.type) {
+        case 'ticket_created':
+          setTickets(prev => [message.data, ...prev]);
+          addToast({
+            type: 'info',
+            title: 'New Ticket',
+            description: `Ticket #${message.data.id} has been created`,
+          });
+          break;
+        case 'ticket_updated':
+          setTickets(prev => prev.map(ticket => 
+            ticket.id === message.data.id ? { ...ticket, ...message.data } : ticket
+          ));
+          break;
+        case 'ticket_deleted':
+          setTickets(prev => prev.filter(ticket => ticket.id !== message.data.id));
+          break;
+        default:
+          console.log('Unhandled ticket message type:', message.type);
+      }
+    }
+  });
 
   useEffect(() => {
     loadTickets();
@@ -95,13 +127,28 @@ export const TicketsPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Support Tickets</h1>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl font-bold text-gray-900">Support Tickets</h1>
+            <Chip 
+              color={isConnected ? "success" : "warning"} 
+              variant="flat" 
+              size="sm"
+              title={isConnected ? "Live updates enabled" : "Live updates offline"}
+            >
+              {isConnected ? "🟢 Live" : "🟡 Offline"}
+            </Chip>
+          </div>
           <p className="mt-1 text-sm text-gray-600">
             Manage and track support requests from your kiosks
+            {isConnected && (
+              <span className="ml-2 text-xs text-green-600">
+                • Last updated: {lastUpdate.toLocaleTimeString()}
+              </span>
+            )}
           </p>
         </div>
         <Button
-          variant="danger"
+          color="danger"
           onClick={clearAllTickets}
           disabled={tickets.length === 0}
         >
@@ -231,7 +278,7 @@ export const TicketsPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Button
-                        variant="default"
+                        variant="light"
                         size="sm"
                         onClick={() => deleteTicket(ticket.id)}
                         className="text-red-600 hover:text-red-900"

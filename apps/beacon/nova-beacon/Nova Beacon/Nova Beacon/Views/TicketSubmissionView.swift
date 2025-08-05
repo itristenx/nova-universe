@@ -1,6 +1,6 @@
 //
 //  TicketSubmissionView.swift
-//  CueIT Kiosk
+//  Nova Beacon
 //
 //  Modern ticket submission interface
 //

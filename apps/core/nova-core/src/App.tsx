@@ -2,6 +2,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Layout } from '@/components/layout';
 import { ConnectedToastContainer } from '@/components/ui';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import { useAuthStatus } from '@/hooks/useAuthStatus';
 import { api } from '@/lib/api';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -268,10 +269,12 @@ const App: React.FC = () => {
       <HeroUIProvider>
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
-            <Router>
-              <AppRoutes />
-              <ConnectedToastContainer />
-            </Router>
+            <WebSocketProvider>
+              <Router>
+                <AppRoutes />
+                <ConnectedToastContainer />
+              </Router>
+            </WebSocketProvider>
           </QueryClientProvider>
         </ThemeProvider>
       </HeroUIProvider>
