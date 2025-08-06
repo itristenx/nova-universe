@@ -53,11 +53,13 @@ import { authRateLimit } from './middleware/rateLimiter.js';
 import { requestLogger, securityHeaders } from './middleware/security.js';
 import { validateActivationCode, validateEmail, validateKioskRegistration } from './middleware/validation.js';
 import helixRouter from './routes/helix.js';
+import helixUniversalLoginRouter from './routes/helix-universal-login.js';
 import loreRouter from './routes/lore.js';
 import orbitRouter from './routes/orbit.js';
 import pulseRouter from './routes/pulse.js';
 import inventoryRouter from './routes/inventory.js';
 import scimRouter from './routes/scim.js';
+import scimMonitorRouter from './routes/scimMonitor.js';
 import synthRouter from './routes/synth.js';
 import synthV2Router from './routes/synth-v2.js';
 import { getEmailStrategy } from './utils/serviceHelpers.js';
@@ -669,6 +671,9 @@ if (!DISABLE_AUTH) {
 
 // Create a v1Router to wrap all direct /api/* endpoints
 const v1Router = express.Router();
+
+// Create kiosksRouter for kiosk management endpoints
+const kiosksRouter = express.Router();
 
 // --- BEGIN: Move all direct /api/* endpoint definitions to v1Router ---
 v1Router.get('/config', ensureAuth, (req, res) => {
@@ -1412,12 +1417,14 @@ app.use('/api/v1/websocket', websocketRouter);
 
 // Nova module routes
 app.use('/api/v1/helix', helixRouter);     // Nova Helix - Identity Engine
+app.use('/api/v1/helix/login', helixUniversalLoginRouter); // Nova Helix - Universal Login
 app.use('/api/v1/lore', loreRouter);       // Nova Lore - Knowledge Base
 app.use('/api/v1/pulse', pulseRouter);     // Nova Pulse - Technician Portal
 app.use('/api/v1/orbit', orbitRouter);     // Nova Orbit - End-User Portal
 app.use('/api/v1/synth', synthRouter);     // Nova Synth - AI Engine (Legacy)
 app.use('/api/v2/synth', synthV2Router);   // Nova Synth - AI Engine (v2 - Full Spec)
 app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
+app.use('/api/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
 
 // Wrap all app setup in an async function
 export async function createApp() {
@@ -1467,7 +1474,7 @@ app.use((err, req, res, next) => {
 });
 
 // --- Kiosks Router ---
-const kiosksRouter = express.Router();
+// Router declaration moved to top of file
 
 // Minimal GET endpoint for kiosks
 kiosksRouter.get('/', async (req, res) => {

@@ -132,38 +132,79 @@ model Log {
 }
 
 model Config {
-  key         String   @id
-  value       String?
-  valueType   String?  @map("value_type")
-  description String?
-  isPublic    Boolean? @default(false) @map("is_public")
-  category    String?
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  key           String   @id
+  value         String?
+  valueType     String?  @map("value_type") // "string", "number", "boolean", "json", "array"
+  description   String?
+  isPublic      Boolean  @default(false) @map("is_public") // Can be exposed to public API
+  category      String?  // "branding", "security", "features", "integrations", "performance"
+  subcategory   String?  @map("subcategory") // More granular categorization
+  isUIEditable  Boolean  @default(true) @map("is_ui_editable") // Can be edited via UI
+  isRequired    Boolean  @default(false) @map("is_required") // Required for system operation
+  defaultValue  String?  @map("default_value") // Default fallback value
+  validationRules Json?  @map("validation_rules") // JSON validation schema
+  displayOrder  Int?     @map("display_order") // Order for UI display
+  helpText      String?  @map("help_text") // Additional help text for UI
+  isAdvanced    Boolean  @default(false) @map("is_advanced") // Show in advanced settings only
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  updatedBy     String?  @map("updated_by") // User ID who last updated
+  history       ConfigHistory[]
 
   @@map("config")
 }
 
+model ConfigHistory {
+  id          Int       @id @default(autoincrement())
+  configKey   String    @map("config_key")
+  config      Config    @relation(fields: [configKey], references: [key], onDelete: Cascade)
+  oldValue    String?   @map("old_value")
+  newValue    String?   @map("new_value")
+  changedBy   String?   @map("changed_by") // User ID who made the change
+  changeReason String?  @map("change_reason") // Optional reason for change
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("config_history")
+}
+
+model ConfigTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  category    String
+  template    Json     // Template configuration as JSON
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("config_templates")
+}
+
 model Kiosk {
-  id             String               @id
-  lastSeen       DateTime?            @map("last_seen")
+  id             String                         @id
+  lastSeen       DateTime?                      @map("last_seen")
   version        String?
-  active         Boolean              @default(false)
-  logoUrl        String?              @map("logo_url")
-  bgUrl          String?              @map("bg_url")
-  statusEnabled  Boolean              @default(false) @map("status_enabled")
-  currentStatus  String?              @map("current_status")
-  openMsg        String?              @map("open_msg")
-  closedMsg      String?              @map("closed_msg")
-  errorMsg       String?              @map("error_msg")
-  meetingMsg     String?              @map("meeting_msg")
-  brbMsg         String?              @map("brb_msg")
-  lunchMsg       String?              @map("lunch_msg")
-  unavailableMsg String?              @map("unavailable_msg")
+  active         Boolean                        @default(false)
+  logoUrl        String?                        @map("logo_url")
+  bgUrl          String?                        @map("bg_url")
+  statusEnabled  Boolean                        @default(false) @map("status_enabled")
+  currentStatus  String?                        @map("current_status")
+  openMsg        String?                        @map("open_msg")
+  closedMsg      String?                        @map("closed_msg")
+  errorMsg       String?                        @map("error_msg")
+  meetingMsg     String?                        @map("meeting_msg")
+  brbMsg         String?                        @map("brb_msg")
+  lunchMsg       String?                        @map("lunch_msg")
+  unavailableMsg String?                        @map("unavailable_msg")
   schedule       Json?
-  createdAt      DateTime             @default(now()) @map("created_at")
-  updatedAt      DateTime             @updatedAt @map("updated_at")
+  createdAt      DateTime                       @default(now()) @map("created_at")
+  updatedAt      DateTime                       @updatedAt @map("updated_at")
   activations    KioskActivation[]
   assetRegistry  KioskAssetRegistry[]
+  syncFailures   HelixSyncFailure[]
+  orgAssignment  KioskOrganizationAssignment?
+  metadataLogs   KioskMetadataLog[]
 
   @@map("kiosks")
 }
@@ -365,6 +406,7 @@ model InventoryAsset {
   warrantyAlerts     AssetWarrantyAlert[]
   kioskRegistrations KioskAssetRegistry[]
   validationLogs     AssetValidationLog[]
+  syncFailures       HelixSyncFailure[]
   importBatch        AssetImportBatch?    @relation(fields: [importBatchId], references: [id])
 
   @@map("inventory_assets")
@@ -485,6 +527,51 @@ model KioskAssetRegistry {
   @@map("kiosk_asset_registry")
 }
 
+model HelixSyncFailure {
+  id           Int      @id @default(autoincrement())
+  kioskId      String   @map("kiosk_id")
+  assetId      Int      @map("asset_id")
+  errorMessage String   @map("error_message")
+  metadata     Json?    @map("metadata")
+  retryCount   Int      @default(0) @map("retry_count")
+  nextRetryAt  DateTime @map("next_retry_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  kiosk        Kiosk    @relation(fields: [kioskId], references: [id], onDelete: Cascade)
+  asset        InventoryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([kioskId, assetId])
+  @@map("helix_sync_failures")
+}
+
+model KioskOrganizationAssignment {
+  id                 Int      @id @default(autoincrement())
+  kioskId            String   @unique @map("kiosk_id")
+  organizationId     Int      @map("organization_id")
+  department         String?  @map("department") @db.VarChar(100)
+  floor              String?  @map("floor") @db.VarChar(50)
+  room               String?  @map("room") @db.VarChar(50)
+  building           String?  @map("building") @db.VarChar(100)
+  assignedBy         String?  @map("assigned_by")
+  assignmentMetadata Json     @default("{}") @map("assignment_metadata")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  kiosk              Kiosk    @relation(fields: [kioskId], references: [id], onDelete: Cascade)
+
+  @@map("kiosk_organization_assignments")
+}
+
+model KioskMetadataLog {
+  id                  Int      @id @default(autoincrement())
+  kioskId             String   @map("kiosk_id")
+  metadataType        String   @map("metadata_type") @db.VarChar(50)
+  encryptedMetadata   String?  @map("encrypted_metadata")
+  collectionTimestamp DateTime @default(now()) @map("collection_timestamp")
+  kiosk               Kiosk    @relation(fields: [kioskId], references: [id], onDelete: Cascade)
+
+  @@map("kiosk_metadata_logs")
+}
+
 model XpEvent {
   id        Int      @id @default(autoincrement())
   userId    String   @map("user_id")
@@ -513,6 +600,23 @@ model ScimMapping {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("scim_mappings")
+}
+
+model ScimLog {
+  id          String   @id @default(uuid())
+  operation   String   // "create", "update", "delete", "get", "list"
+  entityType  String   @map("entity_type") // "user", "group", etc.
+  entityId    String?  @map("entity_id") // External ID or internal ID
+  statusCode  Int      @map("status_code")
+  message     String?
+  requestBody Json?    @map("request_body")
+  responseBody Json?   @map("response_body")
+  userAgent   String?  @map("user_agent")
+  ipAddress   String?  @map("ip_address")
+  duration    Int?     // Request duration in milliseconds
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("scim_logs")
 }
 
 model MailroomPackage {
@@ -615,4 +719,100 @@ model VipSlaHistory {
   user        User      @relation(fields: [userId], references: [id])
 
   @@map("vip_sla_history")
+}
+
+model HelixSyncFailure {
+  id           Int                    @id @default(autoincrement())
+  kioskId      String                 @map("kiosk_id")
+  assetId      Int                    @map("asset_id")
+  errorMessage String                 @map("error_message")
+  metadata     Json                   @default("{}") @map("metadata")
+  retryCount   Int                    @default(0) @map("retry_count")
+  nextRetryAt  DateTime               @map("next_retry_at")
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
+  kiosk        Kiosk                  @relation(fields: [kioskId], references: [id], onDelete: Cascade)
+  asset        InventoryAsset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([kioskId, assetId])
+  @@map("helix_sync_failures")
+}
+
+model KioskOrganizationAssignment {
+  id                   Int       @id @default(autoincrement())
+  kioskId              String    @unique @map("kiosk_id")
+  organizationId       Int?      @map("organization_id")
+  department           String?   @map("department") @db.VarChar(100)
+  floor                String?   @map("floor") @db.VarChar(50)
+  room                 String?   @map("room") @db.VarChar(50)
+  building             String?   @map("building") @db.VarChar(100)
+  assignedBy           String?   @map("assigned_by")
+  assignmentMetadata   Json      @default("{}") @map("assignment_metadata")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  kiosk                Kiosk     @relation(fields: [kioskId], references: [id], onDelete: Cascade)
+
+  @@map("kiosk_organization_assignments")
+}
+
+model KioskMetadataLog {
+  id                   Int      @id @default(autoincrement())
+  kioskId              String   @map("kiosk_id")
+  metadataType         String   @map("metadata_type") @db.VarChar(50)
+  encryptedMetadata    String?  @map("encrypted_metadata")
+  collectionTimestamp  DateTime @default(now()) @map("collection_timestamp")
+  kiosk                Kiosk    @relation(fields: [kioskId], references: [id], onDelete: Cascade)
+
+  @@map("kiosk_metadata_logs")
+}
+
+model AgentAvailability {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  queueName   String   @map("queue_name")
+  isAvailable Boolean  @default(true) @map("is_available")
+  maxCapacity Int      @default(10) @map("max_capacity")
+  currentLoad Int      @default(0) @map("current_load")
+  status      String   @default("active") // active, away, offline, break
+  lastUpdated DateTime @default(now()) @map("last_updated")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  user User @relation("AgentAvailabilityUser", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, queueName])
+  @@map("agent_availability")
+}
+
+model QueueMetrics {
+  id                    String   @id @default(uuid())
+  queueName             String   @map("queue_name")
+  totalAgents           Int      @default(0) @map("total_agents")
+  availableAgents       Int      @default(0) @map("available_agents")
+  totalTickets          Int      @default(0) @map("total_tickets")
+  openTickets           Int      @default(0) @map("open_tickets")
+  avgResponseTime       Float    @default(0) @map("avg_response_time")
+  avgResolutionTime     Float    @default(0) @map("avg_resolution_time")
+  slaBreaches           Int      @default(0) @map("sla_breaches")
+  highPriorityTickets   Int      @default(0) @map("high_priority_tickets")
+  capacityUtilization   Float    @default(0) @map("capacity_utilization") // 0-100%
+  averageWaitTime       Float    @default(0) @map("average_wait_time")
+  thresholdWarning      Boolean  @default(false) @map("threshold_warning")
+  thresholdCritical     Boolean  @default(false) @map("threshold_critical")
+  lastCalculated        DateTime @default(now()) @map("last_calculated")
+  
+  @@unique([queueName])
+  @@map("queue_metrics")
+}
+
+model QueueAlert {
+  id          String   @id @default(uuid())
+  queueName   String   @map("queue_name")
+  alertType   String   @map("alert_type") // warning, critical, capacity_exceeded
+  message     String
+  isActive    Boolean  @default(true) @map("is_active")
+  alertedAt   DateTime @default(now()) @map("alerted_at")
+  resolvedAt  DateTime? @map("resolved_at")
+  notifiedUsers String[] @map("notified_users")
+  
+  @@map("queue_alerts")
 }

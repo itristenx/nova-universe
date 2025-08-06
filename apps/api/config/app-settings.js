@@ -188,21 +188,21 @@ class ConfigurationManager {
    */
   static async loadFromDatabase() {
     try {
-      const query = 'SELECT config_key, config_value FROM app_configuration WHERE enabled = 1';
-      const rows = await new Promise((resolve, reject) => {
-        db.all(query, [], (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows || []);
-        });
-      });
+      // Ensure database is ready
+      await db.ensureReady();
+      
+      const query = 'SELECT key, value FROM configurations';
+      const result = await db.query(query);
+      const rows = result.rows || [];
 
       const config = {};
       rows.forEach(row => {
         try {
-          const value = JSON.parse(row.config_value);
-          this.setNestedValue(config, row.config_key, value);
+          const value = JSON.parse(row.value);
+          this.setNestedValue(config, row.key, value);
         } catch (error) {
-          logger.warn(`Invalid JSON in config key ${row.config_key}:`, error);
+          // If it's not valid JSON, use the string value directly
+          this.setNestedValue(config, row.key, row.value);
         }
       });
 

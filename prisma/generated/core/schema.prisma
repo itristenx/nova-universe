@@ -132,15 +132,53 @@ model Log {
 }
 
 model Config {
-  key         String   @id
-  value       String?
-  valueType   String?  @map("value_type")
-  description String?
-  isPublic    Boolean? @default(false) @map("is_public")
-  category    String?
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  key             String          @id
+  value           String?
+  valueType       String?         @map("value_type") // "string", "number", "boolean", "json", "array"
+  description     String?
+  isPublic        Boolean         @default(false) @map("is_public") // Can be exposed to public API
+  category        String? // "branding", "security", "features", "integrations", "performance"
+  subcategory     String?         @map("subcategory") // More granular categorization
+  isUIEditable    Boolean         @default(true) @map("is_ui_editable") // Can be edited via UI
+  isRequired      Boolean         @default(false) @map("is_required") // Required for system operation
+  defaultValue    String?         @map("default_value") // Default fallback value
+  validationRules Json?           @map("validation_rules") // JSON validation schema
+  displayOrder    Int?            @map("display_order") // Order for UI display
+  helpText        String?         @map("help_text") // Additional help text for UI
+  isAdvanced      Boolean         @default(false) @map("is_advanced") // Show in advanced settings only
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  updatedBy       String?         @map("updated_by") // User ID who last updated
+  history         ConfigHistory[]
 
   @@map("config")
+}
+
+model ConfigHistory {
+  id           Int      @id @default(autoincrement())
+  configKey    String   @map("config_key")
+  config       Config   @relation(fields: [configKey], references: [key], onDelete: Cascade)
+  oldValue     String?  @map("old_value")
+  newValue     String?  @map("new_value")
+  changedBy    String?  @map("changed_by") // User ID who made the change
+  changeReason String?  @map("change_reason") // Optional reason for change
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("config_history")
+}
+
+model ConfigTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  category    String
+  template    Json // Template configuration as JSON
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("config_templates")
 }
 
 model Kiosk {
@@ -513,6 +551,23 @@ model ScimMapping {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("scim_mappings")
+}
+
+model ScimLog {
+  id           String   @id @default(uuid())
+  operation    String // "create", "update", "delete", "get", "list"
+  entityType   String   @map("entity_type") // "user", "group", etc.
+  entityId     String?  @map("entity_id") // External ID or internal ID
+  statusCode   Int      @map("status_code")
+  message      String?
+  requestBody  Json?    @map("request_body")
+  responseBody Json?    @map("response_body")
+  userAgent    String?  @map("user_agent")
+  ipAddress    String?  @map("ip_address")
+  duration     Int? // Request duration in milliseconds
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("scim_logs")
 }
 
 model MailroomPackage {

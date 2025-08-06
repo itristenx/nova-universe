@@ -242,6 +242,168 @@ paths:
                       type: string
                       format: date-time
 
+  /api/scim/monitor/logs:
+    get:
+      summary: Get SCIM provisioning logs
+      description: Retrieve SCIM operation logs with filtering and pagination
+      tags:
+        - SCIM Monitoring
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: operation
+          schema:
+            type: string
+            enum: [create, update, delete, get, list]
+          description: Filter by SCIM operation type
+        - in: query
+          name: entityType
+          schema:
+            type: string
+          description: Filter by entity type (e.g., user, group)
+        - in: query
+          name: statusCode
+          schema:
+            type: integer
+          description: Filter by HTTP status code
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+          description: Filter logs from this date onwards
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+          description: Filter logs up to this date
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+          description: Number of logs per page
+      responses:
+        '200':
+          description: SCIM logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        operation:
+                          type: string
+                        entityType:
+                          type: string
+                        entityId:
+                          type: string
+                        statusCode:
+                          type: integer
+                        message:
+                          type: string
+                        userAgent:
+                          type: string
+                        ipAddress:
+                          type: string
+                        duration:
+                          type: integer
+                        createdAt:
+                          type: string
+                          format: date-time
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '429':
+          description: Too many requests
+        '500':
+          description: Internal server error
+
+  /api/scim/monitor/status:
+    get:
+      summary: Get SCIM provisioning status and statistics
+      description: Retrieve SCIM system status, operation statistics, and health metrics
+      tags:
+        - SCIM Monitoring
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: timeframe
+          schema:
+            type: string
+            enum: [1h, 24h, 7d, 30d]
+            default: 24h
+          description: Timeframe for statistics
+      responses:
+        '200':
+          description: SCIM status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, error]
+                  lastActivity:
+                    type: string
+                    format: date-time
+                  statistics:
+                    type: object
+                    properties:
+                      totalOperations:
+                        type: integer
+                      operationsByType:
+                        type: object
+                      operationsByStatus:
+                        type: object
+                      averageResponseTime:
+                        type: number
+                      errorRate:
+                        type: number
+                  healthMetrics:
+                    type: object
+                    properties:
+                      uptime:
+                        type: string
+                      lastErrorTime:
+                        type: string
+                        format: date-time
+                      recentErrors:
+                        type: integer
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '429':
+          description: Too many requests
+        '500':
+          description: Internal server error
+
 components:
   securitySchemes:
     bearerAuth:

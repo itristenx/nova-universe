@@ -14,13 +14,13 @@ export const databaseConfig = {
     // Connection pool configuration
     host: process.env.CORE_DB_HOST || 'localhost',
     port: parseInt(process.env.CORE_DB_PORT || '5432'),
-    database: process.env.CORE_DB_NAME || 'nova_core',
-    user: process.env.CORE_DB_USER || 'nova_admin',
+    database: process.env.CORE_DB_NAME || 'nova_universe',
+    user: process.env.CORE_DB_USER || 'nova_user',
     password: (() => {
-      const password = process.env.CORE_DB_PASSWORD;
+      const password = process.env.CORE_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
-        logger.error('POSTGRES_PASSWORD is not set. Generating a temporary password.');
-        return generateSecurePassword();
+        logger.error('POSTGRES_PASSWORD is not set. Using nova_password.');
+        return 'nova_password';
       }
       return password;
     })(),
@@ -54,13 +54,13 @@ export const databaseConfig = {
   auth_db: {
     host: process.env.AUTH_DB_HOST || 'localhost',
     port: parseInt(process.env.AUTH_DB_PORT || '5432'),
-    database: process.env.AUTH_DB_NAME || 'nova_auth',
-    user: process.env.AUTH_DB_USER || 'nova_admin',
+    database: process.env.AUTH_DB_NAME || 'nova_universe',
+    user: process.env.AUTH_DB_USER || 'nova_user',
     password: (() => {
-      const password = process.env.AUTH_DB_PASSWORD;
+      const password = process.env.AUTH_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
-        logger.error('AUTH_DB_PASSWORD is not set. Generating a temporary password.');
-        return generateSecurePassword();
+        logger.error('AUTH_DB_PASSWORD is not set. Using nova_password.');
+        return 'nova_password';
       }
       return password;
     })(),
@@ -91,13 +91,11 @@ export const databaseConfig = {
     username: process.env.AUDIT_DB_USER || 'nova_admin',
     password: process.env.AUDIT_DB_PASSWORD || generateSecurePassword(),
     
-    // Connection URI without credentials for security
-    // Note: Credentials (username and password) are intentionally excluded from the URI
-    // to prevent sensitive information from being exposed in logs or error messages.
-    // Authentication should be handled separately via the `options` object below.
-    get uri() {
+    // Build connection URI with SSL options for production
+    get connectionUri() {
+      const baseUri = process.env.AUDIT_DATABASE_URL || 'mongodb://localhost:27017/nova_audit';
       const sslOptions = process.env.NODE_ENV === 'production' ? '&ssl=true' : '';
-      return `${this.uri}${sslOptions}`;
+      return `${baseUri}${sslOptions}`;
     },
     
     // MongoDB client options

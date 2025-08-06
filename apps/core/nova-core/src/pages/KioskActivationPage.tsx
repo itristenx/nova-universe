@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
+import { Button, Card, Input } from '@heroui/react';
 import { useToastStore } from '@/stores/toast';
 import { api } from '../lib/api';
 import { KioskActivation } from '../types';
@@ -200,7 +198,8 @@ export const KioskActivationPage: React.FC = () => {
               placeholder="Enter kiosk ID to activate"
             />
             <Button
-              variant="primary"
+              color="primary"
+              variant="solid"
               onClick={activateKiosk}
               disabled={loading || !kioskId.trim()}
               className="w-full"
@@ -219,7 +218,8 @@ export const KioskActivationPage: React.FC = () => {
             Generate a QR code that kiosks can scan to activate themselves.
           </p>
           <Button
-            variant="primary"
+            color="primary"
+            variant="solid"
             onClick={generateActivation}
             disabled={generatingQR}
             className="w-full"
@@ -249,7 +249,8 @@ export const KioskActivationPage: React.FC = () => {
               className="flex-1"
             />
             <Button
-              variant="primary"
+              color="primary"
+              variant="solid"
               onClick={addSystem}
               disabled={!newSystem.trim() || systemsLoading}
               className="flex items-center space-x-2"
@@ -298,7 +299,7 @@ export const KioskActivationPage: React.FC = () => {
             Activation Codes
           </h2>
           <Button
-            variant="default"
+            variant="bordered"
             size="sm"
             onClick={loadActivations}
             disabled={loading}

@@ -123,6 +123,10 @@ I --> J[Redirect to Original Module with Auth Session]
   * Subscription preferences linked to Nova ID.
   * Cross-module notification rules stored against user identity.
 
+* **Sentinel:**
+
+  * Use Helix for authentication/authorization (no standalone login).
+
 ---
 
 ## 7. **Security Considerations**

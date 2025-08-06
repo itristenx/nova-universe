@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.12.0
- * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+ * Prisma Client JS version: 6.13.0
+ * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
  */
 Prisma.prismaVersion = {
-  client: "6.12.0",
-  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
+  client: "6.13.0",
+  engine: "361e86d0ea4987e9f53a565309b3eed797a6bcbd"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -206,6 +206,38 @@ exports.Prisma.ConfigScalarFieldEnum = {
   description: 'description',
   isPublic: 'isPublic',
   category: 'category',
+  subcategory: 'subcategory',
+  isUIEditable: 'isUIEditable',
+  isRequired: 'isRequired',
+  defaultValue: 'defaultValue',
+  validationRules: 'validationRules',
+  displayOrder: 'displayOrder',
+  helpText: 'helpText',
+  isAdvanced: 'isAdvanced',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  updatedBy: 'updatedBy'
+};
+
+exports.Prisma.ConfigHistoryScalarFieldEnum = {
+  id: 'id',
+  configKey: 'configKey',
+  oldValue: 'oldValue',
+  newValue: 'newValue',
+  changedBy: 'changedBy',
+  changeReason: 'changeReason',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ConfigTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  category: 'category',
+  template: 'template',
+  isDefault: 'isDefault',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
@@ -486,6 +518,21 @@ exports.Prisma.ScimMappingScalarFieldEnum = {
   syncTime: 'syncTime'
 };
 
+exports.Prisma.ScimLogScalarFieldEnum = {
+  id: 'id',
+  operation: 'operation',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  statusCode: 'statusCode',
+  message: 'message',
+  requestBody: 'requestBody',
+  responseBody: 'responseBody',
+  userAgent: 'userAgent',
+  ipAddress: 'ipAddress',
+  duration: 'duration',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.MailroomPackageScalarFieldEnum = {
   id: 'id',
   trackingNumber: 'trackingNumber',
@@ -598,6 +645,8 @@ exports.Prisma.ModelName = {
   Passkey: 'Passkey',
   Log: 'Log',
   Config: 'Config',
+  ConfigHistory: 'ConfigHistory',
+  ConfigTemplate: 'ConfigTemplate',
   Kiosk: 'Kiosk',
   Feedback: 'Feedback',
   Notification: 'Notification',
@@ -621,6 +670,7 @@ exports.Prisma.ModelName = {
   XpEvent: 'XpEvent',
   Leaderboard: 'Leaderboard',
   ScimMapping: 'ScimMapping',
+  ScimLog: 'ScimLog',
   MailroomPackage: 'MailroomPackage',
   DeliveryEvent: 'DeliveryEvent',
   ProxyAuthorization: 'ProxyAuthorization',

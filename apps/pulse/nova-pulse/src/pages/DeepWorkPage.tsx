@@ -1,7 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Tabs, Button } from '@nova-universe/ui'
 import { getTickets, updateTicket, getAssetsForUser, getTicketHistory, getRelatedItems } from '../lib/api'
 import type { TicketHistoryEntry } from '../types'
 import { CosmoAssistant } from '../components/CosmoAssistant'
@@ -9,6 +8,8 @@ import { CosmoAssistant } from '../components/CosmoAssistant'
 export const DeepWorkPage: React.FC = () => {
   const queryClient = useQueryClient()
   const { ticketId } = useParams<{ ticketId: string }>()
+  const [activeTab, setActiveTab] = useState<'timeline' | 'related' | 'assets'>('timeline')
+  
   const { data, refetch } = useQuery({ queryKey: ['ticket', ticketId], queryFn: () => getTickets({ ticketId }).then(t => t[0]), enabled: !!ticketId })
   const { data: assets = [] } = useQuery({
     queryKey: ['ticketAssets', data?.requestedBy.id],
@@ -64,8 +65,18 @@ export const DeepWorkPage: React.FC = () => {
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
-        <Button size="sm" onClick={handleStatusSave}>Save</Button>
-        <Button variant="secondary" size="sm" onClick={toggleSla}>{data.status === 'on_hold' ? 'Resume SLA' : 'Pause SLA'}</Button>
+        <button 
+          className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onClick={handleStatusSave}
+        >
+          Save
+        </button>
+        <button 
+          className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          onClick={toggleSla}
+        >
+          {data.status === 'on_hold' ? 'Resume SLA' : 'Pause SLA'}
+        </button>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -87,56 +98,99 @@ export const DeepWorkPage: React.FC = () => {
         <CosmoAssistant />
       </div>
 
-      <Tabs
-        tabs={[
-          {
-            label: 'Timeline',
-            content: (
+      <div className="border border-gray-200 rounded-lg">
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8 px-6" role="tablist">
+            <button
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'timeline' 
+                  ? 'border-blue-500 text-blue-600' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('timeline')}
+              role="tab"
+              aria-selected={activeTab === 'timeline'}
+            >
+              Timeline
+            </button>
+            <button
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'related' 
+                  ? 'border-blue-500 text-blue-600' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('related')}
+              role="tab"
+              aria-selected={activeTab === 'related'}
+            >
+              Related
+            </button>
+            <button
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'assets' 
+                  ? 'border-blue-500 text-blue-600' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('assets')}
+              role="tab"
+              aria-selected={activeTab === 'assets'}
+            >
+              Assets
+            </button>
+          </nav>
+        </div>
+        
+        <div className="p-6">
+          {activeTab === 'timeline' && (
+            <div role="tabpanel">
               <ul className="list-disc pl-5 space-y-1 text-sm">
                 {history.map((h: TicketHistoryEntry, i: number) => (
                   <li key={i}>{new Date(h.timestamp).toLocaleString()} - {h.user}: {h.action} {h.details ? `- ${h.details}` : ''}</li>
                 ))}
               </ul>
-            )
-          },
-          {
-            label: 'Related',
-            content: (
-              <div className="space-y-4 text-sm">
-                <div>
-                  <h4 className="font-semibold">Related Tickets</h4>
-                  <ul className="list-disc pl-5">
-                    {(related?.tickets || []).map(t => (
-                      <li key={t.ticketId}>{t.title} ({t.status})</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Org Assets</h4>
-                  <ul className="list-disc pl-5">
-                    {(related?.assets || []).map(a => (
-                      <li key={a.id}>{a.name} ({a.assetTag || 'n/a'})</li>
-                    ))}
-                  </ul>
-                </div>
+            </div>
+          )}
+          
+          {activeTab === 'related' && (
+            <div role="tabpanel" className="space-y-4 text-sm">
+              <div>
+                <h4 className="font-semibold">Related Tickets</h4>
+                <ul className="list-disc pl-5">
+                  {(related?.tickets || []).map(t => (
+                    <li key={t.ticketId}>{t.title} ({t.status})</li>
+                  ))}
+                </ul>
               </div>
-            )
-        },
-        {
-            label: 'Assets',
-            content: (
+              <div>
+                <h4 className="font-semibold">Org Assets</h4>
+                <ul className="list-disc pl-5">
+                  {(related?.assets || []).map(a => (
+                    <li key={a.id}>{a.name} ({a.assetTag || 'n/a'})</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'assets' && (
+            <div role="tabpanel">
               <ul className="list-disc pl-5 text-sm">
                 {assets.map(a => (
                   <li key={a.id}>{a.name} ({a.assetTag || 'n/a'})</li>
                 ))}
               </ul>
-            )
-          }
-        ]}
-      />
+            </div>
+          )}
+        </div>
+      </div>
 
       <textarea value={note} onChange={e => setNote(e.target.value)} className="w-full border" />
-      <Button onClick={handleUpdate}>Add Note</Button>
+      <button 
+        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        onClick={handleUpdate}
+      >
+        Add Note
+      </button>
     </div>
   )
 }

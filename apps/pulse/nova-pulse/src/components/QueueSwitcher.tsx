@@ -1,18 +1,26 @@
 import React from 'react'
-import { Select, MenuItem } from '@nova-universe/ui'
 
 interface Props {
+  currentQueue: string
+  onQueueChange: (queue: string) => void
   queues: string[]
-  value: string
-  onChange: (val: string) => void
 }
 
-export const QueueSwitcher: React.FC<Props> = ({ queues, value, onChange }) => (
-  <Select value={value} onChange={e => onChange((e.target as HTMLSelectElement).value)} className="mb-4">
-    {queues.map(q => (
-      <MenuItem key={q} value={q}>
-        {q}
-      </MenuItem>
-    ))}
-  </Select>
+export const QueueSwitcher: React.FC<Props> = ({ currentQueue, onQueueChange, queues }) => (
+  <div className="w-full max-w-xs">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Queue
+    </label>
+    <select
+      value={currentQueue}
+      onChange={(e) => onQueueChange(e.target.value)}
+      className="w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+    >
+      {queues.map((queue) => (
+        <option key={queue} value={queue}>
+          {queue}
+        </option>
+      ))}
+    </select>
+  </div>
 )

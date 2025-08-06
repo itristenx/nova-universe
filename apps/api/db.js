@@ -1,12 +1,17 @@
 // db.js - Consolidated database layer with PostgreSQL/MongoDB support
 // (merged from the former db.js and db-new.js implementations)
+import dotenv from 'dotenv';
+
+// Configure environment variables before importing database config
+dotenv.config();
+
 import { logger } from './logger.js';
 import { DatabaseFactory } from './database/factory.js';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
-import { PrismaClient } from '../../prisma/generated/core/index.js';
+// import { PrismaClient } from '../../prisma/generated/core/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -157,13 +162,13 @@ async function setupDefaultConfig() {
     defaults.adminPassword = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 12);
     for (const [key, value] of Object.entries(defaults)) {
       await db.query(
-        'INSERT INTO config (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING',
+        'INSERT INTO configurations (id, key, value, type, category, "createdAt", "updatedAt") VALUES (gen_random_uuid(), $1, $2, \'string\', \'general\', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT (key) DO NOTHING',
         [key, value]
       );
     }
     await db.query(
-      'INSERT INTO directory_integrations (id, provider, settings, created_at, updated_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO NOTHING',
-      [1, 'mock', '[]', new Date().toISOString(), new Date().toISOString()]
+      'INSERT INTO integrations (id, type, name, config, enabled, "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
+      ['directory-mock', 'directory', 'Mock Directory', '{}', true, new Date().toISOString(), new Date().toISOString()]
     );
     logger.info('Default configuration setup completed');
   } catch (error) {
@@ -179,7 +184,7 @@ async function setupDefaultAdmin() {
     const adminPass = process.env.ADMIN_PASSWORD || 'admin';
     const adminHash = bcrypt.hashSync(adminPass, 12);
     const existingAdmin = await db.query(
-      'SELECT id FROM users WHERE email = $1 OR is_default = true LIMIT 1',
+      'SELECT id FROM users WHERE email = $1 LIMIT 1',
       [adminEmail]
     );
     if (existingAdmin.rows.length === 0) {
@@ -187,23 +192,15 @@ async function setupDefaultAdmin() {
       const newUserId = uuidv4();
       const now = new Date().toISOString();
       const result = await db.query(
-        'INSERT INTO users (id, name, email, password_hash, is_default, created_at, updated_at) VALUES ($1, $2, $3, $4, true, $5, $6) RETURNING id',
-        [newUserId, 'Admin', 'admin@example.com', adminHash, now, now]
+        'INSERT INTO users (id, "clerkId", "novaId", email, "firstName", "lastName", password_hash, role, "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
+        [newUserId, newUserId, newUserId, adminEmail, adminName, 'User', adminHash, 'ADMIN', now, now]
       );
       const userId = result.rows[0].id;
-      await db.query(
-        'INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-        [userId, 1]
-      );
       if (!process.env.CLI_MODE) {
         logger.info(`Default admin user created: ${adminEmail} (password: ${adminPass})`);
       }
     } else {
       const userId = existingAdmin.rows[0].id;
-      await db.query(
-        'INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-        [userId, 1]
-      );
       if (!process.env.CLI_MODE) {
         logger.info(`Admin user already exists: ${adminEmail}`);
       }
@@ -303,10 +300,10 @@ class DatabaseWrapper {
 
 // Create and export the database wrapper
 const dbWrapper = new DatabaseWrapper();
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 export default dbWrapper;
-export { prisma };
+// export { prisma };
 
 // Gracefully close all database connections
 async function closeDatabase() {

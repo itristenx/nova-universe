@@ -76,13 +76,13 @@ class PostgreSQLManager {
       
       if (this.connectionAttempts < this.maxConnectionAttempts) {
         logger.info(`🔄 Retrying PostgreSQL connection in ${this.reconnectDelay / 1000} seconds...`);
-        setTimeout(() => this.initialize(), this.reconnectDelay);
+        // Use a non-recursive approach for retries
+        await new Promise(resolve => setTimeout(resolve, this.reconnectDelay));
+        return this.initialize();
       } else {
         logger.error('💀 PostgreSQL connection failed after maximum attempts');
         throw new Error(`PostgreSQL connection failed: ${error.message}`);
       }
-      
-      return false;
     }
   }
 
@@ -127,13 +127,9 @@ class PostgreSQLManager {
       logger.error('💥 PostgreSQL pool error:', error.message);
       this.isConnected = false;
       
-      // Attempt to reconnect
-      setTimeout(() => {
-        if (!this.isConnected) {
-          logger.info('🔄 Attempting to reconnect to PostgreSQL...');
-          this.initialize();
-        }
-      }, this.reconnectDelay);
+      // Don't automatically reinitialize on error to prevent stack overflow
+      // Let the application handle reconnection logic externally
+      logger.warn('� PostgreSQL connection lost. Manual reconnection required.');
     });
   }
 

@@ -6,6 +6,7 @@ import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import { useAuthStatus } from '@/hooks/useAuthStatus';
 import { api } from '@/lib/api';
 import { LoginPage } from '@/pages/auth/LoginPage';
+import { UniversalLoginPage } from '@/pages/auth/UniversalLoginPage';
 import { NovaDashboard } from '@/pages/NovaDashboard';
 import { SAMLConfigurationPage } from '@/pages/SAMLConfigurationPage';
 import { UserManagementPage } from '@/pages/UserManagementPage';
@@ -101,7 +102,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   // Normal auth flow - redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   return <>{children}</>;
@@ -111,6 +112,7 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/auth/login" element={<UniversalLoginPage />} />
       <Route path="/showcase" element={<Showcase />} />
       <Route
         path="/"
