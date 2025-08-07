@@ -182,7 +182,7 @@ router.post('/login',
       const { email, password } = req.body;
 
       // Get user from database
-      db.get('SELECT * FROM users WHERE email = $1 AND disabled = 0', [email], async (err, user) => {
+      db.get('SELECT * FROM users WHERE email = $1 AND disabled = false', [email], async (err, user) => {
         if (err) {
           logger.error('Database error during login:', err);
           return res.status(500).json({
@@ -200,8 +200,12 @@ router.post('/login',
           });
         }
 
+        // Debug logging
+        console.log('User object keys:', Object.keys(user));
+        console.log('User password_hash:', user.password_hash);
+
         // Check password
-        const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
         if (!isValidPassword) {
           return res.status(401).json({
             success: false,
@@ -229,7 +233,7 @@ router.post('/login',
             const userRoles = roles ? roles.map(r => r.name) : [];
 
             // Update last login
-            db.run('UPDATE users SET last_login = ? WHERE id = ?', [new Date().toISOString(), user.id]);
+            db.run('UPDATE users SET "lastLoginAt" = $1 WHERE id = $2', [new Date().toISOString(), user.id]);
 
             // Generate JWT token
             const token = sign({
@@ -820,7 +824,7 @@ router.post('/2fa/disable',
       const userId = req.user.id;
 
       // Verify user's password
-      db.get('SELECT passwordHash FROM users WHERE id = $1', [userId], async (err, user) => {
+      db.get('SELECT password_hash FROM users WHERE id = $1', [userId], async (err, user) => {
         if (err || !user) {
           return res.status(500).json({
             success: false,
@@ -829,7 +833,7 @@ router.post('/2fa/disable',
           });
         }
 
-        const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
         if (!isValidPassword) {
           return res.status(400).json({
             success: false,
@@ -923,7 +927,7 @@ router.post('/2fa/backup-codes',
       const userId = req.user.id;
 
       // Verify user's password
-      db.get('SELECT passwordHash FROM users WHERE id = $1', [userId], async (err, user) => {
+      db.get('SELECT password_hash FROM users WHERE id = $1', [userId], async (err, user) => {
         if (err || !user) {
           return res.status(500).json({
             success: false,
@@ -932,7 +936,7 @@ router.post('/2fa/backup-codes',
           });
         }
 
-        const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
         if (!isValidPassword) {
           return res.status(400).json({
             success: false,

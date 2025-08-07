@@ -268,15 +268,43 @@ class DatabaseWrapper {
 
   // Compatibility: .get(sql, params, cb)
   get(sql, params, cb) {
+    console.log('DEBUG: get() called with sql:', sql);
     this.query(sql, params)
       .then(result => {
+        console.log('DEBUG: query result:', result);
         if (result && result.rows && result.rows.length > 0) {
+          console.log('DEBUG: returning row:', result.rows[0]);
+          console.log('DEBUG: row keys:', Object.keys(result.rows[0]));
           cb(null, result.rows[0]);
         } else {
+          console.log('DEBUG: no rows found');
           cb(null, undefined);
         }
       })
-      .catch(cb);
+      .catch(err => {
+        console.log('DEBUG: query error:', err);
+        cb(err);
+      });
+  }
+
+  // Compatibility: .all(sql, params, cb)
+  all(sql, params, cb) {
+    console.log('DEBUG: all() called with sql:', sql);
+    this.query(sql, params)
+      .then(result => {
+        console.log('DEBUG: all query result:', result);
+        if (result && result.rows) {
+          console.log('DEBUG: returning rows:', result.rows);
+          cb(null, result.rows);
+        } else {
+          console.log('DEBUG: no rows found');
+          cb(null, []);
+        }
+      })
+      .catch(err => {
+        console.log('DEBUG: all query error:', err);
+        cb(err);
+      });
   }
 
   // Compatibility: .run(sql, params, cb) or .run(sql, params) returning a promise

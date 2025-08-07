@@ -102,7 +102,7 @@ router.get('/Users', authenticateSCIM, async (req, res) => {
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
-      WHERE u.disabled = 0
+      WHERE u.disabled = false
     `;
     const params = [];
     let paramIndex = 1;
@@ -206,7 +206,7 @@ router.get('/Users/:id', authenticateSCIM, async (req, res) => {
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
-      WHERE u.id = $1 AND u.disabled = 0
+      WHERE u.id = $1 AND u.disabled = false
       GROUP BY u.id
     `;
 
@@ -311,7 +311,7 @@ router.post('/Users',
 
       try {
         // Check if user already exists
-        const existingUser = await db.oneOrNone('SELECT id FROM users WHERE email = $1 AND disabled = 0', [primaryEmail]);
+        const existingUser = await db.oneOrNone('SELECT id FROM users WHERE email = $1 AND disabled = false', [primaryEmail]);
         if (existingUser) {
           return res.status(409).json({
             schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
@@ -398,7 +398,7 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
     const now = new Date().toISOString();
 
     // Check if user exists
-    const existingUser = await db.oneOrNone('SELECT * FROM users WHERE id = $1 AND disabled = 0', [id]);
+    const existingUser = await db.oneOrNone('SELECT * FROM users WHERE id = $1 AND disabled = false', [id]);
     if (!existingUser) {
       return res.status(404).json({
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
@@ -486,7 +486,7 @@ router.delete('/Users/:id', authenticateSCIM, async (req, res) => {
   try {
     const { id } = req.params;
     // Check if user exists
-    const existingUser = await db.oneOrNone('SELECT id FROM users WHERE id = $1 AND disabled = 0', [id]);
+    const existingUser = await db.oneOrNone('SELECT id FROM users WHERE id = $1 AND disabled = false', [id]);
     if (!existingUser) {
       return res.status(404).json({
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],

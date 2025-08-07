@@ -49,6 +49,7 @@ model User {
   vipProxiesAsVip                                   VipProxy[]           @relation("VipProxyVip")
   vipProxiesAsProxy                                 VipProxy[]           @relation("VipProxyUser")
   vipSlaHistory                                     VipSlaHistory[]
+  agentAvailability                                 AgentAvailability[]  @relation("AgentAvailabilityUser")
 
   @@map("users")
 }
@@ -548,10 +549,10 @@ model KioskOrganizationAssignment {
   id                 Int      @id @default(autoincrement())
   kioskId            String   @unique @map("kiosk_id")
   organizationId     Int      @map("organization_id")
-  department         String?  @map("department") @db.VarChar(100)
-  floor              String?  @map("floor") @db.VarChar(50)
-  room               String?  @map("room") @db.VarChar(50)
-  building           String?  @map("building") @db.VarChar(100)
+  department         String?  @map("department") @core_db.VarChar(100)
+  floor              String?  @map("floor") @core_db.VarChar(50)
+  room               String?  @map("room") @core_db.VarChar(50)
+  building           String?  @map("building") @core_db.VarChar(100)
   assignedBy         String?  @map("assigned_by")
   assignmentMetadata Json     @default("{}") @map("assignment_metadata")
   createdAt          DateTime @default(now()) @map("created_at")
@@ -564,7 +565,7 @@ model KioskOrganizationAssignment {
 model KioskMetadataLog {
   id                  Int      @id @default(autoincrement())
   kioskId             String   @map("kiosk_id")
-  metadataType        String   @map("metadata_type") @db.VarChar(50)
+  metadataType        String   @map("metadata_type") @core_db.VarChar(50)
   encryptedMetadata   String?  @map("encrypted_metadata")
   collectionTimestamp DateTime @default(now()) @map("collection_timestamp")
   kiosk               Kiosk    @relation(fields: [kioskId], references: [id], onDelete: Cascade)
@@ -719,51 +720,6 @@ model VipSlaHistory {
   user        User      @relation(fields: [userId], references: [id])
 
   @@map("vip_sla_history")
-}
-
-model HelixSyncFailure {
-  id           Int                    @id @default(autoincrement())
-  kioskId      String                 @map("kiosk_id")
-  assetId      Int                    @map("asset_id")
-  errorMessage String                 @map("error_message")
-  metadata     Json                   @default("{}") @map("metadata")
-  retryCount   Int                    @default(0) @map("retry_count")
-  nextRetryAt  DateTime               @map("next_retry_at")
-  createdAt    DateTime               @default(now()) @map("created_at")
-  updatedAt    DateTime               @updatedAt @map("updated_at")
-  kiosk        Kiosk                  @relation(fields: [kioskId], references: [id], onDelete: Cascade)
-  asset        InventoryAsset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
-
-  @@unique([kioskId, assetId])
-  @@map("helix_sync_failures")
-}
-
-model KioskOrganizationAssignment {
-  id                   Int       @id @default(autoincrement())
-  kioskId              String    @unique @map("kiosk_id")
-  organizationId       Int?      @map("organization_id")
-  department           String?   @map("department") @db.VarChar(100)
-  floor                String?   @map("floor") @db.VarChar(50)
-  room                 String?   @map("room") @db.VarChar(50)
-  building             String?   @map("building") @db.VarChar(100)
-  assignedBy           String?   @map("assigned_by")
-  assignmentMetadata   Json      @default("{}") @map("assignment_metadata")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
-  kiosk                Kiosk     @relation(fields: [kioskId], references: [id], onDelete: Cascade)
-
-  @@map("kiosk_organization_assignments")
-}
-
-model KioskMetadataLog {
-  id                   Int      @id @default(autoincrement())
-  kioskId              String   @map("kiosk_id")
-  metadataType         String   @map("metadata_type") @db.VarChar(50)
-  encryptedMetadata    String?  @map("encrypted_metadata")
-  collectionTimestamp  DateTime @default(now()) @map("collection_timestamp")
-  kiosk                Kiosk    @relation(fields: [kioskId], references: [id], onDelete: Cascade)
-
-  @@map("kiosk_metadata_logs")
 }
 
 model AgentAvailability {

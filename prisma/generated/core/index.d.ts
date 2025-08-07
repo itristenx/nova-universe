@@ -164,6 +164,21 @@ export type AssetValidationLog = $Result.DefaultSelection<Prisma.$AssetValidatio
  */
 export type KioskAssetRegistry = $Result.DefaultSelection<Prisma.$KioskAssetRegistryPayload>
 /**
+ * Model HelixSyncFailure
+ * 
+ */
+export type HelixSyncFailure = $Result.DefaultSelection<Prisma.$HelixSyncFailurePayload>
+/**
+ * Model KioskOrganizationAssignment
+ * 
+ */
+export type KioskOrganizationAssignment = $Result.DefaultSelection<Prisma.$KioskOrganizationAssignmentPayload>
+/**
+ * Model KioskMetadataLog
+ * 
+ */
+export type KioskMetadataLog = $Result.DefaultSelection<Prisma.$KioskMetadataLogPayload>
+/**
  * Model XpEvent
  * 
  */
@@ -218,6 +233,21 @@ export type VipProxy = $Result.DefaultSelection<Prisma.$VipProxyPayload>
  * 
  */
 export type VipSlaHistory = $Result.DefaultSelection<Prisma.$VipSlaHistoryPayload>
+/**
+ * Model AgentAvailability
+ * 
+ */
+export type AgentAvailability = $Result.DefaultSelection<Prisma.$AgentAvailabilityPayload>
+/**
+ * Model QueueMetrics
+ * 
+ */
+export type QueueMetrics = $Result.DefaultSelection<Prisma.$QueueMetricsPayload>
+/**
+ * Model QueueAlert
+ * 
+ */
+export type QueueAlert = $Result.DefaultSelection<Prisma.$QueueAlertPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -235,7 +265,7 @@ export type VipSlaHistory = $Result.DefaultSelection<Prisma.$VipSlaHistoryPayloa
  */
 export class PrismaClient<
   ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
-  const U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
+  U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
   ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
 > {
   [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
@@ -645,6 +675,36 @@ export class PrismaClient<
   get kioskAssetRegistry(): Prisma.KioskAssetRegistryDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.helixSyncFailure`: Exposes CRUD operations for the **HelixSyncFailure** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more HelixSyncFailures
+    * const helixSyncFailures = await prisma.helixSyncFailure.findMany()
+    * ```
+    */
+  get helixSyncFailure(): Prisma.HelixSyncFailureDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.kioskOrganizationAssignment`: Exposes CRUD operations for the **KioskOrganizationAssignment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more KioskOrganizationAssignments
+    * const kioskOrganizationAssignments = await prisma.kioskOrganizationAssignment.findMany()
+    * ```
+    */
+  get kioskOrganizationAssignment(): Prisma.KioskOrganizationAssignmentDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.kioskMetadataLog`: Exposes CRUD operations for the **KioskMetadataLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more KioskMetadataLogs
+    * const kioskMetadataLogs = await prisma.kioskMetadataLog.findMany()
+    * ```
+    */
+  get kioskMetadataLog(): Prisma.KioskMetadataLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.xpEvent`: Exposes CRUD operations for the **XpEvent** model.
     * Example usage:
     * ```ts
@@ -753,6 +813,36 @@ export class PrismaClient<
     * ```
     */
   get vipSlaHistory(): Prisma.VipSlaHistoryDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.agentAvailability`: Exposes CRUD operations for the **AgentAvailability** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AgentAvailabilities
+    * const agentAvailabilities = await prisma.agentAvailability.findMany()
+    * ```
+    */
+  get agentAvailability(): Prisma.AgentAvailabilityDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.queueMetrics`: Exposes CRUD operations for the **QueueMetrics** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more QueueMetrics
+    * const queueMetrics = await prisma.queueMetrics.findMany()
+    * ```
+    */
+  get queueMetrics(): Prisma.QueueMetricsDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.queueAlert`: Exposes CRUD operations for the **QueueAlert** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more QueueAlerts
+    * const queueAlerts = await prisma.queueAlert.findMany()
+    * ```
+    */
+  get queueAlert(): Prisma.QueueAlertDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -811,8 +901,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.13.0
-   * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
+   * Prisma Client JS version: 6.12.0
+   * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
    */
   export type PrismaVersion = {
     client: string
@@ -1223,6 +1313,9 @@ export namespace Prisma {
     AssetImportBatch: 'AssetImportBatch',
     AssetValidationLog: 'AssetValidationLog',
     KioskAssetRegistry: 'KioskAssetRegistry',
+    HelixSyncFailure: 'HelixSyncFailure',
+    KioskOrganizationAssignment: 'KioskOrganizationAssignment',
+    KioskMetadataLog: 'KioskMetadataLog',
     XpEvent: 'XpEvent',
     Leaderboard: 'Leaderboard',
     ScimMapping: 'ScimMapping',
@@ -1233,7 +1326,10 @@ export namespace Prisma {
     RequestCatalogItem: 'RequestCatalogItem',
     RITM: 'RITM',
     VipProxy: 'VipProxy',
-    VipSlaHistory: 'VipSlaHistory'
+    VipSlaHistory: 'VipSlaHistory',
+    AgentAvailability: 'AgentAvailability',
+    QueueMetrics: 'QueueMetrics',
+    QueueAlert: 'QueueAlert'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1252,7 +1348,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "role" | "permission" | "userRole" | "rolePermission" | "passkey" | "log" | "config" | "configHistory" | "configTemplate" | "kiosk" | "feedback" | "notification" | "directoryIntegration" | "asset" | "kioskActivation" | "ssoConfiguration" | "adminPin" | "kbArticle" | "kbArticleVersion" | "kbArticleComment" | "supportTicket" | "inventoryAsset" | "assetStatusLog" | "assetAssignment" | "assetTicketHistory" | "assetWarrantyAlert" | "assetImportBatch" | "assetValidationLog" | "kioskAssetRegistry" | "xpEvent" | "leaderboard" | "scimMapping" | "scimLog" | "mailroomPackage" | "deliveryEvent" | "proxyAuthorization" | "requestCatalogItem" | "rITM" | "vipProxy" | "vipSlaHistory"
+      modelProps: "user" | "role" | "permission" | "userRole" | "rolePermission" | "passkey" | "log" | "config" | "configHistory" | "configTemplate" | "kiosk" | "feedback" | "notification" | "directoryIntegration" | "asset" | "kioskActivation" | "ssoConfiguration" | "adminPin" | "kbArticle" | "kbArticleVersion" | "kbArticleComment" | "supportTicket" | "inventoryAsset" | "assetStatusLog" | "assetAssignment" | "assetTicketHistory" | "assetWarrantyAlert" | "assetImportBatch" | "assetValidationLog" | "kioskAssetRegistry" | "helixSyncFailure" | "kioskOrganizationAssignment" | "kioskMetadataLog" | "xpEvent" | "leaderboard" | "scimMapping" | "scimLog" | "mailroomPackage" | "deliveryEvent" | "proxyAuthorization" | "requestCatalogItem" | "rITM" | "vipProxy" | "vipSlaHistory" | "agentAvailability" | "queueMetrics" | "queueAlert"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3476,6 +3572,228 @@ export namespace Prisma {
           }
         }
       }
+      HelixSyncFailure: {
+        payload: Prisma.$HelixSyncFailurePayload<ExtArgs>
+        fields: Prisma.HelixSyncFailureFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.HelixSyncFailureFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.HelixSyncFailureFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload>
+          }
+          findFirst: {
+            args: Prisma.HelixSyncFailureFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.HelixSyncFailureFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload>
+          }
+          findMany: {
+            args: Prisma.HelixSyncFailureFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload>[]
+          }
+          create: {
+            args: Prisma.HelixSyncFailureCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload>
+          }
+          createMany: {
+            args: Prisma.HelixSyncFailureCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.HelixSyncFailureCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload>[]
+          }
+          delete: {
+            args: Prisma.HelixSyncFailureDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload>
+          }
+          update: {
+            args: Prisma.HelixSyncFailureUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload>
+          }
+          deleteMany: {
+            args: Prisma.HelixSyncFailureDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.HelixSyncFailureUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.HelixSyncFailureUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload>[]
+          }
+          upsert: {
+            args: Prisma.HelixSyncFailureUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelixSyncFailurePayload>
+          }
+          aggregate: {
+            args: Prisma.HelixSyncFailureAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateHelixSyncFailure>
+          }
+          groupBy: {
+            args: Prisma.HelixSyncFailureGroupByArgs<ExtArgs>
+            result: $Utils.Optional<HelixSyncFailureGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.HelixSyncFailureCountArgs<ExtArgs>
+            result: $Utils.Optional<HelixSyncFailureCountAggregateOutputType> | number
+          }
+        }
+      }
+      KioskOrganizationAssignment: {
+        payload: Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>
+        fields: Prisma.KioskOrganizationAssignmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.KioskOrganizationAssignmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.KioskOrganizationAssignmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload>
+          }
+          findFirst: {
+            args: Prisma.KioskOrganizationAssignmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.KioskOrganizationAssignmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload>
+          }
+          findMany: {
+            args: Prisma.KioskOrganizationAssignmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload>[]
+          }
+          create: {
+            args: Prisma.KioskOrganizationAssignmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload>
+          }
+          createMany: {
+            args: Prisma.KioskOrganizationAssignmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.KioskOrganizationAssignmentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload>[]
+          }
+          delete: {
+            args: Prisma.KioskOrganizationAssignmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload>
+          }
+          update: {
+            args: Prisma.KioskOrganizationAssignmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.KioskOrganizationAssignmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.KioskOrganizationAssignmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.KioskOrganizationAssignmentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload>[]
+          }
+          upsert: {
+            args: Prisma.KioskOrganizationAssignmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskOrganizationAssignmentPayload>
+          }
+          aggregate: {
+            args: Prisma.KioskOrganizationAssignmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateKioskOrganizationAssignment>
+          }
+          groupBy: {
+            args: Prisma.KioskOrganizationAssignmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<KioskOrganizationAssignmentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.KioskOrganizationAssignmentCountArgs<ExtArgs>
+            result: $Utils.Optional<KioskOrganizationAssignmentCountAggregateOutputType> | number
+          }
+        }
+      }
+      KioskMetadataLog: {
+        payload: Prisma.$KioskMetadataLogPayload<ExtArgs>
+        fields: Prisma.KioskMetadataLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.KioskMetadataLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.KioskMetadataLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload>
+          }
+          findFirst: {
+            args: Prisma.KioskMetadataLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.KioskMetadataLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload>
+          }
+          findMany: {
+            args: Prisma.KioskMetadataLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload>[]
+          }
+          create: {
+            args: Prisma.KioskMetadataLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload>
+          }
+          createMany: {
+            args: Prisma.KioskMetadataLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.KioskMetadataLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload>[]
+          }
+          delete: {
+            args: Prisma.KioskMetadataLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload>
+          }
+          update: {
+            args: Prisma.KioskMetadataLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.KioskMetadataLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.KioskMetadataLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.KioskMetadataLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.KioskMetadataLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KioskMetadataLogPayload>
+          }
+          aggregate: {
+            args: Prisma.KioskMetadataLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateKioskMetadataLog>
+          }
+          groupBy: {
+            args: Prisma.KioskMetadataLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<KioskMetadataLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.KioskMetadataLogCountArgs<ExtArgs>
+            result: $Utils.Optional<KioskMetadataLogCountAggregateOutputType> | number
+          }
+        }
+      }
       XpEvent: {
         payload: Prisma.$XpEventPayload<ExtArgs>
         fields: Prisma.XpEventFieldRefs
@@ -4290,6 +4608,228 @@ export namespace Prisma {
           }
         }
       }
+      AgentAvailability: {
+        payload: Prisma.$AgentAvailabilityPayload<ExtArgs>
+        fields: Prisma.AgentAvailabilityFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AgentAvailabilityFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AgentAvailabilityFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload>
+          }
+          findFirst: {
+            args: Prisma.AgentAvailabilityFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AgentAvailabilityFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload>
+          }
+          findMany: {
+            args: Prisma.AgentAvailabilityFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload>[]
+          }
+          create: {
+            args: Prisma.AgentAvailabilityCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload>
+          }
+          createMany: {
+            args: Prisma.AgentAvailabilityCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AgentAvailabilityCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload>[]
+          }
+          delete: {
+            args: Prisma.AgentAvailabilityDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload>
+          }
+          update: {
+            args: Prisma.AgentAvailabilityUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload>
+          }
+          deleteMany: {
+            args: Prisma.AgentAvailabilityDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AgentAvailabilityUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AgentAvailabilityUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload>[]
+          }
+          upsert: {
+            args: Prisma.AgentAvailabilityUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentAvailabilityPayload>
+          }
+          aggregate: {
+            args: Prisma.AgentAvailabilityAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAgentAvailability>
+          }
+          groupBy: {
+            args: Prisma.AgentAvailabilityGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AgentAvailabilityGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AgentAvailabilityCountArgs<ExtArgs>
+            result: $Utils.Optional<AgentAvailabilityCountAggregateOutputType> | number
+          }
+        }
+      }
+      QueueMetrics: {
+        payload: Prisma.$QueueMetricsPayload<ExtArgs>
+        fields: Prisma.QueueMetricsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.QueueMetricsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.QueueMetricsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload>
+          }
+          findFirst: {
+            args: Prisma.QueueMetricsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.QueueMetricsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload>
+          }
+          findMany: {
+            args: Prisma.QueueMetricsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload>[]
+          }
+          create: {
+            args: Prisma.QueueMetricsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload>
+          }
+          createMany: {
+            args: Prisma.QueueMetricsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.QueueMetricsCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload>[]
+          }
+          delete: {
+            args: Prisma.QueueMetricsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload>
+          }
+          update: {
+            args: Prisma.QueueMetricsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload>
+          }
+          deleteMany: {
+            args: Prisma.QueueMetricsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.QueueMetricsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.QueueMetricsUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload>[]
+          }
+          upsert: {
+            args: Prisma.QueueMetricsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueMetricsPayload>
+          }
+          aggregate: {
+            args: Prisma.QueueMetricsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateQueueMetrics>
+          }
+          groupBy: {
+            args: Prisma.QueueMetricsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<QueueMetricsGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.QueueMetricsCountArgs<ExtArgs>
+            result: $Utils.Optional<QueueMetricsCountAggregateOutputType> | number
+          }
+        }
+      }
+      QueueAlert: {
+        payload: Prisma.$QueueAlertPayload<ExtArgs>
+        fields: Prisma.QueueAlertFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.QueueAlertFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.QueueAlertFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload>
+          }
+          findFirst: {
+            args: Prisma.QueueAlertFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.QueueAlertFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload>
+          }
+          findMany: {
+            args: Prisma.QueueAlertFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload>[]
+          }
+          create: {
+            args: Prisma.QueueAlertCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload>
+          }
+          createMany: {
+            args: Prisma.QueueAlertCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.QueueAlertCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload>[]
+          }
+          delete: {
+            args: Prisma.QueueAlertDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload>
+          }
+          update: {
+            args: Prisma.QueueAlertUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload>
+          }
+          deleteMany: {
+            args: Prisma.QueueAlertDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.QueueAlertUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.QueueAlertUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload>[]
+          }
+          upsert: {
+            args: Prisma.QueueAlertUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$QueueAlertPayload>
+          }
+          aggregate: {
+            args: Prisma.QueueAlertAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateQueueAlert>
+          }
+          groupBy: {
+            args: Prisma.QueueAlertGroupByArgs<ExtArgs>
+            result: $Utils.Optional<QueueAlertGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.QueueAlertCountArgs<ExtArgs>
+            result: $Utils.Optional<QueueAlertCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4333,24 +4873,16 @@ export namespace Prisma {
     /**
      * @example
      * ```
-     * // Shorthand for `emit: 'stdout'`
+     * // Defaults to stdout
      * log: ['query', 'info', 'warn', 'error']
      * 
-     * // Emit as events only
+     * // Emit as events
      * log: [
-     *   { emit: 'event', level: 'query' },
-     *   { emit: 'event', level: 'info' },
-     *   { emit: 'event', level: 'warn' }
-     *   { emit: 'event', level: 'error' }
+     *   { emit: 'stdout', level: 'query' },
+     *   { emit: 'stdout', level: 'info' },
+     *   { emit: 'stdout', level: 'warn' }
+     *   { emit: 'stdout', level: 'error' }
      * ]
-     * 
-     * / Emit as events and log to stdout
-     * og: [
-     *  { emit: 'stdout', level: 'query' },
-     *  { emit: 'stdout', level: 'info' },
-     *  { emit: 'stdout', level: 'warn' }
-     *  { emit: 'stdout', level: 'error' }
-     * 
      * ```
      * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/logging#the-log-option).
      */
@@ -4412,6 +4944,9 @@ export namespace Prisma {
     assetImportBatch?: AssetImportBatchOmit
     assetValidationLog?: AssetValidationLogOmit
     kioskAssetRegistry?: KioskAssetRegistryOmit
+    helixSyncFailure?: HelixSyncFailureOmit
+    kioskOrganizationAssignment?: KioskOrganizationAssignmentOmit
+    kioskMetadataLog?: KioskMetadataLogOmit
     xpEvent?: XpEventOmit
     leaderboard?: LeaderboardOmit
     scimMapping?: ScimMappingOmit
@@ -4423,6 +4958,9 @@ export namespace Prisma {
     rITM?: RITMOmit
     vipProxy?: VipProxyOmit
     vipSlaHistory?: VipSlaHistoryOmit
+    agentAvailability?: AgentAvailabilityOmit
+    queueMetrics?: QueueMetricsOmit
+    queueAlert?: QueueAlertOmit
   }
 
   /* Types for Logging */
@@ -4432,15 +4970,10 @@ export namespace Prisma {
     emit: 'stdout' | 'event'
   }
 
-  export type CheckIsLogLevel<T> = T extends LogLevel ? T : never;
-
-  export type GetLogType<T> = CheckIsLogLevel<
-    T extends LogDefinition ? T['level'] : T
-  >;
-
-  export type GetEvents<T extends any[]> = T extends Array<LogLevel | LogDefinition>
-    ? GetLogType<T[number]>
-    : never;
+  export type GetLogType<T extends LogLevel | LogDefinition> = T extends LogDefinition ? T['emit'] extends 'event' ? T['level'] : never : never
+  export type GetEvents<T extends any> = T extends Array<LogLevel | LogDefinition> ?
+    GetLogType<T[0]> | GetLogType<T[1]> | GetLogType<T[2]> | GetLogType<T[3]>
+    : never
 
   export type QueryEvent = {
     timestamp: Date
@@ -4540,6 +5073,7 @@ export namespace Prisma {
     vipProxiesAsVip: number
     vipProxiesAsProxy: number
     vipSlaHistory: number
+    agentAvailability: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4561,6 +5095,7 @@ export namespace Prisma {
     vipProxiesAsVip?: boolean | UserCountOutputTypeCountVipProxiesAsVipArgs
     vipProxiesAsProxy?: boolean | UserCountOutputTypeCountVipProxiesAsProxyArgs
     vipSlaHistory?: boolean | UserCountOutputTypeCountVipSlaHistoryArgs
+    agentAvailability?: boolean | UserCountOutputTypeCountAgentAvailabilityArgs
   }
 
   // Custom InputTypes
@@ -4700,6 +5235,13 @@ export namespace Prisma {
     where?: VipSlaHistoryWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAgentAvailabilityArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentAvailabilityWhereInput
+  }
+
 
   /**
    * Count Type RoleCountOutputType
@@ -4810,11 +5352,15 @@ export namespace Prisma {
   export type KioskCountOutputType = {
     activations: number
     assetRegistry: number
+    syncFailures: number
+    metadataLogs: number
   }
 
   export type KioskCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     activations?: boolean | KioskCountOutputTypeCountActivationsArgs
     assetRegistry?: boolean | KioskCountOutputTypeCountAssetRegistryArgs
+    syncFailures?: boolean | KioskCountOutputTypeCountSyncFailuresArgs
+    metadataLogs?: boolean | KioskCountOutputTypeCountMetadataLogsArgs
   }
 
   // Custom InputTypes
@@ -4840,6 +5386,20 @@ export namespace Prisma {
    */
   export type KioskCountOutputTypeCountAssetRegistryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: KioskAssetRegistryWhereInput
+  }
+
+  /**
+   * KioskCountOutputType without action
+   */
+  export type KioskCountOutputTypeCountSyncFailuresArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HelixSyncFailureWhereInput
+  }
+
+  /**
+   * KioskCountOutputType without action
+   */
+  export type KioskCountOutputTypeCountMetadataLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KioskMetadataLogWhereInput
   }
 
 
@@ -4975,6 +5535,7 @@ export namespace Prisma {
     warrantyAlerts: number
     kioskRegistrations: number
     validationLogs: number
+    syncFailures: number
   }
 
   export type InventoryAssetCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4985,6 +5546,7 @@ export namespace Prisma {
     warrantyAlerts?: boolean | InventoryAssetCountOutputTypeCountWarrantyAlertsArgs
     kioskRegistrations?: boolean | InventoryAssetCountOutputTypeCountKioskRegistrationsArgs
     validationLogs?: boolean | InventoryAssetCountOutputTypeCountValidationLogsArgs
+    syncFailures?: boolean | InventoryAssetCountOutputTypeCountSyncFailuresArgs
   }
 
   // Custom InputTypes
@@ -5045,6 +5607,13 @@ export namespace Prisma {
    */
   export type InventoryAssetCountOutputTypeCountValidationLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AssetValidationLogWhereInput
+  }
+
+  /**
+   * InventoryAssetCountOutputType without action
+   */
+  export type InventoryAssetCountOutputTypeCountSyncFailuresArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HelixSyncFailureWhereInput
   }
 
 
@@ -5466,6 +6035,7 @@ export namespace Prisma {
     vipProxiesAsVip?: boolean | User$vipProxiesAsVipArgs<ExtArgs>
     vipProxiesAsProxy?: boolean | User$vipProxiesAsProxyArgs<ExtArgs>
     vipSlaHistory?: boolean | User$vipSlaHistoryArgs<ExtArgs>
+    agentAvailability?: boolean | User$agentAvailabilityArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -5562,6 +6132,7 @@ export namespace Prisma {
     vipProxiesAsVip?: boolean | User$vipProxiesAsVipArgs<ExtArgs>
     vipProxiesAsProxy?: boolean | User$vipProxiesAsProxyArgs<ExtArgs>
     vipSlaHistory?: boolean | User$vipSlaHistoryArgs<ExtArgs>
+    agentAvailability?: boolean | User$agentAvailabilityArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -5589,6 +6160,7 @@ export namespace Prisma {
       vipProxiesAsVip: Prisma.$VipProxyPayload<ExtArgs>[]
       vipProxiesAsProxy: Prisma.$VipProxyPayload<ExtArgs>[]
       vipSlaHistory: Prisma.$VipSlaHistoryPayload<ExtArgs>[]
+      agentAvailability: Prisma.$AgentAvailabilityPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6025,6 +6597,7 @@ export namespace Prisma {
     vipProxiesAsVip<T extends User$vipProxiesAsVipArgs<ExtArgs> = {}>(args?: Subset<T, User$vipProxiesAsVipArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VipProxyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     vipProxiesAsProxy<T extends User$vipProxiesAsProxyArgs<ExtArgs> = {}>(args?: Subset<T, User$vipProxiesAsProxyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VipProxyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     vipSlaHistory<T extends User$vipSlaHistoryArgs<ExtArgs> = {}>(args?: Subset<T, User$vipSlaHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VipSlaHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    agentAvailability<T extends User$agentAvailabilityArgs<ExtArgs> = {}>(args?: Subset<T, User$agentAvailabilityArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6911,6 +7484,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: VipSlaHistoryScalarFieldEnum | VipSlaHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * User.agentAvailability
+   */
+  export type User$agentAvailabilityArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    where?: AgentAvailabilityWhereInput
+    orderBy?: AgentAvailabilityOrderByWithRelationInput | AgentAvailabilityOrderByWithRelationInput[]
+    cursor?: AgentAvailabilityWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgentAvailabilityScalarFieldEnum | AgentAvailabilityScalarFieldEnum[]
   }
 
   /**
@@ -17387,6 +17984,9 @@ export namespace Prisma {
     updatedAt?: boolean
     activations?: boolean | Kiosk$activationsArgs<ExtArgs>
     assetRegistry?: boolean | Kiosk$assetRegistryArgs<ExtArgs>
+    syncFailures?: boolean | Kiosk$syncFailuresArgs<ExtArgs>
+    orgAssignment?: boolean | Kiosk$orgAssignmentArgs<ExtArgs>
+    metadataLogs?: boolean | Kiosk$metadataLogsArgs<ExtArgs>
     _count?: boolean | KioskCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["kiosk"]>
 
@@ -17457,6 +18057,9 @@ export namespace Prisma {
   export type KioskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     activations?: boolean | Kiosk$activationsArgs<ExtArgs>
     assetRegistry?: boolean | Kiosk$assetRegistryArgs<ExtArgs>
+    syncFailures?: boolean | Kiosk$syncFailuresArgs<ExtArgs>
+    orgAssignment?: boolean | Kiosk$orgAssignmentArgs<ExtArgs>
+    metadataLogs?: boolean | Kiosk$metadataLogsArgs<ExtArgs>
     _count?: boolean | KioskCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type KioskIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -17467,6 +18070,9 @@ export namespace Prisma {
     objects: {
       activations: Prisma.$KioskActivationPayload<ExtArgs>[]
       assetRegistry: Prisma.$KioskAssetRegistryPayload<ExtArgs>[]
+      syncFailures: Prisma.$HelixSyncFailurePayload<ExtArgs>[]
+      orgAssignment: Prisma.$KioskOrganizationAssignmentPayload<ExtArgs> | null
+      metadataLogs: Prisma.$KioskMetadataLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -17883,6 +18489,9 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     activations<T extends Kiosk$activationsArgs<ExtArgs> = {}>(args?: Subset<T, Kiosk$activationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskActivationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     assetRegistry<T extends Kiosk$assetRegistryArgs<ExtArgs> = {}>(args?: Subset<T, Kiosk$assetRegistryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskAssetRegistryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    syncFailures<T extends Kiosk$syncFailuresArgs<ExtArgs> = {}>(args?: Subset<T, Kiosk$syncFailuresArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    orgAssignment<T extends Kiosk$orgAssignmentArgs<ExtArgs> = {}>(args?: Subset<T, Kiosk$orgAssignmentArgs<ExtArgs>>): Prisma__KioskOrganizationAssignmentClient<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    metadataLogs<T extends Kiosk$metadataLogsArgs<ExtArgs> = {}>(args?: Subset<T, Kiosk$metadataLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18363,6 +18972,73 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: KioskAssetRegistryScalarFieldEnum | KioskAssetRegistryScalarFieldEnum[]
+  }
+
+  /**
+   * Kiosk.syncFailures
+   */
+  export type Kiosk$syncFailuresArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    where?: HelixSyncFailureWhereInput
+    orderBy?: HelixSyncFailureOrderByWithRelationInput | HelixSyncFailureOrderByWithRelationInput[]
+    cursor?: HelixSyncFailureWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HelixSyncFailureScalarFieldEnum | HelixSyncFailureScalarFieldEnum[]
+  }
+
+  /**
+   * Kiosk.orgAssignment
+   */
+  export type Kiosk$orgAssignmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    where?: KioskOrganizationAssignmentWhereInput
+  }
+
+  /**
+   * Kiosk.metadataLogs
+   */
+  export type Kiosk$metadataLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    where?: KioskMetadataLogWhereInput
+    orderBy?: KioskMetadataLogOrderByWithRelationInput | KioskMetadataLogOrderByWithRelationInput[]
+    cursor?: KioskMetadataLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: KioskMetadataLogScalarFieldEnum | KioskMetadataLogScalarFieldEnum[]
   }
 
   /**
@@ -31134,6 +31810,7 @@ export namespace Prisma {
     warrantyAlerts?: boolean | InventoryAsset$warrantyAlertsArgs<ExtArgs>
     kioskRegistrations?: boolean | InventoryAsset$kioskRegistrationsArgs<ExtArgs>
     validationLogs?: boolean | InventoryAsset$validationLogsArgs<ExtArgs>
+    syncFailures?: boolean | InventoryAsset$syncFailuresArgs<ExtArgs>
     importBatch?: boolean | InventoryAsset$importBatchArgs<ExtArgs>
     _count?: boolean | InventoryAssetCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["inventoryAsset"]>
@@ -31254,6 +31931,7 @@ export namespace Prisma {
     warrantyAlerts?: boolean | InventoryAsset$warrantyAlertsArgs<ExtArgs>
     kioskRegistrations?: boolean | InventoryAsset$kioskRegistrationsArgs<ExtArgs>
     validationLogs?: boolean | InventoryAsset$validationLogsArgs<ExtArgs>
+    syncFailures?: boolean | InventoryAsset$syncFailuresArgs<ExtArgs>
     importBatch?: boolean | InventoryAsset$importBatchArgs<ExtArgs>
     _count?: boolean | InventoryAssetCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -31274,6 +31952,7 @@ export namespace Prisma {
       warrantyAlerts: Prisma.$AssetWarrantyAlertPayload<ExtArgs>[]
       kioskRegistrations: Prisma.$KioskAssetRegistryPayload<ExtArgs>[]
       validationLogs: Prisma.$AssetValidationLogPayload<ExtArgs>[]
+      syncFailures: Prisma.$HelixSyncFailurePayload<ExtArgs>[]
       importBatch: Prisma.$AssetImportBatchPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -31710,6 +32389,7 @@ export namespace Prisma {
     warrantyAlerts<T extends InventoryAsset$warrantyAlertsArgs<ExtArgs> = {}>(args?: Subset<T, InventoryAsset$warrantyAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssetWarrantyAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     kioskRegistrations<T extends InventoryAsset$kioskRegistrationsArgs<ExtArgs> = {}>(args?: Subset<T, InventoryAsset$kioskRegistrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskAssetRegistryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     validationLogs<T extends InventoryAsset$validationLogsArgs<ExtArgs> = {}>(args?: Subset<T, InventoryAsset$validationLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssetValidationLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    syncFailures<T extends InventoryAsset$syncFailuresArgs<ExtArgs> = {}>(args?: Subset<T, InventoryAsset$syncFailuresArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     importBatch<T extends InventoryAsset$importBatchArgs<ExtArgs> = {}>(args?: Subset<T, InventoryAsset$importBatchArgs<ExtArgs>>): Prisma__AssetImportBatchClient<$Result.GetResult<Prisma.$AssetImportBatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -32333,6 +33013,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AssetValidationLogScalarFieldEnum | AssetValidationLogScalarFieldEnum[]
+  }
+
+  /**
+   * InventoryAsset.syncFailures
+   */
+  export type InventoryAsset$syncFailuresArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    where?: HelixSyncFailureWhereInput
+    orderBy?: HelixSyncFailureOrderByWithRelationInput | HelixSyncFailureOrderByWithRelationInput[]
+    cursor?: HelixSyncFailureWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HelixSyncFailureScalarFieldEnum | HelixSyncFailureScalarFieldEnum[]
   }
 
   /**
@@ -40574,6 +41278,3424 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: KioskAssetRegistryInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model HelixSyncFailure
+   */
+
+  export type AggregateHelixSyncFailure = {
+    _count: HelixSyncFailureCountAggregateOutputType | null
+    _avg: HelixSyncFailureAvgAggregateOutputType | null
+    _sum: HelixSyncFailureSumAggregateOutputType | null
+    _min: HelixSyncFailureMinAggregateOutputType | null
+    _max: HelixSyncFailureMaxAggregateOutputType | null
+  }
+
+  export type HelixSyncFailureAvgAggregateOutputType = {
+    id: number | null
+    assetId: number | null
+    retryCount: number | null
+  }
+
+  export type HelixSyncFailureSumAggregateOutputType = {
+    id: number | null
+    assetId: number | null
+    retryCount: number | null
+  }
+
+  export type HelixSyncFailureMinAggregateOutputType = {
+    id: number | null
+    kioskId: string | null
+    assetId: number | null
+    errorMessage: string | null
+    retryCount: number | null
+    nextRetryAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type HelixSyncFailureMaxAggregateOutputType = {
+    id: number | null
+    kioskId: string | null
+    assetId: number | null
+    errorMessage: string | null
+    retryCount: number | null
+    nextRetryAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type HelixSyncFailureCountAggregateOutputType = {
+    id: number
+    kioskId: number
+    assetId: number
+    errorMessage: number
+    metadata: number
+    retryCount: number
+    nextRetryAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type HelixSyncFailureAvgAggregateInputType = {
+    id?: true
+    assetId?: true
+    retryCount?: true
+  }
+
+  export type HelixSyncFailureSumAggregateInputType = {
+    id?: true
+    assetId?: true
+    retryCount?: true
+  }
+
+  export type HelixSyncFailureMinAggregateInputType = {
+    id?: true
+    kioskId?: true
+    assetId?: true
+    errorMessage?: true
+    retryCount?: true
+    nextRetryAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type HelixSyncFailureMaxAggregateInputType = {
+    id?: true
+    kioskId?: true
+    assetId?: true
+    errorMessage?: true
+    retryCount?: true
+    nextRetryAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type HelixSyncFailureCountAggregateInputType = {
+    id?: true
+    kioskId?: true
+    assetId?: true
+    errorMessage?: true
+    metadata?: true
+    retryCount?: true
+    nextRetryAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type HelixSyncFailureAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HelixSyncFailure to aggregate.
+     */
+    where?: HelixSyncFailureWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HelixSyncFailures to fetch.
+     */
+    orderBy?: HelixSyncFailureOrderByWithRelationInput | HelixSyncFailureOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: HelixSyncFailureWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HelixSyncFailures from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HelixSyncFailures.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned HelixSyncFailures
+    **/
+    _count?: true | HelixSyncFailureCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: HelixSyncFailureAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: HelixSyncFailureSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: HelixSyncFailureMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: HelixSyncFailureMaxAggregateInputType
+  }
+
+  export type GetHelixSyncFailureAggregateType<T extends HelixSyncFailureAggregateArgs> = {
+        [P in keyof T & keyof AggregateHelixSyncFailure]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateHelixSyncFailure[P]>
+      : GetScalarType<T[P], AggregateHelixSyncFailure[P]>
+  }
+
+
+
+
+  export type HelixSyncFailureGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HelixSyncFailureWhereInput
+    orderBy?: HelixSyncFailureOrderByWithAggregationInput | HelixSyncFailureOrderByWithAggregationInput[]
+    by: HelixSyncFailureScalarFieldEnum[] | HelixSyncFailureScalarFieldEnum
+    having?: HelixSyncFailureScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: HelixSyncFailureCountAggregateInputType | true
+    _avg?: HelixSyncFailureAvgAggregateInputType
+    _sum?: HelixSyncFailureSumAggregateInputType
+    _min?: HelixSyncFailureMinAggregateInputType
+    _max?: HelixSyncFailureMaxAggregateInputType
+  }
+
+  export type HelixSyncFailureGroupByOutputType = {
+    id: number
+    kioskId: string
+    assetId: number
+    errorMessage: string
+    metadata: JsonValue | null
+    retryCount: number
+    nextRetryAt: Date
+    createdAt: Date
+    updatedAt: Date
+    _count: HelixSyncFailureCountAggregateOutputType | null
+    _avg: HelixSyncFailureAvgAggregateOutputType | null
+    _sum: HelixSyncFailureSumAggregateOutputType | null
+    _min: HelixSyncFailureMinAggregateOutputType | null
+    _max: HelixSyncFailureMaxAggregateOutputType | null
+  }
+
+  type GetHelixSyncFailureGroupByPayload<T extends HelixSyncFailureGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<HelixSyncFailureGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof HelixSyncFailureGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], HelixSyncFailureGroupByOutputType[P]>
+            : GetScalarType<T[P], HelixSyncFailureGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type HelixSyncFailureSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    assetId?: boolean
+    errorMessage?: boolean
+    metadata?: boolean
+    retryCount?: boolean
+    nextRetryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+    asset?: boolean | InventoryAssetDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["helixSyncFailure"]>
+
+  export type HelixSyncFailureSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    assetId?: boolean
+    errorMessage?: boolean
+    metadata?: boolean
+    retryCount?: boolean
+    nextRetryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+    asset?: boolean | InventoryAssetDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["helixSyncFailure"]>
+
+  export type HelixSyncFailureSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    assetId?: boolean
+    errorMessage?: boolean
+    metadata?: boolean
+    retryCount?: boolean
+    nextRetryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+    asset?: boolean | InventoryAssetDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["helixSyncFailure"]>
+
+  export type HelixSyncFailureSelectScalar = {
+    id?: boolean
+    kioskId?: boolean
+    assetId?: boolean
+    errorMessage?: boolean
+    metadata?: boolean
+    retryCount?: boolean
+    nextRetryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type HelixSyncFailureOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kioskId" | "assetId" | "errorMessage" | "metadata" | "retryCount" | "nextRetryAt" | "createdAt" | "updatedAt", ExtArgs["result"]["helixSyncFailure"]>
+  export type HelixSyncFailureInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+    asset?: boolean | InventoryAssetDefaultArgs<ExtArgs>
+  }
+  export type HelixSyncFailureIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+    asset?: boolean | InventoryAssetDefaultArgs<ExtArgs>
+  }
+  export type HelixSyncFailureIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+    asset?: boolean | InventoryAssetDefaultArgs<ExtArgs>
+  }
+
+  export type $HelixSyncFailurePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "HelixSyncFailure"
+    objects: {
+      kiosk: Prisma.$KioskPayload<ExtArgs>
+      asset: Prisma.$InventoryAssetPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      kioskId: string
+      assetId: number
+      errorMessage: string
+      metadata: Prisma.JsonValue | null
+      retryCount: number
+      nextRetryAt: Date
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["helixSyncFailure"]>
+    composites: {}
+  }
+
+  type HelixSyncFailureGetPayload<S extends boolean | null | undefined | HelixSyncFailureDefaultArgs> = $Result.GetResult<Prisma.$HelixSyncFailurePayload, S>
+
+  type HelixSyncFailureCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<HelixSyncFailureFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: HelixSyncFailureCountAggregateInputType | true
+    }
+
+  export interface HelixSyncFailureDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['HelixSyncFailure'], meta: { name: 'HelixSyncFailure' } }
+    /**
+     * Find zero or one HelixSyncFailure that matches the filter.
+     * @param {HelixSyncFailureFindUniqueArgs} args - Arguments to find a HelixSyncFailure
+     * @example
+     * // Get one HelixSyncFailure
+     * const helixSyncFailure = await prisma.helixSyncFailure.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends HelixSyncFailureFindUniqueArgs>(args: SelectSubset<T, HelixSyncFailureFindUniqueArgs<ExtArgs>>): Prisma__HelixSyncFailureClient<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one HelixSyncFailure that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {HelixSyncFailureFindUniqueOrThrowArgs} args - Arguments to find a HelixSyncFailure
+     * @example
+     * // Get one HelixSyncFailure
+     * const helixSyncFailure = await prisma.helixSyncFailure.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends HelixSyncFailureFindUniqueOrThrowArgs>(args: SelectSubset<T, HelixSyncFailureFindUniqueOrThrowArgs<ExtArgs>>): Prisma__HelixSyncFailureClient<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first HelixSyncFailure that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelixSyncFailureFindFirstArgs} args - Arguments to find a HelixSyncFailure
+     * @example
+     * // Get one HelixSyncFailure
+     * const helixSyncFailure = await prisma.helixSyncFailure.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends HelixSyncFailureFindFirstArgs>(args?: SelectSubset<T, HelixSyncFailureFindFirstArgs<ExtArgs>>): Prisma__HelixSyncFailureClient<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first HelixSyncFailure that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelixSyncFailureFindFirstOrThrowArgs} args - Arguments to find a HelixSyncFailure
+     * @example
+     * // Get one HelixSyncFailure
+     * const helixSyncFailure = await prisma.helixSyncFailure.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends HelixSyncFailureFindFirstOrThrowArgs>(args?: SelectSubset<T, HelixSyncFailureFindFirstOrThrowArgs<ExtArgs>>): Prisma__HelixSyncFailureClient<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more HelixSyncFailures that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelixSyncFailureFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all HelixSyncFailures
+     * const helixSyncFailures = await prisma.helixSyncFailure.findMany()
+     * 
+     * // Get first 10 HelixSyncFailures
+     * const helixSyncFailures = await prisma.helixSyncFailure.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const helixSyncFailureWithIdOnly = await prisma.helixSyncFailure.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends HelixSyncFailureFindManyArgs>(args?: SelectSubset<T, HelixSyncFailureFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a HelixSyncFailure.
+     * @param {HelixSyncFailureCreateArgs} args - Arguments to create a HelixSyncFailure.
+     * @example
+     * // Create one HelixSyncFailure
+     * const HelixSyncFailure = await prisma.helixSyncFailure.create({
+     *   data: {
+     *     // ... data to create a HelixSyncFailure
+     *   }
+     * })
+     * 
+     */
+    create<T extends HelixSyncFailureCreateArgs>(args: SelectSubset<T, HelixSyncFailureCreateArgs<ExtArgs>>): Prisma__HelixSyncFailureClient<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many HelixSyncFailures.
+     * @param {HelixSyncFailureCreateManyArgs} args - Arguments to create many HelixSyncFailures.
+     * @example
+     * // Create many HelixSyncFailures
+     * const helixSyncFailure = await prisma.helixSyncFailure.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends HelixSyncFailureCreateManyArgs>(args?: SelectSubset<T, HelixSyncFailureCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many HelixSyncFailures and returns the data saved in the database.
+     * @param {HelixSyncFailureCreateManyAndReturnArgs} args - Arguments to create many HelixSyncFailures.
+     * @example
+     * // Create many HelixSyncFailures
+     * const helixSyncFailure = await prisma.helixSyncFailure.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many HelixSyncFailures and only return the `id`
+     * const helixSyncFailureWithIdOnly = await prisma.helixSyncFailure.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends HelixSyncFailureCreateManyAndReturnArgs>(args?: SelectSubset<T, HelixSyncFailureCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a HelixSyncFailure.
+     * @param {HelixSyncFailureDeleteArgs} args - Arguments to delete one HelixSyncFailure.
+     * @example
+     * // Delete one HelixSyncFailure
+     * const HelixSyncFailure = await prisma.helixSyncFailure.delete({
+     *   where: {
+     *     // ... filter to delete one HelixSyncFailure
+     *   }
+     * })
+     * 
+     */
+    delete<T extends HelixSyncFailureDeleteArgs>(args: SelectSubset<T, HelixSyncFailureDeleteArgs<ExtArgs>>): Prisma__HelixSyncFailureClient<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one HelixSyncFailure.
+     * @param {HelixSyncFailureUpdateArgs} args - Arguments to update one HelixSyncFailure.
+     * @example
+     * // Update one HelixSyncFailure
+     * const helixSyncFailure = await prisma.helixSyncFailure.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends HelixSyncFailureUpdateArgs>(args: SelectSubset<T, HelixSyncFailureUpdateArgs<ExtArgs>>): Prisma__HelixSyncFailureClient<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more HelixSyncFailures.
+     * @param {HelixSyncFailureDeleteManyArgs} args - Arguments to filter HelixSyncFailures to delete.
+     * @example
+     * // Delete a few HelixSyncFailures
+     * const { count } = await prisma.helixSyncFailure.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends HelixSyncFailureDeleteManyArgs>(args?: SelectSubset<T, HelixSyncFailureDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more HelixSyncFailures.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelixSyncFailureUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many HelixSyncFailures
+     * const helixSyncFailure = await prisma.helixSyncFailure.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends HelixSyncFailureUpdateManyArgs>(args: SelectSubset<T, HelixSyncFailureUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more HelixSyncFailures and returns the data updated in the database.
+     * @param {HelixSyncFailureUpdateManyAndReturnArgs} args - Arguments to update many HelixSyncFailures.
+     * @example
+     * // Update many HelixSyncFailures
+     * const helixSyncFailure = await prisma.helixSyncFailure.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more HelixSyncFailures and only return the `id`
+     * const helixSyncFailureWithIdOnly = await prisma.helixSyncFailure.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends HelixSyncFailureUpdateManyAndReturnArgs>(args: SelectSubset<T, HelixSyncFailureUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one HelixSyncFailure.
+     * @param {HelixSyncFailureUpsertArgs} args - Arguments to update or create a HelixSyncFailure.
+     * @example
+     * // Update or create a HelixSyncFailure
+     * const helixSyncFailure = await prisma.helixSyncFailure.upsert({
+     *   create: {
+     *     // ... data to create a HelixSyncFailure
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the HelixSyncFailure we want to update
+     *   }
+     * })
+     */
+    upsert<T extends HelixSyncFailureUpsertArgs>(args: SelectSubset<T, HelixSyncFailureUpsertArgs<ExtArgs>>): Prisma__HelixSyncFailureClient<$Result.GetResult<Prisma.$HelixSyncFailurePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of HelixSyncFailures.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelixSyncFailureCountArgs} args - Arguments to filter HelixSyncFailures to count.
+     * @example
+     * // Count the number of HelixSyncFailures
+     * const count = await prisma.helixSyncFailure.count({
+     *   where: {
+     *     // ... the filter for the HelixSyncFailures we want to count
+     *   }
+     * })
+    **/
+    count<T extends HelixSyncFailureCountArgs>(
+      args?: Subset<T, HelixSyncFailureCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], HelixSyncFailureCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a HelixSyncFailure.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelixSyncFailureAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends HelixSyncFailureAggregateArgs>(args: Subset<T, HelixSyncFailureAggregateArgs>): Prisma.PrismaPromise<GetHelixSyncFailureAggregateType<T>>
+
+    /**
+     * Group by HelixSyncFailure.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelixSyncFailureGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends HelixSyncFailureGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: HelixSyncFailureGroupByArgs['orderBy'] }
+        : { orderBy?: HelixSyncFailureGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, HelixSyncFailureGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetHelixSyncFailureGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the HelixSyncFailure model
+   */
+  readonly fields: HelixSyncFailureFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for HelixSyncFailure.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__HelixSyncFailureClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    kiosk<T extends KioskDefaultArgs<ExtArgs> = {}>(args?: Subset<T, KioskDefaultArgs<ExtArgs>>): Prisma__KioskClient<$Result.GetResult<Prisma.$KioskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    asset<T extends InventoryAssetDefaultArgs<ExtArgs> = {}>(args?: Subset<T, InventoryAssetDefaultArgs<ExtArgs>>): Prisma__InventoryAssetClient<$Result.GetResult<Prisma.$InventoryAssetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the HelixSyncFailure model
+   */
+  interface HelixSyncFailureFieldRefs {
+    readonly id: FieldRef<"HelixSyncFailure", 'Int'>
+    readonly kioskId: FieldRef<"HelixSyncFailure", 'String'>
+    readonly assetId: FieldRef<"HelixSyncFailure", 'Int'>
+    readonly errorMessage: FieldRef<"HelixSyncFailure", 'String'>
+    readonly metadata: FieldRef<"HelixSyncFailure", 'Json'>
+    readonly retryCount: FieldRef<"HelixSyncFailure", 'Int'>
+    readonly nextRetryAt: FieldRef<"HelixSyncFailure", 'DateTime'>
+    readonly createdAt: FieldRef<"HelixSyncFailure", 'DateTime'>
+    readonly updatedAt: FieldRef<"HelixSyncFailure", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * HelixSyncFailure findUnique
+   */
+  export type HelixSyncFailureFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    /**
+     * Filter, which HelixSyncFailure to fetch.
+     */
+    where: HelixSyncFailureWhereUniqueInput
+  }
+
+  /**
+   * HelixSyncFailure findUniqueOrThrow
+   */
+  export type HelixSyncFailureFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    /**
+     * Filter, which HelixSyncFailure to fetch.
+     */
+    where: HelixSyncFailureWhereUniqueInput
+  }
+
+  /**
+   * HelixSyncFailure findFirst
+   */
+  export type HelixSyncFailureFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    /**
+     * Filter, which HelixSyncFailure to fetch.
+     */
+    where?: HelixSyncFailureWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HelixSyncFailures to fetch.
+     */
+    orderBy?: HelixSyncFailureOrderByWithRelationInput | HelixSyncFailureOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HelixSyncFailures.
+     */
+    cursor?: HelixSyncFailureWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HelixSyncFailures from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HelixSyncFailures.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HelixSyncFailures.
+     */
+    distinct?: HelixSyncFailureScalarFieldEnum | HelixSyncFailureScalarFieldEnum[]
+  }
+
+  /**
+   * HelixSyncFailure findFirstOrThrow
+   */
+  export type HelixSyncFailureFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    /**
+     * Filter, which HelixSyncFailure to fetch.
+     */
+    where?: HelixSyncFailureWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HelixSyncFailures to fetch.
+     */
+    orderBy?: HelixSyncFailureOrderByWithRelationInput | HelixSyncFailureOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HelixSyncFailures.
+     */
+    cursor?: HelixSyncFailureWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HelixSyncFailures from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HelixSyncFailures.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HelixSyncFailures.
+     */
+    distinct?: HelixSyncFailureScalarFieldEnum | HelixSyncFailureScalarFieldEnum[]
+  }
+
+  /**
+   * HelixSyncFailure findMany
+   */
+  export type HelixSyncFailureFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    /**
+     * Filter, which HelixSyncFailures to fetch.
+     */
+    where?: HelixSyncFailureWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HelixSyncFailures to fetch.
+     */
+    orderBy?: HelixSyncFailureOrderByWithRelationInput | HelixSyncFailureOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing HelixSyncFailures.
+     */
+    cursor?: HelixSyncFailureWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HelixSyncFailures from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HelixSyncFailures.
+     */
+    skip?: number
+    distinct?: HelixSyncFailureScalarFieldEnum | HelixSyncFailureScalarFieldEnum[]
+  }
+
+  /**
+   * HelixSyncFailure create
+   */
+  export type HelixSyncFailureCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    /**
+     * The data needed to create a HelixSyncFailure.
+     */
+    data: XOR<HelixSyncFailureCreateInput, HelixSyncFailureUncheckedCreateInput>
+  }
+
+  /**
+   * HelixSyncFailure createMany
+   */
+  export type HelixSyncFailureCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many HelixSyncFailures.
+     */
+    data: HelixSyncFailureCreateManyInput | HelixSyncFailureCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * HelixSyncFailure createManyAndReturn
+   */
+  export type HelixSyncFailureCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * The data used to create many HelixSyncFailures.
+     */
+    data: HelixSyncFailureCreateManyInput | HelixSyncFailureCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * HelixSyncFailure update
+   */
+  export type HelixSyncFailureUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    /**
+     * The data needed to update a HelixSyncFailure.
+     */
+    data: XOR<HelixSyncFailureUpdateInput, HelixSyncFailureUncheckedUpdateInput>
+    /**
+     * Choose, which HelixSyncFailure to update.
+     */
+    where: HelixSyncFailureWhereUniqueInput
+  }
+
+  /**
+   * HelixSyncFailure updateMany
+   */
+  export type HelixSyncFailureUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update HelixSyncFailures.
+     */
+    data: XOR<HelixSyncFailureUpdateManyMutationInput, HelixSyncFailureUncheckedUpdateManyInput>
+    /**
+     * Filter which HelixSyncFailures to update
+     */
+    where?: HelixSyncFailureWhereInput
+    /**
+     * Limit how many HelixSyncFailures to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * HelixSyncFailure updateManyAndReturn
+   */
+  export type HelixSyncFailureUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * The data used to update HelixSyncFailures.
+     */
+    data: XOR<HelixSyncFailureUpdateManyMutationInput, HelixSyncFailureUncheckedUpdateManyInput>
+    /**
+     * Filter which HelixSyncFailures to update
+     */
+    where?: HelixSyncFailureWhereInput
+    /**
+     * Limit how many HelixSyncFailures to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * HelixSyncFailure upsert
+   */
+  export type HelixSyncFailureUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    /**
+     * The filter to search for the HelixSyncFailure to update in case it exists.
+     */
+    where: HelixSyncFailureWhereUniqueInput
+    /**
+     * In case the HelixSyncFailure found by the `where` argument doesn't exist, create a new HelixSyncFailure with this data.
+     */
+    create: XOR<HelixSyncFailureCreateInput, HelixSyncFailureUncheckedCreateInput>
+    /**
+     * In case the HelixSyncFailure was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<HelixSyncFailureUpdateInput, HelixSyncFailureUncheckedUpdateInput>
+  }
+
+  /**
+   * HelixSyncFailure delete
+   */
+  export type HelixSyncFailureDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+    /**
+     * Filter which HelixSyncFailure to delete.
+     */
+    where: HelixSyncFailureWhereUniqueInput
+  }
+
+  /**
+   * HelixSyncFailure deleteMany
+   */
+  export type HelixSyncFailureDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HelixSyncFailures to delete
+     */
+    where?: HelixSyncFailureWhereInput
+    /**
+     * Limit how many HelixSyncFailures to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * HelixSyncFailure without action
+   */
+  export type HelixSyncFailureDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelixSyncFailure
+     */
+    select?: HelixSyncFailureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HelixSyncFailure
+     */
+    omit?: HelixSyncFailureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HelixSyncFailureInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model KioskOrganizationAssignment
+   */
+
+  export type AggregateKioskOrganizationAssignment = {
+    _count: KioskOrganizationAssignmentCountAggregateOutputType | null
+    _avg: KioskOrganizationAssignmentAvgAggregateOutputType | null
+    _sum: KioskOrganizationAssignmentSumAggregateOutputType | null
+    _min: KioskOrganizationAssignmentMinAggregateOutputType | null
+    _max: KioskOrganizationAssignmentMaxAggregateOutputType | null
+  }
+
+  export type KioskOrganizationAssignmentAvgAggregateOutputType = {
+    id: number | null
+    organizationId: number | null
+  }
+
+  export type KioskOrganizationAssignmentSumAggregateOutputType = {
+    id: number | null
+    organizationId: number | null
+  }
+
+  export type KioskOrganizationAssignmentMinAggregateOutputType = {
+    id: number | null
+    kioskId: string | null
+    organizationId: number | null
+    department: string | null
+    floor: string | null
+    room: string | null
+    building: string | null
+    assignedBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type KioskOrganizationAssignmentMaxAggregateOutputType = {
+    id: number | null
+    kioskId: string | null
+    organizationId: number | null
+    department: string | null
+    floor: string | null
+    room: string | null
+    building: string | null
+    assignedBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type KioskOrganizationAssignmentCountAggregateOutputType = {
+    id: number
+    kioskId: number
+    organizationId: number
+    department: number
+    floor: number
+    room: number
+    building: number
+    assignedBy: number
+    assignmentMetadata: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type KioskOrganizationAssignmentAvgAggregateInputType = {
+    id?: true
+    organizationId?: true
+  }
+
+  export type KioskOrganizationAssignmentSumAggregateInputType = {
+    id?: true
+    organizationId?: true
+  }
+
+  export type KioskOrganizationAssignmentMinAggregateInputType = {
+    id?: true
+    kioskId?: true
+    organizationId?: true
+    department?: true
+    floor?: true
+    room?: true
+    building?: true
+    assignedBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type KioskOrganizationAssignmentMaxAggregateInputType = {
+    id?: true
+    kioskId?: true
+    organizationId?: true
+    department?: true
+    floor?: true
+    room?: true
+    building?: true
+    assignedBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type KioskOrganizationAssignmentCountAggregateInputType = {
+    id?: true
+    kioskId?: true
+    organizationId?: true
+    department?: true
+    floor?: true
+    room?: true
+    building?: true
+    assignedBy?: true
+    assignmentMetadata?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type KioskOrganizationAssignmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KioskOrganizationAssignment to aggregate.
+     */
+    where?: KioskOrganizationAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KioskOrganizationAssignments to fetch.
+     */
+    orderBy?: KioskOrganizationAssignmentOrderByWithRelationInput | KioskOrganizationAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: KioskOrganizationAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KioskOrganizationAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KioskOrganizationAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned KioskOrganizationAssignments
+    **/
+    _count?: true | KioskOrganizationAssignmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: KioskOrganizationAssignmentAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: KioskOrganizationAssignmentSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: KioskOrganizationAssignmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: KioskOrganizationAssignmentMaxAggregateInputType
+  }
+
+  export type GetKioskOrganizationAssignmentAggregateType<T extends KioskOrganizationAssignmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateKioskOrganizationAssignment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateKioskOrganizationAssignment[P]>
+      : GetScalarType<T[P], AggregateKioskOrganizationAssignment[P]>
+  }
+
+
+
+
+  export type KioskOrganizationAssignmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KioskOrganizationAssignmentWhereInput
+    orderBy?: KioskOrganizationAssignmentOrderByWithAggregationInput | KioskOrganizationAssignmentOrderByWithAggregationInput[]
+    by: KioskOrganizationAssignmentScalarFieldEnum[] | KioskOrganizationAssignmentScalarFieldEnum
+    having?: KioskOrganizationAssignmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: KioskOrganizationAssignmentCountAggregateInputType | true
+    _avg?: KioskOrganizationAssignmentAvgAggregateInputType
+    _sum?: KioskOrganizationAssignmentSumAggregateInputType
+    _min?: KioskOrganizationAssignmentMinAggregateInputType
+    _max?: KioskOrganizationAssignmentMaxAggregateInputType
+  }
+
+  export type KioskOrganizationAssignmentGroupByOutputType = {
+    id: number
+    kioskId: string
+    organizationId: number
+    department: string | null
+    floor: string | null
+    room: string | null
+    building: string | null
+    assignedBy: string | null
+    assignmentMetadata: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    _count: KioskOrganizationAssignmentCountAggregateOutputType | null
+    _avg: KioskOrganizationAssignmentAvgAggregateOutputType | null
+    _sum: KioskOrganizationAssignmentSumAggregateOutputType | null
+    _min: KioskOrganizationAssignmentMinAggregateOutputType | null
+    _max: KioskOrganizationAssignmentMaxAggregateOutputType | null
+  }
+
+  type GetKioskOrganizationAssignmentGroupByPayload<T extends KioskOrganizationAssignmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<KioskOrganizationAssignmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof KioskOrganizationAssignmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], KioskOrganizationAssignmentGroupByOutputType[P]>
+            : GetScalarType<T[P], KioskOrganizationAssignmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type KioskOrganizationAssignmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    organizationId?: boolean
+    department?: boolean
+    floor?: boolean
+    room?: boolean
+    building?: boolean
+    assignedBy?: boolean
+    assignmentMetadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["kioskOrganizationAssignment"]>
+
+  export type KioskOrganizationAssignmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    organizationId?: boolean
+    department?: boolean
+    floor?: boolean
+    room?: boolean
+    building?: boolean
+    assignedBy?: boolean
+    assignmentMetadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["kioskOrganizationAssignment"]>
+
+  export type KioskOrganizationAssignmentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    organizationId?: boolean
+    department?: boolean
+    floor?: boolean
+    room?: boolean
+    building?: boolean
+    assignedBy?: boolean
+    assignmentMetadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["kioskOrganizationAssignment"]>
+
+  export type KioskOrganizationAssignmentSelectScalar = {
+    id?: boolean
+    kioskId?: boolean
+    organizationId?: boolean
+    department?: boolean
+    floor?: boolean
+    room?: boolean
+    building?: boolean
+    assignedBy?: boolean
+    assignmentMetadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type KioskOrganizationAssignmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kioskId" | "organizationId" | "department" | "floor" | "room" | "building" | "assignedBy" | "assignmentMetadata" | "createdAt" | "updatedAt", ExtArgs["result"]["kioskOrganizationAssignment"]>
+  export type KioskOrganizationAssignmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }
+  export type KioskOrganizationAssignmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }
+  export type KioskOrganizationAssignmentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }
+
+  export type $KioskOrganizationAssignmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "KioskOrganizationAssignment"
+    objects: {
+      kiosk: Prisma.$KioskPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      kioskId: string
+      organizationId: number
+      department: string | null
+      floor: string | null
+      room: string | null
+      building: string | null
+      assignedBy: string | null
+      assignmentMetadata: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["kioskOrganizationAssignment"]>
+    composites: {}
+  }
+
+  type KioskOrganizationAssignmentGetPayload<S extends boolean | null | undefined | KioskOrganizationAssignmentDefaultArgs> = $Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload, S>
+
+  type KioskOrganizationAssignmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<KioskOrganizationAssignmentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: KioskOrganizationAssignmentCountAggregateInputType | true
+    }
+
+  export interface KioskOrganizationAssignmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['KioskOrganizationAssignment'], meta: { name: 'KioskOrganizationAssignment' } }
+    /**
+     * Find zero or one KioskOrganizationAssignment that matches the filter.
+     * @param {KioskOrganizationAssignmentFindUniqueArgs} args - Arguments to find a KioskOrganizationAssignment
+     * @example
+     * // Get one KioskOrganizationAssignment
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends KioskOrganizationAssignmentFindUniqueArgs>(args: SelectSubset<T, KioskOrganizationAssignmentFindUniqueArgs<ExtArgs>>): Prisma__KioskOrganizationAssignmentClient<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one KioskOrganizationAssignment that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {KioskOrganizationAssignmentFindUniqueOrThrowArgs} args - Arguments to find a KioskOrganizationAssignment
+     * @example
+     * // Get one KioskOrganizationAssignment
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends KioskOrganizationAssignmentFindUniqueOrThrowArgs>(args: SelectSubset<T, KioskOrganizationAssignmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__KioskOrganizationAssignmentClient<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KioskOrganizationAssignment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskOrganizationAssignmentFindFirstArgs} args - Arguments to find a KioskOrganizationAssignment
+     * @example
+     * // Get one KioskOrganizationAssignment
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends KioskOrganizationAssignmentFindFirstArgs>(args?: SelectSubset<T, KioskOrganizationAssignmentFindFirstArgs<ExtArgs>>): Prisma__KioskOrganizationAssignmentClient<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KioskOrganizationAssignment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskOrganizationAssignmentFindFirstOrThrowArgs} args - Arguments to find a KioskOrganizationAssignment
+     * @example
+     * // Get one KioskOrganizationAssignment
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends KioskOrganizationAssignmentFindFirstOrThrowArgs>(args?: SelectSubset<T, KioskOrganizationAssignmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__KioskOrganizationAssignmentClient<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more KioskOrganizationAssignments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskOrganizationAssignmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all KioskOrganizationAssignments
+     * const kioskOrganizationAssignments = await prisma.kioskOrganizationAssignment.findMany()
+     * 
+     * // Get first 10 KioskOrganizationAssignments
+     * const kioskOrganizationAssignments = await prisma.kioskOrganizationAssignment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const kioskOrganizationAssignmentWithIdOnly = await prisma.kioskOrganizationAssignment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends KioskOrganizationAssignmentFindManyArgs>(args?: SelectSubset<T, KioskOrganizationAssignmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a KioskOrganizationAssignment.
+     * @param {KioskOrganizationAssignmentCreateArgs} args - Arguments to create a KioskOrganizationAssignment.
+     * @example
+     * // Create one KioskOrganizationAssignment
+     * const KioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.create({
+     *   data: {
+     *     // ... data to create a KioskOrganizationAssignment
+     *   }
+     * })
+     * 
+     */
+    create<T extends KioskOrganizationAssignmentCreateArgs>(args: SelectSubset<T, KioskOrganizationAssignmentCreateArgs<ExtArgs>>): Prisma__KioskOrganizationAssignmentClient<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many KioskOrganizationAssignments.
+     * @param {KioskOrganizationAssignmentCreateManyArgs} args - Arguments to create many KioskOrganizationAssignments.
+     * @example
+     * // Create many KioskOrganizationAssignments
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends KioskOrganizationAssignmentCreateManyArgs>(args?: SelectSubset<T, KioskOrganizationAssignmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many KioskOrganizationAssignments and returns the data saved in the database.
+     * @param {KioskOrganizationAssignmentCreateManyAndReturnArgs} args - Arguments to create many KioskOrganizationAssignments.
+     * @example
+     * // Create many KioskOrganizationAssignments
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many KioskOrganizationAssignments and only return the `id`
+     * const kioskOrganizationAssignmentWithIdOnly = await prisma.kioskOrganizationAssignment.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends KioskOrganizationAssignmentCreateManyAndReturnArgs>(args?: SelectSubset<T, KioskOrganizationAssignmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a KioskOrganizationAssignment.
+     * @param {KioskOrganizationAssignmentDeleteArgs} args - Arguments to delete one KioskOrganizationAssignment.
+     * @example
+     * // Delete one KioskOrganizationAssignment
+     * const KioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.delete({
+     *   where: {
+     *     // ... filter to delete one KioskOrganizationAssignment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends KioskOrganizationAssignmentDeleteArgs>(args: SelectSubset<T, KioskOrganizationAssignmentDeleteArgs<ExtArgs>>): Prisma__KioskOrganizationAssignmentClient<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one KioskOrganizationAssignment.
+     * @param {KioskOrganizationAssignmentUpdateArgs} args - Arguments to update one KioskOrganizationAssignment.
+     * @example
+     * // Update one KioskOrganizationAssignment
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends KioskOrganizationAssignmentUpdateArgs>(args: SelectSubset<T, KioskOrganizationAssignmentUpdateArgs<ExtArgs>>): Prisma__KioskOrganizationAssignmentClient<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more KioskOrganizationAssignments.
+     * @param {KioskOrganizationAssignmentDeleteManyArgs} args - Arguments to filter KioskOrganizationAssignments to delete.
+     * @example
+     * // Delete a few KioskOrganizationAssignments
+     * const { count } = await prisma.kioskOrganizationAssignment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends KioskOrganizationAssignmentDeleteManyArgs>(args?: SelectSubset<T, KioskOrganizationAssignmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KioskOrganizationAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskOrganizationAssignmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many KioskOrganizationAssignments
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends KioskOrganizationAssignmentUpdateManyArgs>(args: SelectSubset<T, KioskOrganizationAssignmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KioskOrganizationAssignments and returns the data updated in the database.
+     * @param {KioskOrganizationAssignmentUpdateManyAndReturnArgs} args - Arguments to update many KioskOrganizationAssignments.
+     * @example
+     * // Update many KioskOrganizationAssignments
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more KioskOrganizationAssignments and only return the `id`
+     * const kioskOrganizationAssignmentWithIdOnly = await prisma.kioskOrganizationAssignment.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends KioskOrganizationAssignmentUpdateManyAndReturnArgs>(args: SelectSubset<T, KioskOrganizationAssignmentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one KioskOrganizationAssignment.
+     * @param {KioskOrganizationAssignmentUpsertArgs} args - Arguments to update or create a KioskOrganizationAssignment.
+     * @example
+     * // Update or create a KioskOrganizationAssignment
+     * const kioskOrganizationAssignment = await prisma.kioskOrganizationAssignment.upsert({
+     *   create: {
+     *     // ... data to create a KioskOrganizationAssignment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the KioskOrganizationAssignment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends KioskOrganizationAssignmentUpsertArgs>(args: SelectSubset<T, KioskOrganizationAssignmentUpsertArgs<ExtArgs>>): Prisma__KioskOrganizationAssignmentClient<$Result.GetResult<Prisma.$KioskOrganizationAssignmentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of KioskOrganizationAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskOrganizationAssignmentCountArgs} args - Arguments to filter KioskOrganizationAssignments to count.
+     * @example
+     * // Count the number of KioskOrganizationAssignments
+     * const count = await prisma.kioskOrganizationAssignment.count({
+     *   where: {
+     *     // ... the filter for the KioskOrganizationAssignments we want to count
+     *   }
+     * })
+    **/
+    count<T extends KioskOrganizationAssignmentCountArgs>(
+      args?: Subset<T, KioskOrganizationAssignmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], KioskOrganizationAssignmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a KioskOrganizationAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskOrganizationAssignmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends KioskOrganizationAssignmentAggregateArgs>(args: Subset<T, KioskOrganizationAssignmentAggregateArgs>): Prisma.PrismaPromise<GetKioskOrganizationAssignmentAggregateType<T>>
+
+    /**
+     * Group by KioskOrganizationAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskOrganizationAssignmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends KioskOrganizationAssignmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: KioskOrganizationAssignmentGroupByArgs['orderBy'] }
+        : { orderBy?: KioskOrganizationAssignmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, KioskOrganizationAssignmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetKioskOrganizationAssignmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the KioskOrganizationAssignment model
+   */
+  readonly fields: KioskOrganizationAssignmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for KioskOrganizationAssignment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__KioskOrganizationAssignmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    kiosk<T extends KioskDefaultArgs<ExtArgs> = {}>(args?: Subset<T, KioskDefaultArgs<ExtArgs>>): Prisma__KioskClient<$Result.GetResult<Prisma.$KioskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the KioskOrganizationAssignment model
+   */
+  interface KioskOrganizationAssignmentFieldRefs {
+    readonly id: FieldRef<"KioskOrganizationAssignment", 'Int'>
+    readonly kioskId: FieldRef<"KioskOrganizationAssignment", 'String'>
+    readonly organizationId: FieldRef<"KioskOrganizationAssignment", 'Int'>
+    readonly department: FieldRef<"KioskOrganizationAssignment", 'String'>
+    readonly floor: FieldRef<"KioskOrganizationAssignment", 'String'>
+    readonly room: FieldRef<"KioskOrganizationAssignment", 'String'>
+    readonly building: FieldRef<"KioskOrganizationAssignment", 'String'>
+    readonly assignedBy: FieldRef<"KioskOrganizationAssignment", 'String'>
+    readonly assignmentMetadata: FieldRef<"KioskOrganizationAssignment", 'Json'>
+    readonly createdAt: FieldRef<"KioskOrganizationAssignment", 'DateTime'>
+    readonly updatedAt: FieldRef<"KioskOrganizationAssignment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * KioskOrganizationAssignment findUnique
+   */
+  export type KioskOrganizationAssignmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskOrganizationAssignment to fetch.
+     */
+    where: KioskOrganizationAssignmentWhereUniqueInput
+  }
+
+  /**
+   * KioskOrganizationAssignment findUniqueOrThrow
+   */
+  export type KioskOrganizationAssignmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskOrganizationAssignment to fetch.
+     */
+    where: KioskOrganizationAssignmentWhereUniqueInput
+  }
+
+  /**
+   * KioskOrganizationAssignment findFirst
+   */
+  export type KioskOrganizationAssignmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskOrganizationAssignment to fetch.
+     */
+    where?: KioskOrganizationAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KioskOrganizationAssignments to fetch.
+     */
+    orderBy?: KioskOrganizationAssignmentOrderByWithRelationInput | KioskOrganizationAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KioskOrganizationAssignments.
+     */
+    cursor?: KioskOrganizationAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KioskOrganizationAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KioskOrganizationAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KioskOrganizationAssignments.
+     */
+    distinct?: KioskOrganizationAssignmentScalarFieldEnum | KioskOrganizationAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * KioskOrganizationAssignment findFirstOrThrow
+   */
+  export type KioskOrganizationAssignmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskOrganizationAssignment to fetch.
+     */
+    where?: KioskOrganizationAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KioskOrganizationAssignments to fetch.
+     */
+    orderBy?: KioskOrganizationAssignmentOrderByWithRelationInput | KioskOrganizationAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KioskOrganizationAssignments.
+     */
+    cursor?: KioskOrganizationAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KioskOrganizationAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KioskOrganizationAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KioskOrganizationAssignments.
+     */
+    distinct?: KioskOrganizationAssignmentScalarFieldEnum | KioskOrganizationAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * KioskOrganizationAssignment findMany
+   */
+  export type KioskOrganizationAssignmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskOrganizationAssignments to fetch.
+     */
+    where?: KioskOrganizationAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KioskOrganizationAssignments to fetch.
+     */
+    orderBy?: KioskOrganizationAssignmentOrderByWithRelationInput | KioskOrganizationAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing KioskOrganizationAssignments.
+     */
+    cursor?: KioskOrganizationAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KioskOrganizationAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KioskOrganizationAssignments.
+     */
+    skip?: number
+    distinct?: KioskOrganizationAssignmentScalarFieldEnum | KioskOrganizationAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * KioskOrganizationAssignment create
+   */
+  export type KioskOrganizationAssignmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a KioskOrganizationAssignment.
+     */
+    data: XOR<KioskOrganizationAssignmentCreateInput, KioskOrganizationAssignmentUncheckedCreateInput>
+  }
+
+  /**
+   * KioskOrganizationAssignment createMany
+   */
+  export type KioskOrganizationAssignmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many KioskOrganizationAssignments.
+     */
+    data: KioskOrganizationAssignmentCreateManyInput | KioskOrganizationAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * KioskOrganizationAssignment createManyAndReturn
+   */
+  export type KioskOrganizationAssignmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * The data used to create many KioskOrganizationAssignments.
+     */
+    data: KioskOrganizationAssignmentCreateManyInput | KioskOrganizationAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * KioskOrganizationAssignment update
+   */
+  export type KioskOrganizationAssignmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a KioskOrganizationAssignment.
+     */
+    data: XOR<KioskOrganizationAssignmentUpdateInput, KioskOrganizationAssignmentUncheckedUpdateInput>
+    /**
+     * Choose, which KioskOrganizationAssignment to update.
+     */
+    where: KioskOrganizationAssignmentWhereUniqueInput
+  }
+
+  /**
+   * KioskOrganizationAssignment updateMany
+   */
+  export type KioskOrganizationAssignmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update KioskOrganizationAssignments.
+     */
+    data: XOR<KioskOrganizationAssignmentUpdateManyMutationInput, KioskOrganizationAssignmentUncheckedUpdateManyInput>
+    /**
+     * Filter which KioskOrganizationAssignments to update
+     */
+    where?: KioskOrganizationAssignmentWhereInput
+    /**
+     * Limit how many KioskOrganizationAssignments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * KioskOrganizationAssignment updateManyAndReturn
+   */
+  export type KioskOrganizationAssignmentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * The data used to update KioskOrganizationAssignments.
+     */
+    data: XOR<KioskOrganizationAssignmentUpdateManyMutationInput, KioskOrganizationAssignmentUncheckedUpdateManyInput>
+    /**
+     * Filter which KioskOrganizationAssignments to update
+     */
+    where?: KioskOrganizationAssignmentWhereInput
+    /**
+     * Limit how many KioskOrganizationAssignments to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * KioskOrganizationAssignment upsert
+   */
+  export type KioskOrganizationAssignmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the KioskOrganizationAssignment to update in case it exists.
+     */
+    where: KioskOrganizationAssignmentWhereUniqueInput
+    /**
+     * In case the KioskOrganizationAssignment found by the `where` argument doesn't exist, create a new KioskOrganizationAssignment with this data.
+     */
+    create: XOR<KioskOrganizationAssignmentCreateInput, KioskOrganizationAssignmentUncheckedCreateInput>
+    /**
+     * In case the KioskOrganizationAssignment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<KioskOrganizationAssignmentUpdateInput, KioskOrganizationAssignmentUncheckedUpdateInput>
+  }
+
+  /**
+   * KioskOrganizationAssignment delete
+   */
+  export type KioskOrganizationAssignmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter which KioskOrganizationAssignment to delete.
+     */
+    where: KioskOrganizationAssignmentWhereUniqueInput
+  }
+
+  /**
+   * KioskOrganizationAssignment deleteMany
+   */
+  export type KioskOrganizationAssignmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KioskOrganizationAssignments to delete
+     */
+    where?: KioskOrganizationAssignmentWhereInput
+    /**
+     * Limit how many KioskOrganizationAssignments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * KioskOrganizationAssignment without action
+   */
+  export type KioskOrganizationAssignmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskOrganizationAssignment
+     */
+    select?: KioskOrganizationAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskOrganizationAssignment
+     */
+    omit?: KioskOrganizationAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskOrganizationAssignmentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model KioskMetadataLog
+   */
+
+  export type AggregateKioskMetadataLog = {
+    _count: KioskMetadataLogCountAggregateOutputType | null
+    _avg: KioskMetadataLogAvgAggregateOutputType | null
+    _sum: KioskMetadataLogSumAggregateOutputType | null
+    _min: KioskMetadataLogMinAggregateOutputType | null
+    _max: KioskMetadataLogMaxAggregateOutputType | null
+  }
+
+  export type KioskMetadataLogAvgAggregateOutputType = {
+    id: number | null
+  }
+
+  export type KioskMetadataLogSumAggregateOutputType = {
+    id: number | null
+  }
+
+  export type KioskMetadataLogMinAggregateOutputType = {
+    id: number | null
+    kioskId: string | null
+    metadataType: string | null
+    encryptedMetadata: string | null
+    collectionTimestamp: Date | null
+  }
+
+  export type KioskMetadataLogMaxAggregateOutputType = {
+    id: number | null
+    kioskId: string | null
+    metadataType: string | null
+    encryptedMetadata: string | null
+    collectionTimestamp: Date | null
+  }
+
+  export type KioskMetadataLogCountAggregateOutputType = {
+    id: number
+    kioskId: number
+    metadataType: number
+    encryptedMetadata: number
+    collectionTimestamp: number
+    _all: number
+  }
+
+
+  export type KioskMetadataLogAvgAggregateInputType = {
+    id?: true
+  }
+
+  export type KioskMetadataLogSumAggregateInputType = {
+    id?: true
+  }
+
+  export type KioskMetadataLogMinAggregateInputType = {
+    id?: true
+    kioskId?: true
+    metadataType?: true
+    encryptedMetadata?: true
+    collectionTimestamp?: true
+  }
+
+  export type KioskMetadataLogMaxAggregateInputType = {
+    id?: true
+    kioskId?: true
+    metadataType?: true
+    encryptedMetadata?: true
+    collectionTimestamp?: true
+  }
+
+  export type KioskMetadataLogCountAggregateInputType = {
+    id?: true
+    kioskId?: true
+    metadataType?: true
+    encryptedMetadata?: true
+    collectionTimestamp?: true
+    _all?: true
+  }
+
+  export type KioskMetadataLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KioskMetadataLog to aggregate.
+     */
+    where?: KioskMetadataLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KioskMetadataLogs to fetch.
+     */
+    orderBy?: KioskMetadataLogOrderByWithRelationInput | KioskMetadataLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: KioskMetadataLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KioskMetadataLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KioskMetadataLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned KioskMetadataLogs
+    **/
+    _count?: true | KioskMetadataLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: KioskMetadataLogAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: KioskMetadataLogSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: KioskMetadataLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: KioskMetadataLogMaxAggregateInputType
+  }
+
+  export type GetKioskMetadataLogAggregateType<T extends KioskMetadataLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateKioskMetadataLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateKioskMetadataLog[P]>
+      : GetScalarType<T[P], AggregateKioskMetadataLog[P]>
+  }
+
+
+
+
+  export type KioskMetadataLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KioskMetadataLogWhereInput
+    orderBy?: KioskMetadataLogOrderByWithAggregationInput | KioskMetadataLogOrderByWithAggregationInput[]
+    by: KioskMetadataLogScalarFieldEnum[] | KioskMetadataLogScalarFieldEnum
+    having?: KioskMetadataLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: KioskMetadataLogCountAggregateInputType | true
+    _avg?: KioskMetadataLogAvgAggregateInputType
+    _sum?: KioskMetadataLogSumAggregateInputType
+    _min?: KioskMetadataLogMinAggregateInputType
+    _max?: KioskMetadataLogMaxAggregateInputType
+  }
+
+  export type KioskMetadataLogGroupByOutputType = {
+    id: number
+    kioskId: string
+    metadataType: string
+    encryptedMetadata: string | null
+    collectionTimestamp: Date
+    _count: KioskMetadataLogCountAggregateOutputType | null
+    _avg: KioskMetadataLogAvgAggregateOutputType | null
+    _sum: KioskMetadataLogSumAggregateOutputType | null
+    _min: KioskMetadataLogMinAggregateOutputType | null
+    _max: KioskMetadataLogMaxAggregateOutputType | null
+  }
+
+  type GetKioskMetadataLogGroupByPayload<T extends KioskMetadataLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<KioskMetadataLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof KioskMetadataLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], KioskMetadataLogGroupByOutputType[P]>
+            : GetScalarType<T[P], KioskMetadataLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type KioskMetadataLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    metadataType?: boolean
+    encryptedMetadata?: boolean
+    collectionTimestamp?: boolean
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["kioskMetadataLog"]>
+
+  export type KioskMetadataLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    metadataType?: boolean
+    encryptedMetadata?: boolean
+    collectionTimestamp?: boolean
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["kioskMetadataLog"]>
+
+  export type KioskMetadataLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    metadataType?: boolean
+    encryptedMetadata?: boolean
+    collectionTimestamp?: boolean
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["kioskMetadataLog"]>
+
+  export type KioskMetadataLogSelectScalar = {
+    id?: boolean
+    kioskId?: boolean
+    metadataType?: boolean
+    encryptedMetadata?: boolean
+    collectionTimestamp?: boolean
+  }
+
+  export type KioskMetadataLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kioskId" | "metadataType" | "encryptedMetadata" | "collectionTimestamp", ExtArgs["result"]["kioskMetadataLog"]>
+  export type KioskMetadataLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }
+  export type KioskMetadataLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }
+  export type KioskMetadataLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kiosk?: boolean | KioskDefaultArgs<ExtArgs>
+  }
+
+  export type $KioskMetadataLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "KioskMetadataLog"
+    objects: {
+      kiosk: Prisma.$KioskPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      kioskId: string
+      metadataType: string
+      encryptedMetadata: string | null
+      collectionTimestamp: Date
+    }, ExtArgs["result"]["kioskMetadataLog"]>
+    composites: {}
+  }
+
+  type KioskMetadataLogGetPayload<S extends boolean | null | undefined | KioskMetadataLogDefaultArgs> = $Result.GetResult<Prisma.$KioskMetadataLogPayload, S>
+
+  type KioskMetadataLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<KioskMetadataLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: KioskMetadataLogCountAggregateInputType | true
+    }
+
+  export interface KioskMetadataLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['KioskMetadataLog'], meta: { name: 'KioskMetadataLog' } }
+    /**
+     * Find zero or one KioskMetadataLog that matches the filter.
+     * @param {KioskMetadataLogFindUniqueArgs} args - Arguments to find a KioskMetadataLog
+     * @example
+     * // Get one KioskMetadataLog
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends KioskMetadataLogFindUniqueArgs>(args: SelectSubset<T, KioskMetadataLogFindUniqueArgs<ExtArgs>>): Prisma__KioskMetadataLogClient<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one KioskMetadataLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {KioskMetadataLogFindUniqueOrThrowArgs} args - Arguments to find a KioskMetadataLog
+     * @example
+     * // Get one KioskMetadataLog
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends KioskMetadataLogFindUniqueOrThrowArgs>(args: SelectSubset<T, KioskMetadataLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__KioskMetadataLogClient<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KioskMetadataLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskMetadataLogFindFirstArgs} args - Arguments to find a KioskMetadataLog
+     * @example
+     * // Get one KioskMetadataLog
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends KioskMetadataLogFindFirstArgs>(args?: SelectSubset<T, KioskMetadataLogFindFirstArgs<ExtArgs>>): Prisma__KioskMetadataLogClient<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KioskMetadataLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskMetadataLogFindFirstOrThrowArgs} args - Arguments to find a KioskMetadataLog
+     * @example
+     * // Get one KioskMetadataLog
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends KioskMetadataLogFindFirstOrThrowArgs>(args?: SelectSubset<T, KioskMetadataLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__KioskMetadataLogClient<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more KioskMetadataLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskMetadataLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all KioskMetadataLogs
+     * const kioskMetadataLogs = await prisma.kioskMetadataLog.findMany()
+     * 
+     * // Get first 10 KioskMetadataLogs
+     * const kioskMetadataLogs = await prisma.kioskMetadataLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const kioskMetadataLogWithIdOnly = await prisma.kioskMetadataLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends KioskMetadataLogFindManyArgs>(args?: SelectSubset<T, KioskMetadataLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a KioskMetadataLog.
+     * @param {KioskMetadataLogCreateArgs} args - Arguments to create a KioskMetadataLog.
+     * @example
+     * // Create one KioskMetadataLog
+     * const KioskMetadataLog = await prisma.kioskMetadataLog.create({
+     *   data: {
+     *     // ... data to create a KioskMetadataLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends KioskMetadataLogCreateArgs>(args: SelectSubset<T, KioskMetadataLogCreateArgs<ExtArgs>>): Prisma__KioskMetadataLogClient<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many KioskMetadataLogs.
+     * @param {KioskMetadataLogCreateManyArgs} args - Arguments to create many KioskMetadataLogs.
+     * @example
+     * // Create many KioskMetadataLogs
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends KioskMetadataLogCreateManyArgs>(args?: SelectSubset<T, KioskMetadataLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many KioskMetadataLogs and returns the data saved in the database.
+     * @param {KioskMetadataLogCreateManyAndReturnArgs} args - Arguments to create many KioskMetadataLogs.
+     * @example
+     * // Create many KioskMetadataLogs
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many KioskMetadataLogs and only return the `id`
+     * const kioskMetadataLogWithIdOnly = await prisma.kioskMetadataLog.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends KioskMetadataLogCreateManyAndReturnArgs>(args?: SelectSubset<T, KioskMetadataLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a KioskMetadataLog.
+     * @param {KioskMetadataLogDeleteArgs} args - Arguments to delete one KioskMetadataLog.
+     * @example
+     * // Delete one KioskMetadataLog
+     * const KioskMetadataLog = await prisma.kioskMetadataLog.delete({
+     *   where: {
+     *     // ... filter to delete one KioskMetadataLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends KioskMetadataLogDeleteArgs>(args: SelectSubset<T, KioskMetadataLogDeleteArgs<ExtArgs>>): Prisma__KioskMetadataLogClient<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one KioskMetadataLog.
+     * @param {KioskMetadataLogUpdateArgs} args - Arguments to update one KioskMetadataLog.
+     * @example
+     * // Update one KioskMetadataLog
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends KioskMetadataLogUpdateArgs>(args: SelectSubset<T, KioskMetadataLogUpdateArgs<ExtArgs>>): Prisma__KioskMetadataLogClient<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more KioskMetadataLogs.
+     * @param {KioskMetadataLogDeleteManyArgs} args - Arguments to filter KioskMetadataLogs to delete.
+     * @example
+     * // Delete a few KioskMetadataLogs
+     * const { count } = await prisma.kioskMetadataLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends KioskMetadataLogDeleteManyArgs>(args?: SelectSubset<T, KioskMetadataLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KioskMetadataLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskMetadataLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many KioskMetadataLogs
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends KioskMetadataLogUpdateManyArgs>(args: SelectSubset<T, KioskMetadataLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KioskMetadataLogs and returns the data updated in the database.
+     * @param {KioskMetadataLogUpdateManyAndReturnArgs} args - Arguments to update many KioskMetadataLogs.
+     * @example
+     * // Update many KioskMetadataLogs
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more KioskMetadataLogs and only return the `id`
+     * const kioskMetadataLogWithIdOnly = await prisma.kioskMetadataLog.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends KioskMetadataLogUpdateManyAndReturnArgs>(args: SelectSubset<T, KioskMetadataLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one KioskMetadataLog.
+     * @param {KioskMetadataLogUpsertArgs} args - Arguments to update or create a KioskMetadataLog.
+     * @example
+     * // Update or create a KioskMetadataLog
+     * const kioskMetadataLog = await prisma.kioskMetadataLog.upsert({
+     *   create: {
+     *     // ... data to create a KioskMetadataLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the KioskMetadataLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends KioskMetadataLogUpsertArgs>(args: SelectSubset<T, KioskMetadataLogUpsertArgs<ExtArgs>>): Prisma__KioskMetadataLogClient<$Result.GetResult<Prisma.$KioskMetadataLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of KioskMetadataLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskMetadataLogCountArgs} args - Arguments to filter KioskMetadataLogs to count.
+     * @example
+     * // Count the number of KioskMetadataLogs
+     * const count = await prisma.kioskMetadataLog.count({
+     *   where: {
+     *     // ... the filter for the KioskMetadataLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends KioskMetadataLogCountArgs>(
+      args?: Subset<T, KioskMetadataLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], KioskMetadataLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a KioskMetadataLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskMetadataLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends KioskMetadataLogAggregateArgs>(args: Subset<T, KioskMetadataLogAggregateArgs>): Prisma.PrismaPromise<GetKioskMetadataLogAggregateType<T>>
+
+    /**
+     * Group by KioskMetadataLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KioskMetadataLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends KioskMetadataLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: KioskMetadataLogGroupByArgs['orderBy'] }
+        : { orderBy?: KioskMetadataLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, KioskMetadataLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetKioskMetadataLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the KioskMetadataLog model
+   */
+  readonly fields: KioskMetadataLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for KioskMetadataLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__KioskMetadataLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    kiosk<T extends KioskDefaultArgs<ExtArgs> = {}>(args?: Subset<T, KioskDefaultArgs<ExtArgs>>): Prisma__KioskClient<$Result.GetResult<Prisma.$KioskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the KioskMetadataLog model
+   */
+  interface KioskMetadataLogFieldRefs {
+    readonly id: FieldRef<"KioskMetadataLog", 'Int'>
+    readonly kioskId: FieldRef<"KioskMetadataLog", 'String'>
+    readonly metadataType: FieldRef<"KioskMetadataLog", 'String'>
+    readonly encryptedMetadata: FieldRef<"KioskMetadataLog", 'String'>
+    readonly collectionTimestamp: FieldRef<"KioskMetadataLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * KioskMetadataLog findUnique
+   */
+  export type KioskMetadataLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskMetadataLog to fetch.
+     */
+    where: KioskMetadataLogWhereUniqueInput
+  }
+
+  /**
+   * KioskMetadataLog findUniqueOrThrow
+   */
+  export type KioskMetadataLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskMetadataLog to fetch.
+     */
+    where: KioskMetadataLogWhereUniqueInput
+  }
+
+  /**
+   * KioskMetadataLog findFirst
+   */
+  export type KioskMetadataLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskMetadataLog to fetch.
+     */
+    where?: KioskMetadataLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KioskMetadataLogs to fetch.
+     */
+    orderBy?: KioskMetadataLogOrderByWithRelationInput | KioskMetadataLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KioskMetadataLogs.
+     */
+    cursor?: KioskMetadataLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KioskMetadataLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KioskMetadataLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KioskMetadataLogs.
+     */
+    distinct?: KioskMetadataLogScalarFieldEnum | KioskMetadataLogScalarFieldEnum[]
+  }
+
+  /**
+   * KioskMetadataLog findFirstOrThrow
+   */
+  export type KioskMetadataLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskMetadataLog to fetch.
+     */
+    where?: KioskMetadataLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KioskMetadataLogs to fetch.
+     */
+    orderBy?: KioskMetadataLogOrderByWithRelationInput | KioskMetadataLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KioskMetadataLogs.
+     */
+    cursor?: KioskMetadataLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KioskMetadataLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KioskMetadataLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KioskMetadataLogs.
+     */
+    distinct?: KioskMetadataLogScalarFieldEnum | KioskMetadataLogScalarFieldEnum[]
+  }
+
+  /**
+   * KioskMetadataLog findMany
+   */
+  export type KioskMetadataLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    /**
+     * Filter, which KioskMetadataLogs to fetch.
+     */
+    where?: KioskMetadataLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KioskMetadataLogs to fetch.
+     */
+    orderBy?: KioskMetadataLogOrderByWithRelationInput | KioskMetadataLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing KioskMetadataLogs.
+     */
+    cursor?: KioskMetadataLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KioskMetadataLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KioskMetadataLogs.
+     */
+    skip?: number
+    distinct?: KioskMetadataLogScalarFieldEnum | KioskMetadataLogScalarFieldEnum[]
+  }
+
+  /**
+   * KioskMetadataLog create
+   */
+  export type KioskMetadataLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a KioskMetadataLog.
+     */
+    data: XOR<KioskMetadataLogCreateInput, KioskMetadataLogUncheckedCreateInput>
+  }
+
+  /**
+   * KioskMetadataLog createMany
+   */
+  export type KioskMetadataLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many KioskMetadataLogs.
+     */
+    data: KioskMetadataLogCreateManyInput | KioskMetadataLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * KioskMetadataLog createManyAndReturn
+   */
+  export type KioskMetadataLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many KioskMetadataLogs.
+     */
+    data: KioskMetadataLogCreateManyInput | KioskMetadataLogCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * KioskMetadataLog update
+   */
+  export type KioskMetadataLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a KioskMetadataLog.
+     */
+    data: XOR<KioskMetadataLogUpdateInput, KioskMetadataLogUncheckedUpdateInput>
+    /**
+     * Choose, which KioskMetadataLog to update.
+     */
+    where: KioskMetadataLogWhereUniqueInput
+  }
+
+  /**
+   * KioskMetadataLog updateMany
+   */
+  export type KioskMetadataLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update KioskMetadataLogs.
+     */
+    data: XOR<KioskMetadataLogUpdateManyMutationInput, KioskMetadataLogUncheckedUpdateManyInput>
+    /**
+     * Filter which KioskMetadataLogs to update
+     */
+    where?: KioskMetadataLogWhereInput
+    /**
+     * Limit how many KioskMetadataLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * KioskMetadataLog updateManyAndReturn
+   */
+  export type KioskMetadataLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * The data used to update KioskMetadataLogs.
+     */
+    data: XOR<KioskMetadataLogUpdateManyMutationInput, KioskMetadataLogUncheckedUpdateManyInput>
+    /**
+     * Filter which KioskMetadataLogs to update
+     */
+    where?: KioskMetadataLogWhereInput
+    /**
+     * Limit how many KioskMetadataLogs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * KioskMetadataLog upsert
+   */
+  export type KioskMetadataLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the KioskMetadataLog to update in case it exists.
+     */
+    where: KioskMetadataLogWhereUniqueInput
+    /**
+     * In case the KioskMetadataLog found by the `where` argument doesn't exist, create a new KioskMetadataLog with this data.
+     */
+    create: XOR<KioskMetadataLogCreateInput, KioskMetadataLogUncheckedCreateInput>
+    /**
+     * In case the KioskMetadataLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<KioskMetadataLogUpdateInput, KioskMetadataLogUncheckedUpdateInput>
+  }
+
+  /**
+   * KioskMetadataLog delete
+   */
+  export type KioskMetadataLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
+    /**
+     * Filter which KioskMetadataLog to delete.
+     */
+    where: KioskMetadataLogWhereUniqueInput
+  }
+
+  /**
+   * KioskMetadataLog deleteMany
+   */
+  export type KioskMetadataLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KioskMetadataLogs to delete
+     */
+    where?: KioskMetadataLogWhereInput
+    /**
+     * Limit how many KioskMetadataLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * KioskMetadataLog without action
+   */
+  export type KioskMetadataLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KioskMetadataLog
+     */
+    select?: KioskMetadataLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KioskMetadataLog
+     */
+    omit?: KioskMetadataLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KioskMetadataLogInclude<ExtArgs> | null
   }
 
 
@@ -52933,6 +57055,3379 @@ export namespace Prisma {
 
 
   /**
+   * Model AgentAvailability
+   */
+
+  export type AggregateAgentAvailability = {
+    _count: AgentAvailabilityCountAggregateOutputType | null
+    _avg: AgentAvailabilityAvgAggregateOutputType | null
+    _sum: AgentAvailabilitySumAggregateOutputType | null
+    _min: AgentAvailabilityMinAggregateOutputType | null
+    _max: AgentAvailabilityMaxAggregateOutputType | null
+  }
+
+  export type AgentAvailabilityAvgAggregateOutputType = {
+    maxCapacity: number | null
+    currentLoad: number | null
+  }
+
+  export type AgentAvailabilitySumAggregateOutputType = {
+    maxCapacity: number | null
+    currentLoad: number | null
+  }
+
+  export type AgentAvailabilityMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    queueName: string | null
+    isAvailable: boolean | null
+    maxCapacity: number | null
+    currentLoad: number | null
+    status: string | null
+    lastUpdated: Date | null
+    createdAt: Date | null
+  }
+
+  export type AgentAvailabilityMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    queueName: string | null
+    isAvailable: boolean | null
+    maxCapacity: number | null
+    currentLoad: number | null
+    status: string | null
+    lastUpdated: Date | null
+    createdAt: Date | null
+  }
+
+  export type AgentAvailabilityCountAggregateOutputType = {
+    id: number
+    userId: number
+    queueName: number
+    isAvailable: number
+    maxCapacity: number
+    currentLoad: number
+    status: number
+    lastUpdated: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AgentAvailabilityAvgAggregateInputType = {
+    maxCapacity?: true
+    currentLoad?: true
+  }
+
+  export type AgentAvailabilitySumAggregateInputType = {
+    maxCapacity?: true
+    currentLoad?: true
+  }
+
+  export type AgentAvailabilityMinAggregateInputType = {
+    id?: true
+    userId?: true
+    queueName?: true
+    isAvailable?: true
+    maxCapacity?: true
+    currentLoad?: true
+    status?: true
+    lastUpdated?: true
+    createdAt?: true
+  }
+
+  export type AgentAvailabilityMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    queueName?: true
+    isAvailable?: true
+    maxCapacity?: true
+    currentLoad?: true
+    status?: true
+    lastUpdated?: true
+    createdAt?: true
+  }
+
+  export type AgentAvailabilityCountAggregateInputType = {
+    id?: true
+    userId?: true
+    queueName?: true
+    isAvailable?: true
+    maxCapacity?: true
+    currentLoad?: true
+    status?: true
+    lastUpdated?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AgentAvailabilityAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentAvailability to aggregate.
+     */
+    where?: AgentAvailabilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentAvailabilities to fetch.
+     */
+    orderBy?: AgentAvailabilityOrderByWithRelationInput | AgentAvailabilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AgentAvailabilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentAvailabilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentAvailabilities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AgentAvailabilities
+    **/
+    _count?: true | AgentAvailabilityCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AgentAvailabilityAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AgentAvailabilitySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AgentAvailabilityMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AgentAvailabilityMaxAggregateInputType
+  }
+
+  export type GetAgentAvailabilityAggregateType<T extends AgentAvailabilityAggregateArgs> = {
+        [P in keyof T & keyof AggregateAgentAvailability]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAgentAvailability[P]>
+      : GetScalarType<T[P], AggregateAgentAvailability[P]>
+  }
+
+
+
+
+  export type AgentAvailabilityGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentAvailabilityWhereInput
+    orderBy?: AgentAvailabilityOrderByWithAggregationInput | AgentAvailabilityOrderByWithAggregationInput[]
+    by: AgentAvailabilityScalarFieldEnum[] | AgentAvailabilityScalarFieldEnum
+    having?: AgentAvailabilityScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AgentAvailabilityCountAggregateInputType | true
+    _avg?: AgentAvailabilityAvgAggregateInputType
+    _sum?: AgentAvailabilitySumAggregateInputType
+    _min?: AgentAvailabilityMinAggregateInputType
+    _max?: AgentAvailabilityMaxAggregateInputType
+  }
+
+  export type AgentAvailabilityGroupByOutputType = {
+    id: string
+    userId: string
+    queueName: string
+    isAvailable: boolean
+    maxCapacity: number
+    currentLoad: number
+    status: string
+    lastUpdated: Date
+    createdAt: Date
+    _count: AgentAvailabilityCountAggregateOutputType | null
+    _avg: AgentAvailabilityAvgAggregateOutputType | null
+    _sum: AgentAvailabilitySumAggregateOutputType | null
+    _min: AgentAvailabilityMinAggregateOutputType | null
+    _max: AgentAvailabilityMaxAggregateOutputType | null
+  }
+
+  type GetAgentAvailabilityGroupByPayload<T extends AgentAvailabilityGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AgentAvailabilityGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AgentAvailabilityGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AgentAvailabilityGroupByOutputType[P]>
+            : GetScalarType<T[P], AgentAvailabilityGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AgentAvailabilitySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    queueName?: boolean
+    isAvailable?: boolean
+    maxCapacity?: boolean
+    currentLoad?: boolean
+    status?: boolean
+    lastUpdated?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentAvailability"]>
+
+  export type AgentAvailabilitySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    queueName?: boolean
+    isAvailable?: boolean
+    maxCapacity?: boolean
+    currentLoad?: boolean
+    status?: boolean
+    lastUpdated?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentAvailability"]>
+
+  export type AgentAvailabilitySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    queueName?: boolean
+    isAvailable?: boolean
+    maxCapacity?: boolean
+    currentLoad?: boolean
+    status?: boolean
+    lastUpdated?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentAvailability"]>
+
+  export type AgentAvailabilitySelectScalar = {
+    id?: boolean
+    userId?: boolean
+    queueName?: boolean
+    isAvailable?: boolean
+    maxCapacity?: boolean
+    currentLoad?: boolean
+    status?: boolean
+    lastUpdated?: boolean
+    createdAt?: boolean
+  }
+
+  export type AgentAvailabilityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "queueName" | "isAvailable" | "maxCapacity" | "currentLoad" | "status" | "lastUpdated" | "createdAt", ExtArgs["result"]["agentAvailability"]>
+  export type AgentAvailabilityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type AgentAvailabilityIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type AgentAvailabilityIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $AgentAvailabilityPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AgentAvailability"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      queueName: string
+      isAvailable: boolean
+      maxCapacity: number
+      currentLoad: number
+      status: string
+      lastUpdated: Date
+      createdAt: Date
+    }, ExtArgs["result"]["agentAvailability"]>
+    composites: {}
+  }
+
+  type AgentAvailabilityGetPayload<S extends boolean | null | undefined | AgentAvailabilityDefaultArgs> = $Result.GetResult<Prisma.$AgentAvailabilityPayload, S>
+
+  type AgentAvailabilityCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AgentAvailabilityFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AgentAvailabilityCountAggregateInputType | true
+    }
+
+  export interface AgentAvailabilityDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AgentAvailability'], meta: { name: 'AgentAvailability' } }
+    /**
+     * Find zero or one AgentAvailability that matches the filter.
+     * @param {AgentAvailabilityFindUniqueArgs} args - Arguments to find a AgentAvailability
+     * @example
+     * // Get one AgentAvailability
+     * const agentAvailability = await prisma.agentAvailability.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AgentAvailabilityFindUniqueArgs>(args: SelectSubset<T, AgentAvailabilityFindUniqueArgs<ExtArgs>>): Prisma__AgentAvailabilityClient<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AgentAvailability that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AgentAvailabilityFindUniqueOrThrowArgs} args - Arguments to find a AgentAvailability
+     * @example
+     * // Get one AgentAvailability
+     * const agentAvailability = await prisma.agentAvailability.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AgentAvailabilityFindUniqueOrThrowArgs>(args: SelectSubset<T, AgentAvailabilityFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AgentAvailabilityClient<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentAvailability that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentAvailabilityFindFirstArgs} args - Arguments to find a AgentAvailability
+     * @example
+     * // Get one AgentAvailability
+     * const agentAvailability = await prisma.agentAvailability.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AgentAvailabilityFindFirstArgs>(args?: SelectSubset<T, AgentAvailabilityFindFirstArgs<ExtArgs>>): Prisma__AgentAvailabilityClient<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentAvailability that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentAvailabilityFindFirstOrThrowArgs} args - Arguments to find a AgentAvailability
+     * @example
+     * // Get one AgentAvailability
+     * const agentAvailability = await prisma.agentAvailability.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AgentAvailabilityFindFirstOrThrowArgs>(args?: SelectSubset<T, AgentAvailabilityFindFirstOrThrowArgs<ExtArgs>>): Prisma__AgentAvailabilityClient<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AgentAvailabilities that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentAvailabilityFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AgentAvailabilities
+     * const agentAvailabilities = await prisma.agentAvailability.findMany()
+     * 
+     * // Get first 10 AgentAvailabilities
+     * const agentAvailabilities = await prisma.agentAvailability.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const agentAvailabilityWithIdOnly = await prisma.agentAvailability.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AgentAvailabilityFindManyArgs>(args?: SelectSubset<T, AgentAvailabilityFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AgentAvailability.
+     * @param {AgentAvailabilityCreateArgs} args - Arguments to create a AgentAvailability.
+     * @example
+     * // Create one AgentAvailability
+     * const AgentAvailability = await prisma.agentAvailability.create({
+     *   data: {
+     *     // ... data to create a AgentAvailability
+     *   }
+     * })
+     * 
+     */
+    create<T extends AgentAvailabilityCreateArgs>(args: SelectSubset<T, AgentAvailabilityCreateArgs<ExtArgs>>): Prisma__AgentAvailabilityClient<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AgentAvailabilities.
+     * @param {AgentAvailabilityCreateManyArgs} args - Arguments to create many AgentAvailabilities.
+     * @example
+     * // Create many AgentAvailabilities
+     * const agentAvailability = await prisma.agentAvailability.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AgentAvailabilityCreateManyArgs>(args?: SelectSubset<T, AgentAvailabilityCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AgentAvailabilities and returns the data saved in the database.
+     * @param {AgentAvailabilityCreateManyAndReturnArgs} args - Arguments to create many AgentAvailabilities.
+     * @example
+     * // Create many AgentAvailabilities
+     * const agentAvailability = await prisma.agentAvailability.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AgentAvailabilities and only return the `id`
+     * const agentAvailabilityWithIdOnly = await prisma.agentAvailability.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AgentAvailabilityCreateManyAndReturnArgs>(args?: SelectSubset<T, AgentAvailabilityCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AgentAvailability.
+     * @param {AgentAvailabilityDeleteArgs} args - Arguments to delete one AgentAvailability.
+     * @example
+     * // Delete one AgentAvailability
+     * const AgentAvailability = await prisma.agentAvailability.delete({
+     *   where: {
+     *     // ... filter to delete one AgentAvailability
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AgentAvailabilityDeleteArgs>(args: SelectSubset<T, AgentAvailabilityDeleteArgs<ExtArgs>>): Prisma__AgentAvailabilityClient<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AgentAvailability.
+     * @param {AgentAvailabilityUpdateArgs} args - Arguments to update one AgentAvailability.
+     * @example
+     * // Update one AgentAvailability
+     * const agentAvailability = await prisma.agentAvailability.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AgentAvailabilityUpdateArgs>(args: SelectSubset<T, AgentAvailabilityUpdateArgs<ExtArgs>>): Prisma__AgentAvailabilityClient<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AgentAvailabilities.
+     * @param {AgentAvailabilityDeleteManyArgs} args - Arguments to filter AgentAvailabilities to delete.
+     * @example
+     * // Delete a few AgentAvailabilities
+     * const { count } = await prisma.agentAvailability.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AgentAvailabilityDeleteManyArgs>(args?: SelectSubset<T, AgentAvailabilityDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentAvailabilities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentAvailabilityUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AgentAvailabilities
+     * const agentAvailability = await prisma.agentAvailability.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AgentAvailabilityUpdateManyArgs>(args: SelectSubset<T, AgentAvailabilityUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentAvailabilities and returns the data updated in the database.
+     * @param {AgentAvailabilityUpdateManyAndReturnArgs} args - Arguments to update many AgentAvailabilities.
+     * @example
+     * // Update many AgentAvailabilities
+     * const agentAvailability = await prisma.agentAvailability.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AgentAvailabilities and only return the `id`
+     * const agentAvailabilityWithIdOnly = await prisma.agentAvailability.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AgentAvailabilityUpdateManyAndReturnArgs>(args: SelectSubset<T, AgentAvailabilityUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AgentAvailability.
+     * @param {AgentAvailabilityUpsertArgs} args - Arguments to update or create a AgentAvailability.
+     * @example
+     * // Update or create a AgentAvailability
+     * const agentAvailability = await prisma.agentAvailability.upsert({
+     *   create: {
+     *     // ... data to create a AgentAvailability
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AgentAvailability we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AgentAvailabilityUpsertArgs>(args: SelectSubset<T, AgentAvailabilityUpsertArgs<ExtArgs>>): Prisma__AgentAvailabilityClient<$Result.GetResult<Prisma.$AgentAvailabilityPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AgentAvailabilities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentAvailabilityCountArgs} args - Arguments to filter AgentAvailabilities to count.
+     * @example
+     * // Count the number of AgentAvailabilities
+     * const count = await prisma.agentAvailability.count({
+     *   where: {
+     *     // ... the filter for the AgentAvailabilities we want to count
+     *   }
+     * })
+    **/
+    count<T extends AgentAvailabilityCountArgs>(
+      args?: Subset<T, AgentAvailabilityCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AgentAvailabilityCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AgentAvailability.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentAvailabilityAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AgentAvailabilityAggregateArgs>(args: Subset<T, AgentAvailabilityAggregateArgs>): Prisma.PrismaPromise<GetAgentAvailabilityAggregateType<T>>
+
+    /**
+     * Group by AgentAvailability.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentAvailabilityGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AgentAvailabilityGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AgentAvailabilityGroupByArgs['orderBy'] }
+        : { orderBy?: AgentAvailabilityGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AgentAvailabilityGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAgentAvailabilityGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AgentAvailability model
+   */
+  readonly fields: AgentAvailabilityFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AgentAvailability.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AgentAvailabilityClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AgentAvailability model
+   */
+  interface AgentAvailabilityFieldRefs {
+    readonly id: FieldRef<"AgentAvailability", 'String'>
+    readonly userId: FieldRef<"AgentAvailability", 'String'>
+    readonly queueName: FieldRef<"AgentAvailability", 'String'>
+    readonly isAvailable: FieldRef<"AgentAvailability", 'Boolean'>
+    readonly maxCapacity: FieldRef<"AgentAvailability", 'Int'>
+    readonly currentLoad: FieldRef<"AgentAvailability", 'Int'>
+    readonly status: FieldRef<"AgentAvailability", 'String'>
+    readonly lastUpdated: FieldRef<"AgentAvailability", 'DateTime'>
+    readonly createdAt: FieldRef<"AgentAvailability", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AgentAvailability findUnique
+   */
+  export type AgentAvailabilityFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentAvailability to fetch.
+     */
+    where: AgentAvailabilityWhereUniqueInput
+  }
+
+  /**
+   * AgentAvailability findUniqueOrThrow
+   */
+  export type AgentAvailabilityFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentAvailability to fetch.
+     */
+    where: AgentAvailabilityWhereUniqueInput
+  }
+
+  /**
+   * AgentAvailability findFirst
+   */
+  export type AgentAvailabilityFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentAvailability to fetch.
+     */
+    where?: AgentAvailabilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentAvailabilities to fetch.
+     */
+    orderBy?: AgentAvailabilityOrderByWithRelationInput | AgentAvailabilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentAvailabilities.
+     */
+    cursor?: AgentAvailabilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentAvailabilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentAvailabilities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentAvailabilities.
+     */
+    distinct?: AgentAvailabilityScalarFieldEnum | AgentAvailabilityScalarFieldEnum[]
+  }
+
+  /**
+   * AgentAvailability findFirstOrThrow
+   */
+  export type AgentAvailabilityFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentAvailability to fetch.
+     */
+    where?: AgentAvailabilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentAvailabilities to fetch.
+     */
+    orderBy?: AgentAvailabilityOrderByWithRelationInput | AgentAvailabilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentAvailabilities.
+     */
+    cursor?: AgentAvailabilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentAvailabilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentAvailabilities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentAvailabilities.
+     */
+    distinct?: AgentAvailabilityScalarFieldEnum | AgentAvailabilityScalarFieldEnum[]
+  }
+
+  /**
+   * AgentAvailability findMany
+   */
+  export type AgentAvailabilityFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentAvailabilities to fetch.
+     */
+    where?: AgentAvailabilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentAvailabilities to fetch.
+     */
+    orderBy?: AgentAvailabilityOrderByWithRelationInput | AgentAvailabilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AgentAvailabilities.
+     */
+    cursor?: AgentAvailabilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentAvailabilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentAvailabilities.
+     */
+    skip?: number
+    distinct?: AgentAvailabilityScalarFieldEnum | AgentAvailabilityScalarFieldEnum[]
+  }
+
+  /**
+   * AgentAvailability create
+   */
+  export type AgentAvailabilityCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AgentAvailability.
+     */
+    data: XOR<AgentAvailabilityCreateInput, AgentAvailabilityUncheckedCreateInput>
+  }
+
+  /**
+   * AgentAvailability createMany
+   */
+  export type AgentAvailabilityCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AgentAvailabilities.
+     */
+    data: AgentAvailabilityCreateManyInput | AgentAvailabilityCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AgentAvailability createManyAndReturn
+   */
+  export type AgentAvailabilityCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * The data used to create many AgentAvailabilities.
+     */
+    data: AgentAvailabilityCreateManyInput | AgentAvailabilityCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentAvailability update
+   */
+  export type AgentAvailabilityUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AgentAvailability.
+     */
+    data: XOR<AgentAvailabilityUpdateInput, AgentAvailabilityUncheckedUpdateInput>
+    /**
+     * Choose, which AgentAvailability to update.
+     */
+    where: AgentAvailabilityWhereUniqueInput
+  }
+
+  /**
+   * AgentAvailability updateMany
+   */
+  export type AgentAvailabilityUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AgentAvailabilities.
+     */
+    data: XOR<AgentAvailabilityUpdateManyMutationInput, AgentAvailabilityUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentAvailabilities to update
+     */
+    where?: AgentAvailabilityWhereInput
+    /**
+     * Limit how many AgentAvailabilities to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentAvailability updateManyAndReturn
+   */
+  export type AgentAvailabilityUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * The data used to update AgentAvailabilities.
+     */
+    data: XOR<AgentAvailabilityUpdateManyMutationInput, AgentAvailabilityUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentAvailabilities to update
+     */
+    where?: AgentAvailabilityWhereInput
+    /**
+     * Limit how many AgentAvailabilities to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentAvailability upsert
+   */
+  export type AgentAvailabilityUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AgentAvailability to update in case it exists.
+     */
+    where: AgentAvailabilityWhereUniqueInput
+    /**
+     * In case the AgentAvailability found by the `where` argument doesn't exist, create a new AgentAvailability with this data.
+     */
+    create: XOR<AgentAvailabilityCreateInput, AgentAvailabilityUncheckedCreateInput>
+    /**
+     * In case the AgentAvailability was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AgentAvailabilityUpdateInput, AgentAvailabilityUncheckedUpdateInput>
+  }
+
+  /**
+   * AgentAvailability delete
+   */
+  export type AgentAvailabilityDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter which AgentAvailability to delete.
+     */
+    where: AgentAvailabilityWhereUniqueInput
+  }
+
+  /**
+   * AgentAvailability deleteMany
+   */
+  export type AgentAvailabilityDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentAvailabilities to delete
+     */
+    where?: AgentAvailabilityWhereInput
+    /**
+     * Limit how many AgentAvailabilities to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentAvailability without action
+   */
+  export type AgentAvailabilityDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentAvailability
+     */
+    select?: AgentAvailabilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentAvailability
+     */
+    omit?: AgentAvailabilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentAvailabilityInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model QueueMetrics
+   */
+
+  export type AggregateQueueMetrics = {
+    _count: QueueMetricsCountAggregateOutputType | null
+    _avg: QueueMetricsAvgAggregateOutputType | null
+    _sum: QueueMetricsSumAggregateOutputType | null
+    _min: QueueMetricsMinAggregateOutputType | null
+    _max: QueueMetricsMaxAggregateOutputType | null
+  }
+
+  export type QueueMetricsAvgAggregateOutputType = {
+    totalAgents: number | null
+    availableAgents: number | null
+    totalTickets: number | null
+    openTickets: number | null
+    avgResponseTime: number | null
+    avgResolutionTime: number | null
+    slaBreaches: number | null
+    highPriorityTickets: number | null
+    capacityUtilization: number | null
+    averageWaitTime: number | null
+  }
+
+  export type QueueMetricsSumAggregateOutputType = {
+    totalAgents: number | null
+    availableAgents: number | null
+    totalTickets: number | null
+    openTickets: number | null
+    avgResponseTime: number | null
+    avgResolutionTime: number | null
+    slaBreaches: number | null
+    highPriorityTickets: number | null
+    capacityUtilization: number | null
+    averageWaitTime: number | null
+  }
+
+  export type QueueMetricsMinAggregateOutputType = {
+    id: string | null
+    queueName: string | null
+    totalAgents: number | null
+    availableAgents: number | null
+    totalTickets: number | null
+    openTickets: number | null
+    avgResponseTime: number | null
+    avgResolutionTime: number | null
+    slaBreaches: number | null
+    highPriorityTickets: number | null
+    capacityUtilization: number | null
+    averageWaitTime: number | null
+    thresholdWarning: boolean | null
+    thresholdCritical: boolean | null
+    lastCalculated: Date | null
+  }
+
+  export type QueueMetricsMaxAggregateOutputType = {
+    id: string | null
+    queueName: string | null
+    totalAgents: number | null
+    availableAgents: number | null
+    totalTickets: number | null
+    openTickets: number | null
+    avgResponseTime: number | null
+    avgResolutionTime: number | null
+    slaBreaches: number | null
+    highPriorityTickets: number | null
+    capacityUtilization: number | null
+    averageWaitTime: number | null
+    thresholdWarning: boolean | null
+    thresholdCritical: boolean | null
+    lastCalculated: Date | null
+  }
+
+  export type QueueMetricsCountAggregateOutputType = {
+    id: number
+    queueName: number
+    totalAgents: number
+    availableAgents: number
+    totalTickets: number
+    openTickets: number
+    avgResponseTime: number
+    avgResolutionTime: number
+    slaBreaches: number
+    highPriorityTickets: number
+    capacityUtilization: number
+    averageWaitTime: number
+    thresholdWarning: number
+    thresholdCritical: number
+    lastCalculated: number
+    _all: number
+  }
+
+
+  export type QueueMetricsAvgAggregateInputType = {
+    totalAgents?: true
+    availableAgents?: true
+    totalTickets?: true
+    openTickets?: true
+    avgResponseTime?: true
+    avgResolutionTime?: true
+    slaBreaches?: true
+    highPriorityTickets?: true
+    capacityUtilization?: true
+    averageWaitTime?: true
+  }
+
+  export type QueueMetricsSumAggregateInputType = {
+    totalAgents?: true
+    availableAgents?: true
+    totalTickets?: true
+    openTickets?: true
+    avgResponseTime?: true
+    avgResolutionTime?: true
+    slaBreaches?: true
+    highPriorityTickets?: true
+    capacityUtilization?: true
+    averageWaitTime?: true
+  }
+
+  export type QueueMetricsMinAggregateInputType = {
+    id?: true
+    queueName?: true
+    totalAgents?: true
+    availableAgents?: true
+    totalTickets?: true
+    openTickets?: true
+    avgResponseTime?: true
+    avgResolutionTime?: true
+    slaBreaches?: true
+    highPriorityTickets?: true
+    capacityUtilization?: true
+    averageWaitTime?: true
+    thresholdWarning?: true
+    thresholdCritical?: true
+    lastCalculated?: true
+  }
+
+  export type QueueMetricsMaxAggregateInputType = {
+    id?: true
+    queueName?: true
+    totalAgents?: true
+    availableAgents?: true
+    totalTickets?: true
+    openTickets?: true
+    avgResponseTime?: true
+    avgResolutionTime?: true
+    slaBreaches?: true
+    highPriorityTickets?: true
+    capacityUtilization?: true
+    averageWaitTime?: true
+    thresholdWarning?: true
+    thresholdCritical?: true
+    lastCalculated?: true
+  }
+
+  export type QueueMetricsCountAggregateInputType = {
+    id?: true
+    queueName?: true
+    totalAgents?: true
+    availableAgents?: true
+    totalTickets?: true
+    openTickets?: true
+    avgResponseTime?: true
+    avgResolutionTime?: true
+    slaBreaches?: true
+    highPriorityTickets?: true
+    capacityUtilization?: true
+    averageWaitTime?: true
+    thresholdWarning?: true
+    thresholdCritical?: true
+    lastCalculated?: true
+    _all?: true
+  }
+
+  export type QueueMetricsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which QueueMetrics to aggregate.
+     */
+    where?: QueueMetricsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of QueueMetrics to fetch.
+     */
+    orderBy?: QueueMetricsOrderByWithRelationInput | QueueMetricsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: QueueMetricsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` QueueMetrics from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` QueueMetrics.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned QueueMetrics
+    **/
+    _count?: true | QueueMetricsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: QueueMetricsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: QueueMetricsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: QueueMetricsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: QueueMetricsMaxAggregateInputType
+  }
+
+  export type GetQueueMetricsAggregateType<T extends QueueMetricsAggregateArgs> = {
+        [P in keyof T & keyof AggregateQueueMetrics]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateQueueMetrics[P]>
+      : GetScalarType<T[P], AggregateQueueMetrics[P]>
+  }
+
+
+
+
+  export type QueueMetricsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: QueueMetricsWhereInput
+    orderBy?: QueueMetricsOrderByWithAggregationInput | QueueMetricsOrderByWithAggregationInput[]
+    by: QueueMetricsScalarFieldEnum[] | QueueMetricsScalarFieldEnum
+    having?: QueueMetricsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: QueueMetricsCountAggregateInputType | true
+    _avg?: QueueMetricsAvgAggregateInputType
+    _sum?: QueueMetricsSumAggregateInputType
+    _min?: QueueMetricsMinAggregateInputType
+    _max?: QueueMetricsMaxAggregateInputType
+  }
+
+  export type QueueMetricsGroupByOutputType = {
+    id: string
+    queueName: string
+    totalAgents: number
+    availableAgents: number
+    totalTickets: number
+    openTickets: number
+    avgResponseTime: number
+    avgResolutionTime: number
+    slaBreaches: number
+    highPriorityTickets: number
+    capacityUtilization: number
+    averageWaitTime: number
+    thresholdWarning: boolean
+    thresholdCritical: boolean
+    lastCalculated: Date
+    _count: QueueMetricsCountAggregateOutputType | null
+    _avg: QueueMetricsAvgAggregateOutputType | null
+    _sum: QueueMetricsSumAggregateOutputType | null
+    _min: QueueMetricsMinAggregateOutputType | null
+    _max: QueueMetricsMaxAggregateOutputType | null
+  }
+
+  type GetQueueMetricsGroupByPayload<T extends QueueMetricsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<QueueMetricsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof QueueMetricsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], QueueMetricsGroupByOutputType[P]>
+            : GetScalarType<T[P], QueueMetricsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type QueueMetricsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    queueName?: boolean
+    totalAgents?: boolean
+    availableAgents?: boolean
+    totalTickets?: boolean
+    openTickets?: boolean
+    avgResponseTime?: boolean
+    avgResolutionTime?: boolean
+    slaBreaches?: boolean
+    highPriorityTickets?: boolean
+    capacityUtilization?: boolean
+    averageWaitTime?: boolean
+    thresholdWarning?: boolean
+    thresholdCritical?: boolean
+    lastCalculated?: boolean
+  }, ExtArgs["result"]["queueMetrics"]>
+
+  export type QueueMetricsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    queueName?: boolean
+    totalAgents?: boolean
+    availableAgents?: boolean
+    totalTickets?: boolean
+    openTickets?: boolean
+    avgResponseTime?: boolean
+    avgResolutionTime?: boolean
+    slaBreaches?: boolean
+    highPriorityTickets?: boolean
+    capacityUtilization?: boolean
+    averageWaitTime?: boolean
+    thresholdWarning?: boolean
+    thresholdCritical?: boolean
+    lastCalculated?: boolean
+  }, ExtArgs["result"]["queueMetrics"]>
+
+  export type QueueMetricsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    queueName?: boolean
+    totalAgents?: boolean
+    availableAgents?: boolean
+    totalTickets?: boolean
+    openTickets?: boolean
+    avgResponseTime?: boolean
+    avgResolutionTime?: boolean
+    slaBreaches?: boolean
+    highPriorityTickets?: boolean
+    capacityUtilization?: boolean
+    averageWaitTime?: boolean
+    thresholdWarning?: boolean
+    thresholdCritical?: boolean
+    lastCalculated?: boolean
+  }, ExtArgs["result"]["queueMetrics"]>
+
+  export type QueueMetricsSelectScalar = {
+    id?: boolean
+    queueName?: boolean
+    totalAgents?: boolean
+    availableAgents?: boolean
+    totalTickets?: boolean
+    openTickets?: boolean
+    avgResponseTime?: boolean
+    avgResolutionTime?: boolean
+    slaBreaches?: boolean
+    highPriorityTickets?: boolean
+    capacityUtilization?: boolean
+    averageWaitTime?: boolean
+    thresholdWarning?: boolean
+    thresholdCritical?: boolean
+    lastCalculated?: boolean
+  }
+
+  export type QueueMetricsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "queueName" | "totalAgents" | "availableAgents" | "totalTickets" | "openTickets" | "avgResponseTime" | "avgResolutionTime" | "slaBreaches" | "highPriorityTickets" | "capacityUtilization" | "averageWaitTime" | "thresholdWarning" | "thresholdCritical" | "lastCalculated", ExtArgs["result"]["queueMetrics"]>
+
+  export type $QueueMetricsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "QueueMetrics"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      queueName: string
+      totalAgents: number
+      availableAgents: number
+      totalTickets: number
+      openTickets: number
+      avgResponseTime: number
+      avgResolutionTime: number
+      slaBreaches: number
+      highPriorityTickets: number
+      capacityUtilization: number
+      averageWaitTime: number
+      thresholdWarning: boolean
+      thresholdCritical: boolean
+      lastCalculated: Date
+    }, ExtArgs["result"]["queueMetrics"]>
+    composites: {}
+  }
+
+  type QueueMetricsGetPayload<S extends boolean | null | undefined | QueueMetricsDefaultArgs> = $Result.GetResult<Prisma.$QueueMetricsPayload, S>
+
+  type QueueMetricsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<QueueMetricsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: QueueMetricsCountAggregateInputType | true
+    }
+
+  export interface QueueMetricsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['QueueMetrics'], meta: { name: 'QueueMetrics' } }
+    /**
+     * Find zero or one QueueMetrics that matches the filter.
+     * @param {QueueMetricsFindUniqueArgs} args - Arguments to find a QueueMetrics
+     * @example
+     * // Get one QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends QueueMetricsFindUniqueArgs>(args: SelectSubset<T, QueueMetricsFindUniqueArgs<ExtArgs>>): Prisma__QueueMetricsClient<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one QueueMetrics that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {QueueMetricsFindUniqueOrThrowArgs} args - Arguments to find a QueueMetrics
+     * @example
+     * // Get one QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends QueueMetricsFindUniqueOrThrowArgs>(args: SelectSubset<T, QueueMetricsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__QueueMetricsClient<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first QueueMetrics that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueMetricsFindFirstArgs} args - Arguments to find a QueueMetrics
+     * @example
+     * // Get one QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends QueueMetricsFindFirstArgs>(args?: SelectSubset<T, QueueMetricsFindFirstArgs<ExtArgs>>): Prisma__QueueMetricsClient<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first QueueMetrics that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueMetricsFindFirstOrThrowArgs} args - Arguments to find a QueueMetrics
+     * @example
+     * // Get one QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends QueueMetricsFindFirstOrThrowArgs>(args?: SelectSubset<T, QueueMetricsFindFirstOrThrowArgs<ExtArgs>>): Prisma__QueueMetricsClient<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more QueueMetrics that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueMetricsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.findMany()
+     * 
+     * // Get first 10 QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const queueMetricsWithIdOnly = await prisma.queueMetrics.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends QueueMetricsFindManyArgs>(args?: SelectSubset<T, QueueMetricsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a QueueMetrics.
+     * @param {QueueMetricsCreateArgs} args - Arguments to create a QueueMetrics.
+     * @example
+     * // Create one QueueMetrics
+     * const QueueMetrics = await prisma.queueMetrics.create({
+     *   data: {
+     *     // ... data to create a QueueMetrics
+     *   }
+     * })
+     * 
+     */
+    create<T extends QueueMetricsCreateArgs>(args: SelectSubset<T, QueueMetricsCreateArgs<ExtArgs>>): Prisma__QueueMetricsClient<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many QueueMetrics.
+     * @param {QueueMetricsCreateManyArgs} args - Arguments to create many QueueMetrics.
+     * @example
+     * // Create many QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends QueueMetricsCreateManyArgs>(args?: SelectSubset<T, QueueMetricsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many QueueMetrics and returns the data saved in the database.
+     * @param {QueueMetricsCreateManyAndReturnArgs} args - Arguments to create many QueueMetrics.
+     * @example
+     * // Create many QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many QueueMetrics and only return the `id`
+     * const queueMetricsWithIdOnly = await prisma.queueMetrics.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends QueueMetricsCreateManyAndReturnArgs>(args?: SelectSubset<T, QueueMetricsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a QueueMetrics.
+     * @param {QueueMetricsDeleteArgs} args - Arguments to delete one QueueMetrics.
+     * @example
+     * // Delete one QueueMetrics
+     * const QueueMetrics = await prisma.queueMetrics.delete({
+     *   where: {
+     *     // ... filter to delete one QueueMetrics
+     *   }
+     * })
+     * 
+     */
+    delete<T extends QueueMetricsDeleteArgs>(args: SelectSubset<T, QueueMetricsDeleteArgs<ExtArgs>>): Prisma__QueueMetricsClient<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one QueueMetrics.
+     * @param {QueueMetricsUpdateArgs} args - Arguments to update one QueueMetrics.
+     * @example
+     * // Update one QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends QueueMetricsUpdateArgs>(args: SelectSubset<T, QueueMetricsUpdateArgs<ExtArgs>>): Prisma__QueueMetricsClient<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more QueueMetrics.
+     * @param {QueueMetricsDeleteManyArgs} args - Arguments to filter QueueMetrics to delete.
+     * @example
+     * // Delete a few QueueMetrics
+     * const { count } = await prisma.queueMetrics.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends QueueMetricsDeleteManyArgs>(args?: SelectSubset<T, QueueMetricsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more QueueMetrics.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueMetricsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends QueueMetricsUpdateManyArgs>(args: SelectSubset<T, QueueMetricsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more QueueMetrics and returns the data updated in the database.
+     * @param {QueueMetricsUpdateManyAndReturnArgs} args - Arguments to update many QueueMetrics.
+     * @example
+     * // Update many QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more QueueMetrics and only return the `id`
+     * const queueMetricsWithIdOnly = await prisma.queueMetrics.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends QueueMetricsUpdateManyAndReturnArgs>(args: SelectSubset<T, QueueMetricsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one QueueMetrics.
+     * @param {QueueMetricsUpsertArgs} args - Arguments to update or create a QueueMetrics.
+     * @example
+     * // Update or create a QueueMetrics
+     * const queueMetrics = await prisma.queueMetrics.upsert({
+     *   create: {
+     *     // ... data to create a QueueMetrics
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the QueueMetrics we want to update
+     *   }
+     * })
+     */
+    upsert<T extends QueueMetricsUpsertArgs>(args: SelectSubset<T, QueueMetricsUpsertArgs<ExtArgs>>): Prisma__QueueMetricsClient<$Result.GetResult<Prisma.$QueueMetricsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of QueueMetrics.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueMetricsCountArgs} args - Arguments to filter QueueMetrics to count.
+     * @example
+     * // Count the number of QueueMetrics
+     * const count = await prisma.queueMetrics.count({
+     *   where: {
+     *     // ... the filter for the QueueMetrics we want to count
+     *   }
+     * })
+    **/
+    count<T extends QueueMetricsCountArgs>(
+      args?: Subset<T, QueueMetricsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], QueueMetricsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a QueueMetrics.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueMetricsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends QueueMetricsAggregateArgs>(args: Subset<T, QueueMetricsAggregateArgs>): Prisma.PrismaPromise<GetQueueMetricsAggregateType<T>>
+
+    /**
+     * Group by QueueMetrics.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueMetricsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends QueueMetricsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: QueueMetricsGroupByArgs['orderBy'] }
+        : { orderBy?: QueueMetricsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, QueueMetricsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetQueueMetricsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the QueueMetrics model
+   */
+  readonly fields: QueueMetricsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for QueueMetrics.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__QueueMetricsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the QueueMetrics model
+   */
+  interface QueueMetricsFieldRefs {
+    readonly id: FieldRef<"QueueMetrics", 'String'>
+    readonly queueName: FieldRef<"QueueMetrics", 'String'>
+    readonly totalAgents: FieldRef<"QueueMetrics", 'Int'>
+    readonly availableAgents: FieldRef<"QueueMetrics", 'Int'>
+    readonly totalTickets: FieldRef<"QueueMetrics", 'Int'>
+    readonly openTickets: FieldRef<"QueueMetrics", 'Int'>
+    readonly avgResponseTime: FieldRef<"QueueMetrics", 'Float'>
+    readonly avgResolutionTime: FieldRef<"QueueMetrics", 'Float'>
+    readonly slaBreaches: FieldRef<"QueueMetrics", 'Int'>
+    readonly highPriorityTickets: FieldRef<"QueueMetrics", 'Int'>
+    readonly capacityUtilization: FieldRef<"QueueMetrics", 'Float'>
+    readonly averageWaitTime: FieldRef<"QueueMetrics", 'Float'>
+    readonly thresholdWarning: FieldRef<"QueueMetrics", 'Boolean'>
+    readonly thresholdCritical: FieldRef<"QueueMetrics", 'Boolean'>
+    readonly lastCalculated: FieldRef<"QueueMetrics", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * QueueMetrics findUnique
+   */
+  export type QueueMetricsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueMetrics to fetch.
+     */
+    where: QueueMetricsWhereUniqueInput
+  }
+
+  /**
+   * QueueMetrics findUniqueOrThrow
+   */
+  export type QueueMetricsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueMetrics to fetch.
+     */
+    where: QueueMetricsWhereUniqueInput
+  }
+
+  /**
+   * QueueMetrics findFirst
+   */
+  export type QueueMetricsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueMetrics to fetch.
+     */
+    where?: QueueMetricsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of QueueMetrics to fetch.
+     */
+    orderBy?: QueueMetricsOrderByWithRelationInput | QueueMetricsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for QueueMetrics.
+     */
+    cursor?: QueueMetricsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` QueueMetrics from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` QueueMetrics.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of QueueMetrics.
+     */
+    distinct?: QueueMetricsScalarFieldEnum | QueueMetricsScalarFieldEnum[]
+  }
+
+  /**
+   * QueueMetrics findFirstOrThrow
+   */
+  export type QueueMetricsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueMetrics to fetch.
+     */
+    where?: QueueMetricsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of QueueMetrics to fetch.
+     */
+    orderBy?: QueueMetricsOrderByWithRelationInput | QueueMetricsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for QueueMetrics.
+     */
+    cursor?: QueueMetricsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` QueueMetrics from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` QueueMetrics.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of QueueMetrics.
+     */
+    distinct?: QueueMetricsScalarFieldEnum | QueueMetricsScalarFieldEnum[]
+  }
+
+  /**
+   * QueueMetrics findMany
+   */
+  export type QueueMetricsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueMetrics to fetch.
+     */
+    where?: QueueMetricsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of QueueMetrics to fetch.
+     */
+    orderBy?: QueueMetricsOrderByWithRelationInput | QueueMetricsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing QueueMetrics.
+     */
+    cursor?: QueueMetricsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` QueueMetrics from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` QueueMetrics.
+     */
+    skip?: number
+    distinct?: QueueMetricsScalarFieldEnum | QueueMetricsScalarFieldEnum[]
+  }
+
+  /**
+   * QueueMetrics create
+   */
+  export type QueueMetricsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * The data needed to create a QueueMetrics.
+     */
+    data: XOR<QueueMetricsCreateInput, QueueMetricsUncheckedCreateInput>
+  }
+
+  /**
+   * QueueMetrics createMany
+   */
+  export type QueueMetricsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many QueueMetrics.
+     */
+    data: QueueMetricsCreateManyInput | QueueMetricsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * QueueMetrics createManyAndReturn
+   */
+  export type QueueMetricsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * The data used to create many QueueMetrics.
+     */
+    data: QueueMetricsCreateManyInput | QueueMetricsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * QueueMetrics update
+   */
+  export type QueueMetricsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * The data needed to update a QueueMetrics.
+     */
+    data: XOR<QueueMetricsUpdateInput, QueueMetricsUncheckedUpdateInput>
+    /**
+     * Choose, which QueueMetrics to update.
+     */
+    where: QueueMetricsWhereUniqueInput
+  }
+
+  /**
+   * QueueMetrics updateMany
+   */
+  export type QueueMetricsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update QueueMetrics.
+     */
+    data: XOR<QueueMetricsUpdateManyMutationInput, QueueMetricsUncheckedUpdateManyInput>
+    /**
+     * Filter which QueueMetrics to update
+     */
+    where?: QueueMetricsWhereInput
+    /**
+     * Limit how many QueueMetrics to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * QueueMetrics updateManyAndReturn
+   */
+  export type QueueMetricsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * The data used to update QueueMetrics.
+     */
+    data: XOR<QueueMetricsUpdateManyMutationInput, QueueMetricsUncheckedUpdateManyInput>
+    /**
+     * Filter which QueueMetrics to update
+     */
+    where?: QueueMetricsWhereInput
+    /**
+     * Limit how many QueueMetrics to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * QueueMetrics upsert
+   */
+  export type QueueMetricsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * The filter to search for the QueueMetrics to update in case it exists.
+     */
+    where: QueueMetricsWhereUniqueInput
+    /**
+     * In case the QueueMetrics found by the `where` argument doesn't exist, create a new QueueMetrics with this data.
+     */
+    create: XOR<QueueMetricsCreateInput, QueueMetricsUncheckedCreateInput>
+    /**
+     * In case the QueueMetrics was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<QueueMetricsUpdateInput, QueueMetricsUncheckedUpdateInput>
+  }
+
+  /**
+   * QueueMetrics delete
+   */
+  export type QueueMetricsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+    /**
+     * Filter which QueueMetrics to delete.
+     */
+    where: QueueMetricsWhereUniqueInput
+  }
+
+  /**
+   * QueueMetrics deleteMany
+   */
+  export type QueueMetricsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which QueueMetrics to delete
+     */
+    where?: QueueMetricsWhereInput
+    /**
+     * Limit how many QueueMetrics to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * QueueMetrics without action
+   */
+  export type QueueMetricsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueMetrics
+     */
+    select?: QueueMetricsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueMetrics
+     */
+    omit?: QueueMetricsOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model QueueAlert
+   */
+
+  export type AggregateQueueAlert = {
+    _count: QueueAlertCountAggregateOutputType | null
+    _min: QueueAlertMinAggregateOutputType | null
+    _max: QueueAlertMaxAggregateOutputType | null
+  }
+
+  export type QueueAlertMinAggregateOutputType = {
+    id: string | null
+    queueName: string | null
+    alertType: string | null
+    message: string | null
+    isActive: boolean | null
+    alertedAt: Date | null
+    resolvedAt: Date | null
+  }
+
+  export type QueueAlertMaxAggregateOutputType = {
+    id: string | null
+    queueName: string | null
+    alertType: string | null
+    message: string | null
+    isActive: boolean | null
+    alertedAt: Date | null
+    resolvedAt: Date | null
+  }
+
+  export type QueueAlertCountAggregateOutputType = {
+    id: number
+    queueName: number
+    alertType: number
+    message: number
+    isActive: number
+    alertedAt: number
+    resolvedAt: number
+    notifiedUsers: number
+    _all: number
+  }
+
+
+  export type QueueAlertMinAggregateInputType = {
+    id?: true
+    queueName?: true
+    alertType?: true
+    message?: true
+    isActive?: true
+    alertedAt?: true
+    resolvedAt?: true
+  }
+
+  export type QueueAlertMaxAggregateInputType = {
+    id?: true
+    queueName?: true
+    alertType?: true
+    message?: true
+    isActive?: true
+    alertedAt?: true
+    resolvedAt?: true
+  }
+
+  export type QueueAlertCountAggregateInputType = {
+    id?: true
+    queueName?: true
+    alertType?: true
+    message?: true
+    isActive?: true
+    alertedAt?: true
+    resolvedAt?: true
+    notifiedUsers?: true
+    _all?: true
+  }
+
+  export type QueueAlertAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which QueueAlert to aggregate.
+     */
+    where?: QueueAlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of QueueAlerts to fetch.
+     */
+    orderBy?: QueueAlertOrderByWithRelationInput | QueueAlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: QueueAlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` QueueAlerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` QueueAlerts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned QueueAlerts
+    **/
+    _count?: true | QueueAlertCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: QueueAlertMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: QueueAlertMaxAggregateInputType
+  }
+
+  export type GetQueueAlertAggregateType<T extends QueueAlertAggregateArgs> = {
+        [P in keyof T & keyof AggregateQueueAlert]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateQueueAlert[P]>
+      : GetScalarType<T[P], AggregateQueueAlert[P]>
+  }
+
+
+
+
+  export type QueueAlertGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: QueueAlertWhereInput
+    orderBy?: QueueAlertOrderByWithAggregationInput | QueueAlertOrderByWithAggregationInput[]
+    by: QueueAlertScalarFieldEnum[] | QueueAlertScalarFieldEnum
+    having?: QueueAlertScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: QueueAlertCountAggregateInputType | true
+    _min?: QueueAlertMinAggregateInputType
+    _max?: QueueAlertMaxAggregateInputType
+  }
+
+  export type QueueAlertGroupByOutputType = {
+    id: string
+    queueName: string
+    alertType: string
+    message: string
+    isActive: boolean
+    alertedAt: Date
+    resolvedAt: Date | null
+    notifiedUsers: string[]
+    _count: QueueAlertCountAggregateOutputType | null
+    _min: QueueAlertMinAggregateOutputType | null
+    _max: QueueAlertMaxAggregateOutputType | null
+  }
+
+  type GetQueueAlertGroupByPayload<T extends QueueAlertGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<QueueAlertGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof QueueAlertGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], QueueAlertGroupByOutputType[P]>
+            : GetScalarType<T[P], QueueAlertGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type QueueAlertSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    queueName?: boolean
+    alertType?: boolean
+    message?: boolean
+    isActive?: boolean
+    alertedAt?: boolean
+    resolvedAt?: boolean
+    notifiedUsers?: boolean
+  }, ExtArgs["result"]["queueAlert"]>
+
+  export type QueueAlertSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    queueName?: boolean
+    alertType?: boolean
+    message?: boolean
+    isActive?: boolean
+    alertedAt?: boolean
+    resolvedAt?: boolean
+    notifiedUsers?: boolean
+  }, ExtArgs["result"]["queueAlert"]>
+
+  export type QueueAlertSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    queueName?: boolean
+    alertType?: boolean
+    message?: boolean
+    isActive?: boolean
+    alertedAt?: boolean
+    resolvedAt?: boolean
+    notifiedUsers?: boolean
+  }, ExtArgs["result"]["queueAlert"]>
+
+  export type QueueAlertSelectScalar = {
+    id?: boolean
+    queueName?: boolean
+    alertType?: boolean
+    message?: boolean
+    isActive?: boolean
+    alertedAt?: boolean
+    resolvedAt?: boolean
+    notifiedUsers?: boolean
+  }
+
+  export type QueueAlertOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "queueName" | "alertType" | "message" | "isActive" | "alertedAt" | "resolvedAt" | "notifiedUsers", ExtArgs["result"]["queueAlert"]>
+
+  export type $QueueAlertPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "QueueAlert"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      queueName: string
+      alertType: string
+      message: string
+      isActive: boolean
+      alertedAt: Date
+      resolvedAt: Date | null
+      notifiedUsers: string[]
+    }, ExtArgs["result"]["queueAlert"]>
+    composites: {}
+  }
+
+  type QueueAlertGetPayload<S extends boolean | null | undefined | QueueAlertDefaultArgs> = $Result.GetResult<Prisma.$QueueAlertPayload, S>
+
+  type QueueAlertCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<QueueAlertFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: QueueAlertCountAggregateInputType | true
+    }
+
+  export interface QueueAlertDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['QueueAlert'], meta: { name: 'QueueAlert' } }
+    /**
+     * Find zero or one QueueAlert that matches the filter.
+     * @param {QueueAlertFindUniqueArgs} args - Arguments to find a QueueAlert
+     * @example
+     * // Get one QueueAlert
+     * const queueAlert = await prisma.queueAlert.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends QueueAlertFindUniqueArgs>(args: SelectSubset<T, QueueAlertFindUniqueArgs<ExtArgs>>): Prisma__QueueAlertClient<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one QueueAlert that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {QueueAlertFindUniqueOrThrowArgs} args - Arguments to find a QueueAlert
+     * @example
+     * // Get one QueueAlert
+     * const queueAlert = await prisma.queueAlert.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends QueueAlertFindUniqueOrThrowArgs>(args: SelectSubset<T, QueueAlertFindUniqueOrThrowArgs<ExtArgs>>): Prisma__QueueAlertClient<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first QueueAlert that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueAlertFindFirstArgs} args - Arguments to find a QueueAlert
+     * @example
+     * // Get one QueueAlert
+     * const queueAlert = await prisma.queueAlert.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends QueueAlertFindFirstArgs>(args?: SelectSubset<T, QueueAlertFindFirstArgs<ExtArgs>>): Prisma__QueueAlertClient<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first QueueAlert that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueAlertFindFirstOrThrowArgs} args - Arguments to find a QueueAlert
+     * @example
+     * // Get one QueueAlert
+     * const queueAlert = await prisma.queueAlert.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends QueueAlertFindFirstOrThrowArgs>(args?: SelectSubset<T, QueueAlertFindFirstOrThrowArgs<ExtArgs>>): Prisma__QueueAlertClient<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more QueueAlerts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueAlertFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all QueueAlerts
+     * const queueAlerts = await prisma.queueAlert.findMany()
+     * 
+     * // Get first 10 QueueAlerts
+     * const queueAlerts = await prisma.queueAlert.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const queueAlertWithIdOnly = await prisma.queueAlert.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends QueueAlertFindManyArgs>(args?: SelectSubset<T, QueueAlertFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a QueueAlert.
+     * @param {QueueAlertCreateArgs} args - Arguments to create a QueueAlert.
+     * @example
+     * // Create one QueueAlert
+     * const QueueAlert = await prisma.queueAlert.create({
+     *   data: {
+     *     // ... data to create a QueueAlert
+     *   }
+     * })
+     * 
+     */
+    create<T extends QueueAlertCreateArgs>(args: SelectSubset<T, QueueAlertCreateArgs<ExtArgs>>): Prisma__QueueAlertClient<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many QueueAlerts.
+     * @param {QueueAlertCreateManyArgs} args - Arguments to create many QueueAlerts.
+     * @example
+     * // Create many QueueAlerts
+     * const queueAlert = await prisma.queueAlert.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends QueueAlertCreateManyArgs>(args?: SelectSubset<T, QueueAlertCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many QueueAlerts and returns the data saved in the database.
+     * @param {QueueAlertCreateManyAndReturnArgs} args - Arguments to create many QueueAlerts.
+     * @example
+     * // Create many QueueAlerts
+     * const queueAlert = await prisma.queueAlert.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many QueueAlerts and only return the `id`
+     * const queueAlertWithIdOnly = await prisma.queueAlert.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends QueueAlertCreateManyAndReturnArgs>(args?: SelectSubset<T, QueueAlertCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a QueueAlert.
+     * @param {QueueAlertDeleteArgs} args - Arguments to delete one QueueAlert.
+     * @example
+     * // Delete one QueueAlert
+     * const QueueAlert = await prisma.queueAlert.delete({
+     *   where: {
+     *     // ... filter to delete one QueueAlert
+     *   }
+     * })
+     * 
+     */
+    delete<T extends QueueAlertDeleteArgs>(args: SelectSubset<T, QueueAlertDeleteArgs<ExtArgs>>): Prisma__QueueAlertClient<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one QueueAlert.
+     * @param {QueueAlertUpdateArgs} args - Arguments to update one QueueAlert.
+     * @example
+     * // Update one QueueAlert
+     * const queueAlert = await prisma.queueAlert.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends QueueAlertUpdateArgs>(args: SelectSubset<T, QueueAlertUpdateArgs<ExtArgs>>): Prisma__QueueAlertClient<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more QueueAlerts.
+     * @param {QueueAlertDeleteManyArgs} args - Arguments to filter QueueAlerts to delete.
+     * @example
+     * // Delete a few QueueAlerts
+     * const { count } = await prisma.queueAlert.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends QueueAlertDeleteManyArgs>(args?: SelectSubset<T, QueueAlertDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more QueueAlerts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueAlertUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many QueueAlerts
+     * const queueAlert = await prisma.queueAlert.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends QueueAlertUpdateManyArgs>(args: SelectSubset<T, QueueAlertUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more QueueAlerts and returns the data updated in the database.
+     * @param {QueueAlertUpdateManyAndReturnArgs} args - Arguments to update many QueueAlerts.
+     * @example
+     * // Update many QueueAlerts
+     * const queueAlert = await prisma.queueAlert.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more QueueAlerts and only return the `id`
+     * const queueAlertWithIdOnly = await prisma.queueAlert.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends QueueAlertUpdateManyAndReturnArgs>(args: SelectSubset<T, QueueAlertUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one QueueAlert.
+     * @param {QueueAlertUpsertArgs} args - Arguments to update or create a QueueAlert.
+     * @example
+     * // Update or create a QueueAlert
+     * const queueAlert = await prisma.queueAlert.upsert({
+     *   create: {
+     *     // ... data to create a QueueAlert
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the QueueAlert we want to update
+     *   }
+     * })
+     */
+    upsert<T extends QueueAlertUpsertArgs>(args: SelectSubset<T, QueueAlertUpsertArgs<ExtArgs>>): Prisma__QueueAlertClient<$Result.GetResult<Prisma.$QueueAlertPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of QueueAlerts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueAlertCountArgs} args - Arguments to filter QueueAlerts to count.
+     * @example
+     * // Count the number of QueueAlerts
+     * const count = await prisma.queueAlert.count({
+     *   where: {
+     *     // ... the filter for the QueueAlerts we want to count
+     *   }
+     * })
+    **/
+    count<T extends QueueAlertCountArgs>(
+      args?: Subset<T, QueueAlertCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], QueueAlertCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a QueueAlert.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueAlertAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends QueueAlertAggregateArgs>(args: Subset<T, QueueAlertAggregateArgs>): Prisma.PrismaPromise<GetQueueAlertAggregateType<T>>
+
+    /**
+     * Group by QueueAlert.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {QueueAlertGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends QueueAlertGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: QueueAlertGroupByArgs['orderBy'] }
+        : { orderBy?: QueueAlertGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, QueueAlertGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetQueueAlertGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the QueueAlert model
+   */
+  readonly fields: QueueAlertFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for QueueAlert.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__QueueAlertClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the QueueAlert model
+   */
+  interface QueueAlertFieldRefs {
+    readonly id: FieldRef<"QueueAlert", 'String'>
+    readonly queueName: FieldRef<"QueueAlert", 'String'>
+    readonly alertType: FieldRef<"QueueAlert", 'String'>
+    readonly message: FieldRef<"QueueAlert", 'String'>
+    readonly isActive: FieldRef<"QueueAlert", 'Boolean'>
+    readonly alertedAt: FieldRef<"QueueAlert", 'DateTime'>
+    readonly resolvedAt: FieldRef<"QueueAlert", 'DateTime'>
+    readonly notifiedUsers: FieldRef<"QueueAlert", 'String[]'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * QueueAlert findUnique
+   */
+  export type QueueAlertFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueAlert to fetch.
+     */
+    where: QueueAlertWhereUniqueInput
+  }
+
+  /**
+   * QueueAlert findUniqueOrThrow
+   */
+  export type QueueAlertFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueAlert to fetch.
+     */
+    where: QueueAlertWhereUniqueInput
+  }
+
+  /**
+   * QueueAlert findFirst
+   */
+  export type QueueAlertFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueAlert to fetch.
+     */
+    where?: QueueAlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of QueueAlerts to fetch.
+     */
+    orderBy?: QueueAlertOrderByWithRelationInput | QueueAlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for QueueAlerts.
+     */
+    cursor?: QueueAlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` QueueAlerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` QueueAlerts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of QueueAlerts.
+     */
+    distinct?: QueueAlertScalarFieldEnum | QueueAlertScalarFieldEnum[]
+  }
+
+  /**
+   * QueueAlert findFirstOrThrow
+   */
+  export type QueueAlertFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueAlert to fetch.
+     */
+    where?: QueueAlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of QueueAlerts to fetch.
+     */
+    orderBy?: QueueAlertOrderByWithRelationInput | QueueAlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for QueueAlerts.
+     */
+    cursor?: QueueAlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` QueueAlerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` QueueAlerts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of QueueAlerts.
+     */
+    distinct?: QueueAlertScalarFieldEnum | QueueAlertScalarFieldEnum[]
+  }
+
+  /**
+   * QueueAlert findMany
+   */
+  export type QueueAlertFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * Filter, which QueueAlerts to fetch.
+     */
+    where?: QueueAlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of QueueAlerts to fetch.
+     */
+    orderBy?: QueueAlertOrderByWithRelationInput | QueueAlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing QueueAlerts.
+     */
+    cursor?: QueueAlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` QueueAlerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` QueueAlerts.
+     */
+    skip?: number
+    distinct?: QueueAlertScalarFieldEnum | QueueAlertScalarFieldEnum[]
+  }
+
+  /**
+   * QueueAlert create
+   */
+  export type QueueAlertCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * The data needed to create a QueueAlert.
+     */
+    data: XOR<QueueAlertCreateInput, QueueAlertUncheckedCreateInput>
+  }
+
+  /**
+   * QueueAlert createMany
+   */
+  export type QueueAlertCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many QueueAlerts.
+     */
+    data: QueueAlertCreateManyInput | QueueAlertCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * QueueAlert createManyAndReturn
+   */
+  export type QueueAlertCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * The data used to create many QueueAlerts.
+     */
+    data: QueueAlertCreateManyInput | QueueAlertCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * QueueAlert update
+   */
+  export type QueueAlertUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * The data needed to update a QueueAlert.
+     */
+    data: XOR<QueueAlertUpdateInput, QueueAlertUncheckedUpdateInput>
+    /**
+     * Choose, which QueueAlert to update.
+     */
+    where: QueueAlertWhereUniqueInput
+  }
+
+  /**
+   * QueueAlert updateMany
+   */
+  export type QueueAlertUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update QueueAlerts.
+     */
+    data: XOR<QueueAlertUpdateManyMutationInput, QueueAlertUncheckedUpdateManyInput>
+    /**
+     * Filter which QueueAlerts to update
+     */
+    where?: QueueAlertWhereInput
+    /**
+     * Limit how many QueueAlerts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * QueueAlert updateManyAndReturn
+   */
+  export type QueueAlertUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * The data used to update QueueAlerts.
+     */
+    data: XOR<QueueAlertUpdateManyMutationInput, QueueAlertUncheckedUpdateManyInput>
+    /**
+     * Filter which QueueAlerts to update
+     */
+    where?: QueueAlertWhereInput
+    /**
+     * Limit how many QueueAlerts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * QueueAlert upsert
+   */
+  export type QueueAlertUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * The filter to search for the QueueAlert to update in case it exists.
+     */
+    where: QueueAlertWhereUniqueInput
+    /**
+     * In case the QueueAlert found by the `where` argument doesn't exist, create a new QueueAlert with this data.
+     */
+    create: XOR<QueueAlertCreateInput, QueueAlertUncheckedCreateInput>
+    /**
+     * In case the QueueAlert was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<QueueAlertUpdateInput, QueueAlertUncheckedUpdateInput>
+  }
+
+  /**
+   * QueueAlert delete
+   */
+  export type QueueAlertDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+    /**
+     * Filter which QueueAlert to delete.
+     */
+    where: QueueAlertWhereUniqueInput
+  }
+
+  /**
+   * QueueAlert deleteMany
+   */
+  export type QueueAlertDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which QueueAlerts to delete
+     */
+    where?: QueueAlertWhereInput
+    /**
+     * Limit how many QueueAlerts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * QueueAlert without action
+   */
+  export type QueueAlertDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QueueAlert
+     */
+    select?: QueueAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QueueAlert
+     */
+    omit?: QueueAlertOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -53413,6 +60908,49 @@ export namespace Prisma {
   export type KioskAssetRegistryScalarFieldEnum = (typeof KioskAssetRegistryScalarFieldEnum)[keyof typeof KioskAssetRegistryScalarFieldEnum]
 
 
+  export const HelixSyncFailureScalarFieldEnum: {
+    id: 'id',
+    kioskId: 'kioskId',
+    assetId: 'assetId',
+    errorMessage: 'errorMessage',
+    metadata: 'metadata',
+    retryCount: 'retryCount',
+    nextRetryAt: 'nextRetryAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type HelixSyncFailureScalarFieldEnum = (typeof HelixSyncFailureScalarFieldEnum)[keyof typeof HelixSyncFailureScalarFieldEnum]
+
+
+  export const KioskOrganizationAssignmentScalarFieldEnum: {
+    id: 'id',
+    kioskId: 'kioskId',
+    organizationId: 'organizationId',
+    department: 'department',
+    floor: 'floor',
+    room: 'room',
+    building: 'building',
+    assignedBy: 'assignedBy',
+    assignmentMetadata: 'assignmentMetadata',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type KioskOrganizationAssignmentScalarFieldEnum = (typeof KioskOrganizationAssignmentScalarFieldEnum)[keyof typeof KioskOrganizationAssignmentScalarFieldEnum]
+
+
+  export const KioskMetadataLogScalarFieldEnum: {
+    id: 'id',
+    kioskId: 'kioskId',
+    metadataType: 'metadataType',
+    encryptedMetadata: 'encryptedMetadata',
+    collectionTimestamp: 'collectionTimestamp'
+  };
+
+  export type KioskMetadataLogScalarFieldEnum = (typeof KioskMetadataLogScalarFieldEnum)[keyof typeof KioskMetadataLogScalarFieldEnum]
+
+
   export const XpEventScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -53552,6 +61090,56 @@ export namespace Prisma {
   };
 
   export type VipSlaHistoryScalarFieldEnum = (typeof VipSlaHistoryScalarFieldEnum)[keyof typeof VipSlaHistoryScalarFieldEnum]
+
+
+  export const AgentAvailabilityScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    queueName: 'queueName',
+    isAvailable: 'isAvailable',
+    maxCapacity: 'maxCapacity',
+    currentLoad: 'currentLoad',
+    status: 'status',
+    lastUpdated: 'lastUpdated',
+    createdAt: 'createdAt'
+  };
+
+  export type AgentAvailabilityScalarFieldEnum = (typeof AgentAvailabilityScalarFieldEnum)[keyof typeof AgentAvailabilityScalarFieldEnum]
+
+
+  export const QueueMetricsScalarFieldEnum: {
+    id: 'id',
+    queueName: 'queueName',
+    totalAgents: 'totalAgents',
+    availableAgents: 'availableAgents',
+    totalTickets: 'totalTickets',
+    openTickets: 'openTickets',
+    avgResponseTime: 'avgResponseTime',
+    avgResolutionTime: 'avgResolutionTime',
+    slaBreaches: 'slaBreaches',
+    highPriorityTickets: 'highPriorityTickets',
+    capacityUtilization: 'capacityUtilization',
+    averageWaitTime: 'averageWaitTime',
+    thresholdWarning: 'thresholdWarning',
+    thresholdCritical: 'thresholdCritical',
+    lastCalculated: 'lastCalculated'
+  };
+
+  export type QueueMetricsScalarFieldEnum = (typeof QueueMetricsScalarFieldEnum)[keyof typeof QueueMetricsScalarFieldEnum]
+
+
+  export const QueueAlertScalarFieldEnum: {
+    id: 'id',
+    queueName: 'queueName',
+    alertType: 'alertType',
+    message: 'message',
+    isActive: 'isActive',
+    alertedAt: 'alertedAt',
+    resolvedAt: 'resolvedAt',
+    notifiedUsers: 'notifiedUsers'
+  };
+
+  export type QueueAlertScalarFieldEnum = (typeof QueueAlertScalarFieldEnum)[keyof typeof QueueAlertScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -53745,6 +61333,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyListRelationFilter
     vipProxiesAsProxy?: VipProxyListRelationFilter
     vipSlaHistory?: VipSlaHistoryListRelationFilter
+    agentAvailability?: AgentAvailabilityListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -53788,6 +61377,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyOrderByRelationAggregateInput
     vipProxiesAsProxy?: VipProxyOrderByRelationAggregateInput
     vipSlaHistory?: VipSlaHistoryOrderByRelationAggregateInput
+    agentAvailability?: AgentAvailabilityOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -53834,6 +61424,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyListRelationFilter
     vipProxiesAsProxy?: VipProxyListRelationFilter
     vipSlaHistory?: VipSlaHistoryListRelationFilter
+    agentAvailability?: AgentAvailabilityListRelationFilter
   }, "id" | "email" | "samlNameId">
 
   export type UserOrderByWithAggregationInput = {
@@ -54560,6 +62151,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Kiosk"> | Date | string
     activations?: KioskActivationListRelationFilter
     assetRegistry?: KioskAssetRegistryListRelationFilter
+    syncFailures?: HelixSyncFailureListRelationFilter
+    orgAssignment?: XOR<KioskOrganizationAssignmentNullableScalarRelationFilter, KioskOrganizationAssignmentWhereInput> | null
+    metadataLogs?: KioskMetadataLogListRelationFilter
   }
 
   export type KioskOrderByWithRelationInput = {
@@ -54583,6 +62177,9 @@ export namespace Prisma {
     updatedAt?: SortOrder
     activations?: KioskActivationOrderByRelationAggregateInput
     assetRegistry?: KioskAssetRegistryOrderByRelationAggregateInput
+    syncFailures?: HelixSyncFailureOrderByRelationAggregateInput
+    orgAssignment?: KioskOrganizationAssignmentOrderByWithRelationInput
+    metadataLogs?: KioskMetadataLogOrderByRelationAggregateInput
   }
 
   export type KioskWhereUniqueInput = Prisma.AtLeast<{
@@ -54609,6 +62206,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Kiosk"> | Date | string
     activations?: KioskActivationListRelationFilter
     assetRegistry?: KioskAssetRegistryListRelationFilter
+    syncFailures?: HelixSyncFailureListRelationFilter
+    orgAssignment?: XOR<KioskOrganizationAssignmentNullableScalarRelationFilter, KioskOrganizationAssignmentWhereInput> | null
+    metadataLogs?: KioskMetadataLogListRelationFilter
   }, "id">
 
   export type KioskOrderByWithAggregationInput = {
@@ -55458,6 +63058,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertListRelationFilter
     kioskRegistrations?: KioskAssetRegistryListRelationFilter
     validationLogs?: AssetValidationLogListRelationFilter
+    syncFailures?: HelixSyncFailureListRelationFilter
     importBatch?: XOR<AssetImportBatchNullableScalarRelationFilter, AssetImportBatchWhereInput> | null
   }
 
@@ -55501,6 +63102,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertOrderByRelationAggregateInput
     kioskRegistrations?: KioskAssetRegistryOrderByRelationAggregateInput
     validationLogs?: AssetValidationLogOrderByRelationAggregateInput
+    syncFailures?: HelixSyncFailureOrderByRelationAggregateInput
     importBatch?: AssetImportBatchOrderByWithRelationInput
   }
 
@@ -55547,6 +63149,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertListRelationFilter
     kioskRegistrations?: KioskAssetRegistryListRelationFilter
     validationLogs?: AssetValidationLogListRelationFilter
+    syncFailures?: HelixSyncFailureListRelationFilter
     importBatch?: XOR<AssetImportBatchNullableScalarRelationFilter, AssetImportBatchWhereInput> | null
   }, "id">
 
@@ -56203,6 +63806,231 @@ export namespace Prisma {
     encryptedMetadata?: StringNullableWithAggregatesFilter<"KioskAssetRegistry"> | string | null
     createdBy?: StringNullableWithAggregatesFilter<"KioskAssetRegistry"> | string | null
     updatedBy?: StringNullableWithAggregatesFilter<"KioskAssetRegistry"> | string | null
+  }
+
+  export type HelixSyncFailureWhereInput = {
+    AND?: HelixSyncFailureWhereInput | HelixSyncFailureWhereInput[]
+    OR?: HelixSyncFailureWhereInput[]
+    NOT?: HelixSyncFailureWhereInput | HelixSyncFailureWhereInput[]
+    id?: IntFilter<"HelixSyncFailure"> | number
+    kioskId?: StringFilter<"HelixSyncFailure"> | string
+    assetId?: IntFilter<"HelixSyncFailure"> | number
+    errorMessage?: StringFilter<"HelixSyncFailure"> | string
+    metadata?: JsonNullableFilter<"HelixSyncFailure">
+    retryCount?: IntFilter<"HelixSyncFailure"> | number
+    nextRetryAt?: DateTimeFilter<"HelixSyncFailure"> | Date | string
+    createdAt?: DateTimeFilter<"HelixSyncFailure"> | Date | string
+    updatedAt?: DateTimeFilter<"HelixSyncFailure"> | Date | string
+    kiosk?: XOR<KioskScalarRelationFilter, KioskWhereInput>
+    asset?: XOR<InventoryAssetScalarRelationFilter, InventoryAssetWhereInput>
+  }
+
+  export type HelixSyncFailureOrderByWithRelationInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    assetId?: SortOrder
+    errorMessage?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    kiosk?: KioskOrderByWithRelationInput
+    asset?: InventoryAssetOrderByWithRelationInput
+  }
+
+  export type HelixSyncFailureWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    kioskId_assetId?: HelixSyncFailureKioskIdAssetIdCompoundUniqueInput
+    AND?: HelixSyncFailureWhereInput | HelixSyncFailureWhereInput[]
+    OR?: HelixSyncFailureWhereInput[]
+    NOT?: HelixSyncFailureWhereInput | HelixSyncFailureWhereInput[]
+    kioskId?: StringFilter<"HelixSyncFailure"> | string
+    assetId?: IntFilter<"HelixSyncFailure"> | number
+    errorMessage?: StringFilter<"HelixSyncFailure"> | string
+    metadata?: JsonNullableFilter<"HelixSyncFailure">
+    retryCount?: IntFilter<"HelixSyncFailure"> | number
+    nextRetryAt?: DateTimeFilter<"HelixSyncFailure"> | Date | string
+    createdAt?: DateTimeFilter<"HelixSyncFailure"> | Date | string
+    updatedAt?: DateTimeFilter<"HelixSyncFailure"> | Date | string
+    kiosk?: XOR<KioskScalarRelationFilter, KioskWhereInput>
+    asset?: XOR<InventoryAssetScalarRelationFilter, InventoryAssetWhereInput>
+  }, "id" | "kioskId_assetId">
+
+  export type HelixSyncFailureOrderByWithAggregationInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    assetId?: SortOrder
+    errorMessage?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: HelixSyncFailureCountOrderByAggregateInput
+    _avg?: HelixSyncFailureAvgOrderByAggregateInput
+    _max?: HelixSyncFailureMaxOrderByAggregateInput
+    _min?: HelixSyncFailureMinOrderByAggregateInput
+    _sum?: HelixSyncFailureSumOrderByAggregateInput
+  }
+
+  export type HelixSyncFailureScalarWhereWithAggregatesInput = {
+    AND?: HelixSyncFailureScalarWhereWithAggregatesInput | HelixSyncFailureScalarWhereWithAggregatesInput[]
+    OR?: HelixSyncFailureScalarWhereWithAggregatesInput[]
+    NOT?: HelixSyncFailureScalarWhereWithAggregatesInput | HelixSyncFailureScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"HelixSyncFailure"> | number
+    kioskId?: StringWithAggregatesFilter<"HelixSyncFailure"> | string
+    assetId?: IntWithAggregatesFilter<"HelixSyncFailure"> | number
+    errorMessage?: StringWithAggregatesFilter<"HelixSyncFailure"> | string
+    metadata?: JsonNullableWithAggregatesFilter<"HelixSyncFailure">
+    retryCount?: IntWithAggregatesFilter<"HelixSyncFailure"> | number
+    nextRetryAt?: DateTimeWithAggregatesFilter<"HelixSyncFailure"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"HelixSyncFailure"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"HelixSyncFailure"> | Date | string
+  }
+
+  export type KioskOrganizationAssignmentWhereInput = {
+    AND?: KioskOrganizationAssignmentWhereInput | KioskOrganizationAssignmentWhereInput[]
+    OR?: KioskOrganizationAssignmentWhereInput[]
+    NOT?: KioskOrganizationAssignmentWhereInput | KioskOrganizationAssignmentWhereInput[]
+    id?: IntFilter<"KioskOrganizationAssignment"> | number
+    kioskId?: StringFilter<"KioskOrganizationAssignment"> | string
+    organizationId?: IntFilter<"KioskOrganizationAssignment"> | number
+    department?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    floor?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    room?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    building?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    assignedBy?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    assignmentMetadata?: JsonFilter<"KioskOrganizationAssignment">
+    createdAt?: DateTimeFilter<"KioskOrganizationAssignment"> | Date | string
+    updatedAt?: DateTimeFilter<"KioskOrganizationAssignment"> | Date | string
+    kiosk?: XOR<KioskScalarRelationFilter, KioskWhereInput>
+  }
+
+  export type KioskOrganizationAssignmentOrderByWithRelationInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    organizationId?: SortOrder
+    department?: SortOrderInput | SortOrder
+    floor?: SortOrderInput | SortOrder
+    room?: SortOrderInput | SortOrder
+    building?: SortOrderInput | SortOrder
+    assignedBy?: SortOrderInput | SortOrder
+    assignmentMetadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    kiosk?: KioskOrderByWithRelationInput
+  }
+
+  export type KioskOrganizationAssignmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    kioskId?: string
+    AND?: KioskOrganizationAssignmentWhereInput | KioskOrganizationAssignmentWhereInput[]
+    OR?: KioskOrganizationAssignmentWhereInput[]
+    NOT?: KioskOrganizationAssignmentWhereInput | KioskOrganizationAssignmentWhereInput[]
+    organizationId?: IntFilter<"KioskOrganizationAssignment"> | number
+    department?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    floor?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    room?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    building?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    assignedBy?: StringNullableFilter<"KioskOrganizationAssignment"> | string | null
+    assignmentMetadata?: JsonFilter<"KioskOrganizationAssignment">
+    createdAt?: DateTimeFilter<"KioskOrganizationAssignment"> | Date | string
+    updatedAt?: DateTimeFilter<"KioskOrganizationAssignment"> | Date | string
+    kiosk?: XOR<KioskScalarRelationFilter, KioskWhereInput>
+  }, "id" | "kioskId">
+
+  export type KioskOrganizationAssignmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    organizationId?: SortOrder
+    department?: SortOrderInput | SortOrder
+    floor?: SortOrderInput | SortOrder
+    room?: SortOrderInput | SortOrder
+    building?: SortOrderInput | SortOrder
+    assignedBy?: SortOrderInput | SortOrder
+    assignmentMetadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: KioskOrganizationAssignmentCountOrderByAggregateInput
+    _avg?: KioskOrganizationAssignmentAvgOrderByAggregateInput
+    _max?: KioskOrganizationAssignmentMaxOrderByAggregateInput
+    _min?: KioskOrganizationAssignmentMinOrderByAggregateInput
+    _sum?: KioskOrganizationAssignmentSumOrderByAggregateInput
+  }
+
+  export type KioskOrganizationAssignmentScalarWhereWithAggregatesInput = {
+    AND?: KioskOrganizationAssignmentScalarWhereWithAggregatesInput | KioskOrganizationAssignmentScalarWhereWithAggregatesInput[]
+    OR?: KioskOrganizationAssignmentScalarWhereWithAggregatesInput[]
+    NOT?: KioskOrganizationAssignmentScalarWhereWithAggregatesInput | KioskOrganizationAssignmentScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"KioskOrganizationAssignment"> | number
+    kioskId?: StringWithAggregatesFilter<"KioskOrganizationAssignment"> | string
+    organizationId?: IntWithAggregatesFilter<"KioskOrganizationAssignment"> | number
+    department?: StringNullableWithAggregatesFilter<"KioskOrganizationAssignment"> | string | null
+    floor?: StringNullableWithAggregatesFilter<"KioskOrganizationAssignment"> | string | null
+    room?: StringNullableWithAggregatesFilter<"KioskOrganizationAssignment"> | string | null
+    building?: StringNullableWithAggregatesFilter<"KioskOrganizationAssignment"> | string | null
+    assignedBy?: StringNullableWithAggregatesFilter<"KioskOrganizationAssignment"> | string | null
+    assignmentMetadata?: JsonWithAggregatesFilter<"KioskOrganizationAssignment">
+    createdAt?: DateTimeWithAggregatesFilter<"KioskOrganizationAssignment"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"KioskOrganizationAssignment"> | Date | string
+  }
+
+  export type KioskMetadataLogWhereInput = {
+    AND?: KioskMetadataLogWhereInput | KioskMetadataLogWhereInput[]
+    OR?: KioskMetadataLogWhereInput[]
+    NOT?: KioskMetadataLogWhereInput | KioskMetadataLogWhereInput[]
+    id?: IntFilter<"KioskMetadataLog"> | number
+    kioskId?: StringFilter<"KioskMetadataLog"> | string
+    metadataType?: StringFilter<"KioskMetadataLog"> | string
+    encryptedMetadata?: StringNullableFilter<"KioskMetadataLog"> | string | null
+    collectionTimestamp?: DateTimeFilter<"KioskMetadataLog"> | Date | string
+    kiosk?: XOR<KioskScalarRelationFilter, KioskWhereInput>
+  }
+
+  export type KioskMetadataLogOrderByWithRelationInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    metadataType?: SortOrder
+    encryptedMetadata?: SortOrderInput | SortOrder
+    collectionTimestamp?: SortOrder
+    kiosk?: KioskOrderByWithRelationInput
+  }
+
+  export type KioskMetadataLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: KioskMetadataLogWhereInput | KioskMetadataLogWhereInput[]
+    OR?: KioskMetadataLogWhereInput[]
+    NOT?: KioskMetadataLogWhereInput | KioskMetadataLogWhereInput[]
+    kioskId?: StringFilter<"KioskMetadataLog"> | string
+    metadataType?: StringFilter<"KioskMetadataLog"> | string
+    encryptedMetadata?: StringNullableFilter<"KioskMetadataLog"> | string | null
+    collectionTimestamp?: DateTimeFilter<"KioskMetadataLog"> | Date | string
+    kiosk?: XOR<KioskScalarRelationFilter, KioskWhereInput>
+  }, "id">
+
+  export type KioskMetadataLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    metadataType?: SortOrder
+    encryptedMetadata?: SortOrderInput | SortOrder
+    collectionTimestamp?: SortOrder
+    _count?: KioskMetadataLogCountOrderByAggregateInput
+    _avg?: KioskMetadataLogAvgOrderByAggregateInput
+    _max?: KioskMetadataLogMaxOrderByAggregateInput
+    _min?: KioskMetadataLogMinOrderByAggregateInput
+    _sum?: KioskMetadataLogSumOrderByAggregateInput
+  }
+
+  export type KioskMetadataLogScalarWhereWithAggregatesInput = {
+    AND?: KioskMetadataLogScalarWhereWithAggregatesInput | KioskMetadataLogScalarWhereWithAggregatesInput[]
+    OR?: KioskMetadataLogScalarWhereWithAggregatesInput[]
+    NOT?: KioskMetadataLogScalarWhereWithAggregatesInput | KioskMetadataLogScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"KioskMetadataLog"> | number
+    kioskId?: StringWithAggregatesFilter<"KioskMetadataLog"> | string
+    metadataType?: StringWithAggregatesFilter<"KioskMetadataLog"> | string
+    encryptedMetadata?: StringNullableWithAggregatesFilter<"KioskMetadataLog"> | string | null
+    collectionTimestamp?: DateTimeWithAggregatesFilter<"KioskMetadataLog"> | Date | string
   }
 
   export type XpEventWhereInput = {
@@ -56954,6 +64782,255 @@ export namespace Prisma {
     endedAt?: DateTimeNullableWithAggregatesFilter<"VipSlaHistory"> | Date | string | null
   }
 
+  export type AgentAvailabilityWhereInput = {
+    AND?: AgentAvailabilityWhereInput | AgentAvailabilityWhereInput[]
+    OR?: AgentAvailabilityWhereInput[]
+    NOT?: AgentAvailabilityWhereInput | AgentAvailabilityWhereInput[]
+    id?: StringFilter<"AgentAvailability"> | string
+    userId?: StringFilter<"AgentAvailability"> | string
+    queueName?: StringFilter<"AgentAvailability"> | string
+    isAvailable?: BoolFilter<"AgentAvailability"> | boolean
+    maxCapacity?: IntFilter<"AgentAvailability"> | number
+    currentLoad?: IntFilter<"AgentAvailability"> | number
+    status?: StringFilter<"AgentAvailability"> | string
+    lastUpdated?: DateTimeFilter<"AgentAvailability"> | Date | string
+    createdAt?: DateTimeFilter<"AgentAvailability"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type AgentAvailabilityOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    queueName?: SortOrder
+    isAvailable?: SortOrder
+    maxCapacity?: SortOrder
+    currentLoad?: SortOrder
+    status?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type AgentAvailabilityWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_queueName?: AgentAvailabilityUserIdQueueNameCompoundUniqueInput
+    AND?: AgentAvailabilityWhereInput | AgentAvailabilityWhereInput[]
+    OR?: AgentAvailabilityWhereInput[]
+    NOT?: AgentAvailabilityWhereInput | AgentAvailabilityWhereInput[]
+    userId?: StringFilter<"AgentAvailability"> | string
+    queueName?: StringFilter<"AgentAvailability"> | string
+    isAvailable?: BoolFilter<"AgentAvailability"> | boolean
+    maxCapacity?: IntFilter<"AgentAvailability"> | number
+    currentLoad?: IntFilter<"AgentAvailability"> | number
+    status?: StringFilter<"AgentAvailability"> | string
+    lastUpdated?: DateTimeFilter<"AgentAvailability"> | Date | string
+    createdAt?: DateTimeFilter<"AgentAvailability"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId_queueName">
+
+  export type AgentAvailabilityOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    queueName?: SortOrder
+    isAvailable?: SortOrder
+    maxCapacity?: SortOrder
+    currentLoad?: SortOrder
+    status?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+    _count?: AgentAvailabilityCountOrderByAggregateInput
+    _avg?: AgentAvailabilityAvgOrderByAggregateInput
+    _max?: AgentAvailabilityMaxOrderByAggregateInput
+    _min?: AgentAvailabilityMinOrderByAggregateInput
+    _sum?: AgentAvailabilitySumOrderByAggregateInput
+  }
+
+  export type AgentAvailabilityScalarWhereWithAggregatesInput = {
+    AND?: AgentAvailabilityScalarWhereWithAggregatesInput | AgentAvailabilityScalarWhereWithAggregatesInput[]
+    OR?: AgentAvailabilityScalarWhereWithAggregatesInput[]
+    NOT?: AgentAvailabilityScalarWhereWithAggregatesInput | AgentAvailabilityScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AgentAvailability"> | string
+    userId?: StringWithAggregatesFilter<"AgentAvailability"> | string
+    queueName?: StringWithAggregatesFilter<"AgentAvailability"> | string
+    isAvailable?: BoolWithAggregatesFilter<"AgentAvailability"> | boolean
+    maxCapacity?: IntWithAggregatesFilter<"AgentAvailability"> | number
+    currentLoad?: IntWithAggregatesFilter<"AgentAvailability"> | number
+    status?: StringWithAggregatesFilter<"AgentAvailability"> | string
+    lastUpdated?: DateTimeWithAggregatesFilter<"AgentAvailability"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"AgentAvailability"> | Date | string
+  }
+
+  export type QueueMetricsWhereInput = {
+    AND?: QueueMetricsWhereInput | QueueMetricsWhereInput[]
+    OR?: QueueMetricsWhereInput[]
+    NOT?: QueueMetricsWhereInput | QueueMetricsWhereInput[]
+    id?: StringFilter<"QueueMetrics"> | string
+    queueName?: StringFilter<"QueueMetrics"> | string
+    totalAgents?: IntFilter<"QueueMetrics"> | number
+    availableAgents?: IntFilter<"QueueMetrics"> | number
+    totalTickets?: IntFilter<"QueueMetrics"> | number
+    openTickets?: IntFilter<"QueueMetrics"> | number
+    avgResponseTime?: FloatFilter<"QueueMetrics"> | number
+    avgResolutionTime?: FloatFilter<"QueueMetrics"> | number
+    slaBreaches?: IntFilter<"QueueMetrics"> | number
+    highPriorityTickets?: IntFilter<"QueueMetrics"> | number
+    capacityUtilization?: FloatFilter<"QueueMetrics"> | number
+    averageWaitTime?: FloatFilter<"QueueMetrics"> | number
+    thresholdWarning?: BoolFilter<"QueueMetrics"> | boolean
+    thresholdCritical?: BoolFilter<"QueueMetrics"> | boolean
+    lastCalculated?: DateTimeFilter<"QueueMetrics"> | Date | string
+  }
+
+  export type QueueMetricsOrderByWithRelationInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    totalAgents?: SortOrder
+    availableAgents?: SortOrder
+    totalTickets?: SortOrder
+    openTickets?: SortOrder
+    avgResponseTime?: SortOrder
+    avgResolutionTime?: SortOrder
+    slaBreaches?: SortOrder
+    highPriorityTickets?: SortOrder
+    capacityUtilization?: SortOrder
+    averageWaitTime?: SortOrder
+    thresholdWarning?: SortOrder
+    thresholdCritical?: SortOrder
+    lastCalculated?: SortOrder
+  }
+
+  export type QueueMetricsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    queueName?: string
+    AND?: QueueMetricsWhereInput | QueueMetricsWhereInput[]
+    OR?: QueueMetricsWhereInput[]
+    NOT?: QueueMetricsWhereInput | QueueMetricsWhereInput[]
+    totalAgents?: IntFilter<"QueueMetrics"> | number
+    availableAgents?: IntFilter<"QueueMetrics"> | number
+    totalTickets?: IntFilter<"QueueMetrics"> | number
+    openTickets?: IntFilter<"QueueMetrics"> | number
+    avgResponseTime?: FloatFilter<"QueueMetrics"> | number
+    avgResolutionTime?: FloatFilter<"QueueMetrics"> | number
+    slaBreaches?: IntFilter<"QueueMetrics"> | number
+    highPriorityTickets?: IntFilter<"QueueMetrics"> | number
+    capacityUtilization?: FloatFilter<"QueueMetrics"> | number
+    averageWaitTime?: FloatFilter<"QueueMetrics"> | number
+    thresholdWarning?: BoolFilter<"QueueMetrics"> | boolean
+    thresholdCritical?: BoolFilter<"QueueMetrics"> | boolean
+    lastCalculated?: DateTimeFilter<"QueueMetrics"> | Date | string
+  }, "id" | "queueName">
+
+  export type QueueMetricsOrderByWithAggregationInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    totalAgents?: SortOrder
+    availableAgents?: SortOrder
+    totalTickets?: SortOrder
+    openTickets?: SortOrder
+    avgResponseTime?: SortOrder
+    avgResolutionTime?: SortOrder
+    slaBreaches?: SortOrder
+    highPriorityTickets?: SortOrder
+    capacityUtilization?: SortOrder
+    averageWaitTime?: SortOrder
+    thresholdWarning?: SortOrder
+    thresholdCritical?: SortOrder
+    lastCalculated?: SortOrder
+    _count?: QueueMetricsCountOrderByAggregateInput
+    _avg?: QueueMetricsAvgOrderByAggregateInput
+    _max?: QueueMetricsMaxOrderByAggregateInput
+    _min?: QueueMetricsMinOrderByAggregateInput
+    _sum?: QueueMetricsSumOrderByAggregateInput
+  }
+
+  export type QueueMetricsScalarWhereWithAggregatesInput = {
+    AND?: QueueMetricsScalarWhereWithAggregatesInput | QueueMetricsScalarWhereWithAggregatesInput[]
+    OR?: QueueMetricsScalarWhereWithAggregatesInput[]
+    NOT?: QueueMetricsScalarWhereWithAggregatesInput | QueueMetricsScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"QueueMetrics"> | string
+    queueName?: StringWithAggregatesFilter<"QueueMetrics"> | string
+    totalAgents?: IntWithAggregatesFilter<"QueueMetrics"> | number
+    availableAgents?: IntWithAggregatesFilter<"QueueMetrics"> | number
+    totalTickets?: IntWithAggregatesFilter<"QueueMetrics"> | number
+    openTickets?: IntWithAggregatesFilter<"QueueMetrics"> | number
+    avgResponseTime?: FloatWithAggregatesFilter<"QueueMetrics"> | number
+    avgResolutionTime?: FloatWithAggregatesFilter<"QueueMetrics"> | number
+    slaBreaches?: IntWithAggregatesFilter<"QueueMetrics"> | number
+    highPriorityTickets?: IntWithAggregatesFilter<"QueueMetrics"> | number
+    capacityUtilization?: FloatWithAggregatesFilter<"QueueMetrics"> | number
+    averageWaitTime?: FloatWithAggregatesFilter<"QueueMetrics"> | number
+    thresholdWarning?: BoolWithAggregatesFilter<"QueueMetrics"> | boolean
+    thresholdCritical?: BoolWithAggregatesFilter<"QueueMetrics"> | boolean
+    lastCalculated?: DateTimeWithAggregatesFilter<"QueueMetrics"> | Date | string
+  }
+
+  export type QueueAlertWhereInput = {
+    AND?: QueueAlertWhereInput | QueueAlertWhereInput[]
+    OR?: QueueAlertWhereInput[]
+    NOT?: QueueAlertWhereInput | QueueAlertWhereInput[]
+    id?: StringFilter<"QueueAlert"> | string
+    queueName?: StringFilter<"QueueAlert"> | string
+    alertType?: StringFilter<"QueueAlert"> | string
+    message?: StringFilter<"QueueAlert"> | string
+    isActive?: BoolFilter<"QueueAlert"> | boolean
+    alertedAt?: DateTimeFilter<"QueueAlert"> | Date | string
+    resolvedAt?: DateTimeNullableFilter<"QueueAlert"> | Date | string | null
+    notifiedUsers?: StringNullableListFilter<"QueueAlert">
+  }
+
+  export type QueueAlertOrderByWithRelationInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    alertType?: SortOrder
+    message?: SortOrder
+    isActive?: SortOrder
+    alertedAt?: SortOrder
+    resolvedAt?: SortOrderInput | SortOrder
+    notifiedUsers?: SortOrder
+  }
+
+  export type QueueAlertWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: QueueAlertWhereInput | QueueAlertWhereInput[]
+    OR?: QueueAlertWhereInput[]
+    NOT?: QueueAlertWhereInput | QueueAlertWhereInput[]
+    queueName?: StringFilter<"QueueAlert"> | string
+    alertType?: StringFilter<"QueueAlert"> | string
+    message?: StringFilter<"QueueAlert"> | string
+    isActive?: BoolFilter<"QueueAlert"> | boolean
+    alertedAt?: DateTimeFilter<"QueueAlert"> | Date | string
+    resolvedAt?: DateTimeNullableFilter<"QueueAlert"> | Date | string | null
+    notifiedUsers?: StringNullableListFilter<"QueueAlert">
+  }, "id">
+
+  export type QueueAlertOrderByWithAggregationInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    alertType?: SortOrder
+    message?: SortOrder
+    isActive?: SortOrder
+    alertedAt?: SortOrder
+    resolvedAt?: SortOrderInput | SortOrder
+    notifiedUsers?: SortOrder
+    _count?: QueueAlertCountOrderByAggregateInput
+    _max?: QueueAlertMaxOrderByAggregateInput
+    _min?: QueueAlertMinOrderByAggregateInput
+  }
+
+  export type QueueAlertScalarWhereWithAggregatesInput = {
+    AND?: QueueAlertScalarWhereWithAggregatesInput | QueueAlertScalarWhereWithAggregatesInput[]
+    OR?: QueueAlertScalarWhereWithAggregatesInput[]
+    NOT?: QueueAlertScalarWhereWithAggregatesInput | QueueAlertScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"QueueAlert"> | string
+    queueName?: StringWithAggregatesFilter<"QueueAlert"> | string
+    alertType?: StringWithAggregatesFilter<"QueueAlert"> | string
+    message?: StringWithAggregatesFilter<"QueueAlert"> | string
+    isActive?: BoolWithAggregatesFilter<"QueueAlert"> | boolean
+    alertedAt?: DateTimeWithAggregatesFilter<"QueueAlert"> | Date | string
+    resolvedAt?: DateTimeNullableWithAggregatesFilter<"QueueAlert"> | Date | string | null
+    notifiedUsers?: StringNullableListFilter<"QueueAlert">
+  }
+
   export type UserCreateInput = {
     id?: string
     name?: string | null
@@ -56995,6 +65072,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -57038,6 +65116,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -57081,6 +65160,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -57124,6 +65204,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -57889,6 +65970,9 @@ export namespace Prisma {
     updatedAt?: Date | string
     activations?: KioskActivationCreateNestedManyWithoutKioskInput
     assetRegistry?: KioskAssetRegistryCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentCreateNestedOneWithoutKioskInput
+    metadataLogs?: KioskMetadataLogCreateNestedManyWithoutKioskInput
   }
 
   export type KioskUncheckedCreateInput = {
@@ -57912,6 +65996,9 @@ export namespace Prisma {
     updatedAt?: Date | string
     activations?: KioskActivationUncheckedCreateNestedManyWithoutKioskInput
     assetRegistry?: KioskAssetRegistryUncheckedCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedCreateNestedOneWithoutKioskInput
+    metadataLogs?: KioskMetadataLogUncheckedCreateNestedManyWithoutKioskInput
   }
 
   export type KioskUpdateInput = {
@@ -57935,6 +66022,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activations?: KioskActivationUpdateManyWithoutKioskNestedInput
     assetRegistry?: KioskAssetRegistryUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUpdateOneWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUpdateManyWithoutKioskNestedInput
   }
 
   export type KioskUncheckedUpdateInput = {
@@ -57958,6 +66048,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activations?: KioskActivationUncheckedUpdateManyWithoutKioskNestedInput
     assetRegistry?: KioskAssetRegistryUncheckedUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedUpdateOneWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUncheckedUpdateManyWithoutKioskNestedInput
   }
 
   export type KioskCreateManyInput = {
@@ -58822,6 +66915,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutAssetInput
     importBatch?: AssetImportBatchCreateNestedOneWithoutAssetsInput
   }
 
@@ -58865,6 +66959,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryUncheckedCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogUncheckedCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetUpdateInput = {
@@ -58905,6 +67000,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutAssetNestedInput
     importBatch?: AssetImportBatchUpdateOneWithoutAssetsNestedInput
   }
 
@@ -58948,6 +67044,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUncheckedUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUncheckedUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput
   }
 
   export type InventoryAssetCreateManyInput = {
@@ -59655,6 +67752,231 @@ export namespace Prisma {
     encryptedMetadata?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type HelixSyncFailureCreateInput = {
+    errorMessage: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: number
+    nextRetryAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    kiosk: KioskCreateNestedOneWithoutSyncFailuresInput
+    asset: InventoryAssetCreateNestedOneWithoutSyncFailuresInput
+  }
+
+  export type HelixSyncFailureUncheckedCreateInput = {
+    id?: number
+    kioskId: string
+    assetId: number
+    errorMessage: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: number
+    nextRetryAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HelixSyncFailureUpdateInput = {
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kiosk?: KioskUpdateOneRequiredWithoutSyncFailuresNestedInput
+    asset?: InventoryAssetUpdateOneRequiredWithoutSyncFailuresNestedInput
+  }
+
+  export type HelixSyncFailureUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kioskId?: StringFieldUpdateOperationsInput | string
+    assetId?: IntFieldUpdateOperationsInput | number
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HelixSyncFailureCreateManyInput = {
+    id?: number
+    kioskId: string
+    assetId: number
+    errorMessage: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: number
+    nextRetryAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HelixSyncFailureUpdateManyMutationInput = {
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HelixSyncFailureUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kioskId?: StringFieldUpdateOperationsInput | string
+    assetId?: IntFieldUpdateOperationsInput | number
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskOrganizationAssignmentCreateInput = {
+    organizationId: number
+    department?: string | null
+    floor?: string | null
+    room?: string | null
+    building?: string | null
+    assignedBy?: string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    kiosk: KioskCreateNestedOneWithoutOrgAssignmentInput
+  }
+
+  export type KioskOrganizationAssignmentUncheckedCreateInput = {
+    id?: number
+    kioskId: string
+    organizationId: number
+    department?: string | null
+    floor?: string | null
+    room?: string | null
+    building?: string | null
+    assignedBy?: string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KioskOrganizationAssignmentUpdateInput = {
+    organizationId?: IntFieldUpdateOperationsInput | number
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+    building?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kiosk?: KioskUpdateOneRequiredWithoutOrgAssignmentNestedInput
+  }
+
+  export type KioskOrganizationAssignmentUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kioskId?: StringFieldUpdateOperationsInput | string
+    organizationId?: IntFieldUpdateOperationsInput | number
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+    building?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskOrganizationAssignmentCreateManyInput = {
+    id?: number
+    kioskId: string
+    organizationId: number
+    department?: string | null
+    floor?: string | null
+    room?: string | null
+    building?: string | null
+    assignedBy?: string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KioskOrganizationAssignmentUpdateManyMutationInput = {
+    organizationId?: IntFieldUpdateOperationsInput | number
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+    building?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskOrganizationAssignmentUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kioskId?: StringFieldUpdateOperationsInput | string
+    organizationId?: IntFieldUpdateOperationsInput | number
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+    building?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskMetadataLogCreateInput = {
+    metadataType: string
+    encryptedMetadata?: string | null
+    collectionTimestamp?: Date | string
+    kiosk: KioskCreateNestedOneWithoutMetadataLogsInput
+  }
+
+  export type KioskMetadataLogUncheckedCreateInput = {
+    id?: number
+    kioskId: string
+    metadataType: string
+    encryptedMetadata?: string | null
+    collectionTimestamp?: Date | string
+  }
+
+  export type KioskMetadataLogUpdateInput = {
+    metadataType?: StringFieldUpdateOperationsInput | string
+    encryptedMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    collectionTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    kiosk?: KioskUpdateOneRequiredWithoutMetadataLogsNestedInput
+  }
+
+  export type KioskMetadataLogUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kioskId?: StringFieldUpdateOperationsInput | string
+    metadataType?: StringFieldUpdateOperationsInput | string
+    encryptedMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    collectionTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskMetadataLogCreateManyInput = {
+    id?: number
+    kioskId: string
+    metadataType: string
+    encryptedMetadata?: string | null
+    collectionTimestamp?: Date | string
+  }
+
+  export type KioskMetadataLogUpdateManyMutationInput = {
+    metadataType?: StringFieldUpdateOperationsInput | string
+    encryptedMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    collectionTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskMetadataLogUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kioskId?: StringFieldUpdateOperationsInput | string
+    metadataType?: StringFieldUpdateOperationsInput | string
+    encryptedMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    collectionTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type XpEventCreateInput = {
@@ -60385,6 +68707,292 @@ export namespace Prisma {
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type AgentAvailabilityCreateInput = {
+    id?: string
+    queueName: string
+    isAvailable?: boolean
+    maxCapacity?: number
+    currentLoad?: number
+    status?: string
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutAgentAvailabilityInput
+  }
+
+  export type AgentAvailabilityUncheckedCreateInput = {
+    id?: string
+    userId: string
+    queueName: string
+    isAvailable?: boolean
+    maxCapacity?: number
+    currentLoad?: number
+    status?: string
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type AgentAvailabilityUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    maxCapacity?: IntFieldUpdateOperationsInput | number
+    currentLoad?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAgentAvailabilityNestedInput
+  }
+
+  export type AgentAvailabilityUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    maxCapacity?: IntFieldUpdateOperationsInput | number
+    currentLoad?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentAvailabilityCreateManyInput = {
+    id?: string
+    userId: string
+    queueName: string
+    isAvailable?: boolean
+    maxCapacity?: number
+    currentLoad?: number
+    status?: string
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type AgentAvailabilityUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    maxCapacity?: IntFieldUpdateOperationsInput | number
+    currentLoad?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentAvailabilityUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    maxCapacity?: IntFieldUpdateOperationsInput | number
+    currentLoad?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type QueueMetricsCreateInput = {
+    id?: string
+    queueName: string
+    totalAgents?: number
+    availableAgents?: number
+    totalTickets?: number
+    openTickets?: number
+    avgResponseTime?: number
+    avgResolutionTime?: number
+    slaBreaches?: number
+    highPriorityTickets?: number
+    capacityUtilization?: number
+    averageWaitTime?: number
+    thresholdWarning?: boolean
+    thresholdCritical?: boolean
+    lastCalculated?: Date | string
+  }
+
+  export type QueueMetricsUncheckedCreateInput = {
+    id?: string
+    queueName: string
+    totalAgents?: number
+    availableAgents?: number
+    totalTickets?: number
+    openTickets?: number
+    avgResponseTime?: number
+    avgResolutionTime?: number
+    slaBreaches?: number
+    highPriorityTickets?: number
+    capacityUtilization?: number
+    averageWaitTime?: number
+    thresholdWarning?: boolean
+    thresholdCritical?: boolean
+    lastCalculated?: Date | string
+  }
+
+  export type QueueMetricsUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    totalAgents?: IntFieldUpdateOperationsInput | number
+    availableAgents?: IntFieldUpdateOperationsInput | number
+    totalTickets?: IntFieldUpdateOperationsInput | number
+    openTickets?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: FloatFieldUpdateOperationsInput | number
+    avgResolutionTime?: FloatFieldUpdateOperationsInput | number
+    slaBreaches?: IntFieldUpdateOperationsInput | number
+    highPriorityTickets?: IntFieldUpdateOperationsInput | number
+    capacityUtilization?: FloatFieldUpdateOperationsInput | number
+    averageWaitTime?: FloatFieldUpdateOperationsInput | number
+    thresholdWarning?: BoolFieldUpdateOperationsInput | boolean
+    thresholdCritical?: BoolFieldUpdateOperationsInput | boolean
+    lastCalculated?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type QueueMetricsUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    totalAgents?: IntFieldUpdateOperationsInput | number
+    availableAgents?: IntFieldUpdateOperationsInput | number
+    totalTickets?: IntFieldUpdateOperationsInput | number
+    openTickets?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: FloatFieldUpdateOperationsInput | number
+    avgResolutionTime?: FloatFieldUpdateOperationsInput | number
+    slaBreaches?: IntFieldUpdateOperationsInput | number
+    highPriorityTickets?: IntFieldUpdateOperationsInput | number
+    capacityUtilization?: FloatFieldUpdateOperationsInput | number
+    averageWaitTime?: FloatFieldUpdateOperationsInput | number
+    thresholdWarning?: BoolFieldUpdateOperationsInput | boolean
+    thresholdCritical?: BoolFieldUpdateOperationsInput | boolean
+    lastCalculated?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type QueueMetricsCreateManyInput = {
+    id?: string
+    queueName: string
+    totalAgents?: number
+    availableAgents?: number
+    totalTickets?: number
+    openTickets?: number
+    avgResponseTime?: number
+    avgResolutionTime?: number
+    slaBreaches?: number
+    highPriorityTickets?: number
+    capacityUtilization?: number
+    averageWaitTime?: number
+    thresholdWarning?: boolean
+    thresholdCritical?: boolean
+    lastCalculated?: Date | string
+  }
+
+  export type QueueMetricsUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    totalAgents?: IntFieldUpdateOperationsInput | number
+    availableAgents?: IntFieldUpdateOperationsInput | number
+    totalTickets?: IntFieldUpdateOperationsInput | number
+    openTickets?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: FloatFieldUpdateOperationsInput | number
+    avgResolutionTime?: FloatFieldUpdateOperationsInput | number
+    slaBreaches?: IntFieldUpdateOperationsInput | number
+    highPriorityTickets?: IntFieldUpdateOperationsInput | number
+    capacityUtilization?: FloatFieldUpdateOperationsInput | number
+    averageWaitTime?: FloatFieldUpdateOperationsInput | number
+    thresholdWarning?: BoolFieldUpdateOperationsInput | boolean
+    thresholdCritical?: BoolFieldUpdateOperationsInput | boolean
+    lastCalculated?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type QueueMetricsUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    totalAgents?: IntFieldUpdateOperationsInput | number
+    availableAgents?: IntFieldUpdateOperationsInput | number
+    totalTickets?: IntFieldUpdateOperationsInput | number
+    openTickets?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: FloatFieldUpdateOperationsInput | number
+    avgResolutionTime?: FloatFieldUpdateOperationsInput | number
+    slaBreaches?: IntFieldUpdateOperationsInput | number
+    highPriorityTickets?: IntFieldUpdateOperationsInput | number
+    capacityUtilization?: FloatFieldUpdateOperationsInput | number
+    averageWaitTime?: FloatFieldUpdateOperationsInput | number
+    thresholdWarning?: BoolFieldUpdateOperationsInput | boolean
+    thresholdCritical?: BoolFieldUpdateOperationsInput | boolean
+    lastCalculated?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type QueueAlertCreateInput = {
+    id?: string
+    queueName: string
+    alertType: string
+    message: string
+    isActive?: boolean
+    alertedAt?: Date | string
+    resolvedAt?: Date | string | null
+    notifiedUsers?: QueueAlertCreatenotifiedUsersInput | string[]
+  }
+
+  export type QueueAlertUncheckedCreateInput = {
+    id?: string
+    queueName: string
+    alertType: string
+    message: string
+    isActive?: boolean
+    alertedAt?: Date | string
+    resolvedAt?: Date | string | null
+    notifiedUsers?: QueueAlertCreatenotifiedUsersInput | string[]
+  }
+
+  export type QueueAlertUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    alertType?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    alertedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notifiedUsers?: QueueAlertUpdatenotifiedUsersInput | string[]
+  }
+
+  export type QueueAlertUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    alertType?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    alertedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notifiedUsers?: QueueAlertUpdatenotifiedUsersInput | string[]
+  }
+
+  export type QueueAlertCreateManyInput = {
+    id?: string
+    queueName: string
+    alertType: string
+    message: string
+    isActive?: boolean
+    alertedAt?: Date | string
+    resolvedAt?: Date | string | null
+    notifiedUsers?: QueueAlertCreatenotifiedUsersInput | string[]
+  }
+
+  export type QueueAlertUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    alertType?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    alertedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notifiedUsers?: QueueAlertUpdatenotifiedUsersInput | string[]
+  }
+
+  export type QueueAlertUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    alertType?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    alertedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notifiedUsers?: QueueAlertUpdatenotifiedUsersInput | string[]
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -60560,6 +69168,12 @@ export namespace Prisma {
     none?: VipSlaHistoryWhereInput
   }
 
+  export type AgentAvailabilityListRelationFilter = {
+    every?: AgentAvailabilityWhereInput
+    some?: AgentAvailabilityWhereInput
+    none?: AgentAvailabilityWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -60622,6 +69236,10 @@ export namespace Prisma {
   }
 
   export type VipSlaHistoryOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AgentAvailabilityOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -61324,11 +69942,36 @@ export namespace Prisma {
     none?: KioskAssetRegistryWhereInput
   }
 
+  export type HelixSyncFailureListRelationFilter = {
+    every?: HelixSyncFailureWhereInput
+    some?: HelixSyncFailureWhereInput
+    none?: HelixSyncFailureWhereInput
+  }
+
+  export type KioskOrganizationAssignmentNullableScalarRelationFilter = {
+    is?: KioskOrganizationAssignmentWhereInput | null
+    isNot?: KioskOrganizationAssignmentWhereInput | null
+  }
+
+  export type KioskMetadataLogListRelationFilter = {
+    every?: KioskMetadataLogWhereInput
+    some?: KioskMetadataLogWhereInput
+    none?: KioskMetadataLogWhereInput
+  }
+
   export type KioskActivationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type KioskAssetRegistryOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type HelixSyncFailureOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type KioskMetadataLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -62413,6 +71056,139 @@ export namespace Prisma {
     assetId?: SortOrder
   }
 
+  export type HelixSyncFailureKioskIdAssetIdCompoundUniqueInput = {
+    kioskId: string
+    assetId: number
+  }
+
+  export type HelixSyncFailureCountOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    assetId?: SortOrder
+    errorMessage?: SortOrder
+    metadata?: SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HelixSyncFailureAvgOrderByAggregateInput = {
+    id?: SortOrder
+    assetId?: SortOrder
+    retryCount?: SortOrder
+  }
+
+  export type HelixSyncFailureMaxOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    assetId?: SortOrder
+    errorMessage?: SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HelixSyncFailureMinOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    assetId?: SortOrder
+    errorMessage?: SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HelixSyncFailureSumOrderByAggregateInput = {
+    id?: SortOrder
+    assetId?: SortOrder
+    retryCount?: SortOrder
+  }
+
+  export type KioskOrganizationAssignmentCountOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    organizationId?: SortOrder
+    department?: SortOrder
+    floor?: SortOrder
+    room?: SortOrder
+    building?: SortOrder
+    assignedBy?: SortOrder
+    assignmentMetadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KioskOrganizationAssignmentAvgOrderByAggregateInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+  }
+
+  export type KioskOrganizationAssignmentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    organizationId?: SortOrder
+    department?: SortOrder
+    floor?: SortOrder
+    room?: SortOrder
+    building?: SortOrder
+    assignedBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KioskOrganizationAssignmentMinOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    organizationId?: SortOrder
+    department?: SortOrder
+    floor?: SortOrder
+    room?: SortOrder
+    building?: SortOrder
+    assignedBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KioskOrganizationAssignmentSumOrderByAggregateInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+  }
+
+  export type KioskMetadataLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    metadataType?: SortOrder
+    encryptedMetadata?: SortOrder
+    collectionTimestamp?: SortOrder
+  }
+
+  export type KioskMetadataLogAvgOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type KioskMetadataLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    metadataType?: SortOrder
+    encryptedMetadata?: SortOrder
+    collectionTimestamp?: SortOrder
+  }
+
+  export type KioskMetadataLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    metadataType?: SortOrder
+    encryptedMetadata?: SortOrder
+    collectionTimestamp?: SortOrder
+  }
+
+  export type KioskMetadataLogSumOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
   export type XpEventCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -62857,6 +71633,195 @@ export namespace Prisma {
     id?: SortOrder
   }
 
+  export type AgentAvailabilityUserIdQueueNameCompoundUniqueInput = {
+    userId: string
+    queueName: string
+  }
+
+  export type AgentAvailabilityCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    queueName?: SortOrder
+    isAvailable?: SortOrder
+    maxCapacity?: SortOrder
+    currentLoad?: SortOrder
+    status?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AgentAvailabilityAvgOrderByAggregateInput = {
+    maxCapacity?: SortOrder
+    currentLoad?: SortOrder
+  }
+
+  export type AgentAvailabilityMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    queueName?: SortOrder
+    isAvailable?: SortOrder
+    maxCapacity?: SortOrder
+    currentLoad?: SortOrder
+    status?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AgentAvailabilityMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    queueName?: SortOrder
+    isAvailable?: SortOrder
+    maxCapacity?: SortOrder
+    currentLoad?: SortOrder
+    status?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AgentAvailabilitySumOrderByAggregateInput = {
+    maxCapacity?: SortOrder
+    currentLoad?: SortOrder
+  }
+
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type QueueMetricsCountOrderByAggregateInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    totalAgents?: SortOrder
+    availableAgents?: SortOrder
+    totalTickets?: SortOrder
+    openTickets?: SortOrder
+    avgResponseTime?: SortOrder
+    avgResolutionTime?: SortOrder
+    slaBreaches?: SortOrder
+    highPriorityTickets?: SortOrder
+    capacityUtilization?: SortOrder
+    averageWaitTime?: SortOrder
+    thresholdWarning?: SortOrder
+    thresholdCritical?: SortOrder
+    lastCalculated?: SortOrder
+  }
+
+  export type QueueMetricsAvgOrderByAggregateInput = {
+    totalAgents?: SortOrder
+    availableAgents?: SortOrder
+    totalTickets?: SortOrder
+    openTickets?: SortOrder
+    avgResponseTime?: SortOrder
+    avgResolutionTime?: SortOrder
+    slaBreaches?: SortOrder
+    highPriorityTickets?: SortOrder
+    capacityUtilization?: SortOrder
+    averageWaitTime?: SortOrder
+  }
+
+  export type QueueMetricsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    totalAgents?: SortOrder
+    availableAgents?: SortOrder
+    totalTickets?: SortOrder
+    openTickets?: SortOrder
+    avgResponseTime?: SortOrder
+    avgResolutionTime?: SortOrder
+    slaBreaches?: SortOrder
+    highPriorityTickets?: SortOrder
+    capacityUtilization?: SortOrder
+    averageWaitTime?: SortOrder
+    thresholdWarning?: SortOrder
+    thresholdCritical?: SortOrder
+    lastCalculated?: SortOrder
+  }
+
+  export type QueueMetricsMinOrderByAggregateInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    totalAgents?: SortOrder
+    availableAgents?: SortOrder
+    totalTickets?: SortOrder
+    openTickets?: SortOrder
+    avgResponseTime?: SortOrder
+    avgResolutionTime?: SortOrder
+    slaBreaches?: SortOrder
+    highPriorityTickets?: SortOrder
+    capacityUtilization?: SortOrder
+    averageWaitTime?: SortOrder
+    thresholdWarning?: SortOrder
+    thresholdCritical?: SortOrder
+    lastCalculated?: SortOrder
+  }
+
+  export type QueueMetricsSumOrderByAggregateInput = {
+    totalAgents?: SortOrder
+    availableAgents?: SortOrder
+    totalTickets?: SortOrder
+    openTickets?: SortOrder
+    avgResponseTime?: SortOrder
+    avgResolutionTime?: SortOrder
+    slaBreaches?: SortOrder
+    highPriorityTickets?: SortOrder
+    capacityUtilization?: SortOrder
+    averageWaitTime?: SortOrder
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type QueueAlertCountOrderByAggregateInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    alertType?: SortOrder
+    message?: SortOrder
+    isActive?: SortOrder
+    alertedAt?: SortOrder
+    resolvedAt?: SortOrder
+    notifiedUsers?: SortOrder
+  }
+
+  export type QueueAlertMaxOrderByAggregateInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    alertType?: SortOrder
+    message?: SortOrder
+    isActive?: SortOrder
+    alertedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
+  export type QueueAlertMinOrderByAggregateInput = {
+    id?: SortOrder
+    queueName?: SortOrder
+    alertType?: SortOrder
+    message?: SortOrder
+    isActive?: SortOrder
+    alertedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
   export type FeedbackCreateNestedManyWithoutUserInput = {
     create?: XOR<FeedbackCreateWithoutUserInput, FeedbackUncheckedCreateWithoutUserInput> | FeedbackCreateWithoutUserInput[] | FeedbackUncheckedCreateWithoutUserInput[]
     connectOrCreate?: FeedbackCreateOrConnectWithoutUserInput | FeedbackCreateOrConnectWithoutUserInput[]
@@ -62989,6 +71954,13 @@ export namespace Prisma {
     connect?: VipSlaHistoryWhereUniqueInput | VipSlaHistoryWhereUniqueInput[]
   }
 
+  export type AgentAvailabilityCreateNestedManyWithoutUserInput = {
+    create?: XOR<AgentAvailabilityCreateWithoutUserInput, AgentAvailabilityUncheckedCreateWithoutUserInput> | AgentAvailabilityCreateWithoutUserInput[] | AgentAvailabilityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentAvailabilityCreateOrConnectWithoutUserInput | AgentAvailabilityCreateOrConnectWithoutUserInput[]
+    createMany?: AgentAvailabilityCreateManyUserInputEnvelope
+    connect?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
+  }
+
   export type FeedbackUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<FeedbackCreateWithoutUserInput, FeedbackUncheckedCreateWithoutUserInput> | FeedbackCreateWithoutUserInput[] | FeedbackUncheckedCreateWithoutUserInput[]
     connectOrCreate?: FeedbackCreateOrConnectWithoutUserInput | FeedbackCreateOrConnectWithoutUserInput[]
@@ -63119,6 +72091,13 @@ export namespace Prisma {
     connectOrCreate?: VipSlaHistoryCreateOrConnectWithoutUserInput | VipSlaHistoryCreateOrConnectWithoutUserInput[]
     createMany?: VipSlaHistoryCreateManyUserInputEnvelope
     connect?: VipSlaHistoryWhereUniqueInput | VipSlaHistoryWhereUniqueInput[]
+  }
+
+  export type AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<AgentAvailabilityCreateWithoutUserInput, AgentAvailabilityUncheckedCreateWithoutUserInput> | AgentAvailabilityCreateWithoutUserInput[] | AgentAvailabilityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentAvailabilityCreateOrConnectWithoutUserInput | AgentAvailabilityCreateOrConnectWithoutUserInput[]
+    createMany?: AgentAvailabilityCreateManyUserInputEnvelope
+    connect?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -63403,6 +72382,20 @@ export namespace Prisma {
     deleteMany?: VipSlaHistoryScalarWhereInput | VipSlaHistoryScalarWhereInput[]
   }
 
+  export type AgentAvailabilityUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AgentAvailabilityCreateWithoutUserInput, AgentAvailabilityUncheckedCreateWithoutUserInput> | AgentAvailabilityCreateWithoutUserInput[] | AgentAvailabilityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentAvailabilityCreateOrConnectWithoutUserInput | AgentAvailabilityCreateOrConnectWithoutUserInput[]
+    upsert?: AgentAvailabilityUpsertWithWhereUniqueWithoutUserInput | AgentAvailabilityUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AgentAvailabilityCreateManyUserInputEnvelope
+    set?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
+    disconnect?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
+    delete?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
+    connect?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
+    update?: AgentAvailabilityUpdateWithWhereUniqueWithoutUserInput | AgentAvailabilityUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AgentAvailabilityUpdateManyWithWhereWithoutUserInput | AgentAvailabilityUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AgentAvailabilityScalarWhereInput | AgentAvailabilityScalarWhereInput[]
+  }
+
   export type FeedbackUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<FeedbackCreateWithoutUserInput, FeedbackUncheckedCreateWithoutUserInput> | FeedbackCreateWithoutUserInput[] | FeedbackUncheckedCreateWithoutUserInput[]
     connectOrCreate?: FeedbackCreateOrConnectWithoutUserInput | FeedbackCreateOrConnectWithoutUserInput[]
@@ -63663,6 +72656,20 @@ export namespace Prisma {
     update?: VipSlaHistoryUpdateWithWhereUniqueWithoutUserInput | VipSlaHistoryUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: VipSlaHistoryUpdateManyWithWhereWithoutUserInput | VipSlaHistoryUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: VipSlaHistoryScalarWhereInput | VipSlaHistoryScalarWhereInput[]
+  }
+
+  export type AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AgentAvailabilityCreateWithoutUserInput, AgentAvailabilityUncheckedCreateWithoutUserInput> | AgentAvailabilityCreateWithoutUserInput[] | AgentAvailabilityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentAvailabilityCreateOrConnectWithoutUserInput | AgentAvailabilityCreateOrConnectWithoutUserInput[]
+    upsert?: AgentAvailabilityUpsertWithWhereUniqueWithoutUserInput | AgentAvailabilityUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AgentAvailabilityCreateManyUserInputEnvelope
+    set?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
+    disconnect?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
+    delete?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
+    connect?: AgentAvailabilityWhereUniqueInput | AgentAvailabilityWhereUniqueInput[]
+    update?: AgentAvailabilityUpdateWithWhereUniqueWithoutUserInput | AgentAvailabilityUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AgentAvailabilityUpdateManyWithWhereWithoutUserInput | AgentAvailabilityUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AgentAvailabilityScalarWhereInput | AgentAvailabilityScalarWhereInput[]
   }
 
   export type RolePermissionCreateNestedManyWithoutRoleInput = {
@@ -63963,6 +72970,26 @@ export namespace Prisma {
     connect?: KioskAssetRegistryWhereUniqueInput | KioskAssetRegistryWhereUniqueInput[]
   }
 
+  export type HelixSyncFailureCreateNestedManyWithoutKioskInput = {
+    create?: XOR<HelixSyncFailureCreateWithoutKioskInput, HelixSyncFailureUncheckedCreateWithoutKioskInput> | HelixSyncFailureCreateWithoutKioskInput[] | HelixSyncFailureUncheckedCreateWithoutKioskInput[]
+    connectOrCreate?: HelixSyncFailureCreateOrConnectWithoutKioskInput | HelixSyncFailureCreateOrConnectWithoutKioskInput[]
+    createMany?: HelixSyncFailureCreateManyKioskInputEnvelope
+    connect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+  }
+
+  export type KioskOrganizationAssignmentCreateNestedOneWithoutKioskInput = {
+    create?: XOR<KioskOrganizationAssignmentCreateWithoutKioskInput, KioskOrganizationAssignmentUncheckedCreateWithoutKioskInput>
+    connectOrCreate?: KioskOrganizationAssignmentCreateOrConnectWithoutKioskInput
+    connect?: KioskOrganizationAssignmentWhereUniqueInput
+  }
+
+  export type KioskMetadataLogCreateNestedManyWithoutKioskInput = {
+    create?: XOR<KioskMetadataLogCreateWithoutKioskInput, KioskMetadataLogUncheckedCreateWithoutKioskInput> | KioskMetadataLogCreateWithoutKioskInput[] | KioskMetadataLogUncheckedCreateWithoutKioskInput[]
+    connectOrCreate?: KioskMetadataLogCreateOrConnectWithoutKioskInput | KioskMetadataLogCreateOrConnectWithoutKioskInput[]
+    createMany?: KioskMetadataLogCreateManyKioskInputEnvelope
+    connect?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
+  }
+
   export type KioskActivationUncheckedCreateNestedManyWithoutKioskInput = {
     create?: XOR<KioskActivationCreateWithoutKioskInput, KioskActivationUncheckedCreateWithoutKioskInput> | KioskActivationCreateWithoutKioskInput[] | KioskActivationUncheckedCreateWithoutKioskInput[]
     connectOrCreate?: KioskActivationCreateOrConnectWithoutKioskInput | KioskActivationCreateOrConnectWithoutKioskInput[]
@@ -63975,6 +73002,26 @@ export namespace Prisma {
     connectOrCreate?: KioskAssetRegistryCreateOrConnectWithoutKioskInput | KioskAssetRegistryCreateOrConnectWithoutKioskInput[]
     createMany?: KioskAssetRegistryCreateManyKioskInputEnvelope
     connect?: KioskAssetRegistryWhereUniqueInput | KioskAssetRegistryWhereUniqueInput[]
+  }
+
+  export type HelixSyncFailureUncheckedCreateNestedManyWithoutKioskInput = {
+    create?: XOR<HelixSyncFailureCreateWithoutKioskInput, HelixSyncFailureUncheckedCreateWithoutKioskInput> | HelixSyncFailureCreateWithoutKioskInput[] | HelixSyncFailureUncheckedCreateWithoutKioskInput[]
+    connectOrCreate?: HelixSyncFailureCreateOrConnectWithoutKioskInput | HelixSyncFailureCreateOrConnectWithoutKioskInput[]
+    createMany?: HelixSyncFailureCreateManyKioskInputEnvelope
+    connect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+  }
+
+  export type KioskOrganizationAssignmentUncheckedCreateNestedOneWithoutKioskInput = {
+    create?: XOR<KioskOrganizationAssignmentCreateWithoutKioskInput, KioskOrganizationAssignmentUncheckedCreateWithoutKioskInput>
+    connectOrCreate?: KioskOrganizationAssignmentCreateOrConnectWithoutKioskInput
+    connect?: KioskOrganizationAssignmentWhereUniqueInput
+  }
+
+  export type KioskMetadataLogUncheckedCreateNestedManyWithoutKioskInput = {
+    create?: XOR<KioskMetadataLogCreateWithoutKioskInput, KioskMetadataLogUncheckedCreateWithoutKioskInput> | KioskMetadataLogCreateWithoutKioskInput[] | KioskMetadataLogUncheckedCreateWithoutKioskInput[]
+    connectOrCreate?: KioskMetadataLogCreateOrConnectWithoutKioskInput | KioskMetadataLogCreateOrConnectWithoutKioskInput[]
+    createMany?: KioskMetadataLogCreateManyKioskInputEnvelope
+    connect?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
   }
 
   export type KioskActivationUpdateManyWithoutKioskNestedInput = {
@@ -64005,6 +73052,44 @@ export namespace Prisma {
     deleteMany?: KioskAssetRegistryScalarWhereInput | KioskAssetRegistryScalarWhereInput[]
   }
 
+  export type HelixSyncFailureUpdateManyWithoutKioskNestedInput = {
+    create?: XOR<HelixSyncFailureCreateWithoutKioskInput, HelixSyncFailureUncheckedCreateWithoutKioskInput> | HelixSyncFailureCreateWithoutKioskInput[] | HelixSyncFailureUncheckedCreateWithoutKioskInput[]
+    connectOrCreate?: HelixSyncFailureCreateOrConnectWithoutKioskInput | HelixSyncFailureCreateOrConnectWithoutKioskInput[]
+    upsert?: HelixSyncFailureUpsertWithWhereUniqueWithoutKioskInput | HelixSyncFailureUpsertWithWhereUniqueWithoutKioskInput[]
+    createMany?: HelixSyncFailureCreateManyKioskInputEnvelope
+    set?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    disconnect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    delete?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    connect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    update?: HelixSyncFailureUpdateWithWhereUniqueWithoutKioskInput | HelixSyncFailureUpdateWithWhereUniqueWithoutKioskInput[]
+    updateMany?: HelixSyncFailureUpdateManyWithWhereWithoutKioskInput | HelixSyncFailureUpdateManyWithWhereWithoutKioskInput[]
+    deleteMany?: HelixSyncFailureScalarWhereInput | HelixSyncFailureScalarWhereInput[]
+  }
+
+  export type KioskOrganizationAssignmentUpdateOneWithoutKioskNestedInput = {
+    create?: XOR<KioskOrganizationAssignmentCreateWithoutKioskInput, KioskOrganizationAssignmentUncheckedCreateWithoutKioskInput>
+    connectOrCreate?: KioskOrganizationAssignmentCreateOrConnectWithoutKioskInput
+    upsert?: KioskOrganizationAssignmentUpsertWithoutKioskInput
+    disconnect?: KioskOrganizationAssignmentWhereInput | boolean
+    delete?: KioskOrganizationAssignmentWhereInput | boolean
+    connect?: KioskOrganizationAssignmentWhereUniqueInput
+    update?: XOR<XOR<KioskOrganizationAssignmentUpdateToOneWithWhereWithoutKioskInput, KioskOrganizationAssignmentUpdateWithoutKioskInput>, KioskOrganizationAssignmentUncheckedUpdateWithoutKioskInput>
+  }
+
+  export type KioskMetadataLogUpdateManyWithoutKioskNestedInput = {
+    create?: XOR<KioskMetadataLogCreateWithoutKioskInput, KioskMetadataLogUncheckedCreateWithoutKioskInput> | KioskMetadataLogCreateWithoutKioskInput[] | KioskMetadataLogUncheckedCreateWithoutKioskInput[]
+    connectOrCreate?: KioskMetadataLogCreateOrConnectWithoutKioskInput | KioskMetadataLogCreateOrConnectWithoutKioskInput[]
+    upsert?: KioskMetadataLogUpsertWithWhereUniqueWithoutKioskInput | KioskMetadataLogUpsertWithWhereUniqueWithoutKioskInput[]
+    createMany?: KioskMetadataLogCreateManyKioskInputEnvelope
+    set?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
+    disconnect?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
+    delete?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
+    connect?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
+    update?: KioskMetadataLogUpdateWithWhereUniqueWithoutKioskInput | KioskMetadataLogUpdateWithWhereUniqueWithoutKioskInput[]
+    updateMany?: KioskMetadataLogUpdateManyWithWhereWithoutKioskInput | KioskMetadataLogUpdateManyWithWhereWithoutKioskInput[]
+    deleteMany?: KioskMetadataLogScalarWhereInput | KioskMetadataLogScalarWhereInput[]
+  }
+
   export type KioskActivationUncheckedUpdateManyWithoutKioskNestedInput = {
     create?: XOR<KioskActivationCreateWithoutKioskInput, KioskActivationUncheckedCreateWithoutKioskInput> | KioskActivationCreateWithoutKioskInput[] | KioskActivationUncheckedCreateWithoutKioskInput[]
     connectOrCreate?: KioskActivationCreateOrConnectWithoutKioskInput | KioskActivationCreateOrConnectWithoutKioskInput[]
@@ -64031,6 +73116,44 @@ export namespace Prisma {
     update?: KioskAssetRegistryUpdateWithWhereUniqueWithoutKioskInput | KioskAssetRegistryUpdateWithWhereUniqueWithoutKioskInput[]
     updateMany?: KioskAssetRegistryUpdateManyWithWhereWithoutKioskInput | KioskAssetRegistryUpdateManyWithWhereWithoutKioskInput[]
     deleteMany?: KioskAssetRegistryScalarWhereInput | KioskAssetRegistryScalarWhereInput[]
+  }
+
+  export type HelixSyncFailureUncheckedUpdateManyWithoutKioskNestedInput = {
+    create?: XOR<HelixSyncFailureCreateWithoutKioskInput, HelixSyncFailureUncheckedCreateWithoutKioskInput> | HelixSyncFailureCreateWithoutKioskInput[] | HelixSyncFailureUncheckedCreateWithoutKioskInput[]
+    connectOrCreate?: HelixSyncFailureCreateOrConnectWithoutKioskInput | HelixSyncFailureCreateOrConnectWithoutKioskInput[]
+    upsert?: HelixSyncFailureUpsertWithWhereUniqueWithoutKioskInput | HelixSyncFailureUpsertWithWhereUniqueWithoutKioskInput[]
+    createMany?: HelixSyncFailureCreateManyKioskInputEnvelope
+    set?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    disconnect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    delete?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    connect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    update?: HelixSyncFailureUpdateWithWhereUniqueWithoutKioskInput | HelixSyncFailureUpdateWithWhereUniqueWithoutKioskInput[]
+    updateMany?: HelixSyncFailureUpdateManyWithWhereWithoutKioskInput | HelixSyncFailureUpdateManyWithWhereWithoutKioskInput[]
+    deleteMany?: HelixSyncFailureScalarWhereInput | HelixSyncFailureScalarWhereInput[]
+  }
+
+  export type KioskOrganizationAssignmentUncheckedUpdateOneWithoutKioskNestedInput = {
+    create?: XOR<KioskOrganizationAssignmentCreateWithoutKioskInput, KioskOrganizationAssignmentUncheckedCreateWithoutKioskInput>
+    connectOrCreate?: KioskOrganizationAssignmentCreateOrConnectWithoutKioskInput
+    upsert?: KioskOrganizationAssignmentUpsertWithoutKioskInput
+    disconnect?: KioskOrganizationAssignmentWhereInput | boolean
+    delete?: KioskOrganizationAssignmentWhereInput | boolean
+    connect?: KioskOrganizationAssignmentWhereUniqueInput
+    update?: XOR<XOR<KioskOrganizationAssignmentUpdateToOneWithWhereWithoutKioskInput, KioskOrganizationAssignmentUpdateWithoutKioskInput>, KioskOrganizationAssignmentUncheckedUpdateWithoutKioskInput>
+  }
+
+  export type KioskMetadataLogUncheckedUpdateManyWithoutKioskNestedInput = {
+    create?: XOR<KioskMetadataLogCreateWithoutKioskInput, KioskMetadataLogUncheckedCreateWithoutKioskInput> | KioskMetadataLogCreateWithoutKioskInput[] | KioskMetadataLogUncheckedCreateWithoutKioskInput[]
+    connectOrCreate?: KioskMetadataLogCreateOrConnectWithoutKioskInput | KioskMetadataLogCreateOrConnectWithoutKioskInput[]
+    upsert?: KioskMetadataLogUpsertWithWhereUniqueWithoutKioskInput | KioskMetadataLogUpsertWithWhereUniqueWithoutKioskInput[]
+    createMany?: KioskMetadataLogCreateManyKioskInputEnvelope
+    set?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
+    disconnect?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
+    delete?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
+    connect?: KioskMetadataLogWhereUniqueInput | KioskMetadataLogWhereUniqueInput[]
+    update?: KioskMetadataLogUpdateWithWhereUniqueWithoutKioskInput | KioskMetadataLogUpdateWithWhereUniqueWithoutKioskInput[]
+    updateMany?: KioskMetadataLogUpdateManyWithWhereWithoutKioskInput | KioskMetadataLogUpdateManyWithWhereWithoutKioskInput[]
+    deleteMany?: KioskMetadataLogScalarWhereInput | KioskMetadataLogScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutFeedbackInput = {
@@ -64497,6 +73620,13 @@ export namespace Prisma {
     connect?: AssetValidationLogWhereUniqueInput | AssetValidationLogWhereUniqueInput[]
   }
 
+  export type HelixSyncFailureCreateNestedManyWithoutAssetInput = {
+    create?: XOR<HelixSyncFailureCreateWithoutAssetInput, HelixSyncFailureUncheckedCreateWithoutAssetInput> | HelixSyncFailureCreateWithoutAssetInput[] | HelixSyncFailureUncheckedCreateWithoutAssetInput[]
+    connectOrCreate?: HelixSyncFailureCreateOrConnectWithoutAssetInput | HelixSyncFailureCreateOrConnectWithoutAssetInput[]
+    createMany?: HelixSyncFailureCreateManyAssetInputEnvelope
+    connect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+  }
+
   export type AssetImportBatchCreateNestedOneWithoutAssetsInput = {
     create?: XOR<AssetImportBatchCreateWithoutAssetsInput, AssetImportBatchUncheckedCreateWithoutAssetsInput>
     connectOrCreate?: AssetImportBatchCreateOrConnectWithoutAssetsInput
@@ -64550,6 +73680,13 @@ export namespace Prisma {
     connectOrCreate?: AssetValidationLogCreateOrConnectWithoutAssetInput | AssetValidationLogCreateOrConnectWithoutAssetInput[]
     createMany?: AssetValidationLogCreateManyAssetInputEnvelope
     connect?: AssetValidationLogWhereUniqueInput | AssetValidationLogWhereUniqueInput[]
+  }
+
+  export type HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput = {
+    create?: XOR<HelixSyncFailureCreateWithoutAssetInput, HelixSyncFailureUncheckedCreateWithoutAssetInput> | HelixSyncFailureCreateWithoutAssetInput[] | HelixSyncFailureUncheckedCreateWithoutAssetInput[]
+    connectOrCreate?: HelixSyncFailureCreateOrConnectWithoutAssetInput | HelixSyncFailureCreateOrConnectWithoutAssetInput[]
+    createMany?: HelixSyncFailureCreateManyAssetInputEnvelope
+    connect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
   }
 
   export type AssetStatusLogUpdateManyWithoutAssetNestedInput = {
@@ -64648,6 +73785,20 @@ export namespace Prisma {
     update?: AssetValidationLogUpdateWithWhereUniqueWithoutAssetInput | AssetValidationLogUpdateWithWhereUniqueWithoutAssetInput[]
     updateMany?: AssetValidationLogUpdateManyWithWhereWithoutAssetInput | AssetValidationLogUpdateManyWithWhereWithoutAssetInput[]
     deleteMany?: AssetValidationLogScalarWhereInput | AssetValidationLogScalarWhereInput[]
+  }
+
+  export type HelixSyncFailureUpdateManyWithoutAssetNestedInput = {
+    create?: XOR<HelixSyncFailureCreateWithoutAssetInput, HelixSyncFailureUncheckedCreateWithoutAssetInput> | HelixSyncFailureCreateWithoutAssetInput[] | HelixSyncFailureUncheckedCreateWithoutAssetInput[]
+    connectOrCreate?: HelixSyncFailureCreateOrConnectWithoutAssetInput | HelixSyncFailureCreateOrConnectWithoutAssetInput[]
+    upsert?: HelixSyncFailureUpsertWithWhereUniqueWithoutAssetInput | HelixSyncFailureUpsertWithWhereUniqueWithoutAssetInput[]
+    createMany?: HelixSyncFailureCreateManyAssetInputEnvelope
+    set?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    disconnect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    delete?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    connect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    update?: HelixSyncFailureUpdateWithWhereUniqueWithoutAssetInput | HelixSyncFailureUpdateWithWhereUniqueWithoutAssetInput[]
+    updateMany?: HelixSyncFailureUpdateManyWithWhereWithoutAssetInput | HelixSyncFailureUpdateManyWithWhereWithoutAssetInput[]
+    deleteMany?: HelixSyncFailureScalarWhereInput | HelixSyncFailureScalarWhereInput[]
   }
 
   export type AssetImportBatchUpdateOneWithoutAssetsNestedInput = {
@@ -64756,6 +73907,20 @@ export namespace Prisma {
     update?: AssetValidationLogUpdateWithWhereUniqueWithoutAssetInput | AssetValidationLogUpdateWithWhereUniqueWithoutAssetInput[]
     updateMany?: AssetValidationLogUpdateManyWithWhereWithoutAssetInput | AssetValidationLogUpdateManyWithWhereWithoutAssetInput[]
     deleteMany?: AssetValidationLogScalarWhereInput | AssetValidationLogScalarWhereInput[]
+  }
+
+  export type HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput = {
+    create?: XOR<HelixSyncFailureCreateWithoutAssetInput, HelixSyncFailureUncheckedCreateWithoutAssetInput> | HelixSyncFailureCreateWithoutAssetInput[] | HelixSyncFailureUncheckedCreateWithoutAssetInput[]
+    connectOrCreate?: HelixSyncFailureCreateOrConnectWithoutAssetInput | HelixSyncFailureCreateOrConnectWithoutAssetInput[]
+    upsert?: HelixSyncFailureUpsertWithWhereUniqueWithoutAssetInput | HelixSyncFailureUpsertWithWhereUniqueWithoutAssetInput[]
+    createMany?: HelixSyncFailureCreateManyAssetInputEnvelope
+    set?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    disconnect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    delete?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    connect?: HelixSyncFailureWhereUniqueInput | HelixSyncFailureWhereUniqueInput[]
+    update?: HelixSyncFailureUpdateWithWhereUniqueWithoutAssetInput | HelixSyncFailureUpdateWithWhereUniqueWithoutAssetInput[]
+    updateMany?: HelixSyncFailureUpdateManyWithWhereWithoutAssetInput | HelixSyncFailureUpdateManyWithWhereWithoutAssetInput[]
+    deleteMany?: HelixSyncFailureScalarWhereInput | HelixSyncFailureScalarWhereInput[]
   }
 
   export type InventoryAssetCreateNestedOneWithoutStatusLogsInput = {
@@ -64968,6 +74133,62 @@ export namespace Prisma {
     upsert?: InventoryAssetUpsertWithoutKioskRegistrationsInput
     connect?: InventoryAssetWhereUniqueInput
     update?: XOR<XOR<InventoryAssetUpdateToOneWithWhereWithoutKioskRegistrationsInput, InventoryAssetUpdateWithoutKioskRegistrationsInput>, InventoryAssetUncheckedUpdateWithoutKioskRegistrationsInput>
+  }
+
+  export type KioskCreateNestedOneWithoutSyncFailuresInput = {
+    create?: XOR<KioskCreateWithoutSyncFailuresInput, KioskUncheckedCreateWithoutSyncFailuresInput>
+    connectOrCreate?: KioskCreateOrConnectWithoutSyncFailuresInput
+    connect?: KioskWhereUniqueInput
+  }
+
+  export type InventoryAssetCreateNestedOneWithoutSyncFailuresInput = {
+    create?: XOR<InventoryAssetCreateWithoutSyncFailuresInput, InventoryAssetUncheckedCreateWithoutSyncFailuresInput>
+    connectOrCreate?: InventoryAssetCreateOrConnectWithoutSyncFailuresInput
+    connect?: InventoryAssetWhereUniqueInput
+  }
+
+  export type KioskUpdateOneRequiredWithoutSyncFailuresNestedInput = {
+    create?: XOR<KioskCreateWithoutSyncFailuresInput, KioskUncheckedCreateWithoutSyncFailuresInput>
+    connectOrCreate?: KioskCreateOrConnectWithoutSyncFailuresInput
+    upsert?: KioskUpsertWithoutSyncFailuresInput
+    connect?: KioskWhereUniqueInput
+    update?: XOR<XOR<KioskUpdateToOneWithWhereWithoutSyncFailuresInput, KioskUpdateWithoutSyncFailuresInput>, KioskUncheckedUpdateWithoutSyncFailuresInput>
+  }
+
+  export type InventoryAssetUpdateOneRequiredWithoutSyncFailuresNestedInput = {
+    create?: XOR<InventoryAssetCreateWithoutSyncFailuresInput, InventoryAssetUncheckedCreateWithoutSyncFailuresInput>
+    connectOrCreate?: InventoryAssetCreateOrConnectWithoutSyncFailuresInput
+    upsert?: InventoryAssetUpsertWithoutSyncFailuresInput
+    connect?: InventoryAssetWhereUniqueInput
+    update?: XOR<XOR<InventoryAssetUpdateToOneWithWhereWithoutSyncFailuresInput, InventoryAssetUpdateWithoutSyncFailuresInput>, InventoryAssetUncheckedUpdateWithoutSyncFailuresInput>
+  }
+
+  export type KioskCreateNestedOneWithoutOrgAssignmentInput = {
+    create?: XOR<KioskCreateWithoutOrgAssignmentInput, KioskUncheckedCreateWithoutOrgAssignmentInput>
+    connectOrCreate?: KioskCreateOrConnectWithoutOrgAssignmentInput
+    connect?: KioskWhereUniqueInput
+  }
+
+  export type KioskUpdateOneRequiredWithoutOrgAssignmentNestedInput = {
+    create?: XOR<KioskCreateWithoutOrgAssignmentInput, KioskUncheckedCreateWithoutOrgAssignmentInput>
+    connectOrCreate?: KioskCreateOrConnectWithoutOrgAssignmentInput
+    upsert?: KioskUpsertWithoutOrgAssignmentInput
+    connect?: KioskWhereUniqueInput
+    update?: XOR<XOR<KioskUpdateToOneWithWhereWithoutOrgAssignmentInput, KioskUpdateWithoutOrgAssignmentInput>, KioskUncheckedUpdateWithoutOrgAssignmentInput>
+  }
+
+  export type KioskCreateNestedOneWithoutMetadataLogsInput = {
+    create?: XOR<KioskCreateWithoutMetadataLogsInput, KioskUncheckedCreateWithoutMetadataLogsInput>
+    connectOrCreate?: KioskCreateOrConnectWithoutMetadataLogsInput
+    connect?: KioskWhereUniqueInput
+  }
+
+  export type KioskUpdateOneRequiredWithoutMetadataLogsNestedInput = {
+    create?: XOR<KioskCreateWithoutMetadataLogsInput, KioskUncheckedCreateWithoutMetadataLogsInput>
+    connectOrCreate?: KioskCreateOrConnectWithoutMetadataLogsInput
+    upsert?: KioskUpsertWithoutMetadataLogsInput
+    connect?: KioskWhereUniqueInput
+    update?: XOR<XOR<KioskUpdateToOneWithWhereWithoutMetadataLogsInput, KioskUpdateWithoutMetadataLogsInput>, KioskUncheckedUpdateWithoutMetadataLogsInput>
   }
 
   export type UserCreateNestedOneWithoutXpEventsInput = {
@@ -65337,6 +74558,37 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutVipSlaHistoryInput, UserUpdateWithoutVipSlaHistoryInput>, UserUncheckedUpdateWithoutVipSlaHistoryInput>
   }
 
+  export type UserCreateNestedOneWithoutAgentAvailabilityInput = {
+    create?: XOR<UserCreateWithoutAgentAvailabilityInput, UserUncheckedCreateWithoutAgentAvailabilityInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAgentAvailabilityInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutAgentAvailabilityNestedInput = {
+    create?: XOR<UserCreateWithoutAgentAvailabilityInput, UserUncheckedCreateWithoutAgentAvailabilityInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAgentAvailabilityInput
+    upsert?: UserUpsertWithoutAgentAvailabilityInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAgentAvailabilityInput, UserUpdateWithoutAgentAvailabilityInput>, UserUncheckedUpdateWithoutAgentAvailabilityInput>
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type QueueAlertCreatenotifiedUsersInput = {
+    set: string[]
+  }
+
+  export type QueueAlertUpdatenotifiedUsersInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -65599,6 +74851,22 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedBytesNullableFilter<$PrismaModel>
     _max?: NestedBytesNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type FeedbackCreateWithoutUserInput = {
@@ -66146,6 +75414,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type AgentAvailabilityCreateWithoutUserInput = {
+    id?: string
+    queueName: string
+    isAvailable?: boolean
+    maxCapacity?: number
+    currentLoad?: number
+    status?: string
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type AgentAvailabilityUncheckedCreateWithoutUserInput = {
+    id?: string
+    queueName: string
+    isAvailable?: boolean
+    maxCapacity?: number
+    currentLoad?: number
+    status?: string
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type AgentAvailabilityCreateOrConnectWithoutUserInput = {
+    where: AgentAvailabilityWhereUniqueInput
+    create: XOR<AgentAvailabilityCreateWithoutUserInput, AgentAvailabilityUncheckedCreateWithoutUserInput>
+  }
+
+  export type AgentAvailabilityCreateManyUserInputEnvelope = {
+    data: AgentAvailabilityCreateManyUserInput | AgentAvailabilityCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type FeedbackUpsertWithWhereUniqueWithoutUserInput = {
     where: FeedbackWhereUniqueInput
     update: XOR<FeedbackUpdateWithoutUserInput, FeedbackUncheckedUpdateWithoutUserInput>
@@ -66659,6 +75959,37 @@ export namespace Prisma {
     endedAt?: DateTimeNullableFilter<"VipSlaHistory"> | Date | string | null
   }
 
+  export type AgentAvailabilityUpsertWithWhereUniqueWithoutUserInput = {
+    where: AgentAvailabilityWhereUniqueInput
+    update: XOR<AgentAvailabilityUpdateWithoutUserInput, AgentAvailabilityUncheckedUpdateWithoutUserInput>
+    create: XOR<AgentAvailabilityCreateWithoutUserInput, AgentAvailabilityUncheckedCreateWithoutUserInput>
+  }
+
+  export type AgentAvailabilityUpdateWithWhereUniqueWithoutUserInput = {
+    where: AgentAvailabilityWhereUniqueInput
+    data: XOR<AgentAvailabilityUpdateWithoutUserInput, AgentAvailabilityUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AgentAvailabilityUpdateManyWithWhereWithoutUserInput = {
+    where: AgentAvailabilityScalarWhereInput
+    data: XOR<AgentAvailabilityUpdateManyMutationInput, AgentAvailabilityUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type AgentAvailabilityScalarWhereInput = {
+    AND?: AgentAvailabilityScalarWhereInput | AgentAvailabilityScalarWhereInput[]
+    OR?: AgentAvailabilityScalarWhereInput[]
+    NOT?: AgentAvailabilityScalarWhereInput | AgentAvailabilityScalarWhereInput[]
+    id?: StringFilter<"AgentAvailability"> | string
+    userId?: StringFilter<"AgentAvailability"> | string
+    queueName?: StringFilter<"AgentAvailability"> | string
+    isAvailable?: BoolFilter<"AgentAvailability"> | boolean
+    maxCapacity?: IntFilter<"AgentAvailability"> | number
+    currentLoad?: IntFilter<"AgentAvailability"> | number
+    status?: StringFilter<"AgentAvailability"> | string
+    lastUpdated?: DateTimeFilter<"AgentAvailability"> | Date | string
+    createdAt?: DateTimeFilter<"AgentAvailability"> | Date | string
+  }
+
   export type RolePermissionCreateWithoutRoleInput = {
     assignedAt?: Date | string
     permission: PermissionCreateNestedOneWithoutRolesInput
@@ -66838,6 +76169,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRolesInput = {
@@ -66880,6 +76212,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRolesInput = {
@@ -66966,6 +76299,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRolesInput = {
@@ -67008,6 +76342,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PermissionCreateWithoutRolesInput = {
@@ -67150,6 +76485,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPasskeysInput = {
@@ -67192,6 +76528,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPasskeysInput = {
@@ -67250,6 +76587,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPasskeysInput = {
@@ -67292,6 +76630,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutLogsInput = {
@@ -67334,6 +76673,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutLogsInput = {
@@ -67376,6 +76716,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutLogsInput = {
@@ -67434,6 +76775,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLogsInput = {
@@ -67476,6 +76818,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConfigHistoryCreateWithoutConfigInput = {
@@ -67697,6 +77040,90 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type HelixSyncFailureCreateWithoutKioskInput = {
+    errorMessage: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: number
+    nextRetryAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    asset: InventoryAssetCreateNestedOneWithoutSyncFailuresInput
+  }
+
+  export type HelixSyncFailureUncheckedCreateWithoutKioskInput = {
+    id?: number
+    assetId: number
+    errorMessage: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: number
+    nextRetryAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HelixSyncFailureCreateOrConnectWithoutKioskInput = {
+    where: HelixSyncFailureWhereUniqueInput
+    create: XOR<HelixSyncFailureCreateWithoutKioskInput, HelixSyncFailureUncheckedCreateWithoutKioskInput>
+  }
+
+  export type HelixSyncFailureCreateManyKioskInputEnvelope = {
+    data: HelixSyncFailureCreateManyKioskInput | HelixSyncFailureCreateManyKioskInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type KioskOrganizationAssignmentCreateWithoutKioskInput = {
+    organizationId: number
+    department?: string | null
+    floor?: string | null
+    room?: string | null
+    building?: string | null
+    assignedBy?: string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KioskOrganizationAssignmentUncheckedCreateWithoutKioskInput = {
+    id?: number
+    organizationId: number
+    department?: string | null
+    floor?: string | null
+    room?: string | null
+    building?: string | null
+    assignedBy?: string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KioskOrganizationAssignmentCreateOrConnectWithoutKioskInput = {
+    where: KioskOrganizationAssignmentWhereUniqueInput
+    create: XOR<KioskOrganizationAssignmentCreateWithoutKioskInput, KioskOrganizationAssignmentUncheckedCreateWithoutKioskInput>
+  }
+
+  export type KioskMetadataLogCreateWithoutKioskInput = {
+    metadataType: string
+    encryptedMetadata?: string | null
+    collectionTimestamp?: Date | string
+  }
+
+  export type KioskMetadataLogUncheckedCreateWithoutKioskInput = {
+    id?: number
+    metadataType: string
+    encryptedMetadata?: string | null
+    collectionTimestamp?: Date | string
+  }
+
+  export type KioskMetadataLogCreateOrConnectWithoutKioskInput = {
+    where: KioskMetadataLogWhereUniqueInput
+    create: XOR<KioskMetadataLogCreateWithoutKioskInput, KioskMetadataLogUncheckedCreateWithoutKioskInput>
+  }
+
+  export type KioskMetadataLogCreateManyKioskInputEnvelope = {
+    data: KioskMetadataLogCreateManyKioskInput | KioskMetadataLogCreateManyKioskInput[]
+    skipDuplicates?: boolean
+  }
+
   export type KioskActivationUpsertWithWhereUniqueWithoutKioskInput = {
     where: KioskActivationWhereUniqueInput
     update: XOR<KioskActivationUpdateWithoutKioskInput, KioskActivationUncheckedUpdateWithoutKioskInput>
@@ -67761,6 +77188,100 @@ export namespace Prisma {
     updatedBy?: StringNullableFilter<"KioskAssetRegistry"> | string | null
   }
 
+  export type HelixSyncFailureUpsertWithWhereUniqueWithoutKioskInput = {
+    where: HelixSyncFailureWhereUniqueInput
+    update: XOR<HelixSyncFailureUpdateWithoutKioskInput, HelixSyncFailureUncheckedUpdateWithoutKioskInput>
+    create: XOR<HelixSyncFailureCreateWithoutKioskInput, HelixSyncFailureUncheckedCreateWithoutKioskInput>
+  }
+
+  export type HelixSyncFailureUpdateWithWhereUniqueWithoutKioskInput = {
+    where: HelixSyncFailureWhereUniqueInput
+    data: XOR<HelixSyncFailureUpdateWithoutKioskInput, HelixSyncFailureUncheckedUpdateWithoutKioskInput>
+  }
+
+  export type HelixSyncFailureUpdateManyWithWhereWithoutKioskInput = {
+    where: HelixSyncFailureScalarWhereInput
+    data: XOR<HelixSyncFailureUpdateManyMutationInput, HelixSyncFailureUncheckedUpdateManyWithoutKioskInput>
+  }
+
+  export type HelixSyncFailureScalarWhereInput = {
+    AND?: HelixSyncFailureScalarWhereInput | HelixSyncFailureScalarWhereInput[]
+    OR?: HelixSyncFailureScalarWhereInput[]
+    NOT?: HelixSyncFailureScalarWhereInput | HelixSyncFailureScalarWhereInput[]
+    id?: IntFilter<"HelixSyncFailure"> | number
+    kioskId?: StringFilter<"HelixSyncFailure"> | string
+    assetId?: IntFilter<"HelixSyncFailure"> | number
+    errorMessage?: StringFilter<"HelixSyncFailure"> | string
+    metadata?: JsonNullableFilter<"HelixSyncFailure">
+    retryCount?: IntFilter<"HelixSyncFailure"> | number
+    nextRetryAt?: DateTimeFilter<"HelixSyncFailure"> | Date | string
+    createdAt?: DateTimeFilter<"HelixSyncFailure"> | Date | string
+    updatedAt?: DateTimeFilter<"HelixSyncFailure"> | Date | string
+  }
+
+  export type KioskOrganizationAssignmentUpsertWithoutKioskInput = {
+    update: XOR<KioskOrganizationAssignmentUpdateWithoutKioskInput, KioskOrganizationAssignmentUncheckedUpdateWithoutKioskInput>
+    create: XOR<KioskOrganizationAssignmentCreateWithoutKioskInput, KioskOrganizationAssignmentUncheckedCreateWithoutKioskInput>
+    where?: KioskOrganizationAssignmentWhereInput
+  }
+
+  export type KioskOrganizationAssignmentUpdateToOneWithWhereWithoutKioskInput = {
+    where?: KioskOrganizationAssignmentWhereInput
+    data: XOR<KioskOrganizationAssignmentUpdateWithoutKioskInput, KioskOrganizationAssignmentUncheckedUpdateWithoutKioskInput>
+  }
+
+  export type KioskOrganizationAssignmentUpdateWithoutKioskInput = {
+    organizationId?: IntFieldUpdateOperationsInput | number
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+    building?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskOrganizationAssignmentUncheckedUpdateWithoutKioskInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    organizationId?: IntFieldUpdateOperationsInput | number
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+    building?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    assignmentMetadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskMetadataLogUpsertWithWhereUniqueWithoutKioskInput = {
+    where: KioskMetadataLogWhereUniqueInput
+    update: XOR<KioskMetadataLogUpdateWithoutKioskInput, KioskMetadataLogUncheckedUpdateWithoutKioskInput>
+    create: XOR<KioskMetadataLogCreateWithoutKioskInput, KioskMetadataLogUncheckedCreateWithoutKioskInput>
+  }
+
+  export type KioskMetadataLogUpdateWithWhereUniqueWithoutKioskInput = {
+    where: KioskMetadataLogWhereUniqueInput
+    data: XOR<KioskMetadataLogUpdateWithoutKioskInput, KioskMetadataLogUncheckedUpdateWithoutKioskInput>
+  }
+
+  export type KioskMetadataLogUpdateManyWithWhereWithoutKioskInput = {
+    where: KioskMetadataLogScalarWhereInput
+    data: XOR<KioskMetadataLogUpdateManyMutationInput, KioskMetadataLogUncheckedUpdateManyWithoutKioskInput>
+  }
+
+  export type KioskMetadataLogScalarWhereInput = {
+    AND?: KioskMetadataLogScalarWhereInput | KioskMetadataLogScalarWhereInput[]
+    OR?: KioskMetadataLogScalarWhereInput[]
+    NOT?: KioskMetadataLogScalarWhereInput | KioskMetadataLogScalarWhereInput[]
+    id?: IntFilter<"KioskMetadataLog"> | number
+    kioskId?: StringFilter<"KioskMetadataLog"> | string
+    metadataType?: StringFilter<"KioskMetadataLog"> | string
+    encryptedMetadata?: StringNullableFilter<"KioskMetadataLog"> | string | null
+    collectionTimestamp?: DateTimeFilter<"KioskMetadataLog"> | Date | string
+  }
+
   export type UserCreateWithoutFeedbackInput = {
     id?: string
     name?: string | null
@@ -67801,6 +77322,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFeedbackInput = {
@@ -67843,6 +77365,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFeedbackInput = {
@@ -67901,6 +77424,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFeedbackInput = {
@@ -67943,6 +77467,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type KioskCreateWithoutActivationsInput = {
@@ -67965,6 +77490,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assetRegistry?: KioskAssetRegistryCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentCreateNestedOneWithoutKioskInput
+    metadataLogs?: KioskMetadataLogCreateNestedManyWithoutKioskInput
   }
 
   export type KioskUncheckedCreateWithoutActivationsInput = {
@@ -67987,6 +77515,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assetRegistry?: KioskAssetRegistryUncheckedCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedCreateNestedOneWithoutKioskInput
+    metadataLogs?: KioskMetadataLogUncheckedCreateNestedManyWithoutKioskInput
   }
 
   export type KioskCreateOrConnectWithoutActivationsInput = {
@@ -68025,6 +77556,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assetRegistry?: KioskAssetRegistryUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUpdateOneWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUpdateManyWithoutKioskNestedInput
   }
 
   export type KioskUncheckedUpdateWithoutActivationsInput = {
@@ -68047,6 +77581,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assetRegistry?: KioskAssetRegistryUncheckedUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedUpdateOneWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUncheckedUpdateManyWithoutKioskNestedInput
   }
 
   export type UserCreateWithoutKbArticlesAuthoredInput = {
@@ -68089,6 +77626,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutKbArticlesAuthoredInput = {
@@ -68131,6 +77669,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutKbArticlesAuthoredInput = {
@@ -68277,6 +77816,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutKbArticlesAuthoredInput = {
@@ -68319,6 +77859,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type KbArticleVersionUpsertWithWhereUniqueWithoutArticleInput = {
@@ -68457,6 +77998,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutKbArticleVersionsAuthoredInput = {
@@ -68499,6 +78041,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutKbArticleVersionsAuthoredInput = {
@@ -68628,6 +78171,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutKbArticleVersionsAuthoredInput = {
@@ -68670,6 +78214,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type KbArticleUpsertWithWhereUniqueWithoutCurrentVersionInput = {
@@ -68758,6 +78303,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutKbArticleCommentsInput = {
@@ -68800,6 +78346,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutKbArticleCommentsInput = {
@@ -68894,6 +78441,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutKbArticleCommentsInput = {
@@ -68936,6 +78484,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSupport_tickets_support_tickets_assigneeIdTousersInput = {
@@ -68978,6 +78527,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSupport_tickets_support_tickets_assigneeIdTousersInput = {
@@ -69020,6 +78570,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSupport_tickets_support_tickets_assigneeIdTousersInput = {
@@ -69067,6 +78618,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSupport_tickets_support_tickets_userIdTousersInput = {
@@ -69109,6 +78661,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSupport_tickets_support_tickets_userIdTousersInput = {
@@ -69272,6 +78825,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSupport_tickets_support_tickets_assigneeIdTousersInput = {
@@ -69314,6 +78868,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutSupport_tickets_support_tickets_userIdTousersInput = {
@@ -69367,6 +78922,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSupport_tickets_support_tickets_userIdTousersInput = {
@@ -69409,6 +78965,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type MailroomPackageUpsertWithWhereUniqueWithoutTicketInput = {
@@ -69730,6 +79287,37 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type HelixSyncFailureCreateWithoutAssetInput = {
+    errorMessage: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: number
+    nextRetryAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    kiosk: KioskCreateNestedOneWithoutSyncFailuresInput
+  }
+
+  export type HelixSyncFailureUncheckedCreateWithoutAssetInput = {
+    id?: number
+    kioskId: string
+    errorMessage: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: number
+    nextRetryAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HelixSyncFailureCreateOrConnectWithoutAssetInput = {
+    where: HelixSyncFailureWhereUniqueInput
+    create: XOR<HelixSyncFailureCreateWithoutAssetInput, HelixSyncFailureUncheckedCreateWithoutAssetInput>
+  }
+
+  export type HelixSyncFailureCreateManyAssetInputEnvelope = {
+    data: HelixSyncFailureCreateManyAssetInput | HelixSyncFailureCreateManyAssetInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AssetImportBatchCreateWithoutAssetsInput = {
     id?: string
     filename: string
@@ -69938,6 +79526,22 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"AssetValidationLog"> | Date | string
   }
 
+  export type HelixSyncFailureUpsertWithWhereUniqueWithoutAssetInput = {
+    where: HelixSyncFailureWhereUniqueInput
+    update: XOR<HelixSyncFailureUpdateWithoutAssetInput, HelixSyncFailureUncheckedUpdateWithoutAssetInput>
+    create: XOR<HelixSyncFailureCreateWithoutAssetInput, HelixSyncFailureUncheckedCreateWithoutAssetInput>
+  }
+
+  export type HelixSyncFailureUpdateWithWhereUniqueWithoutAssetInput = {
+    where: HelixSyncFailureWhereUniqueInput
+    data: XOR<HelixSyncFailureUpdateWithoutAssetInput, HelixSyncFailureUncheckedUpdateWithoutAssetInput>
+  }
+
+  export type HelixSyncFailureUpdateManyWithWhereWithoutAssetInput = {
+    where: HelixSyncFailureScalarWhereInput
+    data: XOR<HelixSyncFailureUpdateManyMutationInput, HelixSyncFailureUncheckedUpdateManyWithoutAssetInput>
+  }
+
   export type AssetImportBatchUpsertWithoutAssetsInput = {
     update: XOR<AssetImportBatchUpdateWithoutAssetsInput, AssetImportBatchUncheckedUpdateWithoutAssetsInput>
     create: XOR<AssetImportBatchCreateWithoutAssetsInput, AssetImportBatchUncheckedCreateWithoutAssetsInput>
@@ -70016,6 +79620,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutAssetInput
     importBatch?: AssetImportBatchCreateNestedOneWithoutAssetsInput
   }
 
@@ -70058,6 +79663,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryUncheckedCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogUncheckedCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetCreateOrConnectWithoutStatusLogsInput = {
@@ -70113,6 +79719,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutAssetNestedInput
     importBatch?: AssetImportBatchUpdateOneWithoutAssetsNestedInput
   }
 
@@ -70155,6 +79762,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUncheckedUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUncheckedUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput
   }
 
   export type InventoryAssetCreateWithoutAssignmentsInput = {
@@ -70194,6 +79802,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutAssetInput
     importBatch?: AssetImportBatchCreateNestedOneWithoutAssetsInput
   }
 
@@ -70236,6 +79845,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryUncheckedCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogUncheckedCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetCreateOrConnectWithoutAssignmentsInput = {
@@ -70291,6 +79901,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutAssetNestedInput
     importBatch?: AssetImportBatchUpdateOneWithoutAssetsNestedInput
   }
 
@@ -70333,6 +79944,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUncheckedUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUncheckedUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput
   }
 
   export type InventoryAssetCreateWithoutTicketHistoryInput = {
@@ -70372,6 +79984,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutAssetInput
     importBatch?: AssetImportBatchCreateNestedOneWithoutAssetsInput
   }
 
@@ -70414,6 +80027,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryUncheckedCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogUncheckedCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetCreateOrConnectWithoutTicketHistoryInput = {
@@ -70503,6 +80117,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutAssetNestedInput
     importBatch?: AssetImportBatchUpdateOneWithoutAssetsNestedInput
   }
 
@@ -70545,6 +80160,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUncheckedUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUncheckedUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput
   }
 
   export type SupportTicketUpsertWithoutAssetHistoryInput = {
@@ -70624,6 +80240,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutAssetInput
     importBatch?: AssetImportBatchCreateNestedOneWithoutAssetsInput
   }
 
@@ -70666,6 +80283,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryUncheckedCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryUncheckedCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogUncheckedCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetCreateOrConnectWithoutWarrantyAlertsInput = {
@@ -70721,6 +80339,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutAssetNestedInput
     importBatch?: AssetImportBatchUpdateOneWithoutAssetsNestedInput
   }
 
@@ -70763,6 +80382,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryUncheckedUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUncheckedUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUncheckedUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput
   }
 
   export type InventoryAssetCreateWithoutImportBatchInput = {
@@ -70803,6 +80423,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetUncheckedCreateWithoutImportBatchInput = {
@@ -70844,6 +80465,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryUncheckedCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogUncheckedCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetCreateOrConnectWithoutImportBatchInput = {
@@ -71029,6 +80651,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryCreateNestedManyWithoutAssetInput
     warrantyAlerts?: AssetWarrantyAlertCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutAssetInput
     importBatch?: AssetImportBatchCreateNestedOneWithoutAssetsInput
   }
 
@@ -71071,6 +80694,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryUncheckedCreateNestedManyWithoutAssetInput
     warrantyAlerts?: AssetWarrantyAlertUncheckedCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryUncheckedCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetCreateOrConnectWithoutValidationLogsInput = {
@@ -71167,6 +80791,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryUpdateManyWithoutAssetNestedInput
     warrantyAlerts?: AssetWarrantyAlertUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutAssetNestedInput
     importBatch?: AssetImportBatchUpdateOneWithoutAssetsNestedInput
   }
 
@@ -71209,6 +80834,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryUncheckedUpdateManyWithoutAssetNestedInput
     warrantyAlerts?: AssetWarrantyAlertUncheckedUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUncheckedUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput
   }
 
   export type KioskCreateWithoutAssetRegistryInput = {
@@ -71231,6 +80857,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     activations?: KioskActivationCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentCreateNestedOneWithoutKioskInput
+    metadataLogs?: KioskMetadataLogCreateNestedManyWithoutKioskInput
   }
 
   export type KioskUncheckedCreateWithoutAssetRegistryInput = {
@@ -71253,6 +80882,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     activations?: KioskActivationUncheckedCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedCreateNestedOneWithoutKioskInput
+    metadataLogs?: KioskMetadataLogUncheckedCreateNestedManyWithoutKioskInput
   }
 
   export type KioskCreateOrConnectWithoutAssetRegistryInput = {
@@ -71297,6 +80929,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryCreateNestedManyWithoutAssetInput
     warrantyAlerts?: AssetWarrantyAlertCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutAssetInput
     importBatch?: AssetImportBatchCreateNestedOneWithoutAssetsInput
   }
 
@@ -71339,6 +80972,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryUncheckedCreateNestedManyWithoutAssetInput
     warrantyAlerts?: AssetWarrantyAlertUncheckedCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogUncheckedCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetCreateOrConnectWithoutKioskRegistrationsInput = {
@@ -71377,6 +81011,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activations?: KioskActivationUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUpdateOneWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUpdateManyWithoutKioskNestedInput
   }
 
   export type KioskUncheckedUpdateWithoutAssetRegistryInput = {
@@ -71399,6 +81036,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activations?: KioskActivationUncheckedUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedUpdateOneWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUncheckedUpdateManyWithoutKioskNestedInput
   }
 
   export type InventoryAssetUpsertWithoutKioskRegistrationsInput = {
@@ -71449,6 +81089,7 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryUpdateManyWithoutAssetNestedInput
     warrantyAlerts?: AssetWarrantyAlertUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutAssetNestedInput
     importBatch?: AssetImportBatchUpdateOneWithoutAssetsNestedInput
   }
 
@@ -71491,6 +81132,537 @@ export namespace Prisma {
     ticketHistory?: AssetTicketHistoryUncheckedUpdateManyWithoutAssetNestedInput
     warrantyAlerts?: AssetWarrantyAlertUncheckedUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUncheckedUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput
+  }
+
+  export type KioskCreateWithoutSyncFailuresInput = {
+    id: string
+    lastSeen?: Date | string | null
+    version?: string | null
+    active?: boolean
+    logoUrl?: string | null
+    bgUrl?: string | null
+    statusEnabled?: boolean
+    currentStatus?: string | null
+    openMsg?: string | null
+    closedMsg?: string | null
+    errorMsg?: string | null
+    meetingMsg?: string | null
+    brbMsg?: string | null
+    lunchMsg?: string | null
+    unavailableMsg?: string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    activations?: KioskActivationCreateNestedManyWithoutKioskInput
+    assetRegistry?: KioskAssetRegistryCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentCreateNestedOneWithoutKioskInput
+    metadataLogs?: KioskMetadataLogCreateNestedManyWithoutKioskInput
+  }
+
+  export type KioskUncheckedCreateWithoutSyncFailuresInput = {
+    id: string
+    lastSeen?: Date | string | null
+    version?: string | null
+    active?: boolean
+    logoUrl?: string | null
+    bgUrl?: string | null
+    statusEnabled?: boolean
+    currentStatus?: string | null
+    openMsg?: string | null
+    closedMsg?: string | null
+    errorMsg?: string | null
+    meetingMsg?: string | null
+    brbMsg?: string | null
+    lunchMsg?: string | null
+    unavailableMsg?: string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    activations?: KioskActivationUncheckedCreateNestedManyWithoutKioskInput
+    assetRegistry?: KioskAssetRegistryUncheckedCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedCreateNestedOneWithoutKioskInput
+    metadataLogs?: KioskMetadataLogUncheckedCreateNestedManyWithoutKioskInput
+  }
+
+  export type KioskCreateOrConnectWithoutSyncFailuresInput = {
+    where: KioskWhereUniqueInput
+    create: XOR<KioskCreateWithoutSyncFailuresInput, KioskUncheckedCreateWithoutSyncFailuresInput>
+  }
+
+  export type InventoryAssetCreateWithoutSyncFailuresInput = {
+    assetTag: string
+    typeId?: number | null
+    serialNumber?: string | null
+    model?: string | null
+    vendorId?: number | null
+    purchaseDate?: Date | string | null
+    warrantyExpiry?: Date | string | null
+    assignedToUserId?: string | null
+    assignedToOrgId?: number | null
+    assignedToCustomerId?: number | null
+    department?: string | null
+    status?: string | null
+    locationId?: number | null
+    kioskId?: string | null
+    customFields?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    updatedBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    serialNumberEnc?: string | null
+    warrantyInfoEnc?: string | null
+    purchaseInfoEnc?: string | null
+    maintenanceNotesEnc?: string | null
+    warrantyAlertDays?: number | null
+    warrantyAlertEnabled?: boolean
+    lastWarrantyAlertSent?: Date | string | null
+    importSource?: string | null
+    importValidated?: boolean
+    validationErrors?: string | null
+    statusLogs?: AssetStatusLogCreateNestedManyWithoutAssetInput
+    assignments?: AssetAssignmentCreateNestedManyWithoutAssetInput
+    mailroomPackages?: MailroomPackageCreateNestedManyWithoutAssetInput
+    ticketHistory?: AssetTicketHistoryCreateNestedManyWithoutAssetInput
+    warrantyAlerts?: AssetWarrantyAlertCreateNestedManyWithoutAssetInput
+    kioskRegistrations?: KioskAssetRegistryCreateNestedManyWithoutAssetInput
+    validationLogs?: AssetValidationLogCreateNestedManyWithoutAssetInput
+    importBatch?: AssetImportBatchCreateNestedOneWithoutAssetsInput
+  }
+
+  export type InventoryAssetUncheckedCreateWithoutSyncFailuresInput = {
+    id?: number
+    assetTag: string
+    typeId?: number | null
+    serialNumber?: string | null
+    model?: string | null
+    vendorId?: number | null
+    purchaseDate?: Date | string | null
+    warrantyExpiry?: Date | string | null
+    assignedToUserId?: string | null
+    assignedToOrgId?: number | null
+    assignedToCustomerId?: number | null
+    department?: string | null
+    status?: string | null
+    locationId?: number | null
+    kioskId?: string | null
+    customFields?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    updatedBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    serialNumberEnc?: string | null
+    warrantyInfoEnc?: string | null
+    purchaseInfoEnc?: string | null
+    maintenanceNotesEnc?: string | null
+    warrantyAlertDays?: number | null
+    warrantyAlertEnabled?: boolean
+    lastWarrantyAlertSent?: Date | string | null
+    importBatchId?: string | null
+    importSource?: string | null
+    importValidated?: boolean
+    validationErrors?: string | null
+    statusLogs?: AssetStatusLogUncheckedCreateNestedManyWithoutAssetInput
+    assignments?: AssetAssignmentUncheckedCreateNestedManyWithoutAssetInput
+    mailroomPackages?: MailroomPackageUncheckedCreateNestedManyWithoutAssetInput
+    ticketHistory?: AssetTicketHistoryUncheckedCreateNestedManyWithoutAssetInput
+    warrantyAlerts?: AssetWarrantyAlertUncheckedCreateNestedManyWithoutAssetInput
+    kioskRegistrations?: KioskAssetRegistryUncheckedCreateNestedManyWithoutAssetInput
+    validationLogs?: AssetValidationLogUncheckedCreateNestedManyWithoutAssetInput
+  }
+
+  export type InventoryAssetCreateOrConnectWithoutSyncFailuresInput = {
+    where: InventoryAssetWhereUniqueInput
+    create: XOR<InventoryAssetCreateWithoutSyncFailuresInput, InventoryAssetUncheckedCreateWithoutSyncFailuresInput>
+  }
+
+  export type KioskUpsertWithoutSyncFailuresInput = {
+    update: XOR<KioskUpdateWithoutSyncFailuresInput, KioskUncheckedUpdateWithoutSyncFailuresInput>
+    create: XOR<KioskCreateWithoutSyncFailuresInput, KioskUncheckedCreateWithoutSyncFailuresInput>
+    where?: KioskWhereInput
+  }
+
+  export type KioskUpdateToOneWithWhereWithoutSyncFailuresInput = {
+    where?: KioskWhereInput
+    data: XOR<KioskUpdateWithoutSyncFailuresInput, KioskUncheckedUpdateWithoutSyncFailuresInput>
+  }
+
+  export type KioskUpdateWithoutSyncFailuresInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: NullableStringFieldUpdateOperationsInput | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    bgUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    statusEnabled?: BoolFieldUpdateOperationsInput | boolean
+    currentStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    openMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    closedMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    meetingMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    brbMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    lunchMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    unavailableMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    activations?: KioskActivationUpdateManyWithoutKioskNestedInput
+    assetRegistry?: KioskAssetRegistryUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUpdateOneWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUpdateManyWithoutKioskNestedInput
+  }
+
+  export type KioskUncheckedUpdateWithoutSyncFailuresInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: NullableStringFieldUpdateOperationsInput | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    bgUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    statusEnabled?: BoolFieldUpdateOperationsInput | boolean
+    currentStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    openMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    closedMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    meetingMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    brbMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    lunchMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    unavailableMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    activations?: KioskActivationUncheckedUpdateManyWithoutKioskNestedInput
+    assetRegistry?: KioskAssetRegistryUncheckedUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedUpdateOneWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUncheckedUpdateManyWithoutKioskNestedInput
+  }
+
+  export type InventoryAssetUpsertWithoutSyncFailuresInput = {
+    update: XOR<InventoryAssetUpdateWithoutSyncFailuresInput, InventoryAssetUncheckedUpdateWithoutSyncFailuresInput>
+    create: XOR<InventoryAssetCreateWithoutSyncFailuresInput, InventoryAssetUncheckedCreateWithoutSyncFailuresInput>
+    where?: InventoryAssetWhereInput
+  }
+
+  export type InventoryAssetUpdateToOneWithWhereWithoutSyncFailuresInput = {
+    where?: InventoryAssetWhereInput
+    data: XOR<InventoryAssetUpdateWithoutSyncFailuresInput, InventoryAssetUncheckedUpdateWithoutSyncFailuresInput>
+  }
+
+  export type InventoryAssetUpdateWithoutSyncFailuresInput = {
+    assetTag?: StringFieldUpdateOperationsInput | string
+    typeId?: NullableIntFieldUpdateOperationsInput | number | null
+    serialNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: NullableIntFieldUpdateOperationsInput | number | null
+    purchaseDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    warrantyExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedToOrgId?: NullableIntFieldUpdateOperationsInput | number | null
+    assignedToCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableStringFieldUpdateOperationsInput | string | null
+    locationId?: NullableIntFieldUpdateOperationsInput | number | null
+    kioskId?: NullableStringFieldUpdateOperationsInput | string | null
+    customFields?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    serialNumberEnc?: NullableStringFieldUpdateOperationsInput | string | null
+    warrantyInfoEnc?: NullableStringFieldUpdateOperationsInput | string | null
+    purchaseInfoEnc?: NullableStringFieldUpdateOperationsInput | string | null
+    maintenanceNotesEnc?: NullableStringFieldUpdateOperationsInput | string | null
+    warrantyAlertDays?: NullableIntFieldUpdateOperationsInput | number | null
+    warrantyAlertEnabled?: BoolFieldUpdateOperationsInput | boolean
+    lastWarrantyAlertSent?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    importSource?: NullableStringFieldUpdateOperationsInput | string | null
+    importValidated?: BoolFieldUpdateOperationsInput | boolean
+    validationErrors?: NullableStringFieldUpdateOperationsInput | string | null
+    statusLogs?: AssetStatusLogUpdateManyWithoutAssetNestedInput
+    assignments?: AssetAssignmentUpdateManyWithoutAssetNestedInput
+    mailroomPackages?: MailroomPackageUpdateManyWithoutAssetNestedInput
+    ticketHistory?: AssetTicketHistoryUpdateManyWithoutAssetNestedInput
+    warrantyAlerts?: AssetWarrantyAlertUpdateManyWithoutAssetNestedInput
+    kioskRegistrations?: KioskAssetRegistryUpdateManyWithoutAssetNestedInput
+    validationLogs?: AssetValidationLogUpdateManyWithoutAssetNestedInput
+    importBatch?: AssetImportBatchUpdateOneWithoutAssetsNestedInput
+  }
+
+  export type InventoryAssetUncheckedUpdateWithoutSyncFailuresInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    assetTag?: StringFieldUpdateOperationsInput | string
+    typeId?: NullableIntFieldUpdateOperationsInput | number | null
+    serialNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: NullableIntFieldUpdateOperationsInput | number | null
+    purchaseDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    warrantyExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedToOrgId?: NullableIntFieldUpdateOperationsInput | number | null
+    assignedToCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableStringFieldUpdateOperationsInput | string | null
+    locationId?: NullableIntFieldUpdateOperationsInput | number | null
+    kioskId?: NullableStringFieldUpdateOperationsInput | string | null
+    customFields?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    serialNumberEnc?: NullableStringFieldUpdateOperationsInput | string | null
+    warrantyInfoEnc?: NullableStringFieldUpdateOperationsInput | string | null
+    purchaseInfoEnc?: NullableStringFieldUpdateOperationsInput | string | null
+    maintenanceNotesEnc?: NullableStringFieldUpdateOperationsInput | string | null
+    warrantyAlertDays?: NullableIntFieldUpdateOperationsInput | number | null
+    warrantyAlertEnabled?: BoolFieldUpdateOperationsInput | boolean
+    lastWarrantyAlertSent?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    importBatchId?: NullableStringFieldUpdateOperationsInput | string | null
+    importSource?: NullableStringFieldUpdateOperationsInput | string | null
+    importValidated?: BoolFieldUpdateOperationsInput | boolean
+    validationErrors?: NullableStringFieldUpdateOperationsInput | string | null
+    statusLogs?: AssetStatusLogUncheckedUpdateManyWithoutAssetNestedInput
+    assignments?: AssetAssignmentUncheckedUpdateManyWithoutAssetNestedInput
+    mailroomPackages?: MailroomPackageUncheckedUpdateManyWithoutAssetNestedInput
+    ticketHistory?: AssetTicketHistoryUncheckedUpdateManyWithoutAssetNestedInput
+    warrantyAlerts?: AssetWarrantyAlertUncheckedUpdateManyWithoutAssetNestedInput
+    kioskRegistrations?: KioskAssetRegistryUncheckedUpdateManyWithoutAssetNestedInput
+    validationLogs?: AssetValidationLogUncheckedUpdateManyWithoutAssetNestedInput
+  }
+
+  export type KioskCreateWithoutOrgAssignmentInput = {
+    id: string
+    lastSeen?: Date | string | null
+    version?: string | null
+    active?: boolean
+    logoUrl?: string | null
+    bgUrl?: string | null
+    statusEnabled?: boolean
+    currentStatus?: string | null
+    openMsg?: string | null
+    closedMsg?: string | null
+    errorMsg?: string | null
+    meetingMsg?: string | null
+    brbMsg?: string | null
+    lunchMsg?: string | null
+    unavailableMsg?: string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    activations?: KioskActivationCreateNestedManyWithoutKioskInput
+    assetRegistry?: KioskAssetRegistryCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutKioskInput
+    metadataLogs?: KioskMetadataLogCreateNestedManyWithoutKioskInput
+  }
+
+  export type KioskUncheckedCreateWithoutOrgAssignmentInput = {
+    id: string
+    lastSeen?: Date | string | null
+    version?: string | null
+    active?: boolean
+    logoUrl?: string | null
+    bgUrl?: string | null
+    statusEnabled?: boolean
+    currentStatus?: string | null
+    openMsg?: string | null
+    closedMsg?: string | null
+    errorMsg?: string | null
+    meetingMsg?: string | null
+    brbMsg?: string | null
+    lunchMsg?: string | null
+    unavailableMsg?: string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    activations?: KioskActivationUncheckedCreateNestedManyWithoutKioskInput
+    assetRegistry?: KioskAssetRegistryUncheckedCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutKioskInput
+    metadataLogs?: KioskMetadataLogUncheckedCreateNestedManyWithoutKioskInput
+  }
+
+  export type KioskCreateOrConnectWithoutOrgAssignmentInput = {
+    where: KioskWhereUniqueInput
+    create: XOR<KioskCreateWithoutOrgAssignmentInput, KioskUncheckedCreateWithoutOrgAssignmentInput>
+  }
+
+  export type KioskUpsertWithoutOrgAssignmentInput = {
+    update: XOR<KioskUpdateWithoutOrgAssignmentInput, KioskUncheckedUpdateWithoutOrgAssignmentInput>
+    create: XOR<KioskCreateWithoutOrgAssignmentInput, KioskUncheckedCreateWithoutOrgAssignmentInput>
+    where?: KioskWhereInput
+  }
+
+  export type KioskUpdateToOneWithWhereWithoutOrgAssignmentInput = {
+    where?: KioskWhereInput
+    data: XOR<KioskUpdateWithoutOrgAssignmentInput, KioskUncheckedUpdateWithoutOrgAssignmentInput>
+  }
+
+  export type KioskUpdateWithoutOrgAssignmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: NullableStringFieldUpdateOperationsInput | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    bgUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    statusEnabled?: BoolFieldUpdateOperationsInput | boolean
+    currentStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    openMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    closedMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    meetingMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    brbMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    lunchMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    unavailableMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    activations?: KioskActivationUpdateManyWithoutKioskNestedInput
+    assetRegistry?: KioskAssetRegistryUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUpdateManyWithoutKioskNestedInput
+  }
+
+  export type KioskUncheckedUpdateWithoutOrgAssignmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: NullableStringFieldUpdateOperationsInput | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    bgUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    statusEnabled?: BoolFieldUpdateOperationsInput | boolean
+    currentStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    openMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    closedMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    meetingMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    brbMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    lunchMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    unavailableMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    activations?: KioskActivationUncheckedUpdateManyWithoutKioskNestedInput
+    assetRegistry?: KioskAssetRegistryUncheckedUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutKioskNestedInput
+    metadataLogs?: KioskMetadataLogUncheckedUpdateManyWithoutKioskNestedInput
+  }
+
+  export type KioskCreateWithoutMetadataLogsInput = {
+    id: string
+    lastSeen?: Date | string | null
+    version?: string | null
+    active?: boolean
+    logoUrl?: string | null
+    bgUrl?: string | null
+    statusEnabled?: boolean
+    currentStatus?: string | null
+    openMsg?: string | null
+    closedMsg?: string | null
+    errorMsg?: string | null
+    meetingMsg?: string | null
+    brbMsg?: string | null
+    lunchMsg?: string | null
+    unavailableMsg?: string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    activations?: KioskActivationCreateNestedManyWithoutKioskInput
+    assetRegistry?: KioskAssetRegistryCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentCreateNestedOneWithoutKioskInput
+  }
+
+  export type KioskUncheckedCreateWithoutMetadataLogsInput = {
+    id: string
+    lastSeen?: Date | string | null
+    version?: string | null
+    active?: boolean
+    logoUrl?: string | null
+    bgUrl?: string | null
+    statusEnabled?: boolean
+    currentStatus?: string | null
+    openMsg?: string | null
+    closedMsg?: string | null
+    errorMsg?: string | null
+    meetingMsg?: string | null
+    brbMsg?: string | null
+    lunchMsg?: string | null
+    unavailableMsg?: string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    activations?: KioskActivationUncheckedCreateNestedManyWithoutKioskInput
+    assetRegistry?: KioskAssetRegistryUncheckedCreateNestedManyWithoutKioskInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutKioskInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedCreateNestedOneWithoutKioskInput
+  }
+
+  export type KioskCreateOrConnectWithoutMetadataLogsInput = {
+    where: KioskWhereUniqueInput
+    create: XOR<KioskCreateWithoutMetadataLogsInput, KioskUncheckedCreateWithoutMetadataLogsInput>
+  }
+
+  export type KioskUpsertWithoutMetadataLogsInput = {
+    update: XOR<KioskUpdateWithoutMetadataLogsInput, KioskUncheckedUpdateWithoutMetadataLogsInput>
+    create: XOR<KioskCreateWithoutMetadataLogsInput, KioskUncheckedCreateWithoutMetadataLogsInput>
+    where?: KioskWhereInput
+  }
+
+  export type KioskUpdateToOneWithWhereWithoutMetadataLogsInput = {
+    where?: KioskWhereInput
+    data: XOR<KioskUpdateWithoutMetadataLogsInput, KioskUncheckedUpdateWithoutMetadataLogsInput>
+  }
+
+  export type KioskUpdateWithoutMetadataLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: NullableStringFieldUpdateOperationsInput | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    bgUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    statusEnabled?: BoolFieldUpdateOperationsInput | boolean
+    currentStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    openMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    closedMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    meetingMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    brbMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    lunchMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    unavailableMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    activations?: KioskActivationUpdateManyWithoutKioskNestedInput
+    assetRegistry?: KioskAssetRegistryUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUpdateOneWithoutKioskNestedInput
+  }
+
+  export type KioskUncheckedUpdateWithoutMetadataLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: NullableStringFieldUpdateOperationsInput | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    bgUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    statusEnabled?: BoolFieldUpdateOperationsInput | boolean
+    currentStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    openMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    closedMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    errorMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    meetingMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    brbMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    lunchMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    unavailableMsg?: NullableStringFieldUpdateOperationsInput | string | null
+    schedule?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    activations?: KioskActivationUncheckedUpdateManyWithoutKioskNestedInput
+    assetRegistry?: KioskAssetRegistryUncheckedUpdateManyWithoutKioskNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutKioskNestedInput
+    orgAssignment?: KioskOrganizationAssignmentUncheckedUpdateOneWithoutKioskNestedInput
   }
 
   export type UserCreateWithoutXpEventsInput = {
@@ -71533,6 +81705,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutXpEventsInput = {
@@ -71575,6 +81748,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutXpEventsInput = {
@@ -71633,6 +81807,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutXpEventsInput = {
@@ -71675,6 +81850,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutLeaderboardInput = {
@@ -71717,6 +81893,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutLeaderboardInput = {
@@ -71759,6 +81936,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutLeaderboardInput = {
@@ -71817,6 +81995,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLeaderboardInput = {
@@ -71859,6 +82038,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutScimMappingsInput = {
@@ -71901,6 +82081,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutScimMappingsInput = {
@@ -71943,6 +82124,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutScimMappingsInput = {
@@ -72001,6 +82183,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutScimMappingsInput = {
@@ -72043,6 +82226,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutMailroomPackagesInput = {
@@ -72085,6 +82269,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMailroomPackagesInput = {
@@ -72127,6 +82312,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMailroomPackagesInput = {
@@ -72205,6 +82391,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureCreateNestedManyWithoutAssetInput
     importBatch?: AssetImportBatchCreateNestedOneWithoutAssetsInput
   }
 
@@ -72247,6 +82434,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedCreateNestedManyWithoutAssetInput
     kioskRegistrations?: KioskAssetRegistryUncheckedCreateNestedManyWithoutAssetInput
     validationLogs?: AssetValidationLogUncheckedCreateNestedManyWithoutAssetInput
+    syncFailures?: HelixSyncFailureUncheckedCreateNestedManyWithoutAssetInput
   }
 
   export type InventoryAssetCreateOrConnectWithoutMailroomPackagesInput = {
@@ -72359,6 +82547,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMailroomPackagesInput = {
@@ -72401,6 +82590,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SupportTicketUpsertWithoutMailroomPackagesInput = {
@@ -72491,6 +82681,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutAssetNestedInput
     importBatch?: AssetImportBatchUpdateOneWithoutAssetsNestedInput
   }
 
@@ -72533,6 +82724,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUncheckedUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUncheckedUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput
   }
 
   export type DeliveryEventUpsertWithWhereUniqueWithoutPackageInput = {
@@ -72657,6 +82849,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDeliveryEventsInput = {
@@ -72699,6 +82892,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDeliveryEventsInput = {
@@ -72813,6 +83007,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDeliveryEventsInput = {
@@ -72855,6 +83050,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutProxyAuthorizationsAsRecipientInput = {
@@ -72897,6 +83093,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProxyAuthorizationsAsRecipientInput = {
@@ -72939,6 +83136,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProxyAuthorizationsAsRecipientInput = {
@@ -72986,6 +83184,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProxyAuthorizationsAsProxyInput = {
@@ -73028,6 +83227,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProxyAuthorizationsAsProxyInput = {
@@ -73136,6 +83336,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProxyAuthorizationsAsRecipientInput = {
@@ -73178,6 +83379,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutProxyAuthorizationsAsProxyInput = {
@@ -73231,6 +83433,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProxyAuthorizationsAsProxyInput = {
@@ -73273,6 +83476,7 @@ export namespace Prisma {
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type MailroomPackageUpsertWithoutProxyAuthorizationsInput = {
@@ -73524,6 +83728,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationCreateNestedManyWithoutProxyInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutVipProxiesAsVipInput = {
@@ -73566,6 +83771,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationUncheckedCreateNestedManyWithoutProxyInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutVipProxiesAsVipInput = {
@@ -73613,6 +83819,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationCreateNestedManyWithoutProxyInput
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutVipProxiesAsProxyInput = {
@@ -73655,6 +83862,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationUncheckedCreateNestedManyWithoutProxyInput
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutVipProxiesAsProxyInput = {
@@ -73713,6 +83921,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationUpdateManyWithoutProxyNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVipProxiesAsVipInput = {
@@ -73755,6 +83964,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationUncheckedUpdateManyWithoutProxyNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutVipProxiesAsProxyInput = {
@@ -73808,6 +84018,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationUpdateManyWithoutProxyNestedInput
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVipProxiesAsProxyInput = {
@@ -73850,6 +84061,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationUncheckedUpdateManyWithoutProxyNestedInput
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutVipSlaHistoryInput = {
@@ -73892,6 +84104,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationCreateNestedManyWithoutProxyInput
     vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
+    agentAvailability?: AgentAvailabilityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutVipSlaHistoryInput = {
@@ -73934,6 +84147,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationUncheckedCreateNestedManyWithoutProxyInput
     vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
     vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
+    agentAvailability?: AgentAvailabilityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutVipSlaHistoryInput = {
@@ -73992,6 +84206,7 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationUpdateManyWithoutProxyNestedInput
     vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
+    agentAvailability?: AgentAvailabilityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVipSlaHistoryInput = {
@@ -74034,6 +84249,195 @@ export namespace Prisma {
     proxyAuthorizationsAsProxy?: ProxyAuthorizationUncheckedUpdateManyWithoutProxyNestedInput
     vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
     vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
+    agentAvailability?: AgentAvailabilityUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutAgentAvailabilityInput = {
+    id?: string
+    name?: string | null
+    email: string
+    passwordHash?: string | null
+    disabled?: boolean
+    isDefault?: boolean
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    twoFactorBackupCodes?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorVerified?: boolean
+    samlNameId?: string | null
+    samlSessionIndex?: string | null
+    scimExternalId?: string | null
+    department?: string | null
+    lastSamlLogin?: Date | string | null
+    isVip?: boolean
+    vipLevel?: string | null
+    vipSlaOverride?: NullableJsonNullValueInput | InputJsonValue
+    feedback?: FeedbackCreateNestedManyWithoutUserInput
+    logs?: LogCreateNestedManyWithoutUserInput
+    passkeys?: PasskeyCreateNestedManyWithoutUserInput
+    support_tickets_support_tickets_assigneeIdTousers?: SupportTicketCreateNestedManyWithoutUsers_support_tickets_assigneeIdTousersInput
+    support_tickets_support_tickets_userIdTousers?: SupportTicketCreateNestedManyWithoutUsers_support_tickets_userIdTousersInput
+    roles?: UserRoleCreateNestedManyWithoutUserInput
+    scimMappings?: ScimMappingCreateNestedManyWithoutUserInput
+    kbArticlesAuthored?: KbArticleCreateNestedManyWithoutAuthorInput
+    kbArticleVersionsAuthored?: KbArticleVersionCreateNestedManyWithoutAuthorInput
+    kbArticleComments?: KbArticleCommentCreateNestedManyWithoutUserInput
+    xpEvents?: XpEventCreateNestedManyWithoutUserInput
+    leaderboard?: LeaderboardCreateNestedOneWithoutUserInput
+    mailroomPackages?: MailroomPackageCreateNestedManyWithoutRecipientInput
+    deliveryEvents?: DeliveryEventCreateNestedManyWithoutUserInput
+    proxyAuthorizationsAsRecipient?: ProxyAuthorizationCreateNestedManyWithoutRecipientInput
+    proxyAuthorizationsAsProxy?: ProxyAuthorizationCreateNestedManyWithoutProxyInput
+    vipProxiesAsVip?: VipProxyCreateNestedManyWithoutVipInput
+    vipProxiesAsProxy?: VipProxyCreateNestedManyWithoutProxyInput
+    vipSlaHistory?: VipSlaHistoryCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAgentAvailabilityInput = {
+    id?: string
+    name?: string | null
+    email: string
+    passwordHash?: string | null
+    disabled?: boolean
+    isDefault?: boolean
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    twoFactorBackupCodes?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorVerified?: boolean
+    samlNameId?: string | null
+    samlSessionIndex?: string | null
+    scimExternalId?: string | null
+    department?: string | null
+    lastSamlLogin?: Date | string | null
+    isVip?: boolean
+    vipLevel?: string | null
+    vipSlaOverride?: NullableJsonNullValueInput | InputJsonValue
+    feedback?: FeedbackUncheckedCreateNestedManyWithoutUserInput
+    logs?: LogUncheckedCreateNestedManyWithoutUserInput
+    passkeys?: PasskeyUncheckedCreateNestedManyWithoutUserInput
+    support_tickets_support_tickets_assigneeIdTousers?: SupportTicketUncheckedCreateNestedManyWithoutUsers_support_tickets_assigneeIdTousersInput
+    support_tickets_support_tickets_userIdTousers?: SupportTicketUncheckedCreateNestedManyWithoutUsers_support_tickets_userIdTousersInput
+    roles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
+    scimMappings?: ScimMappingUncheckedCreateNestedManyWithoutUserInput
+    kbArticlesAuthored?: KbArticleUncheckedCreateNestedManyWithoutAuthorInput
+    kbArticleVersionsAuthored?: KbArticleVersionUncheckedCreateNestedManyWithoutAuthorInput
+    kbArticleComments?: KbArticleCommentUncheckedCreateNestedManyWithoutUserInput
+    xpEvents?: XpEventUncheckedCreateNestedManyWithoutUserInput
+    leaderboard?: LeaderboardUncheckedCreateNestedOneWithoutUserInput
+    mailroomPackages?: MailroomPackageUncheckedCreateNestedManyWithoutRecipientInput
+    deliveryEvents?: DeliveryEventUncheckedCreateNestedManyWithoutUserInput
+    proxyAuthorizationsAsRecipient?: ProxyAuthorizationUncheckedCreateNestedManyWithoutRecipientInput
+    proxyAuthorizationsAsProxy?: ProxyAuthorizationUncheckedCreateNestedManyWithoutProxyInput
+    vipProxiesAsVip?: VipProxyUncheckedCreateNestedManyWithoutVipInput
+    vipProxiesAsProxy?: VipProxyUncheckedCreateNestedManyWithoutProxyInput
+    vipSlaHistory?: VipSlaHistoryUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAgentAvailabilityInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAgentAvailabilityInput, UserUncheckedCreateWithoutAgentAvailabilityInput>
+  }
+
+  export type UserUpsertWithoutAgentAvailabilityInput = {
+    update: XOR<UserUpdateWithoutAgentAvailabilityInput, UserUncheckedUpdateWithoutAgentAvailabilityInput>
+    create: XOR<UserCreateWithoutAgentAvailabilityInput, UserUncheckedCreateWithoutAgentAvailabilityInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAgentAvailabilityInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAgentAvailabilityInput, UserUncheckedUpdateWithoutAgentAvailabilityInput>
+  }
+
+  export type UserUpdateWithoutAgentAvailabilityInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    disabled?: BoolFieldUpdateOperationsInput | boolean
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorBackupCodes?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorVerified?: BoolFieldUpdateOperationsInput | boolean
+    samlNameId?: NullableStringFieldUpdateOperationsInput | string | null
+    samlSessionIndex?: NullableStringFieldUpdateOperationsInput | string | null
+    scimExternalId?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSamlLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isVip?: BoolFieldUpdateOperationsInput | boolean
+    vipLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    vipSlaOverride?: NullableJsonNullValueInput | InputJsonValue
+    feedback?: FeedbackUpdateManyWithoutUserNestedInput
+    logs?: LogUpdateManyWithoutUserNestedInput
+    passkeys?: PasskeyUpdateManyWithoutUserNestedInput
+    support_tickets_support_tickets_assigneeIdTousers?: SupportTicketUpdateManyWithoutUsers_support_tickets_assigneeIdTousersNestedInput
+    support_tickets_support_tickets_userIdTousers?: SupportTicketUpdateManyWithoutUsers_support_tickets_userIdTousersNestedInput
+    roles?: UserRoleUpdateManyWithoutUserNestedInput
+    scimMappings?: ScimMappingUpdateManyWithoutUserNestedInput
+    kbArticlesAuthored?: KbArticleUpdateManyWithoutAuthorNestedInput
+    kbArticleVersionsAuthored?: KbArticleVersionUpdateManyWithoutAuthorNestedInput
+    kbArticleComments?: KbArticleCommentUpdateManyWithoutUserNestedInput
+    xpEvents?: XpEventUpdateManyWithoutUserNestedInput
+    leaderboard?: LeaderboardUpdateOneWithoutUserNestedInput
+    mailroomPackages?: MailroomPackageUpdateManyWithoutRecipientNestedInput
+    deliveryEvents?: DeliveryEventUpdateManyWithoutUserNestedInput
+    proxyAuthorizationsAsRecipient?: ProxyAuthorizationUpdateManyWithoutRecipientNestedInput
+    proxyAuthorizationsAsProxy?: ProxyAuthorizationUpdateManyWithoutProxyNestedInput
+    vipProxiesAsVip?: VipProxyUpdateManyWithoutVipNestedInput
+    vipProxiesAsProxy?: VipProxyUpdateManyWithoutProxyNestedInput
+    vipSlaHistory?: VipSlaHistoryUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAgentAvailabilityInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    disabled?: BoolFieldUpdateOperationsInput | boolean
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorBackupCodes?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorVerified?: BoolFieldUpdateOperationsInput | boolean
+    samlNameId?: NullableStringFieldUpdateOperationsInput | string | null
+    samlSessionIndex?: NullableStringFieldUpdateOperationsInput | string | null
+    scimExternalId?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSamlLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isVip?: BoolFieldUpdateOperationsInput | boolean
+    vipLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    vipSlaOverride?: NullableJsonNullValueInput | InputJsonValue
+    feedback?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
+    logs?: LogUncheckedUpdateManyWithoutUserNestedInput
+    passkeys?: PasskeyUncheckedUpdateManyWithoutUserNestedInput
+    support_tickets_support_tickets_assigneeIdTousers?: SupportTicketUncheckedUpdateManyWithoutUsers_support_tickets_assigneeIdTousersNestedInput
+    support_tickets_support_tickets_userIdTousers?: SupportTicketUncheckedUpdateManyWithoutUsers_support_tickets_userIdTousersNestedInput
+    roles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
+    scimMappings?: ScimMappingUncheckedUpdateManyWithoutUserNestedInput
+    kbArticlesAuthored?: KbArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    kbArticleVersionsAuthored?: KbArticleVersionUncheckedUpdateManyWithoutAuthorNestedInput
+    kbArticleComments?: KbArticleCommentUncheckedUpdateManyWithoutUserNestedInput
+    xpEvents?: XpEventUncheckedUpdateManyWithoutUserNestedInput
+    leaderboard?: LeaderboardUncheckedUpdateOneWithoutUserNestedInput
+    mailroomPackages?: MailroomPackageUncheckedUpdateManyWithoutRecipientNestedInput
+    deliveryEvents?: DeliveryEventUncheckedUpdateManyWithoutUserNestedInput
+    proxyAuthorizationsAsRecipient?: ProxyAuthorizationUncheckedUpdateManyWithoutRecipientNestedInput
+    proxyAuthorizationsAsProxy?: ProxyAuthorizationUncheckedUpdateManyWithoutProxyNestedInput
+    vipProxiesAsVip?: VipProxyUncheckedUpdateManyWithoutVipNestedInput
+    vipProxiesAsProxy?: VipProxyUncheckedUpdateManyWithoutProxyNestedInput
+    vipSlaHistory?: VipSlaHistoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type FeedbackCreateManyUserInput = {
@@ -74207,6 +84611,17 @@ export namespace Prisma {
     sla: JsonNullValueInput | InputJsonValue
     effectiveAt?: Date | string
     endedAt?: Date | string | null
+  }
+
+  export type AgentAvailabilityCreateManyUserInput = {
+    id?: string
+    queueName: string
+    isAvailable?: boolean
+    maxCapacity?: number
+    currentLoad?: number
+    status?: string
+    lastUpdated?: Date | string
+    createdAt?: Date | string
   }
 
   export type FeedbackUpdateWithoutUserInput = {
@@ -74734,6 +85149,39 @@ export namespace Prisma {
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type AgentAvailabilityUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    maxCapacity?: IntFieldUpdateOperationsInput | number
+    currentLoad?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentAvailabilityUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    maxCapacity?: IntFieldUpdateOperationsInput | number
+    currentLoad?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentAvailabilityUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queueName?: StringFieldUpdateOperationsInput | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    maxCapacity?: IntFieldUpdateOperationsInput | number
+    currentLoad?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type RolePermissionCreateManyRoleInput = {
     permissionId: number
     assignedAt?: Date | string
@@ -74853,6 +85301,24 @@ export namespace Prisma {
     updatedBy?: string | null
   }
 
+  export type HelixSyncFailureCreateManyKioskInput = {
+    id?: number
+    assetId: number
+    errorMessage: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: number
+    nextRetryAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KioskMetadataLogCreateManyKioskInput = {
+    id?: number
+    metadataType: string
+    encryptedMetadata?: string | null
+    collectionTimestamp?: Date | string
+  }
+
   export type KioskActivationUpdateWithoutKioskInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
@@ -74922,6 +85388,58 @@ export namespace Prisma {
     encryptedMetadata?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type HelixSyncFailureUpdateWithoutKioskInput = {
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    asset?: InventoryAssetUpdateOneRequiredWithoutSyncFailuresNestedInput
+  }
+
+  export type HelixSyncFailureUncheckedUpdateWithoutKioskInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    assetId?: IntFieldUpdateOperationsInput | number
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HelixSyncFailureUncheckedUpdateManyWithoutKioskInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    assetId?: IntFieldUpdateOperationsInput | number
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskMetadataLogUpdateWithoutKioskInput = {
+    metadataType?: StringFieldUpdateOperationsInput | string
+    encryptedMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    collectionTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskMetadataLogUncheckedUpdateWithoutKioskInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    metadataType?: StringFieldUpdateOperationsInput | string
+    encryptedMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    collectionTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KioskMetadataLogUncheckedUpdateManyWithoutKioskInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    metadataType?: StringFieldUpdateOperationsInput | string
+    encryptedMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    collectionTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type KbArticleVersionCreateManyArticleInput = {
@@ -75290,6 +85808,17 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type HelixSyncFailureCreateManyAssetInput = {
+    id?: number
+    kioskId: string
+    errorMessage: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: number
+    nextRetryAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type AssetStatusLogUpdateWithoutAssetInput = {
     previousStatus?: NullableStringFieldUpdateOperationsInput | string | null
     newStatus?: StringFieldUpdateOperationsInput | string
@@ -75557,6 +86086,38 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type HelixSyncFailureUpdateWithoutAssetInput = {
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kiosk?: KioskUpdateOneRequiredWithoutSyncFailuresNestedInput
+  }
+
+  export type HelixSyncFailureUncheckedUpdateWithoutAssetInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kioskId?: StringFieldUpdateOperationsInput | string
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HelixSyncFailureUncheckedUpdateManyWithoutAssetInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kioskId?: StringFieldUpdateOperationsInput | string
+    errorMessage?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type InventoryAssetCreateManyImportBatchInput = {
     id?: number
     assetTag: string
@@ -75640,6 +86201,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUpdateManyWithoutAssetNestedInput
   }
 
   export type InventoryAssetUncheckedUpdateWithoutImportBatchInput = {
@@ -75681,6 +86243,7 @@ export namespace Prisma {
     warrantyAlerts?: AssetWarrantyAlertUncheckedUpdateManyWithoutAssetNestedInput
     kioskRegistrations?: KioskAssetRegistryUncheckedUpdateManyWithoutAssetNestedInput
     validationLogs?: AssetValidationLogUncheckedUpdateManyWithoutAssetNestedInput
+    syncFailures?: HelixSyncFailureUncheckedUpdateManyWithoutAssetNestedInput
   }
 
   export type InventoryAssetUncheckedUpdateManyWithoutImportBatchInput = {

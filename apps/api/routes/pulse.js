@@ -1171,4 +1171,263 @@ router.post('/xp',
 // Mount enhanced inventory routes
 router.use('/inventory', pulseInventoryRouter);
 
+// Queue metrics and agent availability endpoints
+router.get('/queues/metrics',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { queue } = req.query;
+      
+      // If specific queue requested, return metrics for that queue
+      if (queue) {
+        const result = await db.query(
+          'SELECT * FROM queue_metrics WHERE queue_name = $1',
+          [queue]
+        );
+        
+        if (!result.rows || result.rows.length === 0) {
+          // Calculate and create metrics for the queue if not exists
+          await calculateAndUpdateQueueMetrics(queue);
+          const newResult = await db.query(
+            'SELECT * FROM queue_metrics WHERE queue_name = $1',
+            [queue]
+          );
+          return res.json({ success: true, metrics: newResult.rows[0] || null });
+        }
+        
+        return res.json({ success: true, metrics: result.rows[0] });
+      }
+      
+      // Return all queue metrics
+      const result = await db.query(
+        'SELECT * FROM queue_metrics ORDER BY queue_name'
+      );
+      
+      res.json({ success: true, metrics: result.rows });
+    } catch (error) {
+      logger.error('Error fetching queue metrics:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch queue metrics',
+        errorCode: 'QUEUE_METRICS_ERROR'
+      });
+    }
+  }
+);
+
+// Get agent availability for specific queue
+router.get('/queues/:queueName/agents',
+  authenticateJWT,
+  checkQueueAccess((req) => req.params.queueName),
+  async (req, res) => {
+    try {
+      const { queueName } = req.params;
+      
+      const result = await db.query(`
+        SELECT 
+          aa.*,
+          u.name,
+          u.email,
+          u.department,
+          COUNT(t.id) as current_tickets
+        FROM agent_availability aa
+        LEFT JOIN users u ON aa.user_id = u.id
+        LEFT JOIN tickets t ON t.assigned_to_id = aa.user_id 
+          AND t.status IN ('open', 'in_progress') 
+          AND t.deleted_at IS NULL
+        WHERE aa.queue_name = $1
+        GROUP BY aa.id, u.id
+        ORDER BY aa.is_available DESC, aa.current_load ASC
+      `, [queueName]);
+      
+      res.json({ success: true, agents: result.rows });
+    } catch (error) {
+      logger.error('Error fetching queue agents:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch queue agents',
+        errorCode: 'QUEUE_AGENTS_ERROR'
+      });
+    }
+  }
+);
+
+// Toggle agent availability
+router.post('/queues/:queueName/agents/availability',
+  authenticateJWT,
+  checkQueueAccess((req) => req.params.queueName),
+  async (req, res) => {
+    try {
+      const { queueName } = req.params;
+      const { isAvailable, status, maxCapacity } = req.body;
+      const userId = req.user.id;
+      
+      // Upsert agent availability
+      await db.query(`
+        INSERT INTO agent_availability (user_id, queue_name, is_available, status, max_capacity, last_updated)
+        VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+        ON CONFLICT (user_id, queue_name) 
+        DO UPDATE SET 
+          is_available = EXCLUDED.is_available,
+          status = EXCLUDED.status,
+          max_capacity = EXCLUDED.max_capacity,
+          last_updated = CURRENT_TIMESTAMP
+      `, [userId, queueName, isAvailable, status || 'active', maxCapacity || 10]);
+      
+      // Update queue metrics
+      await calculateAndUpdateQueueMetrics(queueName);
+      
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Error updating agent availability:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update availability',
+        errorCode: 'AVAILABILITY_UPDATE_ERROR'
+      });
+    }
+  }
+);
+
+// Get queue alerts
+router.get('/queues/alerts',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { active = true } = req.query;
+      
+      let query = 'SELECT * FROM queue_alerts';
+      const params = [];
+      
+      if (active === 'true') {
+        query += ' WHERE is_active = $1';
+        params.push(true);
+      }
+      
+      query += ' ORDER BY alerted_at DESC';
+      
+      const result = await db.query(query, params);
+      res.json({ success: true, alerts: result.rows });
+    } catch (error) {
+      logger.error('Error fetching queue alerts:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch alerts',
+        errorCode: 'QUEUE_ALERTS_ERROR'
+      });
+    }
+  }
+);
+
+// Helper function to calculate and update queue metrics
+async function calculateAndUpdateQueueMetrics(queueName) {
+  try {
+    // Get agent counts
+    const agentResult = await db.query(`
+      SELECT 
+        COUNT(*) as total_agents,
+        SUM(CASE WHEN is_available = true THEN 1 ELSE 0 END) as available_agents,
+        AVG(CASE WHEN is_available = true THEN max_capacity ELSE 0 END) as avg_capacity,
+        SUM(CASE WHEN is_available = true THEN current_load ELSE 0 END) as total_load
+      FROM agent_availability 
+      WHERE queue_name = $1
+    `, [queueName]);
+    
+    const agentStats = agentResult.rows[0] || {};
+    
+    // Get ticket counts (mapping queue to team for now)
+    const ticketResult = await db.query(`
+      SELECT 
+        COUNT(*) as total_tickets,
+        SUM(CASE WHEN status IN ('open', 'in_progress') THEN 1 ELSE 0 END) as open_tickets,
+        SUM(CASE WHEN priority IN ('high', 'critical') THEN 1 ELSE 0 END) as high_priority_tickets,
+        AVG(CASE WHEN status = 'resolved' AND resolved_at IS NOT NULL 
+            THEN EXTRACT(EPOCH FROM (resolved_at - created_at)) / 3600 
+            ELSE NULL END) as avg_resolution_time_hours
+      FROM tickets 
+      WHERE category = $1 AND deleted_at IS NULL
+    `, [queueName]);
+    
+    const ticketStats = ticketResult.rows[0] || {};
+    
+    // Calculate capacity utilization
+    const totalCapacity = (parseInt(agentStats.total_agents) || 0) * 10; // Default capacity per agent
+    const capacityUtilization = totalCapacity > 0 
+      ? ((parseInt(agentStats.total_load) || 0) / totalCapacity) * 100 
+      : 0;
+    
+    // Check thresholds
+    const thresholdWarning = capacityUtilization > 70;
+    const thresholdCritical = capacityUtilization > 90;
+    
+    // Upsert queue metrics
+    await db.query(`
+      INSERT INTO queue_metrics (
+        queue_name, total_agents, available_agents, total_tickets, open_tickets,
+        avg_resolution_time, high_priority_tickets, capacity_utilization,
+        threshold_warning, threshold_critical, last_calculated
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
+      ON CONFLICT (queue_name)
+      DO UPDATE SET 
+        total_agents = EXCLUDED.total_agents,
+        available_agents = EXCLUDED.available_agents,
+        total_tickets = EXCLUDED.total_tickets,
+        open_tickets = EXCLUDED.open_tickets,
+        avg_resolution_time = EXCLUDED.avg_resolution_time,
+        high_priority_tickets = EXCLUDED.high_priority_tickets,
+        capacity_utilization = EXCLUDED.capacity_utilization,
+        threshold_warning = EXCLUDED.threshold_warning,
+        threshold_critical = EXCLUDED.threshold_critical,
+        last_calculated = CURRENT_TIMESTAMP
+    `, [
+      queueName,
+      parseInt(agentStats.total_agents) || 0,
+      parseInt(agentStats.available_agents) || 0,
+      parseInt(ticketStats.total_tickets) || 0,
+      parseInt(ticketStats.open_tickets) || 0,
+      parseFloat(ticketStats.avg_resolution_time_hours) || 0,
+      parseInt(ticketStats.high_priority_tickets) || 0,
+      capacityUtilization,
+      thresholdWarning,
+      thresholdCritical
+    ]);
+    
+    // Create alerts if thresholds exceeded
+    if (thresholdCritical) {
+      await createQueueAlert(queueName, 'critical', 
+        `Queue ${queueName} has exceeded 90% capacity utilization (${capacityUtilization.toFixed(1)}%)`);
+    } else if (thresholdWarning) {
+      await createQueueAlert(queueName, 'warning', 
+        `Queue ${queueName} has exceeded 70% capacity utilization (${capacityUtilization.toFixed(1)}%)`);
+    }
+    
+  } catch (error) {
+    logger.error('Error calculating queue metrics:', error);
+    throw error;
+  }
+}
+
+// Helper function to create queue alerts
+async function createQueueAlert(queueName, alertType, message) {
+  try {
+    // Check if similar alert already exists and is active
+    const existingResult = await db.query(`
+      SELECT id FROM queue_alerts 
+      WHERE queue_name = $1 AND alert_type = $2 AND is_active = true
+    `, [queueName, alertType]);
+    
+    if (!existingResult.rows || existingResult.rows.length === 0) {
+      await db.query(`
+        INSERT INTO queue_alerts (queue_name, alert_type, message, alerted_at)
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+      `, [queueName, alertType, message]);
+      
+      logger.info(`Queue alert created: ${alertType} for ${queueName}`);
+    }
+  } catch (error) {
+    logger.error('Error creating queue alert:', error);
+  }
+}
+
 export default router;

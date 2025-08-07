@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Ticket, DashboardData, TimesheetEntry, TicketUpdate, Alert, Asset, XpEvent, LeaderboardEntry, TeamRanking, TicketHistoryEntry } from '../types'
+import type { Ticket, DashboardData, TimesheetEntry, TicketUpdate, Alert, Asset, XpEvent, LeaderboardEntry, TeamRanking, TicketHistoryEntry, QueueMetrics, AgentAvailability, QueueAlert } from '../types'
 
 const client = axios.create({ baseURL: '/api/v1/pulse' })
 
@@ -56,4 +56,26 @@ export const postXpEvent = async (event: Partial<XpEvent>) => {
 export const getXpLeaderboard = async () => {
   const { data } = await client.get<{ success: boolean; leaderboard: LeaderboardEntry[]; teams: TeamRanking[]; me: { xp: number } }>('/xp')
   return data
+}
+
+// Queue metrics and agent availability functions
+export const getQueueMetrics = async (queue?: string) => {
+  const params = queue ? { queue } : {}
+  const { data } = await client.get<{ success: boolean; metrics: QueueMetrics | QueueMetrics[] }>('/queues/metrics', { params })
+  return data
+}
+
+export const getQueueAgents = async (queueName: string) => {
+  const { data } = await client.get<{ success: boolean; agents: AgentAvailability[] }>(`/queues/${queueName}/agents`)
+  return data.agents
+}
+
+export const toggleAgentAvailability = async (queueName: string, updates: { isAvailable?: boolean; status?: string; maxCapacity?: number }) => {
+  const { data } = await client.post(`/queues/${queueName}/agents/availability`, updates)
+  return data
+}
+
+export const getQueueAlerts = async (active = true) => {
+  const { data } = await client.get<{ success: boolean; alerts: QueueAlert[] }>('/queues/alerts', { params: { active } })
+  return data.alerts
 }

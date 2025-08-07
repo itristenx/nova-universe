@@ -49,6 +49,53 @@ export interface Alert {
   createdAt: string
 }
 
+export interface QueueMetrics {
+  id: string
+  queueName: string
+  totalAgents: number
+  availableAgents: number
+  totalTickets: number
+  openTickets: number
+  avgResponseTime: number
+  avgResolutionTime: number
+  slaBreaches: number
+  highPriorityTickets: number
+  capacityUtilization: number
+  averageWaitTime: number
+  thresholdWarning: boolean
+  thresholdCritical: boolean
+  lastCalculated: string
+}
+
+export interface AgentAvailability {
+  id: string
+  userId: string
+  queueName: string
+  isAvailable: boolean
+  maxCapacity: number
+  currentLoad: number
+  status: string
+  lastUpdated: string
+  createdAt: string
+  user?: {
+    name: string
+    email: string
+    department: string
+  }
+  currentTickets?: number
+}
+
+export interface QueueAlert {
+  id: string
+  queueName: string
+  alertType: string
+  message: string
+  isActive: boolean
+  alertedAt: string
+  resolvedAt?: string
+  notifiedUsers: string[]
+}
+
 export interface Asset {
   id: number
   name: string

@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.13.0
- * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
+ * Prisma Client JS version: 6.12.0
+ * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
  */
 Prisma.prismaVersion = {
-  client: "6.13.0",
-  engine: "361e86d0ea4987e9f53a565309b3eed797a6bcbd"
+  client: "6.12.0",
+  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -497,6 +497,40 @@ exports.Prisma.KioskAssetRegistryScalarFieldEnum = {
   updatedBy: 'updatedBy'
 };
 
+exports.Prisma.HelixSyncFailureScalarFieldEnum = {
+  id: 'id',
+  kioskId: 'kioskId',
+  assetId: 'assetId',
+  errorMessage: 'errorMessage',
+  metadata: 'metadata',
+  retryCount: 'retryCount',
+  nextRetryAt: 'nextRetryAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.KioskOrganizationAssignmentScalarFieldEnum = {
+  id: 'id',
+  kioskId: 'kioskId',
+  organizationId: 'organizationId',
+  department: 'department',
+  floor: 'floor',
+  room: 'room',
+  building: 'building',
+  assignedBy: 'assignedBy',
+  assignmentMetadata: 'assignmentMetadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.KioskMetadataLogScalarFieldEnum = {
+  id: 'id',
+  kioskId: 'kioskId',
+  metadataType: 'metadataType',
+  encryptedMetadata: 'encryptedMetadata',
+  collectionTimestamp: 'collectionTimestamp'
+};
+
 exports.Prisma.XpEventScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -605,6 +639,47 @@ exports.Prisma.VipSlaHistoryScalarFieldEnum = {
   endedAt: 'endedAt'
 };
 
+exports.Prisma.AgentAvailabilityScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  queueName: 'queueName',
+  isAvailable: 'isAvailable',
+  maxCapacity: 'maxCapacity',
+  currentLoad: 'currentLoad',
+  status: 'status',
+  lastUpdated: 'lastUpdated',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.QueueMetricsScalarFieldEnum = {
+  id: 'id',
+  queueName: 'queueName',
+  totalAgents: 'totalAgents',
+  availableAgents: 'availableAgents',
+  totalTickets: 'totalTickets',
+  openTickets: 'openTickets',
+  avgResponseTime: 'avgResponseTime',
+  avgResolutionTime: 'avgResolutionTime',
+  slaBreaches: 'slaBreaches',
+  highPriorityTickets: 'highPriorityTickets',
+  capacityUtilization: 'capacityUtilization',
+  averageWaitTime: 'averageWaitTime',
+  thresholdWarning: 'thresholdWarning',
+  thresholdCritical: 'thresholdCritical',
+  lastCalculated: 'lastCalculated'
+};
+
+exports.Prisma.QueueAlertScalarFieldEnum = {
+  id: 'id',
+  queueName: 'queueName',
+  alertType: 'alertType',
+  message: 'message',
+  isActive: 'isActive',
+  alertedAt: 'alertedAt',
+  resolvedAt: 'resolvedAt',
+  notifiedUsers: 'notifiedUsers'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -667,6 +742,9 @@ exports.Prisma.ModelName = {
   AssetImportBatch: 'AssetImportBatch',
   AssetValidationLog: 'AssetValidationLog',
   KioskAssetRegistry: 'KioskAssetRegistry',
+  HelixSyncFailure: 'HelixSyncFailure',
+  KioskOrganizationAssignment: 'KioskOrganizationAssignment',
+  KioskMetadataLog: 'KioskMetadataLog',
   XpEvent: 'XpEvent',
   Leaderboard: 'Leaderboard',
   ScimMapping: 'ScimMapping',
@@ -677,7 +755,10 @@ exports.Prisma.ModelName = {
   RequestCatalogItem: 'RequestCatalogItem',
   RITM: 'RITM',
   VipProxy: 'VipProxy',
-  VipSlaHistory: 'VipSlaHistory'
+  VipSlaHistory: 'VipSlaHistory',
+  AgentAvailability: 'AgentAvailability',
+  QueueMetrics: 'QueueMetrics',
+  QueueAlert: 'QueueAlert'
 };
 
 /**
