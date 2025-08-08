@@ -15,7 +15,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@elastic/elasticsearch": "^9.0.3",
+    "@elastic/elasticsearch": "^9.1.1",
     "@node-saml/passport-saml": "^5.0.1",
     "@simplewebauthn/server": "^13.1.2",
     "axios": "^1.11.0",
