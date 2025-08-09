@@ -31,5 +31,5 @@ export const logger = {
   warn: (...args) => log('warn', ...args),
   info: (...args) => log('info', ...args),
   log: (...args) => log('log', ...args),
-  debug: (...args) => log('debug', ...args),
+  debug: (...args) => log('debug', ...args)
 };
