@@ -1,7 +1,7 @@
 // src/lib/db/elastic.ts
 // Elasticsearch client for full-text search and analytics
 import { Client } from '@elastic/elasticsearch';
-import { logger } from '../../../nova-api/logger.js';
+import { logger } from '../../../apps/api/logger.js';
 
 // Configuration from environment with robust defaults and validation
 const validateElasticConfig = () => {

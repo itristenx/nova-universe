@@ -1,5 +1,5 @@
 // src/lib/db/mongo.ts
-// Native MongoDB client for logs and telemetry
+// Enhanced MongoDB client with connection management, schema validation, and auditing
 import { Db, MongoClient } from 'mongodb';
 import { logger } from '../../../apps/api/logger.js';
 

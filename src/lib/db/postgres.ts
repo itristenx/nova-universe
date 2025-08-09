@@ -1,5 +1,5 @@
 // src/lib/db/postgres.ts
-// Prisma client for PostgreSQL core data
+// Enhanced Prisma client with connection management, query optimization, and error handling
 import { PrismaClient } from '../../../prisma/generated/core';
 import { logger } from '../../../apps/api/logger.js';
 
