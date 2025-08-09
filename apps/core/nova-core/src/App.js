@@ -2,9 +2,11 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Layout } from '@/components/layout';
 import { ConnectedToastContainer } from '@/components/ui';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import { useAuthStatus } from '@/hooks/useAuthStatus';
 import { api } from '@/lib/api';
 import { LoginPage } from '@/pages/auth/LoginPage';
+import { UniversalLoginPage } from '@/pages/auth/UniversalLoginPage';
 import { NovaDashboard } from '@/pages/NovaDashboard';
 import { SAMLConfigurationPage } from '@/pages/SAMLConfigurationPage';
 import { UserManagementPage } from '@/pages/UserManagementPage';
@@ -88,13 +90,14 @@ const ProtectedRoute = ({ children }) => {
     }
     // Normal auth flow - redirect to login if not authenticated
     if (!isAuthenticated) {
-        return React.createElement(Navigate, { to: "/login", replace: true });
+        return React.createElement(Navigate, { to: "/auth/login", replace: true });
     }
     return React.createElement(React.Fragment, null, children);
 };
 const AppRoutes = () => {
     return (React.createElement(Routes, null,
         React.createElement(Route, { path: "/login", element: React.createElement(LoginPage, null) }),
+        React.createElement(Route, { path: "/auth/login", element: React.createElement(UniversalLoginPage, null) }),
         React.createElement(Route, { path: "/showcase", element: React.createElement(Showcase, null) }),
         React.createElement(Route, { path: "/", element: React.createElement(ProtectedRoute, null,
                 React.createElement(Layout, null)) },
@@ -140,8 +143,9 @@ const App = () => {
         React.createElement(HeroUIProvider, null,
             React.createElement(ThemeProvider, null,
                 React.createElement(QueryClientProvider, { client: queryClient },
-                    React.createElement(Router, null,
-                        React.createElement(AppRoutes, null),
-                        React.createElement(ConnectedToastContainer, null)))))));
+                    React.createElement(WebSocketProvider, null,
+                        React.createElement(Router, null,
+                            React.createElement(AppRoutes, null),
+                            React.createElement(ConnectedToastContainer, null))))))));
 };
 export default App;

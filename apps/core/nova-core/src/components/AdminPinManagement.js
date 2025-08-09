@@ -91,11 +91,7 @@ export const AdminPinManagement = ({ kiosks, onUpdate }) => {
                 globalPin: pinConfig.globalPin || undefined,
                 kioskPins: Object.keys(pinConfig.kioskPins).length > 0 ? pinConfig.kioskPins : undefined
             });
-            addToast({
-                type: 'success',
-                title: 'Success',
-                description: 'Admin PINs updated successfully',
-            });
+            addToast('success', 'Admin PINs updated successfully');
             onUpdate();
         }
         catch (error) {

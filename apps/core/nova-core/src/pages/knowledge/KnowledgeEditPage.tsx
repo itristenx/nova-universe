@@ -62,7 +62,7 @@ const KnowledgeEditPage: React.FC = () => {
           <Textarea label="Content" value={content} onChange={e => setContent(e.target.value)} rows={10} required />
           <Input label="Tags (comma separated)" value={tags} onChange={e => setTags(e.target.value)} />
           <div className="pt-2">
-            <Button variant="primary" type="submit" isLoading={loading}>
+            <Button variant="solid" type="submit" isLoading={loading}>
               {isEdit ? 'Save Version' : 'Create Article'}
             </Button>
           </div>

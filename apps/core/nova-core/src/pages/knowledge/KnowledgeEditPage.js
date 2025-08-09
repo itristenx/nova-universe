@@ -53,6 +53,6 @@ const KnowledgeEditPage = () => {
                 React.createElement(Textarea, { label: "Content", value: content, onChange: e => setContent(e.target.value), rows: 10, required: true }),
                 React.createElement(Input, { label: "Tags (comma separated)", value: tags, onChange: e => setTags(e.target.value) }),
                 React.createElement("div", { className: "pt-2" },
-                    React.createElement(Button, { variant: "primary", type: "submit", isLoading: loading }, isEdit ? 'Save Version' : 'Create Article'))))));
+                    React.createElement(Button, { variant: "solid", type: "submit", isLoading: loading }, isEdit ? 'Save Version' : 'Create Article'))))));
 };
 export default KnowledgeEditPage;

@@ -33,7 +33,7 @@ const KnowledgeListPage: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
         {isEditor && (
-          <Button variant="primary" onClick={() => navigate('/knowledge/new')}>
+          <Button variant="solid" onClick={() => navigate('/knowledge/new')}>
             New Article
           </Button>
         )}
@@ -73,7 +73,7 @@ const KnowledgeListPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-2 text-right whitespace-nowrap">
                     {isEditor && (
-                      <Button size="sm" variant="secondary" onClick={() => navigate(`/knowledge/${a.slug}/edit`)}>
+                      <Button size="sm" variant="light" onClick={() => navigate(`/knowledge/${a.slug}/edit`)}>
                         Edit
                       </Button>
                     )}

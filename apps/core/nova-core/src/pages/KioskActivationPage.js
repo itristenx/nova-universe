@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
+import { Button, Card, Input } from '@heroui/react';
 import { useToastStore } from '@/stores/toast';
 import { api } from '../lib/api';
 import { PlusIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
@@ -181,18 +179,18 @@ export const KioskActivationPage = () => {
                 React.createElement("h2", { className: "text-lg font-semibold text-gray-900 mb-4" }, "Manual Activation"),
                 React.createElement("div", { className: "space-y-4" },
                     React.createElement(Input, { label: "Kiosk ID", value: kioskId, onChange: (e) => setKioskId(e.target.value), placeholder: "Enter kiosk ID to activate" }),
-                    React.createElement(Button, { variant: "primary", onClick: activateKiosk, disabled: loading || !kioskId.trim(), className: "w-full" }, "Activate Kiosk"))),
+                    React.createElement(Button, { color: "primary", variant: "solid", onClick: activateKiosk, disabled: loading || !kioskId.trim(), className: "w-full" }, "Activate Kiosk"))),
             React.createElement(Card, { className: "p-6" },
                 React.createElement("h2", { className: "text-lg font-semibold text-gray-900 mb-4" }, "Generate Activation QR Code"),
                 React.createElement("p", { className: "text-gray-600 mb-4" }, "Generate a QR code that kiosks can scan to activate themselves."),
-                React.createElement(Button, { variant: "primary", onClick: generateActivation, disabled: generatingQR, className: "w-full" }, generatingQR ? 'Generating...' : 'Generate QR Code'))),
+                React.createElement(Button, { color: "primary", variant: "solid", onClick: generateActivation, disabled: generatingQR, className: "w-full" }, generatingQR ? 'Generating...' : 'Generate QR Code'))),
         React.createElement(Card, { className: "p-6" },
             React.createElement("h2", { className: "text-lg font-semibold text-gray-900 mb-4" }, "Kiosk Systems Configuration"),
             React.createElement("p", { className: "text-gray-600 mb-4" }, "Manage the list of systems that appear in the kiosk interface for ticket creation."),
             React.createElement("div", { className: "mb-6" },
                 React.createElement("div", { className: "flex space-x-2" },
                     React.createElement(Input, { value: newSystem, onChange: (e) => setNewSystem(e.target.value), placeholder: "Enter new system name", onKeyPress: (e) => e.key === 'Enter' && addSystem(), className: "flex-1" }),
-                    React.createElement(Button, { variant: "primary", onClick: addSystem, disabled: !newSystem.trim() || systemsLoading, className: "flex items-center space-x-2" },
+                    React.createElement(Button, { color: "primary", variant: "solid", onClick: addSystem, disabled: !newSystem.trim() || systemsLoading, className: "flex items-center space-x-2" },
                         React.createElement(PlusIcon, { className: "w-4 h-4" }),
                         React.createElement("span", null, "Add")))),
             systemsLoading ? (React.createElement("div", { className: "text-center py-8" }, "Loading systems...")) : (React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2" },
@@ -204,7 +202,7 @@ export const KioskActivationPage = () => {
         React.createElement(Card, { className: "p-6" },
             React.createElement("div", { className: "flex items-center justify-between mb-4" },
                 React.createElement("h2", { className: "text-lg font-semibold text-gray-900" }, "Activation Codes"),
-                React.createElement(Button, { variant: "default", size: "sm", onClick: loadActivations, disabled: loading, className: "text-blue-600 hover:text-blue-900", title: "Refresh activation codes" },
+                React.createElement(Button, { variant: "bordered", size: "sm", onClick: loadActivations, disabled: loading, className: "text-blue-600 hover:text-blue-900", title: "Refresh activation codes" },
                     React.createElement(ArrowPathIcon, { className: "w-4 h-4 mr-1" }),
                     "Refresh")),
             loading ? (React.createElement("div", { className: "text-center py-8" }, "Loading activations...")) : activations.length === 0 ? (React.createElement("div", { className: "text-center py-8 text-gray-500" }, "No activation codes generated yet.")) : (React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" }, activations.map((activation) => (React.createElement("div", { key: activation.id, className: `border rounded-lg p-4 ${activation.used

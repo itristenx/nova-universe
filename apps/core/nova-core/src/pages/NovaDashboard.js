@@ -2,6 +2,7 @@
 // Nova Universe Enhanced Dashboard
 import { Card } from '@/components/ui/Card';
 import { api } from '@/lib/api';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import { AcademicCapIcon, BeakerIcon, BoltIcon, ChartBarIcon, CogIcon, GlobeAltIcon, ServerIcon, ShieldCheckIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 export const NovaDashboard = () => {
@@ -9,7 +10,47 @@ export const NovaDashboard = () => {
     const [authStats, setAuthStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [lastUpdate, setLastUpdate] = useState(new Date());
     const progressBarRef = useRef(null);
+    // Setup WebSocket for real-time updates
+    const { isConnected } = useWebSocket({
+        subscriptions: ['system', 'users', 'analytics'],
+        onMessage: (message) => {
+            console.log('Dashboard received real-time update:', message);
+            setLastUpdate(new Date());
+            switch (message.type) {
+                case 'system_health':
+                    setSystemHealth(prev => ({
+                        ...prev,
+                        ...message.data
+                    }));
+                    break;
+                case 'user_stats':
+                    setAuthStats(prev => ({
+                        ...prev,
+                        ...message.data
+                    }));
+                    break;
+                case 'module_status':
+                    setSystemHealth(prev => prev ? ({
+                        ...prev,
+                        modules: {
+                            ...prev.modules,
+                            [message.data.module]: message.data.status === 'operational'
+                        }
+                    }) : null);
+                    break;
+                default:
+                    console.log('Unhandled real-time message type:', message.type);
+            }
+        },
+        onConnect: () => {
+            console.log('Dashboard WebSocket connected');
+        },
+        onDisconnect: (reason) => {
+            console.log('Dashboard WebSocket disconnected:', reason);
+        }
+    });
     // Calculate 2FA percentage for progress bar
     const twoFactorPercentage = useMemo(() => {
         if (!authStats || authStats.totalUsers === 0)
@@ -113,8 +154,17 @@ export const NovaDashboard = () => {
     }
     return (React.createElement("div", { className: "space-y-6" },
         React.createElement("div", { className: "bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-6" },
-            React.createElement("h1", { className: "text-3xl font-bold mb-2" }, "Nova Universe Control Center"),
-            React.createElement("p", { className: "text-purple-100" }, "Enterprise ITSM Platform - Phase 4 Enhanced Administration")),
+            React.createElement("div", { className: "flex items-center justify-between" },
+                React.createElement("div", null,
+                    React.createElement("h1", { className: "text-3xl font-bold mb-2" }, "Nova Universe Control Center"),
+                    React.createElement("p", { className: "text-purple-100" }, "Enterprise ITSM Platform - Phase 4 Enhanced Administration")),
+                React.createElement("div", { className: "text-right" },
+                    React.createElement("div", { className: "flex items-center space-x-2 text-purple-100" },
+                        React.createElement("div", { className: `h-2 w-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}` }),
+                        React.createElement("span", { className: "text-sm" }, isConnected ? 'Live Updates' : 'Offline')),
+                    React.createElement("p", { className: "text-xs text-purple-200 mt-1" },
+                        "Last updated: ",
+                        lastUpdate.toLocaleTimeString())))),
         React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" },
             React.createElement(Card, { className: "p-4" },
                 React.createElement("div", { className: "flex items-center" },

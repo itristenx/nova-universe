@@ -19,6 +19,7 @@ import websocketRouter from './routes/websocket.js';
 import helpscoutRouter from './routes/helpscout.js';
 import analyticsRouter from './routes/analytics.js';
 import monitoringRouter from './routes/monitoring.js';
+import kiosksRouter from './routes/kiosks.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -1718,6 +1719,7 @@ app.use('/api/v1/lore', loreRouter);       // Nova Lore - Knowledge Base
 app.use('/api/v1/pulse', pulseRouter);     // Nova Pulse - Technician Portal
 app.use('/api/v1/orbit', orbitRouter);     // Nova Orbit - End-User Portal
 app.use('/api/v1/synth', synthRouter);     // Nova Synth - AI Engine (Legacy)
+app.use('/api/v1/kiosks', kiosksRouter);   // Kiosk Management API
 app.use('/api/v2/synth', synthV2Router);   // Nova Synth - AI Engine (v2 - Full Spec)
 app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
 app.use('/api/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging

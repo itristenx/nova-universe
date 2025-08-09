@@ -118,20 +118,12 @@ export const UniversalLoginPage: React.FC = () => {
       const user = await api.me(token);
       login(token, user);
       
-      addToast({
-        type: 'success',
-        title: 'Login successful',
-        description: `Welcome back, ${user.name}!`,
-      });
+      addToast('success', `Welcome back, ${user.name}!`);
       
       navigate(redirectUrl);
     } catch (error) {
       console.error('SSO callback error:', error);
-      addToast({
-        type: 'error',
-        title: 'Login failed',
-        description: 'Invalid authentication token.',
-      });
+      addToast('error', 'Invalid authentication token.');
     } finally {
       setIsLoading(false);
     }
@@ -166,11 +158,7 @@ export const UniversalLoginPage: React.FC = () => {
       setCurrentStep('auth');
     } catch (error) {
       console.error('Discovery error:', error);
-      addToast({
-        type: 'error',
-        title: 'Discovery failed',
-        description: 'Unable to find authentication settings for this email.',
-      });
+      addToast('error', 'Unable to find authentication settings for this email.');
     } finally {
       setIsLoading(false);
     }
@@ -220,21 +208,13 @@ export const UniversalLoginPage: React.FC = () => {
         const user = data.user;
         login(data.token, user);
         
-        addToast({
-          type: 'success',
-          title: 'Login successful',
-          description: `Welcome back, ${user.name}!`,
-        });
+        addToast('success', `Welcome back, ${user.name}!`);
         
         navigate(data.redirectUrl || redirectUrl);
       }
     } catch (error) {
       console.error('Authentication error:', error);
-      addToast({
-        type: 'error',
-        title: 'Authentication failed',
-        description: 'Invalid credentials. Please try again.',
-      });
+      addToast('error', 'Invalid credentials. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -262,11 +242,7 @@ export const UniversalLoginPage: React.FC = () => {
       setMfaChallengeMessage(data.message);
     } catch (error) {
       console.error('MFA challenge error:', error);
-      addToast({
-        type: 'error',
-        title: 'MFA challenge failed',
-        description: 'Unable to send verification code.',
-      });
+      addToast('error', 'Unable to send verification code.');
     } finally {
       setIsLoading(false);
     }
@@ -296,20 +272,12 @@ export const UniversalLoginPage: React.FC = () => {
       const user = data.user;
       login(data.token, user);
       
-      addToast({
-        type: 'success',
-        title: 'Login successful',
-        description: `Welcome back, ${user.name}!`,
-      });
+      addToast('success', `Welcome back, ${user.name}!`);
       
       navigate(redirectUrl);
     } catch (error) {
       console.error('MFA verification error:', error);
-      addToast({
-        type: 'error',
-        title: 'Verification failed',
-        description: 'Invalid verification code. Please try again.',
-      });
+      addToast('error', 'Invalid verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }

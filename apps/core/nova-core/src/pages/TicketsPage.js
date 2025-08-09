@@ -1,16 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input } from '@heroui/react';
+import { Button, Card, Input, Chip } from '@heroui/react';
 import { MagnifyingGlassIcon, FunnelIcon, TrashIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { formatDate, getUrgencyColor, getStatusColor } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
+import { useWebSocket } from '@/hooks/useWebSocket';
 export const TicketsPage = () => {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [urgencyFilter, setUrgencyFilter] = useState('');
+    const [lastUpdate, setLastUpdate] = useState(new Date());
     const { addToast } = useToastStore();
+    // Setup WebSocket for real-time ticket updates
+    const { isConnected } = useWebSocket({
+        subscriptions: ['tickets'],
+        onMessage: (message) => {
+            console.log('Tickets page received update:', message);
+            setLastUpdate(new Date());
+            switch (message.type) {
+                case 'ticket_created':
+                    setTickets(prev => [message.data, ...prev]);
+                    addToast({
+                        type: 'info',
+                        title: 'New Ticket',
+                        description: `Ticket #${message.data.id} has been created`,
+                    });
+                    break;
+                case 'ticket_updated':
+                    setTickets(prev => prev.map(ticket => ticket.id === message.data.id ? { ...ticket, ...message.data } : ticket));
+                    break;
+                case 'ticket_deleted':
+                    setTickets(prev => prev.filter(ticket => ticket.id !== message.data.id));
+                    break;
+                default:
+                    console.log('Unhandled ticket message type:', message.type);
+            }
+        }
+    });
     useEffect(() => {
         loadTickets();
     }, []);
@@ -86,9 +114,15 @@ export const TicketsPage = () => {
     return (React.createElement("div", { className: "space-y-6" },
         React.createElement("div", { className: "flex justify-between items-start" },
             React.createElement("div", null,
-                React.createElement("h1", { className: "text-2xl font-bold text-gray-900" }, "Support Tickets"),
-                React.createElement("p", { className: "mt-1 text-sm text-gray-600" }, "Manage and track support requests from your kiosks")),
-            React.createElement(Button, { variant: "danger", onClick: clearAllTickets, disabled: tickets.length === 0 },
+                React.createElement("div", { className: "flex items-center space-x-3" },
+                    React.createElement("h1", { className: "text-2xl font-bold text-gray-900" }, "Support Tickets"),
+                    React.createElement(Chip, { color: isConnected ? "success" : "warning", variant: "flat", size: "sm", title: isConnected ? "Live updates enabled" : "Live updates offline" }, isConnected ? "🟢 Live" : "🟡 Offline")),
+                React.createElement("p", { className: "mt-1 text-sm text-gray-600" },
+                    "Manage and track support requests from your kiosks",
+                    isConnected && (React.createElement("span", { className: "ml-2 text-xs text-green-600" },
+                        "\u2022 Last updated: ",
+                        lastUpdate.toLocaleTimeString())))),
+            React.createElement(Button, { color: "danger", onClick: clearAllTickets, disabled: tickets.length === 0 },
                 React.createElement(TrashIcon, { className: "h-4 w-4 mr-2" }),
                 "Clear All")),
         React.createElement(Card, null,
@@ -146,6 +180,6 @@ export const TicketsPage = () => {
                         React.createElement("span", { className: `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(ticket.emailStatus)}` }, ticket.emailStatus)),
                     React.createElement("td", { className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500" }, formatDate(ticket.timestamp)),
                     React.createElement("td", { className: "px-6 py-4 whitespace-nowrap text-right text-sm font-medium" },
-                        React.createElement(Button, { variant: "default", size: "sm", onClick: () => deleteTicket(ticket.id), className: "text-red-600 hover:text-red-900" },
+                        React.createElement(Button, { variant: "light", size: "sm", onClick: () => deleteTicket(ticket.id), className: "text-red-600 hover:text-red-900" },
                             React.createElement(TrashIcon, { className: "h-4 w-4" })))))))))))));
 };

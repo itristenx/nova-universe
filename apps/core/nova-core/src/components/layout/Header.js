@@ -5,6 +5,7 @@ import { useApiHealth } from '@/hooks/useApiHealth';
 import { useConnectionNotifications } from '@/hooks/useConnectionNotifications';
 import { useToastStore } from '@/stores/toast';
 import { ServerConnectionModal } from '@/components/ServerConnectionModal';
+import { WebSocketStatus } from '@/components/WebSocketStatus';
 import { api } from '@/lib/api';
 export const Header = ({ onToggleSidebar }) => {
     const { isConnected } = useApiHealth();
@@ -123,6 +124,7 @@ export const Header = ({ onToggleSidebar }) => {
                 React.createElement("div", { className: "hidden lg:block" },
                     React.createElement("h1", { className: "text-lg font-semibold text-gray-900 dark:text-gray-100" }, "Dashboard"))),
             React.createElement("div", { className: "flex items-center space-x-4" },
+                React.createElement(WebSocketStatus, null),
                 React.createElement("div", { className: "relative", ref: dropdownRef },
                     React.createElement("button", { onClick: () => setIsDropdownOpen(!isDropdownOpen), disabled: loading, className: "flex items-center space-x-2 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-600 transition-colors duration-200 disabled:opacity-50" },
                         React.createElement("div", { className: `h-2 w-2 rounded-full ${getStatusColor(currentStatus)}` }),

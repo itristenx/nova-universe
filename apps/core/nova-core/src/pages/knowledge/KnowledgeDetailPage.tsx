@@ -24,7 +24,7 @@ const KnowledgeDetailPage: React.FC = () => {
     async function load() {
       try {
         setLoading(true);
-        const art = await api.getKnowledgeArticle(slug);
+        const art = await api.getKnowledgeArticle(slug!);
         setArticle(art);
         if (art) {
           const vers = await api.getKnowledgeVersions(art.id);
@@ -62,7 +62,7 @@ const KnowledgeDetailPage: React.FC = () => {
           )}
         </h1>
         {isEditor && (
-          <Button variant="secondary" onClick={() => navigate(`/knowledge/${slug}/edit`)}>
+          <Button variant="light" onClick={() => navigate(`/knowledge/${slug}/edit`)}>
             Edit
           </Button>
         )}
@@ -101,7 +101,7 @@ const KnowledgeDetailPage: React.FC = () => {
         {user && (
           <div className="space-y-2">
             <Textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Add a comment" />
-            <Button variant="primary" onClick={addComment} disabled={!comment.trim()}>
+            <Button variant="solid" onClick={addComment} disabled={!comment.trim()}>
               Post Comment
             </Button>
           </div>

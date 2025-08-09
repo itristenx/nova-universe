@@ -52,7 +52,7 @@ const KnowledgeDetailPage = () => {
             React.createElement("h1", { className: "text-2xl font-bold text-gray-900" },
                 article.title,
                 article.verifiedSolution && (React.createElement("span", { className: "ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800" }, "Verified"))),
-            isEditor && (React.createElement(Button, { variant: "secondary", onClick: () => navigate(`/knowledge/${slug}/edit`) }, "Edit"))),
+            isEditor && (React.createElement(Button, { variant: "light", onClick: () => navigate(`/knowledge/${slug}/edit`) }, "Edit"))),
         React.createElement(Card, { className: "p-4 space-y-4" },
             React.createElement("div", { className: "prose max-w-none", dangerouslySetInnerHTML: { __html: DOMPurify.sanitize(article.content) } })),
         versions.length > 0 && (React.createElement(Card, { className: "p-4 space-y-2" },
@@ -75,6 +75,6 @@ const KnowledgeDetailPage = () => {
                 React.createElement("div", null, c.content)))),
             user && (React.createElement("div", { className: "space-y-2" },
                 React.createElement(Textarea, { value: comment, onChange: (e) => setComment(e.target.value), placeholder: "Add a comment" }),
-                React.createElement(Button, { variant: "primary", onClick: addComment, disabled: !comment.trim() }, "Post Comment"))))));
+                React.createElement(Button, { variant: "solid", onClick: addComment, disabled: !comment.trim() }, "Post Comment"))))));
 };
 export default KnowledgeDetailPage;

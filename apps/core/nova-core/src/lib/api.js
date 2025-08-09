@@ -1099,69 +1099,6 @@ class ApiClient {
         const response = await this.client.post(`/api/v1/lore/articles/${articleId}/versions`, data);
         return response.data.version;
     }
-    
-    // Analytics
-    async getAnalytics(timeRange = '7d') {
-        if (this.useMockMode) {
-            // Return comprehensive mock analytics data for development
-            return this.mockRequest({
-                ticketTrends: [
-                    { date: '2024-01-01', created: 25, resolved: 20, pending: 5 },
-                    { date: '2024-01-02', created: 30, resolved: 25, pending: 10 },
-                    { date: '2024-01-03', created: 20, resolved: 30, pending: 0 },
-                    { date: '2024-01-04', created: 35, resolved: 28, pending: 7 },
-                    { date: '2024-01-05', created: 40, resolved: 35, pending: 12 },
-                    { date: '2024-01-06', created: 28, resolved: 32, pending: 8 },
-                    { date: '2024-01-07', created: 32, resolved: 30, pending: 10 },
-                ],
-                kioskMetrics: [
-                    { name: 'Kiosk-001', uptime: 99.5, usage: 87, tickets: 45 },
-                    { name: 'Kiosk-002', uptime: 98.2, usage: 92, tickets: 52 },
-                    { name: 'Kiosk-003', uptime: 99.8, usage: 76, tickets: 38 },
-                    { name: 'Kiosk-004', uptime: 97.1, usage: 88, tickets: 41 },
-                    { name: 'Kiosk-005', uptime: 99.9, usage: 95, tickets: 58 },
-                ],
-                userActivity: [
-                    { hour: '00:00', active_users: 12, tickets_created: 2 },
-                    { hour: '02:00', active_users: 8, tickets_created: 1 },
-                    { hour: '04:00', active_users: 5, tickets_created: 0 },
-                    { hour: '06:00', active_users: 15, tickets_created: 3 },
-                    { hour: '08:00', active_users: 45, tickets_created: 12 },
-                    { hour: '10:00', active_users: 65, tickets_created: 18 },
-                    { hour: '12:00', active_users: 78, tickets_created: 22 },
-                    { hour: '14:00', active_users: 82, tickets_created: 25 },
-                    { hour: '16:00', active_users: 69, tickets_created: 19 },
-                    { hour: '18:00', active_users: 45, tickets_created: 11 },
-                    { hour: '20:00', active_users: 32, tickets_created: 8 },
-                    { hour: '22:00', active_users: 25, tickets_created: 5 },
-                ],
-                categoryDistribution: [
-                    { category: 'Hardware Issues', count: 145, percentage: 35 },
-                    { category: 'Software Problems', count: 120, percentage: 29 },
-                    { category: 'Network Issues', count: 78, percentage: 19 },
-                    { category: 'User Support', count: 52, percentage: 13 },
-                    { category: 'Other', count: 18, percentage: 4 },
-                ],
-                responseTimeMetrics: [
-                    { metric: 'Average Response Time', value: 2.5, target: 4.0, trend: -0.5 },
-                    { metric: 'First Response Time', value: 1.2, target: 2.0, trend: -0.3 },
-                    { metric: 'Resolution Time', value: 24.5, target: 48.0, trend: -2.1 },
-                    { metric: 'Customer Satisfaction', value: 4.7, target: 4.5, trend: 0.2 },
-                ],
-                systemPerformance: [
-                    { timestamp: '00:00', cpu_usage: 45, memory_usage: 62, disk_usage: 78, response_time: 120 },
-                    { timestamp: '04:00', cpu_usage: 32, memory_usage: 58, disk_usage: 78, response_time: 98 },
-                    { timestamp: '08:00', cpu_usage: 68, memory_usage: 72, disk_usage: 79, response_time: 145 },
-                    { timestamp: '12:00', cpu_usage: 85, memory_usage: 81, disk_usage: 80, response_time: 180 },
-                    { timestamp: '16:00', cpu_usage: 72, memory_usage: 75, disk_usage: 80, response_time: 165 },
-                    { timestamp: '20:00', cpu_usage: 54, memory_usage: 68, disk_usage: 81, response_time: 132 },
-                ],
-            });
-        }
-        const response = await this.client.get(`/api/v1/analytics?timeRange=${timeRange}`);
-        return response.data;
-    }
-    
     // API Keys
     async getApiKeys() {
         const response = await this.client.get('/api/v1/api-keys');
