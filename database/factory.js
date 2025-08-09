@@ -22,6 +22,10 @@ export class DatabaseFactory {
     try {
       logger.info('Initializing database factory...');
 
+      if (process.env.NODE_ENV === 'test' && process.env.SKIP_DB_TESTS === 'true') {
+        throw new Error('Skipping external DB initialization in test');
+      }
+
       const primaryValue = process.env.PRIMARY_DATABASE || this.config.primary || 'postgresql';
       const primaryDatabases = String(primaryValue)
         .split(',')
