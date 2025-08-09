@@ -606,13 +606,93 @@ router.post('/mfa/challenge', mfaRateLimit, [
       );
 
       if (mfaMethod === 'sms') {
-        // TODO: Implement SMS sending
-        challengeResponse.message = 'Verification code sent to your phone';
-        challengeResponse.maskedPhone = maskPhoneNumber(decrypt(config.phone_number_encrypted));
+        // Implement SMS sending via configured SMS provider
+        try {
+          const maskedPhone = maskPhoneNumber(decrypt(config.phone_number_encrypted));
+          
+          // Send SMS using configured provider (Twilio, AWS SNS, etc.)
+          if (process.env.SMS_PROVIDER === 'twilio' && process.env.TWILIO_ACCOUNT_SID) {
+            const twilio = require('twilio')(
+              process.env.TWILIO_ACCOUNT_SID,
+              process.env.TWILIO_AUTH_TOKEN
+            );
+            
+            await twilio.messages.create({
+              body: `Your Nova Universe verification code is: ${challengeCode}. This code expires in 5 minutes.`,
+              from: process.env.TWILIO_PHONE_NUMBER,
+              to: decrypt(config.phone_number_encrypted)
+            });
+            
+            logger.info(`SMS verification code sent to ${maskedPhone} for user ${userId}`);
+          } else {
+            // Mock SMS sending for development
+            logger.info(`[DEV] SMS verification code ${challengeCode} would be sent to ${maskedPhone}`);
+          }
+          
+          challengeResponse.message = 'Verification code sent to your phone';
+          challengeResponse.maskedPhone = maskedPhone;
+        } catch (smsError) {
+          logger.error('SMS sending failed:', smsError);
+          challengeResponse.message = 'Failed to send SMS verification code';
+          challengeResponse.error = 'SMS delivery failed';
+        }
       } else if (mfaMethod === 'email') {
-        // TODO: Implement email sending
-        challengeResponse.message = 'Verification code sent to your email';
-        challengeResponse.maskedEmail = maskEmail(decrypt(config.email_address_encrypted));
+        // Implement email sending via configured email provider
+        try {
+          const maskedEmail = maskEmail(decrypt(config.email_address_encrypted));
+          const userEmail = decrypt(config.email_address_encrypted);
+          
+          // Send email using nodemailer or configured provider
+          const nodemailer = require('nodemailer');
+          
+          // Use configured SMTP settings
+          const transporter = nodemailer.createTransporter({
+            host: process.env.SMTP_HOST || 'localhost',
+            port: process.env.SMTP_PORT || 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS
+            }
+          });
+          
+          const emailTemplate = `
+            <html>
+              <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: #3B82F6; color: white; padding: 20px; text-align: center;">
+                  <h1>Nova Universe</h1>
+                  <h2>Verification Code</h2>
+                </div>
+                <div style="padding: 20px;">
+                  <p>Your verification code is:</p>
+                  <div style="background: #F3F4F6; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 20px 0;">
+                    ${challengeCode}
+                  </div>
+                  <p>This code will expire in 5 minutes for security purposes.</p>
+                  <p>If you did not request this code, please contact your system administrator immediately.</p>
+                </div>
+                <div style="background: #F9FAFB; padding: 20px; text-align: center; font-size: 12px; color: #6B7280;">
+                  <p>This is an automated message from Nova Universe Support System.</p>
+                </div>
+              </body>
+            </html>
+          `;
+          
+          await transporter.sendMail({
+            from: process.env.SMTP_FROM || 'noreply@nova-universe.com',
+            to: userEmail,
+            subject: 'Nova Universe - Verification Code',
+            html: emailTemplate
+          });
+          
+          logger.info(`Email verification code sent to ${maskedEmail} for user ${userId}`);
+          challengeResponse.message = 'Verification code sent to your email';
+          challengeResponse.maskedEmail = maskedEmail;
+        } catch (emailError) {
+          logger.error('Email sending failed:', emailError);
+          challengeResponse.message = 'Failed to send email verification code';
+          challengeResponse.error = 'Email delivery failed';
+        }
       }
     }
 
@@ -971,12 +1051,12 @@ router.get('/sso/initiate/:provider', async (req, res) => {
     const config = ssoConfig.rows[0];
     
     if (config.provider === 'saml') {
-      // TODO: Implement SAML initiation
       const samlUrl = await initiateSAMLLogin(config, state, redirectUrl);
+      logger.info('SAML login initiated', { provider: config.name, state });
       res.redirect(samlUrl);
     } else if (config.provider === 'oidc') {
-      // TODO: Implement OIDC initiation
       const oidcUrl = await initiateOIDCLogin(config, state, redirectUrl);
+      logger.info('OIDC login initiated', { provider: config.name, state });
       res.redirect(oidcUrl);
     } else {
       res.status(400).json({
@@ -1005,15 +1085,83 @@ router.get('/sso/initiate/:provider', async (req, res) => {
 router.post('/sso/callback/:provider', async (req, res) => {
   try {
     const { provider } = req.params;
+    const { state } = req.body;
     
-    // TODO: Implement SSO callback handling
-    // This would process SAML responses or OIDC authorization codes
-    // Verify the response, extract user information, and create session
+    logger.info('SSO callback received', { provider, state });
+
+    // Verify state parameter to prevent CSRF attacks
+    const stateData = await verifyStateParameter(state);
+    if (!stateData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or expired state parameter'
+      });
+    }
+
+    let userProfile;
     
-    res.json({
-      success: true,
-      message: 'SSO callback handling not yet implemented'
-    });
+    if (provider === 'saml') {
+      userProfile = await processSAMLResponse(req.body);
+    } else if (provider === 'oidc') {
+      userProfile = await processOIDCResponse(req.body);
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: 'Unsupported SSO provider'
+      });
+    }
+
+    if (!userProfile || !userProfile.email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid SSO response - missing user profile'
+      });
+    }
+
+    // Find or create user based on SSO profile
+    const user = await findOrCreateSSOUser(userProfile, stateData.tenantId);
+    
+    if (!user) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to create or retrieve user account'
+      });
+    }
+
+    // Generate session token
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        tenantId: user.tenant_id,
+        roles: user.roles || [],
+        sessionId: crypto.randomUUID()
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Log successful SSO authentication
+    await logAuthEvent(
+      user.tenant_id,
+      user.id,
+      'sso_login',
+      'authentication',
+      `SSO login via ${provider}`,
+      req.ip,
+      req.headers['user-agent'],
+      true,
+      { provider, ssoUserId: userProfile.nameID || userProfile.sub }
+    );
+
+    // Clean up state
+    await cleanupStateParameter(state);
+
+    // Redirect to original URL or default dashboard
+    const redirectUrl = stateData.redirectUrl || '/dashboard';
+    const finalUrl = `${redirectUrl}?token=${token}&sso=success`;
+    
+    res.redirect(finalUrl);
 
   } catch (error) {
     logger.error('SSO callback error:', error);
@@ -1270,28 +1418,372 @@ async function checkTenantMfaRequirement(tenantId) {
 }
 
 async function checkRiskBasedMfaRequirement(userId, req) {
-  // TODO: Implement risk-based MFA logic
-  // Check factors like:
-  // - New device/browser
-  // - Unusual location
-  // - Time of access
-  // - Previous login patterns
-  return false;
-}
+  try {
+    const ipAddress = req.ip;
+    const userAgent = req.headers['user-agent'];
+    const currentTime = new Date();
+    
+    // Check for new device/browser fingerprint
+    const deviceFingerprint = crypto.createHash('sha256')
+      .update(userAgent + req.headers['accept-language'] + req.headers['accept-encoding'])
+      .digest('hex');
+    
+    // Get recent login history for risk analysis
+    const recentLogins = await db.query(
+      `SELECT ip_address, user_agent, created_at, metadata
+       FROM auth_audit_logs 
+       WHERE user_id = $1 AND event_type = 'login_success' 
+       AND created_at > NOW() - INTERVAL '30 days'
+       ORDER BY created_at DESC 
+       LIMIT 20`,
+      [userId]
+    );
 
-async function generateSSOUrl(ssoConfig, state, redirectUrl) {
-  // TODO: Implement SSO URL generation for different providers
-  return `#`;
+    let riskScore = 0;
+
+    // Factor 1: New IP address (30% of risk score)
+    const knownIps = recentLogins.rows.map(login => login.ip_address);
+    if (!knownIps.includes(ipAddress)) {
+      riskScore += 30;
+      logger.info('Risk factor: New IP address', { userId, ipAddress });
+    }
+
+    // Factor 2: New device/browser (25% of risk score)
+    const knownFingerprints = recentLogins.rows
+      .map(login => {
+        try {
+          return login.metadata ? JSON.parse(login.metadata).deviceFingerprint : null;
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+    
+    if (!knownFingerprints.includes(deviceFingerprint)) {
+      riskScore += 25;
+      logger.info('Risk factor: New device/browser', { userId, deviceFingerprint });
+    }
+
+    // Factor 3: Unusual time of access (20% of risk score)
+    const hour = currentTime.getHours();
+    const userLogins = recentLogins.rows.map(login => new Date(login.created_at).getHours());
+    const avgHour = userLogins.length > 0 ? userLogins.reduce((a, b) => a + b, 0) / userLogins.length : 12;
+    
+    if (Math.abs(hour - avgHour) > 6) {
+      riskScore += 20;
+      logger.info('Risk factor: Unusual time', { userId, hour, avgHour });
+    }
+
+    // Factor 4: High frequency of failed attempts (25% of risk score)
+    const recentFailures = await db.query(
+      `SELECT COUNT(*) as count
+       FROM auth_audit_logs 
+       WHERE (user_id = $1 OR ip_address = $2) 
+       AND event_type = 'login_failure' 
+       AND created_at > NOW() - INTERVAL '1 hour'`,
+      [userId, ipAddress]
+    );
+
+    if (parseInt(recentFailures.rows[0].count) > 3) {
+      riskScore += 25;
+      logger.info('Risk factor: Recent failures', { userId, failures: recentFailures.rows[0].count });
+    }
+
+    logger.info('Risk assessment completed', { userId, riskScore });
+
+    // Require MFA if risk score > 50
+    return riskScore > 50;
+
+  } catch (error) {
+    logger.error('Risk assessment error:', error);
+    // Default to requiring MFA on error for security
+    return true;
+  }
 }
 
 async function initiateSAMLLogin(config, state, redirectUrl) {
-  // TODO: Implement SAML login initiation
-  return `#`;
+  try {
+    const { SamlStrategy } = await import('@node-saml/passport-saml');
+    
+    const samlConfig = {
+      entryPoint: config.metadata.entryPoint || config.metadata.sso_url,
+      issuer: config.metadata.issuer || process.env.SAML_ISSUER,
+      callbackUrl: config.metadata.callbackUrl || `${process.env.API_BASE_URL}/api/v1/helix/login/sso/callback/saml`,
+      cert: config.metadata.cert,
+      identifierFormat: config.metadata.identifierFormat || 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+      acceptedClockSkewMs: 5000,
+      authnContext: ['urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport'],
+      forceAuthn: false,
+      wantAssertionsSigned: true,
+      wantAuthnResponseSigned: true,
+      signatureAlgorithm: 'sha256',
+      digestAlgorithm: 'sha256'
+    };
+
+    const strategy = new SamlStrategy(samlConfig, () => {});
+    
+    // Generate SAML request URL
+    const requestUrl = await new Promise((resolve, reject) => {
+      strategy.authenticate(
+        { 
+          query: { RelayState: state },
+          method: 'GET' 
+        },
+        (err, user, info) => {
+          if (err) return reject(err);
+          if (info && info.redirectUrl) {
+            resolve(info.redirectUrl);
+          } else {
+            reject(new Error('Failed to generate SAML request URL'));
+          }
+        }
+      );
+    });
+
+    return requestUrl;
+  } catch (error) {
+    logger.error('SAML initiation error:', error);
+    throw new Error('Failed to initiate SAML login');
+  }
 }
 
 async function initiateOIDCLogin(config, state, redirectUrl) {
-  // TODO: Implement OIDC login initiation
-  return `#`;
+  try {
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: config.metadata.client_id,
+      redirect_uri: config.metadata.redirect_uri || `${process.env.API_BASE_URL}/api/v1/helix/login/sso/callback/oidc`,
+      scope: config.metadata.scope || 'openid profile email',
+      state: state,
+      nonce: crypto.randomUUID()
+    });
+
+    // Add optional parameters
+    if (config.metadata.prompt) {
+      params.append('prompt', config.metadata.prompt);
+    }
+    
+    if (config.metadata.max_age) {
+      params.append('max_age', config.metadata.max_age);
+    }
+
+    if (config.metadata.ui_locales) {
+      params.append('ui_locales', config.metadata.ui_locales);
+    }
+
+    const authUrl = config.metadata.authorization_endpoint || config.metadata.auth_url;
+    if (!authUrl) {
+      throw new Error('Missing OIDC authorization endpoint');
+    }
+
+    const fullUrl = `${authUrl}?${params.toString()}`;
+    
+    logger.info('OIDC login URL generated', { 
+      provider: config.name,
+      client_id: config.metadata.client_id,
+      state 
+    });
+
+    return fullUrl;
+  } catch (error) {
+    logger.error('OIDC initiation error:', error);
+    throw new Error('Failed to initiate OIDC login');
+  }
+}
+
+async function processSAMLResponse(requestBody) {
+  try {
+    const { SamlStrategy } = await import('@node-saml/passport-saml');
+    
+    // This would typically be configured based on the specific SAML provider
+    // For now, we'll extract user information from the SAML response
+    const samlResponse = requestBody.SAMLResponse;
+    if (!samlResponse) {
+      throw new Error('Missing SAML response');
+    }
+
+    // Decode and parse SAML response (simplified implementation)
+    const decodedResponse = Buffer.from(samlResponse, 'base64').toString('utf8');
+    
+    // Extract user profile information from SAML assertion
+    // This is a simplified parser - in production, use proper SAML library parsing
+    const emailMatch = decodedResponse.match(/<saml:Attribute Name="http:\/\/schemas\.xmlsoap\.org\/ws\/2005\/05\/identity\/claims\/emailaddress"[^>]*>[\s\S]*?<saml:AttributeValue[^>]*>(.*?)<\/saml:AttributeValue>/i);
+    const nameMatch = decodedResponse.match(/<saml:Attribute Name="http:\/\/schemas\.xmlsoap\.org\/ws\/2005\/05\/identity\/claims\/name"[^>]*>[\s\S]*?<saml:AttributeValue[^>]*>(.*?)<\/saml:AttributeValue>/i);
+    const nameIdMatch = decodedResponse.match(/<saml:NameID[^>]*>(.*?)<\/saml:NameID>/i);
+
+    return {
+      nameID: nameIdMatch ? nameIdMatch[1] : null,
+      email: emailMatch ? emailMatch[1] : (nameIdMatch ? nameIdMatch[1] : null),
+      name: nameMatch ? nameMatch[1] : null,
+      provider: 'saml'
+    };
+  } catch (error) {
+    logger.error('SAML response processing error:', error);
+    throw new Error('Failed to process SAML response');
+  }
+}
+
+async function processOIDCResponse(requestBody) {
+  try {
+    const { code, state } = requestBody;
+    
+    if (!code) {
+      throw new Error('Missing authorization code');
+    }
+
+    // Get the OIDC configuration for token exchange
+    const stateData = await verifyStateParameter(state);
+    if (!stateData) {
+      throw new Error('Invalid state parameter');
+    }
+
+    const ssoConfig = await db.query(
+      'SELECT * FROM sso_configurations WHERE tenant_id = $1 AND provider = $2 AND active = true',
+      [stateData.tenantId, 'oidc']
+    );
+
+    if (ssoConfig.rows.length === 0) {
+      throw new Error('OIDC configuration not found');
+    }
+
+    const config = ssoConfig.rows[0];
+
+    // Exchange authorization code for access token
+    const tokenResponse = await fetch(config.metadata.token_endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: config.metadata.redirect_uri,
+        client_id: config.metadata.client_id,
+        client_secret: config.metadata.client_secret
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error('Token exchange failed');
+    }
+
+    const tokens = await tokenResponse.json();
+
+    // Get user info from userinfo endpoint
+    const userInfoResponse = await fetch(config.metadata.userinfo_endpoint, {
+      headers: {
+        'Authorization': `Bearer ${tokens.access_token}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!userInfoResponse.ok) {
+      throw new Error('Failed to fetch user info');
+    }
+
+    const userInfo = await userInfoResponse.json();
+
+    return {
+      sub: userInfo.sub,
+      email: userInfo.email,
+      name: userInfo.name || userInfo.given_name + ' ' + userInfo.family_name,
+      provider: 'oidc',
+      accessToken: tokens.access_token,
+      idToken: tokens.id_token
+    };
+  } catch (error) {
+    logger.error('OIDC response processing error:', error);
+    throw new Error('Failed to process OIDC response');
+  }
+}
+
+async function findOrCreateSSOUser(userProfile, tenantId) {
+  try {
+    // First, try to find existing user by email
+    const existingUser = await db.query(
+      'SELECT * FROM users WHERE email = $1 AND tenant_id = $2',
+      [userProfile.email, tenantId]
+    );
+
+    if (existingUser.rows.length > 0) {
+      const user = existingUser.rows[0];
+      
+      // Update last login and SSO information
+      await db.query(
+        `UPDATE users 
+         SET last_login = NOW(), 
+             sso_provider = $1, 
+             sso_user_id = $2,
+             updated_at = NOW()
+         WHERE id = $3`,
+        [userProfile.provider, userProfile.nameID || userProfile.sub, user.id]
+      );
+
+      return user;
+    }
+
+    // Create new user from SSO profile
+    const newUser = await db.query(
+      `INSERT INTO users (
+        tenant_id, email, name, sso_provider, sso_user_id, 
+        verified, created_at, updated_at, last_login
+      ) VALUES ($1, $2, $3, $4, $5, true, NOW(), NOW(), NOW())
+      RETURNING *`,
+      [
+        tenantId,
+        userProfile.email,
+        userProfile.name || userProfile.email,
+        userProfile.provider,
+        userProfile.nameID || userProfile.sub
+      ]
+    );
+
+    // Assign default roles for SSO users
+    await db.query(
+      'INSERT INTO user_roles (user_id, role_id) SELECT $1, id FROM roles WHERE name = $2 AND tenant_id = $3',
+      [newUser.rows[0].id, 'user', tenantId]
+    );
+
+    logger.info('New SSO user created', { 
+      userId: newUser.rows[0].id, 
+      email: userProfile.email,
+      provider: userProfile.provider 
+    });
+
+    return newUser.rows[0];
+  } catch (error) {
+    logger.error('Error finding/creating SSO user:', error);
+    throw new Error('Failed to process SSO user');
+  }
+}
+
+async function verifyStateParameter(state) {
+  try {
+    if (!state) return null;
+
+    const stateResult = await db.query(
+      'SELECT * FROM auth_states WHERE state = $1 AND expires_at > NOW()',
+      [state]
+    );
+
+    if (stateResult.rows.length === 0) {
+      return null;
+    }
+
+    return stateResult.rows[0];
+  } catch (error) {
+    logger.error('State verification error:', error);
+    return null;
+  }
+}
+
+async function cleanupStateParameter(state) {
+  try {
+    await db.query('DELETE FROM auth_states WHERE state = $1', [state]);
+  } catch (error) {
+    logger.error('State cleanup error:', error);
+  }
 }
 
 export default router;

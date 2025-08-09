@@ -103,41 +103,18 @@ export const SmartQueueManagement: React.FC<Props> = ({
   
   const { isOpen: isRecommendationModalOpen, onOpen: onRecommendationModalOpen, onClose: onRecommendationModalClose } = useDisclosure()
 
-  // Mock data - replace with actual API calls
+  // Real API calls instead of mock data
   const { data: queues = [] } = useQuery({
     queryKey: ['queues'],
-    queryFn: async (): Promise<Queue[]> => [
-      {
-        id: 'general',
-        name: 'General Support',
-        description: 'General customer support and technical questions',
-        type: 'general',
-        slaTarget: 240, // 4 hours
-        rules: {
-          maxTicketsPerAgent: 8,
-          autoAssignment: true,
-          priorityWeighting: true,
-          skillMatching: false
-        },
-        agents: [
-          {
-            id: 'agent1',
-            name: 'Sarah Wilson',
-            status: 'available',
-            currentTickets: 5,
-            maxCapacity: 8,
-            skillTags: ['windows', 'networking', 'email'],
-            performance: {
-              avgResolutionTime: 180,
-              successRate: 94,
-              customerSatisfaction: 4.6
-            },
-            workload: { urgent: 1, high: 2, medium: 2, low: 0 }
-          },
-          {
-            id: 'agent2',
-            name: 'Mike Rodriguez',
-            status: 'busy',
+    queryFn: async (): Promise<Queue[]> => {
+      const response = await fetch('/api/v1/queues');
+      if (!response.ok) {
+        throw new Error('Failed to fetch queues');
+      }
+      const data = await response.json();
+      return data.queues || [];
+    }
+  });
             currentTickets: 7,
             maxCapacity: 8,
             skillTags: ['linux', 'database', 'api'],

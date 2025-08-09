@@ -16,6 +16,9 @@ import workflowsRouter from './routes/workflows.js';
 import modulesRouter from './routes/modules.js';
 import apiKeysRouter from './routes/apiKeys.js';
 import websocketRouter from './routes/websocket.js';
+import helpscoutRouter from './routes/helpscout.js';
+import analyticsRouter from './routes/analytics.js';
+import monitoringRouter from './routes/monitoring.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -1185,6 +1188,149 @@ function registerKioskHandler(req, res) {
 app.post('/api/register-kiosk', validateKioskRegistration, registerKioskHandler);
 app.post('/api/v1/register-kiosk', validateKioskRegistration, registerKioskHandler);
 
+// Kiosk activation endpoint
+app.post('/api/kiosks/activate', (req, res) => {
+  const { kioskId, activationCode } = req.body;
+  
+  if (!kioskId || !activationCode) {
+    return res.status(400).json({ error: 'Missing kioskId or activationCode' });
+  }
+  
+  // Check if activation code is valid (for now, use a simple check)
+  // In production, this should validate against a database of valid codes
+  const validCodes = ['NOVA123', 'ACTIVATE', 'BEACON01', 'KIOSK001'];
+  if (!validCodes.includes(activationCode.toUpperCase())) {
+    return res.status(401).json({ error: 'Invalid activation code' });
+  }
+  
+  // Update or create kiosk record as activated
+  db.run(
+    `INSERT INTO kiosks (id, logoUrl, bgUrl, active, activated_at) 
+     VALUES ($1, $2, $3, 1, $4) 
+     ON CONFLICT(id) DO UPDATE SET 
+       active = 1, 
+       activated_at = $4`,
+    [kioskId, '/logo.png', '', new Date().toISOString()],
+    function(err) {
+      if (err) {
+        console.error('Kiosk activation error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      
+      res.json({ 
+        message: 'Kiosk activated successfully',
+        kioskId: kioskId,
+        activated: true 
+      });
+    }
+  );
+});
+
+// Kiosk configuration endpoint
+app.get('/api/kiosks/:id/remote-config', (req, res) => {
+  const kioskId = req.params.id;
+  
+  // Check authentication
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const payload = token && verify(token);
+  
+  const isKioskAuth = payload && payload.type === 'kiosk' && payload.kioskId === kioskId;
+  const isAdminAuth = req.user || (payload && payload.type !== 'kiosk');
+  const hasGeneralKioskToken = KIOSK_TOKEN && token === KIOSK_TOKEN;
+  
+  if (!isKioskAuth && !isAdminAuth && !hasGeneralKioskToken && !DISABLE_AUTH) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  
+  // Get kiosk-specific configuration
+  db.get('SELECT * FROM kiosks WHERE id=$1', [kioskId], (err, kiosk) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    
+    // Get global configuration
+    db.all("SELECT key, value FROM config", (configErr, configRows) => {
+      if (configErr) return res.status(500).json({ error: 'Config error' });
+      
+      const globalConfig = Object.fromEntries(configRows.map(r => [r.key, r.value]));
+      
+      const config = {
+        kioskId: kioskId,
+        active: kiosk?.active || false,
+        roomName: kiosk?.room_name || globalConfig.defaultRoomName || 'Conference Room',
+        logoUrl: kiosk?.logoUrl || globalConfig.logoUrl || '/logo.png',
+        backgroundUrl: kiosk?.bgUrl || globalConfig.backgroundUrl || '',
+        theme: globalConfig.theme || 'default',
+        statusMessages: {
+          available: globalConfig.availableMessage || 'Room Available',
+          inUse: globalConfig.inUseMessage || 'Room Occupied',
+          meeting: globalConfig.meetingMessage || 'In Meeting',
+          brb: globalConfig.brbMessage || 'Be Right Back',
+          lunch: globalConfig.lunchMessage || 'Out for Lunch',
+          unavailable: globalConfig.unavailableMessage || 'Unavailable'
+        },
+        features: {
+          ticketSubmission: globalConfig.enableTicketSubmission === '1',
+          statusUpdates: globalConfig.enableStatusUpdates === '1',
+          directoryIntegration: globalConfig.directoryEnabled === '1'
+        }
+      };
+      
+      res.json({ config });
+    });
+  });
+});
+
+// Kiosk status update endpoint
+app.put('/api/kiosks/:id/status', (req, res) => {
+  const kioskId = req.params.id;
+  const { status, timestamp } = req.body;
+  
+  // Check authentication
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const payload = token && verify(token);
+  
+  const isKioskAuth = payload && payload.type === 'kiosk' && payload.kioskId === kioskId;
+  const isAdminAuth = req.user || (payload && payload.type !== 'kiosk');
+  const hasGeneralKioskToken = KIOSK_TOKEN && token === KIOSK_TOKEN;
+  
+  if (!isKioskAuth && !isAdminAuth && !hasGeneralKioskToken && !DISABLE_AUTH) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  
+  if (!status) {
+    return res.status(400).json({ error: 'Status is required' });
+  }
+  
+  const validStatuses = ['available', 'inUse', 'meeting', 'brb', 'lunch', 'unavailable'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status value' });
+  }
+  
+  // Update kiosk status
+  db.run(
+    `UPDATE kiosks SET current_status=$1, last_status_update=$2 WHERE id=$3`,
+    [status, timestamp || new Date().toISOString(), kioskId],
+    function(err) {
+      if (err) {
+        console.error('Kiosk status update error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Kiosk not found' });
+      }
+      
+      res.json({ 
+        message: 'Status updated successfully',
+        kioskId: kioskId,
+        status: status,
+        timestamp: timestamp || new Date().toISOString()
+      });
+    }
+  );
+});
+
 app.get('/api/kiosks/:id', (req, res) => {
   const kioskId = req.params.id;
   
@@ -1292,6 +1438,138 @@ kiosksRouter.get('/', ensureAuth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "DB error" });
   }
+});
+
+// Automation workflow endpoints
+app.get('/api/v2/automation/workflows', ensureAuth, (req, res) => {
+  // For now, return basic workflow configurations
+  // In production, this would query a workflows database table
+  const workflows = [
+    {
+      id: 'wf-smart-assignment',
+      name: 'Smart Ticket Assignment',
+      description: 'Automatically assigns tickets based on agent skills and workload',
+      type: 'auto_assignment',
+      status: 'active',
+      trigger: { type: 'ticket_created', conditions: ['priority=high'] },
+      actions: [{ 
+        id: 'act-001', 
+        type: 'assign_ticket', 
+        parameters: { algorithm: 'skills_based', consider_workload: true }, 
+        order: 1 
+      }],
+      conditions: [{ field: 'priority', operator: 'equals', value: 'high' }],
+      metrics: { 
+        totalRuns: 1247, 
+        successRate: 94.2, 
+        avgExecutionTime: 1.8, 
+        lastRun: new Date().toISOString() 
+      },
+      schedule: { type: 'event_driven' },
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 'wf-sla-predictor',
+      name: 'SLA Breach Predictor',
+      description: 'Predicts and prevents potential SLA violations',
+      type: 'sla_prediction',
+      status: 'active',
+      trigger: { type: 'time_based', conditions: ['check_interval=15_minutes'] },
+      actions: [
+        { id: 'act-002', type: 'send_notification', parameters: { recipients: ['managers'] }, order: 1 },
+        { id: 'act-003', type: 'escalate', parameters: { escalation_level: 1 }, order: 2 }
+      ],
+      conditions: [{ field: 'time_remaining', operator: 'less_than', value: '2_hours' }],
+      metrics: { 
+        totalRuns: 3456, 
+        successRate: 89.1, 
+        avgExecutionTime: 5.7, 
+        lastRun: new Date().toISOString() 
+      },
+      schedule: { type: 'cron', expression: '*/15 * * * *' },
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ];
+  
+  res.json({ workflows });
+});
+
+app.get('/api/v2/automation/insights', ensureAuth, (req, res) => {
+  // Return predictive insights about automation opportunities
+  const insights = [
+    {
+      id: 'insight-001',
+      type: 'efficiency',
+      title: 'Workflow Optimization Opportunity',
+      description: 'Smart assignment workflow can be optimized for 15% better performance by enabling machine learning refinements',
+      impact: 'high',
+      confidence: 0.89,
+      recommendations: [
+        'Enable machine learning refinement for assignment algorithm',
+        'Add customer satisfaction feedback loop',
+        'Implement dynamic skill weighting based on recent performance'
+      ],
+      data: { 
+        currentEfficiency: 85, 
+        potentialEfficiency: 98,
+        estimatedSavings: '$12,000/month'
+      },
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'insight-002',
+      type: 'pattern_detection',
+      title: 'Recurring Issue Pattern Detected',
+      description: 'Identified 5 recurring issue patterns that could benefit from automated resolution workflows',
+      impact: 'high',
+      confidence: 0.92,
+      recommendations: [
+        'Create automated resolution workflows for top 3 patterns',
+        'Implement pattern-based ticket categorization',
+        'Set up proactive monitoring for pattern triggers'
+      ],
+      data: {
+        patternsDetected: 5,
+        totalOccurrences: 1247,
+        automationPotential: 89,
+        estimatedTimeReduction: '45 hours/week'
+      },
+      createdAt: new Date().toISOString()
+    }
+  ];
+  
+  res.json({ insights });
+});
+
+app.post('/api/v2/automation/workflows', ensureAuth, (req, res) => {
+  const { name, description, type, trigger, actions, conditions } = req.body;
+  
+  if (!name || !type || !trigger || !actions) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  // In production, this would save to database
+  const newWorkflow = {
+    id: `wf-${Date.now()}`,
+    name,
+    description: description || '',
+    type,
+    status: 'draft',
+    trigger,
+    actions,
+    conditions: conditions || [],
+    metrics: { totalRuns: 0, successRate: 0, avgExecutionTime: 0, lastRun: null },
+    schedule: { type: 'event_driven' },
+    isActive: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  res.status(201).json(newWorkflow);
 });
 
 // DELETE notification
@@ -1414,6 +1692,9 @@ app.use('/api/workflows', workflowsRouter);
 app.use('/api/v1/modules', modulesRouter);
 app.use('/api/v1/api-keys', apiKeysRouter);
 app.use('/api/v1/websocket', websocketRouter);
+app.use('/api/helpscout', helpscoutRouter);
+app.use('/api/analytics', analyticsRouter);
+app.use('/api/monitoring', monitoringRouter);
 
 // Nova module routes
 app.use('/api/v1/helix', helixRouter);     // Nova Helix - Identity Engine

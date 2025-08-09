@@ -103,27 +103,26 @@ export const AnalyticsPage: React.FC = () => {
   const loadAnalytics = async () => {
     setLoading(true);
     try {
-      // For now, use mock data since the API endpoint doesn't exist yet
-      // const data = await api.getAnalytics(timeRange);
-      
-      // Generate mock analytics data
-      const mockData: AnalyticsData = {
-        ticketTrends: [
-          { date: '2024-01-01', created: 25, resolved: 20, pending: 5 },
-          { date: '2024-01-02', created: 30, resolved: 25, pending: 10 },
-          { date: '2024-01-03', created: 20, resolved: 30, pending: 0 },
-          { date: '2024-01-04', created: 35, resolved: 28, pending: 7 },
-          { date: '2024-01-05', created: 40, resolved: 35, pending: 12 },
-          { date: '2024-01-06', created: 28, resolved: 32, pending: 8 },
-          { date: '2024-01-07', created: 32, resolved: 30, pending: 10 },
-        ],
-        kioskMetrics: [
-          { name: 'Kiosk-001', uptime: 99.5, usage: 87, tickets: 45 },
-          { name: 'Kiosk-002', uptime: 98.2, usage: 92, tickets: 52 },
-          { name: 'Kiosk-003', uptime: 99.8, usage: 76, tickets: 38 },
-          { name: 'Kiosk-004', uptime: 97.1, usage: 88, tickets: 41 },
-          { name: 'Kiosk-005', uptime: 99.9, usage: 95, tickets: 58 },
-        ],
+      // Use real API call instead of mock data
+      const data = await api.getAnalytics(timeRange);
+      setAnalytics(data);
+    } catch (error) {
+      console.error('Failed to load analytics:', error);
+      // Fallback to minimal data on error
+      setAnalytics({
+        ticketTrends: [],
+        kioskMetrics: [],
+        userActivity: [],
+        categoryDistribution: [],
+        responseTimeMetrics: [],
+        systemPerformance: []
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
         userActivity: [
           { hour: '00:00', active_users: 12, tickets_created: 2 },
           { hour: '02:00', active_users: 8, tickets_created: 1 },

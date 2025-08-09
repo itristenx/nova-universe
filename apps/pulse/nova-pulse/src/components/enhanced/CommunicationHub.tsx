@@ -118,26 +118,18 @@ export const CommunicationHub: React.FC<Props> = ({
   const { isOpen: isTemplateModalOpen, onOpen: onTemplateModalOpen, onClose: onTemplateModalClose } = useDisclosure()
   const { isOpen: isEscalationModalOpen, onOpen: onEscalationModalOpen, onClose: onEscalationModalClose } = useDisclosure()
 
-  // Mock data - replace with actual API calls
+  // Real API calls instead of mock data
   const { data: messages = [] } = useQuery({
     queryKey: ['communication-messages', selectedTicket?.id],
-    queryFn: async (): Promise<CommunicationMessage[]> => [
-      {
-        id: '1',
-        type: 'email',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        from: {
-          id: 'customer1',
-          name: 'John Smith',
-          email: 'john.smith@company.com',
-          type: 'customer'
-        },
-        subject: 'Unable to access authentication service',
-        content: 'Hi, I\'m experiencing issues logging into the system. The authentication service seems to be down. Can you please help?',
-        ticketId: 'T-001',
-        priority: 'high',
-        status: 'unread',
-        tags: ['authentication', 'urgent'],
+    queryFn: async (): Promise<CommunicationMessage[]> => {
+      const response = await fetch(`/api/v1/communication/messages${selectedTicket?.id ? `?ticketId=${selectedTicket.id}` : ''}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch communication messages');
+      }
+      const data = await response.json();
+      return data.messages || [];
+    }
+  });
         isInternal: false
       },
       {

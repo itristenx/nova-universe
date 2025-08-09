@@ -56,13 +56,15 @@ class ConfigurationManager: ObservableObject {
     func activateKiosk(with code: String) async -> Bool {
         guard let serverConfig = serverConfiguration else { return false }
         
-        // TODO: Implement proper API call
-        let success = await APIService.shared.testConnection(serverURL: serverConfig.baseURL)
+        // Use proper API call for kiosk activation
+        let kioskId = Bundle.main.object(forInfoDictionaryKey: "KIOSK_ID") as? String ?? UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
+        let success = await APIService.shared.activateKiosk(id: kioskId, activationCode: code, serverURL: serverConfig.baseURL)
         
         if success {
             isActivated = true
             isDeactivated = false
             userDefaults.set(true, forKey: UserDefaultsKeys.isActivated)
+            userDefaults.set(kioskId, forKey: "kioskId")
             await refreshConfiguration()
         }
         
@@ -71,13 +73,44 @@ class ConfigurationManager: ObservableObject {
     
     // MARK: - Configuration Updates
     func refreshConfiguration() async {
-        guard serverConfiguration != nil, isActivated else { return }
+        guard let serverConfig = serverConfiguration, isActivated else { return }
         
-        // TODO: Implement proper API call to get kiosk configuration
-        // For now, create a basic configuration
-        let _ = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
+        // Get kiosk configuration from API
+        let kioskId = userDefaults.string(forKey: "kioskId") ?? Bundle.main.object(forInfoDictionaryKey: "KIOSK_ID") as? String ?? "unknown"
         
-        // Create a basic configuration if none exists
+        if let configData = await APIService.shared.getKioskConfiguration(id: kioskId, serverURL: serverConfig.baseURL) {
+            // Update local configuration with remote data
+            if let roomName = configData["roomName"] as? String {
+                userDefaults.set(roomName, forKey: "kioskRoomName")
+            }
+            
+            if let logoUrl = configData["logoUrl"] as? String {
+                userDefaults.set(logoUrl, forKey: "kioskLogoUrl")
+            }
+            
+            if let backgroundUrl = configData["backgroundUrl"] as? String {
+                userDefaults.set(backgroundUrl, forKey: "kioskBackgroundUrl")
+            }
+            
+            if let statusMessages = configData["statusMessages"] as? [String: String] {
+                for (key, message) in statusMessages {
+                    userDefaults.set(message, forKey: "statusMessage_\(key)")
+                }
+            }
+            
+            if let features = configData["features"] as? [String: Bool] {
+                for (key, enabled) in features {
+                    userDefaults.set(enabled, forKey: "feature_\(key)")
+                }
+            }
+            
+            // Notify UI of configuration update
+            NotificationCenter.default.post(name: .configurationUpdated, object: nil)
+        } else {
+            // Fallback to basic configuration if API call fails
+            let defaultRoomName = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
+            userDefaults.set(defaultRoomName, forKey: "kioskRoomName")
+        }
         if kioskConfiguration == nil {
             // We'll need to create this when we have the proper structure
             lastConfigUpdate = Date()

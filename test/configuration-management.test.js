@@ -7,8 +7,8 @@
  * 3. Correctly formats and displays configuration data
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 function testConfigurationManagement() {
   console.log('Testing Configuration Management Component...');

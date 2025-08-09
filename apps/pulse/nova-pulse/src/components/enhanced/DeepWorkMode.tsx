@@ -13,8 +13,41 @@ import {
   Modal,
   ModalContent,
   ModalHeader,
-  ModalBody,
-  ModalFooter,
+  ModalBody      // Calculate real productivity metrics
+      const sessionMinutes = sessionDuration / 60
+      const ticketCompletionRate = ticketsWorked.filter(t => t.status === 'completed').length / Math.max(ticketsWorked.length, 1)
+      const notesRate = quickNotes.length / Math.max(sessionMinutes, 1) * 10 // Notes per 10 minutes
+      const focusEfficiency = Math.max(0, 1 - (focusBreaks / Math.max(sessionMinutes / 30, 1))) // Breaks per 30 min
+      
+      // Productivity score calculation (0-100)
+      let productivityScore = 0
+      productivityScore += Math.min(30, sessionMinutes * 0.5) // Base time score (max 30 points)
+      productivityScore += ticketCompletionRate * 40 // Completion rate (max 40 points)  
+      productivityScore += Math.min(15, notesRate * 3) // Note-taking activity (max 15 points)
+      productivityScore += focusEfficiency * 15 // Focus maintenance (max 15 points)
+      
+      // Estimate distractions blocked based on session length and focus breaks
+      const expectedDistractions = Math.floor(sessionMinutes / 15) // Expected every 15 minutes
+      const actualBreaks = focusBreaks
+      const distractionsBlocked = Math.max(0, expectedDistractions - actualBreaks)
+
+      const session = {
+        id: Date.now().toString(),
+        startTime,
+        endTime: new Date(),
+        ticketsWorked,
+        notesCount: quickNotes.length,
+        distractionsBlocked,
+        productivityScore: Math.round(Math.min(100, productivityScore)),
+        focusBreaks,
+        goalAchieved: sessionDuration >= sessionGoalMinutes * 60,
+        metrics: {
+          sessionMinutes: Math.round(sessionMinutes),
+          ticketCompletionRate: Math.round(ticketCompletionRate * 100),
+          notesPerHour: Math.round(notesRate * 6),
+          focusEfficiency: Math.round(focusEfficiency * 100)
+        }
+      }oter,
   useDisclosure,
   Divider
 } from '@heroui/react'
@@ -109,39 +142,100 @@ export const DeepWorkMode: React.FC<Props> = ({
     }
   }, [isActive, isPaused])
 
-  // Mock AI suggestions generation
+  // AI suggestions generation using Nova Synth
   useEffect(() => {
+    let suggestionInterval: NodeJS.Timeout
+
     if (isActive && autoSuggestions && ticket) {
-      // Simulate AI suggestion generation
-      const mockSuggestions: AISuggestion[] = [
-        {
-          id: '1',
-          type: 'resolution',
-          title: 'Similar Issue Resolution',
-          description: 'Based on ticket #12345, try restarting the authentication service.',
-          confidence: 0.87,
-          actionable: true,
-          resourceUrl: '/kb/auth-restart'
-        },
-        {
-          id: '2',
-          type: 'knowledge_base',
-          title: 'Relevant Documentation',
-          description: 'Authentication troubleshooting guide updated 2 days ago.',
-          confidence: 0.92,
-          actionable: true,
-          resourceUrl: '/kb/auth-troubleshooting'
-        },
-        {
-          id: '3',
-          type: 'escalation',
-          title: 'Consider Escalation',
-          description: 'This issue type typically requires Level 2 support after 30 minutes.',
-          confidence: 0.73,
-          actionable: true
+      const generateAISuggestions = async () => {
+        try {
+          const response = await fetch('/api/v2/synth/tools/nova.ai.analyze_ticket', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+            body: JSON.stringify({
+              title: ticket.title,
+              description: ticket.description,
+              requesterEmail: ticket.requester_email,
+              requesterName: ticket.requester_name
+            })
+          })
+
+          if (response.ok) {
+            const analysis = await response.json()
+            
+            const suggestions: AISuggestion[] = []
+            
+            // Convert AI analysis to suggestions
+            if (analysis.suggestions) {
+              analysis.suggestions.forEach((suggestion: any, index: number) => {
+                suggestions.push({
+                  id: `ai-${index}`,
+                  type: 'resolution',
+                  title: 'AI Recommendation',
+                  description: suggestion.reason,
+                  confidence: 0.85,
+                  actionable: true
+                })
+              })
+            }
+            
+            // Add knowledge base suggestions
+            const kbResponse = await fetch('/api/v2/synth/tools/nova.lore.semantic_search', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+              },
+              body: JSON.stringify({
+                query: `${ticket.title} ${ticket.description}`.substring(0, 200),
+                limit: 3
+              })
+            })
+
+            if (kbResponse.ok) {
+              const kbResults = await kbResponse.json()
+              kbResults.articles?.forEach((article: any, index: number) => {
+                suggestions.push({
+                  id: `kb-${index}`,
+                  type: 'knowledge_base',
+                  title: article.title,
+                  description: `${article.content.substring(0, 100)}...`,
+                  confidence: article.relevance,
+                  actionable: true,
+                  resourceUrl: `/kb/${article.id}`
+                })
+              })
+            }
+
+            setAiSuggestions(suggestions)
+          }
+        } catch (error) {
+          console.error('Failed to generate AI suggestions:', error)
+          // Fallback to basic suggestions
+          setAiSuggestions([{
+            id: 'fallback',
+            type: 'knowledge_base',
+            title: 'Search Knowledge Base',
+            description: 'Search for solutions related to this issue.',
+            confidence: 0.5,
+            actionable: true,
+            resourceUrl: '/knowledge'
+          }])
         }
-      ]
-      setAiSuggestions(mockSuggestions)
+      }
+
+      // Generate initial suggestions
+      generateAISuggestions()
+      
+      // Refresh suggestions every 5 minutes during active session
+      suggestionInterval = setInterval(generateAISuggestions, 5 * 60 * 1000)
+    }
+
+    return () => {
+      if (suggestionInterval) clearInterval(suggestionInterval)
     }
   }, [isActive, autoSuggestions, ticket])
 
@@ -165,16 +259,40 @@ export const DeepWorkMode: React.FC<Props> = ({
 
   const stopSession = useCallback(() => {
     if (startTime) {
+      // Calculate real productivity metrics
+      const sessionMinutes = sessionDuration / 60
+      const ticketCompletionRate = ticketsWorked.filter((t: any) => t.status === 'completed').length / Math.max(ticketsWorked.length, 1)
+      const notesRate = quickNotes.length / Math.max(sessionMinutes, 1) * 10 // Notes per 10 minutes
+      const focusEfficiency = Math.max(0, 1 - (focusBreaks / Math.max(sessionMinutes / 30, 1))) // Breaks per 30 min
+      
+      // Productivity score calculation (0-100)
+      let productivityScore = 0
+      productivityScore += Math.min(30, sessionMinutes * 0.5) // Base time score (max 30 points)
+      productivityScore += ticketCompletionRate * 40 // Completion rate (max 40 points)  
+      productivityScore += Math.min(15, notesRate * 3) // Note-taking activity (max 15 points)
+      productivityScore += focusEfficiency * 15 // Focus maintenance (max 15 points)
+      
+      // Estimate distractions blocked based on session length and focus breaks
+      const expectedDistractions = Math.floor(sessionMinutes / 15) // Expected every 15 minutes
+      const actualBreaks = focusBreaks
+      const distractionsBlocked = Math.max(0, expectedDistractions - actualBreaks)
+
       const session: DeepWorkSession = {
         id: Date.now().toString(),
         startTime,
         endTime: new Date(),
         ticketsWorked,
         notesCount: quickNotes.length,
-        distractionsBlocked: Math.floor(sessionDuration / 300), // Mock distraction count
-        productivityScore: Math.min(100, Math.floor((sessionDuration / 60) * 1.5)), // Mock productivity score
+        distractionsBlocked,
+        productivityScore: Math.round(Math.min(100, productivityScore)),
         focusBreaks,
-        goalAchieved: sessionDuration >= sessionGoalMinutes * 60
+        goalAchieved: sessionDuration >= sessionGoalMinutes * 60,
+        metrics: {
+          sessionMinutes: Math.round(sessionMinutes),
+          ticketCompletionRate: Math.round(ticketCompletionRate * 100),
+          notesPerHour: Math.round(notesRate * 6),
+          focusEfficiency: Math.round(focusEfficiency * 100)
+        }
       }
       
       onSessionEnd?.(session)

@@ -93,7 +93,7 @@ Nova Universe includes comprehensive security features designed for enterprise d
 - Applied validation to all user-facing endpoints
 
 **Files Created**:
-- `cueit-api/middleware/validation.js` - Input validation middleware
+- `nova-api/middleware/validation.js` - Input validation middleware
 
 #### 5. Rate Limiting & DoS Protection (Medium Risk)
 **Issues**: 
@@ -108,7 +108,7 @@ Nova Universe includes comprehensive security features designed for enterprise d
 - Applied rate limiting to login, registration, and API endpoints
 
 **Files Created**:
-- `cueit-api/middleware/rateLimiter.js` - Rate limiting middleware
+- `nova-api/middleware/rateLimiter.js` - Rate limiting middleware
 
 #### 6. Security Headers & General Security (Medium Risk)
 **Issues**: 
@@ -124,7 +124,7 @@ Nova Universe includes comprehensive security features designed for enterprise d
 - Added HTTPS-only settings for production
 
 **Files Created**:
-- `cueit-api/middleware/security.js` - Security headers and logging
+- `nova-api/middleware/security.js` - Security headers and logging
 
 #### 7. Database Schema Improvements (Low Risk)
 **Issues**: 
@@ -138,7 +138,7 @@ Nova Universe includes comprehensive security features designed for enterprise d
 - Added timestamp tracking for security auditing
 
 **Files Modified**:
-- `cueit-api/db.js` - Enhanced database schema
+- `nova-api/db.js` - Enhanced database schema
 
 #### 8. Environment Configuration Security (Medium Risk)
 **Issues**: 
@@ -152,7 +152,7 @@ Nova Universe includes comprehensive security features designed for enterprise d
 - Proper configuration management
 
 **Files Created**:
-- `cueit-api/config/environment.js` - Environment validation
+- `nova-api/config/environment.js` - Environment validation
 
 ## Security Improvements Applied
 

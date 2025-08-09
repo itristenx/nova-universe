@@ -94,10 +94,36 @@ class APIService {
         return nil
     }
     
-    // MARK: - Status Configuration (TODO: Implement when types are resolved)
-    /*
-    func getStatusConfiguration(kioskId: String, serverURL: String) async -> StatusConfiguration? {
-        guard let url = URL(string: "\(serverURL)/api/status-config?kioskId=\(kioskId)") else { return nil }
+    // MARK: - Kiosk Activation
+    func activateKiosk(id: String, activationCode: String, serverURL: String) async -> Bool {
+        guard let url = URL(string: "\(serverURL)/api/kiosks/activate") else { return false }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let payload = [
+            "kioskId": id,
+            "activationCode": activationCode
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+            let (_, response) = try await session.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                return httpResponse.statusCode == 200
+            }
+        } catch {
+            print("Kiosk activation failed: \(error)")
+        }
+        
+        return false
+    }
+    
+    // MARK: - Kiosk Configuration
+    func getKioskConfiguration(id: String, serverURL: String) async -> [String: Any]? {
+        guard let url = URL(string: "\(serverURL)/api/kiosks/\(id)/remote-config") else { return nil }
         
         var request = URLRequest(url: url)
         request.setValue("Bearer \(getKioskToken())", forHTTPHeaderField: "Authorization")
@@ -108,8 +134,34 @@ class APIService {
             if let httpResponse = response as? HTTPURLResponse,
                httpResponse.statusCode == 200 {
                 
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                    return parseStatusConfiguration(from: json)
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let config = json["config"] as? [String: Any] {
+                    return config
+                }
+            }
+        } catch {
+            print("Configuration fetch failed: \(error)")
+        }
+        
+        return nil
+    }
+
+    // MARK: - Status Configuration
+    func getStatusConfiguration(kioskId: String, serverURL: String) async -> StatusConfiguration? {
+        guard let url = URL(string: "\(serverURL)/api/kiosks/\(kioskId)/remote-config") else { return nil }
+        
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(getKioskToken())", forHTTPHeaderField: "Authorization")
+        
+        do {
+            let (data, response) = try await session.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200 {
+                
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let config = json["config"] as? [String: Any] {
+                    return parseStatusConfiguration(from: config)
                 }
             }
         } catch {
@@ -145,7 +197,6 @@ class APIService {
         
         return false
     }
-    */
     
     // MARK: - Activation
     func activateKiosk(id: String, activationCode: String, serverURL: String) async -> Bool {
@@ -234,16 +285,16 @@ class APIService {
         return Bundle.main.object(forInfoDictionaryKey: "KIOSK_TOKEN") as? String ?? ""
     }
     
-    /*
     private func parseStatusConfiguration(from data: [String: Any]) -> StatusConfiguration {
+        let statusMessages = data["statusMessages"] as? [String: Any] ?? [:]
+        
         return StatusConfiguration(
-            availableMessage: data["availableMessage"] as? String ?? "Ready to help",
-            inUseMessage: data["inUseMessage"] as? String ?? "Room occupied",
-            meetingMessage: data["meetingMessage"] as? String ?? "In a meeting",
-            brbMessage: data["brbMessage"] as? String ?? "Will be back shortly",
-            lunchMessage: data["lunchMessage"] as? String ?? "Out for lunch",
-            unavailableMessage: data["unavailableMessage"] as? String ?? "Status unknown"
+            availableMessage: statusMessages["available"] as? String ?? "Ready to help",
+            inUseMessage: statusMessages["inUse"] as? String ?? "Room occupied",
+            meetingMessage: statusMessages["meeting"] as? String ?? "In a meeting",
+            brbMessage: statusMessages["brb"] as? String ?? "Will be back shortly",
+            lunchMessage: statusMessages["lunch"] as? String ?? "Out for lunch",
+            unavailableMessage: statusMessages["unavailable"] as? String ?? "Status unknown"
         )
     }
-    */
 }

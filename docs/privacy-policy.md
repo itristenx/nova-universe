@@ -1,6 +1,6 @@
 # Privacy Policy
 
-CueIT collects a minimal amount of information when a ticket is submitted through the kiosk or web interfaces. The following data is sent to the CueIT backend:
+Nova Universe collects a minimal amount of information when a ticket is submitted through the kiosk or web interfaces. The following data is sent to the Nova Universe backend:
 
 - Name
 - Email address

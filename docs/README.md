@@ -214,7 +214,7 @@ See [SECURITY_FIXES.md](SECURITY_FIXES.md) for detailed security implementation.
 # Run tests for each component from the repository root
 pnpm --filter nova-universe-api test
 pnpm --filter nova-core-admin test
-pnpm --filter cueit-slack test
+pnpm --filter nova-comms test
 ```
 
 ### Development Scripts

@@ -4,7 +4,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --config ./jest.config.ts",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --config ./jest.config.mjs",
     "test:simple": "node --test",
     "start": "node index.js",
     "cli": "node cli/index.js",

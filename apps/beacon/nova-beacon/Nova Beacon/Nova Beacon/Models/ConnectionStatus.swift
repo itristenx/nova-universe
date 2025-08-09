@@ -178,6 +178,7 @@ extension Notification.Name {
     static let connectionRetryRequested = Notification.Name("connectionRetryRequested")
     static let connectionHealthCheck = Notification.Name("connectionHealthCheck")
     static let connectionStatusChanged = Notification.Name("connectionStatusChanged")
+    static let configurationUpdated = Notification.Name("configurationUpdated")
 }
 
 // MARK: - Connection Error Types

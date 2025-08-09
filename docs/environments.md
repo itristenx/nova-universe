@@ -33,7 +33,7 @@ To run all services over HTTPS during development:
    openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365
    ```
 
-2. Set `TLS_CERT_PATH` and `TLS_KEY_PATH` in `cueit-api/.env` to the paths of `cert.pem` and `key.pem`.
+2. Set `TLS_CERT_PATH` and `TLS_KEY_PATH` in `nova-api/.env` to the paths of `cert.pem` and `key.pem`.
 3. Update the URLs in the other `.env` files to use `https://localhost` as shown in the examples.
 
 ## Production Deployment

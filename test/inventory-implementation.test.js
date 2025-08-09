@@ -500,6 +500,8 @@ TEST002,SN987654321,HP ProDesk 400,Finance,active`;
       expect(validationResult.errors).toHaveLength(0);
     });
 
+    });
+
     it('should detect validation errors', async () => {
       const testData = [
         {

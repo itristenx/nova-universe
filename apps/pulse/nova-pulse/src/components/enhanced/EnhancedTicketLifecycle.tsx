@@ -107,114 +107,42 @@ export const EnhancedTicketLifecycle: React.FC<Props> = ({
   const { isOpen: isTransitionModalOpen, onOpen: onTransitionModalOpen, onClose: onTransitionModalClose } = useDisclosure()
   const { isOpen: isLinkModalOpen, onOpen: onLinkModalOpen, onClose: onLinkModalClose } = useDisclosure()
 
-  // Mock data - replace with actual API calls
+  // Real API calls instead of mock data
   const { data: activities = [] } = useQuery({
     queryKey: ['ticket-activities', ticket.id],
-    queryFn: async (): Promise<TicketActivity[]> => [
-      {
-        id: '1',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        type: 'status_change',
-        user: { id: 'user1', name: 'John Smith' },
-        title: 'Status changed from Open to In Progress',
-        metadata: { oldValue: 'open', newValue: 'in-progress' }
-      },
-      {
-        id: '2',
-        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-        type: 'comment',
-        user: { id: 'user2', name: 'Sarah Wilson' },
-        title: 'Added comment',
-        description: 'I\'ve reproduced the issue and identified the root cause. Working on a fix now.'
-      },
-      {
-        id: '3',
-        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-        type: 'assignment',
-        user: { id: 'system', name: 'System' },
-        title: 'Ticket assigned to Sarah Wilson',
-        metadata: { newValue: 'Sarah Wilson' }
-      },
-      {
-        id: '4',
-        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-        type: 'link_added',
-        user: { id: 'user1', name: 'John Smith' },
-        title: 'Linked related ticket',
-        description: 'Similar authentication issue reported',
-        metadata: { linkedTicketId: 'T-001' }
+    queryFn: async (): Promise<TicketActivity[]> => {
+      const response = await fetch(`/api/v1/tickets/${ticket.id}/activities`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch ticket activities');
       }
-    ]
-  })
+      const data = await response.json();
+      return data.activities || [];
+    }
+  });
 
   const { data: relatedTickets = [] } = useQuery({
     queryKey: ['related-tickets', ticket.id],
-    queryFn: async (): Promise<RelatedTicket[]> => [
-      {
-        id: '1',
-        ticketId: 'T-001',
-        title: 'Authentication service timeouts',
-        status: 'resolved',
-        priority: 'high',
-        relationship: 'related',
-        similarity: 0.87
-      },
-      {
-        id: '2',
-        ticketId: 'T-003',
-        title: 'User login issues after maintenance',
-        status: 'open',
-        priority: 'medium',
-        relationship: 'duplicate',
-        similarity: 0.94
-      },
-      {
-        id: '3',
-        ticketId: 'T-005',
-        title: 'Database connection pool exhaustion',
-        status: 'in-progress',
-        priority: 'high',
-        relationship: 'blocks',
-        similarity: 0.76
+    queryFn: async (): Promise<RelatedTicket[]> => {
+      const response = await fetch(`/api/v1/tickets/${ticket.id}/related`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch related tickets');
       }
-    ]
-  })
+      const data = await response.json();
+      return data.relatedTickets || [];
+    }
+  });
 
   const { data: knowledgeArticles = [] } = useQuery({
     queryKey: ['knowledge-articles', ticket.id],
-    queryFn: async (): Promise<KnowledgeBaseArticle[]> => [
-      {
-        id: '1',
-        title: 'Troubleshooting Authentication Service Issues',
-        excerpt: 'Step-by-step guide to diagnose and resolve common authentication problems...',
-        url: '/kb/auth-troubleshooting',
-        relevanceScore: 0.92,
-        tags: ['authentication', 'troubleshooting', 'service'],
-        lastUpdated: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-        views: 1247
-      },
-      {
-        id: '2',
-        title: 'Database Connection Best Practices',
-        excerpt: 'Optimize database connections and prevent connection pool issues...',
-        url: '/kb/database-connections',
-        relevanceScore: 0.78,
-        tags: ['database', 'performance', 'connections'],
-        lastUpdated: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
-        views: 892
-      },
-      {
-        id: '3',
-        title: 'Service Restart Procedures',
-        excerpt: 'Safe procedures for restarting critical services without downtime...',
-        url: '/kb/service-restart',
-        relevanceScore: 0.71,
-        tags: ['maintenance', 'procedures', 'services'],
-        lastUpdated: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 2 weeks ago
-        views: 634
+    queryFn: async (): Promise<KnowledgeBaseArticle[]> => {
+      const response = await fetch(`/api/v1/tickets/${ticket.id}/knowledge-suggestions`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch knowledge articles');
       }
-    ]
-  })
+      const data = await response.json();
+      return data.articles || [];
+    }
+  });
 
   const statusTransitions: StatusTransition[] = [
     {
