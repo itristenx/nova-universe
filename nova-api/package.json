@@ -4,7 +4,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_NO_WARNINGS=1 mocha --recursive --timeout 10000 --exit",
+    "test": "NODE_ENV=test NODE_NO_WARNINGS=1 mocha --recursive --timeout 10000 --exit",
     "test:simple": "node --test",
     "start": "node index.js",
     "cli": "node cli/index.js",

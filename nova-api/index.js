@@ -1765,11 +1765,13 @@ app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
 
-app.listen(PORT, () => {
-  console.log(`🚀 CueIT API Server running on port ${PORT}`);
-  console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
-  console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`🚀 CueIT API Server running on port ${PORT}`);
+    console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
+    console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
+  });
+}
 
 // Global error handler
 app.use((err, req, res, next) => {
@@ -1785,3 +1787,5 @@ app.use((err, req, res, next) => {
     : { error: err.message || 'Internal Server Error', stack: err.stack };
   res.status(err.status || 500).json(errorResponse);
 });
+
+export default app;

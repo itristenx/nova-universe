@@ -21,9 +21,13 @@ export class DatabaseFactory {
 
     try {
       logger.info('Initializing database factory...');
-      
-      const primaryDatabases = this.config.primaryDatabase.split(',').map(db => db.trim());
-      
+
+      const primaryValue = process.env.PRIMARY_DATABASE || this.config.primary || 'postgresql';
+      const primaryDatabases = String(primaryValue)
+        .split(',')
+        .map(db => db.trim())
+        .filter(Boolean);
+
       // Initialize PostgreSQL if enabled
       if (primaryDatabases.includes('postgresql')) {
         this.postgresql = new PostgreSQLManager();
@@ -135,21 +139,21 @@ export class DatabaseFactory {
   }
 
   /**
-   * Close all database connections
+   * Close all connections
    */
   async close() {
-    const promises = [];
-
-    if (this.postgresql) {
-      promises.push(this.postgresql.close());
+    try {
+      if (this.postgresql) {
+        await this.postgresql.close();
+      }
+      if (this.mongodb) {
+        await this.mongodb.close();
+      }
+      logger.info('Database factory closed');
+    } catch (error) {
+      logger.warn('Error closing database factory:', error.message);
     }
-
-    if (this.mongodb) {
-      promises.push(this.mongodb.close());
-    }
-
-    await Promise.all(promises);
-    this.isInitialized = false;
-    logger.info('Database factory closed');
   }
 }
+
+export default DatabaseFactory;
