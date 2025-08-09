@@ -1,12 +1,4 @@
-#!/usr/import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Color codes for terminal output
-const colors = {v node
+#!/usr/bin/env node
 
 /**
  * Phase 3 Validation Script
@@ -16,6 +8,9 @@ const colors = {v node
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ANSI color codes for terminal output
 const colors = {
