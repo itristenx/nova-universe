@@ -41,10 +41,11 @@ usage() {
     echo "  -l, --list             List available backups"
     echo "  -h, --help             Show this help message"
     echo ""
+    echo "Environment:"
+    echo "  FORCE=true             Skip interactive confirmation prompts"
+    echo ""
     echo "Examples:"
-    echo "  $0 --list"
-    echo "  $0 --postgres /backups/postgres/nova_universe_20240315_120000.sql.gz"
-    echo "  $0 --mongodb /backups/mongodb/nova_universe_20240315_120000.tar.gz"
+    echo "  FORCE=true $0 --postgres /backups/postgres/nova_universe_20240315_120000.sql.gz"
 }
 
 # List available backups
@@ -87,13 +88,17 @@ restore_postgres() {
         error "PostgreSQL is not available at $POSTGRES_HOST:5432"
     fi
     
-    # Create a confirmation prompt
-    warn "This will COMPLETELY REPLACE the current database!"
-    read -p "Are you sure you want to continue? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        log "Restore cancelled by user"
-        exit 0
+    # Confirmation prompt (skip with FORCE=true)
+    if [[ "${FORCE:-}" != "true" ]]; then
+        warn "This will COMPLETELY REPLACE the current database!"
+        read -p "Are you sure you want to continue? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            log "Restore cancelled by user"
+            exit 0
+        fi
+    else
+        warn "FORCE=true set - skipping confirmation prompt"
     fi
     
     # Decompress and restore
