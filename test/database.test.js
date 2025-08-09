@@ -495,7 +495,7 @@ const testConfig = {
 });
 
 // Additional integration tests
-describe('Integration Tests', () => {
+(shouldSkipDbTests ? describe.skip : describe)('Integration Tests', () => {
   let dbFactory;
 
   before(async () => {

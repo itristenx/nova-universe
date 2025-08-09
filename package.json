@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "npm run test:root && npm run test:api && npm run test:comms",
-    "test:root": "node --test",
+    "test:root": "node --test test/**/*.test.js test/**/test-*.js",
     "test:api": "npm --prefix nova-api test",
     "test:comms": "npm --prefix nova-comms test || true"
   },
