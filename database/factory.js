@@ -21,9 +21,13 @@ export class DatabaseFactory {
 
     try {
       logger.info('Initializing database factory...');
-      
-      const primaryDatabases = this.config.primaryDatabase.split(',').map(db => db.trim());
-      
+
+      const configuredPrimary = this.config.primary ?? this.config.primaryDatabase ?? '';
+      const primaryDatabases = String(configuredPrimary)
+        .split(',')
+        .map((db) => db.trim())
+        .filter(Boolean);
+
       // Initialize PostgreSQL if enabled
       if (primaryDatabases.includes('postgresql')) {
         this.postgresql = new PostgreSQLManager();

@@ -5,7 +5,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import Table from 'cli-table3';
 import { 
   logger, 
@@ -271,7 +271,7 @@ async function createUser(userData) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const hashedPassword = bcrypt.hashSync(userData.password, 10);
 
     // Create user document
     const user = {
@@ -367,23 +367,16 @@ function displayUsersTable(users) {
 }
 
 // Update user
-async function updateUser(email, options) {
+async function updateUser(email, options = {}) {
   const spinner = createSpinner('Updating user...');
   spinner.start();
 
   try {
     const db = await connectDatabase();
-    
-    const user = await db.collection('users').findOne({ email });
-    if (!user) {
-      spinner.fail('User not found');
-      return;
-    }
-
     const updates = { updatedAt: new Date() };
 
     if (options.password) {
-      updates.password = await bcrypt.hash(options.password, 10);
+      updates.password = bcrypt.hashSync(options.password, 10);
     }
 
     if (options.role) {
@@ -396,26 +389,23 @@ async function updateUser(email, options) {
 
     if (options.activate) {
       updates.active = true;
-    } else if (options.deactivate) {
+    }
+
+    if (options.deactivate) {
       updates.active = false;
     }
 
-    await db.collection('users').updateOne(
+    const result = await db.collection('users').updateOne(
       { email },
       { $set: updates }
     );
 
-    spinner.succeed('User updated successfully');
-    
-    // Show updated user info
-    const updatedUser = await db.collection('users').findOne(
-      { email },
-      { projection: { password: 0 } }
-    );
-    
-    console.log(chalk.green('\n✅ Updated User:'));
-    displayUserInfo(updatedUser);
+    if (result.matchedCount === 0) {
+      spinner.fail('User not found');
+      return;
+    }
 
+    spinner.succeed('User updated successfully');
   } catch (error) {
     spinner.fail('Failed to update user');
     throw error;
@@ -476,63 +466,37 @@ async function searchUsers(query) {
 }
 
 // Reset user password
-async function resetUserPassword(email, options) {
+async function resetUserPassword(email, options = {}) {
   const spinner = createSpinner('Resetting password...');
   spinner.start();
 
   try {
     const db = await connectDatabase();
-    
-    const user = await db.collection('users').findOne({ email });
-    if (!user) {
+
+    let newPassword = options.password;
+    if (!newPassword && options.generate) {
+      newPassword = Math.random().toString(36).slice(-12);
+    }
+
+    if (!newPassword) {
+      spinner.fail('Password is required (or use --generate)');
+      return;
+    }
+
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+    const result = await db.collection('users').updateOne(
+      { email },
+      { $set: { password: hashedPassword, updatedAt: new Date() } }
+    );
+
+    if (result.matchedCount === 0) {
       spinner.fail('User not found');
       return;
     }
 
-    let newPassword = options.password;
-
-    if (options.generate) {
-      // Generate random password
-      newPassword = Math.random().toString(36).slice(-12);
-    } else if (!newPassword) {
-      // Prompt for password
-      const { password } = await inquirer.prompt([
-        {
-          type: 'password',
-          name: 'password',
-          message: 'New password:',
-          validate: (input) => {
-            if (!input) return 'Password is required';
-            if (input.length < 8) return 'Password must be at least 8 characters';
-            return true;
-          }
-        }
-      ]);
-      newPassword = password;
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    await db.collection('users').updateOne(
-      { email },
-      { 
-        $set: { 
-          password: hashedPassword,
-          updatedAt: new Date()
-        }
-      }
-    );
-
     spinner.succeed('Password reset successfully');
-    
-    console.log(chalk.green('\n✅ Password Reset Complete:'));
-    console.log(`   User: ${email}`);
-    if (options.generate) {
-      console.log(chalk.yellow(`   New Password: ${newPassword}`));
-      console.log(chalk.gray('   Please share this password securely with the user'));
-    }
-    console.log();
-
+    console.log(chalk.green(`\nNew password for ${email}: ${newPassword}\n`));
   } catch (error) {
     spinner.fail('Failed to reset password');
     throw error;
