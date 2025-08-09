@@ -1,65 +1,88 @@
 # Nova Universe API - Production Dockerfile
+# Multi-stage build for optimized production image
+
+# Stage 1: Build dependencies and application
 FROM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies for building
+# Install build dependencies
 RUN apk add --no-cache \
     python3 \
     make \
     g++ \
-    libc6-compat
+    linux-headers
 
 # Copy package files
 COPY package*.json ./
-COPY prisma ./prisma/
+COPY ../../package*.json ../../
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci --include=dev
 
 # Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
+# Build the application (if needed)
+RUN npm run build 2>/dev/null || echo "No build script found"
 
-# Production stage
-FROM node:20-alpine AS production
+# Remove dev dependencies
+RUN npm prune --production
 
-# Create app user
+# Stage 2: Production runtime
+FROM node:20-alpine AS runtime
+
+# Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nextjs -u 1001
 
 # Set working directory
 WORKDIR /app
 
-# Install production dependencies
+# Install production runtime dependencies
 RUN apk add --no-cache \
-    dumb-init \
+    tini \
     curl \
-    && rm -rf /var/cache/apk/*
+    dumb-init
 
 # Copy built application from builder stage
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
-COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
-COPY --chown=nodejs:nodejs . .
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
+COPY --from=builder --chown=nextjs:nodejs /app .
 
-# Create logs and uploads directories
-RUN mkdir -p /app/logs /app/uploads && \
-    chown -R nodejs:nodejs /app/logs /app/uploads
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/logs /app/uploads /app/temp && \
+    chown -R nextjs:nodejs /app/logs /app/uploads /app/temp
+
+# Set security permissions
+RUN chmod -R 755 /app && \
+    chmod -R 700 /app/logs /app/uploads /app/temp
+
+# Switch to non-root user
+USER nextjs
 
 # Expose port
 EXPOSE 3000
 
-# Switch to non-root user
-USER nodejs
-
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3000/health || exit 1
 
+<<<<<<< Current (Your changes)
 # Start application with dumb-init
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "index.js"]
+=======
+# Use tini as PID 1 for proper signal handling
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Start the application
+CMD ["node", "index.js"]
+
+# Labels for container metadata
+LABEL maintainer="Nova Universe Team"
+LABEL version="1.0.0"
+LABEL description="Nova Universe API Server - Production"
+LABEL org.opencontainers.image.source="https://github.com/your-org/nova-universe"
+>>>>>>> Incoming (Background Agent changes)

@@ -190,6 +190,7 @@ class StatusManager: ObservableObject {
     
     private func syncManualStatusToBackend() async {
         guard connectionManager.isConnected,
+<<<<<<< Current (Your changes)
               let _ = configManager.serverConfiguration else {
             return
         }
@@ -206,6 +207,104 @@ class StatusManager: ObservableObject {
     private func fetchCurrentStatus(serverURL: String) async {
         // TODO: Implement API call to fetch current status
         // For now, keep current status
+=======
+              let serverConfig = configManager.serverConfiguration else {
+            return
+        }
+        
+        // Sync kiosk status to Nova Universe backend
+        do {
+            let statusPayload = [
+                "status": currentStatus.rawValue,
+                "timestamp": ISO8601DateFormatter().string(from: Date()),
+                "deviceId": configManager.deviceId,
+                "location": configManager.location ?? "Unknown"
+            ]
+            
+            guard let url = URL(string: "\(serverConfig.serverURL)/api/kiosks/\(configManager.deviceId)/status") else {
+                print("Invalid status sync URL")
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("Bearer \(serverConfig.token)", forHTTPHeaderField: "Authorization")
+            request.httpBody = try JSONSerialization.data(withJSONObject: statusPayload)
+            
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                print("Status synced successfully to backend: \(currentStatus.rawValue)")
+            } else {
+                print("Failed to sync status to backend")
+            }
+        } catch {
+            print("Error syncing status to backend: \(error)")
+        }
+    }
+    
+    private func fetchStatusConfiguration(serverURL: String) async {
+        // Fetch status configuration from Nova Universe backend
+        do {
+            guard let url = URL(string: "\(serverURL)/api/kiosks/\(configManager.deviceId)/config") else {
+                print("Invalid configuration URL")
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                let config = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                print("Fetched status configuration: \(config ?? [:])")
+                
+                // Apply configuration settings
+                if let updateInterval = config?["statusUpdateInterval"] as? Double {
+                    self.statusUpdateInterval = updateInterval
+                }
+            } else {
+                print("Failed to fetch status configuration")
+            }
+        } catch {
+            print("Error fetching status configuration: \(error)")
+        }
+    }
+    
+    private func fetchCurrentStatus(serverURL: String) async {
+        // Fetch current kiosk status from Nova Universe backend
+        do {
+            guard let url = URL(string: "\(serverURL)/api/kiosks/\(configManager.deviceId)/status") else {
+                print("Invalid status URL")
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                let statusResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                
+                if let statusString = statusResponse?["status"] as? String,
+                   let serverStatus = KioskStatus(rawValue: statusString) {
+                    await MainActor.run {
+                        self.currentStatus = serverStatus
+                    }
+                    print("Updated status from server: \(serverStatus.rawValue)")
+                } else {
+                    print("Invalid status response from server")
+                }
+            } else {
+                print("Failed to fetch current status from server")
+            }
+        } catch {
+            print("Error fetching current status: \(error)")
+        }
+>>>>>>> Incoming (Background Agent changes)
     }
     
     private func saveStatus() {

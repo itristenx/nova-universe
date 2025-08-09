@@ -269,7 +269,7 @@ curl -X POST http://localhost:3000/submit-ticket \
 For a complete description of all endpoints see
 [nova-api/README.md](nova-api/README.md#api-endpoints).
 
-## HelpScout Integration #PENDING CHANGE TO IMPORT ONLY TO NOVA
+## HelpScout Integration (Import Only)
 
 When `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` are defined in
 `nova-api/.env`, the API creates a new HelpScout conversation for each ticket

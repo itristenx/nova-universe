@@ -1,55 +1,84 @@
-# Nova Orbit End-User Portal - Production Dockerfile
-FROM node:20-alpine AS builder
+# Nova Universe Orbit - Production Dockerfile
+# Multi-stage build for optimized Next.js production image
 
-# Set working directory
-WORKDIR /app
-
-# Install dependencies for building
+# Stage 1: Dependencies
+FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+RUN npm ci --only=production
 
-# Install dependencies
-RUN npm ci
+# Stage 2: Builder
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
 
 # Copy source code
 COPY . .
 
-# Build Next.js application
+# Set production environment variables for build
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build the application
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine AS production
+# Stage 3: Production runtime
+FROM node:20-alpine AS runner
 
-# Create app user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
-# Set working directory
 WORKDIR /app
 
-# Install production dependencies
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Install runtime dependencies
 RUN apk add --no-cache \
-    dumb-init \
-    curl \
-    && rm -rf /var/cache/apk/*
+    tini \
+    curl
 
 # Copy built application
-COPY --from=builder --chown=nodejs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nodejs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nodejs:nodejs /app/public ./public
+COPY --from=builder /app/public ./public
+
+# Copy Next.js build output
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Switch to non-root user
+USER nextjs
 
 # Expose port
 EXPOSE 3000
 
-# Switch to non-root user
-USER nodejs
-
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:3000 || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
 
+# Use tini as PID 1
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Start the application
+CMD ["node", "server.js"]
+
+<<<<<<< Current (Your changes)
 # Start application
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "server.js"]
+=======
+# Labels
+LABEL maintainer="Nova Universe Team"
+LABEL version="1.0.0"
+LABEL description="Nova Universe Orbit - End User Portal"
+>>>>>>> Incoming (Background Agent changes)
