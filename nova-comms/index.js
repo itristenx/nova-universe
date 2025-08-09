@@ -24,7 +24,7 @@ dotenv.config();
 
 const PORT = process.env.SLACK_PORT || 3001;
 
-// Validate required environment variables
+// Validate required environment variables unless running tests
 const requiredEnvVars = [
   'SLACK_SIGNING_SECRET',
   'SLACK_BOT_TOKEN', 
@@ -32,10 +32,12 @@ const requiredEnvVars = [
   'JWT_SECRET'
 ];
 
-for (const envVar of requiredEnvVars) {
-  if (!process.env[envVar]) {
-    console.error(`Missing required environment variable: ${envVar}`);
-    process.exit(1);
+if (process.env.NODE_ENV !== 'test') {
+  for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+      console.error(`Missing required environment variable: ${envVar}`);
+      process.exit(1);
+    }
   }
 }
 

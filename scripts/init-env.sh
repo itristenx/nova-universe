@@ -1,9 +1,10 @@
 #!/bin/bash
 set -e
 
-apps=(nova-api nova-core nova-comms)
-
-for app in "${apps[@]}"; do
+# Create .env files next to any .env.example found in immediate subdirectories
+for app in */ ; do
+  # remove trailing slash
+  app=${app%/}
   example="$app/.env.example"
   env="$app/.env"
   if [ -f "$example" ]; then

@@ -1,10 +1,9 @@
 import nodemailer from 'nodemailer';
 import axios from 'axios';
-import db from '../db.js';
 
-if (!process.env.DISABLE_AUTH) {
-  process.env.DISABLE_AUTH = 'true';
-}
+// Ensure test-friendly environment before any module imports
+if (!process.env.NODE_ENV) process.env.NODE_ENV = 'test';
+if (!process.env.DISABLE_AUTH) process.env.DISABLE_AUTH = 'true';
 process.env.DISABLE_CLEANUP = 'true';
 process.env.SCIM_TOKEN = 'testtoken';
 process.env.KIOSK_TOKEN = 'kiosktoken';
@@ -12,9 +11,13 @@ process.env.RATE_LIMIT_WINDOW = '60000';
 process.env.SUBMIT_TICKET_LIMIT = '100';
 process.env.API_LOGIN_LIMIT = '50';
 process.env.AUTH_LIMIT = '50';
+process.env.SESSION_SECRET = process.env.SESSION_SECRET || 'test-session-secret';
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret';
+
 let app;
 let sendBehavior = async () => {};
-let axiosBehavior = async () => ({});
+let axiosBehavior = async () => ({
+});
 const originalCreate = nodemailer.createTransport;
 
 nodemailer.createTransport = () => ({
@@ -24,8 +27,11 @@ nodemailer.createTransport = () => ({
 const originalPost = axios.post;
 axios.post = (...args) => axiosBehavior(...args);
 
+// Dynamically import after env is configured
 const mod = await import('../index.js');
 app = mod.default;
+const { default: db } = await import('../db.js');
+
 globalThis.app = app;
 
 await new Promise((resolve) => {

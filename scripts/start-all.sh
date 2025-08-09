@@ -21,7 +21,16 @@ get_cmd() {
   esac
 }
 
-read -rp "Apps to start (api,core,comms or all) [all]: " INPUT
+# Determine selected apps: prefer APPS env, fallback to prompt if TTY, else all
+INPUT="${APPS:-}"
+if [[ -z "$INPUT" ]]; then
+  if [ -t 0 ]; then
+    read -rp "Apps to start (api,core,comms or all) [all]: " INPUT
+  else
+    INPUT="all"
+  fi
+fi
+
 if [[ -z "$INPUT" || "$INPUT" == "all" ]]; then
   SELECTED=(api core comms)
 else
@@ -39,7 +48,7 @@ for APP in "${SELECTED[@]}"; do
   fi
   if [[ ! -d $DIR/node_modules ]]; then
     echo "Installing dependencies for $DIR..."
-    npm --prefix "$DIR" install
+    npm --prefix "$DIR" ci --silent
   fi
   NAMES+=("$APP")
   COMMANDS+=("$CMD")
