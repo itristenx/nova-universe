@@ -1,93 +1,298 @@
+// Security middleware for Nova Universe API
+// Implements comprehensive security headers and protection measures
 
 import helmet from 'helmet';
+import cors from 'cors';
 import { logger } from '../logger.js';
 
 /**
- * Security middleware using helmet and custom headers.
- * @type {import('express').RequestHandler}
+ * Configure comprehensive security headers using Helmet
  */
-export const securityHeaders = [
-  helmet(),
-  (req, res, next) => {
-    // Additional custom headers
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+export function configureSecurityHeaders() {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
+  return helmet({
     // Content Security Policy
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    const csp = [
-      "default-src 'self'",
-      isDevelopment ? "script-src 'self' 'unsafe-inline'" : "script-src 'self'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https:",
-      "font-src 'self'",
-      "connect-src 'self'",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'"
-    ].join('; ');
-    res.setHeader('Content-Security-Policy', csp);
-    next();
-  }
-];
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        connectSrc: ["'self'"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        workerSrc: ["'self'"],
+        childSrc: ["'self'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+      },
+    },
+
+    // Cross-Origin Embedder Policy
+    crossOriginEmbedderPolicy: false, // Disable for API compatibility
+
+    // Cross-Origin Opener Policy  
+    crossOriginOpenerPolicy: { policy: "same-origin" },
+
+    // Cross-Origin Resource Policy
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+
+    // DNS Prefetch Control
+    dnsPrefetchControl: { allow: false },
+
+    // Frame Options
+    frameguard: { action: 'deny' },
+
+    // Hide Powered-By header
+    hidePoweredBy: true,
+
+    // HTTP Strict Transport Security
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true
+    },
+
+    // IE No Open
+    ieNoOpen: true,
+
+    // MIME Type sniffing prevention
+    noSniff: true,
+
+    // Referrer Policy
+    referrerPolicy: { policy: "no-referrer" },
+
+    // X-XSS-Protection
+    xssFilter: true,
+
+    // Permissions Policy (formerly Feature Policy)
+    permittedCrossDomainPolicies: false,
+  });
+}
 
 /**
- * Request logging middleware using centralized logger.
- * @type {import('express').RequestHandler}
+ * Configure CORS with security-focused settings
  */
-export const requestLogger = (req, res, next) => {
-  const start = Date.now();
-  const originalSend = res.send;
-  res.send = function (data) {
-    const duration = Date.now() - start;
-    const logData = {
-      method: req.method,
-      url: req.url,
-      status: res.statusCode,
-      duration: `${duration}ms`,
-      ip: req.ip || req.connection.remoteAddress,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date().toISOString(),
-    };
-    if (res.statusCode >= 400) {
-      logger.error(`HTTP ${res.statusCode} ${req.method} ${req.url} - ${duration}ms - ${logData.ip}`);
-    } else {
-      logger.info(`${req.method} ${req.url} - ${duration}ms - ${logData.ip}`);
-    }
-    return originalSend.call(this, data);
-  };
-  next();
-};
+export function configureCORS() {
+  const allowedOrigins = process.env.CORS_ORIGINS 
+    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+    : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:4173'];
 
-// Security logging middleware
-export const securityLogger = (req, res, next) => {
+  // Add production URLs if specified
+  if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+  }
+
+  return cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, postman, etc.)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        return callback(null, true);
+      }
+      
+      // In development, allow localhost with any port
+      if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
+        return callback(null, true);
+      }
+      
+      logger.warn('CORS blocked origin', { origin, allowedOrigins });
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+      return callback(new Error(msg), false);
+    },
+    
+    credentials: true,
+    
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With', 
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'X-API-Key',
+      'X-Client-Version',
+      'X-Request-ID'
+    ],
+    
+    exposedHeaders: [
+      'X-Total-Count',
+      'X-Rate-Limit-Limit',
+      'X-Rate-Limit-Remaining',
+      'X-Rate-Limit-Reset'
+    ],
+    
+    maxAge: 86400, // 24 hours
+    
+    optionsSuccessStatus: 200, // For legacy browser support
+    
+    preflightContinue: false
+  });
+}
+
+/**
+ * Input sanitization middleware
+ */
+export function sanitizeInput(req, res, next) {
+  try {
+    // Recursively sanitize request body
+    if (req.body && typeof req.body === 'object') {
+      req.body = sanitizeObject(req.body);
+    }
+    
+    // Sanitize query parameters
+    if (req.query && typeof req.query === 'object') {
+      req.query = sanitizeObject(req.query);
+    }
+    
+    next();
+  } catch (error) {
+    logger.error('Input sanitization error:', error);
+    res.status(400).json({
+      error: 'Invalid input data',
+      errorCode: 'INVALID_INPUT'
+    });
+  }
+}
+
+/**
+ * Recursively sanitize object properties
+ */
+function sanitizeObject(obj) {
+  if (obj === null || typeof obj !== 'object') {
+    return sanitizeValue(obj);
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeObject(item));
+  }
+  
+  const sanitized = {};
+  for (const [key, value] of Object.entries(obj)) {
+    // Sanitize the key
+    const cleanKey = sanitizeValue(key);
+    sanitized[cleanKey] = sanitizeObject(value);
+  }
+  
+  return sanitized;
+}
+
+/**
+ * Sanitize individual values
+ */
+function sanitizeValue(value) {
+  if (typeof value !== 'string') {
+    return value;
+  }
+  
+  // Remove potential XSS vectors
+  return value
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .replace(/style\s*=/gi, '') // Remove inline styles
+    .trim();
+}
+
+/**
+ * API Key validation middleware
+ */
+export function validateApiKey(req, res, next) {
+  const apiKey = req.headers['x-api-key'];
+  
+  if (!apiKey) {
+    return res.status(401).json({
+      error: 'API key required',
+      errorCode: 'API_KEY_REQUIRED'
+    });
+  }
+  
+  // Basic API key format validation
+  if (!/^[a-zA-Z0-9_-]{32,}$/.test(apiKey)) {
+    return res.status(401).json({
+      error: 'Invalid API key format',
+      errorCode: 'INVALID_API_KEY_FORMAT'
+    });
+  }
+  
+  // TODO: Implement actual API key validation against database
+  // For now, check against environment variable
+  const validApiKey = process.env.API_KEY;
+  if (validApiKey && apiKey !== validApiKey) {
+    logger.warn('Invalid API key attempt', { 
+      providedKey: apiKey.substring(0, 8) + '...',
+      ip: req.ip
+    });
+    
+    return res.status(401).json({
+      error: 'Invalid API key',
+      errorCode: 'INVALID_API_KEY'
+    });
+  }
+  
+  next();
+}
+
+/**
+ * Request logging middleware for security monitoring
+ */
+export function securityLogging(req, res, next) {
   const startTime = Date.now();
   
-  res.on('finish', () => {
-    const duration = Date.now() - startTime;
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      method: req.method,
-      url: req.url,
-      statusCode: res.statusCode,
-      duration: `${duration}ms`,
-      ip: req.ip || req.connection.remoteAddress,
-      userAgent: req.get('User-Agent') || 'unknown'
-    };
-    
-    // Log security-relevant events
-    if (res.statusCode >= 400) {
-      console.log(`[SECURITY] ${JSON.stringify(logEntry)}`);
-    }
-    
-    // Log suspicious patterns
-    if (req.url.includes('../') || req.url.includes('..\\')) {
-      console.log(`[SECURITY] Path traversal attempt: ${JSON.stringify(logEntry)}`);
-    }
-    
-    if (req.headers['x-forwarded-for'] && req.headers['x-forwarded-for'].split(',').length > 3) {
-      console.log(`[SECURITY] Suspicious proxy chain: ${JSON.stringify(logEntry)}`);
-    }
+  // Log request
+  logger.info('Request', {
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+    userId: req.user?.id || null,
+    timestamp: new Date().toISOString()
   });
   
+  // Capture response
+  const originalSend = res.send;
+  res.send = function(data) {
+    const duration = Date.now() - startTime;
+    
+    // Log response
+    logger.info('Response', {
+      method: req.method,
+      url: req.originalUrl,
+      statusCode: res.statusCode,
+      duration: `${duration}ms`,
+      ip: req.ip,
+      userId: req.user?.id || null
+    });
+    
+    // Log security events
+    if (res.statusCode === 401 || res.statusCode === 403) {
+      logger.warn('Security event', {
+        event: 'ACCESS_DENIED',
+        method: req.method,
+        url: req.originalUrl,
+        statusCode: res.statusCode,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        userId: req.user?.id || null
+      });
+    }
+    
+    originalSend.call(this, data);
+  };
+  
   next();
+}
+
+export default {
+  configureSecurityHeaders,
+  configureCORS,
+  sanitizeInput,
+  validateApiKey,
+  securityLogging
 };
