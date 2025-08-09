@@ -15,6 +15,11 @@ import { MongoDBManager } from '../database/mongodb.js';
 import { MigrationManager } from '../database/migrations.js';
 import { logger } from '../nova-api/logger.js';
 
+// Skip integration tests when external DBs are not available
+const shouldSkipDbTests = process.env.SKIP_DB_TESTS === 'true' || (
+  !process.env.POSTGRES_HOST && !process.env.MONGO_URI
+);
+
 // Test configuration
 const testConfig = {
   postgresql: {
@@ -34,7 +39,7 @@ const testConfig = {
   }
 };
 
-describe('Database System Tests', () => {
+(shouldSkipDbTests ? describe.skip : describe)('Database System Tests', () => {
   let dbFactory;
   let postgresManager;
   let mongoManager;

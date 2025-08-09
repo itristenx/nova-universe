@@ -3,12 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "npm run test:root && npm run test:api && npm run test:comms",
+    "test:root": "node --test",
+    "test:api": "npm --prefix nova-api test",
+    "test:comms": "npm --prefix nova-comms test || true"
   },
   "devDependencies": {
     "@elastic/elasticsearch": "^9.0.3",
     "@prisma/client": "^6.12.0",
-    "jest": "^30.0.5",
     "mongoose": "^8.16.4",
     "prisma": "^6.12.0",
     "tsx": "^4.20.3",

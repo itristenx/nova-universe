@@ -5,7 +5,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import Table from 'cli-table3';
 import { 
   logger, 
@@ -271,7 +271,7 @@ async function createUser(userData) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const hashedPassword = bcrypt.hashSync(userData.password, 12);
 
     // Create user document
     const user = {
@@ -383,7 +383,7 @@ async function updateUser(email, options) {
     const updates = { updatedAt: new Date() };
 
     if (options.password) {
-      updates.password = await bcrypt.hash(options.password, 10);
+      updates.password = bcrypt.hashSync(options.password, 12);
     }
 
     if (options.role) {
@@ -511,7 +511,7 @@ async function resetUserPassword(email, options) {
       newPassword = password;
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = bcrypt.hashSync(newPassword, 12);
 
     await db.collection('users').updateOne(
       { email },
