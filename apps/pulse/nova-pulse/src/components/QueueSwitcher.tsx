@@ -10,7 +10,6 @@ interface Props {
 
 export const QueueSwitcher: React.FC<Props> = ({ currentQueue, onQueueChange, queues }) => {
   const [metrics, setMetrics] = useState<QueueMetrics | null>(null)
-  const [agents, setAgents] = useState<AgentAvailability[]>([])
   const [currentUser, setCurrentUser] = useState<AgentAvailability | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -31,8 +30,6 @@ export const QueueSwitcher: React.FC<Props> = ({ currentQueue, onQueueChange, qu
       if (metricsData.success && !Array.isArray(metricsData.metrics)) {
         setMetrics(metricsData.metrics)
       }
-      
-      setAgents(agentsData)
       
       // Find current user in agents list
       const user = agentsData.find(agent => agent.userId === getCurrentUserId())
@@ -136,16 +133,16 @@ export const QueueSwitcher: React.FC<Props> = ({ currentQueue, onQueueChange, qu
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-gray-600">Available Agents:</span>
-              <span className="ml-1 font-medium">{metrics.availableAgents}/{metrics.totalAgents}</span>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-600">Available Agents:</span>
+                <span className="ml-1 font-medium">{metrics.availableAgents}/{metrics.totalAgents}</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Open Tickets:</span>
+                <span className="ml-1 font-medium">{metrics.openTickets}</span>
+              </div>
             </div>
-            <div>
-              <span className="text-gray-600">Open Tickets:</span>
-              <span className="ml-1 font-medium">{metrics.openTickets}</span>
-            </div>
-          </div>
         </div>
       )}
 

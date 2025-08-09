@@ -10,10 +10,14 @@ export const DeepWorkPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>()
   const [activeTab, setActiveTab] = useState<'timeline' | 'related' | 'assets'>('timeline')
   
-  const { data, refetch } = useQuery({ queryKey: ['ticket', ticketId], queryFn: () => getTickets({ ticketId }).then(t => t[0]), enabled: !!ticketId })
+  const { data, refetch } = useQuery({ 
+    queryKey: ['ticket', ticketId], 
+    queryFn: () => getTickets({ ticketId: ticketId! }).then(t => t[0]), 
+    enabled: !!ticketId 
+  })
   const { data: assets = [] } = useQuery({
     queryKey: ['ticketAssets', data?.requestedBy.id],
-    queryFn: () => getAssetsForUser(data!.requestedBy.id),
+    queryFn: () => getAssetsForUser(data!.requestedBy.id.toString()),
     enabled: !!data
   })
   const { data: history = [] } = useQuery({
@@ -56,11 +60,28 @@ export const DeepWorkPage: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['ticketHistory', ticketId] })
   }
 
+  const updateTabAria = React.useCallback(() => {
+    const tabs = document.querySelectorAll('[role="tab"]');
+    tabs.forEach(t => {
+      const id = t.getAttribute('id');
+      if (!id) return;
+      const selected = id === `tab-${activeTab}`;
+      t.setAttribute('aria-selected', selected ? 'true' : 'false');
+      t.setAttribute('tabindex', selected ? '0' : '-1');
+    });
+  }, [activeTab]);
+  React.useEffect(() => { updateTabAria(); }, [updateTabAria]);
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">{data.title}</h2>
       <div className="flex items-center gap-2">
-        <select value={status} onChange={e => setStatus(e.target.value)} className="border rounded px-2 py-1">
+        <select 
+          value={status} 
+          onChange={e => setStatus(e.target.value)} 
+          className="border rounded px-2 py-1"
+          aria-label="Change ticket status"
+        >
           {['open', 'in_progress', 'on_hold', 'resolved', 'closed'].map(s => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -83,7 +104,6 @@ export const DeepWorkPage: React.FC = () => {
         <div>
           <h3 className="font-semibold mb-1">Requestor</h3>
           <p>{data.requestedBy.name}</p>
-          <p className="text-sm text-muted-foreground">{data.requestedBy.email}</p>
         </div>
         <div>
           <h3 className="font-semibold mb-1">Linked Assets</h3>
@@ -102,6 +122,11 @@ export const DeepWorkPage: React.FC = () => {
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6" role="tablist">
             <button
+              type="button"
+              id="tab-timeline"
+              aria-controls="panel-timeline"
+              aria-selected="false"
+              // aria-selected updated via effect
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'timeline' 
                   ? 'border-blue-500 text-blue-600' 
@@ -109,11 +134,14 @@ export const DeepWorkPage: React.FC = () => {
               }`}
               onClick={() => setActiveTab('timeline')}
               role="tab"
-              aria-selected={activeTab === 'timeline'}
             >
               Timeline
             </button>
             <button
+              type="button"
+              id="tab-related"
+              aria-controls="panel-related"
+              aria-selected="false"
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'related' 
                   ? 'border-blue-500 text-blue-600' 
@@ -121,11 +149,14 @@ export const DeepWorkPage: React.FC = () => {
               }`}
               onClick={() => setActiveTab('related')}
               role="tab"
-              aria-selected={activeTab === 'related'}
             >
               Related
             </button>
             <button
+              type="button"
+              id="tab-assets"
+              aria-controls="panel-assets"
+              aria-selected="false"
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'assets' 
                   ? 'border-blue-500 text-blue-600' 
@@ -133,7 +164,6 @@ export const DeepWorkPage: React.FC = () => {
               }`}
               onClick={() => setActiveTab('assets')}
               role="tab"
-              aria-selected={activeTab === 'assets'}
             >
               Assets
             </button>
@@ -142,7 +172,7 @@ export const DeepWorkPage: React.FC = () => {
         
         <div className="p-6">
           {activeTab === 'timeline' && (
-            <div role="tabpanel">
+            <div role="tabpanel" id="panel-timeline" aria-labelledby="tab-timeline">
               <ul className="list-disc pl-5 space-y-1 text-sm">
                 {history.map((h: TicketHistoryEntry, i: number) => (
                   <li key={i}>{new Date(h.timestamp).toLocaleString()} - {h.user}: {h.action} {h.details ? `- ${h.details}` : ''}</li>
@@ -152,7 +182,7 @@ export const DeepWorkPage: React.FC = () => {
           )}
           
           {activeTab === 'related' && (
-            <div role="tabpanel" className="space-y-4 text-sm">
+            <div role="tabpanel" id="panel-related" aria-labelledby="tab-related" className="space-y-4 text-sm">
               <div>
                 <h4 className="font-semibold">Related Tickets</h4>
                 <ul className="list-disc pl-5">
@@ -173,7 +203,7 @@ export const DeepWorkPage: React.FC = () => {
           )}
           
           {activeTab === 'assets' && (
-            <div role="tabpanel">
+            <div role="tabpanel" id="panel-assets" aria-labelledby="tab-assets">
               <ul className="list-disc pl-5 text-sm">
                 {assets.map(a => (
                   <li key={a.id}>{a.name} ({a.assetTag || 'n/a'})</li>
@@ -184,7 +214,13 @@ export const DeepWorkPage: React.FC = () => {
         </div>
       </div>
 
-      <textarea value={note} onChange={e => setNote(e.target.value)} className="w-full border" />
+      <textarea 
+        value={note} 
+        onChange={e => setNote(e.target.value)} 
+        className="w-full border" 
+        placeholder="Add your work notes here..."
+        aria-label="Work notes"
+      />
       <button 
         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         onClick={handleUpdate}

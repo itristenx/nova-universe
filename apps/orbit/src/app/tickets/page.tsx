@@ -22,6 +22,7 @@ export interface Ticket {
 }
 import { Button } from "../../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import Link from "next/link";
 
 const STATUS_OPTIONS = [
 	{ value: "", label: "All" },
@@ -47,15 +48,7 @@ export default function TicketsPage() {
         typeof window !== "undefined"
           ? localStorage.getItem("token") || ""
           : "";
-
-  if (!token) {
-    return (
-      <main className="p-8 max-w-4xl mx-auto">
-        <p>Please log in to view your tickets.</p>
-      </main>
-    );
-  }
-
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -86,8 +79,18 @@ export default function TicketsPage() {
 		setLoading(false);
 	  }
 	};
-	fetchTickets();
+	if (token) {
+	  fetchTickets();
+	}
   }, [status, page, token]);
+
+  if (!token) {
+    return (
+      <main className="p-8 max-w-4xl mx-auto">
+        <p>Please log in to view your tickets.</p>
+      </main>
+    );
+  }
 
   return (
 	<main className="p-8 max-w-4xl mx-auto">
@@ -97,6 +100,18 @@ export default function TicketsPage() {
 		  <p className="mt-1 text-muted-foreground text-sm">
 			List and filter all your support tickets here.
 		  </p>
+		</div>
+		<div className="flex gap-2">
+		  <Link href="/tickets/track">
+			<Button variant="outline" size="sm">
+			  Enhanced Tracking
+			</Button>
+		  </Link>
+		  <Link href="/tickets/new-enhanced">
+			<Button size="sm">
+			  New Ticket
+			</Button>
+		  </Link>
 		</div>
 		<div className="flex gap-2 items-center">
 		  <Select value={status} onValueChange={setStatus}>

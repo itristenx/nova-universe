@@ -1,22 +1,16 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+import { heroUITheme } from '@nova-universe/design-tokens'
+
+const config = {
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
+    "../../packages/design-system/src/**/*.{js,ts,jsx,tsx}",
+    "../../packages/ui/src/**/*.{js,ts,jsx,tsx}"
   ],
   darkMode: 'class',
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: '#eff6ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          900: '#1e3a8a',
-        },
-      },
-    },
-  },
+  theme: heroUITheme,
   plugins: [],
 }
+
+export default config

@@ -1,11 +1,5 @@
 import React from 'react'
-
-interface Alert {
-  id: string
-  message: string
-  severity: 'info' | 'warning' | 'error' | 'success'
-  timestamp: string
-}
+import type { Alert } from '../types'
 
 interface Props {
   alerts: Alert[]
@@ -18,17 +12,12 @@ export const AlertsFeed: React.FC<Props> = ({ alerts }) => (
       {alerts.map((alert) => (
         <div
           key={alert.id}
-          className={`p-4 rounded-lg border-l-4 ${
-            alert.severity === 'error' ? 'bg-red-50 border-red-400 text-red-700' :
-            alert.severity === 'warning' ? 'bg-yellow-50 border-yellow-400 text-yellow-700' :
-            alert.severity === 'success' ? 'bg-green-50 border-green-400 text-green-700' :
-            'bg-blue-50 border-blue-400 text-blue-700'
-          }`}
+          className="p-4 rounded-lg border-l-4 bg-blue-50 border-blue-400 text-blue-700"
         >
           <div className="flex justify-between items-start">
             <div>
               <p className="font-medium">{alert.message}</p>
-              <p className="text-xs opacity-75 mt-1">{alert.timestamp}</p>
+              <p className="text-xs opacity-75 mt-1">{alert.createdAt}</p>
             </div>
           </div>
         </div>

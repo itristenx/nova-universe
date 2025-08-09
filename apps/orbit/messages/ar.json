@@ -1,0 +1,85 @@
+{
+  "HomePage": {
+    "title": "مرحباً بكم في نوفا يونيفرس",
+    "description": "مستقبل الاستكشاف والاكتشاف الفضائي",
+    "about": "اذهب إلى صفحة حول",
+    "getStarted": "ابدأ",
+    "learnMore": "اعرف المزيد"
+  },
+  "Navigation": {
+    "home": "الرئيسية",
+    "about": "حول",
+    "dashboard": "لوحة التحكم",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول",
+    "signup": "التسجيل"
+  },
+  "Common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "previous": "السابق",
+    "next": "التالي",
+    "close": "إغلاق",
+    "open": "فتح"
+  },
+  "Forms": {
+    "required": "هذا الحقل مطلوب",
+    "invalid": "إدخال غير صحيح",
+    "email": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+    "password": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل",
+    "passwordMatch": "كلمات المرور غير متطابقة",
+    "submit": "إرسال",
+    "reset": "إعادة تعيين"
+  },
+  "Accessibility": {
+    "skipToContent": "انتقل إلى المحتوى الرئيسي",
+    "skipToNavigation": "انتقل إلى التنقل",
+    "skipToSearch": "انتقل إلى البحث",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة",
+    "screenReaderOnly": "محتوى لقارئات الشاشة فقط",
+    "languageSelector": "اختيار اللغة",
+    "themeToggle": "تبديل المظهر"
+  },
+  "Languages": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ja": "日本語",
+    "ar": "العربية",
+    "ru": "Русский"
+  },
+  "Dates": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "tomorrow": "غداً",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "thisYear": "هذا العام",
+    "lastYear": "العام الماضي"
+  },
+  "Errors": {
+    "notFound": "الصفحة غير موجودة",
+    "serverError": "خطأ داخلي في الخادم",
+    "networkError": "خطأ في اتصال الشبكة",
+    "unauthorized": "غير مخول للوصول إلى هذا المورد",
+    "forbidden": "الوصول محظور",
+    "tryAgain": "يرجى المحاولة مرة أخرى",
+    "contactSupport": "اتصل بالدعم إذا استمرت هذه المشكلة"
+  }
+}

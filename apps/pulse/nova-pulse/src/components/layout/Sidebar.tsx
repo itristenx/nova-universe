@@ -9,12 +9,21 @@ import {
   PlayIcon,
   ChartBarIcon,
   XMarkIcon,
+  EyeIcon,
+  QueueListIcon,
+  ChatBubbleLeftRightIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
   { name: 'Tickets', href: '/tickets', icon: TicketIcon },
+  { name: 'Deep Work', href: '/deepwork', icon: EyeIcon },
+  { name: 'Queue Management', href: '/queue', icon: QueueListIcon },
+  { name: 'Communication', href: '/communication', icon: ChatBubbleLeftRightIcon },
+  { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
+  { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: 'Alerts', href: '/alerts', icon: ExclamationTriangleIcon },
   { name: 'Inventory', href: '/inventory', icon: CubeIcon },
   { name: 'Leaderboard', href: '/leaderboard', icon: TrophyIcon },

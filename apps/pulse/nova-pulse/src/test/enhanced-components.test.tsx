@@ -5,60 +5,35 @@ import { BrowserRouter } from 'react-router-dom';
 import { EnhancedTicketGrid } from '../components/enhanced/EnhancedTicketGrid';
 import { EnhancedDeepWorkPage } from '../components/enhanced/EnhancedDeepWorkPage';
 import { EnhancedDashboard } from '../components/enhanced/EnhancedDashboard';
-import type { User, Ticket } from '../types';
+import type { Ticket } from '../types';
 
 // Mock data for testing
-const mockUser: User = {
-  id: 'test-user-1',
-  username: 'testuser',
-  email: 'test@example.com',
-  role: 'agent',
-  firstName: 'Test',
-  lastName: 'User',
-  isActive: true,
-  isVip: false,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
-
 const mockTickets: Ticket[] = [
   {
-    id: 'ticket-1',
+    id: 1,
     ticketId: 'IT-2025-001',
     title: 'Test Ticket 1',
-    description: 'This is a test ticket',
     priority: 'high',
     status: 'open',
     category: 'it',
     subcategory: 'hardware',
-    location: 'office',
-    requestedById: 'user-1',
-    requestedByName: 'John Doe',
-    requestedByEmail: 'john@example.com',
-    assignedToId: 'agent-1',
-    assignedToName: 'Agent Smith',
-    assignedToEmail: 'agent@example.com',
+    requestedBy: { id: 1, name: 'John Doe' },
+    assignedTo: { id: 1, name: 'Agent Smith' },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
-    vipWeight: null
+    vipWeight: undefined
   },
   {
-    id: 'ticket-2',
+    id: 2,
     ticketId: 'HR-2025-002',
     title: 'Test Ticket 2',
-    description: 'Another test ticket',
     priority: 'critical',
     status: 'in_progress',
     category: 'hr',
     subcategory: 'onboarding',
-    location: 'remote',
-    requestedById: 'user-2',
-    requestedByName: 'Jane Doe',
-    requestedByEmail: 'jane@example.com',
-    assignedToId: 'agent-2',
-    assignedToName: 'Agent Johnson',
-    assignedToEmail: 'johnson@example.com',
+    requestedBy: { id: 2, name: 'Jane Doe' },
+    assignedTo: { id: 2, name: 'Agent Johnson' },
     createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
     updatedAt: new Date().toISOString(),
     dueDate: new Date(Date.now() + 7200000).toISOString(), // 2 hours from now
@@ -83,7 +58,8 @@ const mockApiResponses = {
 };
 
 // Mock fetch function
-global.fetch = jest.fn((url: string) => {
+global.fetch = jest.fn((input: RequestInfo | URL, init?: RequestInit) => {
+  const url = typeof input === 'string' ? input : input.toString();
   const endpoint = url.split('?')[0]; // Remove query parameters
   const mockData = mockApiResponses[endpoint as keyof typeof mockApiResponses];
   
@@ -92,6 +68,20 @@ global.fetch = jest.fn((url: string) => {
     json: () => Promise.resolve(mockData || { data: [], total: 0 })
   } as Response);
 });
+
+// Mock user data
+const mockUser = {
+  id: 'user-1',
+  username: 'testuser',
+  email: 'test@example.com',
+  role: 'agent' as const,
+  firstName: 'Test',
+  lastName: 'User',
+  isActive: true,
+  isVip: false,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+};
 
 // Test wrapper component
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {

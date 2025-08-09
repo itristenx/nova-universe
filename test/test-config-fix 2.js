@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 // Test script to verify configuration loading fix
-import { logger } from './apps/api/logger.js';
-import ConfigurationManager from './apps/api/config/app-settings.js';
+import { logger } from '../apps/api/logger.js';
+import ConfigurationManager from '../apps/api/config/app-settings.js';
 
 async function testConfigurationLoading() {
   try {

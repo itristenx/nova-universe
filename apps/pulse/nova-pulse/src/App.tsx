@@ -14,6 +14,10 @@ import { LeaderboardPage } from './pages/LeaderboardPage'
 import { EnhancedTicketGrid } from './components/enhanced/EnhancedTicketGrid'
 import { EnhancedDeepWorkPage } from './components/enhanced/EnhancedDeepWorkPage'
 import { EnhancedDashboard } from './components/enhanced/EnhancedDashboard'
+import { SmartQueueManagement } from './components/enhanced/SmartQueueManagement'
+import CommunicationHubPage from './pages/CommunicationHubPage'
+import AdvancedSearchPage from './pages/AdvancedSearchPage'
+import PerformanceAnalyticsPage from './pages/PerformanceAnalyticsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } }
@@ -45,6 +49,21 @@ const App: React.FC = () => (
             {/* Enhanced ticket management */}
             <Route path="/tickets" element={<EnhancedTicketGrid />} />
             <Route path="/tickets/:ticketId" element={<EnhancedDeepWorkPage />} />
+            
+            {/* Deep Work Mode - standalone */}
+            <Route path="/deepwork" element={<EnhancedDeepWorkPage />} />
+            
+            {/* Smart Queue Management */}
+            <Route path="/queue" element={<SmartQueueManagement />} />
+            
+            {/* Communication Hub */}
+            <Route path="/communication" element={<CommunicationHubPage />} />
+            
+            {/* Advanced Search & Navigation */}
+            <Route path="/search" element={<AdvancedSearchPage />} />
+            
+            {/* Performance Analytics */}
+            <Route path="/analytics" element={<PerformanceAnalyticsPage />} />
             
             {/* Legacy pages for gradual migration */}
             <Route path="/legacy/dashboard" element={<DashboardPage />} />

@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getDashboard, getTickets, getTimesheet } from '../../lib/api'
-import type { Ticket, DashboardData } from '../../types'
 
 // Simple icon components
 const BarChart = ({ className }: { className?: string }) => (

@@ -1,0 +1,209 @@
+/**
+ * Nova Universe Global Styles
+ * Includes design tokens and base styles for all applications
+ */
+
+/* Import design token CSS variables */
+@import '@nova-universe/design-tokens/css-variables';
+
+/* Base styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-family: var(--font-family-sans);
+  background-color: rgb(var(--color-neutral-50));
+  color: rgb(var(--color-neutral-900));
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+/* Typography scale */
+.text-display-2xl {
+  font-size: var(--font-size-6xl);
+  line-height: 1;
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.text-display-xl {
+  font-size: var(--font-size-5xl);
+  line-height: 1;
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.text-display-lg {
+  font-size: var(--font-size-4xl);
+  line-height: 1.1;
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-semibold);
+}
+
+.text-display-md {
+  font-size: var(--font-size-3xl);
+  line-height: 1.2;
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-semibold);
+}
+
+.text-display-sm {
+  font-size: var(--font-size-2xl);
+  line-height: 1.3;
+  font-weight: var(--font-weight-semibold);
+}
+
+.text-display-xs {
+  font-size: var(--font-size-xl);
+  line-height: 1.4;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Focus styles */
+.focus-ring {
+  outline: 2px solid rgb(var(--color-primary-500));
+  outline-offset: 2px;
+}
+
+/* Dark mode styles */
+[data-theme="dark"] body {
+  background-color: rgb(var(--color-neutral-950));
+  color: rgb(var(--color-neutral-50));
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn var(--duration-300) var(--timing-ease-out);
+}
+
+.animate-slide-up {
+  animation: slideUp var(--duration-300) var(--timing-ease-out);
+}
+
+.animate-slide-down {
+  animation: slideDown var(--duration-300) var(--timing-ease-out);
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-200) var(--timing-ease-out);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Utility classes */
+.shadow-focus {
+  box-shadow: 0 0 0 3px rgb(var(--color-primary-500) / 0.1);
+}
+
+.border-focus {
+  border-color: rgb(var(--color-primary-500));
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--color-neutral-100));
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-neutral-300));
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-neutral-400));
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: rgb(var(--color-neutral-800));
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-neutral-600));
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-neutral-500));
+}

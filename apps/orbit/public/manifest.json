@@ -1,0 +1,195 @@
+{
+  "name": "Nova Universe - IT Service Management",
+  "short_name": "Nova Universe",
+  "description": "Advanced IT Service Management platform with AI-powered automation and intelligent workflows",
+  "version": "1.0.0",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1e40af",
+  "background_color": "#ffffff",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Enhanced Dashboard with real-time metrics"
+    },
+    {
+      "src": "/screenshots/dashboard-mobile.png",
+      "sizes": "375x667",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Mobile-optimized dashboard"
+    },
+    {
+      "src": "/screenshots/tickets-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Advanced ticket management system"
+    },
+    {
+      "src": "/screenshots/cosmo-ai.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Cosmo AI Assistant with contextual chat"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Ticket",
+      "short_name": "New Ticket",
+      "description": "Create a new support ticket",
+      "url": "/tickets/new-enhanced",
+      "icons": [
+        {
+          "src": "/shortcut-ticket.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Track Tickets",
+      "short_name": "My Tickets",
+      "description": "View and track your tickets",
+      "url": "/tickets/track",
+      "icons": [
+        {
+          "src": "/shortcut-track.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Knowledge Base",
+      "short_name": "Knowledge",
+      "description": "Search knowledge articles",
+      "url": "/knowledge/enhanced",
+      "icons": [
+        {
+          "src": "/shortcut-knowledge.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Cosmo AI",
+      "short_name": "AI Assistant",
+      "description": "Chat with Cosmo AI Assistant",
+      "url": "/cosmo/enhanced",
+      "icons": [
+        {
+          "src": "/shortcut-cosmo.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+nova",
+      "url": "/handle/%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/file-handler",
+      "accept": {
+        "text/csv": [".csv"],
+        "application/json": [".json"],
+        "text/plain": [".txt", ".log"]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "files",
+          "accept": ["image/*", ".txt", ".csv", ".json", ".log"]
+        }
+      ]
+    }
+  },
+  "capture_links": "existing-client-navigate",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://nova-universe.example.com/manifest.json"
+    }
+  ],
+  "prefer_related_applications": false
+}

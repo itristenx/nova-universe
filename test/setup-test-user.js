@@ -2,7 +2,7 @@
 
 // Script to create a test user for authentication
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from './prisma/generated/core/index.js';
+import { PrismaClient } from '../prisma/generated/core/index.js';
 
 const prisma = new PrismaClient();
 

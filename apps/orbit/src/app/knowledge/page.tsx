@@ -1,11 +1,30 @@
 "use client";
-import { useState } from "react";
-import { Button } from "../../components/ui/button";
-import { searchKnowledge } from "../../lib/api";
+
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { searchKnowledge } from "@/lib/api";
+
+interface KnowledgeResult {
+  id?: string;
+  _id?: string;
+  title?: string;
+  summary?: string;
+  url?: string;
+  _source?: {
+    title?: string;
+    summary?: string;
+    content?: string;
+  };
+}
 
 export default function KnowledgePage() {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<KnowledgeResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+
   if (!token) {
     return (
       <main className="p-8 max-w-2xl mx-auto">
@@ -13,31 +32,23 @@ export default function KnowledgePage() {
       </main>
     );
   }
-  const [query, setQuery] = useState("");
-interface KnowledgeResult {
-  id: string;
-  title: string;
-  summary: string;
-  url: string;
-}
-const [results, setResults] = useState<KnowledgeResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
+    if (!query.trim()) return;
     setLoading(true);
     setError(null);
     setResults([]);
     try {
-      const res = await searchKnowledge(token, query);
+      const res = await searchKnowledge(token, query.trim());
       if (res.success) {
         setResults(res.results || []);
       } else {
         setError(res.error || "Search failed");
       }
-    } catch {
-      setError("Search failed");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Search failed";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -51,9 +62,11 @@ const [results, setResults] = useState<KnowledgeResult[]>([]);
           className="flex-1 border rounded px-3 py-2"
           placeholder="Search articles..."
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
         />
-        <Button type="submit" disabled={loading}>Search</Button>
+        <Button type="submit" disabled={loading}>
+          Search
+        </Button>
       </form>
       {loading ? (
         <div className="py-8 text-center text-muted-foreground">Searching...</div>
@@ -63,10 +76,12 @@ const [results, setResults] = useState<KnowledgeResult[]>([]);
         <div className="py-8 text-center text-muted-foreground">No results found.</div>
       ) : (
         <ul className="space-y-4">
-          {results.map(r => (
-            <li key={r.id} className="p-4 border rounded bg-muted">
-              <div className="font-semibold mb-1">{r.title}</div>
-              <div className="text-sm text-muted-foreground">{r.summary}</div>
+          {results.map((r: KnowledgeResult) => (
+            <li key={r.id || r._id} className="p-4 border rounded bg-muted">
+              <div className="font-semibold mb-1">{r.title || r._source?.title}</div>
+              <div className="text-sm text-muted-foreground">
+                {r.summary || r._source?.summary || r._source?.content?.slice(0, 160)}
+              </div>
             </li>
           ))}
         </ul>
