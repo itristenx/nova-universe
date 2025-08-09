@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { BetaBadge } from '@/components/ui/beta-badge'
 import { NovaLogo } from '@/components/ui/nova-logo'
 import {
   ArrowRightIcon,
@@ -76,10 +77,10 @@ export default function SelectModulePage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <NovaLogo className="w-12 h-12" />
+            <NovaLogo className="w-12 h-12 animate-pulse-glow" />
             <div>
               <h1 className="text-3xl font-bold nova-text-gradient">Nova Universe</h1>
-              <Badge variant="outline" className="mt-1">Beta</Badge>
+              <BetaBadge className="mt-1" />
             </div>
           </div>
           <h2 className="text-xl font-semibold mb-2">
@@ -99,7 +100,7 @@ export default function SelectModulePage() {
               <Card
                 key={module.id}
                 onClick={() => handleModuleSelect(module.href)}
-                className="relative group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 hover:border-primary/50 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+                className="relative group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 hover:border-primary/50 modern-card nova-glow-border"
               >
                 <CardHeader className="text-center pb-4">
                   <div className={cn(

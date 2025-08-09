@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { NovaLogo } from '@/components/ui/nova-logo'
+import { BetaBadge } from '@/components/ui/beta-badge'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { toast } from 'sonner'
@@ -88,9 +89,7 @@ export default function LoginPage() {
         <CardHeader className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-3">
             <NovaLogo className="w-16 h-16 animate-nova-float" />
-            <Badge variant="outline" className="beta-badge text-xs">
-              Beta
-            </Badge>
+            <BetaBadge />
           </div>
           <div className="space-y-2">
             <CardTitle className="text-2xl nova-text-gradient">Welcome to Nova Universe</CardTitle>

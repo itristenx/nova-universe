@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth/auth-provider'
 import { NovaLogo } from '@/components/ui/nova-logo'
 import { Badge } from '@/components/ui/badge'
+import { BetaBadge } from '@/components/ui/beta-badge'
 import {
   HomeIcon,
   TicketIcon,
@@ -152,8 +153,8 @@ export function PulseSidebar() {
               <NovaLogo className="w-8 h-8" />
               <div>
                 <div className="flex items-center space-x-2">
-                  <h1 className="text-lg font-bold module-pulse">Nova Pulse</h1>
-                  <Badge variant="outline" className="text-xs">Beta</Badge>
+                  <h1 className="text-lg font-bold nova-text-gradient">Nova Pulse</h1>
+                  <BetaBadge size="sm" />
                 </div>
                 <p className="text-xs text-muted-foreground">Technician Portal</p>
               </div>

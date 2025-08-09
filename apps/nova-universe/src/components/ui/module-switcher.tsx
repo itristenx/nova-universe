@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useAuth } from '@/lib/auth/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { BetaBadge } from '@/components/ui/beta-badge'
 import { NovaLogo } from '@/components/ui/nova-logo'
 import {
   DropdownMenu,
@@ -173,9 +174,7 @@ export function ModuleSwitcher({ className, variant = 'dropdown' }: ModuleSwitch
             </>
           )}
           <ChevronDownIcon className="w-4 h-4 text-muted-foreground" />
-          <Badge variant="outline" className="ml-1 text-xs">
-            Beta
-          </Badge>
+          <BetaBadge size="sm" className="ml-1" variant="outline" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">

@@ -43,9 +43,12 @@ export default function HomePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10">
         <div className="text-center space-y-6">
-          <NovaLogo className="w-24 h-24 mx-auto animate-pulse-glow" />
+          <div className="relative">
+            <NovaLogo className="w-24 h-24 mx-auto animate-pulse-glow" />
+            <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-20 blur-xl animate-pulse" />
+          </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold nova-text-gradient">Nova Universe</h1>
+            <h1 className="text-3xl font-bold nova-text-gradient">Nova Universe</h1>
             <p className="text-muted-foreground">Initializing your workspace...</p>
           </div>
           <LoadingSpinner size="lg" />

@@ -258,16 +258,45 @@
   }
 }
 
-/* Nova Universe specific styles */
+/* Nova Universe specific styles - Gemini Inspired */
 .nova-gradient {
-  background: linear-gradient(135deg, hsl(var(--nova-blue)), hsl(var(--nova-purple)));
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 25%, 
+    #f093fb 50%, 
+    #f5576c 75%, 
+    #4facfe 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
 }
 
 .nova-text-gradient {
-  background: linear-gradient(135deg, hsl(var(--nova-blue)), hsl(var(--nova-purple)));
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 25%, 
+    #f093fb 50%, 
+    #f5576c 75%, 
+    #4facfe 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(200%) skewX(-12deg); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 /* Module-specific color schemes */
@@ -295,18 +324,70 @@
   --module-color: 335 78% 42%;
 }
 
-/* Apple-inspired animations and effects */
-@keyframes pulse-glow {
+/* Gemini-inspired glow effects */
+@keyframes nova-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(var(--primary), 0.3);
+    box-shadow: 
+      0 0 20px rgba(102, 126, 234, 0.4),
+      0 0 40px rgba(118, 75, 162, 0.3),
+      0 0 60px rgba(240, 147, 251, 0.2),
+      0 0 80px rgba(245, 87, 108, 0.1);
+  }
+  25% {
+    box-shadow: 
+      0 0 30px rgba(118, 75, 162, 0.4),
+      0 0 50px rgba(240, 147, 251, 0.3),
+      0 0 70px rgba(245, 87, 108, 0.2),
+      0 0 90px rgba(79, 172, 254, 0.1);
   }
   50% {
-    box-shadow: 0 0 30px rgba(var(--primary), 0.5);
+    box-shadow: 
+      0 0 25px rgba(240, 147, 251, 0.4),
+      0 0 45px rgba(245, 87, 108, 0.3),
+      0 0 65px rgba(79, 172, 254, 0.2),
+      0 0 85px rgba(102, 126, 234, 0.1);
+  }
+  75% {
+    box-shadow: 
+      0 0 35px rgba(245, 87, 108, 0.4),
+      0 0 55px rgba(79, 172, 254, 0.3),
+      0 0 75px rgba(102, 126, 234, 0.2),
+      0 0 95px rgba(118, 75, 162, 0.1);
   }
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+  animation: nova-glow 3s ease-in-out infinite;
+}
+
+.nova-glow-border {
+  position: relative;
+  border-radius: 12px;
+  background: linear-gradient(135deg, 
+    rgba(102, 126, 234, 0.1) 0%, 
+    rgba(118, 75, 162, 0.1) 25%, 
+    rgba(240, 147, 251, 0.1) 50%, 
+    rgba(245, 87, 108, 0.1) 75%, 
+    rgba(79, 172, 254, 0.1) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.nova-glow-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 25%, 
+    #f093fb 50%, 
+    #f5576c 75%, 
+    #4facfe 100%);
+  border-radius: inherit;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
 }
 
 @keyframes nova-float {
@@ -322,17 +403,76 @@
   animation: nova-float 3s ease-in-out infinite;
 }
 
-/* Enhanced glassmorphism for beta branding */
+/* Enhanced glassmorphism and modern card styles */
 .glass-card {
-  backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  backdrop-filter: blur(32px);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 12px 48px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .dark .glass-card {
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark .glass-card:hover {
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 12px 48px rgba(0, 0, 0, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.modern-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.04),
+    0 1px 4px rgba(0, 0, 0, 0.02);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-card:hover {
+  box-shadow: 
+    0 8px 40px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  transform: translateY(-4px);
+}
+
+.dark .modern-card {
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.2),
+    0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark .modern-card:hover {
+  box-shadow: 
+    0 8px 40px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Smooth transitions for all interactive elements */

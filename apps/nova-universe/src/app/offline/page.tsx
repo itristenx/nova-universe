@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { NovaLogo } from '@/components/ui/nova-logo'
 import { Badge } from '@/components/ui/badge'
+import { BetaBadge } from '@/components/ui/beta-badge'
 import {
   WifiIcon,
   ArrowPathIcon,
@@ -68,13 +69,16 @@ export default function OfflinePage() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <NovaLogo className="w-16 h-16 animate-pulse" />
-            <div>
-              <h1 className="text-3xl font-bold nova-text-gradient">Nova Universe</h1>
-              <Badge variant="outline" className="mt-1">Offline Mode</Badge>
-            </div>
-          </div>
+                     <div className="flex items-center justify-center space-x-3 mb-4">
+             <NovaLogo className="w-16 h-16 animate-pulse" />
+             <div>
+               <h1 className="text-3xl font-bold nova-text-gradient">Nova Universe</h1>
+               <div className="flex items-center space-x-2 mt-1">
+                 <BetaBadge size="sm" />
+                 <Badge variant="outline" className="text-xs">Offline Mode</Badge>
+               </div>
+             </div>
+           </div>
         </div>
 
         {/* Main Content */}
