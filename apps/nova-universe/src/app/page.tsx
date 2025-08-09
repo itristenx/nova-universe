@@ -7,7 +7,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { NovaLogo } from '@/components/ui/nova-logo'
 
 export default function HomePage() {
-  const { isAuthenticated, isLoading, getCurrentModule, hasModuleAccess } = useAuth()
+  const { isAuthenticated, isLoading, getCurrentModule, getAvailableModules } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -18,25 +18,26 @@ export default function HomePage() {
       return
     }
 
-    // Determine where to redirect the user based on their access
-    const currentModule = getCurrentModule()
+    const availableModules = getAvailableModules()
     
-    if (currentModule) {
-      const moduleRoutes = {
-        orbit: '/portal',
-        pulse: '/pulse',
-        core: '/admin',
-        lore: '/knowledge',
-        beacon: '/kiosk',
-        synth: '/analytics',
-      }
-      
-      router.push(moduleRoutes[currentModule])
-    } else {
-      // User has no module access - redirect to access denied page
+    // If user has no module access
+    if (availableModules.length === 0) {
       router.push('/access-denied')
+      return
     }
-  }, [isAuthenticated, isLoading, getCurrentModule, router])
+    
+    // If user has multiple modules, show selection page
+    if (availableModules.length > 1) {
+      router.push('/select-module')
+      return
+    }
+    
+    // If user has only one module, redirect directly to it
+    if (availableModules.length === 1) {
+      router.push(availableModules[0].href)
+      return
+    }
+  }, [isAuthenticated, isLoading, getAvailableModules, router])
 
   if (isLoading || isAuthenticated) {
     return (

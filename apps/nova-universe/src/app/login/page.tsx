@@ -84,12 +84,17 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-      <Card className="w-full max-w-md glass">
+      <Card className="w-full max-w-md glass-card border-2">
         <CardHeader className="text-center space-y-4">
-          <NovaLogo className="w-16 h-16 mx-auto" />
+          <div className="flex items-center justify-center space-x-3">
+            <NovaLogo className="w-16 h-16 animate-nova-float" />
+            <Badge variant="outline" className="beta-badge text-xs">
+              Beta
+            </Badge>
+          </div>
           <div className="space-y-2">
             <CardTitle className="text-2xl nova-text-gradient">Welcome to Nova Universe</CardTitle>
-            <CardDescription>Sign in to access your workspace</CardDescription>
+            <CardDescription>Sign in to access your unified workspace</CardDescription>
           </div>
         </CardHeader>
         

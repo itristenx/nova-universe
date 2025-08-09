@@ -17,6 +17,14 @@ interface AuthContextType {
   hasPermission: (permission: string) => boolean
   hasModuleAccess: (module: NovaModule) => boolean
   getCurrentModule: () => NovaModule | null
+  getAvailableModules: () => Array<{
+    id: string
+    name: string
+    description: string
+    href: string
+    icon: string
+    color: string
+  }>
   switchModule: (module: NovaModule) => boolean
 }
 
@@ -182,6 +190,81 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return null
   }
 
+  const getAvailableModules = () => {
+    if (!user?.roles) return []
+    
+    const modules = []
+    
+    // Check each module access
+    if (hasModuleAccess('orbit')) {
+      modules.push({
+        id: 'orbit',
+        name: 'Nova Orbit',
+        description: 'Self-Service Portal',
+        href: '/portal',
+        icon: 'orbit',
+        color: 'bg-blue-500'
+      })
+    }
+    
+    if (hasModuleAccess('pulse')) {
+      modules.push({
+        id: 'pulse',
+        name: 'Nova Pulse',
+        description: 'Technician Portal',
+        href: '/pulse',
+        icon: 'pulse',
+        color: 'bg-green-500'
+      })
+    }
+    
+    if (hasModuleAccess('core')) {
+      modules.push({
+        id: 'core',
+        name: 'Nova Core',
+        description: 'Admin Portal',
+        href: '/admin',
+        icon: 'core',
+        color: 'bg-purple-500'
+      })
+    }
+    
+    if (hasModuleAccess('lore')) {
+      modules.push({
+        id: 'lore',
+        name: 'Nova Lore',
+        description: 'Knowledge Base',
+        href: '/knowledge',
+        icon: 'lore',
+        color: 'bg-orange-500'
+      })
+    }
+    
+    if (hasModuleAccess('beacon')) {
+      modules.push({
+        id: 'beacon',
+        name: 'Nova Beacon',
+        description: 'Kiosk Portal',
+        href: '/kiosk',
+        icon: 'beacon',
+        color: 'bg-red-500'
+      })
+    }
+    
+    if (hasModuleAccess('synth')) {
+      modules.push({
+        id: 'synth',
+        name: 'Nova Synth',
+        description: 'Analytics Portal',
+        href: '/analytics',
+        icon: 'synth',
+        color: 'bg-indigo-500'
+      })
+    }
+    
+    return modules
+  }
+
   const switchModule = (module: NovaModule): boolean => {
     if (!hasModuleAccess(module)) {
       return false
@@ -214,6 +297,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     hasPermission,
     hasModuleAccess,
     getCurrentModule,
+    getAvailableModules,
     switchModule,
   }
 

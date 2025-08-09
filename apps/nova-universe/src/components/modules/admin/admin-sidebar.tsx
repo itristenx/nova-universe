@@ -147,7 +147,10 @@ export function AdminSidebar() {
             <div className="flex items-center space-x-3">
               <NovaLogo className="w-8 h-8" />
               <div>
-                <h1 className="text-lg font-bold module-core">Nova Core</h1>
+                <div className="flex items-center space-x-2">
+                  <h1 className="text-lg font-bold module-core">Nova Core</h1>
+                  <Badge variant="outline" className="text-xs">Beta</Badge>
+                </div>
                 <p className="text-xs text-muted-foreground">Admin Portal</p>
               </div>
             </div>

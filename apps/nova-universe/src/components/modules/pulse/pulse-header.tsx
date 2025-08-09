@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { ModuleSwitcher } from '@/components/ui/module-switcher'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,8 +68,10 @@ export function PulseHeader() {
           ))}
         </div>
 
-        {/* Right side - Search, Notifications, User Menu */}
+        {/* Right side - Module Switcher, Search, Notifications, User Menu */}
         <div className="flex items-center space-x-4">
+          {/* Module Switcher */}
+          <ModuleSwitcher />
           {/* Search */}
           <form onSubmit={handleSearch} className="relative">
             <div className="relative">

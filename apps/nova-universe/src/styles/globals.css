@@ -294,3 +294,67 @@
 .module-synth {
   --module-color: 335 78% 42%;
 }
+
+/* Apple-inspired animations and effects */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(var(--primary), 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(var(--primary), 0.5);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes nova-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-nova-float {
+  animation: nova-float 3s ease-in-out infinite;
+}
+
+/* Enhanced glassmorphism for beta branding */
+.glass-card {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.dark .glass-card {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button, a, [role="button"], [role="menuitem"] {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced focus states for accessibility */
+*:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary)), 0 0 0 4px rgba(var(--primary), 0.2);
+}
+
+/* Beta badge styling */
+.beta-badge {
+  background: linear-gradient(135deg, hsl(var(--nova-blue)), hsl(var(--nova-purple)));
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
