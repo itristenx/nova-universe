@@ -13,7 +13,13 @@ if (process.env.NODE_ENV === 'production') {
 
 const missing = required.filter((k) => !process.env[k]);
 if (missing.length) {
-  throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  if (process.env.NODE_ENV === 'test') {
+    // Provide safe defaults in test mode
+    if (!process.env.SESSION_SECRET) process.env.SESSION_SECRET = 'test_session_secret';
+    if (!process.env.JWT_SECRET) process.env.JWT_SECRET = 'test_jwt_secret';
+  } else {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
 }
 
 const config = {
@@ -78,26 +84,6 @@ export const getConfig = () => {
     SCIM_TOKEN: process.env.SCIM_TOKEN,
     DISABLE_AUTH: process.env.DISABLE_AUTH === 'true',
     CORS_ORIGINS: process.env.CORS_ORIGINS,
-    RATE_LIMIT_WINDOW: parseInt(process.env.RATE_LIMIT_WINDOW) || 60000,
-    SUBMIT_TICKET_LIMIT: parseInt(process.env.SUBMIT_TICKET_LIMIT) || 10,
-    API_LOGIN_LIMIT: parseInt(process.env.API_LOGIN_LIMIT) || 5,
-    AUTH_LIMIT: parseInt(process.env.AUTH_LIMIT) || 5,
-    LOG_RETENTION_DAYS: parseInt(process.env.LOG_RETENTION_DAYS) || 30,
-    TLS_CERT_PATH: process.env.TLS_CERT_PATH,
-    TLS_KEY_PATH: process.env.TLS_KEY_PATH,
-    SMTP_HOST: process.env.SMTP_HOST,
-    SMTP_PORT: parseInt(process.env.SMTP_PORT) || 587,
-    SMTP_USER: process.env.SMTP_USER,
-    SMTP_PASS: process.env.SMTP_PASS,
-    SMTP_SECURE: process.env.SMTP_SECURE === 'true',
-    HELPDESK_EMAIL: process.env.HELPDESK_EMAIL,
-    SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
-    SERVICENOW_INSTANCE: process.env.SERVICENOW_INSTANCE,
-    SERVICENOW_USER: process.env.SERVICENOW_USER,
-    SERVICENOW_PASS: process.env.SERVICENOW_PASS,
-    HELPSCOUT_API_KEY: process.env.HELPSCOUT_API_KEY,
-    HELPSCOUT_MAILBOX_ID: process.env.HELPSCOUT_MAILBOX_ID,
-    HELPSCOUT_SMTP_FALLBACK: process.env.HELPSCOUT_SMTP_FALLBACK === 'true'
   };
 };
 

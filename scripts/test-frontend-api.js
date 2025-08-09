@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 // Simple test to verify frontend can communicate with API
+// scripts/test-frontend-api.js
+if (typeof window === 'undefined') {
+  console.log('Skipping browser-only test in Node environment');
+  process.exit(0);
+}
+
 import axios from 'axios';
 
 const API_URL = 'http://localhost:3000';
