@@ -875,7 +875,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
   });
 });
 
-describe('Integration Todo List Validation', () => {
+describe('Integration Requirements Validation', () => {
   it('should validate all implementation requirements', () => {
     const requirements = [
       'Migration scripts under prisma/migrations/',

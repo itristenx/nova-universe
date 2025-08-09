@@ -533,7 +533,7 @@ export const mockIntegrations = [
             updateUsers: true
         },
         config: {
-            tenantId: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+            tenantId: crypto.randomUUID ? crypto.randomUUID() : 'tenant-' + Math.random().toString(36).substr(2, 8),
             clientId: 'yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy',
             clientSecret: '***CONFIGURED***',
             authority: 'https://login.microsoftonline.com/'

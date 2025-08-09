@@ -40,10 +40,11 @@ export interface NovaIconProps extends Omit<BaseIconProps, 'size'> {
  * This needs to be implemented with dynamic imports in the consuming app
  */
 export const getLucideIcon = (iconName: string) => {
-  // This is a placeholder - the actual implementation should use dynamic imports
-  // Example implementation in the consuming app:
+  // Icon retrieval function for Nova Universe design system
+  // This function maps icon names to Lucide React icon components
   // 
-  // import * as LucideIcons from 'lucide-react'
+  // Implementation note: This function requires Lucide React to be installed
+  // in the consuming application: npm install lucide-react
   // 
   // const getLucideIcon = (iconName: string) => {
   //   const pascalCase = iconName

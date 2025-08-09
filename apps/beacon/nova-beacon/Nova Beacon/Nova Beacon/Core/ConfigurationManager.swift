@@ -204,18 +204,91 @@ class ConfigurationManager: ObservableObject {
     }
     
     private func setupConfigUpdateTimer() {
-        // TODO: Implement periodic configuration updates from server
-        // This would periodically check if the kiosk has been deactivated
+        // Setup periodic configuration updates from Nova Universe server
+        // Checks every 5 minutes if the kiosk has been deactivated or config changed
         configUpdateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
             Task {
                 await self.checkServerStatus()
+                await self.fetchLatestConfiguration()
             }
         }
     }
     
     private func checkServerStatus() async {
-        // TODO: Check with server if kiosk is still activated
-        // If deactivated, call deactivateKiosk()
+        // Check with Nova Universe server if kiosk is still activated
+        guard let serverConfig = serverConfiguration else { return }
+        
+        do {
+            guard let url = URL(string: "\(serverConfig.serverURL)/api/kiosks/\(deviceId)") else {
+                print("Invalid kiosk status URL")
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("Bearer \(serverConfig.token)", forHTTPHeaderField: "Authorization")
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    let kioskData = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                    
+                    if let isActive = kioskData?["isActive"] as? Bool, !isActive {
+                        // Kiosk has been deactivated on the server
+                        await MainActor.run {
+                            self.deactivateKiosk()
+                        }
+                        print("Kiosk deactivated by server")
+                    }
+                    
+                    // Update last successful check
+                    lastConfigUpdate = Date()
+                    userDefaults.set(lastConfigUpdate, forKey: UserDefaultsKeys.lastConfigUpdate)
+                } else if httpResponse.statusCode == 404 {
+                    // Kiosk not found on server - deactivate
+                    await MainActor.run {
+                        self.deactivateKiosk()
+                    }
+                    print("Kiosk not found on server - deactivating")
+                }
+            }
+        } catch {
+            print("Error checking server status: \(error)")
+        }
+    }
+    
+    private func fetchLatestConfiguration() async {
+        // Fetch latest configuration from Nova Universe server
+        guard let serverConfig = serverConfiguration else { return }
+        
+        do {
+            guard let url = URL(string: "\(serverConfig.serverURL)/api/kiosks/\(deviceId)/config") else {
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("Bearer \(serverConfig.token)", forHTTPHeaderField: "Authorization")
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                let configData = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                
+                // Update configuration if changed
+                if let newLocation = configData?["location"] as? String {
+                    await MainActor.run {
+                        self.location = newLocation
+                        self.userDefaults.set(newLocation, forKey: UserDefaultsKeys.location)
+                    }
+                }
+                
+                print("Configuration updated from server")
+            }
+        } catch {
+            print("Error fetching latest configuration: \(error)")
+        }
     }
     
     // MARK: - Kiosk Controller Methods

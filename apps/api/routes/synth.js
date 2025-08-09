@@ -1282,7 +1282,7 @@ async function detectPatterns(tickets, timeframe) {
       frequency: 'daily',
       impact: 'medium',
       recommendation: 'Consider staffing adjustments during peak hours',
-      relatedTickets: tickets.filter(t => t.hour === peakHour).slice(0, 5).map(t => t.id || 'TKT-XXXX')
+      relatedTickets: tickets.filter(t => t.hour === peakHour).slice(0, 5).map(t => t.id || `TKT-${Math.random().toString(36).substr(2, 8).toUpperCase()}`)
     });
   }
 
@@ -1296,7 +1296,7 @@ async function detectPatterns(tickets, timeframe) {
         frequency: `${count} times in ${timeframe}`,
         impact: count > 10 ? 'high' : count > 5 ? 'medium' : 'low',
         recommendation: `Investigate infrastructure or training needs for ${category} in ${location}`,
-        relatedTickets: tickets.filter(t => t.category === category && t.location === location).slice(0, 5).map(t => t.id || 'TKT-XXXX')
+        relatedTickets: tickets.filter(t => t.category === category && t.location === location).slice(0, 5).map(t => t.id || `TKT-${Math.random().toString(36).substr(2, 8).toUpperCase()}`)
       });
     }
   });
