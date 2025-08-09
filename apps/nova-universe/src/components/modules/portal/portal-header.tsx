@@ -1,0 +1,209 @@
+'use client'
+
+import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useAuth } from '@/lib/auth/auth-provider'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  MagnifyingGlassIcon,
+  BellIcon,
+  UserCircleIcon,
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon,
+  ChevronRightIcon,
+  QuestionMarkCircleIcon,
+  TicketIcon,
+  DocumentTextIcon,
+} from '@heroicons/react/24/outline'
+
+export function PortalHeader() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const pathname = usePathname()
+  const { user, logout } = useAuth()
+
+  // Generate breadcrumbs from pathname
+  const pathSegments = pathname.split('/').filter(Boolean)
+  const breadcrumbs = pathSegments.map((segment, index) => {
+    const href = '/' + pathSegments.slice(0, index + 1).join('/')
+    const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace('-', ' ')
+    return { label, href, isLast: index === pathSegments.length - 1 }
+  })
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      // Navigate to search with query
+      window.location.href = `/portal/search?q=${encodeURIComponent(searchQuery.trim())}`
+    }
+  }
+
+  return (
+    <header className="bg-background border-b border-border px-6 py-4">
+      <div className="flex items-center justify-between">
+        {/* Breadcrumbs */}
+        <div className="flex items-center space-x-2 text-sm">
+          {breadcrumbs.map((crumb, index) => (
+            <div key={crumb.href} className="flex items-center space-x-2">
+              {index > 0 && (
+                <ChevronRightIcon className="w-4 h-4 text-muted-foreground" />
+              )}
+              <span
+                className={
+                  crumb.isLast
+                    ? 'font-medium text-foreground'
+                    : 'text-muted-foreground hover:text-foreground cursor-pointer'
+                }
+              >
+                {crumb.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Right side - Search, Quick Actions, Notifications, User Menu */}
+        <div className="flex items-center space-x-4">
+          {/* Search */}
+          <form onSubmit={handleSearch} className="relative">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search knowledge base, tickets..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-80"
+              />
+            </div>
+          </form>
+
+          {/* Quick Actions */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <QuestionMarkCircleIcon className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel>Quick Help</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <TicketIcon className="w-4 h-4 mr-2" />
+                Submit New Ticket
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <DocumentTextIcon className="w-4 h-4 mr-2" />
+                Browse Knowledge Base
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <UserCircleIcon className="w-4 h-4 mr-2" />
+                Contact Support
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="p-2 text-xs text-muted-foreground">
+                <p className="font-medium mb-1">Support Hours:</p>
+                <p>Mon-Fri: 8AM-6PM EST</p>
+                <p>Sat-Sun: 10AM-4PM EST</p>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Notifications */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <BellIcon className="w-5 h-5" />
+                <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center text-xs">
+                  2
+                </Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="space-y-2 p-2">
+                <div className="flex items-start space-x-3 p-2 hover:bg-muted rounded-md">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">Ticket update</p>
+                    <p className="text-xs text-muted-foreground">
+                      Your ticket #1234 has been updated by support
+                    </p>
+                    <p className="text-xs text-muted-foreground">10 minutes ago</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3 p-2 hover:bg-muted rounded-md">
+                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">Service request approved</p>
+                    <p className="text-xs text-muted-foreground">
+                      Your software installation request has been approved
+                    </p>
+                    <p className="text-xs text-muted-foreground">1 hour ago</p>
+                  </div>
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-center justify-center">
+                View all notifications
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <span className="text-sm font-medium text-primary">
+                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                </div>
+                <div className="hidden md:block text-left">
+                  <p className="text-sm font-medium">{user?.name || 'User'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {user?.department || 'Employee'}
+                  </p>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <UserCircleIcon className="w-4 h-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Cog6ToothIcon className="w-4 h-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="p-2 text-xs text-muted-foreground">
+                <p>Employee ID: {user?.id || 'N/A'}</p>
+                <p>Department: {user?.department || 'N/A'}</p>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={logout}
+                className="text-destructive focus:text-destructive"
+              >
+                <ArrowRightOnRectangleIcon className="w-4 h-4 mr-2" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </header>
+  )
+}

@@ -118,6 +118,48 @@ export function isValidUrl(url: string): boolean {
   }
 }
 
+// Date and time formatting
+export const formatDate = (date: Date | string, format = 'MMM d, yyyy'): string => {
+  const d = new Date(date)
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+export const formatRelativeTime = (date: Date | string): string => {
+  const now = new Date()
+  const then = new Date(date)
+  const diffInSeconds = Math.floor((now.getTime() - then.getTime()) / 1000)
+
+  if (diffInSeconds < 60) {
+    return 'just now'
+  }
+
+  if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60)
+    return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
+  }
+
+  if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600)
+    return `${hours} hour${hours === 1 ? '' : 's'} ago`
+  }
+
+  if (diffInSeconds < 604800) {
+    const days = Math.floor(diffInSeconds / 86400)
+    return `${days} day${days === 1 ? '' : 's'} ago`
+  }
+
+  if (diffInSeconds < 2419200) {
+    const weeks = Math.floor(diffInSeconds / 604800)
+    return `${weeks} week${weeks === 1 ? '' : 's'} ago`
+  }
+
+  return formatDate(date)
+}
+
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
