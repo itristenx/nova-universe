@@ -100,10 +100,20 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     });
 
     // Data update handlers specific to technician needs
+    const dispatchNative = (name: string, detail: any) => {
+      window.dispatchEvent(new CustomEvent(name, { detail }));
+    };
+    const toastKiosk = (title: string, body: string) => {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/assets/icons/icon-192x192.png', tag: 'kiosk-activation' });
+      }
+    };
+
     socket.on('ticket_update', (message: WebSocketMessage) => {
       console.log('🎫 Ticket update received:', message.type);
       setLastMessage(message);
       onMessage?.(message);
+      dispatchNative('pulse:ticket_update', message);
     });
 
     socket.on('ticket_assigned', (message: WebSocketMessage) => {
@@ -131,6 +141,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
       console.log('🔔 Technician notification:', message.type);
       setLastMessage(message);
       onMessage?.(message);
+      dispatchNative('pulse:technician_notification', message);
       
       // Show browser notification
       if ('Notification' in window && Notification.permission === 'granted') {
@@ -139,6 +150,21 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
           icon: '/assets/icons/icon-192x192.png',
           tag: 'pulse-notification'
         });
+      }
+    });
+
+    socket.on('data_update', (message: WebSocketMessage) => {
+      // Broadcast native event for app-wide listeners
+      dispatchNative('pulse:data_update', message);
+      if (message?.type === 'kiosk_activated') {
+        toastKiosk('Kiosk Paired', `Kiosk ${message?.data?.kioskId || ''} paired successfully`);
+      }
+    });
+
+    socket.on('realtime_update', (message: WebSocketMessage) => {
+      dispatchNative('pulse:realtime_update', message);
+      if (message?.type === 'kiosk_activated') {
+        toastKiosk('Kiosk Paired', `Kiosk ${message?.data?.kioskId || ''} paired successfully`);
       }
     });
 
