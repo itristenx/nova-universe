@@ -19,7 +19,7 @@ Environment variables:
 - `OPENAI_BASE_URL` (optional; supports Azure OpenAI or proxy)
 - `OPENAI_ORG` (optional)
 - `NOVA_AI_DEFAULT_PROVIDER` (default: openai)
-- `NOVA_AI_DEFAULT_MODEL` (default: gpt-4o-mini)
+- `NOVA_AI_DEFAULT_MODEL` (default: gpt-oss-20b)
 
 ## Security & Compliance
 - PII redaction for third‑party providers (emails, phones, CC numbers)

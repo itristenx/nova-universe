@@ -11,6 +11,6 @@ export async function loadPolicies() {
 
 export function attachComplianceHeaders(req, res, next) {
   res.setHeader('X-Nova-AI-Provider', process.env.NOVA_AI_DEFAULT_PROVIDER || 'openai');
-  res.setHeader('X-Nova-AI-Model', process.env.NOVA_AI_DEFAULT_MODEL || 'gpt-4o-mini');
+  res.setHeader('X-Nova-AI-Model', process.env.NOVA_AI_DEFAULT_MODEL || 'gpt-oss-20b');
   next();
 }

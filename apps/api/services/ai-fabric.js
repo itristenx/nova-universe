@@ -5,7 +5,7 @@ import db from '../db.js';
 dotenv.config();
 
 const DEFAULT_PROVIDER = process.env.NOVA_AI_DEFAULT_PROVIDER || 'openai';
-const DEFAULT_MODEL = process.env.NOVA_AI_DEFAULT_MODEL || 'gpt-4o-mini';
+const DEFAULT_MODEL = process.env.NOVA_AI_DEFAULT_MODEL || 'gpt-oss-20b';
 
 export const AiProviders = {
   OPENAI: 'openai',
