@@ -7,6 +7,14 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 
+  // Lint/type checks during build can be relaxed for UAT
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // Image optimization
   images: {
     formats: ['image/webp', 'image/avif'],

@@ -5,6 +5,8 @@ interface SecurityPageProps {
   params: Promise<{ locale: string }>;
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function SecurityPage({ params }: SecurityPageProps) {
   const { locale } = await params;
   
@@ -12,13 +14,4 @@ export default async function SecurityPage({ params }: SecurityPageProps) {
   setRequestLocale(locale);
 
   return <SecurityHub />;
-}
-
-export function generateStaticParams() {
-  return [
-    { locale: 'en' },
-    { locale: 'es' },
-    { locale: 'fr' },
-    { locale: 'ar' }
-  ];
 }

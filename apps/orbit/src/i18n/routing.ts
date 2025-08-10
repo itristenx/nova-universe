@@ -10,3 +10,5 @@ export const routing = defineRouting({
   // Always show the locale prefix in the URL
   localePrefix: 'always'
 });
+
+export default routing;

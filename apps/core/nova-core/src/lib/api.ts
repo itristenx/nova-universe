@@ -1365,8 +1365,6 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
-<<<<<<< Current (Your changes)
-=======
 
 export async function generateActivationCode(input: { kioskId: string; kioskName?: string; location?: string; configuration?: any }) {
   const res = await fetch('/api/v2/beacon/activation-codes', {
@@ -1383,4 +1381,3 @@ export async function listActivationCodes() {
   if (!res.ok) throw new Error('Failed to list activation codes');
   return res.json();
 }
->>>>>>> Incoming (Background Agent changes)
