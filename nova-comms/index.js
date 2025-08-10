@@ -29,7 +29,8 @@ const isTest = process.env.JEST_WORKER_ID !== undefined || process.env.NODE_ENV 
 // Validate required environment variables
 const requiredEnvVars = [
   'SLACK_SIGNING_SECRET',
-  'SLACK_BOT_TOKEN', 
+  // If OAuth is not configured, we need a bot token. If OAuth is configured, token is managed per installation.
+  ...(process.env.SLACK_CLIENT_ID && process.env.SLACK_CLIENT_SECRET ? [] : ['SLACK_BOT_TOKEN']),
   'API_URL',
   'JWT_SECRET'
 ];
@@ -46,9 +47,21 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
+const useOAuth = Boolean(process.env.SLACK_CLIENT_ID && process.env.SLACK_CLIENT_SECRET);
+
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
-  token: process.env.SLACK_BOT_TOKEN,
+  ...(useOAuth
+    ? {
+        clientId: process.env.SLACK_CLIENT_ID,
+        clientSecret: process.env.SLACK_CLIENT_SECRET,
+        stateSecret: process.env.SLACK_STATE_SECRET || process.env.JWT_SECRET,
+        scopes: (
+          process.env.SLACK_SCOPES ||
+          'commands,chat:write,chat:write.public,reactions:write,users:read,channels:read,app_mentions:read'
+        ).split(',')
+      }
+    : { token: process.env.SLACK_BOT_TOKEN })
 });
 
 function buildModal(systems = [], urgencies = [], channel) {
@@ -66,77 +79,35 @@ function buildModal(systems = [], urgencies = [], channel) {
     submit: { type: 'plain_text', text: 'Submit' },
     close: { type: 'plain_text', text: 'Cancel' },
     blocks: [
+      { type: 'input', block_id: 'name', label: { type: 'plain_text', text: 'Name' }, element: { type: 'plain_text_input', action_id: 'value' } },
+      { type: 'input', block_id: 'email', label: { type: 'plain_text', text: 'Email' }, element: { type: 'plain_text_input', action_id: 'value' } },
+      { type: 'input', block_id: 'title', label: { type: 'plain_text', text: 'Title' }, element: { type: 'plain_text_input', action_id: 'value' } },
       {
-        type: 'input',
-        block_id: 'name',
-        label: { type: 'plain_text', text: 'Name' },
-        element: { type: 'plain_text_input', action_id: 'value' },
+        type: 'input', block_id: 'system', label: { type: 'plain_text', text: 'System' },
+        element: systemOptions.length > 0
+          ? { type: 'static_select', action_id: 'value', options: systemOptions }
+          : { type: 'plain_text_input', action_id: 'value' },
       },
       {
-        type: 'input',
-        block_id: 'email',
-        label: { type: 'plain_text', text: 'Email' },
-        element: { type: 'plain_text_input', action_id: 'value' },
+        type: 'input', block_id: 'urgency', label: { type: 'plain_text', text: 'Urgency' },
+        element: { type: 'static_select', action_id: 'value', options: urgencyOptions.map((urgency) => ({ text: { type: 'plain_text', text: urgency }, value: urgency })) },
       },
       {
-        type: 'input',
-        block_id: 'title',
-        label: { type: 'plain_text', text: 'Title' },
-        element: { type: 'plain_text_input', action_id: 'value' },
-      },
-      {
-        type: 'input',
-        block_id: 'system',
-        label: { type: 'plain_text', text: 'System' },
-        element:
-          systemOptions.length > 0
-            ? {
-                type: 'static_select',
-                action_id: 'value',
-                options: systemOptions,
-              }
-            : { type: 'plain_text_input', action_id: 'value' },
-      },
-      {
-        type: 'input',
-        block_id: 'urgency',
-        label: { type: 'plain_text', text: 'Urgency' },
-        element: {
-          type: 'static_select',
-          action_id: 'value',
-          options: urgencyOptions.map((urgency) => ({
-            text: { type: 'plain_text', text: urgency },
-            value: urgency,
-          })),
-        },
-      },
-      {
-        type: 'input',
-        block_id: 'description',
-        label: { type: 'plain_text', text: 'Description' },
-        element: {
-          type: 'plain_text_input',
-          multiline: true,
-          action_id: 'value',
-        },
-        optional: true,
+        type: 'input', block_id: 'description', label: { type: 'plain_text', text: 'Description' },
+        element: { type: 'plain_text_input', multiline: true, action_id: 'value' }, optional: true,
       },
     ],
   };
 }
 
 async function getAuthToken() {
-  return jwt.sign({ type: 'slack' }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '1h',
-  });
+  return jwt.sign({ type: 'slack' }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '1h' });
 }
 
 async function fetchConfigWithFallback() {
   const token = await getAuthToken();
   try {
-    const response = await axios.get(`${process.env.API_URL}/api/config`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get(`${process.env.API_URL}/api/config`, { headers: { Authorization: `Bearer ${token}` } });
     return response.data || {};
   } catch (error) {
     console.error('Failed to fetch config from /api/config:', error.message);
@@ -148,29 +119,66 @@ function buildQueueBlocks(summary) {
   if (!summary || !Array.isArray(summary.queues)) {
     return [{ type: 'section', text: { type: 'mrkdwn', text: 'No queue data available.' } }];
   }
-  const header = {
-    type: 'section',
-    text: { type: 'mrkdwn', text: '*Pulse Queue Summary*' },
-  };
+  const header = { type: 'section', text: { type: 'mrkdwn', text: '*Pulse Queue Summary*' } };
   const divider = { type: 'divider' };
   const rows = summary.queues.slice(0, 10).map((queue) => ({
-    type: 'section',
-    text: {
-      type: 'mrkdwn',
-      text: `• *${queue.name}*: ${queue.openCount || 0} open, ${queue.waitingCount || 0} waiting, ${queue.slaBreaches || 0} SLA breaches`,
-    },
+    type: 'section', text: { type: 'mrkdwn', text: `• *${queue.name}*: ${queue.openCount || 0} open, ${queue.waitingCount || 0} waiting, ${queue.slaBreaches || 0} SLA breaches` },
   }));
   return [header, divider, ...rows];
 }
+
+// ---------- Helix / Nova Auth integration ----------
+async function resolveNovaUserFromSlack({ slackUserId, teamId }) {
+  const token = await getAuthToken();
+  try {
+    const res = await axios.post(
+      `${process.env.API_URL}/auth/slack/resolve`,
+      { slackUserId, teamId },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return res.data || null;
+  } catch (error) {
+    // fallback path
+    try {
+      const res2 = await axios.post(
+        `${process.env.API_URL}/api/auth/slack/resolve`,
+        { slackUserId, teamId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res2.data || null;
+    } catch (error2) {
+      return null;
+    }
+  }
+}
+
+function hasRequiredRole(novaUser, requiredRoles) {
+  if (!requiredRoles || requiredRoles.length === 0) return true;
+  const roles = novaUser?.roles || [];
+  return requiredRoles.some((r) => roles.includes(r));
+}
+
+async function ensureAuthorizedOrReply({ client, channelId, userId, slackUserId, teamId, requiredRoles }) {
+  const novaUser = await resolveNovaUserFromSlack({ slackUserId, teamId });
+  if (!novaUser || !hasRequiredRole(novaUser, requiredRoles)) {
+    await client.chat.postEphemeral({
+      channel: channelId,
+      user: userId,
+      text: 'You are not authorized to perform this action. Please contact an administrator or link your Slack account in Nova.'
+    });
+    return false;
+  }
+  return true;
+}
+
+// ---------------------------------------------------
 
 // Slash command: /new-ticket (existing)
 app.command('/new-ticket', async ({ ack, body, client }) => {
   await ack();
   try {
     const token = await getAuthToken();
-    const response = await axios.get(`${process.env.API_URL}/api/config`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get(`${process.env.API_URL}/api/config`, { headers: { Authorization: `Bearer ${token}` } });
     const systems = Array.isArray(response.data.systems)
       ? response.data.systems
       : String(response.data.systems || '')
@@ -233,49 +241,34 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
 
   try {
     const token = await getAuthToken();
-    const response = await axios.post(
-      `${process.env.API_URL}/submit-ticket`,
-      payload,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const response = await axios.post(`${process.env.API_URL}/submit-ticket`, payload, { headers: { Authorization: `Bearer ${token}` } });
     const { ticketId, emailStatus } = response.data || {};
     const adminUrl = process.env.VITE_ADMIN_URL;
     const blocks = [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:white_check_mark: Ticket *${ticketId}* submitted (email ${emailStatus}).`,
-        },
-      },
+      { type: 'section', text: { type: 'mrkdwn', text: `:white_check_mark: Ticket *${ticketId}* submitted (email ${emailStatus}).` } },
     ];
     if (adminUrl) {
-      blocks.push({
-        type: 'context',
-        elements: [
-          { type: 'mrkdwn', text: `<${adminUrl}|Open Nova Portal>` },
-        ],
-      });
+      blocks.push({ type: 'context', elements: [{ type: 'mrkdwn', text: `<${adminUrl}|Open Nova Portal>` }] });
     }
-    await client.chat.postEphemeral({
-      channel: view.private_metadata || body.user.id,
-      user: body.user.id,
-      text: `Ticket ${ticketId || ''} submitted`,
-      blocks,
-    });
+    await client.chat.postEphemeral({ channel: view.private_metadata || body.user.id, user: body.user.id, text: `Ticket ${ticketId || ''} submitted`, blocks });
   } catch (error) {
     console.error('Failed to submit ticket:', error.message);
-    await client.chat.postEphemeral({
-      channel: view.private_metadata || body.user.id,
-      user: body.user.id,
-      text: 'Failed to submit ticket.',
-    });
+    await client.chat.postEphemeral({ channel: view.private_metadata || body.user.id, user: body.user.id, text: 'Failed to submit ticket.' });
   }
 });
 
-// Slash command: /nova-status → system status
+// Slash command: /nova-status → system status (agent/admin)
 app.command('/nova-status', async ({ ack, body, client }) => {
   await ack();
+  const authorized = await ensureAuthorizedOrReply({
+    client,
+    channelId: body.channel_id,
+    userId: body.user_id,
+    slackUserId: body.user_id,
+    teamId: body.team_id,
+    requiredRoles: ['agent', 'admin'],
+  });
+  if (!authorized) return;
   try {
     const token = await getAuthToken();
     let data;
@@ -294,9 +287,18 @@ app.command('/nova-status', async ({ ack, body, client }) => {
   }
 });
 
-// Slash command: /nova-queue → queue summary (Pulse)
+// Slash command: /nova-queue → queue summary (Pulse) (agent/admin)
 app.command('/nova-queue', async ({ ack, body, client }) => {
   await ack();
+  const authorized = await ensureAuthorizedOrReply({
+    client,
+    channelId: body.channel_id,
+    userId: body.user_id,
+    slackUserId: body.user_id,
+    teamId: body.team_id,
+    requiredRoles: ['agent', 'admin'],
+  });
+  if (!authorized) return;
   try {
     const token = await getAuthToken();
     let summary;
@@ -315,30 +317,15 @@ app.command('/nova-queue', async ({ ack, body, client }) => {
   }
 });
 
-// Slash command: /nova-feedback → modal
+// Slash command: /nova-feedback → modal (open)
 app.command('/nova-feedback', async ({ ack, body, client }) => {
   await ack();
   const view = {
-    type: 'modal',
-    callback_id: 'feedback_submit',
-    private_metadata: body.channel_id,
-    title: { type: 'plain_text', text: 'Submit Feedback' },
-    submit: { type: 'plain_text', text: 'Send' },
-    close: { type: 'plain_text', text: 'Cancel' },
+    type: 'modal', callback_id: 'feedback_submit', private_metadata: body.channel_id,
+    title: { type: 'plain_text', text: 'Submit Feedback' }, submit: { type: 'plain_text', text: 'Send' }, close: { type: 'plain_text', text: 'Cancel' },
     blocks: [
-      {
-        type: 'input',
-        block_id: 'feedback',
-        label: { type: 'plain_text', text: 'Your feedback' },
-        element: { type: 'plain_text_input', action_id: 'value', multiline: true },
-      },
-      {
-        type: 'input',
-        optional: true,
-        block_id: 'contact',
-        label: { type: 'plain_text', text: 'Contact (optional)' },
-        element: { type: 'plain_text_input', action_id: 'value' },
-      },
+      { type: 'input', block_id: 'feedback', label: { type: 'plain_text', text: 'Your feedback' }, element: { type: 'plain_text_input', action_id: 'value', multiline: true } },
+      { type: 'input', optional: true, block_id: 'contact', label: { type: 'plain_text', text: 'Contact (optional)' }, element: { type: 'plain_text_input', action_id: 'value' } },
     ],
   };
   await client.views.open({ trigger_id: body.trigger_id, view });
@@ -358,35 +345,29 @@ app.view('feedback_submit', async ({ ack, view, body, client }) => {
   }
 });
 
-// Slash command: /nova-assign → assign thread to agent
+// Slash command: /nova-assign → assign thread to agent (agent/admin)
 app.command('/nova-assign', async ({ ack, body, client }) => {
   await ack();
+  const authorized = await ensureAuthorizedOrReply({
+    client,
+    channelId: body.channel_id,
+    userId: body.user_id,
+    slackUserId: body.user_id,
+    teamId: body.team_id,
+    requiredRoles: ['agent', 'admin'],
+  });
+  if (!authorized) return;
   try {
     const token = await getAuthToken();
     const agentsRes = await axios.get(`${process.env.API_URL}/pulse/agents`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { agents: [] } }));
     const agents = agentsRes?.data?.agents || [];
     const options = agents.slice(0, 100).map((a) => ({ text: { type: 'plain_text', text: a.displayName || a.email || a.id }, value: a.id }));
     const view = {
-      type: 'modal',
-      callback_id: 'assign_submit',
-      private_metadata: JSON.stringify({ channel_id: body.channel_id }),
-      title: { type: 'plain_text', text: 'Assign Thread' },
-      submit: { type: 'plain_text', text: 'Assign' },
-      close: { type: 'plain_text', text: 'Cancel' },
+      type: 'modal', callback_id: 'assign_submit', private_metadata: JSON.stringify({ channel_id: body.channel_id }),
+      title: { type: 'plain_text', text: 'Assign Thread' }, submit: { type: 'plain_text', text: 'Assign' }, close: { type: 'plain_text', text: 'Cancel' },
       blocks: [
-        {
-          type: 'input',
-          block_id: 'agent',
-          label: { type: 'plain_text', text: 'Agent' },
-          element: options.length ? { type: 'static_select', action_id: 'value', options } : { type: 'plain_text_input', action_id: 'value' },
-        },
-        {
-          type: 'input',
-          block_id: 'notes',
-          optional: true,
-          label: { type: 'plain_text', text: 'Notes' },
-          element: { type: 'plain_text_input', action_id: 'value', multiline: true },
-        },
+        { type: 'input', block_id: 'agent', label: { type: 'plain_text', text: 'Agent' }, element: options.length ? { type: 'static_select', action_id: 'value', options } : { type: 'plain_text_input', action_id: 'value' } },
+        { type: 'input', block_id: 'notes', optional: true, label: { type: 'plain_text', text: 'Notes' }, element: { type: 'plain_text_input', action_id: 'value', multiline: true } },
       ],
     };
     await client.views.open({ trigger_id: body.trigger_id, view });
@@ -410,16 +391,18 @@ app.view('assign_submit', async ({ ack, view, body, client }) => {
   }
 });
 
-// Event: app_mention → AI suggestions via Cosmo
+// Event: app_mention → AI suggestions via Cosmo (optional)
 app.event('app_mention', async ({ event, client }) => {
   try {
     if (String(process.env.COMMS_AI_ENABLED || 'true') !== 'true') return;
     const token = await getAuthToken();
-    const aiRes = await axios.post(
-      `${process.env.API_URL}/ai/cosmo/suggest`,
-      { text: event.text, channel: event.channel, thread_ts: event.thread_ts },
-      { headers: { Authorization: `Bearer ${token}` } }
-    ).catch(() => ({ data: { suggestions: [] } }));
+    const aiRes = await axios
+      .post(
+        `${process.env.API_URL}/ai/cosmo/suggest`,
+        { text: event.text, channel: event.channel, thread_ts: event.thread_ts },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .catch(() => ({ data: { suggestions: [] } }));
 
     const suggestions = aiRes?.data?.suggestions || [];
     const text = suggestions[0]?.text || 'I am here to help. Try `/it-help` to create a ticket or `/nova-queue` to view queues.';
@@ -440,9 +423,18 @@ app.message(/(urgent|escalate|sev[1-3])/i, async ({ message, client, context }) 
   }
 });
 
-// Interactive approval buttons
+// Interactive approval buttons (agent/admin)
 app.action('approve_request', async ({ ack, body, client }) => {
   await ack();
+  const authorized = await ensureAuthorizedOrReply({
+    client,
+    channelId: body.channel?.id,
+    userId: body.user?.id,
+    slackUserId: body.user?.id,
+    teamId: body.team?.id,
+    requiredRoles: ['agent', 'admin'],
+  });
+  if (!authorized) return;
   try {
     const token = await getAuthToken();
     const requestId = body?.actions?.[0]?.value;
@@ -453,9 +445,18 @@ app.action('approve_request', async ({ ack, body, client }) => {
   }
 });
 
-// Optional: summarize recent thread/messages
+// Optional: summarize recent thread/messages (agent/admin)
 app.command('/nova-summarize', async ({ ack, body, client }) => {
   await ack();
+  const authorized = await ensureAuthorizedOrReply({
+    client,
+    channelId: body.channel_id,
+    userId: body.user_id,
+    slackUserId: body.user_id,
+    teamId: body.team_id,
+    requiredRoles: ['agent', 'admin'],
+  });
+  if (!authorized) return;
   try {
     const token = await getAuthToken();
     const res = await axios.post(`${process.env.API_URL}/ai/cosmo/summarize`, { channel: body.channel_id }, { headers: { Authorization: `Bearer ${token}` } });

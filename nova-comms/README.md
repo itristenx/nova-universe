@@ -14,13 +14,15 @@ Slack-based communication and conversational interface for Nova Universe. Suppor
 ## Features
 
 - `/it-help` and `/new-ticket`: Modal ticket intake with dynamic options
-- `/nova-status`: System status
-- `/nova-queue`: Pulse queue summary
+- `/nova-status`: System status (agent/admin)
+- `/nova-queue`: Pulse queue summary (agent/admin)
 - `/nova-feedback`: Feedback modal
-- `/nova-assign`: Assign current thread to an agent
-- `/nova-summarize`: AI summary of channel/thread (optional)
-- App mention AI suggestions via Cosmo
-- Keyword triggers for triage and routing (e.g., "urgent", "escalate", "sev1")
+- `/nova-assign`: Assign current thread to an agent (agent/admin)
+- `/nova-summarize`: AI summary (agent/admin, optional)
+- App mention AI suggestions via Cosmo (optional)
+- Keyword triggers for triage and routing
+- RBAC checks via Nova Helix (Slack user → Nova user → roles)
+- Supports Slack OAuth installation or classic bot token
 
 ## Setup
 
@@ -36,18 +38,10 @@ Slack-based communication and conversational interface for Nova Universe. Suppor
 npm install
 ```
 
-Create `.env`:
+Create `.env` (see `.env.example`):
 
-```env
-SLACK_SIGNING_SECRET=your_signing_secret
-SLACK_BOT_TOKEN=xoxb-your-bot-token
-API_URL=http://localhost:3000
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=1h
-VITE_ADMIN_URL=http://localhost:5173
-SLACK_PORT=3001
-COMMS_AI_ENABLED=true
-```
+- Choose either classic bot token or OAuth installation (recommended)
+- Set `API_URL`, `JWT_SECRET`, and optional `COMMS_AI_ENABLED`
 
 Start:
 
@@ -64,6 +58,16 @@ npm start
   - Subscribe to `app_mention`
 - Scopes:
   - `commands`, `chat:write`, `chat:write.public`, `reactions:write`, `users:read`, `channels:read`, `app_mentions:read`
+- OAuth (optional but preferred):
+  - Provide `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_STATE_SECRET`, `SLACK_SCOPES`
+
+## Auth & RBAC
+
+- Slack user is resolved to a Nova user via API: `POST /auth/slack/resolve` (fallback `/api/auth/slack/resolve`)
+- Commands that require elevated permissions enforce roles: `agent` or `admin`
+  - Protected: `/nova-status`, `/nova-queue`, `/nova-assign`, `/nova-summarize`, `approve_request` action
+  - Open: `/new-ticket`, `/it-help`, `/nova-feedback`
+- If a user is not linked or lacks roles, ephemeral error is posted with guidance
 
 ## API Integration
 
@@ -76,22 +80,22 @@ npm start
 - POST `/ai/cosmo/suggest` → AI suggestions
 - POST `/ai/cosmo/summarize` → AI summary (optional)
 - POST `/comms/triage` → keyword triage hook
+- POST `/workflows/approve` → approve requests (action handler)
 - POST `/feedback` → submit feedback
-
-## Commands
-
-Refer to features list for supported commands and modals.
+- POST `/auth/slack/resolve` → Slack→Nova user mapping
 
 ## Local Testing
 
-Use ngrok to expose the port specified by `SLACK_PORT`.
+- Use ngrok to expose `SLACK_PORT`
+- Run tests: `npm test`
 
 ## Security
 
-- Slack signing secret verification
+- Slack signing verification
 - JWT to Nova API
+- RBAC checks on privileged actions
 - Least-privilege scopes
 
 ## Monitoring
 
-- Logs include command usage and API calls. Integrate with your logging stack.
+- Logs include command usage, API calls, and failures
