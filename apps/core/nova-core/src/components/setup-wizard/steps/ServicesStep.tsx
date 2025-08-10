@@ -29,6 +29,19 @@ interface ServiceData {
   knowledgeBaseEnabled?: boolean;
   aiAssistEnabled?: boolean;
   openaiApiKey?: string;
+  
+  // Monitoring & Alerting
+  sentinelEnabled?: boolean;
+  sentinelUrl?: string;
+  sentinelApiKey?: string;
+  sentinelWebhookSecret?: string;
+  goAlertEnabled?: boolean;
+  goAlertUrl?: string;
+  goAlertApiKey?: string;
+  goAlertSmtpHost?: string;
+  goAlertSmtpPort?: string;
+  goAlertSmtpUser?: string;
+  goAlertSmtpPass?: string;
 }
 
 interface SetupData {
@@ -86,7 +99,21 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
     // Knowledge Base
     knowledgeBaseEnabled: data?.services?.knowledgeBaseEnabled || false,
     aiAssistEnabled: data?.services?.aiAssistEnabled || false,
-    openaiApiKey: data?.services?.openaiApiKey || ''
+    openaiApiKey: data?.services?.openaiApiKey || '',
+    
+    // Monitoring & Alerting
+    sentinelEnabled: data?.services?.sentinelEnabled || false,
+    sentinelUrl: data?.services?.sentinelUrl || 'http://localhost:3001',
+    sentinelApiKey: data?.services?.sentinelApiKey || '',
+    sentinelWebhookSecret: data?.services?.sentinelWebhookSecret || '',
+    
+    goAlertEnabled: data?.services?.goAlertEnabled || false,
+    goAlertUrl: data?.services?.goAlertUrl || 'http://localhost:8081',
+    goAlertApiKey: data?.services?.goAlertApiKey || '',
+    goAlertSmtpHost: data?.services?.goAlertSmtpHost || '',
+    goAlertSmtpPort: data?.services?.goAlertSmtpPort || '587',
+    goAlertSmtpUser: data?.services?.goAlertSmtpUser || '',
+    goAlertSmtpPass: data?.services?.goAlertSmtpPass || ''
   });
 
   const [connectionTests, setConnectionTests] = useState<Record<string, 'idle' | 'testing' | 'success' | 'error'>>({});
@@ -543,6 +570,218 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                 </div>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Monitoring & Alerting */}
+        <div className="space-y-6">
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Monitoring & Alerting</h3>
+          
+          {/* Nova Sentinel */}
+          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl">🛡️</div>
+                <div>
+                  <h4 className="font-medium text-slate-900 dark:text-white">Nova Sentinel</h4>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Uptime monitoring and service health tracking
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={formData.sentinelEnabled}
+                onChange={(checked) => handleInputChange('sentinelEnabled', checked)}
+              />
+            </div>
+
+            {formData.sentinelEnabled && (
+              <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Sentinel URL *
+                    </label>
+                    <Input
+                      type="url"
+                      value={formData.sentinelUrl}
+                      onChange={(e) => handleInputChange('sentinelUrl', e.target.value)}
+                      placeholder="http://localhost:3001"
+                      error={errors.sentinelUrl}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      API Key
+                    </label>
+                    <Input
+                      type="password"
+                      value={formData.sentinelApiKey}
+                      onChange={(e) => handleInputChange('sentinelApiKey', e.target.value)}
+                      placeholder="Optional API key for authentication"
+                      error={errors.sentinelApiKey}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Webhook Secret
+                  </label>
+                  <Input
+                    type="password"
+                    value={formData.sentinelWebhookSecret}
+                    onChange={(e) => handleInputChange('sentinelWebhookSecret', e.target.value)}
+                    placeholder="Secret for webhook validation"
+                    error={errors.sentinelWebhookSecret}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Used to validate incoming webhook notifications from Sentinel
+                  </p>
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => testConnection('sentinel')}
+                    disabled={connectionTests.sentinel === 'testing' || !formData.sentinelUrl}
+                    isLoading={connectionTests.sentinel === 'testing'}
+                  >
+                    Test Connection
+                  </Button>
+                </div>
+                <ConnectionStatus service="sentinel" />
+              </div>
+            )}
+          </div>
+
+          {/* GoAlert */}
+          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl">🚨</div>
+                <div>
+                  <h4 className="font-medium text-slate-900 dark:text-white">GoAlert</h4>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Incident response and escalation management
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={formData.goAlertEnabled}
+                onChange={(checked) => handleInputChange('goAlertEnabled', checked)}
+              />
+            </div>
+
+            {formData.goAlertEnabled && (
+              <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      GoAlert URL *
+                    </label>
+                    <Input
+                      type="url"
+                      value={formData.goAlertUrl}
+                      onChange={(e) => handleInputChange('goAlertUrl', e.target.value)}
+                      placeholder="http://localhost:8081"
+                      error={errors.goAlertUrl}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      API Key *
+                    </label>
+                    <Input
+                      type="password"
+                      value={formData.goAlertApiKey}
+                      onChange={(e) => handleInputChange('goAlertApiKey', e.target.value)}
+                      placeholder="GoAlert API token"
+                      error={errors.goAlertApiKey}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                  <h5 className="font-medium text-slate-900 dark:text-white mb-3">SMTP Configuration</h5>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                    Configure email settings for GoAlert notifications
+                  </p>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        SMTP Host
+                      </label>
+                      <Input
+                        value={formData.goAlertSmtpHost}
+                        onChange={(e) => handleInputChange('goAlertSmtpHost', e.target.value)}
+                        placeholder="smtp.gmail.com"
+                        error={errors.goAlertSmtpHost}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        SMTP Port
+                      </label>
+                      <Input
+                        value={formData.goAlertSmtpPort}
+                        onChange={(e) => handleInputChange('goAlertSmtpPort', e.target.value)}
+                        placeholder="587"
+                        error={errors.goAlertSmtpPort}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        SMTP Username
+                      </label>
+                      <Input
+                        value={formData.goAlertSmtpUser}
+                        onChange={(e) => handleInputChange('goAlertSmtpUser', e.target.value)}
+                        placeholder="your-email@gmail.com"
+                        error={errors.goAlertSmtpUser}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        SMTP Password
+                      </label>
+                      <Input
+                        type="password"
+                        value={formData.goAlertSmtpPass}
+                        onChange={(e) => handleInputChange('goAlertSmtpPass', e.target.value)}
+                        placeholder="App password or SMTP password"
+                        error={errors.goAlertSmtpPass}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => testConnection('goalert')}
+                    disabled={connectionTests.goalert === 'testing' || !formData.goAlertUrl || !formData.goAlertApiKey}
+                    isLoading={connectionTests.goalert === 'testing'}
+                  >
+                    Test Connection
+                  </Button>
+                </div>
+                <ConnectionStatus service="goalert" />
+              </div>
+            )}
           </div>
         </div>
 

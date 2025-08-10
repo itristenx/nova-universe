@@ -111,6 +111,21 @@ export interface SetupData {
     knowledgeBaseEnabled?: boolean;
     aiAssistEnabled?: boolean;
     openaiApiKey?: string;
+    
+    // Nova Sentinel Monitoring
+    sentinelEnabled?: boolean;
+    sentinelUrl?: string;
+    sentinelApiKey?: string;
+    sentinelWebhookSecret?: string;
+    
+    // GoAlert Alerting
+    goAlertEnabled?: boolean;
+    goAlertUrl?: string;
+    goAlertApiKey?: string;
+    goAlertSmtpHost?: string;
+    goAlertSmtpPort?: string;
+    goAlertSmtpUser?: string;
+    goAlertSmtpPass?: string;
   };
   branding?: {
     // Logo and Branding
@@ -372,6 +387,16 @@ export const SetupProvider: React.FC<SetupProviderProps> = ({ children }) => {
         // Validate AI assist if enabled
         if (state.setupData.services?.aiAssistEnabled) {
           return !!(state.setupData.services?.openaiApiKey);
+        }
+        
+        // Validate Sentinel if enabled
+        if (state.setupData.services?.sentinelEnabled) {
+          return !!(state.setupData.services?.sentinelUrl);
+        }
+        
+        // Validate GoAlert if enabled
+        if (state.setupData.services?.goAlertEnabled) {
+          return !!(state.setupData.services?.goAlertUrl && state.setupData.services?.goAlertApiKey);
         }
         
         return true;

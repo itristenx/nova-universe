@@ -1277,16 +1277,3 @@ router.get('/health', async (req, res) => {
 });
 
 // ==================== END NOVA SENTINEL INTEGRATION ====================
-
-/**
- * Get configuration value with fallback
- */
-async function getConfigValue(key, defaultValue) {
-  try {
-    const result = await db.query('SELECT value FROM config WHERE key = $1', [key]);
-    return result.rows.length > 0 ? result.rows[0].value : defaultValue;
-  } catch (error) {
-    logger.error('Failed to get config value', { key, error: error.message });
-    return defaultValue;
-  }
-}

@@ -92,7 +92,18 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
         services: {
           storageProvider: 'local' as const,
           knowledgeBaseEnabled: true,
-          aiAssistEnabled: false
+          aiAssistEnabled: false,
+          sentinelEnabled: true,
+          sentinelUrl: 'http://localhost:3001',
+          sentinelApiKey: '',
+          sentinelWebhookSecret: 'nova-sentinel-test',
+          goAlertEnabled: true,
+          goAlertUrl: 'http://localhost:8081',
+          goAlertApiKey: '',
+          goAlertSmtpHost: 'localhost',
+          goAlertSmtpPort: '1025',
+          goAlertSmtpUser: '',
+          goAlertSmtpPass: ''
         },
         branding: {
           companyName: 'Nova Test',

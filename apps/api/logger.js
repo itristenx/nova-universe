@@ -32,8 +32,4 @@ export const logger = {
   info: (...args) => log('info', ...args),
   log: (...args) => log('log', ...args),
   debug: (...args) => log('debug', ...args)
-<<<<<<< Current (Your changes)
->>>>>>> Incoming (Background Agent changes)
-=======
->>>>>>> Incoming (Background Agent changes)
 };

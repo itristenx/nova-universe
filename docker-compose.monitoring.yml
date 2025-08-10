@@ -173,6 +173,48 @@ services:
     networks:
       - nova-network
 
+  # Nova Sentinel - Complete Uptime Kuma Integration Service
+  nova-sentinel:
+    build: ./apps/sentinel/nova-sentinel
+    container_name: nova-sentinel
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - SENTINEL_PORT=3002
+      - UPTIME_KUMA_URL=http://nova-sentinel-kuma:3001
+      - UPTIME_KUMA_ENABLED=true
+      - UPTIME_KUMA_API_KEY=${UPTIME_KUMA_API_KEY:-}
+      - HELIX_URL=http://nova-api:3000/api/v1/helix
+      - HELIX_API_KEY=${HELIX_API_KEY:-nova-sentinel-key}
+      - DATABASE_PATH=/data/sentinel.db
+      - REDIS_URL=redis://nova-sentinel-redis:6379
+      - REDIS_ENABLED=true
+      - LOG_LEVEL=info
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+    volumes:
+      - sentinel-data:/data
+      - ./monitoring/sentinel-config:/config
+    networks:
+      - nova-network
+    depends_on:
+      nova-sentinel-kuma:
+        condition: service_healthy
+      nova-sentinel-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sentinel.rule=Host(`sentinel.nova.local`)"
+      - "traefik.http.routers.sentinel.tls=true"
+      - "traefik.http.services.sentinel.loadbalancer.server.port=3002"
+
 volumes:
   goalert-postgres-data:
     driver: local
@@ -183,6 +225,8 @@ volumes:
   grafana-data:
     driver: local
   prometheus-data:
+    driver: local
+  sentinel-data:
     driver: local
 
 networks:
