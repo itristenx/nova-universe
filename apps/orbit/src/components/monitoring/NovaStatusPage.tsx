@@ -79,12 +79,12 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
     const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`);
     
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'subscribe_status_page', statusPageId: statusPageSlug }));
+      ws.send(JSON.stringify({ type: 'subscribe', topic: `status_page:${statusPageSlug}` }));
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === 'status_page_updated' || data.type === 'heartbeat') {
+      if (data.type === 'status_page_updated' || data.type === 'heartbeat' || data.topic === `status_page:${statusPageSlug}`) {
         fetchStatusPage();
       }
     };
@@ -96,14 +96,14 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
 
   const fetchStatusPage = async () => {
     try {
-      const response = await fetch(`/api/v1/status-pages/public/${statusPageSlug}?format=json`);
+      const response = await fetch(`/api/enhanced-monitoring/status/${statusPageSlug}`);
       
       if (!response.ok) {
         throw new Error('Status page not found');
       }
 
       const data = await response.json();
-      setStatusData(data.statusPage);
+      setStatusData(data.page || data.statusPage || data.status_page);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load status page');
@@ -117,7 +117,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
     setSubscriptionStatus('subscribing');
 
     try {
-      const response = await fetch(`/api/v1/status-pages/public/${statusPageSlug}/subscribe`, {
+      const response = await fetch(`/api/enhanced-monitoring/status-pages/${statusPageSlug}/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

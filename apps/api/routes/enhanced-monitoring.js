@@ -10,11 +10,14 @@ import { extendedMonitorService } from '../lib/extended-monitors.js';
 import { advancedFeaturesService } from '../lib/advanced-features.js';
 import { statusPageService } from '../lib/enhanced-status-pages.js';
 import crypto from 'crypto';
+import { audit } from '../middleware/audit.js';
 
 const router = express.Router();
 
 // Apply authentication to all routes
 router.use(authenticateJWT);
+// Audit all enhanced monitoring operations
+router.use(audit('monitoring.enhanced'));
 
 /**
  * @swagger
@@ -124,7 +127,7 @@ router.get('/monitors', async (req, res) => {
  *     description: Create monitors with advanced types and configuration options
  *     tags: [Enhanced Monitoring]
  */
-router.post('/monitors', async (req, res) => {
+router.post('/monitors', audit('monitoring.monitors.create'), async (req, res) => {
   try {
     const monitorData = req.body;
     
@@ -254,7 +257,7 @@ router.post('/monitors', async (req, res) => {
  *     description: Execute a monitor check using extended monitoring capabilities
  *     tags: [Enhanced Monitoring]
  */
-router.post('/monitors/:id/check', async (req, res) => {
+router.post('/monitors/:id/check', audit('monitoring.monitors.check'), async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -370,7 +373,7 @@ router.post('/monitors/:id/check', async (req, res) => {
 });
 
 // Push monitoring endpoint
-router.post('/push/:token', async (req, res) => {
+router.post('/push/:token', audit('monitoring.push.heartbeat'), async (req, res) => {
   try {
     const { token } = req.params;
     const { status = 'ok', message = '', ping, data } = req.body;

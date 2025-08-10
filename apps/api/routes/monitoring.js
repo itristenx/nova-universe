@@ -357,7 +357,7 @@ export default router;
  *     security:
  *       - bearerAuth: []
  */
-router.get('/monitors', authenticateJWT, async (req, res) => {
+router.get('/monitors', authenticateJWT, (req, res, next) => next(), /* audit placeholder */ async (req, res) => {
   try {
     const { tenant_id, group_id, status, type } = req.query;
     const user = req.user;

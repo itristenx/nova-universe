@@ -9,7 +9,7 @@ import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 import { checkPermissions } from '../middleware/rbac.js';
-import { audit } from '../middleware/audit.js';
+import { audit } from '../middleware/audit.js'; // ensured to be ESM and writes to alert_audit_log
 import fetch from 'node-fetch';
 
 const router = express.Router();
