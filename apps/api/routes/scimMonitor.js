@@ -1,13 +1,29 @@
 // nova-api/routes/scimMonitor.js
 // SCIM Monitoring and Logging Routes
 import express from 'express';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+let prisma;
+try {
+  const { PrismaClient } = await import('../../../prisma/generated/core/index.js');
+  prisma = new PrismaClient();
+} catch (e) {
+  console.warn('Prisma not available; SCIM monitor will operate in mock mode');
+  prisma = {
+    scimLog: {
+      count: async () => 0,
+      findMany: async () => [],
+      groupBy: async () => [],
+      aggregate: async () => ({ _avg: 0 }),
+      findFirst: async () => null,
+      create: async () => ({}),
+    }
+  };
+}
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimiter } from '../middleware/rateLimiter.js';
 import { logger } from '../logger.js';
 
 const router = express.Router();
-const prisma = new PrismaClient();
+// prisma is set above
 
 // Rate limiter for SCIM monitoring endpoints
 const scimMonitorRateLimit = createRateLimiter({

@@ -61,7 +61,7 @@ import events from './events.js';
 import { sign, verify } from './jwt.js';
 import { authenticateJWT } from './middleware/auth.js';
 import { authRateLimit } from './middleware/rateLimiter.js';
-import { requestLogger, securityHeaders } from './middleware/security.js';
+import { securityLogging as requestLogger, configureSecurityHeaders as securityHeaders } from './middleware/security.js';
 import { validateActivationCode, validateEmail, validateKioskRegistration } from './middleware/validation.js';
 import helixRouter from './routes/helix.js';
 import helixUniversalLoginRouter from './routes/helix-universal-login.js';

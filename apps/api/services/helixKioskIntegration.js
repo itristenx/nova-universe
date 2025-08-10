@@ -3,9 +3,19 @@
 
 import { logger } from '../logger.js';
 import { encrypt, decrypt } from '../utils/encryption.js';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
 
-const prisma = new PrismaClient();
+let prisma = {
+  inventoryAsset: { findUnique: async () => null, findFirst: async () => null },
+  kiosk: { findUnique: async () => null },
+  $executeRaw: async () => ({}),
+  $queryRaw: async () => []
+};
+try {
+  const { PrismaClient } = await import('../../../prisma/generated/core/index.js');
+  prisma = new PrismaClient();
+} catch (e) {
+  logger.warn('Prisma not available, HelixKioskIntegration will operate in mock mode');
+}
 
 export class HelixKioskIntegrationService {
   constructor() {

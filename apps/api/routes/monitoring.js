@@ -1322,21 +1322,6 @@ router.get('/health', async (req, res) => {
 // ==========================================
 
 /**
- * Get configuration value with fallback
- */
-async function getConfigValue(key, defaultValue) {
-  try {
-    const result = await db.query('SELECT value FROM config WHERE key = $1', [key]);
-    return result.rows.length > 0 ? result.rows[0].value : defaultValue;
-  } catch (error) {
-    logger.error('Failed to get config value', { key, error: error.message });
-    return defaultValue;
-  }
-}
-<<<<<<< Current (Your changes)
-=======
-
-/**
  * Create incident manually from Pulse UI
  */
 router.post('/monitor-incident', authenticateJWT, audit('sentinel.incident.create'), async (req, res) => {
@@ -1388,4 +1373,3 @@ router.post('/monitor-incident', authenticateJWT, audit('sentinel.incident.creat
     res.status(500).json({ error: 'Failed to create incident' });
   }
 });
->>>>>>> Incoming (Background Agent changes)

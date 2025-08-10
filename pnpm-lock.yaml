@@ -358,7 +358,7 @@ importers:
     devDependencies:
       jest:
         specifier: ^30.0.5
-        version: 30.0.5(@types/node@22.17.1)(ts-node@10.9.2(@types/node@22.17.1)(typescript@5.8.3))
+        version: 30.0.5(@types/node@24.2.0)(ts-node@10.9.2(@types/node@24.2.0)(typescript@5.8.3))
 
   apps/core/nova-core:
     dependencies:
@@ -576,7 +576,7 @@ importers:
         version: 15.4.5(eslint@9.32.0(jiti@2.4.2))(typescript@5.8.3)
       jest:
         specifier: ^30.0.5
-        version: 30.0.5(@types/node@24.2.0)(ts-node@10.9.2(@types/node@22.17.1)(typescript@5.8.3))
+        version: 30.0.5(@types/node@24.2.0)(ts-node@10.9.2(@types/node@24.2.0)(typescript@5.8.3))
       jest-axe:
         specifier: ^10.0.0
         version: 10.0.0
@@ -628,6 +628,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      framer-motion:
+        specifier: ^11.18.2
+        version: 11.18.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       lucide-react:
         specifier: ^0.537.0
         version: 0.537.0(react@19.1.0)
@@ -7802,6 +7805,20 @@ packages:
     resolution: {integrity: sha512-GMBAbW9antB8iZRHLoGw0b3HANt57diZYFO/HL1JGIC1MjKrdmhxvrJbupnVvpys0zsz7yBApXdQyfepKly2kA==}
     engines: {node: '>=0.10.0'}
 
+  framer-motion@11.18.2:
+    resolution: {integrity: sha512-5F5Och7wrvtLVElIpclDT0CBzMVg3dL22B64aZwHtsIY8RB4mXICLrkajK4G9R+ieSAGcgrLeae2SeUTg2pr6w==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   framer-motion@12.23.9:
     resolution: {integrity: sha512-TqEHXj8LWfQSKqfdr5Y4mYltYLw96deu6/K9kGDd+ysqRJPNwF9nb5mZcrLmybHbU7gcJ+HQar41U3UTGanbbQ==}
     peerDependencies:
@@ -9453,8 +9470,14 @@ packages:
     resolution: {integrity: sha512-Ey84Jf1c426FEMj16+j/VqFKupFN2Ey5uAy6TTAN9HlFP4OcunL7j9O7vTuwAipzlZdjctxP0OK9MRJ4Aa/jNg==}
     engines: {node: '>=16.20.1'}
 
+  motion-dom@11.18.1:
+    resolution: {integrity: sha512-g76KvA001z+atjfxczdRtw/RXOM3OMSdd1f4DL77qCTF/+avrRJiawSG4yDibEQ215sr9kpinSlX2pCTJ9zbhw==}
+
   motion-dom@12.23.9:
     resolution: {integrity: sha512-6Sv++iWS8XMFCgU1qwKj9l4xuC47Hp4+2jvPfyTXkqDg2tTzSgX6nWKD4kNFXk0k7llO59LZTPuJigza4A2K1A==}
+
+  motion-utils@11.18.1:
+    resolution: {integrity: sha512-49Kt+HKjtbJKLtgO/LKj9Ld+6vw9BjH5d9sc40R/kVyH8GLAXgT42M2NnuPcJNuA3s9ZfZBUcwIgpmZWGEE+hA==}
 
   motion-utils@12.23.6:
     resolution: {integrity: sha512-eAWoPgr4eFEOFfg2WjIsMoqJTW6Z8MTUCgn/GZ3VRpClWBdnbjryiA3ZSNLyxCTmCQx4RmYX6jX1iWHbenUPNQ==}
@@ -21420,6 +21443,15 @@ snapshots:
       map-cache: 0.2.2
     optional: true
 
+  framer-motion@11.18.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      motion-dom: 11.18.1
+      motion-utils: 11.18.1
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+
   framer-motion@12.23.9(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       motion-dom: 12.23.9
@@ -22322,25 +22354,6 @@ snapshots:
       - supports-color
       - ts-node
 
-  jest-cli@30.0.5(@types/node@24.2.0)(ts-node@10.9.2(@types/node@22.17.1)(typescript@5.8.3)):
-    dependencies:
-      '@jest/core': 30.0.5(ts-node@10.9.2(@types/node@22.17.1)(typescript@5.8.3))
-      '@jest/test-result': 30.0.5
-      '@jest/types': 30.0.5
-      chalk: 4.1.2
-      exit-x: 0.2.2
-      import-local: 3.2.0
-      jest-config: 30.0.5(@types/node@24.2.0)(ts-node@10.9.2(@types/node@22.17.1)(typescript@5.8.3))
-      jest-util: 30.0.5
-      jest-validate: 30.0.5
-      yargs: 17.7.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - esbuild-register
-      - supports-color
-      - ts-node
-
   jest-cli@30.0.5(@types/node@24.2.0)(ts-node@10.9.2(@types/node@24.2.0)(typescript@5.8.3)):
     dependencies:
       '@jest/core': 30.0.5(ts-node@10.9.2(@types/node@24.2.0)(typescript@5.8.3))
@@ -22957,19 +22970,6 @@ snapshots:
       '@jest/types': 30.0.5
       import-local: 3.2.0
       jest-cli: 30.0.5(@types/node@22.17.1)(ts-node@10.9.2(@types/node@22.17.1)(typescript@5.8.3))
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - esbuild-register
-      - supports-color
-      - ts-node
-
-  jest@30.0.5(@types/node@24.2.0)(ts-node@10.9.2(@types/node@22.17.1)(typescript@5.8.3)):
-    dependencies:
-      '@jest/core': 30.0.5(ts-node@10.9.2(@types/node@22.17.1)(typescript@5.8.3))
-      '@jest/types': 30.0.5
-      import-local: 3.2.0
-      jest-cli: 30.0.5(@types/node@24.2.0)(ts-node@10.9.2(@types/node@22.17.1)(typescript@5.8.3))
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -23616,9 +23616,15 @@ snapshots:
       - socks
       - supports-color
 
+  motion-dom@11.18.1:
+    dependencies:
+      motion-utils: 11.18.1
+
   motion-dom@12.23.9:
     dependencies:
       motion-utils: 12.23.6
+
+  motion-utils@11.18.1: {}
 
   motion-utils@12.23.6: {}
 

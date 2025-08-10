@@ -170,3 +170,16 @@ export const validateTicketSubmission = (req, res, next) => {
   
   next();
 };
+
+export const validateKioskAuth = (req, res, next) => {
+  try {
+    const header = req.headers.authorization || '';
+    const token = header.replace(/^Bearer\s+/i, '');
+    if (!token) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+    next();
+  } catch (e) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+};

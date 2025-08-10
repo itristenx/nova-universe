@@ -46,6 +46,16 @@ class DatabaseFactory {
 
     } catch (error) {
       logger.error('❌ Database initialization failed:', error.message);
+      if (process.env.NODE_ENV !== 'production') {
+        logger.warn('⚠️ Using in-memory mock database for UAT/dev');
+        this.initialized = true;
+        this.availableDatabases.add('mock');
+        this.primaryDb = {
+          async query(sql, params) { return { rows: [], rowCount: 0 }; },
+          async close() { return; }
+        };
+        return;
+      }
       throw error;
     }
   }

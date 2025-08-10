@@ -83,7 +83,7 @@ const AlertCard: React.FC<AlertCardProps> = ({
         ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50/30' : ''}
         group cursor-pointer
       `}
-      onClick={() => onSelect?.(alert.id, !isSelected)}
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => onSelect?.(alert.id, !isSelected)}
     >
       {/* Priority Indicator */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${getPriorityColor(alert.priority)}`} />
@@ -189,7 +189,7 @@ const AlertCard: React.FC<AlertCardProps> = ({
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
                   onAcknowledge?.(alert.id);
                 }}
@@ -203,7 +203,7 @@ const AlertCard: React.FC<AlertCardProps> = ({
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
                   onResolve?.(alert.id);
                 }}
@@ -217,7 +217,7 @@ const AlertCard: React.FC<AlertCardProps> = ({
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
                   onEscalate?.(alert.id);
                 }}
@@ -234,7 +234,7 @@ const AlertCard: React.FC<AlertCardProps> = ({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               // Handle view details
             }}

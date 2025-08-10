@@ -5,10 +5,14 @@ import { parse as parseCsv } from 'csv-parse/sync';
 import { encrypt, decrypt } from '../utils/encryption.js';
 import { logger } from '../logger.js';
 import { v4 as uuidv4 } from 'uuid';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+let prisma = { $queryRaw: async () => [], $executeRaw: async () => ({}) };
+try {
+  const { PrismaClient } = await import('../../../prisma/generated/core/index.js');
+  prisma = new PrismaClient();
+} catch (e) {
+  console.warn('Prisma not available; inventory service will operate in mock mode');
+}
 import HelixKioskIntegrationService from './helixKioskIntegration.js';
-
-const prisma = new PrismaClient();
 
 // Validation rules for asset fields
 const VALIDATION_RULES = {

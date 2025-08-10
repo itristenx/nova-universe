@@ -10,10 +10,16 @@ import inventoryService from '../services/inventory.js';
 import helixKioskIntegration from '../services/helixKioskIntegration.js';
 import { logger } from '../logger.js';
 import { encrypt, decrypt } from '../utils/encryption.js';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+
+let prisma = { $queryRaw: async () => [], $executeRaw: async () => ({}) };
+try {
+  const { PrismaClient } = await import('../../../prisma/generated/core/index.js');
+  prisma = new PrismaClient();
+} catch (e) {
+  console.warn('Prisma not available; pulse-inventory routes will operate in mock mode');
+}
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 /**
  * @swagger

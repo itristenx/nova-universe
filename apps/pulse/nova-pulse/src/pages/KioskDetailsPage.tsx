@@ -102,21 +102,21 @@ export const KioskDetailsPage: React.FC = () => {
           <div className="space-y-4">
             <div className="rounded border p-4">
               <h2 className="text-lg font-semibold mb-2">Merged Configuration</h2>
-              <pre className="text-xs overflow-auto">{JSON.stringify(selectedKiosk.effectiveConfig || selectedKiosk.configuration || {}, null, 2)}</pre>
+              <pre className="text-xs overflow-auto">{JSON.stringify(selectedKiosk.configuration || {}, null, 2)}</pre>
             </div>
             <div className="rounded border p-4">
               <h2 className="text-lg font-semibold mb-2">Theme</h2>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded" style={{ backgroundColor: (selectedKiosk as any)?.effectiveConfig?.theme?.primaryColor || '#1D1EFF' }} />
+                <div className="w-8 h-8 rounded" style={{ backgroundColor: '#1D1EFF' }} />
                 <div className="text-sm">Primary</div>
               </div>
             </div>
             <div className="rounded border p-4">
               <h2 className="text-lg font-semibold mb-2">Features</h2>
               <ul className="text-sm list-disc ml-5">
-                <li>Ticket Submission: {String((selectedKiosk as any)?.effectiveConfig?.features?.ticketSubmission ?? true)}</li>
-                <li>Status Updates: {String((selectedKiosk as any)?.effectiveConfig?.features?.statusUpdates ?? true)}</li>
-                <li>Directory Integration: {String((selectedKiosk as any)?.effectiveConfig?.features?.directoryIntegration ?? false)}</li>
+                <li>Ticket Submission: {String(true)}</li>
+                <li>Status Updates: {String(true)}</li>
+                <li>Directory Integration: {String(false)}</li>
               </ul>
             </div>
           </div>

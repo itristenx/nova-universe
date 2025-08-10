@@ -606,8 +606,6 @@ router.post('/activate',
   }
 );
 
-<<<<<<< Current (Your changes)
-=======
 // Admin-issued activation code generation
 router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req, res) => {
   try {
@@ -711,5 +709,4 @@ router.post('/link-asset', authenticateJWT, async (req, res) => {
   }
 });
 
->>>>>>> Incoming (Background Agent changes)
 export default router;

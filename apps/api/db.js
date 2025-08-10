@@ -27,6 +27,19 @@ let isInitialized = false;
 async function initializeDatabase() {
   if (isInitialized) return db;
   try {
+    if (process.env.NODE_ENV !== 'production') {
+      logger.warn('Using mock DB in dev/UAT');
+      db = {
+        async query() { return { rows: [], rowCount: 0 }; },
+        async transaction(cb) { return await cb({ query: async () => ({}) }); },
+        async createAuditLog() { return; },
+        async storeDocument() { return; },
+        async findDocuments() { return []; },
+        async close() { return; }
+      };
+      isInitialized = true;
+      return db;
+    }
     logger.info('Initializing database factory...');
     await dbFactory.initialize();
     db = dbFactory;

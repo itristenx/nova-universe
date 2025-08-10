@@ -126,7 +126,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     // Keyword check
     if (conditions.keywords && conditions.keywords.length > 0) {
       const text = `${ticket.title} ${ticket.description}`.toLowerCase();
-      const hasKeyword = conditions.keywords.some(keyword => 
+      const hasKeyword = conditions.keywords.some((keyword: string) => 
         text.includes(keyword.toLowerCase())
       );
       if (!hasKeyword) {
@@ -233,8 +233,9 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
         updateActionStatus(execution.id, 'create_alert', 'completed', result);
         addExecutionLog(execution.id, `Alert created: ${result.alertId}`);
       } catch (error) {
-        updateActionStatus(execution.id, 'create_alert', 'failed', null, error.message);
-        addExecutionLog(execution.id, `Alert creation failed: ${error.message}`);
+        const err = error as Error;
+        updateActionStatus(execution.id, 'create_alert', 'failed', null, err.message);
+        addExecutionLog(execution.id, `Alert creation failed: ${err.message}`);
       }
     }
 
@@ -252,8 +253,9 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
         updateActionStatus(execution.id, 'escalate', 'completed', escalationResult);
         addExecutionLog(execution.id, `Escalated to ${actions.escalate_to}`);
       } catch (error) {
-        updateActionStatus(execution.id, 'escalate', 'failed', null, error.message);
-        addExecutionLog(execution.id, `Escalation failed: ${error.message}`);
+        const err = error as Error;
+        updateActionStatus(execution.id, 'escalate', 'failed', null, err.message);
+        addExecutionLog(execution.id, `Escalation failed: ${err.message}`);
       }
     }
 
@@ -267,8 +269,9 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
         addExecutionLog(execution.id, `Notifications sent to ${actions.notify.join(', ')}`);
         updateActionStatus(execution.id, 'notify', 'completed');
       } catch (error) {
-        updateActionStatus(execution.id, 'notify', 'failed', null, error.message);
-        addExecutionLog(execution.id, `Notification failed: ${error.message}`);
+        const err = error as Error;
+        updateActionStatus(execution.id, 'notify', 'failed', null, err.message);
+        addExecutionLog(execution.id, `Notification failed: ${err.message}`);
       }
     }
 
@@ -282,8 +285,9 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
         addExecutionLog(execution.id, `Priority changed to ${actions.priority_change}`);
         updateActionStatus(execution.id, 'priority_change', 'completed');
       } catch (error) {
-        updateActionStatus(execution.id, 'priority_change', 'failed', null, error.message);
-        addExecutionLog(execution.id, `Priority change failed: ${error.message}`);
+        const err = error as Error;
+        updateActionStatus(execution.id, 'priority_change', 'failed', null, err.message);
+        addExecutionLog(execution.id, `Priority change failed: ${err.message}`);
       }
     }
 
