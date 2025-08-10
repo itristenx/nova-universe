@@ -13,6 +13,9 @@ export const KioskActivationPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [systemsLoading, setSystemsLoading] = useState(false);
   const [generatingQR, setGeneratingQR] = useState(false);
+  const [linkKioskId, setLinkKioskId] = useState('');
+  const [assetTag, setAssetTag] = useState('');
+  const [serialNumber, setSerialNumber] = useState('');
   const { addToast } = useToastStore();
 
   useEffect(() => {
@@ -175,6 +178,26 @@ export const KioskActivationPage: React.FC = () => {
     return new Date(expiresAt) < new Date();
   };
 
+  const linkAsset = async () => {
+    if (!linkKioskId || (!assetTag && !serialNumber)) {
+      addToast({ type: 'error', title: 'Error', description: 'Enter kiosk ID and asset tag or serial' });
+      return;
+    }
+    try {
+      const res = await fetch('/api/v2/beacon/link-asset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kioskId: linkKioskId, assetTag: assetTag || undefined, serialNumber: serialNumber || undefined })
+      });
+      if (!res.ok) throw new Error('Link failed');
+      const data = await res.json();
+      addToast({ type: 'success', title: 'Linked', description: `Linked to asset ${data?.result?.asset?.tag || ''}` });
+      setLinkKioskId(''); setAssetTag(''); setSerialNumber('');
+    } catch (e) {
+      addToast({ type: 'error', title: 'Error', description: 'Failed to link asset' });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -228,6 +251,17 @@ export const KioskActivationPage: React.FC = () => {
           </Button>
         </Card>
       </div>
+
+      {/* Link kiosk to inventory asset */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Link Kiosk to Inventory Asset</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <Input label="Kiosk ID" value={linkKioskId} onChange={e => setLinkKioskId(e.target.value)} placeholder="kiosk-001" />
+          <Input label="Asset Tag" value={assetTag} onChange={e => setAssetTag(e.target.value)} placeholder="ASSET-123" />
+          <Input label="Serial Number" value={serialNumber} onChange={e => setSerialNumber(e.target.value)} placeholder="SN123456" />
+          <Button color="primary" onClick={linkAsset} className="w-full">Link Asset</Button>
+        </div>
+      </Card>
 
       {/* Systems Management */}
       <Card className="p-6">

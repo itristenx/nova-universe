@@ -9,6 +9,7 @@ import { validateKioskAuth } from '../middleware/validation.js';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
 import HelixKioskIntegration from '../services/helixKioskIntegration.js';
+import { authenticateJWT } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -644,6 +645,36 @@ router.post('/check-in', validateKioskAuth, async (req, res) => {
     });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Check-in failed' });
+  }
+});
+
+// Link a kiosk to an inventory asset by tag or serial
+router.post('/link-asset', authenticateJWT, async (req, res) => {
+  try {
+    const { kioskId, assetTag, serialNumber } = req.body || {};
+    if (!kioskId || (!assetTag && !serialNumber)) {
+      return res.status(400).json({ success: false, error: 'kioskId and assetTag or serialNumber required' });
+    }
+    const helix = (await import('../services/helixKioskIntegration.js')).default;
+
+    // Lookup asset in inventory
+    let asset = null;
+    if (assetTag) {
+      asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: assetTag } });
+    }
+    if (!asset && serialNumber) {
+      // Note: serial may be stored encrypted; adjust matching as needed in production
+      asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: serialNumber } }).catch(() => null);
+    }
+    if (!asset) {
+      return res.status(404).json({ success: false, error: 'Asset not found' });
+    }
+
+    const result = await helix.registerAssetWithKiosk(asset.id, kioskId, { userId: req.user?.id || 'admin' });
+    return res.json({ success: true, result });
+  } catch (e) {
+    logger.error('Link asset failed:', e);
+    res.status(500).json({ success: false, error: 'Link asset failed' });
   }
 });
 
