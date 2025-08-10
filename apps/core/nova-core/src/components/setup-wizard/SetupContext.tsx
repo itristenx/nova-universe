@@ -119,13 +119,13 @@ export interface SetupData {
     sentinelWebhookSecret?: string;
     
     // GoAlert Alerting
-    goAlertEnabled?: boolean;
-    goAlertUrl?: string;
-    goAlertApiKey?: string;
-    goAlertSmtpHost?: string;
-    goAlertSmtpPort?: string;
-    goAlertSmtpUser?: string;
-    goAlertSmtpPass?: string;
+    goalertEnabled?: boolean;
+    goalertUrl?: string;
+    goalertApiKey?: string;
+    goalertSmtpHost?: string;
+    goalertSmtpPort?: string;
+    goalertSmtpUser?: string;
+    goalertSmtpPass?: string;
   };
   branding?: {
     // Logo and Branding
@@ -395,8 +395,8 @@ export const SetupProvider: React.FC<SetupProviderProps> = ({ children }) => {
         }
         
         // Validate GoAlert if enabled
-        if (state.setupData.services?.goAlertEnabled) {
-          return !!(state.setupData.services?.goAlertUrl && state.setupData.services?.goAlertApiKey);
+        if (state.setupData.services?.goalertEnabled) {
+          return !!(state.setupData.services?.goalertUrl && state.setupData.services?.goalertApiKey);
         }
         
         return true;

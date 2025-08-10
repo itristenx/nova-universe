@@ -3,6 +3,10 @@
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import readline from 'readline';
+import fs from 'fs';
+import path from 'path';
+import { spawn } from 'child_process';
+import fetch from 'node-fetch';
 import db from './db.js';
 import { logger } from './logger.js';
 
@@ -134,6 +138,222 @@ function listUsers() {
   }, 1000);
 }
 
+// System health check
+async function healthCheck() {
+  logger.info('🔍 Nova Universe System Health Check');
+  logger.info('====================================\n');
+  
+  const checks = [];
+  
+  // Check API Health
+  try {
+    const response = await fetch('http://localhost:3000/health');
+    if (response.ok) {
+      checks.push({ service: 'Nova API', status: '✅ Healthy', port: 3000 });
+    } else {
+      checks.push({ service: 'Nova API', status: '❌ Unhealthy', port: 3000 });
+    }
+  } catch (error) {
+    checks.push({ service: 'Nova API', status: '❌ Offline', port: 3000 });
+  }
+  
+  // Check Core UI
+  try {
+    const response = await fetch('http://localhost:3001');
+    if (response.ok) {
+      checks.push({ service: 'Nova Core UI', status: '✅ Healthy', port: 3001 });
+    } else {
+      checks.push({ service: 'Nova Core UI', status: '❌ Unhealthy', port: 3001 });
+    }
+  } catch (error) {
+    checks.push({ service: 'Nova Core UI', status: '❌ Offline', port: 3001 });
+  }
+  
+  // Check Sentinel (if enabled)
+  try {
+    const response = await fetch('http://localhost:3002/api/status');
+    if (response.ok) {
+      checks.push({ service: 'Nova Sentinel', status: '✅ Healthy', port: 3002 });
+    } else {
+      checks.push({ service: 'Nova Sentinel', status: '❌ Unhealthy', port: 3002 });
+    }
+  } catch (error) {
+    checks.push({ service: 'Nova Sentinel', status: '❌ Offline', port: 3002 });
+  }
+  
+  // Check GoAlert (if enabled)
+  try {
+    const response = await fetch('http://localhost:8081/health');
+    if (response.ok) {
+      checks.push({ service: 'GoAlert', status: '✅ Healthy', port: 8081 });
+    } else {
+      checks.push({ service: 'GoAlert', status: '❌ Unhealthy', port: 8081 });
+    }
+  } catch (error) {
+    checks.push({ service: 'GoAlert', status: '❌ Offline', port: 8081 });
+  }
+  
+  // Display results
+  checks.forEach(check => {
+    logger.info(`${check.service.padEnd(20)} ${check.status} (Port: ${check.port})`);
+  });
+  
+  const healthyCount = checks.filter(c => c.status.includes('✅')).length;
+  logger.info(`\nOverall Status: ${healthyCount}/${checks.length} services healthy`);
+  
+  rl.close();
+}
+
+// Configure monitoring services
+function configureMonitoring() {
+  logger.info('⚙️  Nova Universe Monitoring Configuration');
+  logger.info('=========================================\n');
+  
+  logger.info('Available monitoring services:');
+  logger.info('1. Nova Sentinel (Uptime monitoring)');
+  logger.info('2. GoAlert (Incident management)');
+  logger.info('3. AI Fabric (ML/AI monitoring)');
+  logger.info('\nUse the setup wizard at http://localhost:3001/setup to configure these services.');
+  
+  rl.close();
+}
+
+// Start/Stop services
+function startServices() {
+  logger.info('🚀 Starting Nova Universe Services');
+  logger.info('==================================\n');
+  
+  const dockerCompose = spawn('docker-compose', ['up', '-d'], {
+    stdio: 'inherit',
+    cwd: process.cwd()
+  });
+  
+  dockerCompose.on('close', (code) => {
+    if (code === 0) {
+      logger.info('\n✅ All services started successfully!');
+      logger.info('📱 Core UI: http://localhost:3001');
+      logger.info('🔌 API: http://localhost:3000');
+      logger.info('📊 Sentinel: http://localhost:3002');
+      logger.info('🚨 GoAlert: http://localhost:8081');
+    } else {
+      logger.error('❌ Failed to start services');
+    }
+    rl.close();
+  });
+}
+
+function stopServices() {
+  logger.info('🛑 Stopping Nova Universe Services');
+  logger.info('==================================\n');
+  
+  const dockerCompose = spawn('docker-compose', ['down'], {
+    stdio: 'inherit',
+    cwd: process.cwd()
+  });
+  
+  dockerCompose.on('close', (code) => {
+    if (code === 0) {
+      logger.info('\n✅ All services stopped successfully!');
+    } else {
+      logger.error('❌ Failed to stop services');
+    }
+    rl.close();
+  });
+}
+
+// Reset system to clean state
+function resetSystem() {
+  logger.info('🔄 Nova Universe System Reset');
+  logger.info('=============================\n');
+  logger.info('⚠️  This will remove all data and reset to initial state.');
+  
+  askPassword('Type "RESET" to confirm: ').then((confirmation) => {
+    if (confirmation === 'RESET') {
+      logger.info('Resetting system...');
+      
+      const dockerCompose = spawn('docker-compose', ['down', '-v'], {
+        stdio: 'inherit',
+        cwd: process.cwd()
+      });
+      
+      dockerCompose.on('close', (code) => {
+        if (code === 0) {
+          logger.info('\n✅ System reset complete!');
+          logger.info('Run "node cli.js start" to begin fresh setup.');
+        } else {
+          logger.error('❌ Failed to reset system');
+        }
+        rl.close();
+      });
+    } else {
+      logger.info('Reset cancelled.');
+      rl.close();
+    }
+  });
+}
+
+// Show system status and URLs
+function showStatus() {
+  logger.info('📊 Nova Universe Status');
+  logger.info('=======================\n');
+  
+  logger.info('Service URLs:');
+  logger.info('• Core Admin UI:     http://localhost:3001');
+  logger.info('• API Documentation: http://localhost:3000/docs');
+  logger.info('• Sentinel Monitor:  http://localhost:3002');
+  logger.info('• GoAlert Dashboard: http://localhost:8081');
+  logger.info('• AI Fabric:         http://localhost:3000/ai-fabric');
+  logger.info('\nDefault Admin Login:');
+  logger.info('• Email:    admin@example.com');
+  logger.info('• Password: admin');
+  logger.info('\n💡 Use "node cli.js health" for detailed health check');
+  
+  rl.close();
+}
+
+function showHelp() {
+  logger.info('Nova Universe CLI');
+  logger.info('=================\n');
+  
+  logger.info('User Management:');
+  logger.info('  passwd, change-password [pwd] - Change admin password');
+  logger.info('  users, list-users             - List admin users\n');
+  
+  logger.info('Service Management:');
+  logger.info('  start                         - Start all services');
+  logger.info('  stop                          - Stop all services');
+  logger.info('  restart                       - Restart all services');
+  logger.info('  status                        - Show service URLs and info');
+  logger.info('  health                        - Check service health\n');
+  
+  logger.info('Configuration:');
+  logger.info('  config, configure             - Configure monitoring services');
+  logger.info('  reset                         - Reset system (removes all data)\n');
+  
+  logger.info('Information:');
+  logger.info('  help, --help, -h              - Show this help');
+  logger.info('  version, --version, -v        - Show version info\n');
+  
+  logger.info('Examples:');
+  logger.info('  node cli.js start             # Start all services');
+  logger.info('  node cli.js passwd newpass123 # Set admin password');
+  logger.info('  node cli.js health            # Check system health');
+  
+  rl.close();
+}
+
+function showVersion() {
+  const packagePath = path.join(process.cwd(), 'package.json');
+  try {
+    const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+    logger.info(`Nova Universe v${pkg.version}`);
+    logger.info('Enterprise Help Desk Platform');
+  } catch (error) {
+    logger.info('Nova Universe (version unknown)');
+  }
+  rl.close();
+}
+
 // CLI command router
 const command = process.argv[2];
 
@@ -146,17 +366,41 @@ switch (command) {
   case 'users':
     listUsers();
     break;
+  case 'health':
+  case 'check':
+    healthCheck();
+    break;
+  case 'config':
+  case 'configure':
+    configureMonitoring();
+    break;
+  case 'start':
+    startServices();
+    break;
+  case 'stop':
+    stopServices();
+    break;
+  case 'restart':
+    stopServices();
+    setTimeout(startServices, 3000);
+    break;
+  case 'reset':
+    resetSystem();
+    break;
+  case 'status':
+    showStatus();
+    break;
+  case 'version':
+  case '--version':
+  case '-v':
+    showVersion();
+    break;
   case 'help':
   case '--help':
   case '-h':
-    logger.info('Nova Universe CLI Commands:');
-    logger.info('==================');
-    logger.info('node cli.js change-password  - Change default admin password');
-    logger.info('node cli.js list-users       - List default superadmin users');
-    console.log('node cli.js help             - Show this help message');
-    rl.close();
-    break;
   default:
-    console.log('❌ Unknown command. Use "node cli.js help" for available commands.');
-    rl.close();
+    if (command && !command.startsWith('-')) {
+      logger.error(`❌ Unknown command: ${command}\n`);
+    }
+    showHelp();
 }

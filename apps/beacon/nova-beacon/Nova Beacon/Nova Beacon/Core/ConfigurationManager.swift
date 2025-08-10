@@ -20,6 +20,7 @@ class ConfigurationManager: ObservableObject {
     @Published var isDeactivated = false
     @Published var lastConfigUpdate: Date?
     @Published var currentRoomName: String = "Conference Room"
+    @Published var isServerLocked: Bool = false
     
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
@@ -63,8 +64,12 @@ class ConfigurationManager: ObservableObject {
         if success {
             isActivated = true
             isDeactivated = false
+            isServerLocked = true
             userDefaults.set(true, forKey: UserDefaultsKeys.isActivated)
+            userDefaults.set(true, forKey: "isServerLocked")
             userDefaults.set(kioskId, forKey: "kioskId")
+            // Persist the baseURL to lock configuration source
+            userDefaults.set(serverConfig.baseURL, forKey: "lockedServerURL")
             await refreshConfiguration()
         }
         
@@ -78,44 +83,49 @@ class ConfigurationManager: ObservableObject {
         // Get kiosk configuration from API
         let kioskId = userDefaults.string(forKey: "kioskId") ?? Bundle.main.object(forInfoDictionaryKey: "KIOSK_ID") as? String ?? "unknown"
         
+        // 1) Existing remote-config for kiosk
         if let configData = await APIService.shared.getKioskConfiguration(id: kioskId, serverURL: serverConfig.baseURL) {
             // Update local configuration with remote data
             if let roomName = configData["roomName"] as? String {
                 userDefaults.set(roomName, forKey: "kioskRoomName")
             }
-            
             if let logoUrl = configData["logoUrl"] as? String {
                 userDefaults.set(logoUrl, forKey: "kioskLogoUrl")
             }
-            
             if let backgroundUrl = configData["backgroundUrl"] as? String {
                 userDefaults.set(backgroundUrl, forKey: "kioskBackgroundUrl")
             }
-            
             if let statusMessages = configData["statusMessages"] as? [String: String] {
                 for (key, message) in statusMessages {
                     userDefaults.set(message, forKey: "statusMessage_\(key)")
                 }
             }
-            
             if let features = configData["features"] as? [String: Bool] {
                 for (key, enabled) in features {
                     userDefaults.set(enabled, forKey: "feature_\(key)")
                 }
             }
-            
-            // Notify UI of configuration update
-            NotificationCenter.default.post(name: .configurationUpdated, object: nil)
-        } else {
-            // Fallback to basic configuration if API call fails
-            let defaultRoomName = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
-            userDefaults.set(defaultRoomName, forKey: "kioskRoomName")
         }
-        if kioskConfiguration == nil {
-            // We'll need to create this when we have the proper structure
-            lastConfigUpdate = Date()
-            userDefaults.set(lastConfigUpdate, forKey: UserDefaultsKeys.lastConfigUpdate)
+        
+        // 2) Optional core config for remote skinning parity
+        if let coreConfig = await APIService.shared.getCoreConfig(kioskId: kioskId, serverURL: serverConfig.baseURL) {
+            if let theme = coreConfig["theme"] as? [String: Any] {
+                if let logo = theme["logo_url"] as? String { userDefaults.set(logo, forKey: "kioskLogoUrl") }
+                if let primary = theme["primary_color"] as? String { userDefaults.set(primary, forKey: "kioskPrimaryColor") }
+            }
+            if let forms = coreConfig["forms"] as? [String: Any] {
+                if let defForm = forms["default_ticket_form_id"] as? String { userDefaults.set(defForm, forKey: "kioskDefaultFormId") }
+            }
+            if let cosmo = coreConfig["cosmo"] as? [String: Any] {
+                if let enabled = cosmo["enabled"] as? Bool { userDefaults.set(enabled, forKey: "feature_cosmoEnabled") }
+                if let prompt = cosmo["preset_prompt"] as? String { userDefaults.set(prompt, forKey: "cosmoPresetPrompt") }
+            }
         }
+        
+        // Notify UI of configuration update
+        lastConfigUpdate = Date()
+        userDefaults.set(lastConfigUpdate, forKey: UserDefaultsKeys.lastConfigUpdate)
+        NotificationCenter.default.post(name: .configurationUpdated, object: nil)
     }
     
     // MARK: - Kiosk ID Management
@@ -189,6 +199,7 @@ class ConfigurationManager: ObservableObject {
         // Load activation status
         isActivated = userDefaults.bool(forKey: UserDefaultsKeys.isActivated)
         isDeactivated = userDefaults.bool(forKey: UserDefaultsKeys.isDeactivated)
+        isServerLocked = userDefaults.bool(forKey: "isServerLocked")
         
         // Load room name
         currentRoomName = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
@@ -197,6 +208,10 @@ class ConfigurationManager: ObservableObject {
         if let data = userDefaults.data(forKey: UserDefaultsKeys.serverConfig),
            let config = try? JSONDecoder().decode(ServerConfiguration.self, from: data) {
             serverConfiguration = config
+        }
+        // If locked, ensure serverConfiguration baseURL matches locked value
+        if isServerLocked, let locked = userDefaults.string(forKey: "lockedServerURL") {
+            if var cfg = serverConfiguration { cfg.baseURL = locked; serverConfiguration = cfg }
         }
         
         // Load last config update

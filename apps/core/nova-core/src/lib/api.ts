@@ -1365,3 +1365,22 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+<<<<<<< Current (Your changes)
+=======
+
+export async function generateActivationCode(input: { kioskId: string; kioskName?: string; location?: string; configuration?: any }) {
+  const res = await fetch('/api/v2/beacon/activation-codes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input)
+  });
+  if (!res.ok) throw new Error('Failed to generate activation code');
+  return res.json();
+}
+
+export async function listActivationCodes() {
+  const res = await fetch('/api/v1/configuration/activations');
+  if (!res.ok) throw new Error('Failed to list activation codes');
+  return res.json();
+}
+>>>>>>> Incoming (Background Agent changes)

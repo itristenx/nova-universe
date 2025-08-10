@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 
@@ -8,6 +8,19 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [banner, setBanner] = useState<{ title: string; message: string } | null>(null);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const msg = e?.detail || e;
+      if (msg?.type === 'kiosk_activated') {
+        setBanner({ title: 'Kiosk Paired', message: `Kiosk ${msg?.data?.kioskId || ''} paired successfully` });
+        setTimeout(() => setBanner(null), 5000);
+      }
+    };
+    window.addEventListener('pulse:realtime_update', handler as any);
+    return () => window.removeEventListener('pulse:realtime_update', handler as any);
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -23,6 +36,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         <Header onToggleSidebar={toggleSidebar} />
+        {banner && (
+          <div className="mx-4 mt-2 px-4 py-2 rounded bg-green-600 text-white shadow animate-in fade-in slide-in-from-top-2">
+            <div className="text-sm font-semibold">{banner.title}</div>
+            <div className="text-xs opacity-90">{banner.message}</div>
+          </div>
+        )}
         
         <main className="flex-1 relative overflow-y-auto focus:outline-none">
           <div className="py-6">

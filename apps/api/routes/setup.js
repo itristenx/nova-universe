@@ -1,400 +1,351 @@
-/**
- * Setup and Configuration Testing Routes
- * Handles testing connections for various services during setup wizard
- */
+// Nova API - Setup Routes
+// Handles setup wizard configuration testing and completion
 
 import express from 'express';
-import fetch from 'node-fetch';
-import nodemailer from 'nodemailer';
-import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
+import { body, validationResult } from 'express-validator';
 import { logger } from '../logger.js';
+import { authenticateJWT } from '../middleware/auth.js';
+import nodemailer from 'nodemailer';
+import fetch from 'node-fetch';
 
 const router = express.Router();
 
-/**
- * Test Slack connection
- */
-router.post('/test-slack', async (req, res) => {
+// Test connection endpoints for setup wizard
+router.post('/test-slack', [
+  body('slackToken').notEmpty().withMessage('Slack token is required'),
+  body('slackChannel').optional()
+], async (req, res) => {
   try {
-    const { slackToken, slackChannel } = req.body;
-
-    if (!slackToken) {
-      return res.status(400).json({
-        success: false,
-        error: 'Slack token is required'
-      });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, error: errors.array()[0].msg });
     }
+
+    const { slackToken, slackChannel = '#general' } = req.body;
 
     // Test Slack API connection
     const response = await fetch('https://slack.com/api/auth.test', {
-      headers: {
-        'Authorization': `Bearer ${slackToken}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const result = await response.json();
-
-    if (!result.ok) {
-      return res.json({
-        success: false,
-        error: result.error || 'Invalid Slack token'
-      });
-    }
-
-    // Test sending a message to the channel if provided
-    if (slackChannel) {
-      const testMessage = await fetch('https://slack.com/api/chat.postMessage', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${slackToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          channel: slackChannel,
-          text: 'Test message from Nova Universe setup wizard',
-          as_user: true
-        })
-      });
-
-      const messageResult = await testMessage.json();
-      if (!messageResult.ok) {
-        return res.json({
-          success: false,
-          error: `Channel test failed: ${messageResult.error}`
-        });
-      }
-    }
-
-    res.json({
-      success: true,
-      message: 'Slack connection successful',
-      teamName: result.team,
-      user: result.user
-    });
-
-  } catch (error) {
-    logger.error('Slack test error:', error);
-    res.json({
-      success: false,
-      error: 'Failed to test Slack connection'
-    });
-  }
-});
-
-/**
- * Test Microsoft Teams webhook
- */
-router.post('/test-teams', async (req, res) => {
-  try {
-    const { teamsWebhook } = req.body;
-
-    if (!teamsWebhook) {
-      return res.status(400).json({
-        success: false,
-        error: 'Teams webhook URL is required'
-      });
-    }
-
-    // Send test message to Teams
-    const response = await fetch(teamsWebhook, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Authorization': `Bearer ${slackToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+    
+    if (!data.ok) {
+      return res.status(400).json({ 
+        success: false, 
+        error: data.error || 'Slack authentication failed' 
+      });
+    }
+
+    // Test sending a message
+    const testResponse = await fetch('https://slack.com/api/chat.postMessage', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${slackToken}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        "@type": "MessageCard",
-        "@context": "http://schema.org/extensions",
-        "summary": "Nova Universe Test",
-        "themeColor": "0076D7",
-        "title": "Nova Universe Setup Test",
-        "text": "This is a test message from Nova Universe setup wizard"
-      })
+        channel: slackChannel,
+        text: 'Test message from Nova Universe setup wizard',
+        username: 'Nova Setup',
+      }),
     });
 
-    if (!response.ok) {
-      return res.json({
-        success: false,
-        error: `Teams webhook test failed: ${response.statusText}`
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Teams webhook connection successful'
-    });
-
-  } catch (error) {
-    logger.error('Teams test error:', error);
-    res.json({
-      success: false,
-      error: 'Failed to test Teams webhook'
-    });
-  }
-});
-
-/**
- * Test S3 bucket access
- */
-router.post('/test-s3', async (req, res) => {
-  try {
-    const { s3Bucket, s3Region, s3AccessKey, s3SecretKey } = req.body;
-
-    if (!s3Bucket || !s3AccessKey || !s3SecretKey) {
-      return res.status(400).json({
-        success: false,
-        error: 'S3 bucket, access key, and secret key are required'
-      });
-    }
-
-    // Create S3 client
-    const s3Client = new S3Client({
-      region: s3Region || 'us-east-1',
-      credentials: {
-        accessKeyId: s3AccessKey,
-        secretAccessKey: s3SecretKey
-      }
-    });
-
-    // Test bucket access
-    await s3Client.send(new HeadBucketCommand({ Bucket: s3Bucket }));
-
-    res.json({
-      success: true,
-      message: 'S3 bucket access successful'
-    });
-
-  } catch (error) {
-    logger.error('S3 test error:', error);
+    const testData = await testResponse.json();
     
-    let errorMessage = 'Failed to access S3 bucket';
-    if (error.name === 'NoSuchBucket') {
-      errorMessage = 'S3 bucket does not exist';
-    } else if (error.name === 'AccessDenied' || error.name === 'InvalidAccessKeyId') {
-      errorMessage = 'Invalid S3 credentials or insufficient permissions';
+    if (testData.ok) {
+      logger.info('Slack connection test successful');
+      res.json({ success: true, message: 'Slack connection successful' });
+    } else {
+      res.status(400).json({ 
+        success: false, 
+        error: testData.error || 'Failed to send test message' 
+      });
     }
-
-    res.json({
-      success: false,
-      error: errorMessage
+  } catch (error) {
+    logger.error('Slack connection test failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to test Slack connection' 
     });
   }
 });
 
-/**
- * Test Elasticsearch connection
- */
-router.post('/test-elasticsearch', async (req, res) => {
+router.post('/test-teams', [
+  body('teamsWebhook').isURL().withMessage('Valid Teams webhook URL is required')
+], async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, error: errors.array()[0].msg });
+    }
+
+    const { teamsWebhook } = req.body;
+
+    const payload = {
+      "@type": "MessageCard",
+      "@context": "http://schema.org/extensions",
+      "themeColor": "0076D7",
+      "summary": "Nova Universe Setup Test",
+      "sections": [{
+        "activityTitle": "Setup Test",
+        "activitySubtitle": "Nova Universe",
+        "activityImage": "https://teamsnodesample.azurewebsites.net/static/img/image5.png",
+        "facts": [{
+          "name": "Status",
+          "value": "Teams integration test successful"
+        }],
+        "markdown": true
+      }]
+    };
+
+    const response = await fetch(teamsWebhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      logger.info('Teams connection test successful');
+      res.json({ success: true, message: 'Teams connection successful' });
+    } else {
+      res.status(400).json({ 
+        success: false, 
+        error: 'Failed to send test message to Teams' 
+      });
+    }
+  } catch (error) {
+    logger.error('Teams connection test failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to test Teams connection' 
+    });
+  }
+});
+
+router.post('/test-elasticsearch', [
+  body('elasticsearchUrl').isURL().withMessage('Valid Elasticsearch URL is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, error: errors.array()[0].msg });
+    }
+
     const { elasticsearchUrl } = req.body;
 
-    if (!elasticsearchUrl) {
-      return res.status(400).json({
-        success: false,
-        error: 'Elasticsearch URL is required'
-      });
-    }
-
-    // Test Elasticsearch health
+    // Test Elasticsearch connection
     const response = await fetch(`${elasticsearchUrl}/_cluster/health`, {
-      timeout: 10000
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 10000,
     });
 
-    if (!response.ok) {
-      return res.json({
-        success: false,
-        error: `Elasticsearch connection failed: ${response.statusText}`
+    if (response.ok) {
+      const data = await response.json();
+      logger.info('Elasticsearch connection test successful');
+      res.json({ 
+        success: true, 
+        message: `Elasticsearch connection successful (${data.status})` 
+      });
+    } else {
+      res.status(400).json({ 
+        success: false, 
+        error: 'Failed to connect to Elasticsearch' 
       });
     }
-
-    const health = await response.json();
-
-    res.json({
-      success: true,
-      message: 'Elasticsearch connection successful',
-      clusterName: health.cluster_name,
-      status: health.status
-    });
-
   } catch (error) {
-    logger.error('Elasticsearch test error:', error);
-    res.json({
-      success: false,
-      error: 'Failed to connect to Elasticsearch'
+    logger.error('Elasticsearch connection test failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to test Elasticsearch connection' 
     });
   }
 });
 
-/**
- * Test Nova Sentinel connection
- */
-router.post('/test-sentinel', async (req, res) => {
+router.post('/test-s3', [
+  body('s3Bucket').notEmpty().withMessage('S3 bucket name is required'),
+  body('s3AccessKey').notEmpty().withMessage('S3 access key is required'),
+  body('s3SecretKey').notEmpty().withMessage('S3 secret key is required'),
+  body('s3Region').optional()
+], async (req, res) => {
   try {
-    const { sentinelUrl, sentinelApiKey } = req.body;
-
-    if (!sentinelUrl) {
-      return res.status(400).json({
-        success: false,
-        error: 'Sentinel URL is required'
-      });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, error: errors.array()[0].msg });
     }
 
-    // Test Sentinel health endpoint
+    const { s3Bucket, s3AccessKey, s3SecretKey, s3Region = 'us-east-1' } = req.body;
+
+    // Import AWS SDK (if available)
+    try {
+      const AWS = await import('@aws-sdk/client-s3');
+      const { S3Client, HeadBucketCommand } = AWS;
+
+      const s3Client = new S3Client({
+        region: s3Region,
+        credentials: {
+          accessKeyId: s3AccessKey,
+          secretAccessKey: s3SecretKey,
+        },
+      });
+
+      // Test bucket access
+      await s3Client.send(new HeadBucketCommand({ Bucket: s3Bucket }));
+
+      logger.info('S3 connection test successful');
+      res.json({ success: true, message: 'S3 connection successful' });
+    } catch (awsError) {
+      logger.error('S3 connection test failed:', awsError);
+      res.status(400).json({ 
+        success: false, 
+        error: 'Failed to connect to S3: ' + awsError.message 
+      });
+    }
+  } catch (error) {
+    logger.error('S3 connection test failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to test S3 connection (AWS SDK not available)' 
+    });
+  }
+});
+
+router.post('/test-sentinel', [
+  body('sentinelUrl').isURL().withMessage('Valid Sentinel URL is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, error: errors.array()[0].msg });
+    }
+
+    const { sentinelUrl, sentinelApiKey } = req.body;
+
     const headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'User-Agent': 'Nova-Universe-Setup/1.0',
     };
 
     if (sentinelApiKey) {
       headers['Authorization'] = `Bearer ${sentinelApiKey}`;
     }
 
-    const response = await fetch(`${sentinelUrl}/api/v1/health`, {
+    // Test Sentinel API health endpoint
+    const response = await fetch(`${sentinelUrl}/api/status`, {
+      method: 'GET',
       headers,
-      timeout: 10000
+      timeout: 10000,
     });
 
-    if (!response.ok) {
-      return res.json({
-        success: false,
-        error: `Sentinel connection failed: ${response.statusText}`
-      });
-    }
-
-    const health = await response.json();
-
-    res.json({
-      success: true,
-      message: 'Sentinel connection successful',
-      version: health.version || 'unknown',
-      status: health.status || 'healthy'
-    });
-
-  } catch (error) {
-    logger.error('Sentinel test error:', error);
-    res.json({
-      success: false,
-      error: 'Failed to connect to Nova Sentinel'
-    });
-  }
-});
-
-/**
- * Test GoAlert connection
- */
-router.post('/test-goalert', async (req, res) => {
-  try {
-    const { goAlertUrl, goAlertApiKey } = req.body;
-
-    if (!goAlertUrl || !goAlertApiKey) {
-      return res.status(400).json({
-        success: false,
-        error: 'GoAlert URL and API key are required'
-      });
-    }
-
-    // Test GoAlert API connection
-    const response = await fetch(`${goAlertUrl}/api/v2/user/profile`, {
-      headers: {
-        'Authorization': `Bearer ${goAlertApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      timeout: 10000
-    });
-
-    if (!response.ok) {
-      return res.json({
-        success: false,
-        error: `GoAlert connection failed: ${response.statusText}`
-      });
-    }
-
-    const profile = await response.json();
-
-    res.json({
-      success: true,
-      message: 'GoAlert connection successful',
-      userName: profile.name || 'Unknown',
-      userEmail: profile.email || 'Unknown'
-    });
-
-  } catch (error) {
-    logger.error('GoAlert test error:', error);
-    res.json({
-      success: false,
-      error: 'Failed to connect to GoAlert'
-    });
-  }
-});
-
-/**
- * Test SMTP email configuration
- */
-router.post('/test-email', async (req, res) => {
-  try {
-    const { 
-      provider, 
-      host, 
-      port, 
-      username, 
-      password, 
-      apiKey, 
-      fromEmail, 
-      secure 
-    } = req.body;
-
-    if (provider === 'console') {
-      return res.json({
-        success: true,
-        message: 'Console email provider configured (emails will be logged)'
-      });
-    }
-
-    if (provider === 'smtp') {
-      if (!host || !port || !fromEmail) {
-        return res.status(400).json({
-          success: false,
-          error: 'SMTP host, port, and from email are required'
-        });
-      }
-
-      // Create transporter
-      const transporter = nodemailer.createTransporter({
-        host,
-        port: parseInt(port),
-        secure: secure || port === '465',
-        auth: username && password ? {
-          user: username,
-          pass: password
-        } : undefined
-      });
-
-      // Verify connection
-      await transporter.verify();
-
-      res.json({
-        success: true,
-        message: 'SMTP connection successful'
+    if (response.ok) {
+      const data = await response.json();
+      logger.info('Sentinel connection test successful');
+      res.json({ 
+        success: true, 
+        message: 'Nova Sentinel connection successful' 
       });
     } else {
-      // For SendGrid, SES, etc.
-      if (!apiKey) {
-        return res.status(400).json({
-          success: false,
-          error: `API key is required for ${provider}`
-        });
-      }
+      res.status(400).json({ 
+        success: false, 
+        error: `Failed to connect to Sentinel (${response.status})` 
+      });
+    }
+  } catch (error) {
+    logger.error('Sentinel connection test failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to test Sentinel connection: ' + error.message 
+    });
+  }
+});
 
-      res.json({
-        success: true,
-        message: `${provider} configuration validated`
+router.post('/test-goalert', [
+  body('goalertUrl').isURL().withMessage('Valid GoAlert URL is required'),
+  body('goalertApiKey').notEmpty().withMessage('GoAlert API key is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, error: errors.array()[0].msg });
+    }
+
+    const { goalertUrl, goalertApiKey } = req.body;
+
+    // Test GoAlert API connection
+    const response = await fetch(`${goalertUrl}/api/v2/user/profile`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${goalertApiKey}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'Nova-Universe-Setup/1.0',
+      },
+      timeout: 10000,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      logger.info('GoAlert connection test successful');
+      res.json({ 
+        success: true, 
+        message: 'GoAlert connection successful' 
+      });
+    } else {
+      res.status(400).json({ 
+        success: false, 
+        error: `Failed to connect to GoAlert (${response.status})` 
+      });
+    }
+  } catch (error) {
+    logger.error('GoAlert connection test failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to test GoAlert connection: ' + error.message 
+    });
+  }
+});
+
+// Complete setup
+router.post('/complete', [
+  authenticateJWT,
+  body('setupData').isObject().withMessage('Setup data is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        error: errors.array()[0].msg 
       });
     }
 
+    const { setupData } = req.body;
+    const userId = req.user?.id;
+
+    // Store setup completion in database
+    // This would typically update environment variables and configuration
+    logger.info('Setup completed by user:', userId);
+    logger.info('Setup data:', JSON.stringify(setupData, null, 2));
+
+    // In a real implementation, you would:
+    // 1. Store configuration in database
+    // 2. Update environment variables
+    // 3. Initialize services
+    // 4. Mark setup as complete
+
+    res.json({ 
+      success: true, 
+      message: 'Setup completed successfully' 
+    });
   } catch (error) {
-    logger.error('Email test error:', error);
-    res.json({
-      success: false,
-      error: 'Failed to test email configuration'
+    logger.error('Setup completion failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to complete setup' 
     });
   }
 });

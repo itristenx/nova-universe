@@ -817,4 +817,31 @@ router.post('/feedback',
   }
 );
 
+<<<<<<< Current (Your changes)
+=======
+router.get('/forms/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    // For now return a simple dynamic form definition; in production, fetch from DB
+    const form = {
+      id,
+      title: 'Incident Report',
+      fields: [
+        { id: 'title', type: 'text', label: 'Title', required: true, maxLength: 200 },
+        { id: 'description', type: 'textarea', label: 'Description', required: true },
+        { id: 'category', type: 'select', label: 'Category', options: ['Hardware', 'Software', 'Network', 'Access'] },
+        { id: 'priority', type: 'radio', label: 'Priority', options: ['low', 'medium', 'high', 'critical'], default: 'medium' },
+        { id: 'location', type: 'text', label: 'Location' }
+      ],
+      version: 1,
+      updatedAt: new Date().toISOString()
+    };
+
+    res.json({ success: true, form });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch form' });
+  }
+});
+
+>>>>>>> Incoming (Background Agent changes)
 export default router;

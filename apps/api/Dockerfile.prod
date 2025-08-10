@@ -69,11 +69,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3000/health || exit 1
 
-<<<<<<< Current (Your changes)
-# Start application with dumb-init
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "index.js"]
-=======
 # Use tini as PID 1 for proper signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
@@ -85,4 +80,3 @@ LABEL maintainer="Nova Universe Team"
 LABEL version="1.0.0"
 LABEL description="Nova Universe API Server - Production"
 LABEL org.opencontainers.image.source="https://github.com/your-org/nova-universe"
->>>>>>> Incoming (Background Agent changes)

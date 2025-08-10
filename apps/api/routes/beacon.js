@@ -8,6 +8,9 @@ import { createRateLimit } from '../middleware/rateLimiter.js';
 import { validateKioskAuth } from '../middleware/validation.js';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
+import HelixKioskIntegration from '../services/helixKioskIntegration.js';
+import { authenticateJWT } from '../middleware/auth.js';
+import events from '../events.js';
 
 const router = express.Router();
 
@@ -552,6 +555,15 @@ router.post('/activate',
                 });
               }
 
+              // Auto-register kiosk record in inventory (if inventory module available)
+              try {
+                // This would link a kiosk to an inventory asset if one exists; placeholder assetId 0
+                // In a real system, deviceInfo/serial would be matched.
+                HelixKioskIntegration.updateHelixSyncStatus?.(activation.kioskId, 0, { status: 'pending', timestamp: new Date().toISOString() });
+              } catch (e) {
+                logger.warn('Inventory/Helix auto-registration hook failed:', e.message);
+              }
+
               // Mark activation as used
               db.run(
                 'UPDATE kiosk_activations SET isUsed = 1, usedAt = datetime("now") WHERE id = $1',
@@ -563,6 +575,9 @@ router.post('/activate',
                 kioskName: activation.kioskName,
                 location: activation.location
               });
+
+              // Emit kiosk-activated for realtime UIs
+              events.emit('kiosk-activated', { kioskId: activation.kioskId, kioskName: activation.kioskName, location: activation.location });
 
               res.json({
                 success: true,
@@ -591,4 +606,110 @@ router.post('/activate',
   }
 );
 
+<<<<<<< Current (Your changes)
+=======
+// Admin-issued activation code generation
+router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req, res) => {
+  try {
+    const { kioskId, kioskName, location, configuration } = req.body || {};
+    if (!kioskId) return res.status(400).json({ success: false, error: 'kioskId required' });
+    const code = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 15).toISOString(); // 15 min
+    db.run(
+      `INSERT INTO kiosk_activations (kioskId, kioskName, location, activationCode, configuration, isUsed, expiresAt)
+       VALUES ($1, $2, $3, $4, $5, 0, $6)`,
+      [kioskId, kioskName || kioskId, location || '', code, JSON.stringify(configuration || {}), expiresAt],
+      function(err) {
+        if (err) return res.status(500).json({ success: false, error: 'DB error' });
+        const activationUrl = `${process.env.ADMIN_URL || ''}/activate?kioskId=${encodeURIComponent(kioskId)}&code=${code}`;
+        QRCode.toDataURL(activationUrl).then(qr => {
+          res.status(201).json({ success: true, code, kioskId, kioskName, location, expiresAt, activationUrl, qr });
+        }).catch(() => res.status(201).json({ success: true, code, kioskId, kioskName, location, expiresAt, activationUrl }));
+      }
+    );
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Failed to create activation code' });
+  }
+});
+
+// Kiosk check-in to update lastSeen and trigger Helix sync
+router.post('/check-in', validateKioskAuth, async (req, res) => {
+  try {
+    const kioskId = req.kiosk.id;
+    db.run('UPDATE kiosks SET lastSeen = datetime("now") WHERE id = $1', [kioskId], async (err) => {
+      if (err) return res.status(500).json({ success: false, error: 'DB error' });
+      // Trigger Helix sync for any pending assets linked to this kiosk
+      try {
+        const helix = (await import('../services/helixKioskIntegration.js')).default;
+        if (helix?.bulkSyncWithHelix) {
+          await helix.bulkSyncWithHelix({ limit: 50 });
+        }
+      } catch (e) {
+        logger.warn('Helix bulk sync trigger failed:', e.message);
+      }
+      events.emit('kiosk_check_in', { kioskId, timestamp: new Date().toISOString() });
+      res.json({ success: true, kioskId });
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Check-in failed' });
+  }
+});
+
+// Link a kiosk to an inventory asset by tag or serial
+router.post('/link-asset', authenticateJWT, async (req, res) => {
+  try {
+    const { kioskId, assetTag, serialNumber } = req.body || {};
+    if (!kioskId || (!assetTag && !serialNumber)) {
+      return res.status(400).json({ success: false, error: 'kioskId and assetTag or serialNumber required' });
+    }
+    const helix = (await import('../services/helixKioskIntegration.js')).default;
+
+    // Lookup asset in inventory
+    let asset = null;
+    if (assetTag) {
+      asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: assetTag } });
+      if (!asset) {
+        asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: { equals: assetTag, mode: 'insensitive' } } });
+      }
+    }
+    if (!asset && serialNumber) {
+      // Attempt plaintext field
+      asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: serialNumber } }).catch(() => null);
+      // Fallback: case-insensitive partial match
+      if (!asset) {
+        asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: { contains: serialNumber, mode: 'insensitive' } } }).catch(() => null);
+      }
+      // Fallback: decrypt compare across recent assets (bounded scan)
+      if (!asset) {
+        const recent = await helix.db.inventoryAsset.findMany({ take: 200, orderBy: { updated_at: 'desc' } }).catch(() => []);
+        for (const a of recent) {
+          if (a.serial_number_enc) {
+            try {
+              const { decrypt } = await import('../utils/encryption.js');
+              const dec = decrypt(a.serial_number_enc);
+              if (dec && dec.toLowerCase() === String(serialNumber).toLowerCase()) { asset = a; break; }
+            } catch {}
+          }
+        }
+      }
+    }
+    if (!asset) {
+      return res.status(404).json({ success: false, error: 'Asset not found' });
+    }
+
+    const result = await helix.registerAssetWithKiosk(asset.id, kioskId, { userId: req.user?.id || 'admin' });
+    // Trigger sync immediately for responsiveness, ignoring errors
+    try {
+      await helix.syncWithHelix(kioskId, asset.id, asset, result.metadata || {});
+    } catch (e) {
+      logger.warn('Immediate Helix sync failed:', e.message);
+    }
+    return res.json({ success: true, result });
+  } catch (e) {
+    logger.error('Link asset failed:', e);
+    res.status(500).json({ success: false, error: 'Link asset failed' });
+  }
+});
+
+>>>>>>> Incoming (Background Agent changes)
 export default router;

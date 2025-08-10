@@ -24,6 +24,7 @@ class ConnectionManager: ObservableObject {
     private let monitor = NWPathMonitor()
     private let monitorQueue = DispatchQueue(label: "ConnectionMonitor")
     private var pingTimer: Timer?
+    private var heartbeatTimer: Timer?
     
     private init() {}
     
@@ -31,6 +32,7 @@ class ConnectionManager: ObservableObject {
     func startMonitoring() async {
         await setupNetworkMonitoring()
         startServerPing()
+        startHeartbeat()
     }
     
     nonisolated func stopMonitoring() {
@@ -38,6 +40,8 @@ class ConnectionManager: ObservableObject {
         Task { @MainActor in
             pingTimer?.invalidate()
             pingTimer = nil
+            heartbeatTimer?.invalidate()
+            heartbeatTimer = nil
         }
     }
     
@@ -149,6 +153,21 @@ class ConnectionManager: ObservableObject {
         pingTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in
             Task {
                 await self.testConnection()
+            }
+        }
+    }
+    
+    private func startHeartbeat() {
+        // Kiosk heartbeat every 60 seconds to check-in
+        heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
+            Task { @MainActor in
+                guard self.isConnected, let serverConfig = ConfigurationManager.shared.serverConfiguration else { return }
+                let urlString = "\(serverConfig.baseURL)/api/v2/beacon/check-in"
+                guard let url = URL(string: urlString) else { return }
+                var req = URLRequest(url: url)
+                req.httpMethod = "POST"
+                // In production, include kiosk token auth header if required by server
+                URLSession.shared.dataTask(with: req).resume()
             }
         }
     }

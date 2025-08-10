@@ -1,4 +1,4 @@
 module Nova_Beacon {
-    header "/Users/tneibarger/Documents/GitHub/nova-universe/apps/beacon/nova-beacon/Nova Beacon/.build/index-build/arm64-apple-macosx/debug/Nova_Beacon.build/Nova-Beacon-Swift.h"
+    header "/Users/tneibarger/nova-universe/apps/beacon/nova-beacon/Nova Beacon/.build/index-build/arm64-apple-macosx/debug/Nova_Beacon.build/Nova-Beacon-Swift.h"
     requires objc
 }

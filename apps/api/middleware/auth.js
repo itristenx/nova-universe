@@ -155,14 +155,10 @@ export function issueJWT(user) {
     roles: user.roles || [],
     iat: Math.floor(Date.now() / 1000) // issued at time
   };
-<<<<<<< Current (Your changes)
-  return jwt.sign(payload, config.jwtSecret, { expiresIn: '12h' });
-=======
   
   return jwt.sign(payload, config.jwtSecret, { 
     expiresIn: '12h',
     issuer: 'nova-universe-api',
     audience: 'nova-universe'
   });
->>>>>>> Incoming (Background Agent changes)
 }

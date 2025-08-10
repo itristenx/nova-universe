@@ -30,8 +30,14 @@ struct KioskHomeView: View {
                     // Header Bar (Room Name + Gear Icon)
                     headerBar
                     
+                    // Branded room ribbon
+                    roomRibbon
+                    
                     // Main content area
-                    VStack(spacing: 32) {
+                    VStack(spacing: 24) {
+                        // Next meeting strip
+                        nextMeetingStrip
+                        
                         Spacer()
                         
                         // Notification Card (Time + Message)
@@ -44,6 +50,9 @@ struct KioskHomeView: View {
                     }
                     .padding(.horizontal, 40)
                     .padding(.bottom, 60)
+                    
+                    // Persistent bottom status indicator bar
+                    StatusIndicatorBar(connectionStatus: AppCoordinator.shared.connectionStatus)
                 }
             }
         }
@@ -136,6 +145,65 @@ struct KioskHomeView: View {
         .padding(.horizontal, 40)
         .padding(.top, 20)
         .padding(.bottom, 10)
+    }
+    
+    private var roomRibbon: some View {
+        HStack(spacing: 12) {
+            if let logoUrl = UserDefaults.standard.string(forKey: "kioskLogoUrl"), let url = URL(string: logoUrl) {
+                AsyncImage(url: url) { img in
+                    img.resizable().aspectRatio(contentMode: .fit)
+                } placeholder: { Color.white.opacity(0.2) }
+                .frame(width: 48, height: 48)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.2), lineWidth: 1))
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(roomName)
+                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white)
+                Text("Kiosk Ready • \(dateFormatter.string(from: currentTime))")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.85))
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(hex: UserDefaults.standard.string(forKey: "kioskPrimaryColor") ?? "#1D1EFF").opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal, 40)
+        .padding(.bottom, 12)
+    }
+    
+    private var nextMeetingStrip: some View {
+        HStack(spacing: 12) {
+            Circle().fill(Color.green).frame(width: 10, height: 10)
+            Text("No upcoming meetings")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+            Spacer()
+            HStack(spacing: 8) {
+                Image(systemName: "wifi").foregroundColor(connectionManager.isConnected ? .green : .yellow)
+                if let last = configManager.lastConfigUpdate {
+                    Text("Last sync: \(last.formatted(.relative(presentation: .named)))")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                }
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.08))
+        )
+        .padding(.horizontal, 40)
     }
     
     // MARK: - Notification Card

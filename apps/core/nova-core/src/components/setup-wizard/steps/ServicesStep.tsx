@@ -30,18 +30,20 @@ interface ServiceData {
   aiAssistEnabled?: boolean;
   openaiApiKey?: string;
   
-  // Monitoring & Alerting
+  // Nova Sentinel Monitoring
   sentinelEnabled?: boolean;
   sentinelUrl?: string;
   sentinelApiKey?: string;
   sentinelWebhookSecret?: string;
-  goAlertEnabled?: boolean;
-  goAlertUrl?: string;
-  goAlertApiKey?: string;
-  goAlertSmtpHost?: string;
-  goAlertSmtpPort?: string;
-  goAlertSmtpUser?: string;
-  goAlertSmtpPass?: string;
+  
+  // GoAlert Alerting
+  goalertEnabled?: boolean;
+  goalertUrl?: string;
+  goalertApiKey?: string;
+  goalertSmtpHost?: string;
+  goalertSmtpPort?: string;
+  goalertSmtpUser?: string;
+  goalertSmtpPass?: string;
 }
 
 interface SetupData {
@@ -101,19 +103,20 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
     aiAssistEnabled: data?.services?.aiAssistEnabled || false,
     openaiApiKey: data?.services?.openaiApiKey || '',
     
-    // Monitoring & Alerting
+    // Nova Sentinel Monitoring
     sentinelEnabled: data?.services?.sentinelEnabled || false,
     sentinelUrl: data?.services?.sentinelUrl || 'http://localhost:3001',
     sentinelApiKey: data?.services?.sentinelApiKey || '',
     sentinelWebhookSecret: data?.services?.sentinelWebhookSecret || '',
     
-    goAlertEnabled: data?.services?.goAlertEnabled || false,
-    goAlertUrl: data?.services?.goAlertUrl || 'http://localhost:8081',
-    goAlertApiKey: data?.services?.goAlertApiKey || '',
-    goAlertSmtpHost: data?.services?.goAlertSmtpHost || '',
-    goAlertSmtpPort: data?.services?.goAlertSmtpPort || '587',
-    goAlertSmtpUser: data?.services?.goAlertSmtpUser || '',
-    goAlertSmtpPass: data?.services?.goAlertSmtpPass || ''
+    // GoAlert Alerting
+    goalertEnabled: data?.services?.goalertEnabled || false,
+    goalertUrl: data?.services?.goalertUrl || 'http://localhost:8081',
+    goalertApiKey: data?.services?.goalertApiKey || '',
+    goalertSmtpHost: data?.services?.goalertSmtpHost || '',
+    goalertSmtpPort: data?.services?.goalertSmtpPort || '587',
+    goalertSmtpUser: data?.services?.goalertSmtpUser || '',
+    goalertSmtpPass: data?.services?.goalertSmtpPass || ''
   });
 
   const [connectionTests, setConnectionTests] = useState<Record<string, 'idle' | 'testing' | 'success' | 'error'>>({});
@@ -670,12 +673,12 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                 </div>
               </div>
               <Switch
-                checked={formData.goAlertEnabled}
-                onChange={(checked) => handleInputChange('goAlertEnabled', checked)}
+                checked={formData.goalertEnabled}
+                onChange={(checked) => handleInputChange('goalertEnabled', checked)}
               />
             </div>
 
-            {formData.goAlertEnabled && (
+            {formData.goalertEnabled && (
               <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -684,10 +687,10 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     </label>
                     <Input
                       type="url"
-                      value={formData.goAlertUrl}
-                      onChange={(e) => handleInputChange('goAlertUrl', e.target.value)}
+                      value={formData.goalertUrl}
+                      onChange={(e) => handleInputChange('goalertUrl', e.target.value)}
                       placeholder="http://localhost:8081"
-                      error={errors.goAlertUrl}
+                      error={errors.goalertUrl}
                       className="w-full"
                     />
                   </div>
@@ -697,10 +700,10 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     </label>
                     <Input
                       type="password"
-                      value={formData.goAlertApiKey}
-                      onChange={(e) => handleInputChange('goAlertApiKey', e.target.value)}
+                      value={formData.goalertApiKey}
+                      onChange={(e) => handleInputChange('goalertApiKey', e.target.value)}
                       placeholder="GoAlert API token"
-                      error={errors.goAlertApiKey}
+                      error={errors.goalertApiKey}
                       className="w-full"
                     />
                   </div>
@@ -718,10 +721,10 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                         SMTP Host
                       </label>
                       <Input
-                        value={formData.goAlertSmtpHost}
-                        onChange={(e) => handleInputChange('goAlertSmtpHost', e.target.value)}
+                        value={formData.goalertSmtpHost}
+                        onChange={(e) => handleInputChange('goalertSmtpHost', e.target.value)}
                         placeholder="smtp.gmail.com"
-                        error={errors.goAlertSmtpHost}
+                        error={errors.goalertSmtpHost}
                         className="w-full"
                       />
                     </div>
@@ -730,10 +733,10 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                         SMTP Port
                       </label>
                       <Input
-                        value={formData.goAlertSmtpPort}
-                        onChange={(e) => handleInputChange('goAlertSmtpPort', e.target.value)}
+                        value={formData.goalertSmtpPort}
+                        onChange={(e) => handleInputChange('goalertSmtpPort', e.target.value)}
                         placeholder="587"
-                        error={errors.goAlertSmtpPort}
+                        error={errors.goalertSmtpPort}
                         className="w-full"
                       />
                     </div>
@@ -745,10 +748,10 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                         SMTP Username
                       </label>
                       <Input
-                        value={formData.goAlertSmtpUser}
-                        onChange={(e) => handleInputChange('goAlertSmtpUser', e.target.value)}
+                        value={formData.goalertSmtpUser}
+                        onChange={(e) => handleInputChange('goalertSmtpUser', e.target.value)}
                         placeholder="your-email@gmail.com"
-                        error={errors.goAlertSmtpUser}
+                        error={errors.goalertSmtpUser}
                         className="w-full"
                       />
                     </div>
@@ -758,10 +761,10 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                       </label>
                       <Input
                         type="password"
-                        value={formData.goAlertSmtpPass}
-                        onChange={(e) => handleInputChange('goAlertSmtpPass', e.target.value)}
+                        value={formData.goalertSmtpPass}
+                        onChange={(e) => handleInputChange('goalertSmtpPass', e.target.value)}
                         placeholder="App password or SMTP password"
-                        error={errors.goAlertSmtpPass}
+                        error={errors.goalertSmtpPass}
                         className="w-full"
                       />
                     </div>
@@ -773,7 +776,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     variant="secondary"
                     size="sm"
                     onClick={() => testConnection('goalert')}
-                    disabled={connectionTests.goalert === 'testing' || !formData.goAlertUrl || !formData.goAlertApiKey}
+                    disabled={connectionTests.goalert === 'testing' || !formData.goalertUrl || !formData.goalertApiKey}
                     isLoading={connectionTests.goalert === 'testing'}
                   >
                     Test Connection
