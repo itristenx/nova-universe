@@ -1163,6 +1163,68 @@ async function registerNovaTools(server) {
     }
   );
 
+  // Alert Analysis Tool
+  server.registerTool(
+    'nova.alerts.analyze',
+    {
+      title: 'Analyze Alert Situation',
+      description: 'Analyze tickets/situations and recommend alert creation or escalation actions',
+      inputSchema: {
+        userId: z.string(),
+        module: z.enum(['pulse', 'orbit', 'core']).default('pulse'),
+        userRole: z.string().default('technician'),
+        context: z.object({
+          ticketId: z.string().optional(),
+          alertId: z.string().optional(),
+          priority: z.string().optional(),
+          customerTier: z.string().optional(),
+          affectedUsers: z.number().optional(),
+          serviceCategory: z.string().optional(),
+          keywords: z.array(z.string()).optional(),
+          tenantId: z.string().optional(),
+          timestamp: z.string().optional()
+        }),
+        message: z.string()
+      }
+    },
+    async ({ userId, module, userRole, context, message }) => {
+      try {
+        // Analyze the situation using Nova's alert intelligence
+        const analysis = await analyzeAlertSituation(context, message, userRole);
+        
+        // Log the analysis request
+        logger.info('Alert analysis performed:', {
+          userId,
+          module,
+          context,
+          action: analysis.action,
+          confidence: analysis.confidence
+        });
+
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(analysis)
+          }]
+        };
+      } catch (error) {
+        logger.error('Alert analysis failed:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              action: 'no_action',
+              reasoning: `Analysis failed: ${error.message}`,
+              confidence: 0.1,
+              error: true
+            })
+          }],
+          isError: true
+        };
+      }
+    }
+  );
+
   // Hook Trigger Tool
   server.registerTool(
     'nova.hooks.trigger',
@@ -1917,4 +1979,171 @@ export async function notifyCosmoEscalation(ticketId, reason) {
   } catch (error) {
     logger.error('Error in legacy escalation:', error);
   }
+}
+
+/**
+ * Analyze alert situation using Nova's business logic
+ */
+export async function analyzeAlertSituation(context, message, userRole) {
+  const analysis = {
+    action: 'no_action',
+    reasoning: '',
+    confidence: 0.5,
+    suggestions: [],
+    alertData: null,
+    escalationData: null
+  };
+
+  // Priority-based analysis
+  if (context.priority) {
+    switch (context.priority.toLowerCase()) {
+      case 'critical':
+        analysis.confidence += 0.3;
+        analysis.action = 'create_alert';
+        analysis.reasoning = 'Critical priority issue requires immediate alert.';
+        break;
+      case 'high':
+        analysis.confidence += 0.2;
+        if (context.customerTier === 'vip' || (context.affectedUsers && context.affectedUsers > 5)) {
+          analysis.action = 'create_alert';
+          analysis.reasoning = 'High priority with significant impact requires alert.';
+        } else {
+          analysis.action = 'suggest_resolution';
+          analysis.reasoning = 'High priority issue should be monitored closely.';
+          analysis.suggestions.push('Monitor for escalation if not resolved within 30 minutes');
+        }
+        break;
+      case 'medium':
+        analysis.confidence += 0.1;
+        if (context.affectedUsers && context.affectedUsers > 10) {
+          analysis.action = 'create_alert';
+          analysis.reasoning = 'Medium priority affecting many users requires alert.';
+        } else {
+          analysis.action = 'suggest_resolution';
+          analysis.reasoning = 'Medium priority issue - continue normal resolution process.';
+        }
+        break;
+      case 'low':
+        analysis.action = 'suggest_resolution';
+        analysis.reasoning = 'Low priority issue - handle through normal channels.';
+        analysis.suggestions.push('Track resolution time for SLA compliance');
+        break;
+    }
+  }
+
+  // Customer tier analysis
+  if (context.customerTier === 'vip') {
+    analysis.confidence += 0.2;
+    if (analysis.action === 'suggest_resolution') {
+      analysis.action = 'escalate_alert';
+      analysis.reasoning += ' VIP customer requires escalated attention.';
+    }
+  }
+
+  // Keyword-based analysis
+  if (context.keywords && context.keywords.length > 0) {
+    const criticalKeywords = ['outage', 'down', 'security', 'breach', 'critical', 'emergency'];
+    const hasCriticalKeywords = context.keywords.some(k => criticalKeywords.includes(k.toLowerCase()));
+    
+    if (hasCriticalKeywords) {
+      analysis.confidence += 0.25;
+      if (analysis.action === 'no_action' || analysis.action === 'suggest_resolution') {
+        analysis.action = 'create_alert';
+        analysis.reasoning += ' Critical keywords detected indicating serious issue.';
+      }
+    }
+
+    const securityKeywords = ['security', 'breach', 'malware', 'phishing', 'unauthorized'];
+    const hasSecurityKeywords = context.keywords.some(k => securityKeywords.includes(k.toLowerCase()));
+    
+    if (hasSecurityKeywords) {
+      analysis.confidence += 0.3;
+      analysis.action = 'create_alert';
+      analysis.reasoning += ' Security incident requires immediate alert.';
+    }
+  }
+
+  // Affected users analysis
+  if (context.affectedUsers) {
+    if (context.affectedUsers > 50) {
+      analysis.confidence += 0.4;
+      analysis.action = 'escalate_alert';
+      analysis.reasoning += ` Large number of affected users (${context.affectedUsers}) requires escalation.`;
+    } else if (context.affectedUsers > 10) {
+      analysis.confidence += 0.2;
+      if (analysis.action === 'no_action') {
+        analysis.action = 'create_alert';
+        analysis.reasoning += ` Multiple users affected (${context.affectedUsers}) requires alert.`;
+      }
+    }
+  }
+
+  // Time-based analysis (if alertId provided, this is an existing alert)
+  if (context.alertId) {
+    // This is analysis for potential escalation
+    analysis.action = 'escalate_alert';
+    analysis.reasoning = 'Existing alert requires escalation analysis.';
+    analysis.confidence += 0.1;
+  }
+
+  // Service category analysis
+  if (context.serviceCategory) {
+    switch (context.serviceCategory.toLowerCase()) {
+      case 'security':
+        analysis.confidence += 0.3;
+        analysis.action = 'create_alert';
+        analysis.reasoning += ' Security category requires alert creation.';
+        break;
+      case 'infrastructure':
+      case 'network':
+        analysis.confidence += 0.2;
+        if (context.affectedUsers && context.affectedUsers > 1) {
+          analysis.action = 'create_alert';
+          analysis.reasoning += ' Infrastructure issue affecting multiple users.';
+        }
+        break;
+    }
+  }
+
+  // Role-based adjustments
+  if (userRole === 'pulse_lead' || userRole === 'core_admin') {
+    // Leaders can trigger alerts more easily
+    analysis.confidence += 0.1;
+  }
+
+  // Normalize confidence
+  analysis.confidence = Math.min(1.0, Math.max(0.0, analysis.confidence));
+
+  // Add general suggestions based on action
+  switch (analysis.action) {
+    case 'create_alert':
+      analysis.suggestions.push(
+        'Review on-call schedule before creating alert',
+        'Include relevant context in alert description',
+        'Set appropriate priority level'
+      );
+      break;
+    case 'escalate_alert':
+      analysis.suggestions.push(
+        'Document escalation reason clearly',
+        'Notify relevant stakeholders',
+        'Update ticket with escalation details'
+      );
+      break;
+    case 'suggest_resolution':
+      analysis.suggestions.push(
+        'Continue normal resolution process',
+        'Monitor for changes in severity',
+        'Update ticket status regularly'
+      );
+      break;
+    case 'no_action':
+      analysis.suggestions.push(
+        'Continue current resolution process',
+        'No immediate alert action required'
+      );
+      break;
+  }
+
+  return analysis;
 }

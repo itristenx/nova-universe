@@ -19,6 +19,8 @@ import websocketRouter from './routes/websocket.js';
 import helpscoutRouter from './routes/helpscout.js';
 import analyticsRouter from './routes/analytics.js';
 import monitoringRouter from './routes/monitoring.js';
+import enhancedMonitoringRouter from './routes/enhanced-monitoring.js';
+import { enhancedMonitoringService } from './lib/enhanced-monitoring-integration.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -53,7 +55,7 @@ import events from './events.js';
 import { sign, verify } from './jwt.js';
 import { authenticateJWT } from './middleware/auth.js';
 import { authRateLimit } from './middleware/rateLimiter.js';
-import { requestLogger, securityHeaders } from './middleware/security.js';
+import { configureSecurityHeaders, configureCORS, sanitizeInput, securityLogging } from './middleware/security.js';
 import { validateActivationCode, validateEmail, validateKioskRegistration } from './middleware/validation.js';
 import helixRouter from './routes/helix.js';
 import helixUniversalLoginRouter from './routes/helix-universal-login.js';
@@ -65,6 +67,8 @@ import scimRouter from './routes/scim.js';
 import scimMonitorRouter from './routes/scimMonitor.js';
 import synthRouter from './routes/synth.js';
 import synthV2Router from './routes/synth-v2.js';
+import beaconRouter from './routes/beacon.js';
+import filesRouter from './routes/files.js';
 import { getEmailStrategy } from './utils/serviceHelpers.js';
 import { setupGraphQL } from './graphql.js';
 
@@ -335,22 +339,10 @@ if (process.env.DEBUG_CORS === 'true') {
   console.log('🔧 CORS Debug - originList:', originList);
 }
 
-// Apply security middleware
-app.use(securityHeaders);
-app.use(requestLogger);
-
-// Regular CSP for other routes  
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      fontSrc: ["'self'", "https:", "data:"]
-    }
-  }
-}));
+// Apply enhanced security middleware
+app.use(securityLogging);
+app.use(configureSecurityHeaders());
+app.use(sanitizeInput);
 
 // Disable CSP entirely for Swagger UI routes (must be after helmet)
 app.use('/api-docs', (req, res, next) => {
@@ -369,22 +361,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Temporarily allow all origins for debugging
-if (process.env.DEBUG_CORS === 'true') {
-  console.log('🔧 CORS Debug - Setting up CORS with origin: true');
-  app.use(cors({ 
-    origin: true,
-    credentials: true,
-    optionsSuccessStatus: 200
-  }));
-} else {
-  console.log('🔒 CORS Production - Setting up CORS with restricted origins:', originList);
-  app.use(cors({ 
-    origin: originList || false,
-    credentials: true,
-    optionsSuccessStatus: 200
-  }));
-}
+// Configure CORS with enhanced security
+app.use(configureCORS());
 
 // Add post-CORS middleware to log headers (only in debug mode)
 if (process.env.DEBUG_CORS === 'true') {
@@ -445,6 +423,11 @@ const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET;
 
 if (!DISABLE_AUTH && !process.env.SESSION_SECRET) {
   logger.error('SESSION_SECRET environment variable is required');
+  process.exit(1);
+}
+
+if (!DISABLE_AUTH && !process.env.JWT_SECRET) {
+  logger.error('JWT_SECRET environment variable is required');
   process.exit(1);
 }
 
@@ -1710,6 +1693,15 @@ app.use('/api/v1/websocket', websocketRouter);
 app.use('/api/helpscout', helpscoutRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/monitoring', monitoringRouter);
+app.use('/api/enhanced-monitoring', enhancedMonitoringRouter);
+
+// Import and use Sentinel-Alerts integration routes
+import sentinelAlertsRoutes from './routes/sentinel-alerts.js';
+app.use('/api/v2/sentinel', sentinelAlertsRoutes);
+
+// Import and use GoAlert proxy routes for 1:1 feature parity
+import goalertProxyRoutes from './routes/goalert-proxy.js';
+app.use('/api/v2/goalert', goalertProxyRoutes);
 
 // Nova module routes
 app.use('/api/v1/helix', helixRouter);     // Nova Helix - Identity Engine
@@ -1719,6 +1711,8 @@ app.use('/api/v1/pulse', pulseRouter);     // Nova Pulse - Technician Portal
 app.use('/api/v1/orbit', orbitRouter);     // Nova Orbit - End-User Portal
 app.use('/api/v1/synth', synthRouter);     // Nova Synth - AI Engine (Legacy)
 app.use('/api/v2/synth', synthV2Router);   // Nova Synth - AI Engine (v2 - Full Spec)
+app.use('/api/v2/beacon', beaconRouter);   // Nova Beacon - Kiosk API
+app.use('/api/v2/files', filesRouter);     // Nova Files - File Upload/Download API
 app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
 app.use('/api/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
 
@@ -1734,12 +1728,42 @@ export async function createApp() {
 
 // Only start the server if not in test mode
 if (process.env.NODE_ENV !== 'test') {
-  createApp().then(({ app, server, io }) => {
+  createApp().then(async ({ app, server, io }) => {
+    // Initialize Enhanced Monitoring System
+    try {
+      logger.info('Initializing Enhanced Monitoring System...');
+      await enhancedMonitoringService.initialize();
+      logger.info('✓ Enhanced Monitoring System initialized successfully');
+    } catch (error) {
+      logger.error('Failed to initialize Enhanced Monitoring System:', error);
+      // Continue startup even if monitoring fails to initialize
+    }
+
     server.listen(PORT, () => {
       console.log(`🚀 Nova Universe API Server running on port ${PORT}`);
       console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
       console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
       console.log(`⚡ WebSocket server ready for real-time updates`);
+      console.log(`🔍 Enhanced Monitoring with Uptime Kuma parity: http://localhost:${PORT}/api/enhanced-monitoring`);
+    });
+
+    // Graceful shutdown handler
+    process.on('SIGTERM', async () => {
+      logger.info('SIGTERM received, shutting down gracefully...');
+      await enhancedMonitoringService.shutdown();
+      server.close(() => {
+        logger.info('Server shutdown complete');
+        process.exit(0);
+      });
+    });
+
+    process.on('SIGINT', async () => {
+      logger.info('SIGINT received, shutting down gracefully...');
+      await enhancedMonitoringService.shutdown();
+      server.close(() => {
+        logger.info('Server shutdown complete');
+        process.exit(0);
+      });
     });
   });
 }

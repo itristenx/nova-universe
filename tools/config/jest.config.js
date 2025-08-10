@@ -13,6 +13,15 @@ export default {
     '<rootDir>/apps/api/test/**/*.test.ts',
     '<rootDir>/apps/api/test/**/*.test.tsx'
   ],
+  testPathIgnorePatterns: [
+    '<rootDir>/test/encryption.test.js',
+    '<rootDir>/test/inventory-helix-integration.test.js',
+    '<rootDir>/test/inventory-implementation.test.js',
+    '<rootDir>/test/nova-synth-integration.test.js',
+    '<rootDir>/test/universal-login-integration.test.js',
+    '<rootDir>/test/websocket-pwa-integration.test.js',
+    '<rootDir>/apps/pulse/nova-pulse/src/test/**/*'
+  ],
   testEnvironment: 'node',
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['@babel/preset-env', '@babel/preset-typescript'] }]

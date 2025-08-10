@@ -30,9 +30,12 @@ const STEPS = [
 
 export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
   const { 
-    state, 
-    dispatch, 
-    updateStepData, 
+    currentStep: contextCurrentStep,
+    setCurrentStep,
+    setupData,
+    updateSetupData,
+    errors,
+    isLoading: contextIsLoading,
     validateStep, 
     saveProgress,
     loadProgress 
@@ -74,11 +77,11 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
           confirmPassword: 'TestPassword123!'
         },
         database: {
-          type: 'sqlite',
+          type: 'sqlite' as const,
           filename: 'nova-test.db'
         },
         email: {
-          provider: 'console'
+          provider: 'console' as const
         },
         authentication: {
           requireMfa: false,
@@ -87,7 +90,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
           maxLoginAttempts: 5
         },
         services: {
-          storageProvider: 'local',
+          storageProvider: 'local' as const,
           knowledgeBaseEnabled: true,
           aiAssistEnabled: false
         },
@@ -101,10 +104,8 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
         }
       };
 
-      // Update all steps with auto data
-      Object.entries(autoData).forEach(([stepId, data]) => {
-        updateStepData(stepId, data);
-      });
+      // Update all setup data
+      updateSetupData(autoData);
 
       // Jump to completion step
       setCurrentStepIndex(STEPS.length - 1);
@@ -114,7 +115,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [updateStepData]);
+  }, [updateSetupData]);
 
   const handleStepComplete = useCallback(async () => {
     const isValid = await validateStep(currentStep.id);
@@ -151,8 +152,9 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
   }, [currentStepIndex]);
 
   const handleStepUpdate = useCallback((data: any) => {
-    updateStepData(currentStep.id, data);
-  }, [currentStep.id, updateStepData]);
+    const updatedData = { [currentStep.id]: data };
+    updateSetupData(updatedData);
+  }, [currentStep.id, updateSetupData]);
 
   const jumpToStep = useCallback((stepIndex: number) => {
     if (stepIndex >= 0 && stepIndex < STEPS.length) {
@@ -187,7 +189,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
             {currentStepIndex === 0 && !isAutoSetup && (
               <div className="mb-6">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   onClick={runAutoSetup}
                   disabled={isLoading}
                   isLoading={isLoading}
@@ -212,7 +214,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
               <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                 <div 
                   className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }}
+                  style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }} // eslint-disable-line no-inline-styles
                 />
               </div>
             </div>
@@ -263,10 +265,10 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
               <div className="p-8">
                 <CurrentStepComponent
-                  data={state.setupData[currentStep.id]}
+                  data={setupData[currentStep.id as keyof typeof setupData] || {}}
                   onUpdate={handleStepUpdate}
                   onComplete={handleStepComplete}
-                  errors={state.errors}
+                  errors={errors}
                   isLoading={isLoading}
                 />
               </div>
@@ -276,7 +278,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
                 <div className="bg-slate-50 dark:bg-slate-700/50 px-8 py-4 border-t border-slate-200 dark:border-slate-600">
                   <div className="flex items-center justify-between">
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       onClick={handleStepBack}
                       disabled={currentStepIndex === 0 || isLoading}
                       className="flex items-center space-x-2"

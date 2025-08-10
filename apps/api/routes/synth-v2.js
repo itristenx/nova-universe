@@ -930,6 +930,226 @@ router.post('/hook/register',
 
 /**
  * @swagger
+ * /api/v2/synth/alerts/analyze:
+ *   post:
+ *     tags: [Synth v2 - Alert Intelligence]
+ *     summary: Analyze situation and recommend alert actions
+ *     description: Use Cosmo AI to analyze tickets/situations and suggest alert creation or escalation
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - context
+ *               - message
+ *             properties:
+ *               context:
+ *                 type: object
+ *                 properties:
+ *                   ticketId:
+ *                     type: string
+ *                   alertId:
+ *                     type: string
+ *                   priority:
+ *                     type: string
+ *                   customerTier:
+ *                     type: string
+ *                   affectedUsers:
+ *                     type: integer
+ *                   serviceCategory:
+ *                     type: string
+ *                   keywords:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *               message:
+ *                 type: string
+ *                 description: Analysis request message
+ *               module:
+ *                 type: string
+ *                 enum: [pulse, orbit, core]
+ *               userRole:
+ *                 type: string
+ */
+router.post('/alerts/analyze',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 20), // 20 analyses per minute
+  [
+    body('context').isObject().withMessage('Context object required'),
+    body('message').isString().withMessage('Analysis message required'),
+    body('module').optional().isIn(['pulse', 'orbit', 'core']),
+    body('userRole').optional().isString()
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { context, message, module = 'pulse', userRole = 'technician' } = req.body;
+
+      // Initialize MCP server for analysis
+      const mcpServer = await initializeMCPServer();
+      
+      // Prepare analysis context for Cosmo
+      const analysisPayload = {
+        userId: req.user.id,
+        module,
+        userRole,
+        context: {
+          ...context,
+          tenantId: req.user.tenantId,
+          timestamp: new Date().toISOString()
+        },
+        message: `${message}\n\nContext: ${JSON.stringify(context, null, 2)}\n\nBased on this information, analyze the situation and recommend one of the following actions:
+1. create_alert - If a new alert should be created
+2. escalate_alert - If an existing situation should be escalated
+3. suggest_resolution - If you have resolution suggestions but no alert is needed
+4. no_action - If no immediate action is required
+
+Please provide your reasoning, confidence level (0-1), and specific action data if applicable.`
+      };
+
+      // Call Cosmo for intelligent analysis
+      const analysisResult = await mcpServer.callTool('nova.alerts.analyze', analysisPayload);
+      
+      let analysis;
+      try {
+        analysis = JSON.parse(analysisResult.content[0].text);
+      } catch (parseError) {
+        // If parsing fails, create a structured response from the text
+        const responseText = analysisResult.content[0].text;
+        analysis = {
+          action: 'suggest_resolution',
+          reasoning: responseText,
+          confidence: 0.7,
+          suggestions: [responseText]
+        };
+      }
+
+      // Enhance analysis with Nova-specific logic
+      const enhancedAnalysis = await enhanceAnalysisWithRules(analysis, context, req.user);
+
+      res.json({
+        success: true,
+        analysis: enhancedAnalysis,
+        conversationId: analysisResult.conversationId,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      logger.error('Alert analysis failed:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Alert analysis failed',
+        details: error.message
+      });
+    }
+  }
+);
+
+/**
+ * Enhance Cosmo analysis with Nova business rules
+ */
+async function enhanceAnalysisWithRules(analysis, context, user) {
+  // Apply VIP customer rules
+  if (context.customerTier === 'vip' && context.priority === 'high') {
+    analysis.confidence = Math.min(1.0, analysis.confidence + 0.2);
+    if (analysis.action === 'suggest_resolution') {
+      analysis.action = 'escalate_alert';
+      analysis.reasoning += ' Enhanced priority due to VIP customer status.';
+    }
+  }
+
+  // Apply affected users threshold
+  if (context.affectedUsers && context.affectedUsers > 10) {
+    analysis.confidence = Math.min(1.0, analysis.confidence + 0.15);
+    if (analysis.action === 'no_action') {
+      analysis.action = 'create_alert';
+      analysis.reasoning += ' Alert recommended due to high number of affected users.';
+    }
+  }
+
+  // Apply security keyword detection
+  const securityKeywords = ['security', 'breach', 'malware', 'phishing', 'unauthorized'];
+  if (context.keywords && context.keywords.some(k => securityKeywords.includes(k))) {
+    analysis.confidence = Math.min(1.0, analysis.confidence + 0.25);
+    if (analysis.action === 'no_action' || analysis.action === 'suggest_resolution') {
+      analysis.action = 'create_alert';
+      analysis.reasoning += ' Security incident detected - alert creation recommended.';
+      
+      // Set specific alert data for security incidents
+      analysis.alertData = {
+        summary: `🔒 Security Alert: ${context.ticketId ? `Ticket #${context.ticketId}` : 'Security Incident'}`,
+        description: `Automated security alert created by Cosmo AI.\n\nReasoning: ${analysis.reasoning}`,
+        source: 'cosmo',
+        serviceId: 'security-001', // Default security service
+        priority: 'critical',
+        ticketId: context.ticketId,
+        metadata: {
+          cosmoGenerated: true,
+          securityIncident: true,
+          detectedKeywords: context.keywords.filter(k => securityKeywords.includes(k))
+        }
+      };
+    }
+  }
+
+  // Apply infrastructure outage detection
+  const infraKeywords = ['outage', 'down', 'failed', 'unreachable', 'disconnected'];
+  if (context.keywords && context.keywords.some(k => infraKeywords.includes(k))) {
+    if (context.affectedUsers && context.affectedUsers > 5) {
+      analysis.confidence = Math.min(1.0, analysis.confidence + 0.2);
+      analysis.action = 'escalate_alert';
+      analysis.reasoning += ' Infrastructure outage with multiple users affected.';
+      
+      analysis.escalationData = {
+        ticketId: context.ticketId,
+        reason: `Infrastructure outage affecting ${context.affectedUsers} users. Cosmo AI analysis: ${analysis.reasoning}`,
+        priority: 'critical',
+        serviceId: 'ops-infra-001'
+      };
+    }
+  }
+
+  // Set default service mapping based on category
+  if (analysis.action === 'create_alert' && !analysis.alertData) {
+    const serviceMapping = {
+      'security': 'security-001',
+      'infrastructure': 'ops-infra-001',
+      'network': 'ops-network-001',
+      'software': 'support-l2-001',
+      'hardware': 'ops-infra-001'
+    };
+
+    analysis.alertData = {
+      summary: `Alert: ${context.ticketId ? `Ticket #${context.ticketId}` : 'Cosmo Analysis'}`,
+      description: `Automated alert created by Cosmo AI.\n\nReasoning: ${analysis.reasoning}`,
+      source: 'cosmo',
+      serviceId: serviceMapping[context.serviceCategory] || 'support-l1-001',
+      priority: context.priority || 'medium',
+      ticketId: context.ticketId,
+      metadata: {
+        cosmoGenerated: true,
+        confidence: analysis.confidence
+      }
+    };
+  }
+
+  return analysis;
+}
+
+/**
+ * @swagger
  * /api/v2/synth/hook/trigger:
  *   post:
  *     tags: [Synth v2 - Integration]

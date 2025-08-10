@@ -7,7 +7,9 @@ import { DashboardPage } from './pages/DashboardPage'
 import { TicketsPage } from './pages/TicketsPage'
 import { DeepWorkPage } from './pages/DeepWorkPage'
 import { GamificationPage } from './pages/GamificationPage'
-import { AlertsPage } from './pages/AlertsPage'
+import AlertsPage from './pages/AlertsPage'
+import SentinelDashboard from './components/monitoring/SentinelDashboard'
+import GoAlertDashboard from './components/goalert/GoAlertDashboard'
 import { InventoryPage } from './pages/InventoryPage'
 import { LeaderboardPage } from './pages/LeaderboardPage'
 // Enhanced ticket management components
@@ -72,6 +74,8 @@ const App: React.FC = () => (
             
             {/* Other existing pages */}
             <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="/monitoring" element={<SentinelDashboard />} />
+            <Route path="/goalert" element={<GoAlertDashboard />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/gamification" element={<GamificationPage />} />

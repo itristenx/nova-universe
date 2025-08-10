@@ -13,41 +13,8 @@ import {
   Modal,
   ModalContent,
   ModalHeader,
-  ModalBody      // Calculate real productivity metrics
-      const sessionMinutes = sessionDuration / 60
-      const ticketCompletionRate = ticketsWorked.filter(t => t.status === 'completed').length / Math.max(ticketsWorked.length, 1)
-      const notesRate = quickNotes.length / Math.max(sessionMinutes, 1) * 10 // Notes per 10 minutes
-      const focusEfficiency = Math.max(0, 1 - (focusBreaks / Math.max(sessionMinutes / 30, 1))) // Breaks per 30 min
-      
-      // Productivity score calculation (0-100)
-      let productivityScore = 0
-      productivityScore += Math.min(30, sessionMinutes * 0.5) // Base time score (max 30 points)
-      productivityScore += ticketCompletionRate * 40 // Completion rate (max 40 points)  
-      productivityScore += Math.min(15, notesRate * 3) // Note-taking activity (max 15 points)
-      productivityScore += focusEfficiency * 15 // Focus maintenance (max 15 points)
-      
-      // Estimate distractions blocked based on session length and focus breaks
-      const expectedDistractions = Math.floor(sessionMinutes / 15) // Expected every 15 minutes
-      const actualBreaks = focusBreaks
-      const distractionsBlocked = Math.max(0, expectedDistractions - actualBreaks)
-
-      const session = {
-        id: Date.now().toString(),
-        startTime,
-        endTime: new Date(),
-        ticketsWorked,
-        notesCount: quickNotes.length,
-        distractionsBlocked,
-        productivityScore: Math.round(Math.min(100, productivityScore)),
-        focusBreaks,
-        goalAchieved: sessionDuration >= sessionGoalMinutes * 60,
-        metrics: {
-          sessionMinutes: Math.round(sessionMinutes),
-          ticketCompletionRate: Math.round(ticketCompletionRate * 100),
-          notesPerHour: Math.round(notesRate * 6),
-          focusEfficiency: Math.round(focusEfficiency * 100)
-        }
-      }oter,
+  ModalBody,
+  ModalFooter,
   useDisclosure,
   Divider
 } from '@heroui/react'
@@ -76,6 +43,12 @@ interface DeepWorkSession {
   productivityScore: number
   focusBreaks: number
   goalAchieved: boolean
+  metrics?: {
+    sessionMinutes: number
+    ticketCompletionRate: number
+    notesPerHour: number
+    focusEfficiency: number
+  }
 }
 
 interface QuickNote {
@@ -157,9 +130,10 @@ export const DeepWorkMode: React.FC<Props> = ({
             },
             body: JSON.stringify({
               title: ticket.title,
-              description: ticket.description,
-              requesterEmail: ticket.requester_email,
-              requesterName: ticket.requester_name
+              category: ticket.category,
+              priority: ticket.priority,
+              requesterEmail: ticket.requestedBy?.name || 'Unknown',
+              requesterName: ticket.requestedBy?.name || 'Unknown'
             })
           })
 
@@ -190,7 +164,7 @@ export const DeepWorkMode: React.FC<Props> = ({
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
               },
               body: JSON.stringify({
-                query: `${ticket.title} ${ticket.description}`.substring(0, 200),
+                query: `${ticket.title} ${ticket.category || ''} ${ticket.priority}`.substring(0, 200),
                 limit: 3
               })
             })

@@ -1,0 +1,190 @@
+# Nova Sentinel + GoAlert Integration Stack
+# Complete monitoring and alerting infrastructure for Nova Universe
+
+version: '3.8'
+
+services:
+  # GoAlert - Core alerting and escalation engine (headless)
+  nova-goalert:
+    image: goalert/goalert:latest
+    container_name: nova-goalert
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - GOALERT_DB_URL=postgres://goalert:${GOALERT_DB_PASSWORD:-goalert_pass}@nova-goalert-postgres:5432/goalert?sslmode=disable
+      - GOALERT_LISTEN=:8081
+      - GOALERT_PUBLIC_URL=http://localhost:8081
+      - GOALERT_API_ONLY=true  # Disable UI, use Nova interfaces only
+      - GOALERT_LOG_LEVEL=info
+      - GOALERT_WEBHOOK_SECRET=${GOALERT_WEBHOOK_SECRET:-nova-goalert-webhook-secret}
+      - GOALERT_SMTP_FROM=${GOALERT_SMTP_FROM:-alerts@nova.local}
+      - GOALERT_SMTP_HOST=${GOALERT_SMTP_HOST:-localhost}
+      - GOALERT_SMTP_PORT=${GOALERT_SMTP_PORT:-587}
+      - GOALERT_TWILIO_SID=${TWILIO_SID:-}
+      - GOALERT_TWILIO_TOKEN=${TWILIO_TOKEN:-}
+      - GOALERT_SLACK_TOKEN=${SLACK_BOT_TOKEN:-}
+    networks:
+      - nova-network
+    depends_on:
+      nova-goalert-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/v2/user/profile"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    labels:
+      - "traefik.enable=false"  # No direct access, proxy through Nova API only
+
+  # GoAlert Database
+  nova-goalert-postgres:
+    image: postgres:15-alpine
+    container_name: nova-goalert-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=goalert
+      - POSTGRES_USER=goalert
+      - POSTGRES_PASSWORD=${GOALERT_DB_PASSWORD:-goalert_pass}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - goalert-postgres-data:/var/lib/postgresql/data
+    networks:
+      - nova-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goalert -d goalert"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Uptime Kuma - Monitoring backend
+  nova-sentinel-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: nova-sentinel-kuma
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+      - ./monitoring/kuma-config:/config
+    environment:
+      - UPTIME_KUMA_DISABLE_FRAME_SENTRY=1
+      - UPTIME_KUMA_PORT=3001
+      - NODE_ENV=production
+      - UPTIME_KUMA_CLOUDFLARED_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:-}
+    networks:
+      - nova-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=false"  # No direct access, proxy through Nova API only
+
+  # Redis for caching monitoring data
+  nova-sentinel-redis:
+    image: redis:7-alpine
+    container_name: nova-sentinel-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-novasentinel}
+    command: redis-server --requirepass ${REDIS_PASSWORD:-novasentinel}
+    networks:
+      - nova-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana for monitoring dashboards (optional)
+  nova-sentinel-grafana:
+    image: grafana/grafana:latest
+    container_name: nova-sentinel-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-novasentinel}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - nova-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.nova.local`)"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+  # Prometheus for metrics collection (optional)
+  nova-prometheus:
+    image: prom/prometheus:latest
+    container_name: nova-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    networks:
+      - nova-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.nova.local`)"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+
+  # Node Exporter for system metrics
+  nova-node-exporter:
+    image: prom/node-exporter:latest
+    container_name: nova-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - nova-network
+
+volumes:
+  goalert-postgres-data:
+    driver: local
+  uptime-kuma-data:
+    driver: local
+  redis-data:
+    driver: local
+  grafana-data:
+    driver: local
+  prometheus-data:
+    driver: local
+
+networks:
+  nova-network:
+    external: true

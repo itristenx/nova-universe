@@ -3,6 +3,8 @@ import db from '../db.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { logger } from '../logger.js';
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import axios from 'axios';
 
 const router = express.Router();
 
@@ -340,3 +342,951 @@ async function getPerformanceMetrics() {
 }
 
 export default router;
+
+// ==========================================
+// NOVA SENTINEL MONITORING ENDPOINTS
+// ==========================================
+
+/**
+ * @swagger
+ * /api/monitoring/monitors:
+ *   get:
+ *     summary: List all monitors (scoped by role)
+ *     description: Get monitors based on user role and tenant
+ *     tags: [Nova Sentinel]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/monitors', authenticateJWT, async (req, res) => {
+  try {
+    const { tenant_id, group_id, status, type } = req.query;
+    const user = req.user;
+
+    let query = `
+      SELECT m.*, 
+             COUNT(CASE WHEN h.status = 'up' THEN 1 END) * 100.0 / NULLIF(COUNT(h.id), 0) as uptime_24h,
+             mg.name as group_name,
+             CASE WHEN mi.id IS NOT NULL THEN mi.status ELSE NULL END as incident_status
+      FROM monitors m
+      LEFT JOIN monitor_heartbeats h ON m.id = h.monitor_id 
+        AND h.checked_at >= NOW() - INTERVAL '24 hours'
+      LEFT JOIN monitor_group_members mgm ON m.id = mgm.monitor_id
+      LEFT JOIN monitor_groups mg ON mgm.group_id = mg.id
+      LEFT JOIN monitor_incidents mi ON m.id = mi.monitor_id 
+        AND mi.status IN ('open', 'acknowledged', 'investigating')
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    let paramIndex = 1;
+
+    // Apply tenant scoping for Orbit users
+    if (tenant_id) {
+      query += ` AND m.tenant_id = $${paramIndex}`;
+      params.push(tenant_id);
+      paramIndex++;
+    }
+
+    if (status) {
+      query += ` AND m.status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+
+    if (type) {
+      query += ` AND m.type = $${paramIndex}`;
+      params.push(type);
+      paramIndex++;
+    }
+
+    if (group_id) {
+      query += ` AND mgm.group_id = $${paramIndex}`;
+      params.push(group_id);
+      paramIndex++;
+    }
+
+    query += `
+      GROUP BY m.id, mg.name, mi.id, mi.status
+      ORDER BY m.name
+    `;
+
+    const result = await db.query(query, params);
+    
+    res.json({
+      monitors: result.rows,
+      count: result.rows.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to get monitors', { error: error.message });
+    res.status(500).json({ error: 'Failed to get monitors' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/monitors:
+ *   post:
+ *     summary: Create a new monitor
+ *     description: Create a new monitoring configuration
+ *     tags: [Nova Sentinel]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post('/monitors', authenticateJWT, async (req, res) => {
+  try {
+    const {
+      name, type, url, hostname, port, tenant_id, tags = [],
+      interval_seconds = 60, timeout_seconds = 30, retry_interval_seconds = 60,
+      max_retries = 3, http_method = 'GET', http_headers = {},
+      accepted_status_codes = [200, 201, 202, 203, 204],
+      follow_redirects = true, ignore_ssl = false
+    } = req.body;
+
+    const user = req.user;
+
+    // Validate required fields
+    if (!name || !type) {
+      return res.status(400).json({ error: 'Name and type are required' });
+    }
+
+    // Type-specific validation
+    if (type === 'http' && !url) {
+      return res.status(400).json({ error: 'URL is required for HTTP monitors' });
+    }
+    if ((type === 'ping' || type === 'dns') && !hostname) {
+      return res.status(400).json({ error: 'Hostname is required for ping/DNS monitors' });
+    }
+    if (type === 'tcp' && (!hostname || !port)) {
+      return res.status(400).json({ error: 'Hostname and port are required for TCP monitors' });
+    }
+
+    const result = await db.query(`
+      INSERT INTO monitors (
+        name, type, url, hostname, port, tenant_id, tags, 
+        interval_seconds, timeout_seconds, retry_interval_seconds, max_retries,
+        http_method, http_headers, accepted_status_codes, follow_redirects, ignore_ssl,
+        created_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+      RETURNING *
+    `, [
+      name, type, url, hostname, port, tenant_id, JSON.stringify(tags),
+      interval_seconds, timeout_seconds, retry_interval_seconds, max_retries,
+      http_method, JSON.stringify(http_headers), JSON.stringify(accepted_status_codes),
+      follow_redirects, ignore_ssl, user.id
+    ]);
+
+    const monitor = result.rows[0];
+
+    // TODO: Create corresponding Uptime Kuma monitor via API
+    // await createKumaMonitor(monitor);
+
+    logger.info('Monitor created', { 
+      monitorId: monitor.id, 
+      name: monitor.name, 
+      type: monitor.type,
+      createdBy: user.id 
+    });
+
+    res.status(201).json(monitor);
+  } catch (error) {
+    logger.error('Failed to create monitor', { error: error.message });
+    res.status(500).json({ error: 'Failed to create monitor' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/monitors/{id}:
+ *   get:
+ *     summary: Get monitor details
+ *     description: Get detailed information about a specific monitor
+ *     tags: [Nova Sentinel]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/monitors/:id', authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { period = '24h' } = req.query;
+
+    // Get monitor details
+    const monitorResult = await db.query(`
+      SELECT m.*, 
+             mg.name as group_name,
+             COUNT(CASE WHEN h.status = 'up' THEN 1 END) * 100.0 / NULLIF(COUNT(h.id), 0) as uptime_percent,
+             AVG(h.response_time_ms) as avg_response_time
+      FROM monitors m
+      LEFT JOIN monitor_group_members mgm ON m.id = mgm.monitor_id
+      LEFT JOIN monitor_groups mg ON mgm.group_id = mg.id
+      LEFT JOIN monitor_heartbeats h ON m.id = h.monitor_id 
+        AND h.checked_at >= NOW() - INTERVAL '${period === '7d' ? '7 days' : '24 hours'}'
+      WHERE m.id = $1
+      GROUP BY m.id, mg.name
+    `, [id]);
+
+    if (monitorResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Monitor not found' });
+    }
+
+    const monitor = monitorResult.rows[0];
+
+    // Get recent heartbeats
+    const heartbeatsResult = await db.query(`
+      SELECT status, response_time_ms, checked_at, error_message
+      FROM monitor_heartbeats
+      WHERE monitor_id = $1
+      ORDER BY checked_at DESC
+      LIMIT 100
+    `, [id]);
+
+    // Get active incidents
+    const incidentsResult = await db.query(`
+      SELECT id, status, severity, summary, started_at, acknowledged_at
+      FROM monitor_incidents
+      WHERE monitor_id = $1 AND status IN ('open', 'acknowledged', 'investigating')
+      ORDER BY started_at DESC
+    `, [id]);
+
+    res.json({
+      monitor,
+      heartbeats: heartbeatsResult.rows,
+      incidents: incidentsResult.rows,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to get monitor details', { error: error.message });
+    res.status(500).json({ error: 'Failed to get monitor details' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/monitors/{id}:
+ *   patch:
+ *     summary: Update monitor
+ *     description: Update an existing monitor configuration
+ *     tags: [Nova Sentinel]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.patch('/monitors/:id', authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const user = req.user;
+
+    // Build dynamic update query
+    const allowedFields = [
+      'name', 'url', 'hostname', 'port', 'tags', 'interval_seconds',
+      'timeout_seconds', 'retry_interval_seconds', 'max_retries', 'status',
+      'http_method', 'http_headers', 'accepted_status_codes', 'follow_redirects',
+      'ignore_ssl', 'notification_settings'
+    ];
+
+    const updateFields = [];
+    const values = [];
+    let paramIndex = 1;
+
+    for (const [key, value] of Object.entries(updates)) {
+      if (allowedFields.includes(key)) {
+        updateFields.push(`${key} = $${paramIndex}`);
+        values.push(typeof value === 'object' ? JSON.stringify(value) : value);
+        paramIndex++;
+      }
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+
+    updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+    values.push(id);
+
+    const query = `
+      UPDATE monitors 
+      SET ${updateFields.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `;
+
+    const result = await db.query(query, values);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Monitor not found' });
+    }
+
+    // TODO: Update corresponding Uptime Kuma monitor
+    // await updateKumaMonitor(result.rows[0]);
+
+    logger.info('Monitor updated', { 
+      monitorId: id, 
+      updates: Object.keys(updates),
+      updatedBy: user.id 
+    });
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    logger.error('Failed to update monitor', { error: error.message });
+    res.status(500).json({ error: 'Failed to update monitor' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/monitors/{id}:
+ *   delete:
+ *     summary: Delete monitor
+ *     description: Delete a monitor and all associated data
+ *     tags: [Nova Sentinel]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.delete('/monitors/:id', authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const result = await db.query('DELETE FROM monitors WHERE id = $1 RETURNING name', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Monitor not found' });
+    }
+
+    // TODO: Delete corresponding Uptime Kuma monitor
+    // await deleteKumaMonitor(id);
+
+    logger.info('Monitor deleted', { 
+      monitorId: id, 
+      name: result.rows[0].name,
+      deletedBy: user.id 
+    });
+
+    res.json({ message: 'Monitor deleted successfully' });
+  } catch (error) {
+    logger.error('Failed to delete monitor', { error: error.message });
+    res.status(500).json({ error: 'Failed to delete monitor' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/incidents:
+ *   get:
+ *     summary: List current incidents
+ *     description: Get list of active and recent incidents
+ *     tags: [Nova Sentinel]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/incidents', authenticateJWT, async (req, res) => {
+  try {
+    const { status, severity, monitor_id, tenant_id } = req.query;
+
+    let query = `
+      SELECT i.*, m.name as monitor_name, m.type as monitor_type, m.tenant_id
+      FROM monitor_incidents i
+      JOIN monitors m ON i.monitor_id = m.id
+      WHERE 1=1
+    `;
+
+    const params = [];
+    let paramIndex = 1;
+
+    if (status) {
+      query += ` AND i.status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+
+    if (severity) {
+      query += ` AND i.severity = $${paramIndex}`;
+      params.push(severity);
+      paramIndex++;
+    }
+
+    if (monitor_id) {
+      query += ` AND i.monitor_id = $${paramIndex}`;
+      params.push(monitor_id);
+      paramIndex++;
+    }
+
+    if (tenant_id) {
+      query += ` AND m.tenant_id = $${paramIndex}`;
+      params.push(tenant_id);
+      paramIndex++;
+    }
+
+    query += ` ORDER BY i.started_at DESC LIMIT 100`;
+
+    const result = await db.query(query, params);
+
+    res.json({
+      incidents: result.rows,
+      count: result.rows.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to get incidents', { error: error.message });
+    res.status(500).json({ error: 'Failed to get incidents' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/events:
+ *   post:
+ *     summary: Webhook endpoint for Uptime Kuma events
+ *     description: Receives monitor status change events from Uptime Kuma
+ *     tags: [Nova Sentinel]
+ */
+router.post('/events', async (req, res) => {
+  try {
+    const { monitor, heartbeat, msg } = req.body;
+    const signature = req.headers['x-uptime-kuma-signature'];
+
+    // TODO: Verify webhook signature
+    // if (!verifyWebhookSignature(req.body, signature)) {
+    //   return res.status(401).json({ error: 'Invalid signature' });
+    // }
+
+    // Process the event
+    await processKumaEvent({
+      monitor,
+      heartbeat,
+      message: msg,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('Failed to process Kuma event', { error: error.message });
+    res.status(500).json({ error: 'Failed to process event' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/subscribe:
+ *   post:
+ *     summary: Subscribe to monitor notifications
+ *     description: Subscribe user to notifications for specific monitors
+ *     tags: [Nova Sentinel]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post('/subscribe', authenticateJWT, async (req, res) => {
+  try {
+    const { monitor_id, notification_type = 'email', notification_config = {} } = req.body;
+    const user = req.user;
+
+    if (!monitor_id) {
+      return res.status(400).json({ error: 'Monitor ID is required' });
+    }
+
+    const result = await db.query(`
+      INSERT INTO monitor_subscriptions (monitor_id, user_id, notification_type, notification_config)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (monitor_id, user_id, notification_type) 
+      DO UPDATE SET active = true, notification_config = $4, updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `, [monitor_id, user.id, notification_type, JSON.stringify(notification_config)]);
+
+    logger.info('User subscribed to monitor', { 
+      monitorId: monitor_id, 
+      userId: user.id, 
+      notificationType: notification_type 
+    });
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    logger.error('Failed to create subscription', { error: error.message });
+    res.status(500).json({ error: 'Failed to create subscription' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/history/{id}:
+ *   get:
+ *     summary: Get monitor uptime history
+ *     description: Fetch uptime history and statistics for a monitor
+ *     tags: [Nova Sentinel]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/history/:id', authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { period = '7d', granularity = 'hour' } = req.query;
+
+    let interval;
+    let timeRange;
+
+    switch (period) {
+      case '24h':
+        interval = '1 hour';
+        timeRange = '24 hours';
+        break;
+      case '7d':
+        interval = '6 hours';
+        timeRange = '7 days';
+        break;
+      case '30d':
+        interval = '1 day';
+        timeRange = '30 days';
+        break;
+      default:
+        interval = '1 hour';
+        timeRange = '24 hours';
+    }
+
+    const query = `
+      SELECT 
+        date_trunc('${granularity}', checked_at) as time_bucket,
+        COUNT(*) as total_checks,
+        COUNT(CASE WHEN status = 'up' THEN 1 END) as up_checks,
+        AVG(response_time_ms) as avg_response_time,
+        MIN(response_time_ms) as min_response_time,
+        MAX(response_time_ms) as max_response_time
+      FROM monitor_heartbeats
+      WHERE monitor_id = $1 
+        AND checked_at >= NOW() - INTERVAL '${timeRange}'
+      GROUP BY time_bucket
+      ORDER BY time_bucket
+    `;
+
+    const result = await db.query(query, [id]);
+
+    // Calculate overall statistics
+    const statsQuery = `
+      SELECT 
+        COUNT(*) as total_checks,
+        COUNT(CASE WHEN status = 'up' THEN 1 END) as up_checks,
+        COUNT(CASE WHEN status = 'down' THEN 1 END) as down_checks,
+        AVG(response_time_ms) as avg_response_time
+      FROM monitor_heartbeats
+      WHERE monitor_id = $1 
+        AND checked_at >= NOW() - INTERVAL '${timeRange}'
+    `;
+
+    const statsResult = await db.query(statsQuery, [id]);
+    const stats = statsResult.rows[0];
+
+    res.json({
+      history: result.rows.map(row => ({
+        timestamp: row.time_bucket,
+        uptime_percent: stats.total_checks > 0 ? (row.up_checks / row.total_checks) * 100 : 0,
+        avg_response_time: parseFloat(row.avg_response_time) || 0,
+        min_response_time: parseInt(row.min_response_time) || 0,
+        max_response_time: parseInt(row.max_response_time) || 0,
+        total_checks: parseInt(row.total_checks)
+      })),
+      statistics: {
+        period,
+        total_checks: parseInt(stats.total_checks),
+        uptime_percent: stats.total_checks > 0 ? (stats.up_checks / stats.total_checks) * 100 : 0,
+        downtime_count: parseInt(stats.down_checks),
+        avg_response_time: parseFloat(stats.avg_response_time) || 0
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to get monitor history', { error: error.message });
+    res.status(500).json({ error: 'Failed to get monitor history' });
+  }
+});
+
+// ==========================================
+// HELPER FUNCTIONS
+// ==========================================
+
+/**
+ * Process incoming Uptime Kuma event
+ */
+async function processKumaEvent(event) {
+  try {
+    const { monitor, heartbeat, message, timestamp } = event;
+    
+    // Find our monitor by kuma_id
+    const monitorResult = await db.query(
+      'SELECT * FROM monitors WHERE kuma_id = $1',
+      [monitor.id]
+    );
+
+    if (monitorResult.rows.length === 0) {
+      logger.warn('Received event for unknown monitor', { kumaId: monitor.id });
+      return;
+    }
+
+    const novaMonitor = monitorResult.rows[0];
+
+    // Record heartbeat
+    await db.query(`
+      INSERT INTO monitor_heartbeats (
+        monitor_id, status, response_time_ms, status_code, 
+        error_message, checked_at, important
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [
+      novaMonitor.id,
+      heartbeat.status === 1 ? 'up' : 'down',
+      heartbeat.ping || null,
+      heartbeat.statusCode || null,
+      heartbeat.msg || null,
+      new Date(heartbeat.time),
+      heartbeat.important || false
+    ]);
+
+    // Handle incident management
+    if (heartbeat.status === 0 && heartbeat.important) {
+      // Service went down - create/update incident
+      await handleServiceDown(novaMonitor, heartbeat, message);
+    } else if (heartbeat.status === 1 && heartbeat.important) {
+      // Service recovered - resolve incident
+      await handleServiceRecovered(novaMonitor, heartbeat);
+    }
+
+    logger.debug('Kuma event processed', { 
+      monitorId: novaMonitor.id, 
+      status: heartbeat.status === 1 ? 'up' : 'down',
+      important: heartbeat.important 
+    });
+
+  } catch (error) {
+    logger.error('Failed to process Kuma event', { error: error.message, event });
+  }
+}
+
+/**
+ * Handle service down event
+ */
+async function handleServiceDown(monitor, heartbeat, message) {
+  try {
+    // Check if there's already an open incident
+    const existingIncident = await db.query(`
+      SELECT id FROM monitor_incidents 
+      WHERE monitor_id = $1 AND status IN ('open', 'acknowledged', 'investigating')
+      ORDER BY started_at DESC LIMIT 1
+    `, [monitor.id]);
+
+    if (existingIncident.rows.length === 0) {
+      // Create new incident
+      const severity = determineSeverity(monitor, heartbeat);
+      const summary = await generateIncidentSummary(monitor, heartbeat, message);
+
+      const result = await db.query(`
+        INSERT INTO monitor_incidents (
+          monitor_id, status, severity, summary, description, started_at
+        ) VALUES ($1, 'open', $2, $3, $4, $5)
+        RETURNING *
+      `, [
+        monitor.id,
+        severity,
+        summary,
+        `Monitor ${monitor.name} is experiencing issues: ${heartbeat.msg || 'Unknown error'}`,
+        new Date(heartbeat.time)
+      ]);
+
+      const incident = result.rows[0];
+
+      // TODO: Integrate with Nova Synth for AI analysis
+      // TODO: Create ticket if configured
+      // TODO: Send notifications via Nova Comms
+      // TODO: Update Orbit status banners
+
+      logger.info('Incident created', { 
+        incidentId: incident.id, 
+        monitorId: monitor.id, 
+        severity 
+      });
+    }
+  } catch (error) {
+    logger.error('Failed to handle service down', { error: error.message });
+  }
+}
+
+/**
+ * Handle service recovered event
+ */
+async function handleServiceRecovered(monitor, heartbeat) {
+  try {
+    // Auto-resolve open incidents if configured
+    const autoResolve = await getConfigValue('monitoring.incident_auto_resolve', 'true');
+    
+    if (autoResolve === 'true') {
+      await db.query(`
+        UPDATE monitor_incidents 
+        SET status = 'resolved', resolved_at = $1, auto_resolved = true
+        WHERE monitor_id = $2 AND status IN ('open', 'acknowledged', 'investigating')
+      `, [new Date(heartbeat.time), monitor.id]);
+
+      logger.info('Incident auto-resolved', { monitorId: monitor.id });
+
+      // TODO: Send recovery notifications
+      // TODO: Remove Orbit banners
+    }
+  } catch (error) {
+    logger.error('Failed to handle service recovery', { error: error.message });
+  }
+}
+
+/**
+ * Determine incident severity based on monitor configuration
+ */
+function determineSeverity(monitor, heartbeat) {
+  // Basic severity determination - can be enhanced with ML
+  if (monitor.tenant_id) {
+    // Tenant-scoped monitors are more critical
+    return 'high';
+  }
+  
+  if (monitor.type === 'http' && heartbeat.statusCode >= 500) {
+    return 'high';
+  }
+  
+  return 'medium';
+}
+
+/**
+ * Generate AI-enhanced incident summary
+ */
+async function generateIncidentSummary(monitor, heartbeat, message) {
+  // TODO: Integrate with Nova Synth for AI-generated summaries
+  // For now, return a basic summary
+  return `${monitor.name} is currently experiencing issues. ${heartbeat.msg || 'Service appears to be down.'}`;
+}
+
+/**
+ * Get configuration value with fallback
+ */
+async function getConfigValue(key, defaultValue) {
+  try {
+    const result = await db.query('SELECT value FROM config WHERE key = $1', [key]);
+    return result.rows.length > 0 ? result.rows[0].value : defaultValue;
+  } catch (error) {
+    logger.error('Failed to get config value', { key, error: error.message });
+    return defaultValue;
+  }
+}
+
+// ==================== NOVA SENTINEL UPTIME KUMA INTEGRATION ====================
+
+/**
+ * @swagger
+ * /api/monitoring/kuma/monitors:
+ *   get:
+ *     summary: Get all monitors with Kuma integration
+ *     description: Fetch monitors from Nova Sentinel with live Kuma status
+ *     tags: [Nova Sentinel]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/kuma/monitors', authenticateJWT, async (req, res) => {
+  try {
+    const tenantId = req.user.tenant_id;
+    
+    // Import Kuma client dynamically to avoid module loading issues
+    const { kumaClient, syncStatusFromKuma } = await import('../lib/uptime-kuma.js');
+    
+    // Sync latest status from Kuma (non-blocking)
+    try {
+      await syncStatusFromKuma();
+    } catch (syncError) {
+      logger.warn('Failed to sync from Kuma, using cached data', { error: syncError.message });
+    }
+    
+    const result = await db.query(`
+      SELECT 
+        m.*,
+        COUNT(CASE WHEN i.status != 'resolved' THEN 1 END) as active_incidents
+      FROM monitors m
+      LEFT JOIN monitor_incidents i ON m.id = i.monitor_id
+      WHERE m.tenant_id = $1 AND m.deleted_at IS NULL
+      GROUP BY m.id
+      ORDER BY m.name ASC
+    `, [tenantId]);
+    
+    res.json({
+      monitors: result.rows,
+      total: result.rows.length
+    });
+  } catch (error) {
+    logger.error('Error fetching Kuma monitors', { error: error.message });
+    res.status(500).json({ error: 'Failed to fetch monitors' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/kuma/webhook:
+ *   post:
+ *     summary: Process webhook from Uptime Kuma
+ *     description: Handle real-time status updates from Kuma
+ *     tags: [Nova Sentinel]
+ */
+router.post('/kuma/webhook', async (req, res) => {
+  try {
+    logger.info('Received Kuma webhook', { payload: req.body });
+    
+    // Import webhook processor dynamically
+    const { processKumaWebhook } = await import('../lib/uptime-kuma.js');
+    
+    // Process the webhook
+    await processKumaWebhook(req.body);
+    
+    res.json({ message: 'Webhook processed successfully' });
+  } catch (error) {
+    logger.error('Error processing Kuma webhook', { error: error.message });
+    res.status(500).json({ error: 'Failed to process webhook' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/status/{tenant}:
+ *   get:
+ *     summary: Public status page endpoint
+ *     description: Get public status page data for a tenant
+ *     tags: [Nova Sentinel]
+ *     parameters:
+ *       - in: path
+ *         name: tenant
+ *         required: true
+ *         schema:
+ *           type: string
+ */
+router.get('/status/:tenant', async (req, res) => {
+  try {
+    const tenantId = req.params.tenant;
+    
+    // Get status page configuration
+    const configResult = await db.query(`
+      SELECT * FROM status_page_configs 
+      WHERE tenant_id = $1
+    `, [tenantId]);
+    
+    const config = configResult.rows[0] || {
+      title: 'Service Status',
+      description: 'Current status of our services',
+      show_uptime_percentages: true,
+      show_incident_history_days: 30
+    };
+    
+    // Get monitors and their status
+    const monitorsResult = await db.query(`
+      SELECT 
+        id,
+        name,
+        type,
+        status,
+        uptime_24h,
+        uptime_7d,
+        uptime_30d,
+        avg_response_time,
+        last_check,
+        description
+      FROM monitors 
+      WHERE tenant_id = $1 AND deleted_at IS NULL AND status != 'disabled'
+      ORDER BY name ASC
+    `, [tenantId]);
+    
+    // Get active incidents
+    const incidentsResult = await db.query(`
+      SELECT 
+        i.*,
+        m.name as monitor_name
+      FROM monitor_incidents i
+      JOIN monitors m ON i.monitor_id = m.id
+      WHERE i.tenant_id = $1 AND i.status != 'resolved'
+      ORDER BY i.started_at DESC
+    `, [tenantId]);
+    
+    // Calculate overall status
+    const monitors = monitorsResult.rows;
+    let overallStatus = 'operational';
+    
+    if (monitors.some(m => m.uptime_24h < 50)) {
+      overallStatus = 'major_outage';
+    } else if (monitors.some(m => m.uptime_24h < 95)) {
+      overallStatus = 'degraded';
+    }
+    
+    // Check for maintenance windows
+    const maintenanceResult = await db.query(`
+      SELECT * FROM maintenance_windows 
+      WHERE tenant_id = $1 
+      AND (status = 'in_progress' OR (status = 'scheduled' AND scheduled_start <= NOW() + INTERVAL '24 hours'))
+      ORDER BY scheduled_start ASC
+    `, [tenantId]);
+    
+    if (maintenanceResult.rows.length > 0) {
+      overallStatus = 'maintenance';
+    }
+    
+    res.json({
+      config,
+      services: monitors,
+      groups: [], // TODO: Implement service groups
+      active_incidents: incidentsResult.rows,
+      maintenance_windows: maintenanceResult.rows,
+      overall_status: overallStatus,
+      last_updated: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error fetching status page', { error: error.message });
+    res.status(500).json({ error: 'Failed to fetch status page' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/monitoring/health:
+ *   get:
+ *     summary: System health check
+ *     description: Check health of Nova Sentinel and Uptime Kuma
+ *     tags: [Nova Sentinel]
+ */
+router.get('/health', async (req, res) => {
+  try {
+    // Check database connectivity
+    await db.query('SELECT 1');
+    
+    // Check Uptime Kuma connectivity
+    let kumaHealth = false;
+    try {
+      const { kumaClient } = await import('../lib/uptime-kuma.js');
+      kumaHealth = await kumaClient.ping();
+    } catch (kumaError) {
+      logger.warn('Kuma health check failed', { error: kumaError.message });
+    }
+    
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      database: 'connected',
+      uptime_kuma: kumaHealth ? 'connected' : 'disconnected'
+    });
+  } catch (error) {
+    logger.error('Health check failed', { error: error.message });
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
+});
+
+// ==================== END NOVA SENTINEL INTEGRATION ====================
+
+/**
+ * Get configuration value with fallback
+ */
+async function getConfigValue(key, defaultValue) {
+  try {
+    const result = await db.query('SELECT value FROM config WHERE key = $1', [key]);
+    return result.rows.length > 0 ? result.rows[0].value : defaultValue;
+  } catch (error) {
+    logger.error('Failed to get config value', { key, error: error.message });
+    return defaultValue;
+  }
+}

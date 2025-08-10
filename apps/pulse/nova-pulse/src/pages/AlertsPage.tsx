@@ -1,16 +1,14 @@
-import React from 'react'
-import { AlertsFeed } from '../components/AlertsFeed'
-import { useQuery } from '@tanstack/react-query'
-import { getAlerts } from '../lib/api'
+import React from 'react';
+import AlertDashboard from '../components/alerts/AlertDashboard';
 
-export const AlertsPage: React.FC = () => {
-  const { data: alerts = [] } = useQuery({ queryKey: ['alerts'], queryFn: () => getAlerts() })
-
+const AlertsPage: React.FC = () => {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Alerts</h2>
-      <AlertsFeed alerts={alerts} />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
+      <div className="container mx-auto px-4 py-8">
+        <AlertDashboard />
+      </div>
     </div>
-  )
-}
+  );
+};
 
+export default AlertsPage;

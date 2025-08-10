@@ -13,6 +13,8 @@ import {
   QueueListIcon,
   ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
+  ServerIcon,
+  BellIcon,
 } from '@heroicons/react/24/outline';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -25,6 +27,8 @@ const navigation = [
   { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: 'Alerts', href: '/alerts', icon: ExclamationTriangleIcon },
+  { name: 'Monitoring', href: '/monitoring', icon: ServerIcon },
+  { name: 'GoAlert', href: '/goalert', icon: BellIcon },
   { name: 'Inventory', href: '/inventory', icon: CubeIcon },
   { name: 'Leaderboard', href: '/leaderboard', icon: TrophyIcon },
   { name: 'Gamification', href: '/gamification', icon: PlayIcon },

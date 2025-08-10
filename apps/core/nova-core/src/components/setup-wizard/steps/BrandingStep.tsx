@@ -175,6 +175,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                 accept="image/*"
                 onChange={handleLogoUpload}
                 className="hidden"
+                aria-label="Upload company logo"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Recommended: PNG or SVG, max 2MB
@@ -243,15 +244,15 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                   <div className="flex space-x-1 mb-2">
                     <div 
                       className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: theme.colors.primary }}
+                      style={{ backgroundColor: theme.colors.primary }} // eslint-disable-line no-inline-styles
                     />
                     <div 
                       className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: theme.colors.secondary }}
+                      style={{ backgroundColor: theme.colors.secondary }} // eslint-disable-line no-inline-styles
                     />
                     <div 
                       className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: theme.colors.accent }}
+                      style={{ backgroundColor: theme.colors.accent }} // eslint-disable-line no-inline-styles
                     />
                   </div>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{theme.name}</p>
@@ -274,6 +275,8 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                     value={formData.primaryColor}
                     onChange={(e) => handleInputChange('primaryColor', e.target.value)}
                     className="w-12 h-10 rounded border border-slate-300 dark:border-slate-600"
+                    aria-label="Primary color picker"
+                    title="Select primary color"
                   />
                   <Input
                     value={formData.primaryColor}
@@ -294,6 +297,8 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                     value={formData.secondaryColor}
                     onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
                     className="w-12 h-10 rounded border border-slate-300 dark:border-slate-600"
+                    aria-label="Secondary color picker"
+                    title="Select secondary color"
                   />
                   <Input
                     value={formData.secondaryColor}
@@ -314,6 +319,8 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                     value={formData.accentColor}
                     onChange={(e) => handleInputChange('accentColor', e.target.value)}
                     className="w-12 h-10 rounded border border-slate-300 dark:border-slate-600"
+                    aria-label="Accent color picker"
+                    title="Select accent color"
                   />
                   <Input
                     value={formData.accentColor}
@@ -476,7 +483,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             )}
             <h2 
               className="text-xl font-bold mb-2"
-              style={{ color: formData.primaryColor }}
+              style={{ color: formData.primaryColor }} // eslint-disable-line no-inline-styles
             >
               {formData.companyName || 'Your Company'}
             </h2>
@@ -485,7 +492,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             )}
             <div 
               className="inline-block px-4 py-2 rounded-lg text-white text-sm font-medium"
-              style={{ backgroundColor: formData.primaryColor }}
+              style={{ backgroundColor: formData.primaryColor }} // eslint-disable-line no-inline-styles
             >
               {formData.portalTitle}
             </div>

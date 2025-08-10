@@ -209,13 +209,15 @@ export const AuthenticationStep: React.FC<AuthenticationStepProps> = ({
               
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                  <label className="block text-sm font-medium text-blue-900 dark:text-blue-100 mb-2" htmlFor="sso-provider-select">
                     Preferred Provider
                   </label>
                   <select
+                    id="sso-provider-select"
                     value={formData.ssoProvider}
                     onChange={(e) => handleInputChange('ssoProvider', e.target.value)}
                     className="block w-40 px-3 py-2 border border-blue-200 dark:border-blue-700 rounded-md text-sm bg-white dark:bg-slate-800"
+                    aria-label="Select SSO provider"
                   >
                     <option value="saml">SAML 2.0</option>
                     <option value="oauth">OAuth 2.0</option>

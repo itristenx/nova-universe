@@ -4,9 +4,40 @@ import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
 import { Switch } from '../../ui/Switch';
 
+interface ServiceData {
+  slackEnabled?: boolean;
+  slackToken?: string;
+  slackChannel?: string;
+  teamsEnabled?: boolean;
+  teamsWebhook?: string;
+  webhooksEnabled?: boolean;
+  webhookUrl?: string;
+  webhookSecret?: string;
+  elasticsearchEnabled?: boolean;
+  elasticsearchUrl?: string;
+  elasticsearchIndex?: string;
+  analyticsEnabled?: boolean;
+  analyticsProvider?: string;
+  googleAnalyticsId?: string;
+  sentryEnabled?: boolean;
+  sentryDsn?: string;
+  storageProvider?: string;
+  s3Bucket?: string;
+  s3AccessKey?: string;
+  s3SecretKey?: string;
+  s3Region?: string;
+  knowledgeBaseEnabled?: boolean;
+  aiAssistEnabled?: boolean;
+  openaiApiKey?: string;
+}
+
+interface SetupData {
+  services?: ServiceData;
+}
+
 interface ServicesStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: SetupData;
+  onUpdate: (data: SetupData) => void;
   onComplete: () => void;
   errors: Record<string, string>;
   isLoading: boolean;
@@ -213,7 +244,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                 </div>
                 <div className="flex justify-end">
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={() => testConnection('slack')}
                     disabled={connectionTests.slack === 'testing' || !formData.slackToken}
@@ -262,7 +293,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                 </div>
                 <div className="flex justify-end">
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={() => testConnection('teams')}
                     disabled={connectionTests.teams === 'testing' || !formData.teamsWebhook}
@@ -376,7 +407,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                   </div>
                   <div className="flex justify-end">
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={() => testConnection('s3')}
                       disabled={connectionTests.s3 === 'testing' || !formData.s3Bucket}
@@ -440,7 +471,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                 </div>
                 <div className="flex justify-end">
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={() => testConnection('elasticsearch')}
                     disabled={connectionTests.elasticsearch === 'testing' || !formData.elasticsearchUrl}

@@ -221,7 +221,7 @@ export const AdminAccountStep: React.FC<AdminAccountStepProps> = ({
                   Password *
                 </label>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   onClick={generateStrongPassword}
                   className="text-xs"
