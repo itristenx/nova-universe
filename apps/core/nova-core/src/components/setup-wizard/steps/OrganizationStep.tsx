@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { BuildingOfficeIcon, GlobeAltIcon, PaintBrushIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
-import { ColorPicker } from '../../ui/ColorPicker';
 
 interface OrganizationStepProps {
   data: any;
@@ -260,7 +259,7 @@ export const OrganizationStep: React.FC<OrganizationStepProps> = ({
               {formData.helpMessage}
             </p>
             <Button 
-              variant="primary" 
+              variant="solid"
               size="sm"
               style={{ backgroundColor: formData.primaryColor }}
             >
@@ -273,7 +272,7 @@ export const OrganizationStep: React.FC<OrganizationStepProps> = ({
       {/* Continue Button */}
       <div className="flex justify-end">
         <Button
-          variant="primary"
+          variant="solid"
           onClick={handleContinue}
           disabled={!isValid || isLoading}
           isLoading={isLoading}

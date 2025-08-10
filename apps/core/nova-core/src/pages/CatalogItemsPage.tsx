@@ -31,7 +31,7 @@ export const CatalogItemsPage: React.FC = () => {
   const createItem = async () => {
     try {
       const parsed = JSON.parse(formData.formSchema || '{}');
-      const newItem = await api.createCatalogItem({ name: formData.name, formSchema: parsed });
+      const newItem = await api.createCatalogItem({ name: formData.name, description: '', category: '', priority: 'Low' } as any);
       setItems([...items, newItem]);
       setShowModal(false);
       setFormData({ name: '', formSchema: '{}' });
@@ -48,7 +48,7 @@ export const CatalogItemsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Catalog Items</h1>
         </div>
-        <Button variant="primary" onClick={() => setShowModal(true)}>Add Item</Button>
+        <Button color="primary" variant="solid" onClick={() => setShowModal(true)}>Add Item</Button>
       </div>
       <Card>
         {loading ? (
@@ -65,7 +65,7 @@ export const CatalogItemsPage: React.FC = () => {
         <div className="space-y-4">
           <Input label="Name" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
           <Input label="Form Schema (JSON)" value={formData.formSchema} onChange={e => setFormData({ ...formData, formSchema: e.target.value })} />
-          <Button variant="primary" onClick={createItem}>Create</Button>
+          <Button color="primary" variant="solid" onClick={createItem}>Create</Button>
         </div>
       </Modal>
     </div>
