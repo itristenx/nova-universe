@@ -44,6 +44,9 @@ struct KioskHomeView: View {
                     }
                     .padding(.horizontal, 40)
                     .padding(.bottom, 60)
+                    
+                    // Persistent bottom status indicator bar
+                    StatusIndicatorBar(connectionStatus: AppCoordinator.shared.connectionStatus)
                 }
             }
         }

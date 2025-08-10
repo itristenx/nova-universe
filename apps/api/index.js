@@ -21,6 +21,11 @@ import analyticsRouter from './routes/analytics.js';
 import monitoringRouter from './routes/monitoring.js';
 import aiFabricRouter from './routes/ai-fabric.js';
 import setupRouter from './routes/setup.js';
+import coreRouter from './routes/core.js';
+import statusSummaryRouter from './routes/status.js';
+import announcementsRouter from './routes/announcements.js';
+import cosmoRouter from './routes/cosmo.js';
+import beaconRouter from './routes/beacon.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -1725,6 +1730,14 @@ app.use('/api/v1/synth', synthRouter);     // Nova Synth - AI Engine (Legacy)
 app.use('/api/v2/synth', synthV2Router);   // Nova Synth - AI Engine (v2 - Full Spec)
 app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
 app.use('/api/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
+app.use('/api/v1/core', coreRouter);
+app.use('/core', coreRouter);
+app.use('/api/v1/status', statusSummaryRouter);
+app.use('/status', statusSummaryRouter);
+app.use('/api/v1/announcements', announcementsRouter);
+app.use('/announcements', announcementsRouter);
+app.use('/api/v1/cosmo', cosmoRouter);
+app.use('/api/v2/beacon', beaconRouter);
 
 // Wrap all app setup in an async function
 export async function createApp() {
