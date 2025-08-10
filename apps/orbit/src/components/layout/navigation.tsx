@@ -63,6 +63,12 @@ export function MainNavigation() {
               >
                 {t('accessibility')}
               </Link>
+              <Link
+                href="/kiosk-preview"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Preview Kiosk
+              </Link>
             </div>
           </div>
 
@@ -126,6 +132,13 @@ export function MainNavigation() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('accessibility')}
+              </Link>
+              <Link
+                href="/kiosk-preview"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Preview Kiosk
               </Link>
               
               {/* Mobile Language Switcher */}

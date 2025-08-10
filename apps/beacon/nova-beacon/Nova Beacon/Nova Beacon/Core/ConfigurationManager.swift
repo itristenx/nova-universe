@@ -20,6 +20,7 @@ class ConfigurationManager: ObservableObject {
     @Published var isDeactivated = false
     @Published var lastConfigUpdate: Date?
     @Published var currentRoomName: String = "Conference Room"
+    @Published var isServerLocked: Bool = false
     
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
@@ -63,8 +64,12 @@ class ConfigurationManager: ObservableObject {
         if success {
             isActivated = true
             isDeactivated = false
+            isServerLocked = true
             userDefaults.set(true, forKey: UserDefaultsKeys.isActivated)
+            userDefaults.set(true, forKey: "isServerLocked")
             userDefaults.set(kioskId, forKey: "kioskId")
+            // Persist the baseURL to lock configuration source
+            userDefaults.set(serverConfig.baseURL, forKey: "lockedServerURL")
             await refreshConfiguration()
         }
         
@@ -194,6 +199,7 @@ class ConfigurationManager: ObservableObject {
         // Load activation status
         isActivated = userDefaults.bool(forKey: UserDefaultsKeys.isActivated)
         isDeactivated = userDefaults.bool(forKey: UserDefaultsKeys.isDeactivated)
+        isServerLocked = userDefaults.bool(forKey: "isServerLocked")
         
         // Load room name
         currentRoomName = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
@@ -202,6 +208,10 @@ class ConfigurationManager: ObservableObject {
         if let data = userDefaults.data(forKey: UserDefaultsKeys.serverConfig),
            let config = try? JSONDecoder().decode(ServerConfiguration.self, from: data) {
             serverConfiguration = config
+        }
+        // If locked, ensure serverConfiguration baseURL matches locked value
+        if isServerLocked, let locked = userDefaults.string(forKey: "lockedServerURL") {
+            if var cfg = serverConfiguration { cfg.baseURL = locked; serverConfiguration = cfg }
         }
         
         // Load last config update
