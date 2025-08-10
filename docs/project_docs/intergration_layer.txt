@@ -1,0 +1,294 @@
+# Nova Integrations & User 360 Spec
+
+Version: 1.1
+Modules: Nova Integrations Layer (NIL), Helix, Pulse, Orbit, Synth
+Purpose: Provide a unified integration framework that aggregates data from identity, asset, security, and collaboration tools into a single view for both technicians (Pulse) and end-users (Orbit), aligned with implemented Nova API v1 routes.
+
+---
+
+## 1. Architecture Overview
+
+```
+[Okta] [CrowdStrike] [Cisco] [Zoom] [Slack] [Monday.com] [Jamf] [Intune] [HRIS]
+          ↓
+  [Nova Integrations Layer (NIL)] ←→ [Helix (Identity Engine)]
+          ↓
+   ┌────────────────────┬───────────────────────┐
+   │ Nova Pulse (Tech)  │ Nova Orbit (End-User) │
+   └────────────────────┴───────────────────────┘
+                     ↓
+                 [Synth AI]
+```
+
+Notes:
+- Identity, RBAC, session: handled by Helix (`/api/v1/helix/*`).
+- End-user tickets: Orbit (`/api/v1/orbit/*`).
+- Technician dashboard and inventory: Pulse (`/api/v1/pulse/*`).
+- Integration configurations: `/api/v1/integrations/*`.
+
+---
+
+## 2. Nova Integrations Layer (NIL)
+
+NIL acts as a service bus + data normalization facade across integrations. In the current codebase, NIL concerns are surfaced via the unified API, primarily under `/api/v1/integrations` for integration configuration and tests, and via module-specific routes (e.g., Pulse Inventory) for normalized asset views.
+
+### 2.1 Connectors (Conceptual Catalog)
+
+| Connector           | Data Pulled                        | Actions (Push)                     |
+| ------------------- | ---------------------------------- | ---------------------------------- |
+| Okta / Entra / IdP  | User profiles, MFA status, groups  | Reset MFA, suspend/reactivate user |
+| Slack               | Profile, presence                  | Send DM, deactivate user           |
+| Zoom                | License status, activity           | Assign license                     |
+| CrowdStrike         | Device inventory, endpoint alerts  | Quarantine, release                |
+| Cisco (Duo/VPN)     | Login history, device posture      | Disconnect VPN, trigger MFA        |
+| Jamf                | macOS/iOS assets, compliance       | Remote lock, wipe, inventory sync  |
+| Intune              | Windows/Android assets, compliance | Remote lock, wipe, inventory sync  |
+| HRIS                | User employment data               | Onboarding/termination sync        |
+| Uptime Kuma         | Service uptime, outage alerts      | N/A                                |
+| Monday.com          | Tasks, projects                    | Create tasks                       |
+
+Implementation note: The codebase currently exposes integration configuration and testing endpoints at `/api/v1/integrations/*`, and provides normalized asset views via Pulse Inventory endpoints (see 4. Asset Integration). Additional connectors are enabled progressively via Synth workflows and Core configuration without requiring separate public routes per vendor.
+
+---
+
+## 3. Identity Correlation (Helix)
+
+Helix maps external identities to a Nova identity and provides RBAC and session tokens.
+
+- Primary Key: Email or UPN
+- Secondary Keys: Slack ID, device serial number, etc.
+
+Entity Graph (conceptual):
+```
+User ↔ Devices (Inventory)
+     ↔ Apps (via integrations config and module usage)
+     ↔ Tickets (Pulse/Orbit)
+     ↔ Alerts (Sentinel/Alerts)
+     ↔ HR (HRIS)
+```
+
+Helix Endpoints used in this spec:
+- GET `/api/v1/helix/session`
+- POST `/api/v1/helix/login`
+- Universal Login flows under `/api/v1/helix/login/*` (tenant discovery, authenticate, MFA challenge/verify, refresh, logout)
+
+---
+
+## 4. Asset Integration (Pulse Inventory)
+
+Pulse Inventory normalizes asset data and enriches it with warranty and ticket context.
+
+Schema alignment (Prisma/PostgreSQL): core models include `inventory_assets`, `asset_status_logs`, `asset_assignments`, with enhanced fields for warranty and encrypted details.
+
+Normalized API responses:
+- GET `/api/v1/pulse/inventory/assets` (filters: `status`, `assignedTo`, `department`, `warrantyStatus`, `includeHistory`, `limit`, `offset`)
+- GET `/api/v1/pulse/inventory/assets/{assetId}`
+
+Example normalized asset (truncated):
+```json
+{
+  "id": 123,
+  "asset_tag": "ASSET-1001",
+  "serial_number": "C02XYZ12345",
+  "status": "active",
+  "department": "IT",
+  "warranty_status": "ok",
+  "warranty_days_remaining": 142,
+  "warranty_alerts": [ ... ],
+  "active_tickets": [ ... ],
+  "status_history": [ ... ],
+  "current_assignment": { "assigned_date": "...", "manager_id": "..." }
+}
+```
+
+Ownership is linked by user IDs (Helix-issued identities). Compliance posture is conveyed via asset fields and alerts rather than a separate compliance API.
+
+---
+
+## 5. User 360 Composition Pattern (Technician)
+
+“User 360” is composed client-side using existing APIs. There is no single `/integrations/user/:id` endpoint; instead, assemble the view via:
+
+1) Identity & roles
+- GET `/api/v1/helix/session` to get current user claims and RBAC
+- For target user context, use module queries (tickets/assets filtered by user)
+
+2) Devices/Assets
+- GET `/api/v1/pulse/inventory/assets?assignedTo={user_id}&includeHistory=true`
+
+3) Tickets
+- For technician work queues: GET `/api/v1/pulse/dashboard` (summary)
+- For user-submitted tickets (as end-user): GET `/api/v1/orbit/tickets`
+
+4) Security/Alerts (where applicable in Nova)
+- Display via module UIs (e.g., Sentinel/Alerts UI) and related logs; no direct NIL user endpoint is required.
+
+Composite response (example schema for UI state):
+```json
+{
+  "identity": { "userId": "uuid", "email": "user@company.com", "roles": ["tech"] },
+  "devices": [...],
+  "tickets": { "techDashboard": {...}, "userTickets": [...] },
+  "security": { "notes": "Surfaced via Sentinel UI modules" }
+}
+```
+
+---
+
+## 6. Pulse (Technician UI)
+
+Pulse provides the full operational view for technicians:
+- Identity, devices, VIP indicators, dashboard stats
+- Tickets (Incidents/Requests), with VIP-aware SLA handling
+- Inventory linkage and live warranty context
+- AI assistance via Synth (classification, suggestions)
+
+Relevant routes:
+- GET `/api/v1/pulse/dashboard`
+- GET `/api/v1/pulse/inventory/assets`
+- GET `/api/v1/pulse/inventory/assets/{assetId}`
+- POST `/api/v1/pulse/tickets`
+
+---
+
+## 7. Orbit (End-User UI)
+
+Orbit provides the end-user portal for tickets, knowledge, and personalized dashboard.
+
+Frontend route:
+- Next.js route: `/enhanced-dashboard` (default redirect from `/`)
+
+API routes:
+- GET `/api/v1/orbit/tickets`
+- POST `/api/v1/orbit/tickets`
+
+---
+
+## 8. Enterprise Enhancements
+
+| Area                  | Feature                                                     |
+| --------------------- | ----------------------------------------------------------- |
+| Service Catalog       | Role-based visibility, approvals, dynamic forms             |
+| HR Integration        | Onboarding workflows (auto-provision apps, assets)          |
+| Compliance            | Asset warranty visibility, audit hooks in Core              |
+| Alert Correlation     | Sentinel/Alerts tied to user devices/services               |
+| Audit & Security      | Actions logged in Core/Helix audit trail                    |
+
+---
+
+## 9. API Contracts (Aligned with Codebase)
+
+- Helix (Identity)
+  - GET `/api/v1/helix/session`
+  - POST `/api/v1/helix/login`
+  - Universal Login flows under `/api/v1/helix/login/*` (tenant discovery, authenticate, MFA, refresh, logout)
+
+- Integrations (Configuration)
+  - GET `/api/v1/integrations`
+  - PUT `/api/v1/integrations/{id}`
+  - POST `/api/v1/integrations/{id}/test`
+
+- Pulse (Technician)
+  - GET `/api/v1/pulse/dashboard`
+  - GET `/api/v1/pulse/inventory/assets`
+  - GET `/api/v1/pulse/inventory/assets/{assetId}`
+  - POST `/api/v1/pulse/tickets`
+
+- Orbit (End-User)
+  - GET `/api/v1/orbit/tickets`
+  - POST `/api/v1/orbit/tickets`
+
+Notes:
+- There is no `/integrations/user/{nova_id}` or `/integrations/assets/sync` public route in the current codebase. User 360 is a composition of the routes above.
+
+---
+
+## 10. Security & Governance
+
+- SCIM/SSO via Helix; all session and RBAC checks enforced by Helix middleware and JWTs.
+- RBAC limits actions (technicians vs end-users).
+- Audit logging: ticket actions and VIP escalations recorded in Core audit logs; identity audit in Helix.
+- Data retention: TTL and log indexing configured per environment guidance.
+
+---
+
+## 11. ERD (Key Entities)
+
+```
+users (Helix/Core)
+  id (uuid) PK
+  email (text) unique
+  name (text)
+  is_vip (bool), vip_level (text)
+  ...
+
+scim_mappings
+  id (text) PK
+  user_id (text) → users.id
+  external_id (text)
+  provider (text)
+  sync_time (timestamp)
+
+inventory_assets
+  id (serial) PK
+  asset_tag (text)
+  serial_number (text nullable)
+  status (text)
+  department (text)
+  warranty_expiry (timestamp nullable)
+  custom_fields (jsonb)
+  ... encrypted_* fields (stored as *_enc)
+
+asset_status_logs
+  id (serial) PK
+  asset_id (int) → inventory_assets.id
+  previous_status (text)
+  new_status (text)
+  changed_by_user_id (text)
+  timestamp (timestamp)
+
+asset_assignments
+  id (serial) PK
+  asset_id (int) → inventory_assets.id
+  user_id (text) → users.id
+  org_id (int)
+  assigned_by (text)
+  assigned_date (timestamp)
+  expected_return (timestamp)
+  return_date (timestamp nullable)
+
+asset_ticket_history
+  id (serial) PK
+  asset_id (int) → inventory_assets.id
+  ticket_id (uuid) → tickets.id
+  relationship_type (text)
+  created_at (timestamp)
+  ended_at (timestamp nullable)
+
+tickets (Core/Pulse/Orbit)
+  id (uuid) PK
+  ticket_id (human ID)
+  requested_by_id (uuid) → users.id
+  assigned_to_id (uuid) → users.id
+  priority, status, category, subcategory
+  due_date, created_at, updated_at
+  ...
+```
+
+---
+
+## 12. Implementation Phases (Execution Guide)
+
+1) Identity & Sessions (Helix Universal Login + Session) — complete in codebase
+2) End-User Tickets (Orbit) — implemented via `/api/v1/orbit/tickets`
+3) Technician Dashboard & Inventory (Pulse) — implemented via `/api/v1/pulse/dashboard` and `/api/v1/pulse/inventory/*`
+4) Integrations Config Surface — implemented via `/api/v1/integrations`
+5) AI Assistance (Synth) — available via Synth APIs and UI components per module
+
+---
+
+✅ Result:
+- Pulse: Technician command center with unified data and automation (via existing endpoints).
+- Orbit: End-user hub for tickets and guided self-service.
+- NIL + Helix: Centralized configuration and identity authority.
+- Synth: AI-driven insights and recommendations surfaced in module UIs.

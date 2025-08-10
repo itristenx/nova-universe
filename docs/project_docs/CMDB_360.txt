@@ -1,0 +1,165 @@
+Yes—Nova Helix and User360 should be tightly integrated but remain separate components with clear responsibilities.
+
+Helix is the identity and access engine (authentication, roles, SCIM, credential vault), while User360 is a context composition pattern for technicians built on top of existing Nova APIs. Their integration ensures a unified, secure, and automated user view across the Nova Universe.
+
+---
+
+## Why They Should Be Integrated
+
+| Area                   | Reason                                                                                                                                    |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity Linking       | Helix is the source of truth for identity (Nova ID). User360 relies on this to correctly map users, assets, tickets, and integrations.     |
+| SSO & MFA              | Helix handles login, MFA enforcement, and token issuance. User360 does not duplicate this logic.                                           |
+| RBAC Enforcement       | User360 visibility (HR data, security info, assets) is role-driven. Helix provides roles and claims via session tokens.                    |
+| Audit Trail            | Actions in Pulse/Orbit are logged with Helix identities; VIP flows and escalations are audited in Core/Helix.                              |
+| Integration Access     | User360 composes data from Nova APIs; any service calls are helix-scoped via JWT claims and middleware.                                    |
+
+---
+
+## Recommended Integration Model
+
+```
++-----------------------------+
+|        Nova Helix           |
+|  (Identity & Access Layer)  |
+|-----------------------------|
+| • SSO / MFA                 |
+| • SCIM Provisioning         |
+| • Roles & Permissions       |
+| • Credential Vault          |
+| • Audit Trail               |
++--------------+--------------+
+               |
+               v
++--------------+--------------+
+|            User360          |
+| (Context Composition Layer) |
+|-----------------------------|
+| • Unified Profile           |
+| • Linked Assets (Inventory) |
+| • Linked Tickets            |
+| • VIP Context & SLA         |
+| • Technician Actions        |
++--------------+--------------+
+               |
+               v
++--------------+--------------+
+|    Nova Integration Layer   |
+| (Integrations + Inventory)  |
+|-----------------------------|
+| • Integration Config        |
+| • Inventory (Pulse)         |
+| • Event Bus (via Core)      |
++--------------+--------------+
+               |
+               v
++--------------+--------------+
+|          CMDB               |
+| • Assets & Services         |
+| • Relationships             |
+| • Ownership (Helix IDs)     |
++-----------------------------+
+```
+
+---
+
+## Integration Principles
+
+- Helix is the identity authority — User360 never stores or modifies identity data.
+- User360 consumes Helix tokens — all access scoped by claims in `/api/v1/helix/session`.
+- Helix drives contextual access (HR vs IT vs Ops visibility) via roles and claims.
+- Cosmo/Synth actions run under Helix identity for full auditability.
+
+---
+
+## Helix ↔ User360 Internal API Spec (Aligned with Codebase)
+
+User360 is not a separate service; it is a composition pattern for Pulse/Orbit UIs using existing endpoints. The following calls form a consistent internal spec:
+
+1) Identity & Roles (Helix)
+- GET `/api/v1/helix/session`
+  - Response: `{ success, user: { id, email, name, roles[] }, session: { ... } }`
+- POST `/api/v1/helix/login` and `/api/v1/helix/login/*` for universal login flows
+
+2) End-User Tickets (Orbit)
+- GET `/api/v1/orbit/tickets` (filters by current user from token)
+- POST `/api/v1/orbit/tickets`
+
+3) Technician Context (Pulse)
+- GET `/api/v1/pulse/dashboard` (technician summary: my tickets, today stats, upcoming tasks, recent activity)
+- GET `/api/v1/pulse/inventory/assets?assignedTo={user_id}&includeHistory=true`
+- GET `/api/v1/pulse/inventory/assets/{assetId}`
+- POST `/api/v1/pulse/tickets` (on behalf of a user)
+
+4) Integrations Config (NIL surface)
+- GET `/api/v1/integrations`
+- PUT `/api/v1/integrations/{id}`
+- POST `/api/v1/integrations/{id}/test`
+
+Composition Guidance:
+- Technician “User360” view =
+  - Helix session claims + chosen target user ID
+  - Inventory assets assigned to target user
+  - Ticket context via Pulse dashboard (for agent) and Orbit tickets (for target user, if needed)
+  - VIP and SLA details from ticket and user fields
+
+---
+
+## ERD (Key Entities for CMDB/User360)
+
+```
+users
+  id (uuid) PK
+  email (text), name (text)
+  is_vip (bool), vip_level (text)
+  ...
+
+inventory_assets
+  id (serial) PK
+  asset_tag, serial_number (nullable), status, department
+  warranty_expiry (nullable), custom_fields (jsonb)
+  *_enc (encrypted fields for serial/warranty/purchase/notes)
+
+asset_status_logs
+  id (serial) PK
+  asset_id → inventory_assets.id
+  previous_status, new_status, changed_by_user_id, timestamp
+
+asset_assignments
+  id (serial) PK
+  asset_id → inventory_assets.id
+  user_id → users.id
+  assigned_by, assigned_date, expected_return, return_date
+
+asset_ticket_history
+  id (serial) PK
+  asset_id → inventory_assets.id
+  ticket_id → tickets.id
+  relationship_type, created_at, ended_at
+
+tickets
+  id (uuid) PK, ticket_id (human ID)
+  requested_by_id → users.id
+  assigned_to_id → users.id
+  priority, status, category, subcategory
+  due_date, created_at, updated_at
+```
+
+---
+
+## Implementation Checklist (No Placeholders)
+
+- Use Helix session and universal login flows for authentication.
+- Build User360 technician view by composing:
+  - Helix session claims
+  - Pulse Inventory asset lists filtered by `assignedTo`
+  - Pulse dashboard data for agent context
+  - Orbit tickets if end-user view is needed for the same identity
+- Respect RBAC claims in all requests; backend routes already enforce JWT + rate limits.
+- Log VIP-related actions; backend already records VIP escalations and audit logs.
+
+---
+
+Conclusion:
+- Helix = who a user is and what they can do.
+- User360 = the composed context a technician can see and act upon for that user, using the existing Nova API routes.
