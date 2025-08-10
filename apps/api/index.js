@@ -1628,6 +1628,11 @@ app.use('/api/v1/kiosks', kiosksRouter);
 app.use('/api/kiosks', kiosksRouter);
 app.use('/api/v1/kiosks', kiosksRouter);
 
+// NNP v2 notifications API
+import notificationsV2 from './routes/notifications.v2.js';
+import { securityLogging } from './middleware/security.js';
+app.use('/api/v2/notifications', securityLogging, notificationsV2);
+
 // Setup API routes
 app.get('/api-docs/swagger.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');

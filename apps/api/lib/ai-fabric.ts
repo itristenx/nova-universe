@@ -628,6 +628,12 @@ export class NovaAIFabric extends EventEmitter {
   }
 }
 
+export async function summarizeNotificationsForDigest(events: Array<{ title: string; message: string }>): Promise<string> {
+  // TODO: Replace with Synth/Cosmo summarization
+  const titles = events.map(e => `• ${e.title}`).join('\n');
+  return `Notification Digest:\n${titles}`;
+}
+
 // Placeholder classes for the subsystems (to be implemented)
 class ExternalAIProviders {
   async initialize() { /* Implementation */ }

@@ -318,6 +318,15 @@ CREATE TABLE IF NOT EXISTS nova_kuma_import_log (
     created_by TEXT
 );
 
+-- Channel send results for monitoring
+CREATE TABLE IF NOT EXISTS nova_notification_channel_results (
+    channel_id TEXT PRIMARY KEY,
+    last_success_at TIMESTAMPTZ,
+    last_failure_at TIMESTAMPTZ,
+    failure_count INTEGER DEFAULT 0,
+    total_sent INTEGER DEFAULT 0
+);
+
 -- Performance indexes
 CREATE INDEX IF NOT EXISTS idx_monitors_tenant_type ON nova_monitors(tenant_id, type);
 CREATE INDEX IF NOT EXISTS idx_monitors_status ON nova_monitors(status) WHERE status = 'active';

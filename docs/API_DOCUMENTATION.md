@@ -447,3 +447,14 @@ Download our comprehensive Postman collection:
 - Initial API release
 - Core ITSM functionality
 - User and organization management
+
+## Notifications API v2 (NNP)
+
+- POST `/api/v2/notifications/events`
+  - Body: `{ module, type, priority, title, message, recipient_roles?, recipient_users?, actions?, metadata? }`
+  - Auth: Bearer (JWT)
+  - Response: `{ accepted: true, deliveries, eventId }`
+
+- GET `/api/v2/notifications/preferences/:userId`
+- PUT `/api/v2/notifications/preferences/:userId`
+- GET `/api/v2/notifications/deliveries?userId=<id>&limit=50`

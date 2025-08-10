@@ -150,6 +150,24 @@ async function generateSystemAlerts() {
         timestamp: now.toISOString(),
         action: 'Consider increasing support staff or activating escalation procedures'
       });
+      // Fan out critical via NNP
+      if (alerts[alerts.length-1].severity === SEVERITY.CRITICAL) {
+        try {
+          await fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/v2/notifications/events`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': req.headers.authorization || '' },
+            body: JSON.stringify({
+              module: 'sentinel',
+              type: 'system_alerts',
+              priority: 'critical',
+              title: 'Critical: High ticket volume',
+              message: `High ticket volume: ${hourlyTickets} tickets in last hour`,
+              recipient_roles: ['admin'],
+              metadata: { metric: hourlyTickets }
+            })
+          });
+        } catch {}
+      }
     }
 
     // Check average resolution time
@@ -1333,8 +1351,6 @@ async function getConfigValue(key, defaultValue) {
     return defaultValue;
   }
 }
-<<<<<<< Current (Your changes)
-=======
 
 /**
  * Create incident manually from Pulse UI
@@ -1388,4 +1404,3 @@ router.post('/monitor-incident', authenticateJWT, audit('sentinel.incident.creat
     res.status(500).json({ error: 'Failed to create incident' });
   }
 });
->>>>>>> Incoming (Background Agent changes)

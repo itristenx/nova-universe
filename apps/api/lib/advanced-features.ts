@@ -434,3 +434,7 @@ export class AdvancedFeaturesService {
 }
 
 export const advancedFeaturesService = new AdvancedFeaturesService();
+
+export const features = {
+  notificationsV2: true,
+};

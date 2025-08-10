@@ -6,7 +6,7 @@ import { ConfidentialClientApplication } from '@azure/msal-node';
 
 const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
 
-class M365EmailService {
+export class M365EmailService {
   constructor() {
     this.pollIntervalMs = parseInt(process.env.M365_POLL_INTERVAL_MS || '60000');
     this.running = false;
@@ -146,4 +146,5 @@ class M365EmailService {
   }
 }
 
-export default new M365EmailService();
+const defaultM365EmailService = new M365EmailService();
+export default defaultM365EmailService;
