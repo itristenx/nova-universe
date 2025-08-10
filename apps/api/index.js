@@ -19,6 +19,7 @@ import websocketRouter from './routes/websocket.js';
 import helpscoutRouter from './routes/helpscout.js';
 import analyticsRouter from './routes/analytics.js';
 import monitoringRouter from './routes/monitoring.js';
+import aiFabricRouter from './routes/ai-fabric.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -1710,6 +1711,7 @@ app.use('/api/v1/websocket', websocketRouter);
 app.use('/api/helpscout', helpscoutRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/monitoring', monitoringRouter);
+app.use('/api/ai-fabric', aiFabricRouter);
 
 // Nova module routes
 app.use('/api/v1/helix', helixRouter);     // Nova Helix - Identity Engine
