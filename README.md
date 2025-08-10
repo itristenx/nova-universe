@@ -2,52 +2,180 @@
 
 # Nova Universe
 
+**Modern help desk that just works.**
+
 [![Build Status](https://img.shields.io/github/actions/workflow/status/itristenx/nova-universe/ci.yml?branch=main)](https://github.com/itristenx/nova-universe/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Open Issues](https://img.shields.io/github/issues/itristenx/nova-universe)](https://github.com/itristenx/nova-universe/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/itristenx/nova-universe)](https://github.com/itristenx/nova-universe/pulls)
 
 ---
 
-## About
+## What is Nova Universe?
 
-**Nova** is an open source, enterprise-grade help desk platform for submitting and tracking IT tickets. It features a modern admin UI, kiosk support, Slack integration, and robust security. Designed for easy deployment and extensibility.
+Nova Universe is an enterprise help desk platform designed for teams who want powerful features without complexity. Submit tickets, track progress, and resolve issues faster.
 
----
-
-## Features
-- Multi-app monorepo: Platform API, Core Admin UI, Beacon Kiosk, Comms (Slack integration)
-- Modern React/TypeScript admin interface
-- Secure Express/PostgreSQL backend
-- iPad kiosk support
-- Slack slash command integration
-- SAML SSO, JWT, and RBAC
-- Rate limiting, input validation, and audit logging
-- Installer scripts for all major OSes
-- Automated tests and CI/CD ready
+**Key Features:**
+- 🎯 **Simple Setup** - Running in minutes, not hours
+- 📱 **iPad Kiosk** - Self-service ticket submission 
+- 🔍 **Smart Search** - AI-powered ticket discovery
+- 📊 **Real-time Monitoring** - Built-in uptime tracking
+- 🚨 **Smart Alerts** - Intelligent incident management
+- 💬 **Team Integration** - Slack, Teams, webhooks
+- 🔒 **Enterprise Security** - SAML SSO, RBAC, audit logs
 
 ---
 
-[→ Quickstart Guide](docs/quickstart.md)
+## Quick Start
 
-## Repository Structure
+**One command to get started:**
 
-- **nova-api** – Nova Platform API (Express/PostgreSQL backend)
-- **nova-core** – Nova Core (React admin interface with integrated kiosk activation management)
-- **nova-beacon** – Nova Beacon (iPad kiosk for ticket submission)
-- **nova-comms** – Nova Comms (Slack slash command integration)
+```bash
+git clone https://github.com/itristenx/nova-universe.git
+cd nova-universe
+./setup.sh
+```
 
-The `design/theme.js` file defines shared colors, fonts and spacing. Frontends import these tokens so styles remain consistent across the admin UI and kiosk app.
+That's it. Open http://localhost:3001 and start using Nova Universe.
+
+**Default login:**
+- Email: `admin@example.com`
+- Password: `admin`
 
 ---
 
-## Getting Started
+## What's Included
 
-### Requirements
-- [Node.js](https://nodejs.org/) 18 or higher
-- npm
-- [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
-- PostgreSQL 15 or higher
+**Core Platform:**
+- **Nova Core** - Admin interface and dashboard
+- **Nova API** - REST API and GraphQL backend  
+- **Nova Beacon** - iPad kiosk for ticket submission
+- **Nova Comms** - Slack integration and webhooks
+
+**Monitoring & Alerting:**
+- **Nova Sentinel** - Uptime monitoring (Uptime Kuma)
+- **GoAlert** - Incident response and escalation
+- **AI Fabric** - Machine learning and automation
+
+**Everything works together seamlessly.**
+
+---
+
+## Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Nova Core     │    │   Nova Beacon   │    │   Nova Comms    │
+│  (Admin UI)     │    │   (iPad Kiosk)  │    │ (Integrations)  │
+└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
+          │                      │                      │
+          └──────────────────────┼──────────────────────┘
+                                 │
+                    ┌─────────────┴───────────┐
+                    │      Nova API          │
+                    │   (Core Backend)       │
+                    └─────────────┬───────────┘
+                                 │
+               ┌─────────────────┼─────────────────┐
+               │                 │                 │
+    ┌──────────┴────────┐ ┌──────┴──────┐ ┌───────┴──────┐
+    │  Nova Sentinel    │ │  GoAlert    │ │  AI Fabric   │
+    │  (Monitoring)     │ │ (Alerting)  │ │    (AI)      │
+    └───────────────────┘ └─────────────┘ └──────────────┘
+```
+
+---
+
+## Management
+
+**CLI Commands:**
+```bash
+# Service management
+cd apps/api && node cli.js start    # Start all services
+cd apps/api && node cli.js stop     # Stop all services  
+cd apps/api && node cli.js health   # Check system health
+
+# User management  
+cd apps/api && node cli.js passwd newpassword123  # Change admin password
+cd apps/api && node cli.js users    # List admin users
+
+# System operations
+cd apps/api && node cli.js reset    # Reset to clean state
+cd apps/api && node cli.js status   # Show service URLs
+```
+
+**Deployment:**
+```bash
+# Production deployment
+./scripts/deploy-production.sh
+
+# Complete teardown
+./teardown.sh
+```
+
+---
+
+## Requirements
+
+- **Node.js** 18+
+- **Docker** (recommended)
+- **PostgreSQL** 15+ (or use Docker)
+
+**Optional for full features:**
+- **Redis** (caching)
+- **Elasticsearch** (advanced search)
+- **S3** (file storage)
+
+---
+
+## Configuration
+
+Nova Universe configures itself during setup. For advanced configuration:
+
+1. **Setup Wizard** - Visit http://localhost:3001/setup after installation
+2. **Admin Panel** - Configure services in the admin interface
+3. **Environment Files** - Manual configuration in `.env` files
+
+**Key integrations:**
+- Slack/Teams notifications
+- SAML/OIDC authentication  
+- Monitoring and alerting
+- AI-powered features
+
+---
+
+## Production Deployment
+
+**Quick production setup:**
+```bash
+# Generate production configuration
+bash scripts/generate-production-secrets.sh
+
+# Deploy with monitoring and SSL
+bash scripts/deploy-production.sh
+```
+
+**What you get:**
+- SSL/TLS encryption
+- Production database  
+- Monitoring dashboard
+- Automated backups
+- Health checks
+- Log aggregation
+
+---
+
+## Support
+
+- **Documentation** - [docs/quickstart.md](docs/quickstart.md)
+- **API Reference** - http://localhost:3000/docs (after setup)
+- **Issues** - [GitHub Issues](https://github.com/itristenx/nova-universe/issues)
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file.
+
+**Nova Universe** - Help desk that scales with your team.
 
 ### Quick Start
 

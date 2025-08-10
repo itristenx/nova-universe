@@ -1,5 +1,7 @@
 {
   "name": "nova-universe-root",
+  "version": "2.0.0",
+  "description": "Enterprise Help Desk Platform with AI, Monitoring, and Alerting",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,7 +23,15 @@
     "lint": "eslint . --config ./tools/config/eslint.config.js",
     "prisma:generate:core": "prisma generate --schema prisma/core/schema.prisma",
     "prisma:generate:auth": "prisma generate --schema prisma/auth/schema.prisma",
-    "prisma:generate:audit": "prisma generate --schema prisma/audit/schema.prisma"
+    "prisma:generate:audit": "prisma generate --schema prisma/audit/schema.prisma",
+    "setup": "./setup.sh",
+    "teardown": "./teardown.sh",
+    "deploy": "bash scripts/deploy-production.sh",
+    "validate": "./validate-production-readiness.sh",
+    "health": "cd apps/api && node cli.js health",
+    "start": "cd apps/api && node cli.js start",
+    "stop": "cd apps/api && node cli.js stop",
+    "status": "cd apps/api && node cli.js status"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.0",
