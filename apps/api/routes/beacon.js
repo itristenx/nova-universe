@@ -8,6 +8,7 @@ import { createRateLimit } from '../middleware/rateLimiter.js';
 import { validateKioskAuth } from '../middleware/validation.js';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
+import HelixKioskIntegration from '../services/helixKioskIntegration.js';
 
 const router = express.Router();
 
@@ -550,6 +551,15 @@ router.post('/activate',
                   error: 'Failed to activate kiosk',
                   errorCode: 'ACTIVATION_ERROR'
                 });
+              }
+
+              // Auto-register kiosk record in inventory (if inventory module available)
+              try {
+                // This would link a kiosk to an inventory asset if one exists; placeholder assetId 0
+                // In a real system, deviceInfo/serial would be matched.
+                HelixKioskIntegration.updateHelixSyncStatus?.(activation.kioskId, 0, { status: 'pending', timestamp: new Date().toISOString() });
+              } catch (e) {
+                logger.warn('Inventory/Helix auto-registration hook failed:', e.message);
               }
 
               // Mark activation as used

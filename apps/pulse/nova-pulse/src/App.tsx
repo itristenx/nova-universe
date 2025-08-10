@@ -20,6 +20,7 @@ import { SmartQueueManagement } from './components/enhanced/SmartQueueManagement
 import CommunicationHubPage from './pages/CommunicationHubPage'
 import AdvancedSearchPage from './pages/AdvancedSearchPage'
 import PerformanceAnalyticsPage from './pages/PerformanceAnalyticsPage'
+import { KioskDetailsPage } from './pages/KioskDetailsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } }
@@ -79,6 +80,7 @@ const App: React.FC = () => (
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/gamification" element={<GamificationPage />} />
+            <Route path="/kiosks/details" element={<KioskDetailsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>
