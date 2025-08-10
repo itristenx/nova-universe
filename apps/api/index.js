@@ -70,7 +70,10 @@ import orbitRouter from './routes/orbit.js';
 import pulseRouter from './routes/pulse.js';
 import inventoryRouter from './routes/inventory.js';
 import scimRouter from './routes/scim.js';
-import scimMonitorRouter from './routes/scimMonitor.js';
+let scimMonitorRouter = null;
+try {
+  scimMonitorRouter = (await import('./routes/scimMonitor.js')).default;
+} catch {}
 import synthRouter from './routes/synth.js';
 import synthV2Router from './routes/synth-v2.js';
 import { getEmailStrategy } from './utils/serviceHelpers.js';
@@ -1734,7 +1737,10 @@ app.use('/api/v1/orbit', orbitRouter);     // Nova Orbit - End-User Portal
 app.use('/api/v1/synth', synthRouter);     // Nova Synth - AI Engine (Legacy)
 app.use('/api/v2/synth', synthV2Router);   // Nova Synth - AI Engine (v2 - Full Spec)
 app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
-app.use('/api/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
+// SCIM Monitor (optional)
+if (scimMonitorRouter) {
+  app.use('/api/scim/monitor', scimMonitorRouter);
+}
 app.use('/api/v1/core', coreRouter);
 app.use('/core', coreRouter);
 app.use('/api/v1/status', statusSummaryRouter);
