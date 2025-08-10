@@ -29,6 +29,7 @@ const navigation = [
   { name: 'Email Accounts', href: '/email-accounts', icon: Cog6ToothIcon },
   { name: 'Modules', href: '/modules', icon: Cog6ToothIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
+  { name: 'CMDB', href: '/cmdb', icon: ComputerDesktopIcon },
 ];
 
 interface SidebarProps {

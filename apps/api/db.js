@@ -46,7 +46,102 @@ async function initializeDatabase() {
  */
 async function setupSchemas() {
   try {
-    logger.info('Database schemas verified');
+    // Create CMDB core tables if they do not exist
+    const ddlStatements = [
+      // CI Classes
+      `CREATE TABLE IF NOT EXISTS ci_classes (
+         id SERIAL PRIMARY KEY,
+         name VARCHAR(100) UNIQUE NOT NULL,
+         label VARCHAR(150),
+         description TEXT,
+         parent_id INTEGER REFERENCES ci_classes(id) ON DELETE SET NULL,
+         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+       );`,
+      // CI Items
+      `CREATE TABLE IF NOT EXISTS ci_items (
+         id SERIAL PRIMARY KEY,
+         class_id INTEGER NOT NULL REFERENCES ci_classes(id) ON DELETE RESTRICT,
+         name VARCHAR(255) NOT NULL,
+         status VARCHAR(50) DEFAULT 'active',
+         environment VARCHAR(50),
+         owner_user_id TEXT,
+         owner_group VARCHAR(100),
+         criticality INTEGER,
+         attributes JSONB DEFAULT '{}'::jsonb,
+         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+       );`,
+      // Identifiers used for reconciliation/de-dup
+      `CREATE TABLE IF NOT EXISTS ci_identifiers (
+         id SERIAL PRIMARY KEY,
+         item_id INTEGER NOT NULL REFERENCES ci_items(id) ON DELETE CASCADE,
+         namespace VARCHAR(100) NOT NULL,
+         name VARCHAR(100) NOT NULL,
+         value VARCHAR(255) NOT NULL,
+         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+         UNIQUE (namespace, name, value)
+       );`,
+      // Relationship types
+      `CREATE TABLE IF NOT EXISTS ci_relationship_types (
+         id SERIAL PRIMARY KEY,
+         name VARCHAR(100) UNIQUE NOT NULL,
+         forward_label VARCHAR(100) NOT NULL,
+         reverse_label VARCHAR(100) NOT NULL,
+         description TEXT
+       );`,
+      // Relationships
+      `CREATE TABLE IF NOT EXISTS ci_relationships (
+         id SERIAL PRIMARY KEY,
+         type_id INTEGER NOT NULL REFERENCES ci_relationship_types(id) ON DELETE RESTRICT,
+         source_item_id INTEGER NOT NULL REFERENCES ci_items(id) ON DELETE CASCADE,
+         target_item_id INTEGER NOT NULL REFERENCES ci_items(id) ON DELETE CASCADE,
+         properties JSONB DEFAULT '{}'::jsonb,
+         created_by TEXT,
+         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+         UNIQUE (type_id, source_item_id, target_item_id)
+       );`,
+      // Audit trail
+      `CREATE TABLE IF NOT EXISTS ci_audit (
+         id SERIAL PRIMARY KEY,
+         item_id INTEGER REFERENCES ci_items(id) ON DELETE CASCADE,
+         action VARCHAR(50) NOT NULL, -- create, update, delete
+         diff JSONB,
+         user_id TEXT,
+         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+       );`,
+      // Helpful indexes
+      `CREATE INDEX IF NOT EXISTS idx_ci_items_class ON ci_items(class_id);`,
+      `CREATE INDEX IF NOT EXISTS idx_ci_items_name ON ci_items(name);`,
+      `CREATE INDEX IF NOT EXISTS idx_ci_identifiers_item ON ci_identifiers(item_id);`,
+      `CREATE INDEX IF NOT EXISTS idx_ci_relationships_src ON ci_relationships(source_item_id);`,
+      `CREATE INDEX IF NOT EXISTS idx_ci_relationships_tgt ON ci_relationships(target_item_id);`
+    ];
+
+    for (const sql of ddlStatements) {
+      await db.query(sql);
+    }
+
+    // Seed common relationship types if empty
+    const { rows: relTypeCountRows } = await db.query('SELECT COUNT(*)::int AS count FROM ci_relationship_types');
+    if (!relTypeCountRows[0] || relTypeCountRows[0].count === 0) {
+      const relTypes = [
+        { name: 'depends_on', forward: 'depends on', reverse: 'required by' },
+        { name: 'runs_on', forward: 'runs on', reverse: 'hosts' },
+        { name: 'uses', forward: 'uses', reverse: 'used by' },
+        { name: 'connected_to', forward: 'connected to', reverse: 'connected to' },
+        { name: 'owned_by', forward: 'owned by', reverse: 'owns' },
+        { name: 'supports', forward: 'supports', reverse: 'supported by' }
+      ];
+      for (const t of relTypes) {
+        await db.query(
+          'INSERT INTO ci_relationship_types (name, forward_label, reverse_label, description) VALUES ($1,$2,$3,$4) ON CONFLICT (name) DO NOTHING',
+          [t.name, t.forward, t.reverse, null]
+        );
+      }
+    }
+
+    logger.info('CMDB schemas verified');
   } catch (error) {
     logger.error('Error setting up schemas:', error);
     throw error;

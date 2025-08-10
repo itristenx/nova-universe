@@ -26,6 +26,7 @@ import statusSummaryRouter from './routes/status.js';
 import announcementsRouter from './routes/announcements.js';
 import cosmoRouter from './routes/cosmo.js';
 import beaconRouter from './routes/beacon.js';
+import cmdbRouter from './routes/cmdb.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -1702,6 +1703,7 @@ app.use('/api/v1/directory', directoryRouter);
 app.use('/api/v1/roles', rolesRouter);
 app.use('/api/v1/assets', assetsRouter);
 app.use('/api/v1/inventory', inventoryRouter);
+app.use('/api/v1/cmdb', cmdbRouter);
 app.use('/api/v1/integrations', integrationsRouter);
 app.use('/api/catalog-items', catalogItemsRouter);
 app.use('/api/v1/search', searchRouter);
