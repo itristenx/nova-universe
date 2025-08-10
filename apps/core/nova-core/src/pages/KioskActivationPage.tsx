@@ -16,6 +16,9 @@ export const KioskActivationPage: React.FC = () => {
   const [linkKioskId, setLinkKioskId] = useState('');
   const [assetTag, setAssetTag] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
+  const [latestActivation, setLatestActivation] = useState<{ code: string; qr?: string; expiresAt: string } | null>(null);
+  const [waiting, setWaiting] = useState(false);
+  const [paired, setPaired] = useState(false);
   const { addToast } = useToastStore();
 
   useEffect(() => {
@@ -65,20 +68,17 @@ export const KioskActivationPage: React.FC = () => {
   const generateActivation = async () => {
     try {
       setGeneratingQR(true);
-      const activation = await api.generateKioskActivation();
-      setActivations([activation, ...activations]);
-      addToast({
-        type: 'success',
-        title: 'Success',
-        description: 'Kiosk activation code generated successfully',
-      });
+      setWaiting(false);
+      setPaired(false);
+      const input = { kioskId: kioskId || `kiosk-${Math.random().toString(36).slice(2,7)}` } as any;
+      const activation = await fetch('/api/v2/beacon/activation-codes', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input)
+      }).then(r=>r.json());
+      setLatestActivation({ code: activation.code, qr: activation.qr, expiresAt: activation.expiresAt });
+      setWaiting(true);
+      addToast({ type: 'success', title: 'Success', description: 'Activation code generated' });
     } catch (error) {
-      console.error('Failed to generate activation:', error);
-      addToast({
-        type: 'error',
-        title: 'Error',
-        description: 'Failed to generate activation code',
-      });
+      addToast({ type: 'error', title: 'Error', description: 'Failed to generate activation code' });
     } finally {
       setGeneratingQR(false);
     }
@@ -249,6 +249,24 @@ export const KioskActivationPage: React.FC = () => {
           >
             {generatingQR ? 'Generating...' : 'Generate QR Code'}
           </Button>
+          {latestActivation && (
+            <div className="mt-4 border rounded p-4 text-center">
+              <div className="text-sm text-gray-600">Activation Code</div>
+              <div className="text-2xl font-semibold tracking-wider">{latestActivation.code}</div>
+              {latestActivation.qr && (
+                <img src={latestActivation.qr} alt="QR" className="mx-auto mt-3 h-36" />
+              )}
+              <div className="text-xs text-gray-500 mt-2">Expires {new Date(latestActivation.expiresAt).toLocaleString()}</div>
+              <div className="mt-3">
+                {waiting && !paired && (
+                  <div className="text-blue-600 animate-pulse">Waiting for kiosk to pair...</div>
+                )}
+                {paired && (
+                  <div className="text-green-600">Kiosk paired!</div>
+                )}
+              </div>
+            </div>
+          )}
         </Card>
       </div>
 

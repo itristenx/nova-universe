@@ -671,6 +671,12 @@ router.post('/link-asset', authenticateJWT, async (req, res) => {
     }
 
     const result = await helix.registerAssetWithKiosk(asset.id, kioskId, { userId: req.user?.id || 'admin' });
+    // Trigger sync immediately for responsiveness, ignoring errors
+    try {
+      await helix.syncWithHelix(kioskId, asset.id, asset, result.metadata || {});
+    } catch (e) {
+      logger.warn('Immediate Helix sync failed:', e.message);
+    }
     return res.json({ success: true, result });
   } catch (e) {
     logger.error('Link asset failed:', e);
