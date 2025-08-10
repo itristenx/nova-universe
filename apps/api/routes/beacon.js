@@ -10,6 +10,7 @@ import crypto from 'crypto';
 import QRCode from 'qrcode';
 import HelixKioskIntegration from '../services/helixKioskIntegration.js';
 import { authenticateJWT } from '../middleware/auth.js';
+import events from '../events.js';
 
 const router = express.Router();
 
@@ -575,6 +576,9 @@ router.post('/activate',
                 location: activation.location
               });
 
+              // Emit kiosk-activated for realtime UIs
+              events.emit('kiosk-activated', { kioskId: activation.kioskId, kioskName: activation.kioskName, location: activation.location });
+
               res.json({
                 success: true,
                 token: kioskToken,
@@ -641,6 +645,7 @@ router.post('/check-in', validateKioskAuth, async (req, res) => {
       } catch (e) {
         logger.warn('Helix bulk sync trigger failed:', e.message);
       }
+      events.emit('kiosk_check_in', { kioskId, timestamp: new Date().toISOString() });
       res.json({ success: true, kioskId });
     });
   } catch (e) {
@@ -661,10 +666,30 @@ router.post('/link-asset', authenticateJWT, async (req, res) => {
     let asset = null;
     if (assetTag) {
       asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: assetTag } });
+      if (!asset) {
+        asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: { equals: assetTag, mode: 'insensitive' } } });
+      }
     }
     if (!asset && serialNumber) {
-      // Note: serial may be stored encrypted; adjust matching as needed in production
+      // Attempt plaintext field
       asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: serialNumber } }).catch(() => null);
+      // Fallback: case-insensitive partial match
+      if (!asset) {
+        asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: { contains: serialNumber, mode: 'insensitive' } } }).catch(() => null);
+      }
+      // Fallback: decrypt compare across recent assets (bounded scan)
+      if (!asset) {
+        const recent = await helix.db.inventoryAsset.findMany({ take: 200, orderBy: { updated_at: 'desc' } }).catch(() => []);
+        for (const a of recent) {
+          if (a.serial_number_enc) {
+            try {
+              const { decrypt } = await import('../utils/encryption.js');
+              const dec = decrypt(a.serial_number_enc);
+              if (dec && dec.toLowerCase() === String(serialNumber).toLowerCase()) { asset = a; break; }
+            } catch {}
+          }
+        }
+      }
     }
     if (!asset) {
       return res.status(404).json({ success: false, error: 'Asset not found' });

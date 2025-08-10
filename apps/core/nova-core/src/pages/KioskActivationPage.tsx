@@ -4,6 +4,7 @@ import { useToastStore } from '@/stores/toast';
 import { api } from '../lib/api';
 import { KioskActivation } from '../types';
 import { PlusIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { useWebSocketContext } from '@/contexts/WebSocketContext';
 
 export const KioskActivationPage: React.FC = () => {
   const [kioskId, setKioskId] = useState('');
@@ -20,6 +21,7 @@ export const KioskActivationPage: React.FC = () => {
   const [waiting, setWaiting] = useState(false);
   const [paired, setPaired] = useState(false);
   const { addToast } = useToastStore();
+  const { subscribe } = useWebSocketContext();
 
   useEffect(() => {
     loadActivations();
@@ -29,6 +31,30 @@ export const KioskActivationPage: React.FC = () => {
     const interval = setInterval(loadActivations, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    subscribe('kiosks');
+    const handler = (e: any) => {
+      try {
+        const msg = typeof e?.detail === 'object' ? e.detail : e;
+        const type = msg?.type || msg?.data?.type;
+        const data = msg?.data || msg;
+        if ((type === 'kiosk_activated' || type === 'kiosk_check_in') && waiting) {
+          if (!kioskId || data.kioskId === kioskId || latestActivation) {
+            setPaired(true);
+            setWaiting(false);
+          }
+        }
+      } catch {}
+    };
+    // Assuming useWebSocket emits window events; if not, adapt to your hook’s onMessage handler
+    window.addEventListener('realtime_update', handler as any);
+    window.addEventListener('data_update', handler as any);
+    return () => {
+      window.removeEventListener('realtime_update', handler as any);
+      window.removeEventListener('data_update', handler as any);
+    };
+  }, [waiting, kioskId, latestActivation]);
 
   const loadSystems = async () => {
     try {

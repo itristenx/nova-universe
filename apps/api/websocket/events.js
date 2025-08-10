@@ -64,6 +64,31 @@ export class WebSocketManager {
       });
     });
 
+    events.on('kiosk-activated', (data) => {
+      this.broadcastToSubscribers('kiosks', {
+        type: 'kiosk_activated',
+        data,
+        timestamp: new Date().toISOString()
+      });
+      this.broadcastToRoom('admin', {
+        type: 'notification',
+        data: {
+          title: 'Kiosk Paired',
+          message: `Kiosk ${data.kioskId} paired successfully`,
+          level: 'success',
+          timestamp: new Date().toISOString()
+        }
+      });
+    });
+
+    events.on('kiosk_check_in', (data) => {
+      this.broadcastToSubscribers('kiosks', {
+        type: 'kiosk_check_in',
+        data,
+        timestamp: new Date().toISOString()
+      });
+    });
+
     events.on('kiosk-offline', (kioskData) => {
       this.broadcastToSubscribers('kiosks', {
         type: 'kiosk_offline',
