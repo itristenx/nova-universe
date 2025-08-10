@@ -33,6 +33,7 @@ const KnowledgeListPage = React.lazy(() => import('@/pages/knowledge/KnowledgeLi
 const KnowledgeDetailPage = React.lazy(() => import('@/pages/knowledge/KnowledgeDetailPage').then(m => ({ default: m.default }))); 
 const KnowledgeEditPage = React.lazy(() => import('@/pages/knowledge/KnowledgeEditPage').then(m => ({ default: m.default })));
 const APIDocumentationPage = React.lazy(() => import('@/pages/APIDocumentationPage').then(m => ({ default: m.default })));
+const User360Page = React.lazy(() => import('@/pages/User360Page').then(m => ({ default: m.default })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -184,6 +185,14 @@ const AppRoutes: React.FC = () => {
           element={
             <React.Suspense fallback={<div>Loading...</div>}>
               <IntegrationsPage />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path="user360"
+          element={
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <User360Page />
             </React.Suspense>
           }
         />

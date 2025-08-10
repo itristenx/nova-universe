@@ -1362,6 +1362,31 @@ class ApiClient {
     const response = await this.client.delete<ApiResponse>(`/api/v1/api-keys/${key}`);
     return response.data;
   }
+
+  // Helix: Slack linking
+  async getSlackLinkStatus(): Promise<{ success: boolean; linked: boolean; account: any | null }> {
+    if (this.useMockMode) {
+      return this.mockRequest({ success: true, linked: false, account: null });
+    }
+    const response = await this.client.get('/api/v1/helix/link/slack');
+    return response.data;
+  }
+
+  async linkSlackAccount(payload: { slackUserId: string; slackTeamId?: string; slackUsername?: string }): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ success: true, message: 'Slack account linked (mock)' });
+    }
+    const response = await this.client.post<ApiResponse>('/api/v1/helix/link/slack', payload);
+    return response.data;
+  }
+
+  async unlinkSlackAccount(): Promise<ApiResponse> {
+    if (this.useMockMode) {
+      return this.mockRequest({ success: true, message: 'Slack account unlinked (mock)' });
+    }
+    const response = await this.client.delete<ApiResponse>('/api/v1/helix/link/slack');
+    return response.data;
+  }
 }
 
 export const api = new ApiClient();
