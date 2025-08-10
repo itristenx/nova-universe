@@ -158,8 +158,32 @@ export function configureOIDC() {
     logger.info('OIDC configuration skipped - environment variables not set');
     return;
   }
-  // Placeholder for real passport-oidc strategy
-  logger.info('OIDC provider configured', { issuer: process.env.OIDC_ISSUER });
+}
+
+// Implement minimal SAML strategy wiring using @node-saml/passport-saml if configured
+export function configureSAMLSecondary(app) {
+  if (!process.env.SAML_ENTRY_POINT || !process.env.SAML_ISSUER || !process.env.SAML_CALLBACK_URL) {
+    return; // Not configured
+  }
+
+  const strategy = new SamlStrategy({
+    entryPoint: process.env.SAML_ENTRY_POINT,
+    issuer: process.env.SAML_ISSUER,
+    callbackUrl: process.env.SAML_CALLBACK_URL,
+    cert: process.env.SAML_CERT || undefined,
+    identifierFormat: null,
+    disableRequestedAuthnContext: true
+  }, (profile, done) => {
+    const user = {
+      id: profile.nameID,
+      email: profile.email || profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+      name: profile.displayName || profile.cn || profile.commonName || profile.nameID
+    };
+    done(null, user);
+  });
+
+  passport.use('saml', strategy);
+  app.use(passport.initialize());
 }
 
 /**

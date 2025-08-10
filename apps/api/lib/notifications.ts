@@ -103,9 +103,46 @@ class NotificationService {
    * Get subscriptions that should receive this notification
    */
   private async getRelevantSubscriptions(event: NotificationEvent): Promise<NotificationSubscription[]> {
-    // This would query the database for relevant subscriptions
-    // For now, return empty array as placeholder
-    return [];
+    try {
+      const { default: db } = await import('../db.js');
+      const conditions: string[] = ['tenant_id = $1', 'verified = true'];
+      const params: any[] = [event.tenant_id];
+      let idx = 2;
+
+      if (event.monitor_id) {
+        conditions.push('($' + idx + ' = ANY(monitors) OR monitors IS NULL)');
+        params.push(event.monitor_id);
+        idx++;
+      }
+
+      if (event.type) {
+        conditions.push('($' + idx + ' = ANY(incident_types) OR incident_types IS NULL)');
+        params.push(event.type);
+        idx++;
+      }
+
+      const query = `
+        SELECT id, tenant_id, user_id, email, phone, channels, monitors, incident_types, maintenance_notifications, verified
+        FROM monitor_subscriptions
+        WHERE ${conditions.join(' AND ')}
+      `;
+      const result = await db.query(query, params);
+      return (result.rows || []).map((row: any) => ({
+        id: row.id,
+        tenant_id: row.tenant_id,
+        user_id: row.user_id,
+        email: row.email,
+        phone: row.phone,
+        channels: row.channels,
+        monitors: row.monitors || [],
+        incident_types: row.incident_types || [],
+        maintenance_notifications: row.maintenance_notifications || false,
+        verified: row.verified
+      }));
+    } catch (error: any) {
+      logger.warn(`Failed to load subscriptions: ${error.message}`);
+      return [];
+    }
   }
 
   /**

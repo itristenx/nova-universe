@@ -744,7 +744,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/tneibarger/Documents/GitHub/nova-universe/prisma/generated/core",
+      "value": "/Users/tneibarger/nova-universe/prisma/generated/core",
       "fromEnvVar": null
     },
     "config": {
@@ -758,7 +758,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/tneibarger/Documents/GitHub/nova-universe/prisma/core/schema.prisma",
+    "sourceFilePath": "/Users/tneibarger/nova-universe/prisma/core/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -772,6 +772,7 @@ const config = {
     "core_db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "core_db": {
       "url": {

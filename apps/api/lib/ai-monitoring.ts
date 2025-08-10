@@ -847,15 +847,53 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   }
 
   private async calculateBiasScore(testData: any[], protectedAttribute: string): Promise<number> {
-    // Simplified bias calculation
-    // In reality, this would use statistical tests for demographic parity, etc.
-    return Math.random() * 0.5; // Placeholder
+    // Demographic parity difference (absolute)
+    if (!Array.isArray(testData) || testData.length === 0) return 0;
+    const groups = new Map<string, { positives: number; total: number }>();
+    for (const row of testData) {
+      const group = String(row[protectedAttribute] ?? 'unknown');
+      const bucket = groups.get(group) || { positives: 0, total: 0 };
+      bucket.total += 1;
+      if (row.prediction === 1 || row.prediction === true) bucket.positives += 1;
+      groups.set(group, bucket);
+    }
+    const rates = Array.from(groups.values()).map(g => (g.total ? g.positives / g.total : 0));
+    const max = Math.max(...rates);
+    const min = Math.min(...rates);
+    return Math.abs(max - min); // 0..1 (0 is best)
   }
 
   private async calculateDriftScore(currentData: any[], baselineData: any[]): Promise<number> {
-    // Simplified drift calculation
-    // In reality, this would use KS test, PSI, etc.
-    return Math.random() * 0.6; // Placeholder
+    // Population Stability Index (PSI) for a single numeric feature if available
+    if (!Array.isArray(currentData) || !Array.isArray(baselineData) || currentData.length === 0 || baselineData.length === 0) {
+      return 0;
+    }
+    const feature = Object.keys(currentData[0]).find(k => typeof currentData[0][k] === 'number');
+    if (!feature) return 0;
+    const bins = 10;
+    const all = [...currentData, ...baselineData].map(r => r[feature] as number).filter(n => Number.isFinite(n));
+    if (all.length === 0) return 0;
+    const min = Math.min(...all);
+    const max = Math.max(...all);
+    const width = (max - min) / bins || 1;
+    const dist = (arr: number[]) => {
+      const counts = new Array(bins).fill(0);
+      for (const v of arr) {
+        const idx = Math.min(bins - 1, Math.max(0, Math.floor((v - min) / width)));
+        counts[idx] += 1;
+      }
+      const total = counts.reduce((a, b) => a + b, 0) || 1;
+      return counts.map(c => c / total);
+    };
+    const p = dist(baselineData.map(r => r[feature] as number).filter(n => Number.isFinite(n)));
+    const q = dist(currentData.map(r => r[feature] as number).filter(n => Number.isFinite(n)));
+    let psi = 0;
+    for (let i = 0; i < bins; i++) {
+      const pi = Math.max(p[i], 1e-6);
+      const qi = Math.max(q[i], 1e-6);
+      psi += (qi - pi) * Math.log(qi / pi);
+    }
+    return Math.abs(psi); // Typical thresholds: <0.1 small, 0.1-0.25 moderate, >0.25 major drift
   }
 
   private async generateModelExplanation(model: string, prediction: any, inputData: any): Promise<ExplainabilityReport['explanation']> {

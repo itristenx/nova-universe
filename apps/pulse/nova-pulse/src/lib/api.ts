@@ -79,3 +79,34 @@ export const getQueueAlerts = async (active = true) => {
   const { data } = await client.get<{ success: boolean; alerts: QueueAlert[] }>('/queues/alerts', { params: { active } })
   return data.alerts
 }
+
+// CMDB API functions
+export const getCmdbItems = async (params?: Record<string, string | number>) => {
+  const { data } = await client.get<{ success: boolean; data: any[]; pagination: any }>('/cmdb', { params })
+  return data
+}
+
+export const getCiTypes = async () => {
+  const { data } = await client.get<{ success: boolean; data: any[] }>('/cmdb/types')
+  return data.data
+}
+
+export const createCi = async (ciData: any) => {
+  const { data } = await client.post('/cmdb', ciData)
+  return data
+}
+
+export const updateCi = async (id: string, ciData: any) => {
+  const { data } = await client.put(`/cmdb/${id}`, ciData)
+  return data
+}
+
+export const deleteCi = async (id: string) => {
+  const { data } = await client.delete(`/cmdb/${id}`)
+  return data
+}
+
+export const getCmdbHealth = async () => {
+  const { data } = await client.get<{ success: boolean; data: any }>('/cmdb/health')
+  return data.data
+}

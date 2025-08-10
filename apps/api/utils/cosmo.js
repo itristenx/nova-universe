@@ -1908,12 +1908,23 @@ async function getSystemStatus(component) {
 }
 
 async function executeWorkflow(workflowId, parameters, context) {
-  // Placeholder for workflow execution
-  return {
-    workflowId,
-    status: 'completed',
-    summary: `Workflow ${workflowId} executed with parameters: ${JSON.stringify(parameters)}`
-  };
+  try {
+    const id = uuidv4();
+    const startedAt = new Date().toISOString();
+    await db.run(`
+      INSERT INTO workflow_executions (id, workflow_id, parameters, status, created_by, created_at)
+      VALUES (?, ?, ?, 'running', ?, ?)
+    `, [id, workflowId, JSON.stringify(parameters || {}), context?.userId || 'system', startedAt]);
+
+    // Simulate execution; in production this would enqueue a background worker
+    setImmediate(async () => {
+      await db.run(`UPDATE workflow_executions SET status = 'completed', finished_at = ? WHERE id = ?`, [new Date().toISOString(), id]);
+    });
+
+    return { workflowId, executionId: id, status: 'running', queuedAt: startedAt };
+  } catch (error) {
+    return { workflowId, status: 'failed', error: error.message };
+  }
 }
 
 async function storeConversationInDatabase(conversation) {

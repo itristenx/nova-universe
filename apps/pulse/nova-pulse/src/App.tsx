@@ -12,6 +12,8 @@ import SentinelDashboard from './components/monitoring/SentinelDashboard'
 import GoAlertDashboard from './components/goalert/GoAlertDashboard'
 import { InventoryPage } from './pages/InventoryPage'
 import { LeaderboardPage } from './pages/LeaderboardPage'
+import { CmdbPage } from './pages/CmdbPage'
+import SupportGroupsPage from './pages/SupportGroupsPage'
 // Enhanced ticket management components
 import { EnhancedTicketGrid } from './components/enhanced/EnhancedTicketGrid'
 import { EnhancedDeepWorkPage } from './components/enhanced/EnhancedDeepWorkPage'
@@ -78,6 +80,8 @@ const App: React.FC = () => (
             <Route path="/monitoring" element={<SentinelDashboard />} />
             <Route path="/goalert" element={<GoAlertDashboard />} />
             <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/cmdb" element={<CmdbPage />} />
+            <Route path="/support-groups" element={<SupportGroupsPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/gamification" element={<GamificationPage />} />
             <Route path="/kiosks/details" element={<KioskDetailsPage />} />

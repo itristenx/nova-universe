@@ -24,6 +24,8 @@
     "prisma:generate:core": "prisma generate --schema prisma/core/schema.prisma",
     "prisma:generate:auth": "prisma generate --schema prisma/auth/schema.prisma",
     "prisma:generate:audit": "prisma generate --schema prisma/audit/schema.prisma",
+    "prisma:generate:cmdb": "prisma generate --schema prisma/cmdb/schema.prisma",
+    "prisma:generate:all": "npm run prisma:generate:core && npm run prisma:generate:auth && npm run prisma:generate:audit && npm run prisma:generate:cmdb",
     "setup": "./setup.sh",
     "teardown": "./teardown.sh",
     "teardown:restart": "./teardown.sh --restart",

@@ -380,14 +380,17 @@ router.post('/providers/:providerId/health', authenticateJWT, async (req, res) =
   try {
     const { providerId } = req.params;
     
-    // This would trigger a health check for the specific provider
-    // For now, return a placeholder response
-    res.json({
-      providerId,
-      status: 'healthy',
-      checkedAt: new Date().toISOString(),
-      responseTime: Math.floor(Math.random() * 1000) + 100
-    });
+    // Trigger a provider health check via AI Monitoring system if available
+    try {
+      const { aiMonitoringSystem } = await import('../lib/ai-monitoring.js');
+      if (aiMonitoringSystem?.checkProviderHealth) {
+        const result = await aiMonitoringSystem.checkProviderHealth(providerId);
+        return res.json({ providerId, ...result, checkedAt: new Date().toISOString() });
+      }
+    } catch {}
+
+    // Fallback response
+    res.json({ providerId, status: 'unknown', checkedAt: new Date().toISOString() });
   } catch (error) {
     logger.error('Provider health check error:', error);
     res.status(500).json({ error: 'Health check failed' });

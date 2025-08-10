@@ -170,3 +170,57 @@ export const validateTicketSubmission = (req, res, next) => {
   
   next();
 };
+
+/**
+ * Kiosk authentication validation middleware
+ */
+export const validateKioskAuth = (req, res, next) => {
+  // Kiosk authentication logic
+  const kioskToken = req.headers['x-kiosk-token'] || req.query.kioskToken;
+  
+  if (!kioskToken) {
+    return res.status(401).json({ 
+      error: 'Kiosk authentication required', 
+      errorCode: 'MISSING_KIOSK_TOKEN' 
+    });
+  }
+
+  // Basic token validation (extend as needed)
+  if (kioskToken.length < 10) {
+    return res.status(401).json({ 
+      error: 'Invalid kiosk token', 
+      errorCode: 'INVALID_KIOSK_TOKEN' 
+    });
+  }
+
+  // Add kiosk info to request
+  req.kiosk = {
+    token: kioskToken,
+    authenticated: true
+  };
+
+  next();
+};
+
+/**
+ * Generic request validation middleware
+ */
+export const validateRequest = (req, res, next) => {
+  // Generic validation logic
+  const errors = [];
+
+  // Check for common validation requirements
+  if (req.body && typeof req.body !== 'object') {
+    errors.push('Invalid request body format');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({ 
+      error: 'Validation failed', 
+      details: errors,
+      errorCode: 'VALIDATION_FAILED' 
+    });
+  }
+
+  next();
+};

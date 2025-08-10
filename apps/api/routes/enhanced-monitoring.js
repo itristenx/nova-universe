@@ -10,6 +10,7 @@ import { extendedMonitorService } from '../lib/extended-monitors.js';
 import { advancedFeaturesService } from '../lib/advanced-features.js';
 import { statusPageService } from '../lib/enhanced-status-pages.js';
 import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
@@ -844,7 +845,32 @@ router.post('/status/:slug/subscribe', async (req, res) => {
         verified = false
     `, [statusPageId, email, verificationToken]);
 
-    // TODO: Send verification email
+    // Send verification email (non-blocking)
+    try {
+      const transport = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587', 10),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: process.env.SMTP_USER && process.env.SMTP_PASS ? {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        } : undefined
+      });
+
+      const publicUrl = process.env.PUBLIC_URL || 'http://localhost:3000';
+      const verifyUrl = `${publicUrl}/status/${slug}/verify?token=${verificationToken}`;
+
+      await transport.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER || 'no-reply@nova.universe',
+        to: email,
+        subject: 'Verify your Nova Status Page subscription',
+        text: `Please verify your subscription by visiting: ${verifyUrl}`,
+        html: `<p>Please verify your subscription by clicking the link below:</p><p><a href="${verifyUrl}">Verify Subscription</a></p>`
+      });
+    } catch (mailErr) {
+      logger.warn('Subscription verification email failed to send', { error: mailErr.message });
+      // continue without failing the request
+    }
 
     res.json({
       success: true,

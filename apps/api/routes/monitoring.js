@@ -480,8 +480,24 @@ router.post('/monitors', authenticateJWT, async (req, res) => {
 
     const monitor = result.rows[0];
 
-    // TODO: Create corresponding Uptime Kuma monitor via API
-    // await createKumaMonitor(monitor);
+    // Create corresponding Uptime Kuma monitor via API (best-effort)
+    try {
+      const { kumaClient } = await import('../lib/uptime-kuma.js');
+      const kuma = await kumaClient.createMonitor({
+        name: monitor.name,
+        type: monitor.type,
+        url: monitor.url,
+        hostname: monitor.hostname,
+        port: monitor.port,
+        interval: monitor.interval_seconds,
+        timeout: monitor.timeout_seconds,
+        active: monitor.status !== 'disabled'
+      });
+      // persist kuma_id
+      await db.query('UPDATE monitors SET kuma_id = $1 WHERE id = $2', [kuma.id, monitor.id]);
+    } catch (e) {
+      logger.warn('Failed to create Kuma monitor (non-blocking)', { error: e.message, monitorId: monitor.id });
+    }
 
     logger.info('Monitor created', { 
       monitorId: monitor.id, 
@@ -618,8 +634,25 @@ router.patch('/monitors/:id', authenticateJWT, async (req, res) => {
       return res.status(404).json({ error: 'Monitor not found' });
     }
 
-    // TODO: Update corresponding Uptime Kuma monitor
-    // await updateKumaMonitor(result.rows[0]);
+    // Update corresponding Uptime Kuma monitor
+    try {
+      const updated = result.rows[0];
+      if (updated.kuma_id) {
+        const { kumaClient } = await import('../lib/uptime-kuma.js');
+        await kumaClient.updateMonitor(updated.kuma_id, {
+          name: updated.name,
+          type: updated.type,
+          url: updated.url,
+          hostname: updated.hostname,
+          port: updated.port,
+          interval: updated.interval_seconds,
+          timeout: updated.timeout_seconds,
+          active: updated.status !== 'disabled'
+        });
+      }
+    } catch (e) {
+      logger.warn('Failed to update Kuma monitor (non-blocking)', { error: e.message, monitorId: id });
+    }
 
     logger.info('Monitor updated', { 
       monitorId: id, 
@@ -649,14 +682,22 @@ router.delete('/monitors/:id', authenticateJWT, async (req, res) => {
     const { id } = req.params;
     const user = req.user;
 
-    const result = await db.query('DELETE FROM monitors WHERE id = $1 RETURNING name', [id]);
+    const result = await db.query('DELETE FROM monitors WHERE id = $1 RETURNING name, kuma_id', [id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
     }
 
-    // TODO: Delete corresponding Uptime Kuma monitor
-    // await deleteKumaMonitor(id);
+    // Delete corresponding Uptime Kuma monitor
+    try {
+      const kumaId = result.rows[0].kuma_id;
+      if (kumaId) {
+        const { kumaClient } = await import('../lib/uptime-kuma.js');
+        await kumaClient.deleteMonitor(kumaId);
+      }
+    } catch (e) {
+      logger.warn('Failed to delete Kuma monitor (non-blocking)', { error: e.message, monitorId: id });
+    }
 
     logger.info('Monitor deleted', { 
       monitorId: id, 
@@ -747,10 +788,10 @@ router.post('/events', async (req, res) => {
     const { monitor, heartbeat, msg } = req.body;
     const signature = req.headers['x-uptime-kuma-signature'];
 
-    // TODO: Verify webhook signature
-    // if (!verifyWebhookSignature(req.body, signature)) {
-    //   return res.status(401).json({ error: 'Invalid signature' });
-    // }
+    // Verify webhook signature if a secret is configured
+    if (!verifyWebhookSignature(req.body, signature)) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
 
     // Process the event
     await processKumaEvent({
@@ -829,7 +870,11 @@ router.post('/subscribe', authenticateJWT, async (req, res) => {
 router.get('/history/:id', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
-    const { period = '7d', granularity = 'hour' } = req.query;
+    const { period = '7d' } = req.query;
+    // Whitelist granularity to prevent SQL injection via date_trunc
+    const rawGranularity = (req.query.granularity || 'hour').toString();
+    const allowedGranularity = new Set(['hour', 'day']);
+    const granularity = allowedGranularity.has(rawGranularity) ? rawGranularity : 'hour';
 
     let interval;
     let timeRange;
@@ -969,6 +1014,38 @@ async function processKumaEvent(event) {
 }
 
 /**
+ * Verify HMAC-SHA256 signature for Uptime Kuma webhooks
+ * Accepts hex-encoded signatures. If no secret configured, reject.
+ */
+function verifyWebhookSignature(payload, signatureHeader) {
+  try {
+    const secret = process.env.SENTINEL_WEBHOOK_SECRET || process.env.KUMA_WEBHOOK_SECRET;
+    if (!secret) {
+      // No secret configured → reject to avoid accepting unsigned requests in production
+      return false;
+    }
+
+    if (!signatureHeader || typeof signatureHeader !== 'string') {
+      return false;
+    }
+
+    const bodyString = typeof payload === 'string' ? payload : JSON.stringify(payload);
+    const expected = crypto
+      .createHmac('sha256', secret)
+      .update(bodyString)
+      .digest('hex');
+
+    const sig = Buffer.from(signatureHeader, 'utf8');
+    const exp = Buffer.from(expected, 'utf8');
+    if (sig.length !== exp.length) return false;
+    return crypto.timingSafeEqual(sig, exp);
+  } catch (e) {
+    logger.warn('Webhook signature verification error', { error: e.message });
+    return false;
+  }
+}
+
+/**
  * Handle service down event
  */
 async function handleServiceDown(monitor, heartbeat, message) {
@@ -1047,9 +1124,9 @@ async function handleServiceRecovered(monitor, heartbeat) {
 
       const resolved = result.rows;
 
-      if (req?.app?.wsManager && resolved.length > 0) {
+      if (globalThis.app?.wsManager && resolved.length > 0) {
         try {
-          req.app.wsManager.broadcastToSubscribers('system_status', {
+          globalThis.app.wsManager.broadcastToSubscribers('system_status', {
             type: 'sentinel_incident_resolved',
             data: { monitorId: monitor.id, count: resolved.length },
             timestamp: new Date().toISOString()
@@ -1061,6 +1138,34 @@ async function handleServiceRecovered(monitor, heartbeat) {
         monitor_id: monitor.id,
         resolved_count: resolved.length,
       });
+
+      // Send recovery notifications
+      try {
+        const { notificationService } = await import('../lib/notifications.js');
+        await notificationService.sendNotification({
+          type: 'incident_resolved',
+          monitor_id: monitor.id,
+          incident_id: resolved?.[0]?.id,
+          tenant_id: monitor.tenant_id || 'default',
+          severity: 'low',
+          title: `Service recovered: ${monitor.name}`,
+          message: `Monitor ${monitor.name} has recovered at ${new Date(heartbeat.time).toISOString()}.`,
+          data: { monitor, heartbeat }
+        });
+      } catch (notifyErr) {
+        logger.warn('Failed to send recovery notifications', { error: notifyErr.message });
+      }
+
+      // Update Orbit banners via WebSocket broadcast (best-effort)
+      try {
+        if (globalThis.app?.wsManager) {
+          globalThis.app.wsManager.broadcastToSubscribers('system_status', {
+            type: 'service_recovered',
+            data: { monitorId: monitor.id, name: monitor.name },
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch {}
 
       logger.info('Incident auto-resolved', { monitorId: monitor.id });
     }
@@ -1090,21 +1195,29 @@ function determineSeverity(monitor, heartbeat) {
  * Generate AI-enhanced incident summary
  */
 async function generateIncidentSummary(monitor, heartbeat, message) {
-  // TODO: Integrate with Nova Synth for AI-generated summaries
-  // For now, return a basic summary
-  return `${monitor.name} is currently experiencing issues. ${heartbeat.msg || 'Service appears to be down.'}`;
-}
-
-/**
- * Get configuration value with fallback
- */
-async function getConfigValue(key, defaultValue) {
+  // Attempt AI-generated summary via Nova Synth MCP
   try {
-    const result = await db.query('SELECT value FROM config WHERE key = $1', [key]);
-    return result.rows.length > 0 ? result.rows[0].value : defaultValue;
-  } catch (error) {
-    logger.error('Failed to get config value', { key, error: error.message });
-    return defaultValue;
+    const { initializeMCPServer } = await import('../utils/cosmo.js');
+    const mcp = await initializeMCPServer();
+    const analysis = await mcp.callTool('nova.alerts.analyze', {
+      userId: monitor.updated_by || monitor.created_by || 'system',
+      module: 'pulse',
+      userRole: 'technician',
+      context: {
+        ticketId: null,
+        priority: 'high',
+        affectedUsers: 0,
+        serviceCategory: monitor.type,
+        keywords: ['outage', 'down']
+      },
+      message: `Monitor ${monitor.name} is ${heartbeat.status === 1 ? 'up' : 'down'}.
+Reason: ${heartbeat.msg || message || 'Unknown'}`
+    });
+    const parsed = JSON.parse(analysis.content?.[0]?.text || '{}');
+    return parsed.reasoning || `Incident detected on ${monitor.name}: ${heartbeat.msg || 'Service appears to be down.'}`;
+  } catch (e) {
+    // Fallback to basic summary
+    return `${monitor.name} is currently experiencing issues. ${heartbeat.msg || 'Service appears to be down.'}`;
   }
 }
 
@@ -1213,22 +1326,26 @@ router.get('/status/:tenant', async (req, res) => {
       show_incident_history_days: 30
     };
     
-    // Get monitors and their status
+    // Get monitors and their status (with groups)
     const monitorsResult = await db.query(`
       SELECT 
-        id,
-        name,
-        type,
-        status,
-        uptime_24h,
-        uptime_7d,
-        uptime_30d,
-        avg_response_time,
-        last_check,
-        description
-      FROM monitors 
-      WHERE tenant_id = $1 AND deleted_at IS NULL AND status != 'disabled'
-      ORDER BY name ASC
+        m.id,
+        m.name,
+        m.type,
+        m.status,
+        m.uptime_24h,
+        m.uptime_7d,
+        m.uptime_30d,
+        m.avg_response_time,
+        m.last_check,
+        m.description,
+        mg.id as group_id,
+        mg.name as group_name
+      FROM monitors m
+      LEFT JOIN monitor_group_members mgm ON m.id = mgm.monitor_id
+      LEFT JOIN monitor_groups mg ON mgm.group_id = mg.id
+      WHERE m.tenant_id = $1 AND m.deleted_at IS NULL AND m.status != 'disabled'
+      ORDER BY m.name ASC
     `, [tenantId]);
     
     // Get active incidents
@@ -1264,10 +1381,21 @@ router.get('/status/:tenant', async (req, res) => {
       overallStatus = 'maintenance';
     }
     
+    // Build service groups
+    const groupsMap = new Map();
+    for (const m of monitors) {
+      if (m.group_id && m.group_name) {
+        if (!groupsMap.has(m.group_id)) {
+          groupsMap.set(m.group_id, { id: m.group_id, name: m.group_name, services: [] });
+        }
+        groupsMap.get(m.group_id).services.push(m.id);
+      }
+    }
+
     res.json({
       config,
       services: monitors,
-      groups: [], // TODO: Implement service groups
+      groups: Array.from(groupsMap.values()),
       active_incidents: incidentsResult.rows,
       maintenance_windows: maintenanceResult.rows,
       overall_status: overallStatus,
@@ -1333,8 +1461,6 @@ async function getConfigValue(key, defaultValue) {
     return defaultValue;
   }
 }
-<<<<<<< Current (Your changes)
-=======
 
 /**
  * Create incident manually from Pulse UI
@@ -1388,4 +1514,3 @@ router.post('/monitor-incident', authenticateJWT, audit('sentinel.incident.creat
     res.status(500).json({ error: 'Failed to create incident' });
   }
 });
->>>>>>> Incoming (Background Agent changes)

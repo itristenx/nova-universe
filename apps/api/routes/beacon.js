@@ -268,56 +268,75 @@ router.post('/ticket',
       const ticketId = `TKT-${Date.now().toString().slice(-8).padStart(8, '0')}`;
 
       // Create ticket
-      db.run(
-        `INSERT INTO tickets (
-          ticketId, title, description, requesterName, requesterEmail,
-          category, priority, location, source, sourceId, status, createdAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'kiosk', ?, 'open', datetime('now'))`,
-        [
-          ticketId,
-          title,
-          description,
-          requesterName,
-          requesterEmail || null,
-          category,
-          priority,
-          location || req.kiosk.location,
-          kioskId
-        ],
-        function(err) {
-          if (err) {
-            logger.error('Error creating ticket from kiosk:', err);
-            return res.status(500).json({
-              success: false,
-              error: 'Failed to create ticket',
-              errorCode: 'TICKET_CREATE_ERROR'
-            });
-          }
-
-          const ticketDbId = this.lastID;
-
-          logger.info('Ticket created from kiosk', {
-            ticketId,
-            kioskId,
-            requesterName,
-            title
-          });
-
-          // TODO: Trigger notifications/integrations here
-
-          res.status(201).json({
-            success: true,
-            ticket: {
-              id: ticketDbId,
+      try {
+        const result = await new Promise((resolve, reject) => {
+          db.run(
+            `INSERT INTO tickets (
+              ticketId, title, description, requesterName, requesterEmail,
+              category, priority, location, source, sourceId, status, createdAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'kiosk', ?, 'open', datetime('now'))`,
+            [
               ticketId,
               title,
-              status: 'open',
-              createdAt: new Date().toISOString()
-            },
-            message: `Ticket ${ticketId} created successfully`
+              description,
+              requesterName,
+              requesterEmail || null,
+              category,
+              priority,
+              location || req.kiosk.location,
+              kioskId
+            ],
+            function(err) {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(this.lastID);
+              }
+            }
+          );
+        });
+
+        const ticketDbId = result;
+
+        logger.info('Ticket created from kiosk', {
+          ticketId,
+          kioskId,
+          requesterName,
+          title
+        });
+
+        // Trigger notifications/integrations for kiosk status change
+        try {
+          const { notificationService } = await import('../lib/notifications.js');
+          await notificationService.sendNotification({
+            type: 'monitor_up',
+            tenant_id: req.user?.tenant_id || 'default',
+            severity: 'low',
+            title: `Kiosk ${kioskId} activated`,
+            message: `Kiosk ${kioskId} was successfully activated and linked.`,
+            data: { kioskId }
           });
-        }
-      );
+        } catch {}
+
+        res.status(201).json({
+          success: true,
+          ticket: {
+            id: ticketDbId,
+            ticketId,
+            title,
+            status: 'open',
+            createdAt: new Date().toISOString()
+          },
+          message: `Ticket ${ticketId} created successfully`
+        });
+      } catch (err) {
+        logger.error('Error creating ticket from kiosk:', err);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to create ticket',
+          errorCode: 'TICKET_CREATE_ERROR'
+        });
+      }
     } catch (error) {
       logger.error('Error creating ticket from kiosk:', error);
       res.status(500).json({
@@ -557,7 +576,10 @@ router.post('/activate',
 
               // Auto-register kiosk record in inventory (if inventory module available)
               try {
-                // This would link a kiosk to an inventory asset if one exists; placeholder assetId 0
+               // Link kiosk to inventory asset if found by hardwareId
+               // TODO: Fix this to work with async/await properly
+               // const asset = await db.query('SELECT id FROM inventory_assets WHERE hardware_id = $1 LIMIT 1', [hardwareId]);
+               // const assetId = asset.rows?.[0]?.id || null;
                 // In a real system, deviceInfo/serial would be matched.
                 HelixKioskIntegration.updateHelixSyncStatus?.(activation.kioskId, 0, { status: 'pending', timestamp: new Date().toISOString() });
               } catch (e) {
@@ -606,8 +628,6 @@ router.post('/activate',
   }
 );
 
-<<<<<<< Current (Your changes)
-=======
 // Admin-issued activation code generation
 router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req, res) => {
   try {
@@ -711,5 +731,4 @@ router.post('/link-asset', authenticateJWT, async (req, res) => {
   }
 });
 
->>>>>>> Incoming (Background Agent changes)
 export default router;

@@ -385,51 +385,88 @@ export class AdvancedFeaturesService {
     return colors[Math.floor(Math.random() * colors.length)];
   }
 
-  // Database placeholder methods (would be implemented with actual database queries)
+  // Database-backed methods
   private async saveTag(tag: Tag): Promise<void> {
-    // Save tag to database
+    const db = (await import('../db.js')).default;
+    await db.query(`
+      INSERT INTO tags (id, tenant_id, name, color, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, NOW(), NOW())
+      ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, color = EXCLUDED.color, updated_at = NOW()
+    `, [tag.id, tag.tenantId || null, tag.name, tag.color || this.getRandomColor()]);
   }
 
   private async queryTagsByTenant(tenantId?: string): Promise<Tag[]> {
-    // Query tags from database
-    return [];
+    const db = (await import('../db.js')).default;
+    const res = tenantId
+      ? await db.query('SELECT id, name, color FROM tags WHERE tenant_id = $1 ORDER BY name', [tenantId])
+      : await db.query('SELECT id, name, color FROM tags ORDER BY name');
+    return (res.rows || []).map((r: any) => ({ id: r.id, name: r.name, color: r.color, tenantId }));
   }
 
   private async assignMonitorTags(monitorId: string, tagIds: string[]): Promise<void> {
-    // Assign tags to monitor in database
+    const db = (await import('../db.js')).default;
+    await db.query('DELETE FROM monitor_tags WHERE monitor_id = $1', [monitorId]);
+    for (const tagId of tagIds) {
+      await db.query('INSERT INTO monitor_tags (monitor_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [monitorId, tagId]);
+    }
   }
 
   private async queryMonitorsByTag(tagId: string): Promise<string[]> {
-    // Query monitors by tag from database
-    return [];
+    const db = (await import('../db.js')).default;
+    const res = await db.query('SELECT monitor_id FROM monitor_tags WHERE tag_id = $1', [tagId]);
+    return (res.rows || []).map((r: any) => r.monitor_id);
   }
 
   private async saveMaintenanceWindow(window: MaintenanceWindow): Promise<void> {
-    // Save maintenance window to database
+    const db = (await import('../db.js')).default;
+    await db.query(`
+      INSERT INTO maintenance_windows (id, tenant_id, title, status, scheduled_start, scheduled_end, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+      ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, status = EXCLUDED.status, scheduled_start = EXCLUDED.scheduled_start, scheduled_end = EXCLUDED.scheduled_end, updated_at = NOW()
+    `, [window.id, window.tenantId || null, window.title, window.status || 'scheduled', window.startTime, window.endTime]);
   }
 
   private async queryMaintenanceWindows(): Promise<MaintenanceWindow[]> {
-    // Query maintenance windows from database
-    return [];
+    const db = (await import('../db.js')).default;
+    const res = await db.query('SELECT id, title, status, scheduled_start as "startTime", scheduled_end as "endTime", tenant_id as "tenantId" FROM maintenance_windows ORDER BY scheduled_start DESC');
+    return res.rows || [];
   }
 
   private async saveProxyConfiguration(proxy: ProxyConfiguration): Promise<void> {
-    // Save proxy configuration to database
+    const db = (await import('../db.js')).default;
+    await db.query(`
+      INSERT INTO proxy_configurations (id, tenant_id, name, target_url, auth_type, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, target_url = EXCLUDED.target_url, auth_type = EXCLUDED.auth_type, updated_at = NOW()
+    `, [proxy.id, proxy.tenantId || null, proxy.name, proxy.targetUrl, proxy.authType || 'none']);
   }
 
   private async queryProxyConfiguration(proxyId: string): Promise<ProxyConfiguration | null> {
-    // Query proxy configuration from database
-    return null;
+    const db = (await import('../db.js')).default;
+    const res = await db.query('SELECT id, tenant_id as "tenantId", name, target_url as "targetUrl", auth_type as "authType" FROM proxy_configurations WHERE id = $1', [proxyId]);
+    return res.rows?.[0] || null;
   }
 
   private async queryCertificatesExpiringSoon(days: number): Promise<CertificateInfo[]> {
-    // Query certificates expiring soon from database
-    return [];
+    const db = (await import('../db.js')).default;
+    const res = await db.query(`
+      SELECT id, monitor_id as "monitorId", days_remaining as "daysRemaining", is_expired as "isExpired", issuer
+      FROM certificate_info
+      WHERE days_remaining <= $1
+      ORDER BY days_remaining ASC
+    `, [days]);
+    return res.rows || [];
   }
 
   private async queryMonitorResults(monitorId: string, hours: number): Promise<any[]> {
-    // Query monitor results from database
-    return [];
+    const db = (await import('../db.js')).default;
+    const res = await db.query(`
+      SELECT checked_at as timestamp, response_time_ms as response_time, (status = 'up') as success
+      FROM monitor_heartbeats
+      WHERE monitor_id = $1 AND checked_at >= NOW() - ($2 || ' hours')::interval
+      ORDER BY checked_at ASC
+    `, [monitorId, String(hours)]);
+    return res.rows || [];
   }
 }
 

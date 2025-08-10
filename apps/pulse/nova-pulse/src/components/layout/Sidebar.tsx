@@ -15,6 +15,7 @@ import {
   MagnifyingGlassIcon,
   ServerIcon,
   BellIcon,
+  CircleStackIcon,
 } from '@heroicons/react/24/outline';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -30,6 +31,7 @@ const navigation = [
   { name: 'Monitoring', href: '/monitoring', icon: ServerIcon },
   { name: 'GoAlert', href: '/goalert', icon: BellIcon },
   { name: 'Inventory', href: '/inventory', icon: CubeIcon },
+  { name: 'CMDB', href: '/cmdb', icon: CircleStackIcon },
   { name: 'Leaderboard', href: '/leaderboard', icon: TrophyIcon },
   { name: 'Gamification', href: '/gamification', icon: PlayIcon },
 ];

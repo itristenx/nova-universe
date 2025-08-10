@@ -1603,32 +1603,42 @@ export class NovaGoAlertIntegration extends EventEmitter {
   }
 
   private async createGoAlert(alert: NovaAlert): Promise<string> {
-    // Placeholder for GoAlert API call
-    return crypto.randomUUID();
+    // Create alert via Nova GoAlert proxy
+    const resp = await axios.post(`${this.goAlertProxyUrl}/alerts`, {
+      serviceID: alert.serviceId,
+      summary: alert.summary,
+      details: alert.details || ''
+    }, {
+      headers: this.getAuthHeaders()
+    });
+    return resp.data?.alert?.id || crypto.randomUUID();
   }
 
   private async acknowledgeGoAlert(goAlertId: string, userId: string): Promise<void> {
-    // Placeholder for GoAlert acknowledgment
-    logger.debug('Would acknowledge GoAlert', { goAlertId, userId });
+    await axios.post(`${this.goAlertProxyUrl}/alerts/${goAlertId}/acknowledge`, {}, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   private async closeGoAlert(goAlertId: string): Promise<void> {
-    // Placeholder for GoAlert closure
-    logger.debug('Would close GoAlert', { goAlertId });
+    await axios.post(`${this.goAlertProxyUrl}/alerts/${goAlertId}/close`, {}, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   private async getGoAlertStatus(goAlertId: string): Promise<string> {
-    // Placeholder for GoAlert status check
-    return 'active';
+    const resp = await axios.get(`${this.goAlertProxyUrl}/alerts?status=active&limit=1&offset=0`, {
+      headers: this.getAuthHeaders()
+    });
+    const found = Array.isArray(resp.data?.alerts) ? resp.data.alerts.find((a: any) => a.id === goAlertId) : undefined;
+    return found ? 'active' : 'closed';
   }
 
   private async getGoAlertOnCall(scheduleId: string): Promise<any> {
-    // Placeholder for on-call information
-    return {
-      scheduleId,
-      onCall: [],
-      nextRotation: new Date()
-    };
+    const resp = await axios.get(`${this.goAlertProxyUrl}/schedules/${scheduleId}/on-call`, {
+      headers: this.getAuthHeaders()
+    });
+    return resp.data?.onCall || [];
   }
 
   private async createAlertTicket(alert: NovaAlert): Promise<string> {

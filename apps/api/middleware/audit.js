@@ -31,9 +31,6 @@ export function audit(actionKey) {
   };
 }
 
-<<<<<<< Current (Your changes)
-module.exports = { logAudit };
-=======
 /**
  * Helper to programmatically create audit entries.
  */
@@ -61,4 +58,3 @@ function redactBody(body) {
     return undefined;
   }
 }
->>>>>>> Incoming (Background Agent changes)

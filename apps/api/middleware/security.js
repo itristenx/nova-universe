@@ -4,6 +4,7 @@
 import helmet from 'helmet';
 import cors from 'cors';
 import { logger } from '../logger.js';
+import ConfigurationManager from '../config/app-settings.js';
 
 /**
  * Configure comprehensive security headers using Helmet
@@ -221,22 +222,33 @@ export function validateApiKey(req, res, next) {
     });
   }
   
-  // TODO: Implement actual API key validation against database
-  // For now, check against environment variable
-  const validApiKey = process.env.API_KEY;
-  if (validApiKey && apiKey !== validApiKey) {
-    logger.warn('Invalid API key attempt', { 
-      providedKey: apiKey.substring(0, 8) + '...',
-      ip: req.ip
-    });
-    
-    return res.status(401).json({
-      error: 'Invalid API key',
-      errorCode: 'INVALID_API_KEY'
-    });
-  }
-  
-  next();
+  (async () => {
+    try {
+      // Prefer DB-backed keys stored via ConfigurationManager under 'apiKeys'
+      const stored = await ConfigurationManager.get('apiKeys', []);
+      const storedKeys = Array.isArray(stored) ? stored.map((k) => k.key).filter(Boolean) : [];
+
+      // Env fallback for emergency use
+      const envKey = process.env.API_KEY;
+
+      const isMatch = storedKeys.includes(apiKey) || (envKey ? apiKey === envKey : false);
+      if (!isMatch) {
+        logger.warn('Invalid API key attempt', {
+          providedKey: apiKey.substring(0, 8) + '...',
+          ip: req.ip
+        });
+        return res.status(401).json({
+          error: 'Invalid API key',
+          errorCode: 'INVALID_API_KEY'
+        });
+      }
+
+      return next();
+    } catch (e) {
+      logger.error('API key validation error', { error: e.message });
+      return res.status(500).json({ error: 'API key validation failed', errorCode: 'API_KEY_VALIDATION_ERROR' });
+    }
+  })();
 }
 
 /**
@@ -289,10 +301,45 @@ export function securityLogging(req, res, next) {
   next();
 }
 
+/**
+ * Request logging middleware
+ */
+export function requestLogger(req, res, next) {
+  const start = Date.now();
+  
+  // Log request
+  logger.info('HTTP Request', {
+    method: req.method,
+    url: req.url,
+    userAgent: req.get('User-Agent'),
+    ip: req.ip
+  });
+  
+  // Log response when finished
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    logger.info('HTTP Response', {
+      method: req.method,
+      url: req.url,
+      statusCode: res.statusCode,
+      duration: `${duration}ms`
+    });
+  });
+  
+  next();
+}
+
+/**
+ * Security headers middleware - alias for configureSecurityHeaders
+ */
+export const securityHeaders = configureSecurityHeaders;
+
 export default {
   configureSecurityHeaders,
   configureCORS,
   sanitizeInput,
   validateApiKey,
-  securityLogging
+  securityLogging,
+  requestLogger,
+  securityHeaders
 };

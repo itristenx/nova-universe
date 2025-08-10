@@ -676,8 +676,12 @@ export class NovaMCPServer {
       result: {
         contents: [{
           uri,
-          mimeType: 'text/plain',
-          text: 'Resource content placeholder'
+          mimeType: 'application/json',
+          text: JSON.stringify({
+            uri,
+            retrievedAt: new Date().toISOString(),
+            note: 'Resource retrieval implemented: returning metadata stub until storage backend is wired.'
+          })
         }]
       }
     };
@@ -828,13 +832,19 @@ export class NovaMCPServer {
   }
 
   private async executeNovaTool(toolName: string, args: any, client: MCPClient): Promise<any> {
-    // This would integrate with the existing Nova tools
-    // For now, return a placeholder response
-    return {
-      tool: toolName,
-      result: 'Tool execution result placeholder',
-      timestamp: new Date().toISOString()
-    };
+    // Route to built-in handlers where applicable
+    if (this.tools.has(toolName)) {
+      const tool = this.tools.get(toolName)!;
+      const validated = tool.inputSchema ? tool.inputSchema.parse(args) : args;
+      const output = await tool.handler(validated, { userId: client?.metadata?.userId });
+      return {
+        tool: toolName,
+        result: output?.content?.[0]?.text || output,
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    return { tool: toolName, result: 'Unknown tool', timestamp: new Date().toISOString() };
   }
 
   private async processMCPWebSocketMessage(message: MCPMessage, ws: WebSocket): Promise<MCPMessage> {

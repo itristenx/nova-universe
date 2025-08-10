@@ -805,16 +805,31 @@ export class NovaSentinelIntegration extends EventEmitter {
           return aiFabric?.isInitialized ? 'up' : 'down';
         
         case 'rag-engine':
-          // Check if RAG engine is responsive
-          return 'up'; // Placeholder
+          // Check if RAG engine is responsive via health endpoint
+          try {
+            const res = await axios.get(`${process.env.RAG_ENGINE_URL || 'http://localhost:4005'}/health`, { timeout: 3000 });
+            return res.status === 200 ? 'up' : 'down';
+          } catch {
+            return 'down';
+          }
         
         case 'mcp-server':
-          // Check MCP server health
-          return 'up'; // Placeholder
+          // Check MCP server health by pinging server info route
+          try {
+            const res = await axios.get(`${process.env.MCP_SERVER_URL || 'http://localhost:4010'}/api/mcp/info`, { timeout: 3000 });
+            return res.status === 200 ? 'up' : 'down';
+          } catch {
+            return 'down';
+          }
         
         case 'nova-local-ai':
-          // Check Nova Local AI health
-          return 'up'; // Placeholder
+          // Check Nova Local AI health endpoint
+          try {
+            const res = await axios.get(`${process.env.NOVA_LOCAL_AI_URL || 'http://localhost:4015'}/health`, { timeout: 3000 });
+            return res.status === 200 ? 'up' : 'down';
+          } catch {
+            return 'down';
+          }
         
         default:
           return 'unknown';
@@ -1314,18 +1329,43 @@ export class NovaSentinelIntegration extends EventEmitter {
   }
 
   private async updateSentinelMonitor(monitor: SentinelMonitor): Promise<void> {
-    // Implementation would update the corresponding Sentinel monitor
-    // This is a placeholder for now
+    try {
+      await axios.patch(`${this.sentinelApiUrl}/monitors/${monitor.id}`, {
+        name: monitor.name,
+        component: monitor.component,
+        status: monitor.status,
+        avg_response_time: monitor.avgResponseTime,
+        uptime_24h: monitor.uptime24h
+      }, { headers: this.getAuthHeaders() });
+    } catch (error) {
+      logger.warn('Failed to update Sentinel monitor', { id: monitor.id, error: error.message });
+    }
   }
 
   private async createSentinelIncident(incident: SentinelIncident): Promise<void> {
-    // Implementation would create incident in Sentinel
-    // This is a placeholder for now
+    try {
+      await axios.post(`${this.sentinelApiUrl}/incidents`, {
+        monitor_id: incident.monitorId,
+        severity: incident.severity,
+        status: incident.status,
+        summary: incident.summary,
+        description: incident.description,
+        started_at: incident.startedAt
+      }, { headers: this.getAuthHeaders() });
+    } catch (error) {
+      logger.warn('Failed to create Sentinel incident', { error: error.message });
+    }
   }
 
   private async updateSentinelIncident(incident: SentinelIncident): Promise<void> {
-    // Implementation would update incident in Sentinel
-    // This is a placeholder for now
+    try {
+      await axios.patch(`${this.sentinelApiUrl}/incidents/${incident.id}`, {
+        status: incident.status,
+        resolved_at: incident.resolvedAt || undefined
+      }, { headers: this.getAuthHeaders() });
+    } catch (error) {
+      logger.warn('Failed to update Sentinel incident', { id: incident.id, error: error.message });
+    }
   }
 
   private async syncMonitorsFromSentinel(): Promise<void> {

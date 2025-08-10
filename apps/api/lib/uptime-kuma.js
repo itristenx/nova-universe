@@ -294,17 +294,25 @@ export async function syncStatusFromKuma(): Promise<void> {
       try {
         const status = await kumaClient.getMonitorStatus(kumaMonitor.id);
         const uptimeStats = await kumaClient.getUptimeStats(kumaMonitor.id);
-
-        // Update Nova monitor status
-        // This would trigger the API to update the database
-        console.log(`Syncing status for monitor ${kumaMonitor.id}:`, {
-          status: status.heartbeat.status ? 'up' : 'down',
-          response_time: status.heartbeat.duration,
-          uptime_24h: uptimeStats.uptime_24h,
-          uptime_7d: uptimeStats.uptime_7d,
-          uptime_30d: uptimeStats.uptime_30d,
-          avg_response_time: uptimeStats.avg_response_time
-        });
+        // Persist Nova monitor status in DB
+        const { default: db } = await import('../db.js');
+        await db.query(`
+          UPDATE monitors SET
+            status = $1,
+            avg_response_time = $2,
+            uptime_24h = $3,
+            uptime_7d = $4,
+            uptime_30d = $5,
+            last_check = NOW()
+          WHERE kuma_id = $6
+        `, [
+          status.heartbeat.status ? 'up' : 'down',
+          status.heartbeat.duration || 0,
+          uptimeStats.uptime_24h || 0,
+          uptimeStats.uptime_7d || 0,
+          uptimeStats.uptime_30d || 0,
+          kumaMonitor.id
+        ]);
       } catch (error) {
         console.error(`Failed to sync status for monitor ${kumaMonitor.id}:`, error);
       }

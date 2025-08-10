@@ -118,7 +118,7 @@ export const CommunicationHub: React.FC<Props> = ({
   const { isOpen: isTemplateModalOpen, onOpen: onTemplateModalOpen, onClose: onTemplateModalClose } = useDisclosure()
   const { isOpen: isEscalationModalOpen, onOpen: onEscalationModalOpen, onClose: onEscalationModalClose } = useDisclosure()
 
-  // Real API calls instead of mock data
+    // Real API calls instead of mock data
   const { data: messages = [] } = useQuery({
     queryKey: ['communication-messages', selectedTicket?.id],
     queryFn: async (): Promise<CommunicationMessage[]> => {
@@ -130,58 +130,6 @@ export const CommunicationHub: React.FC<Props> = ({
       return data.messages || [];
     }
   });
-        isInternal: false
-      },
-      {
-        id: '2',
-        type: 'slack',
-        timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
-        from: {
-          id: 'agent1',
-          name: 'Sarah Wilson',
-          type: 'agent'
-        },
-        content: '@channel We\'re seeing multiple authentication issues. Investigating now.',
-        priority: 'medium',
-        status: 'read',
-        tags: ['internal', 'investigation'],
-        isInternal: true
-      },
-      {
-        id: '3',
-        type: 'ticket_comment',
-        timestamp: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
-        from: {
-          id: 'agent2',
-          name: 'Mike Rodriguez',
-          type: 'agent'
-        },
-        content: 'Reproduced the issue. Root cause identified in the authentication microservice.',
-        ticketId: 'T-001',
-        priority: 'medium',
-        status: 'read',
-        tags: ['progress', 'technical'],
-        isInternal: true
-      },
-      {
-        id: '4',
-        type: 'email',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        from: {
-          id: 'customer2',
-          name: 'Jane Doe',
-          email: 'jane.doe@enterprise.com',
-          type: 'customer'
-        },
-        subject: 'VIP: System performance issues',
-        content: 'Our team is experiencing significant delays. This is affecting our production environment.',
-        priority: 'urgent',
-        status: 'replied',
-        tags: ['vip', 'performance'],
-        isInternal: false
-      }
-    ]
-  })
 
   const { data: templates = [] } = useQuery({
     queryKey: ['response-templates'],
