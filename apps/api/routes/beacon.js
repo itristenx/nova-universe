@@ -591,4 +591,28 @@ router.post('/activate',
   }
 );
 
+// Admin-issued activation code generation
+router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req, res) => {
+  try {
+    const { kioskId, kioskName, location, configuration } = req.body || {};
+    if (!kioskId) return res.status(400).json({ success: false, error: 'kioskId required' });
+    const code = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 15).toISOString(); // 15 min
+    db.run(
+      `INSERT INTO kiosk_activations (kioskId, kioskName, location, activationCode, configuration, isUsed, expiresAt)
+       VALUES ($1, $2, $3, $4, $5, 0, $6)`,
+      [kioskId, kioskName || kioskId, location || '', code, JSON.stringify(configuration || {}), expiresAt],
+      function(err) {
+        if (err) return res.status(500).json({ success: false, error: 'DB error' });
+        const activationUrl = `${process.env.ADMIN_URL || ''}/activate?kioskId=${encodeURIComponent(kioskId)}&code=${code}`;
+        QRCode.toDataURL(activationUrl).then(qr => {
+          res.status(201).json({ success: true, code, kioskId, kioskName, location, expiresAt, activationUrl, qr });
+        }).catch(() => res.status(201).json({ success: true, code, kioskId, kioskName, location, expiresAt, activationUrl }));
+      }
+    );
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Failed to create activation code' });
+  }
+});
+
 export default router;

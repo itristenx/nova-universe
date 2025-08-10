@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit // Added for UIDevice
 
 class APIService {
     static let shared = APIService()
@@ -53,10 +54,16 @@ class APIService {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let payload = [
+        let payload: [String: Any] = [
             "id": id,
             "version": version,
-            "token": getKioskToken()
+            "token": getKioskToken(),
+            "deviceInfo": [
+                "deviceId": UIDevice.current.identifierForVendor?.uuidString ?? "unknown",
+                "deviceName": UIDevice.current.name,
+                "osVersion": UIDevice.current.systemVersion,
+                "model": UIDevice.current.model
+            ]
         ]
         
         do {
@@ -102,9 +109,16 @@ class APIService {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let payload = [
+        let payload: [String: Any] = [
             "kioskId": id,
-            "activationCode": activationCode
+            "activationCode": activationCode,
+            "deviceInfo": [
+                "deviceId": UIDevice.current.identifierForVendor?.uuidString ?? "unknown",
+                "deviceName": UIDevice.current.name,
+                "osVersion": UIDevice.current.systemVersion,
+                "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "",
+                "model": UIDevice.current.model
+            ]
         ]
         
         do {
