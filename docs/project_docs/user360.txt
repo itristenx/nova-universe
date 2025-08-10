@@ -1,0 +1,128 @@
+# Nova User 360 – Full Specification (Codebase-Aligned)
+
+## 1. Overview
+
+Nova User 360 is the single pane of glass for user-related context in Nova. It consolidates identity, assets, tickets, security posture, and activity into a unified technician view while enforcing Helix RBAC.
+
+Primary Goals
+- Centralize relevant user data in real time
+- Enrich via integrations and inventory
+- Enforce tenant/RBAC scoping via Helix
+- Power Pulse (technician), Orbit (end-user), and Cosmo (AI)
+
+---
+
+## 2. Core Data Model
+
+### 2.1 Primary Entities
+
+| Entity           | Description                                             | Source(s)                     |
+| ---------------- | ------------------------------------------------------- | ----------------------------- |
+| User Profile     | Identity, roles, VIP flags                              | Helix                         |
+| Linked Accounts  | Provider links (Slack, etc.)                            | Helix Linked Accounts         |
+| Assets           | Assigned devices and related context                    | Pulse Inventory               |
+| Tickets          | User’s tickets and agent queues                         | Orbit (user), Pulse (tech)    |
+| Activity Logs    | Key actions/audit (module specific)                     | Core/Helix                    |
+
+### 2.2 Condensed ERD
+```
+users (Helix/Core)
+user_linked_accounts (provider = 'slack') → users
+inventory_assets → asset_assignments → users
+asset_ticket_history → tickets → users
+```
+
+All joins key off Helix-issued user IDs.
+
+---
+
+## 3. Features
+
+### 3.1 Technician 360 View (Pulse)
+- Summary (contact, role, VIP)
+- Assets w/ warranty, history
+- Open tickets and recent updates
+- Quick actions (create ticket on behalf, link/unlink Slack)
+
+### 3.2 End-User View (Orbit)
+- Assigned devices (read-only)
+- Own tickets
+- Training/compliance (as available per tenant)
+
+### 3.3 Cosmo AI Integration
+- Uses User 360 context for triage and suggestions
+- Actions audited via Helix/Core
+
+---
+
+## 4. Data Sources & Composition (No new service)
+
+User 360 is a composition pattern built from existing routes:
+- Identity & roles: GET `/api/v1/helix/session`
+- Technician context: GET `/api/v1/pulse/dashboard`
+- Assets: GET `/api/v1/pulse/inventory/assets?assignedTo={user_id}&includeHistory=true`
+- Asset details: GET `/api/v1/pulse/inventory/assets/{assetId}`
+- End-user tickets: GET `/api/v1/orbit/tickets`; POST `/api/v1/orbit/tickets`
+
+There is no `/api/v2/user360/*`. Frontends compose 360 using the above endpoints.
+
+---
+
+## 5. Slack Linking Flow (Helix)
+
+Enable users to link their Slack account for richer presence, DM actions, and identification.
+
+Endpoints (new in Helix):
+- GET `/api/v1/helix/link/slack` → get current link status
+- POST `/api/v1/helix/link/slack` → body: `{ slackUserId, slackTeamId?, slackUsername? }`
+- DELETE `/api/v1/helix/link/slack` → unlink current user’s Slack
+
+Storage:
+- Table `user_linked_accounts` with unique `(user_id, provider)`; indexed by `(provider, external_user_id)`
+
+UI/UX:
+- Pulse technician panel: show Slack link status, allow unlink
+- Orbit profile: optional self-link action per tenant policy
+
+Security:
+- Auth via Helix JWT (bearerAuth)
+- Rate-limited via existing middleware
+- Audit via Core/Helix logs when used with actions
+
+---
+
+## 6. Security & Compliance
+- RBAC via Helix claims
+- Audit logs on sensitive actions (VIP, escalations, linking where applicable)
+- PII masking configurable per tenant
+- Retention per tenant policy
+
+---
+
+## 7. Implementation Notes
+- Frontend composition lives in Pulse and Orbit UIs
+- Backends already expose needed inventory/ticket routes
+- Slack linking is implemented under Helix; future providers can reuse `user_linked_accounts`
+
+---
+
+## 8. Technician 360 Assembly (Example)
+1) GET `/api/v1/helix/session` → current user claims, target user selection UI
+2) GET `/api/v1/pulse/inventory/assets?assignedTo={targetUserId}&includeHistory=true`
+3) GET `/api/v1/pulse/dashboard` (agent’s dashboard context)
+4) GET `/api/v1/orbit/tickets` if viewing the target user’s own requests (subject to permissions)
+5) GET `/api/v1/helix/link/slack` to display Slack link status for the signed-in user; for target users, show only if permitted
+
+---
+
+## 9. Orbit User Experience
+- App routes: `/` → redirects to `/enhanced-dashboard`
+- Tickets managed through `/api/v1/orbit/tickets`
+- Optional profile page can expose Slack linking per tenant policy
+
+---
+
+## 10. Done Criteria
+- Slack linking endpoints available under Helix
+- Docs aligned with implemented v1 routes
+- No placeholders; 360 view composes from existing APIs

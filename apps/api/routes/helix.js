@@ -1161,4 +1161,150 @@ router.put('/users/:id/vip',
   }
 );
 
+// Ensure table for linked accounts exists (idempotent)
+async function ensureLinkedAccountsTable() {
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS user_linked_accounts (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL,
+        provider TEXT NOT NULL,
+        external_user_id TEXT NOT NULL,
+        external_team_id TEXT,
+        username TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (user_id, provider)
+      );
+    `);
+    await db.query(
+      `CREATE INDEX IF NOT EXISTS idx_linked_accounts_provider_external ON user_linked_accounts (provider, external_user_id)`
+    );
+    return true;
+  } catch (e) {
+    logger.error('Failed ensuring user_linked_accounts table', e);
+    throw e;
+  }
+}
+
+/**
+ * @swagger
+ * /api/v1/helix/link/slack:
+ *   get:
+ *     summary: Get Slack linking status for current user
+ *     tags: [Helix - Identity]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Slack link status
+ */
+router.get('/link/slack', authenticateJWT, async (req, res) => {
+  try {
+    await ensureLinkedAccountsTable();
+    const userId = req.user.id;
+    const result = await db.query(
+      'SELECT id, external_user_id, external_team_id, username, created_at, updated_at FROM user_linked_accounts WHERE user_id = $1 AND provider = $2 LIMIT 1',
+      [userId, 'slack']
+    );
+    const row = result?.rows?.[0];
+    res.json({
+      success: true,
+      linked: !!row,
+      account: row || null
+    });
+  } catch (error) {
+    logger.error('Error getting Slack link status:', error);
+    res.status(500).json({ success: false, error: 'Failed to get Slack link status', errorCode: 'SLACK_LINK_STATUS_ERROR' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/helix/link/slack:
+ *   post:
+ *     summary: Link Slack account to current user
+ *     tags: [Helix - Identity]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [slackUserId]
+ *             properties:
+ *               slackUserId:
+ *                 type: string
+ *               slackTeamId:
+ *                 type: string
+ *               slackUsername:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Slack account linked
+ */
+router.post('/link/slack',
+  authenticateJWT,
+  createRateLimit(15 * 60 * 1000, 20),
+  [
+    body('slackUserId').isString().withMessage('slackUserId is required'),
+    body('slackTeamId').optional().isString(),
+    body('slackUsername').optional().isString()
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, error: 'Invalid input', details: errors.array(), errorCode: 'VALIDATION_ERROR' });
+      }
+      await ensureLinkedAccountsTable();
+      const userId = req.user.id;
+      const { slackUserId, slackTeamId = null, slackUsername = null } = req.body;
+
+      // Upsert by (user_id, provider)
+      await db.query(
+        `INSERT INTO user_linked_accounts (id, user_id, provider, external_user_id, external_team_id, username)
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5)
+         ON CONFLICT (user_id, provider)
+         DO UPDATE SET external_user_id = EXCLUDED.external_user_id,
+                       external_team_id = EXCLUDED.external_team_id,
+                       username = EXCLUDED.username,
+                       updated_at = CURRENT_TIMESTAMP`,
+        [userId, 'slack', slackUserId, slackTeamId, slackUsername]
+      );
+
+      res.json({ success: true, message: 'Slack account linked' });
+    } catch (error) {
+      logger.error('Error linking Slack account:', error);
+      res.status(500).json({ success: false, error: 'Failed to link Slack account', errorCode: 'SLACK_LINK_ERROR' });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/v1/helix/link/slack:
+ *   delete:
+ *     summary: Unlink Slack account from current user
+ *     tags: [Helix - Identity]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Slack account unlinked
+ */
+router.delete('/link/slack', authenticateJWT, async (req, res) => {
+  try {
+    await ensureLinkedAccountsTable();
+    const userId = req.user.id;
+    await db.query('DELETE FROM user_linked_accounts WHERE user_id = $1 AND provider = $2', [userId, 'slack']);
+    res.json({ success: true, message: 'Slack account unlinked' });
+  } catch (error) {
+    logger.error('Error unlinking Slack account:', error);
+    res.status(500).json({ success: false, error: 'Failed to unlink Slack account', errorCode: 'SLACK_UNLINK_ERROR' });
+  }
+});
+
 export default router;
