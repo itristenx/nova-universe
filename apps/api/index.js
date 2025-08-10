@@ -66,7 +66,8 @@ import scimMonitorRouter from './routes/scimMonitor.js';
 import synthRouter from './routes/synth.js';
 import synthV2Router from './routes/synth-v2.js';
 import { getEmailStrategy } from './utils/serviceHelpers.js';
-import { setupGraphQL } from './graphql.js';
+// GraphQL is loaded dynamically inside createApp to avoid hard dependency failures
+
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -403,6 +404,8 @@ if (process.env.DEBUG_CORS === 'true') {
 }
 
 app.use(express.json({ limit: '10mb' })); // Limit JSON payload size
+import { attachComplianceHeaders } from './middleware/aiCompliance.js';
+app.use(attachComplianceHeaders);
 
 
 // ---
@@ -1711,6 +1714,14 @@ app.use('/api/helpscout', helpscoutRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/monitoring', monitoringRouter);
 
+// AI and MCP hosting routes
+import aiRouter from './routes/ai.js';
+import aiFeedbackRouter from './routes/ai-feedback.js';
+import mcpHostRouter from './routes/mcp-host.js';
+app.use('/api/ai', ensureAuth, aiRouter);
+app.use('/api/ai', ensureAuth, aiFeedbackRouter);
+app.use('/api/mcp', ensureAuth, mcpHostRouter);
+
 // Nova module routes
 app.use('/api/v1/helix', helixRouter);     // Nova Helix - Identity Engine
 app.use('/api/v1/helix/login', helixUniversalLoginRouter); // Nova Helix - Universal Login
@@ -1727,7 +1738,7 @@ export async function createApp() {
   // All the above setup code remains as is
   // (from dotenv.config() through all middleware, routers, etc.)
   // Setup Apollo GraphQL server
-  await setupGraphQL(app);
+  try { const { setupGraphQL } = await import('./graphql.js'); await setupGraphQL(app);} catch (e) { logger.warn('GraphQL unavailable:', e.message);}
   // Do not call server.listen here
   return { app, server, io };
 }
