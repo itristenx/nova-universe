@@ -280,6 +280,20 @@ class APIService {
         return false
     }
     
+    // MARK: - Core Config for Remote Skinning
+    func getCoreConfig(kioskId: String, serverURL: String) async -> [String: Any]? {
+        guard let url = URL(string: "\(serverURL)/core/config?kiosk_id=\(kioskId)") else { return nil }
+        do {
+            let (data, response) = try await session.data(from: url)
+            if let http = response as? HTTPURLResponse, http.statusCode == 200 {
+                return try JSONSerialization.jsonObject(with: data) as? [String: Any]
+            }
+        } catch {
+            print("Core config fetch failed: \(error)")
+        }
+        return nil
+    }
+    
     // MARK: - Helper Methods
     private func getKioskToken() -> String {
         return Bundle.main.object(forInfoDictionaryKey: "KIOSK_TOKEN") as? String ?? ""

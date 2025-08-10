@@ -78,44 +78,49 @@ class ConfigurationManager: ObservableObject {
         // Get kiosk configuration from API
         let kioskId = userDefaults.string(forKey: "kioskId") ?? Bundle.main.object(forInfoDictionaryKey: "KIOSK_ID") as? String ?? "unknown"
         
+        // 1) Existing remote-config for kiosk
         if let configData = await APIService.shared.getKioskConfiguration(id: kioskId, serverURL: serverConfig.baseURL) {
             // Update local configuration with remote data
             if let roomName = configData["roomName"] as? String {
                 userDefaults.set(roomName, forKey: "kioskRoomName")
             }
-            
             if let logoUrl = configData["logoUrl"] as? String {
                 userDefaults.set(logoUrl, forKey: "kioskLogoUrl")
             }
-            
             if let backgroundUrl = configData["backgroundUrl"] as? String {
                 userDefaults.set(backgroundUrl, forKey: "kioskBackgroundUrl")
             }
-            
             if let statusMessages = configData["statusMessages"] as? [String: String] {
                 for (key, message) in statusMessages {
                     userDefaults.set(message, forKey: "statusMessage_\(key)")
                 }
             }
-            
             if let features = configData["features"] as? [String: Bool] {
                 for (key, enabled) in features {
                     userDefaults.set(enabled, forKey: "feature_\(key)")
                 }
             }
-            
-            // Notify UI of configuration update
-            NotificationCenter.default.post(name: .configurationUpdated, object: nil)
-        } else {
-            // Fallback to basic configuration if API call fails
-            let defaultRoomName = userDefaults.string(forKey: "kioskRoomName") ?? "Conference Room"
-            userDefaults.set(defaultRoomName, forKey: "kioskRoomName")
         }
-        if kioskConfiguration == nil {
-            // We'll need to create this when we have the proper structure
-            lastConfigUpdate = Date()
-            userDefaults.set(lastConfigUpdate, forKey: UserDefaultsKeys.lastConfigUpdate)
+        
+        // 2) Optional core config for remote skinning parity
+        if let coreConfig = await APIService.shared.getCoreConfig(kioskId: kioskId, serverURL: serverConfig.baseURL) {
+            if let theme = coreConfig["theme"] as? [String: Any] {
+                if let logo = theme["logo_url"] as? String { userDefaults.set(logo, forKey: "kioskLogoUrl") }
+                if let primary = theme["primary_color"] as? String { userDefaults.set(primary, forKey: "kioskPrimaryColor") }
+            }
+            if let forms = coreConfig["forms"] as? [String: Any] {
+                if let defForm = forms["default_ticket_form_id"] as? String { userDefaults.set(defForm, forKey: "kioskDefaultFormId") }
+            }
+            if let cosmo = coreConfig["cosmo"] as? [String: Any] {
+                if let enabled = cosmo["enabled"] as? Bool { userDefaults.set(enabled, forKey: "feature_cosmoEnabled") }
+                if let prompt = cosmo["preset_prompt"] as? String { userDefaults.set(prompt, forKey: "cosmoPresetPrompt") }
+            }
         }
+        
+        // Notify UI of configuration update
+        lastConfigUpdate = Date()
+        userDefaults.set(lastConfigUpdate, forKey: UserDefaultsKeys.lastConfigUpdate)
+        NotificationCenter.default.post(name: .configurationUpdated, object: nil)
     }
     
     // MARK: - Kiosk ID Management
