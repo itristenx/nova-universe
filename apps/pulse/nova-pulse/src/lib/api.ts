@@ -33,6 +33,26 @@ export const getInventory = async () => {
   return data.assets
 }
 
+// CMDB
+export const cmdb = {
+  listClasses: async () => {
+    const { data } = await axios.get('/api/v1/cmdb/classes')
+    return data.classes as Array<{ id: number; key: string; name: string }>
+  },
+  listItems: async (params?: { classKey?: string; q?: string; limit?: number; offset?: number }) => {
+    const { data } = await axios.get('/api/v1/cmdb/items', { params })
+    return data.items as Array<any>
+  },
+  getItem: async (id: number) => {
+    const { data } = await axios.get(`/api/v1/cmdb/items/${id}`)
+    return data.item as any
+  },
+  getGraph: async (rootId: number, depth = 2) => {
+    const { data } = await axios.get('/api/v1/cmdb/graph', { params: { rootId, depth } })
+    return data.graph as { nodes: any[]; edges: any[] }
+  },
+}
+
 export const getAssetsForUser = async (userId: string) => {
   const { data } = await client.get<{ success: boolean; assets: Asset[] }>(`/inventory/user/${userId}`)
   return data.assets

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Card,
   CardContent,
@@ -352,10 +353,15 @@ const ConfigurationManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState<Record<string, string>>({});
+  const [cmdbClasses, setCmdbClasses] = useState<any[]>([]);
 
   // Load configurations from API
   useEffect(() => {
     loadConfigurations();
+  }, []);
+
+  useEffect(() => {
+    axios.get('/api/v1/cmdb/classes').then(r => setCmdbClasses(r.data.classes || [])).catch(() => void 0);
   }, []);
 
   const loadConfigurations = async () => {
@@ -769,6 +775,14 @@ const ConfigurationManagement: React.FC = () => {
           </TabsContent>
         ))}
       </Tabs>
+      <div className="rounded-md border p-4">
+        <h3 className="font-semibold mb-2">CMDB Classes</h3>
+        <ul className="list-disc pl-5">
+          {cmdbClasses.map(c => (
+            <li key={c.id}>{c.name} ({c.key})</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

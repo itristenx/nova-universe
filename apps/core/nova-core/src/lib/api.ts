@@ -196,6 +196,33 @@ class ApiClient {
     return response.data.heatmap;
   }
 
+  // CMDB (admin)
+  async cmdbListClasses(): Promise<any[]> {
+    const response = await this.client.get<{ success: boolean; classes: any[] }>('/api/v1/cmdb/classes');
+    return response.data.classes;
+  }
+
+  async cmdbCreateClass(payload: { name: string; key: string; description?: string; icon?: string; parentId?: number; attributeSchema?: Record<string, any> }): Promise<any> {
+    const response = await this.client.post('/api/v1/cmdb/classes', payload);
+    return response.data.class;
+  }
+
+  async cmdbListItems(params?: { classKey?: string; q?: string; limit?: number; offset?: number }): Promise<any[]> {
+    const response = await this.client.get('/api/v1/cmdb/items', { params });
+    // @ts-ignore
+    return response.data.items;
+  }
+
+  async cmdbGetItem(id: number): Promise<any> {
+    const response = await this.client.get(`/api/v1/cmdb/items/${id}`);
+    return response.data.item;
+  }
+
+  async cmdbGraph(rootId: number, depth = 2): Promise<{ nodes: any[]; edges: any[] }> {
+    const response = await this.client.get('/api/v1/cmdb/graph', { params: { rootId, depth } });
+    return response.data.graph;
+  }
+
   // Roles and Permissions
   async getRoles(): Promise<Role[]> {
     if (this.useMockMode) {
