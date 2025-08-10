@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -50,6 +50,51 @@ export const metadata: Metadata = {
   },
 };
 
+function OutageBanner() {
+  const [status, setStatus] = useState<'operational' | 'degraded' | 'major_outage' | 'maintenance' | null>(null);
+  const [message, setMessage] = useState<string>('');
+
+  useEffect(() => {
+    let active = true;
+    const tenant = typeof window !== 'undefined' ? localStorage.getItem('tenant_id') || 'public' : 'public';
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch(`/api/monitoring/status/${tenant}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!active) return;
+        setStatus(data.overall_status);
+        const activeIncidents = Array.isArray(data.active_incidents) ? data.active_incidents : [];
+        if (data.overall_status === 'major_outage' && activeIncidents.length > 0) {
+          const inc = activeIncidents[0];
+          setMessage(`Major outage: ${inc.summary || 'Multiple services impacted'}`);
+        } else if (data.overall_status === 'degraded') {
+          setMessage('Some services are degraded.');
+        } else if (data.overall_status === 'maintenance') {
+          setMessage('Scheduled maintenance in progress.');
+        } else {
+          setMessage('');
+        }
+      } catch {}
+    }
+
+    fetchStatus();
+    const id = setInterval(fetchStatus, 30000);
+    return () => { active = false; clearInterval(id); };
+  }, []);
+
+  if (!status || status === 'operational' || !message) return null;
+
+  const cls = status === 'major_outage' ? 'bg-red-600' : status === 'degraded' ? 'bg-yellow-500' : 'bg-blue-600';
+
+  return (
+    <div className={`${cls} text-white text-sm w-full py-2 px-4 text-center`}> 
+      {message}
+    </div>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -69,6 +114,7 @@ export default function RootLayout({
         data-color-primary={defaultBranding.primaryColor}
         data-color-secondary={defaultBranding.secondaryColor}
       >
+        <OutageBanner />
         <PWAInstaller />
         <KioskRedirect />
         {children}

@@ -5,6 +5,8 @@ import { logger } from '../logger.js';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import axios from 'axios';
+import events from '../events.js';
+import { audit, logAudit } from '../middleware/audit.js';
 
 const router = express.Router();
 
@@ -758,6 +760,15 @@ router.post('/events', async (req, res) => {
       timestamp: new Date().toISOString()
     });
 
+    // Emit realtime update to monitoring subscribers
+    if (req.app?.wsManager) {
+      req.app.wsManager.broadcastToSubscribers('system_status', {
+        type: 'sentinel_kuma_event',
+        data: { monitorId: monitor?.id, status: heartbeat?.status, time: heartbeat?.time },
+        timestamp: new Date().toISOString()
+      });
+    }
+
     res.json({ success: true });
   } catch (error) {
     logger.error('Failed to process Kuma event', { error: error.message });
@@ -989,10 +1000,23 @@ async function handleServiceDown(monitor, heartbeat, message) {
 
       const incident = result.rows[0];
 
-      // TODO: Integrate with Nova Synth for AI analysis
-      // TODO: Create ticket if configured
-      // TODO: Send notifications via Nova Comms
-      // TODO: Update Orbit status banners
+      // Emit realtime update
+      if (globalThis.app?.wsManager) {
+        try {
+          globalThis.app.wsManager.broadcastToSubscribers('system_status', {
+            type: 'sentinel_incident_created',
+            data: { incident },
+            timestamp: new Date().toISOString()
+          });
+        } catch {}
+      }
+
+      // Write audit log
+      await db.createAuditLog('sentinel.incident.auto_created', 'system', {
+        monitor_id: monitor.id,
+        severity,
+        summary,
+      });
 
       logger.info('Incident created', { 
         incidentId: incident.id, 
@@ -1014,16 +1038,31 @@ async function handleServiceRecovered(monitor, heartbeat) {
     const autoResolve = await getConfigValue('monitoring.incident_auto_resolve', 'true');
     
     if (autoResolve === 'true') {
-      await db.query(`
+      const result = await db.query(`
         UPDATE monitor_incidents 
         SET status = 'resolved', resolved_at = $1, auto_resolved = true
         WHERE monitor_id = $2 AND status IN ('open', 'acknowledged', 'investigating')
+        RETURNING *
       `, [new Date(heartbeat.time), monitor.id]);
 
-      logger.info('Incident auto-resolved', { monitorId: monitor.id });
+      const resolved = result.rows;
 
-      // TODO: Send recovery notifications
-      // TODO: Remove Orbit banners
+      if (req?.app?.wsManager && resolved.length > 0) {
+        try {
+          req.app.wsManager.broadcastToSubscribers('system_status', {
+            type: 'sentinel_incident_resolved',
+            data: { monitorId: monitor.id, count: resolved.length },
+            timestamp: new Date().toISOString()
+          });
+        } catch {}
+      }
+
+      await db.createAuditLog('sentinel.incident.auto_resolved', 'system', {
+        monitor_id: monitor.id,
+        resolved_count: resolved.length,
+      });
+
+      logger.info('Incident auto-resolved', { monitorId: monitor.id });
     }
   } catch (error) {
     logger.error('Failed to handle service recovery', { error: error.message });
@@ -1069,7 +1108,9 @@ async function getConfigValue(key, defaultValue) {
   }
 }
 
-// ==================== NOVA SENTINEL UPTIME KUMA INTEGRATION ====================
+// ==========================================
+// NOVA SENTINEL UPTIME KUMA INTEGRATION
+// ==========================================
 
 /**
  * @swagger
@@ -1276,7 +1317,9 @@ router.get('/health', async (req, res) => {
   }
 });
 
-// ==================== END NOVA SENTINEL INTEGRATION ====================
+// ==========================================
+// END NOVA SENTINEL INTEGRATION
+// ==========================================
 
 /**
  * Get configuration value with fallback
@@ -1290,3 +1333,56 @@ async function getConfigValue(key, defaultValue) {
     return defaultValue;
   }
 }
+
+/**
+ * Create incident manually from Pulse UI
+ */
+router.post('/monitor-incident', authenticateJWT, audit('sentinel.incident.create'), async (req, res) => {
+  try {
+    const { monitorId, monitorName, status = 'down', errorMessage = '', important = false } = req.body;
+
+    // Find monitor by kuma_id or internal id
+    const monitorQuery = /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/.test(monitorId)
+      ? { sql: 'SELECT * FROM monitors WHERE id = $1', params: [monitorId] }
+      : { sql: 'SELECT * FROM monitors WHERE kuma_id = $1', params: [monitorId] };
+
+    const monitorResult = await db.query(monitorQuery.sql, monitorQuery.params);
+    if (monitorResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Monitor not found' });
+    }
+    const monitor = monitorResult.rows[0];
+
+    const severity = determineSeverity(monitor, { status: status === 'up' ? 1 : 0, statusCode: null });
+    const summary = await generateIncidentSummary(monitor, { msg: errorMessage }, errorMessage);
+
+    const result = await db.query(`
+      INSERT INTO monitor_incidents (monitor_id, status, severity, summary, description, started_at)
+      VALUES ($1, 'open', $2, $3, $4, NOW())
+      RETURNING *
+    `, [monitor.id, severity, summary, `Manual incident: ${errorMessage || 'Triggered from Pulse'}`]);
+
+    const incident = result.rows[0];
+
+    // Broadcast via websockets
+    if (req.app?.wsManager) {
+      req.app.wsManager.broadcastToSubscribers('system_status', {
+        type: 'sentinel_incident_created',
+        data: { incident },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Audit log
+    await logAudit('sentinel.incident.created', req.user, {
+      monitor_id: monitor.id,
+      monitor_name: monitorName || monitor.name,
+      severity,
+      status,
+    });
+
+    res.status(201).json({ success: true, incident });
+  } catch (error) {
+    logger.error('Failed to create incident', { error: error.message });
+    res.status(500).json({ error: 'Failed to create incident' });
+  }
+});

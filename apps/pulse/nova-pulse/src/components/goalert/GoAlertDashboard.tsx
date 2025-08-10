@@ -87,7 +87,7 @@ const GoAlertDashboard: React.FC = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch alerts');
       const data = await response.json();
-      return data.alerts;
+      return data.alerts || data; // proxy returns {alerts}
     },
     refetchInterval: 30000 // Refresh every 30 seconds
   });
