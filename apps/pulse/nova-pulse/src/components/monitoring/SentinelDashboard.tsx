@@ -81,7 +81,7 @@ const SentinelDashboard: React.FC<SentinelDashboardProps> = ({ className = '' })
       if (filterStatus !== 'all') params.append('status', filterStatus);
       if (filterType !== 'all') params.append('type', filterType);
 
-      const response = await fetch(`/api/v2/monitoring/monitors?${params}`, {
+      const response = await fetch(`/api/monitoring/monitors?${params}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
 
@@ -96,7 +96,7 @@ const SentinelDashboard: React.FC<SentinelDashboardProps> = ({ className = '' })
   const { data: incidents = [], isLoading: incidentsLoading } = useQuery({
     queryKey: ['monitoring-incidents'],
     queryFn: async (): Promise<MonitoringIncident[]> => {
-      const response = await fetch('/api/v2/sentinel/incidents?status=active', {
+      const response = await fetch('/api/monitoring/incidents?status=active', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
 
@@ -110,7 +110,7 @@ const SentinelDashboard: React.FC<SentinelDashboardProps> = ({ className = '' })
   // Create incident mutation
   const createIncidentMutation = useMutation({
     mutationFn: async (monitorData: any) => {
-      const response = await fetch('/api/v2/sentinel/monitor-incident', {
+      const response = await fetch('/api/monitoring/monitor-incident', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

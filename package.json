@@ -26,12 +26,19 @@
     "prisma:generate:audit": "prisma generate --schema prisma/audit/schema.prisma",
     "setup": "./setup.sh",
     "teardown": "./teardown.sh",
+    "teardown:restart": "./teardown.sh --restart",
+    "teardown:shutdown": "./teardown.sh --shutdown",
     "deploy": "bash scripts/deploy-production.sh",
     "validate": "./validate-production-readiness.sh",
     "health": "cd apps/api && node cli.js health",
     "start": "cd apps/api && node cli.js start",
     "stop": "cd apps/api && node cli.js stop",
-    "status": "cd apps/api && node cli.js status"
+    "status": "cd apps/api && node cli.js status",
+    "test:env": "./setup-test-env.sh",
+    "test:env:integration": "./setup-test-env.sh integration",
+    "test:env:e2e": "./setup-test-env.sh e2e",
+    "test:env:list": "./setup-test-env.sh --list",
+    "test:env:clean": "./setup-test-env.sh --clean-all"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.0",

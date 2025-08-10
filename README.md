@@ -102,10 +102,29 @@ cd apps/api && node cli.js reset    # Reset to clean state
 cd apps/api && node cli.js status   # Show service URLs
 ```
 
+**Testing:**
+```bash
+# Create test environment
+./setup-test-env.sh                 # Default test environment
+./setup-test-env.sh integration     # Integration testing
+./setup-test-env.sh e2e             # End-to-end testing
+
+# Manage test environments
+./test-[env].sh start               # Start test environment
+./test-[env].sh test                # Run tests
+./test-[env].sh clean               # Clean up
+```
+
 **Deployment:**
 ```bash
 # Production deployment
 ./scripts/deploy-production.sh
+
+# Restart services (keep data)
+./teardown.sh --restart
+
+# Graceful shutdown
+./teardown.sh --shutdown
 
 # Complete teardown
 ./teardown.sh

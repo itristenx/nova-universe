@@ -202,7 +202,7 @@ show_completion() {
     echo "• Run: ./setup.sh"
     echo "• Or follow the quickstart guide: docs/quickstart.md"
     echo ""
-    log_info "Thank you for using Nova Universe!"
+    log_info "Thank you for visiting the Nova Universe!"
     echo ""
 }
 
@@ -217,6 +217,26 @@ main() {
     show_completion
 }
 
+# Restart services
+restart_services() {
+    log_header "🔄 Restarting Services"
+    echo "======================"
+    
+    log_info "Stopping all services first..."
+    stop_services
+    
+    sleep 3
+    
+    log_info "Starting services back up..."
+    if [ -f "setup.sh" ]; then
+        ./setup.sh
+        log_success "Services restarted successfully!"
+    else
+        log_error "setup.sh not found - cannot restart automatically"
+        echo "Please run setup.sh manually to restart services"
+    fi
+}
+
 # Handle script arguments
 case "${1:-}" in
     "--help"|"-h"|"help")
@@ -228,10 +248,14 @@ case "${1:-}" in
         echo "  --help, -h        Show this help message"
         echo "  --force           Skip confirmation (dangerous!)"
         echo "  --services-only   Only stop services, keep data"
+        echo "  --restart         Stop and restart all services"
+        echo "  --shutdown        Graceful shutdown (stop services only)"
         echo ""
         echo "Example:"
         echo "  $0                Interactive teardown"
         echo "  $0 --services-only    Stop services only"
+        echo "  $0 --restart      Restart all services"
+        echo "  $0 --shutdown     Graceful shutdown"
         ;;
     "--force")
         log_warning "Force mode enabled - skipping confirmation"
@@ -240,10 +264,16 @@ case "${1:-}" in
         remove_images
         show_completion
         ;;
-    "--services-only")
-        log_info "Stopping services only (keeping data)"
+    "--services-only"|"--shutdown")
+        log_info "Graceful shutdown - stopping services only (keeping data)"
         stop_services
-        log_success "Services stopped. Data preserved."
+        log_success "Services stopped gracefully. Data preserved."
+        echo ""
+        echo "To restart: ./setup.sh or ./teardown.sh --restart"
+        ;;
+    "--restart")
+        log_info "Restarting Nova Universe services..."
+        restart_services
         ;;
     *)
         main

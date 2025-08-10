@@ -26,6 +26,7 @@ import statusSummaryRouter from './routes/status.js';
 import announcementsRouter from './routes/announcements.js';
 import cosmoRouter from './routes/cosmo.js';
 import beaconRouter from './routes/beacon.js';
+import goalertProxyRouter from './routes/goalert-proxy.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -409,7 +410,9 @@ if (process.env.DEBUG_CORS === 'true') {
   });
 }
 
-app.use(express.json({ limit: '10mb' })); // Limit JSON payload size
+// Ensure JSON body parsing before routers
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true }));
 
 
 // ---
@@ -1717,6 +1720,8 @@ app.use('/api/v1/websocket', websocketRouter);
 app.use('/api/helpscout', helpscoutRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/monitoring', monitoringRouter);
+app.use('/api/v2/sentinel', monitoringRouter);
+app.use('/api/v2/goalert', goalertProxyRouter);
 app.use('/api/ai-fabric', aiFabricRouter);
 app.use('/api/setup', setupRouter);
 

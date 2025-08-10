@@ -239,20 +239,73 @@ validate_documentation() {
     echo ""
 }
 
+# Scripts
+validate_scripts() {
+    log_header "� Scripts & Automation"
+    echo "======================="
+    
+    check "Setup script exists" "[ -f setup.sh ]" true
+    check "Teardown script exists" "[ -f teardown.sh ]" true
+    check "Test environment script exists" "[ -f setup-test-env.sh ]" true
+    check "Deploy script exists" "[ -f scripts/deploy-production.sh ]" true
+    
+    # Check script permissions
+    check "Scripts are executable" "[ -x setup.sh ] && [ -x teardown.sh ] && [ -x setup-test-env.sh ]" true
+    
+    # Check enhanced teardown options
+    if [ -f teardown.sh ]; then
+        check "Teardown has restart option" "grep -q 'restart' teardown.sh" true
+        check "Teardown has shutdown option" "grep -q 'shutdown' teardown.sh" true
+    fi
+    
+    # Check test environment features
+    if [ -f setup-test-env.sh ]; then
+        check "Test env supports multiple environments" "grep -q 'integration\\|e2e' setup-test-env.sh" true
+        check "Test env has port management" "grep -q 'BASE_PORT' setup-test-env.sh" true
+        check "Test env has cleanup options" "grep -q 'clean-all' setup-test-env.sh" true
+    fi
+    
+    echo ""
+}
+
 # Production readiness
 validate_production() {
     log_header "🚀 Production Readiness"
     echo "======================="
     
-    # Scripts
-    check "Scripts are executable" "[ -x setup.sh ] && [ -x teardown.sh ]" true
-    check "Production deployment script" "[ -x scripts/deploy-production.sh ]" true
+    # Docker images
+    check "Production Dockerfiles exist" "[ -f apps/api/Dockerfile.prod ] && [ -f apps/core/nova-core/Dockerfile.prod ]" false
+    check "Development Dockerfiles exist" "[ -f apps/api/Dockerfile.dev ] && [ -f apps/core/nova-core/Dockerfile.dev ]" true
     
     # Security
     check "No hardcoded secrets in git" "! git log --oneline -n 50 | xargs git show | grep -E '(password|secret|key).*=.*[a-zA-Z0-9]{10}'" false
     
-    # Docker images
-    check "Production Dockerfiles exist" "[ -f apps/api/Dockerfile.prod ] && [ -f apps/core/nova-core/Dockerfile.prod ]" false
+    echo ""
+}
+
+# Test environment capabilities
+validate_test_environments() {
+    log_header "🧪 Test Environment Capabilities"
+    echo "================================"
+    
+    check "Test environment setup script exists" "[ -f setup-test-env.sh ]" true
+    check "Test environment script is executable" "[ -x setup-test-env.sh ]" true
+    
+    # Check npm scripts for test environments
+    if [ -f package.json ]; then
+        check "npm test:env script exists" "grep -q 'test:env' package.json" true
+        check "npm test:env:integration script exists" "grep -q 'test:env:integration' package.json" true
+        check "npm test:env:e2e script exists" "grep -q 'test:env:e2e' package.json" true
+    fi
+    
+    # Check for development Dockerfiles needed for test environments
+    check "API dev Dockerfile exists" "[ -f apps/api/Dockerfile.dev ]" true
+    check "Core dev Dockerfile exists" "[ -f apps/core/nova-core/Dockerfile.dev ]" true
+    check "Beacon dev Dockerfile exists" "[ -f apps/beacon/nova-beacon/Dockerfile.dev ]" true
+    check "Comms dev Dockerfile exists" "[ -f apps/comms/nova-comms/Dockerfile.dev ]" true
+    
+    # Check for test documentation
+    check "Test environment documentation exists" "[ -f docs/TEST_ENVIRONMENTS.md ]" true
     
     echo ""
 }
@@ -314,7 +367,9 @@ main() {
     validate_frontend
     validate_monitoring
     validate_documentation
+    validate_scripts
     validate_production
+    validate_test_environments
     
     generate_report
 }
