@@ -625,4 +625,26 @@ router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req,
   }
 });
 
+// Kiosk check-in to update lastSeen and trigger Helix sync
+router.post('/check-in', validateKioskAuth, async (req, res) => {
+  try {
+    const kioskId = req.kiosk.id;
+    db.run('UPDATE kiosks SET lastSeen = datetime("now") WHERE id = $1', [kioskId], async (err) => {
+      if (err) return res.status(500).json({ success: false, error: 'DB error' });
+      // Trigger Helix sync for any pending assets linked to this kiosk
+      try {
+        const helix = (await import('../services/helixKioskIntegration.js')).default;
+        if (helix?.bulkSyncWithHelix) {
+          await helix.bulkSyncWithHelix({ limit: 50 });
+        }
+      } catch (e) {
+        logger.warn('Helix bulk sync trigger failed:', e.message);
+      }
+      res.json({ success: true, kioskId });
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Check-in failed' });
+  }
+});
+
 export default router;
