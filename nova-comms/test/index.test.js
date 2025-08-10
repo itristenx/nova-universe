@@ -3,6 +3,9 @@ import { jest } from '@jest/globals';
 jest.unstable_mockModule('@slack/bolt', () => {
   const commandRegistry = {};
   const viewRegistry = {};
+  const eventRegistry = {};
+  const messageRegistry = [];
+  const actionRegistry = {};
   const startMock = jest.fn().mockResolvedValue();
 
   class App {
@@ -13,6 +16,15 @@ jest.unstable_mockModule('@slack/bolt', () => {
     view(id, handler) {
       viewRegistry[id] = handler;
     }
+    event(name, handler) {
+      eventRegistry[name] = handler;
+    }
+    message(pattern, handler) {
+      messageRegistry.push({ pattern, handler });
+    }
+    action(id, handler) {
+      actionRegistry[id] = handler;
+    }
     start() {
       return startMock();
     }
@@ -22,6 +34,9 @@ jest.unstable_mockModule('@slack/bolt', () => {
     App,
     __commandRegistry: commandRegistry,
     __viewRegistry: viewRegistry,
+    __eventRegistry: eventRegistry,
+    __messageRegistry: messageRegistry,
+    __actionRegistry: actionRegistry,
     __startMock: startMock,
   };
 });
