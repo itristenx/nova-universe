@@ -46,11 +46,16 @@
     "ora": "^8.2.0",
     "passport": "^0.7.0",
     "pg": "^8.14.0",
+    "pino": "^9.3.2",
+    "pino-http": "^10.3.0",
+    "pino-pretty": "^11.2.2",
     "qrcode": "^1.5.4",
+    "rotating-file-stream": "^3.2.5",
     "socket.io": "^4.8.1",
     "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "syslog-client": "^1.1.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

@@ -94,6 +94,41 @@ const DEFAULT_CONFIG = {
   }
 };
 
+// Logging configuration defaults
+export const loggingConfig = {
+  level: process.env.LOG_LEVEL || 'info',
+  pretty: process.env.LOG_PRETTY === 'true',
+  file: {
+    enabled: process.env.LOG_FILE_ENABLED === 'true',
+    dir: process.env.LOG_DIR || '/var/log/nova',
+    name: process.env.LOG_FILE_NAME || 'nova-api.log',
+    rotateSize: process.env.LOG_FILE_ROTATE_SIZE || '10M',
+    interval: process.env.LOG_FILE_INTERVAL || '1d',
+    maxFiles: parseInt(process.env.LOG_FILE_MAX || '14', 10),
+  },
+  syslog: {
+    enabled: process.env.LOG_SYSLOG_ENABLED === 'true',
+    host: process.env.LOG_SYSLOG_HOST || '127.0.0.1',
+    port: parseInt(process.env.LOG_SYSLOG_PORT || '514', 10),
+    protocol: process.env.LOG_SYSLOG_PROTOCOL || 'udp',
+    tls: process.env.LOG_SYSLOG_TLS === 'true',
+    hostname: process.env.LOG_SYSLOG_HOSTNAME,
+  },
+  splunk: {
+    enabled: process.env.LOG_SPLUNK_HEC_ENABLED === 'true',
+    url: process.env.LOG_SPLUNK_HEC_URL,
+    token: process.env.LOG_SPLUNK_HEC_TOKEN,
+    index: process.env.LOG_SPLUNK_INDEX,
+    sourcetype: process.env.LOG_SPLUNK_SOURCETYPE || 'json',
+  },
+  azure: {
+    enabled: process.env.LOG_AZURE_LA_ENABLED === 'true',
+    workspaceId: process.env.LOG_AZURE_WORKSPACE_ID,
+    sharedKey: process.env.LOG_AZURE_SHARED_KEY,
+    logType: process.env.LOG_AZURE_LOG_TYPE || 'NovaAppLogs',
+  }
+};
+
 // Configuration cache
 let configCache = null;
 let cacheTimestamp = 0;

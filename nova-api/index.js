@@ -41,7 +41,8 @@ import {
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 import qrcode from 'qrcode';
-import { securityHeaders, requestLogger } from './middleware/security.js';
+import { securityHeaders } from './middleware/security.js';
+import { httpLogger } from './logger.js';
 import { validateKioskRegistration, validateTicketSubmission, validateEmail, validateActivationCode } from './middleware/validation.js';
 import { authRateLimit, apiRateLimit, kioskRateLimit } from './middleware/rateLimiter.js';
 import helmet from 'helmet';
@@ -181,7 +182,7 @@ if (process.env.DEBUG_CORS === 'true') {
 
 // Apply security middleware
 app.use(securityHeaders);
-app.use(requestLogger);
+app.use(httpLogger);
 
 // Regular CSP for other routes  
 app.use(helmet({
@@ -349,7 +350,7 @@ if (!DISABLE_AUTH) {
   } // End SAML conditional
 }
 
-const PORT = process.env.API_PORT || 3000;
+// const PORT is declared later near server startup
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
 const CERT_PATH = process.env.TLS_CERT_PATH;
 const KEY_PATH = process.env.TLS_KEY_PATH;
@@ -1765,10 +1766,27 @@ app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
 
+// Global process error handlers for robust logging
+process.on('unhandledRejection', (reason) => {
+  try {
+    logger.error('UnhandledRejection:', String(reason));
+  } catch {}
+});
+
+process.on('uncaughtException', (err) => {
+  try {
+    logger.error('UncaughtException:', err?.stack || String(err));
+  } catch {}
+});
+
+// Server startup
+const PORT = parseInt(process.env.API_PORT || '3001', 10);
 app.listen(PORT, () => {
-  console.log(`🚀 CueIT API Server running on port ${PORT}`);
-  console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
-  console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
+  try {
+    logger.info(`Nova API listening on port ${PORT}`);
+  } catch {
+    console.log(`Nova API listening on port ${PORT}`);
+  }
 });
 
 // Global error handler

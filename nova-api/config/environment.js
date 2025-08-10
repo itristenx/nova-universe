@@ -116,3 +116,34 @@ export const logEnvironmentStatus = () => {
   
   return config;
 };
+
+// Logging and SIEM environment variables
+// Local/console
+//   LOG_LEVEL=debug|info|warn|error
+//   LOG_PRETTY=true (development pretty printing)
+// File
+//   LOG_FILE_ENABLED=true
+//   LOG_DIR=/var/log/nova
+//   LOG_FILE_NAME=nova-api.log
+//   LOG_FILE_ROTATE_SIZE=10M
+//   LOG_FILE_INTERVAL=1d
+//   LOG_FILE_MAX=14
+//   LOG_FILE_COMPRESS=true
+// Syslog (RFC5424)
+//   LOG_SYSLOG_ENABLED=true
+//   LOG_SYSLOG_HOST=127.0.0.1
+//   LOG_SYSLOG_PORT=514
+//   LOG_SYSLOG_PROTOCOL=udp|tcp
+//   LOG_SYSLOG_TLS=false
+//   LOG_SYSLOG_HOSTNAME=api.example.com
+// Splunk HEC
+//   LOG_SPLUNK_HEC_ENABLED=true
+//   LOG_SPLUNK_HEC_URL=https://splunk.example.com:8088
+//   LOG_SPLUNK_HEC_TOKEN=xxxxx
+//   LOG_SPLUNK_INDEX=main
+//   LOG_SPLUNK_SOURCETYPE=json
+// Azure Log Analytics (Sentinel)
+//   LOG_AZURE_LA_ENABLED=true
+//   LOG_AZURE_WORKSPACE_ID=<workspace-id>
+//   LOG_AZURE_SHARED_KEY=<base64-shared-key>
+//   LOG_AZURE_LOG_TYPE=NovaAppLogs
