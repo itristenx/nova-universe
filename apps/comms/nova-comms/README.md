@@ -13,7 +13,12 @@ A Slack bot that integrates with the Nova Universe ticketing system, allowing us
 
 ## Features
 
-- `/new-ticket` slash command for ticket submission
+- `/it-help` and `/new-ticket` for ticket submission via modal
+- `/nova-status` summarizes current status and monitor health
+- `/nova-queue` shows Pulse queue summary
+- `/nova-feedback` submits product feedback
+- `/nova-assign TKT-xxxxx` suggests an assignee using Cosmo
+- Mentions: `@Cosmo` starts an AI conversation in thread
 - Interactive modal forms with dynamic system and urgency options
 - Automatic ticket confirmation with clickable links
 - JWT-based authentication with the Nova Platform API
@@ -43,6 +48,12 @@ A Slack bot that integrates with the Nova Universe ticketing system, allowing us
    JWT_EXPIRES_IN=1h
    VITE_ADMIN_URL=http://localhost:5173
    SLACK_PORT=3001
+   # Optional service identity (recommended)
+   COMMS_SERVICE_USER_ID=comms-service
+   COMMS_SERVICE_USER_EMAIL=comms@nova.local
+   COMMS_SERVICE_USER_NAME=Nova Comms Bot
+   COMMS_SERVICE_USER_ROLE=technician
+   COMMS_TENANT_ID=default
    ```
 
 3. Start the service:
@@ -52,63 +63,79 @@ A Slack bot that integrates with the Nova Universe ticketing system, allowing us
 
 ### Slack App Configuration
 
-1. Create a new Slack app at https://api.slack.com/apps
+1. Create a new Slack app at `https://api.slack.com/apps`
 2. Enable the following features:
    - Slash Commands
-   - Interactive Components
+   - Interactivity & Shortcuts
    - Bot Users
+   - Events API (subscribe to `app_mention`)
 
-3. Add the `/new-ticket` slash command:
-   - Command: `/new-ticket`
+3. Add slash commands:
+   - `/it-help` → Request URL: `https://your-domain.com/slack/events`
+   - `/new-ticket` → Request URL: `https://your-domain.com/slack/events`
+   - `/nova-status` → Request URL: `https://your-domain.com/slack/events`
+   - `/nova-queue` → Request URL: `https://your-domain.com/slack/events`
+   - `/nova-feedback` → Request URL: `https://your-domain.com/slack/events`
+   - `/nova-assign` → Request URL: `https://your-domain.com/slack/events`
+
+4. Set up Interactivity:
    - Request URL: `https://your-domain.com/slack/events`
-   - Short Description: "Submit a new support ticket"
 
-4. Set up Interactive Components:
-   - Request URL: `https://your-domain.com/slack/events`
+5. Events API Subscriptions:
+   - Subscribe to bot events: `app_mention`
 
-5. Configure OAuth & Permissions with these scopes:
-   - `commands` - Add slash commands
-   - `chat:write` - Send messages
-   - `users:read` - View user information
+6. OAuth & Permissions Scopes:
+   - `commands`
+   - `chat:write`
+   - `chat:write.public` (optional for public channels)
+   - `users:read`
+   - `app_mentions:read`
+   - `reactions:write` (optional)
 
 ## API Integration
 
-The Slack bot communicates with the Nova Platform API using JWT tokens:
+The Slack bot communicates with the Nova Platform API using a service JWT:
 
-- Fetches system and urgency configuration from `/api/config`
-- Submits tickets via `/submit-ticket`
-- Handles authentication and error responses
+- Fetches config from `/api/config`
+- Creates tickets via `/api/v1/orbit/tickets`
+- Shows queue metrics via `/api/v1/pulse/queues/metrics`
+- Submits feedback via `/api/v1/orbit/feedback`
+- Starts Cosmo conversations via `/api/v2/synth/conversation/start`
 
 ## Commands
 
-### `/new-ticket`
-
+### `/it-help` and `/new-ticket`
 Opens an interactive modal for ticket submission with fields:
 - Name (required)
-- Email (required)  
+- Email (required)
 - Title (required)
 - System (dropdown, loaded from API config)
 - Urgency (dropdown, loaded from API config)
 - Description (optional)
 
+### `/nova-status`
+Displays aggregated help desk status and monitor uptime.
+
+### `/nova-queue`
+Shows a snapshot of Pulse queues and open counts.
+
+### `/nova-feedback`
+Sends general feedback to the platform.
+
+### `/nova-assign TKT-xxxxx`
+Asks Cosmo to suggest an assignee for a ticket.
+
 ## Local Testing
+
 Slack slash commands require a public HTTPS endpoint. While developing you can expose your local service using [ngrok](https://ngrok.com/):
 
 ```bash
 npx ngrok http $SLACK_PORT
 ```
 
-Use the HTTPS forwarding address printed by ngrok as the request URL for your `/new-ticket` command.
+Use the HTTPS forwarding address printed by ngrok as the request URL for your commands.
 
-## Development
-
-### Running Tests
-
-```bash
-npm test
-```
-
-### Environment Variables
+## Environment Variables
 
 | Variable | Description | Required |
 |----------|-------------|----------|
@@ -117,18 +144,9 @@ npm test
 | API_URL | Nova Platform API base URL | Yes |
 | JWT_SECRET | Secret for JWT generation | Yes |
 | JWT_EXPIRES_IN | JWT expiration time | No (default: 1h) |
-| VITE_ADMIN_URL | Admin panel URL for links | No |
+| VITE_ADMIN_URL | Admin portal URL for links | No |
 | SLACK_PORT | Port for the service | No (default: 3001) |
-
-### Error Handling
-
-The bot includes comprehensive error handling:
-- Network timeouts and connection errors
-- Invalid API responses
-- Missing configuration data
-- Slack API errors
-
-When errors occur, users receive helpful messages and the bot attempts to provide fallback functionality.
+| COMMS_SERVICE_USER_* | Optional service identity for Nova API JWTs | No |
 
 ## Deployment
 
@@ -155,35 +173,4 @@ CMD ["npm", "start"]
 ## Security
 
 - All requests verified using Slack signing secrets
-- JWT tokens used for API authentication
-- Environment variables for sensitive configuration
-- Input validation on all user data
-
-## Monitoring
-
-The service logs:
-- Incoming slash commands
-- API requests and responses
-- Error conditions
-- Performance metrics
-
-Consider integrating with monitoring services for production deployments.
-
-## Community & Contributing
-- [Contributing Guidelines](../.github/CONTRIBUTING.md)
-- [Code of Conduct](../.github/CODE_OF_CONDUCT.md)
-- [Security Policy](../.github/SECURITY.md)
-- [Open an Issue](https://github.com/itristenx/nova-universe/issues)
-- [Submit a Pull Request](https://github.com/itristenx/nova-universe/pulls)
-
----
-
-## License
-
-This project is licensed under the [MIT License](../LICENSE).
-
----
-
-## Credits & Acknowledgments
-- [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) for README inspiration
-- All contributors and open source dependencies
+- Service JWTs include tenant and role claims used by Nova API auth

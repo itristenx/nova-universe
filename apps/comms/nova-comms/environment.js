@@ -12,6 +12,12 @@ export function validateEnv() {
   return {
     port: parseInt(process.env.SLACK_PORT) || 3001,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1h',
-    adminUrl: process.env.VITE_ADMIN_URL
+    adminUrl: process.env.VITE_ADMIN_URL,
+    // Optional service identity for JWTs used to call Nova API
+    serviceUserId: process.env.COMMS_SERVICE_USER_ID || 'comms-service',
+    serviceUserEmail: process.env.COMMS_SERVICE_USER_EMAIL || 'comms@nova.local',
+    serviceUserName: process.env.COMMS_SERVICE_USER_NAME || 'Nova Comms Bot',
+    serviceUserRole: process.env.COMMS_SERVICE_USER_ROLE || 'technician',
+    tenantId: process.env.COMMS_TENANT_ID || 'default'
   };
 }
