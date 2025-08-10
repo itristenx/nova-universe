@@ -239,6 +239,12 @@ export const KioskActivationPage: React.FC = () => {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Manual Activation
           </h2>
+          <div className="mb-3">
+            <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${waiting && !paired ? 'bg-blue-100 text-blue-800 animate-pulse' : paired ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+              <span className={`w-2 h-2 rounded-full ${waiting && !paired ? 'bg-blue-500' : paired ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+              {waiting && !paired ? 'Waiting for kiosk...' : paired ? 'Kiosk Paired' : 'Idle'}
+            </span>
+          </div>
           <div className="space-y-4">
             <Input
               label="Kiosk ID"
