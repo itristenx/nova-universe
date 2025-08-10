@@ -1,17 +1,14 @@
-import { SecurityHub } from '@/components/security/security-hub';
-import { setRequestLocale } from 'next-intl/server';
+import SecurityPageClient from './page.client';
 
 interface SecurityPageProps {
-  params: Promise<{ locale: string }>;
+  params: { locale: string };
 }
 
-export default async function SecurityPage({ params }: SecurityPageProps) {
-  const { locale } = await params;
-  
-  // Enable static rendering
-  setRequestLocale(locale);
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-  return <SecurityHub />;
+export default function SecurityPage(_props: SecurityPageProps) {
+  return <SecurityPageClient />;
 }
 
 export function generateStaticParams() {

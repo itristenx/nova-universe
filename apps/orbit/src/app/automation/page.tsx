@@ -90,6 +90,7 @@ export default function IntelligentAutomation() {
   const [selectedTab, setSelectedTab] = useState('workflows');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Load automation data from API
   useEffect(() => {
@@ -114,11 +115,9 @@ export default function IntelligentAutomation() {
               trigger: { type: 'ticket_created', conditions: ['priority=high'] },
               actions: [{ id: 'act-001', type: 'assign_ticket', parameters: { algorithm: 'skills_based' }, order: 1 }],
               conditions: [{ field: 'priority', operator: 'equals', value: 'high' }],
-              metrics: { totalRuns: 1247, successRate: 94.2, avgExecutionTime: 1.8, lastRun: new Date().toISOString() },
-              schedule: { type: 'event_driven' },
-              isActive: true,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
+              metrics: { totalRuns: 1247, successRate: 94.2, avgExecutionTime: 1.8, lastRun: new Date() },
+              createdBy: 'system',
+              lastModified: new Date()
             }
           ]);
         }
@@ -127,20 +126,19 @@ export default function IntelligentAutomation() {
         const insightsResponse = await fetch('/api/v2/automation/insights');
         if (insightsResponse.ok) {
           const insightsData = await insightsResponse.json();
-          setInsights(insightsData.insights || []);
+          setPredictiveInsights(insightsData.insights || []);
         } else {
           // Fallback to basic insights
-          setInsights([
+          setPredictiveInsights([
             {
               id: 'insight-001',
-              type: 'efficiency',
-              title: 'Workflow Optimization Opportunity',
-              description: 'Smart assignment workflow can be optimized for 15% better performance',
-              impact: 'high',
-              confidence: 0.89,
-              recommendations: ['Enable machine learning refinement', 'Add customer satisfaction feedback loop'],
-              data: { currentEfficiency: 85, potentialEfficiency: 98 },
-              createdAt: new Date().toISOString()
+              type: 'sla_risk',
+              title: 'High SLA Risk Detected',
+              description: '15 tickets are at risk of breaching SLA in the next 2 hours',
+              confidence: 92,
+              severity: 'high',
+              suggestedAction: 'Reassign tickets to available agents or escalate to management',
+              data: { affected_tickets: 15, time_window: '2_hours' }
             }
           ]);
         }
@@ -149,121 +147,13 @@ export default function IntelligentAutomation() {
         console.error('Failed to load automation data:', error);
         // Use minimal fallback data
         setWorkflows([]);
-        setInsights([]);
+        setPredictiveInsights([]);
       } finally {
         setLoading(false);
       }
     };
     
     loadAutomationData();
-          loadAutomationData();
-  }, []);
-      },
-      {
-        id: 'wf-002',
-        name: 'SLA Breach Predictor',
-        description: 'Predicts potential SLA breaches and takes proactive actions',
-        type: 'sla_prediction',
-        status: 'active',
-        trigger: {
-          type: 'time_based',
-          conditions: ['check_interval=15_minutes'],
-          schedule: '*/15 * * * *'
-        },
-        actions: [
-          {
-            id: 'act-002',
-            type: 'send_notification',
-            parameters: { recipients: ['managers'], urgency: 'high' },
-            order: 1
-          },
-          {
-            id: 'act-003',
-            type: 'escalate',
-            parameters: { escalation_level: 1 },
-            order: 2
-          }
-        ],
-        conditions: [
-          { field: 'time_remaining', operator: 'less_than', value: '2_hours' },
-          { field: 'complexity_score', operator: 'greater_than', value: '7' }
-        ],
-        metrics: {
-          totalRuns: 3456,
-          successRate: 89.1,
-          avgExecutionTime: 5.7,
-          lastRun: new Date('2024-01-15T11:15:00'),
-          impactScore: 9.2
-        },
-        createdBy: 'system',
-        lastModified: new Date('2024-01-12T09:15:00')
-      },
-      {
-        id: 'wf-003',
-        name: 'Knowledge Auto-Suggest',
-        description: 'Automatically suggests relevant knowledge articles based on ticket content',
-        type: 'knowledge_recommendation',
-        status: 'active',
-        trigger: {
-          type: 'ticket_created',
-          conditions: ['has_description=true']
-        },
-        actions: [
-          {
-            id: 'act-004',
-            type: 'suggest_knowledge',
-            parameters: { min_relevance: 0.7, max_suggestions: 5 },
-            order: 1
-          }
-        ],
-        conditions: [
-          { field: 'description_length', operator: 'greater_than', value: '50' }
-        ],
-        metrics: {
-          totalRuns: 892,
-          successRate: 76.4,
-          avgExecutionTime: 1.3,
-          lastRun: new Date('2024-01-15T11:45:00'),
-          impactScore: 6.8
-        },
-        createdBy: 'admin',
-        lastModified: new Date('2024-01-08T16:30:00')
-      }
-    ];
-
-    const mockInsights: PredictiveInsight[] = [
-      {
-        id: 'insight-001',
-        type: 'sla_risk',
-        title: 'High SLA Risk Detected',
-        description: '15 tickets are at risk of breaching SLA in the next 2 hours',
-        confidence: 92,
-        severity: 'high',
-        suggestedAction: 'Reassign tickets to available agents or escalate to management',
-        data: { affected_tickets: 15, time_window: '2_hours' }
-      },
-      {
-        id: 'insight-002',
-        type: 'workload_prediction',
-        title: 'Workload Spike Predicted',
-        description: 'Expected 40% increase in ticket volume next Monday morning',
-        confidence: 78,
-        severity: 'medium',
-        suggestedAction: 'Schedule additional staff for Monday morning shift',
-        data: { predicted_increase: 40, timeframe: 'monday_morning' }
-      },
-      {
-        id: 'insight-003',
-        type: 'trending_issues',
-        title: 'Password Reset Spike',
-        description: 'Password reset requests increased 200% in the last 24 hours',
-        confidence: 95,
-        severity: 'medium',
-        suggestedAction: 'Create automated self-service flow for password resets',
-        data: { category: 'password_reset', increase: 200, timeframe: '24_hours' }
-      }
-    ];
-
   }, []);
 
   // Filter workflows
