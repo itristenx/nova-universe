@@ -306,13 +306,15 @@ export function securityLogging(req, res, next) {
  */
 export function requestLogger(req, res, next) {
   const start = Date.now();
+  const requestId = req.id || req.headers['x-request-id'] || undefined;
   
   // Log request
   logger.info('HTTP Request', {
     method: req.method,
     url: req.url,
     userAgent: req.get('User-Agent'),
-    ip: req.ip
+    ip: req.ip,
+    requestId
   });
   
   // Log response when finished
@@ -322,7 +324,8 @@ export function requestLogger(req, res, next) {
       method: req.method,
       url: req.url,
       statusCode: res.statusCode,
-      duration: `${duration}ms`
+      duration: `${duration}ms`,
+      requestId
     });
   });
   

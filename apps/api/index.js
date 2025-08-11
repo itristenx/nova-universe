@@ -252,10 +252,8 @@ const swaggerDefinition = {
     description: 'API documentation for Nova Universe backend',
   },
   servers: [
-    {
-      url: '/api/v1',
-      description: 'Nova Platform API server (v1)',
-    },
+    { url: '/api/v2', description: 'Nova Platform API server (v2)' },
+    { url: '/api/v1', description: 'Nova Platform API server (v1, legacy)' },
   ],
 };
 
@@ -1729,7 +1727,7 @@ app.use('/api/analytics', analyticsRouter);
 app.use('/api/monitoring', monitoringRouter);
 app.use('/api/v2/sentinel', monitoringRouter);
 app.use('/api/v2/goalert', goalertProxyRouter);
-app.use('/api/v2/notifications', notificationsRouter); // Universal Notification Platform
+app.use('/api/v2/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
 app.use('/api/ai-fabric', aiFabricRouter);
 app.use('/api/setup', setupRouter);
 

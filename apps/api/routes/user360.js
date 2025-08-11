@@ -287,7 +287,11 @@ router.get('/activity/:helix_uid', authenticateJWT, async (req, res) => {
     }
 
     const since = new Date(Date.now() - (parseInt(hours) * 60 * 60 * 1000));
-    const activity = await novaIntegrationLayer.getUserActivity(helix_uid, since);
+    const integration = await getIntegrationLayer();
+  if (!integration) {
+    return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+  }
+  const activity = await integration.getUserActivity(helix_uid, since);
     
     res.json({
       activity,
