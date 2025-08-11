@@ -64,7 +64,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
+    CMD curl -f http://localhost:3000/ || exit 1
 
 # Use tini as PID 1
 ENTRYPOINT ["/sbin/tini", "--"]
@@ -72,13 +72,7 @@ ENTRYPOINT ["/sbin/tini", "--"]
 # Start the application
 CMD ["node", "server.js"]
 
-<<<<<<< Current (Your changes)
-# Start application
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "server.js"]
-=======
 # Labels
 LABEL maintainer="Nova Universe Team"
 LABEL version="1.0.0"
 LABEL description="Nova Universe Orbit - End User Portal"
->>>>>>> Incoming (Background Agent changes)

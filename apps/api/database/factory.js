@@ -146,9 +146,9 @@ class DatabaseFactory {
     };
 
     // Check PostgreSQL health
-    if (this.isDatabaseAvailable('postgresql')) {
+    if (this.isDatabaseAvailable('core_db')) {
       try {
-        status.health_checks.postgresql = await postgresManager.healthCheck();
+        status.health_checks.postgresql = await this.coreDb.healthCheck();
       } catch (error) {
         status.health_checks.postgresql = {
           status: 'error',

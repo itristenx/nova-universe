@@ -10,22 +10,9 @@ import { body, query, param, validationResult } from 'express-validator';
 import rateLimit from 'express-rate-limit';
 import { authenticateJWT, requirePermission, createRateLimit } from '../middleware/auth.js';
 import { novaNotificationPlatform } from '../../lib/notification/nova-notification-platform.js';
-import winston from 'winston';
+import { logger } from '../logger.js';
 
 const router = express.Router();
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/notification-api.log' })
-  ]
-});
-
 // Rate limiting for notification endpoints
 const notificationRateLimit = createRateLimit(60 * 1000, 100); // 100 requests per minute
 const bulkRateLimit = createRateLimit(60 * 1000, 10);         // 10 bulk requests per minute

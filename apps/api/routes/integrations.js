@@ -5,6 +5,16 @@ import { deleteConfigByKey, fetchConfigByKey } from '../utils/dbUtils.js';
 
 const router = express.Router();
 
+async function getIntegrationLayer() {
+  try {
+    const mod = await import('../../lib/integration/nova-integration-layer.js');
+    return mod.novaIntegrationLayer;
+  } catch (e) {
+    logger.warn('Integration layer unavailable; skipping NIL-dependent route', { error: e?.message });
+    return null;
+  }
+}
+
 /**
  * @swagger
  * /api/v1/integrations:
@@ -349,10 +359,10 @@ router.post('/:id/test', async (req, res, next) => {
  */
 router.get('/connectors/health', async (req, res) => {
   try {
-    // Import here to avoid circular dependencies
-    const { novaIntegrationLayer } = await import('../../lib/integration/nova-integration-layer.js');
-    
-    const healthStatuses = await novaIntegrationLayer.getConnectorHealth();
+    const layer = await getIntegrationLayer();
+    if (!layer) return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+
+    const healthStatuses = await layer.getConnectorHealth();
     
     res.json({
       connectors: healthStatuses,
@@ -384,14 +394,11 @@ router.post('/connectors/:id/sync', async (req, res) => {
   try {
     const { id } = req.params;
     const { type = 'incremental', dryRun = false } = req.body;
-    
-    // Import here to avoid circular dependencies
-    const { novaIntegrationLayer } = await import('../../lib/integration/nova-integration-layer.js');
-    
-    const result = await novaIntegrationLayer.executeSync(id, {
-      type,
-      dryRun
-    });
+
+    const layer = await getIntegrationLayer();
+    if (!layer) return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+
+    const result = await layer.executeSync(id, { type, dryRun });
     
     res.json({
       success: true,
@@ -443,11 +450,11 @@ router.post('/actions', async (req, res) => {
         code: 'MISSING_FIELDS' 
       });
     }
+
+    const layer = await getIntegrationLayer();
+    if (!layer) return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
     
-    // Import here to avoid circular dependencies
-    const { novaIntegrationLayer } = await import('../../lib/integration/nova-integration-layer.js');
-    
-    const result = await novaIntegrationLayer.executeAction({
+    const result = await layer.executeAction({
       connectorId,
       action,
       target,

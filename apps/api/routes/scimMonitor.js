@@ -1,13 +1,29 @@
 // nova-api/routes/scimMonitor.js
 // SCIM Monitoring and Logging Routes
 import express from 'express';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+// import { PrismaClient } from '../../../prisma/generated/core/index.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimiter } from '../middleware/rateLimiter.js';
 import { logger } from '../logger.js';
 
+async function getPrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../prisma/generated/core/index.js');
+    const PrismaClient = mod.PrismaClient;
+    return new PrismaClient();
+  } catch {
+    return null;
+  }
+}
+
 const router = express.Router();
-const prisma = new PrismaClient();
+
+router.get('/health', async (req, res) => {
+  const prisma = await getPrisma();
+  if (!prisma) return res.json({ status: 'degraded', prisma: 'unavailable' });
+  return res.json({ status: 'ok' });
+});
 
 // Rate limiter for SCIM monitoring endpoints
 const scimMonitorRateLimit = createRateLimiter({
@@ -456,6 +472,11 @@ export async function logScimOperation({
   duration = null
 }) {
   try {
+    const prisma = await getPrisma();
+    if (!prisma) {
+      logger.warn('Attempted to log SCIM operation with disabled Prisma.');
+      return;
+    }
     await prisma.scimLog.create({
       data: {
         operation,

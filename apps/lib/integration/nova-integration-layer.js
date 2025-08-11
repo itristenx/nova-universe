@@ -12,7 +12,26 @@
 
 import { EventEmitter } from 'events';
 import crypto from 'crypto';
-import axios from 'axios';
+let axios;
+(async () => {
+  try {
+    // Try standard ESM import
+    axios = (await import('axios')).default || (await import('axios'));
+  } catch (e) {
+    try {
+      // Fallback: attempt CJS path if needed
+      axios = (await import('axios/index.js')).default;
+    } catch (e2) {
+      // As a last resort, create a minimal fetch-like shim
+      axios = async function(url, opts = {}) {
+        const fetchMod = await import('node-fetch');
+        const res = await fetchMod.default(url, opts);
+        const data = await res.json().catch(() => null);
+        return { status: res.status, data };
+      };
+    }
+  }
+})();
 import rateLimit from 'express-rate-limit';
 
 // Prisma clients - will be imported dynamically to handle missing schemas gracefully
@@ -20,6 +39,8 @@ let CorePrismaClient, IntegrationPrismaClient;
 
 // Circuit breaker - will be imported dynamically if available
 let CircuitBreaker;
+
+const prismaDisabled = process.env.PRISMA_DISABLED === 'true';
 
 // ============================================================================
 // CORE TYPES AND INTERFACES
@@ -215,15 +236,20 @@ export class NovaIntegrationLayer extends EventEmitter {
    */
   async initializePrismaClients() {
     try {
+      if (prismaDisabled) {
+        this.logger.warn('Prisma disabled via PRISMA_DISABLED=true');
+        this.prisma = null;
+        return;
+      }
       // Try to import Prisma clients
       try {
-        const coreModule = await import('@prisma/client');
+        const coreModule = await import('../../../prisma/generated/core/index.js');
         CorePrismaClient = coreModule.PrismaClient;
         
         const integrationModule = await import('../../../prisma/generated/integration/index.js');
         IntegrationPrismaClient = integrationModule.PrismaClient;
         
-        this.prisma = new IntegrationPrismaClient();
+        this.prisma = new CorePrismaClient();
         this.logger.info('Prisma clients initialized successfully');
       } catch (importError) {
         this.logger.warn('Prisma clients not available:', importError.message);

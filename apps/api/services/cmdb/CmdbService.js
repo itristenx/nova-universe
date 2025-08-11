@@ -1,17 +1,35 @@
-import { PrismaClient as CmdbPrismaClient } from '../../../../prisma/generated/cmdb/index.js';
-import { PrismaClient as CorePrismaClient } from '../../../../prisma/generated/core/index.js';
 import { logger } from '../../logger.js';
 
-// Initialize CMDB Prisma client
-const cmdbClient = new CmdbPrismaClient();
+async function getCmdbPrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../../prisma/generated/cmdb/index.js');
+    return new mod.PrismaClient();
+  } catch {
+    return null;
+  }
+}
 
-// Initialize Core database client for user lookups
-const coreClient = new CorePrismaClient();
+async function getCorePrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../../prisma/generated/core/index.js');
+    return new mod.PrismaClient();
+  } catch {
+    return null;
+  }
+}
 
 class CmdbService {
   constructor() {
-    this.client = cmdbClient;
-    this.coreDb = coreClient;
+    this.clientPromise = getCmdbPrisma();
+    this.coreDbPromise = getCorePrisma();
+  }
+
+  async _getClients() {
+    const [client, coreDb] = await Promise.all([this.clientPromise, this.coreDbPromise]);
+    if (!client) throw new Error('CMDB Prisma client unavailable');
+    return { client, coreDb };
   }
 
   /**
@@ -19,35 +37,27 @@ class CmdbService {
    */
   async getConfigurationItems(filters = {}, pagination = { page: 1, limit: 50 }) {
     try {
+      const { client } = await this._getClients();
       const where = this._buildCiWhereClause(filters);
       const skip = (pagination.page - 1) * pagination.limit;
 
       const [items, total] = await Promise.all([
-        this.client.configurationItem.findMany({
+        client.configurationItem.findMany({
           where,
           include: {
             ciType_rel: true,
             outgoingRelationships: {
-              include: {
-                targetCi: true,
-                relationshipType: true
-              }
+              include: { targetCi: true, relationshipType: true }
             },
             incomingRelationships: {
-              include: {
-                sourceCi: true,
-                relationshipType: true
-              }
+              include: { sourceCi: true, relationshipType: true }
             }
           },
-          orderBy: [
-            { updatedAt: 'desc' },
-            { name: 'asc' }
-          ],
+          orderBy: [ { updatedAt: 'desc' }, { name: 'asc' } ],
           skip,
           take: pagination.limit
         }),
-        this.client.configurationItem.count({ where })
+        client.configurationItem.count({ where })
       ]);
 
       return {
@@ -72,51 +82,18 @@ class CmdbService {
    */
   async getConfigurationItem(identifier, options = {}) {
     try {
-      const where = this._isUUID(identifier) 
-        ? { id: identifier }
-        : { ciId: identifier };
-
-      const include = {
-        ciType_rel: true,
-        hardwareDetails: true,
-        softwareDetails: true,
-        applicationDetails: true,
-        networkDetails: true,
-        serviceDetails: true,
-        databaseDetails: true,
-        virtualDetails: true,
-        facilityDetails: true
-      };
-
+      const { client } = await this._getClients();
+      const where = this._isUUID(identifier) ? { id: identifier } : { ciId: identifier };
+      const include = { ciType_rel: true, hardwareDetails: true, softwareDetails: true, applicationDetails: true, networkDetails: true, serviceDetails: true, databaseDetails: true, virtualDetails: true, facilityDetails: true };
       if (options.includeRelationships) {
-        include.outgoingRelationships = {
-          include: {
-            targetCi: true,
-            relationshipType: true
-          }
-        };
-        include.incomingRelationships = {
-          include: {
-            sourceCi: true,
-            relationshipType: true
-          }
-        };
+        include.outgoingRelationships = { include: { targetCi: true, relationshipType: true } };
+        include.incomingRelationships = { include: { sourceCi: true, relationshipType: true } };
       }
-
-      const ci = await this.client.configurationItem.findFirst({
-        where,
-        include
-      });
-
+      const ci = await client.configurationItem.findFirst({ where, include });
       if (options.includeHistory && ci) {
-        const auditLogs = await this.client.ciAuditLog.findMany({
-          where: { ciId: ci.id },
-          orderBy: { timestamp: 'desc' },
-          take: 50
-        });
+        const auditLogs = await client.ciAuditLog.findMany({ where: { ciId: ci.id }, orderBy: { timestamp: 'desc' }, take: 50 });
         ci.auditHistory = auditLogs;
       }
-
       return ci;
     } catch (error) {
       logger.error('Error fetching Configuration Item:', error);
@@ -129,11 +106,12 @@ class CmdbService {
    */
   async createConfigurationItem(ciData) {
     try {
+      const { client } = await this._getClients();
       // Generate CI ID (CI123456 format)
       const ciId = await this._generateCiId();
 
       // Validate CI Type exists
-      const ciType = await this.client.ciType.findUnique({
+      const ciType = await client.ciType.findUnique({
         where: { id: ciData.ciType }
       });
 
@@ -142,7 +120,7 @@ class CmdbService {
       }
 
       // Create the CI
-      const ci = await this.client.configurationItem.create({
+      const ci = await client.configurationItem.create({
         data: {
           ...ciData,
           ciId,
@@ -169,18 +147,19 @@ class CmdbService {
    */
   async updateConfigurationItem(identifier, updateData) {
     try {
+      const { client } = await this._getClients();
       const where = this._isUUID(identifier) 
         ? { id: identifier }
         : { ciId: identifier };
 
       // Get existing CI for audit trail
-      const existingCi = await this.client.configurationItem.findFirst({ where });
+      const existingCi = await client.configurationItem.findFirst({ where });
       if (!existingCi) {
         return null;
       }
 
       // Update CI
-      const ci = await this.client.configurationItem.update({
+      const ci = await client.configurationItem.update({
         where: { id: existingCi.id },
         data: updateData,
         include: {
@@ -204,17 +183,18 @@ class CmdbService {
    */
   async deleteConfigurationItem(identifier, deletedBy) {
     try {
+      const { client } = await this._getClients();
       const where = this._isUUID(identifier) 
         ? { id: identifier }
         : { ciId: identifier };
 
-      const ci = await this.client.configurationItem.findFirst({ where });
+      const ci = await client.configurationItem.findFirst({ where });
       if (!ci) {
         return false;
       }
 
       // Check for active relationships
-      const relationshipCount = await this.client.ciRelationship.count({
+      const relationshipCount = await client.ciRelationship.count({
         where: {
           OR: [
             { sourceCiId: ci.id },
@@ -228,7 +208,7 @@ class CmdbService {
         throw new Error('Cannot delete CI with active relationships. Remove relationships first.');
       }
 
-      await this.client.configurationItem.delete({ where: { id: ci.id } });
+      await client.configurationItem.delete({ where: { id: ci.id } });
 
       // Create audit log
       await this._createAuditLog(ci.id, 'DELETE', null, null, null, deletedBy);
@@ -246,7 +226,8 @@ class CmdbService {
    */
   async getCiTypes() {
     try {
-      return await this.client.ciType.findMany({
+      const { client } = await this._getClients();
+      return await client.ciType.findMany({
         where: { isActive: true },
         include: {
           parentType: true,
@@ -268,7 +249,8 @@ class CmdbService {
    */
   async createCiType(typeData) {
     try {
-      const ciType = await this.client.ciType.create({
+      const { client } = await this._getClients();
+      const ciType = await client.ciType.create({
         data: typeData,
         include: {
           parentType: true
@@ -288,7 +270,8 @@ class CmdbService {
    */
   async getBusinessServices() {
     try {
-      return await this.client.businessService.findMany({
+      const { client } = await this._getClients();
+      return await client.businessService.findMany({
         include: {
           configurationItems: {
             include: {
@@ -321,18 +304,18 @@ class CmdbService {
         totalRelationships,
         discoveredCis
       ] = await Promise.all([
-        this.client.configurationItem.count(),
-        this.client.configurationItem.count({ where: { ciStatus: 'Active' } }),
-        this.client.configurationItem.count({
+        this._getClients().then(({ client }) => client.configurationItem.count()),
+        this._getClients().then(({ client }) => client.configurationItem.count({ where: { ciStatus: 'Active' } })),
+        this._getClients().then(({ client }) => client.configurationItem.count({
           where: {
             updatedAt: {
               lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
             }
           }
-        }),
+        })),
         this._getOrphanedCisCount(),
-        this.client.ciRelationship.count({ where: { isActive: true } }),
-        this.client.configurationItem.count({ where: { isDiscovered: true } })
+        this._getClients().then(({ client }) => client.ciRelationship.count({ where: { isActive: true } })),
+        this._getClients().then(({ client }) => client.configurationItem.count({ where: { isDiscovered: true } }))
       ]);
 
       // Calculate completeness score (percentage of CIs with required fields)
@@ -360,9 +343,9 @@ class CmdbService {
       };
 
       // Store the health record
-      await this.client.cmdbHealth.create({
+      await this._getClients().then(({ client }) => client.cmdbHealth.create({
         data: health
-      });
+      }));
 
       return health;
     } catch (error) {
@@ -388,7 +371,8 @@ class CmdbService {
 
     // Validate user exists in core database
     if (userId) {
-      const user = await this.coreDb.user.findUnique({
+      const { coreDb } = await this._getClients();
+      const user = await coreDb.user.findUnique({
         where: { id: userId },
         select: { id: true, name: true, email: true }
       });
@@ -399,7 +383,8 @@ class CmdbService {
 
     // Validate support group exists
     if (supportGroupId) {
-      const supportGroup = await this.client.supportGroup.findUnique({
+      const { client } = await this._getClients();
+      const supportGroup = await client.supportGroup.findUnique({
         where: { id: supportGroupId }
       });
       if (!supportGroup) {
@@ -408,7 +393,8 @@ class CmdbService {
     }
 
     // Check for existing ownership of the same type
-    const existingOwnership = await this.client.ciOwnership.findUnique({
+    const { client } = await this._getClients();
+    const existingOwnership = await client.ciOwnership.findUnique({
       where: {
         ciId_ownershipType_userId: {
           ciId,
@@ -422,7 +408,7 @@ class CmdbService {
       throw new Error('User already has this ownership type for this CI');
     }
 
-    const ownership = await this.client.ciOwnership.create({
+    const ownership = await client.ciOwnership.create({
       data: {
         ciId,
         ownershipType,
@@ -439,7 +425,8 @@ class CmdbService {
   }
 
   async removeOwnership(ciId, ownershipType, userId) {
-    await this.client.ciOwnership.delete({
+    const { client } = await this._getClients();
+    await client.ciOwnership.delete({
       where: {
         ciId_ownershipType_userId: {
           ciId,
@@ -453,7 +440,8 @@ class CmdbService {
   }
 
   async updateOwnership(ciId, ownershipType, userId, updateData) {
-    const ownership = await this.client.ciOwnership.update({
+    const { client } = await this._getClients();
+    const ownership = await client.ciOwnership.update({
       where: {
         ciId_ownershipType_userId: {
           ciId,
@@ -468,7 +456,8 @@ class CmdbService {
   }
 
   async getCiOwnership(ciId) {
-    const ownership = await this.client.ciOwnership.findMany({
+    const { client } = await this._getClients();
+    const ownership = await client.ciOwnership.findMany({
       where: { ciId, isActive: true },
       include: {
         supportGroup: {
@@ -485,7 +474,8 @@ class CmdbService {
     // Enrich with user details from core database
     const enrichedOwnership = await Promise.all(
       ownership.map(async (owner) => {
-        const user = await this.coreDb.user.findUnique({
+        const { coreDb } = await this._getClients();
+        const user = await coreDb.user.findUnique({
           where: { id: owner.userId },
           select: { id: true, name: true, email: true, department: true }
         });
@@ -497,13 +487,14 @@ class CmdbService {
   }
 
   async getUserOwnedCis(userId, ownershipType = null) {
+    const { client } = await this._getClients();
     const where = {
       userId,
       isActive: true,
       ...(ownershipType && { ownershipType })
     };
 
-    const ownership = await this.client.ciOwnership.findMany({
+    const ownership = await client.ciOwnership.findMany({
       where,
       include: {
         configurationItem: {
@@ -590,7 +581,8 @@ class CmdbService {
       const number = Math.floor(100000 + Math.random() * 900000);
       ciId = `${prefix}${number}`;
       
-      const existing = await this.client.configurationItem.findUnique({
+      const { client } = await this._getClients();
+      const existing = await client.configurationItem.findUnique({
         where: { ciId }
       });
       exists = !!existing;
@@ -612,7 +604,8 @@ class CmdbService {
    */
   async _createAuditLog(ciId, operation, fieldName, oldValue, newValue, changedBy) {
     try {
-      await this.client.ciAuditLog.create({
+      const { client } = await this._getClients();
+      await client.ciAuditLog.create({
         data: {
           ciId,
           operation,
@@ -652,7 +645,8 @@ class CmdbService {
    */
   async _getOrphanedCisCount() {
     try {
-      const result = await this.client.configurationItem.findMany({
+      const { client } = await this._getClients();
+      const result = await client.configurationItem.findMany({
         where: {
           AND: [
             {
@@ -684,12 +678,13 @@ class CmdbService {
     try {
       const requiredFields = ['name', 'ciType', 'environment', 'owner'];
       
-      const totalCis = await this.client.configurationItem.count();
+      const { client } = await this._getClients();
+      const totalCis = await client.configurationItem.count();
       if (totalCis === 0) return 100;
 
       let completeCount = 0;
       
-      const cis = await this.client.configurationItem.findMany({
+      const cis = await client.configurationItem.findMany({
         select: {
           name: true,
           ciType: true,
