@@ -247,7 +247,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
             <SelectValue placeholder="Select escalation group" />
           </SelectTrigger>
           <SelectContent>
-            {supportGroups?.supportGroups?.filter((sg: any) => sg.id !== group?.id).map((sg: any) => (
+            {supportGroups?.supportGroups?.filter((sg: SupportGroup) => sg.id !== group?.id).map((sg: SupportGroup) => (
               <SelectItem key={sg.id} value={sg.id}>
                 {sg.name}
               </SelectItem>
