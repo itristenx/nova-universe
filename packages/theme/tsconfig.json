@@ -3,7 +3,11 @@
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": ".",
-    "composite": true
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": false,
+    "emitDeclarationOnly": false
   },
-  "include": ["theme.ts"]
+  "include": ["theme.ts"],
+  "exclude": ["node_modules", "dist"]
 }

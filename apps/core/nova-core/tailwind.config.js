@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-import { heroUITheme } from '@nova-universe/design-tokens'
+import { heroUITheme } from '../../../packages/design-tokens/dist/index.esm.js'
 
 export default {
   content: [

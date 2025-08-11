@@ -9,12 +9,14 @@
     },
     "composite": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "types": ["react", "react-dom", "node"],
+    "skipLibCheck": true,
+    "noEmit": true
   },
   "include": [
-    "src",
-    "../../design/**/*",
-    "../../packages/theme/**/*"
+    "src"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
