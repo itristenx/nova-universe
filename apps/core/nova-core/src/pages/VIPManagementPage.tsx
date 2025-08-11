@@ -29,7 +29,7 @@ export const VIPManagementPage: React.FC = () => {
   const updateVip = async (user: User, isVip: boolean, vipLevel: string) => {
     try {
       await api.updateVipStatus(user.id, { isVip, vipLevel });
-      setUsers(users.map(u => u.id === user.id ? { ...u, isVip, vipLevel } as any : u));
+      setUsers(users.map(u => u.id === user.id ? { ...u, isVip, vipLevel } : u));
       addToast({ type: 'success', title: 'Updated', description: 'VIP status saved' });
     } catch (e) {
       console.error(e);
