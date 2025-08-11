@@ -13,11 +13,17 @@ let prismaInstance: PrismaClient;
 if (process.env.NODE_ENV === 'production') {
   prismaInstance = new PrismaClient({
     log: ['error', 'warn'],
+    datasources: {
+      core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL }
+    }
   });
 } else {
   if (!global.__prisma) {
     global.__prisma = new PrismaClient({
       log: ['query', 'info', 'warn', 'error'],
+      datasources: {
+        core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL }
+      }
     });
   }
   prismaInstance = global.__prisma;

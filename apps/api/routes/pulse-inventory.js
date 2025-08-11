@@ -16,7 +16,7 @@ async function getPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
     const mod = await import('../../../prisma/generated/core/index.js');
-    return new mod.PrismaClient();
+    return new mod.PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch (e) {
     logger.warn('Prisma unavailable in pulse-inventory routes', { error: e?.message });
     return null;

@@ -13,7 +13,7 @@ async function getPrisma() {
   try {
     const mod = await import('../../../prisma/generated/core/index.js');
     const PrismaClient = mod.PrismaClient;
-    return new PrismaClient();
+    return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch (e) {
     logger.warn('Prisma unavailable in InventoryService', { error: e?.message });
     return null;

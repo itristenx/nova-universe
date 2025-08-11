@@ -10,6 +10,7 @@ datasource user360_db {
 generator user360Client {
   provider = "prisma-client-js"
   output   = "../generated/user360"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 // ============================================================================

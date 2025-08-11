@@ -249,7 +249,16 @@ export class NovaIntegrationLayer extends EventEmitter {
         const integrationModule = await import('../../../prisma/generated/integration/index.js');
         IntegrationPrismaClient = integrationModule.PrismaClient;
         
-        this.prisma = new CorePrismaClient();
+        this.coreDb = new CorePrismaClient({
+          datasources: {
+            core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL }
+          }
+        });
+        this.prisma = new IntegrationPrismaClient({
+          datasources: {
+            integration_db: { url: process.env.INTEGRATION_DATABASE_URL || process.env.DATABASE_URL }
+          }
+        });
         this.logger.info('Prisma clients initialized successfully');
       } catch (importError) {
         this.logger.warn('Prisma clients not available:', importError.message);
