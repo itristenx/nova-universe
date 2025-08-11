@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-interface Kiosk { id: string; name?: string; location?: string; active?: boolean; configuration?: any; logoUrl?: string; bgUrl?: string; currentStatus?: string; }
+interface Kiosk { id: string; name?: string; location?: string; active?: boolean; configuration?: any; effectiveConfig?: any; logoUrl?: string; bgUrl?: string; currentStatus?: string; }
 
 const KioskWebMock: React.FC<{ kioskId: string }> = ({ kioskId }) => {
   const [core, setCore] = useState<any>(null);
@@ -107,16 +107,16 @@ export const KioskDetailsPage: React.FC = () => {
             <div className="rounded border p-4">
               <h2 className="text-lg font-semibold mb-2">Theme</h2>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded" style={{ backgroundColor: (selectedKiosk as any)?.effectiveConfig?.theme?.primaryColor || '#1D1EFF' }} />
+                <div className="w-8 h-8 rounded" style={{ backgroundColor: selectedKiosk.effectiveConfig?.theme?.primaryColor || '#1D1EFF' }} />
                 <div className="text-sm">Primary</div>
               </div>
             </div>
             <div className="rounded border p-4">
               <h2 className="text-lg font-semibold mb-2">Features</h2>
               <ul className="text-sm list-disc ml-5">
-                <li>Ticket Submission: {String((selectedKiosk as any)?.effectiveConfig?.features?.ticketSubmission ?? true)}</li>
-                <li>Status Updates: {String((selectedKiosk as any)?.effectiveConfig?.features?.statusUpdates ?? true)}</li>
-                <li>Directory Integration: {String((selectedKiosk as any)?.effectiveConfig?.features?.directoryIntegration ?? false)}</li>
+                <li>Ticket Submission: {String(selectedKiosk.effectiveConfig?.features?.ticketSubmission ?? true)}</li>
+                <li>Status Updates: {String(selectedKiosk.effectiveConfig?.features?.statusUpdates ?? true)}</li>
+                <li>Directory Integration: {String(selectedKiosk.effectiveConfig?.features?.directoryIntegration ?? false)}</li>
               </ul>
             </div>
           </div>
