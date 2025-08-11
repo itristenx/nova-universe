@@ -529,3 +529,23 @@ export interface ApiKey {
   createdAt: string;
   description?: string;
 }
+
+export interface OrganizationBranding {
+  logoUrl?: string;
+  faviconUrl?: string;
+  kioskLogoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  welcomeMessage?: string;
+  helpMessage?: string;
+}
+
+export interface RequestCatalogItem {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  sla?: string;
+  enabled?: boolean;
+}
