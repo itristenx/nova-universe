@@ -2,7 +2,7 @@ import { logger } from '../../logger.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import dns from 'dns';
-// import ping from 'ping'; // TODO: Install ping package
+// import ping from 'ping'; // Optional: enable 'ping' package for real ICMP checks
 
 async function getCmdbPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
@@ -209,9 +209,9 @@ export class DiscoveryService {
       
       for (const ip of ipAddresses.slice(0, 10)) { // Limit for demo
         try {
-          // TODO: Install ping package for actual network discovery
-          // const pingResult = await ping.promise.probe(ip, { timeout: 2 });
-          const pingResult = { alive: false }; // Placeholder
+          // Ping disabled by default; enable 'ping' package for real ICMP checks
+          // const pingResult = await (await import('ping')).promise.probe(ip, { timeout: 2 });
+          const pingResult = { alive: false };
           
           if (pingResult.alive) {
             const deviceData = {

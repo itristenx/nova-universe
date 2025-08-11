@@ -333,11 +333,11 @@ router.get('/:id',
             });
           }
 
-          // TODO: Implement file access control based on user roles/permissions
-          // For now, allow access to the file uploader and admins
+          // Access control: allow uploader, admins, or users with explicit 'files:read:any'
           const hasAccess = file.uploadedBy === req.user.id || 
                            req.user.roles?.includes('admin') ||
-                           req.user.roles?.includes('superadmin');
+                           req.user.roles?.includes('superadmin') ||
+                           req.user.permissions?.includes?.('files:read:any');
 
           if (!hasAccess) {
             logger.warn('Unauthorized file access attempt', {

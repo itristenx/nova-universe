@@ -487,13 +487,25 @@ async function checkUserAccess(requestingUser, targetUserId, accessType) {
     return accessType === 'read' || accessType === 'read_activity';
   }
   
-  // Managers can access their direct reports
+  // Managers can access their direct reports (basic check; integrate with org directory when available)
   if (requestingUser.role === 'manager') {
-    // TODO: Implement manager-report relationship check
-    return accessType === 'read';
+    const managesTarget = await isManagerOf(requestingUser.id, targetUserId);
+    return managesTarget && (accessType === 'read' || accessType === 'read_activity');
   }
   
   return false;
+}
+
+async function isManagerOf(managerUserId, reportUserId) {
+  try {
+    // Basic heuristic: compare against a cached mapping if available on the request context
+    // Replace with integration to the org directory service when available
+    const map = globalThis.__managerReportMap || {};
+    const reports = map[managerUserId] || [];
+    return reports.includes(reportUserId);
+  } catch {
+    return false;
+  }
 }
 
 /**

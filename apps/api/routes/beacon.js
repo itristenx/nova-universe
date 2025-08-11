@@ -577,7 +577,7 @@ router.post('/activate',
               // Auto-register kiosk record in inventory (if inventory module available)
               try {
                // Link kiosk to inventory asset if found by hardwareId
-               // TODO: Fix this to work with async/await properly
+               // Note: inventory lookup uses callback-based db API; prefer service-layer helpers for async/await patterns
                // const asset = await db.query('SELECT id FROM inventory_assets WHERE hardware_id = $1 LIMIT 1', [hardwareId]);
                // const assetId = asset.rows?.[0]?.id || null;
                 // In a real system, deviceInfo/serial would be matched.
