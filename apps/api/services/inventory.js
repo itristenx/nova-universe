@@ -21,7 +21,14 @@ async function getPrisma() {
 }
 
 let prisma;
-(async ()=>{ prisma = await getPrisma(); })();
+// Lazy initialization for Prisma client to avoid race conditions
+let prismaInstancePromise = null;
+function getPrismaInstance() {
+  if (!prismaInstancePromise) {
+    prismaInstancePromise = getPrisma();
+  }
+  return prismaInstancePromise;
+}
 
 // Validation rules for asset fields
 const VALIDATION_RULES = {
