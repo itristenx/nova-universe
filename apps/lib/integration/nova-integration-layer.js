@@ -28,7 +28,8 @@ let axios;
         const res = await fetchMod.default(url, opts);
         const data = await res.json().catch(() => null);
         return { status: res.status, data };
-      };
+      // As a last resort, throw an error to indicate axios is required
+      throw new Error('Failed to import axios. Please ensure axios is installed as a dependency.');
     }
   }
 })();
