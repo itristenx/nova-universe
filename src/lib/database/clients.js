@@ -8,19 +8,7 @@
 import { PrismaClient as CorePrismaClient } from '../../../prisma/generated/core/index.js';
 import { PrismaClient as CmdbPrismaClient } from '../../../prisma/generated/cmdb/index.js';
 import { PrismaClient as NotificationPrismaClient } from '../../../prisma/generated/notification/index.js';
-import winston from 'winston';
-
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console()
-  ]
-});
+import { logger } from '../../../apps/api/logger.js';
 
 // ============================================================================
 // DATABASE CLIENT INITIALIZATION
@@ -31,7 +19,7 @@ const logger = winston.createLogger({
  */
 export const coreClient = new CorePrismaClient({
   datasources: {
-    db: {
+    core_db: {
       url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL
     }
   },
@@ -47,7 +35,7 @@ export const coreClient = new CorePrismaClient({
  */
 export const cmdbClient = new CmdbPrismaClient({
   datasources: {
-    db: {
+    cmdb_db: {
       url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL
     }
   },
@@ -63,7 +51,7 @@ export const cmdbClient = new CmdbPrismaClient({
  */
 export const notificationClient = new NotificationPrismaClient({
   datasources: {
-    db: {
+    notification_db: {
       url: process.env.NOTIFICATION_DATABASE_URL || process.env.DATABASE_URL
     }
   },

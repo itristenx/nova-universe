@@ -10,6 +10,7 @@ datasource notification_db {
 generator notificationClient {
   provider = "prisma-client-js"
   output   = "../generated/notification"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 // ============================================================================

@@ -12,6 +12,19 @@ import HelixKioskIntegration from '../services/helixKioskIntegration.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import events from '../events.js';
 
+async function findInventoryAssetByHardwareId(hardwareId) {
+  try {
+    // If a proper inventory service is available, use that; otherwise fall back to DB lookup
+    const helix = (await import('../services/helixKioskIntegration.js')).default;
+    if (helix?.db?.inventoryAsset?.findFirst) {
+      const asset = await helix.db.inventoryAsset.findFirst({ where: { hardware_id: hardwareId } }).catch(() => null);
+      if (asset) return asset;
+      return await helix.db.inventoryAsset.findFirst({ where: { hardware_id: { equals: hardwareId, mode: 'insensitive' } } }).catch(() => null);
+    }
+  } catch {}
+  return null;
+}
+
 const router = express.Router();
 
 /**
@@ -576,10 +589,13 @@ router.post('/activate',
 
               // Auto-register kiosk record in inventory (if inventory module available)
               try {
-               // Link kiosk to inventory asset if found by hardwareId
-               // TODO: Fix this to work with async/await properly
-               // const asset = await db.query('SELECT id FROM inventory_assets WHERE hardware_id = $1 LIMIT 1', [hardwareId]);
-               // const assetId = asset.rows?.[0]?.id || null;
+                const hardwareId = deviceInfo?.deviceId || deviceInfo?.serialNumber || null;
+                if (hardwareId) {
+                  const asset = await findInventoryAssetByHardwareId(hardwareId);
+                  if (asset?.id && HelixKioskIntegration?.registerAssetWithKiosk) {
+                    await HelixKioskIntegration.registerAssetWithKiosk(asset.id, activation.kioskId, { userId: 'kiosk-activation' }).catch(()=>null);
+                  }
+                }
                 // In a real system, deviceInfo/serial would be matched.
                 HelixKioskIntegration.updateHelixSyncStatus?.(activation.kioskId, 0, { status: 'pending', timestamp: new Date().toISOString() });
               } catch (e) {

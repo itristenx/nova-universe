@@ -5,10 +5,30 @@ import { parse as parseCsv } from 'csv-parse/sync';
 import { encrypt, decrypt } from '../utils/encryption.js';
 import { logger } from '../logger.js';
 import { v4 as uuidv4 } from 'uuid';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+// import { PrismaClient } from '../../../prisma/generated/core/index.js';
 import HelixKioskIntegrationService from './helixKioskIntegration.js';
 
-const prisma = new PrismaClient();
+async function getPrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../prisma/generated/core/index.js');
+    const PrismaClient = mod.PrismaClient;
+    return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+  } catch (e) {
+    logger.warn('Prisma unavailable in InventoryService', { error: e?.message });
+    return null;
+  }
+}
+
+let prisma;
+// Lazy initialization for Prisma client to avoid race conditions
+let prismaInstancePromise = null;
+function getPrismaInstance() {
+  if (!prismaInstancePromise) {
+    prismaInstancePromise = getPrisma();
+  }
+  return prismaInstancePromise;
+}
 
 // Validation rules for asset fields
 const VALIDATION_RULES = {

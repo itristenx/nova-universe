@@ -3,9 +3,22 @@
 
 import { logger } from '../logger.js';
 import { encrypt, decrypt } from '../utils/encryption.js';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+// import { PrismaClient } from '../../../prisma/generated/core/index.js';
 
-const prisma = new PrismaClient();
+async function getPrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../prisma/generated/core/index.js');
+    const PrismaClient = mod.PrismaClient;
+    return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+  } catch (e) {
+    logger.warn('Prisma unavailable in HelixKioskIntegrationService', { error: e?.message });
+    return null;
+  }
+}
+
+let prisma;
+(async ()=>{ prisma = await getPrisma(); })();
 
 export class HelixKioskIntegrationService {
   constructor() {

@@ -1,19 +1,24 @@
-import { PrismaClient as CmdbPrismaClient } from '../../../../prisma/generated/cmdb/index.js';
 import { logger } from '../../logger.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import dns from 'dns';
-// import ping from 'ping'; // TODO: Install ping package
+import net from 'net';
+// import ping from 'ping'; // Optional: enable 'ping' package for real ICMP checks
 
-const execAsync = promisify(exec);
-const dnsResolveAsync = promisify(dns.resolve4);
+async function getCmdbPrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../../prisma/generated/cmdb/index.js');
+    return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
+  } catch { return null; }
+}
 
 // Initialize Prisma client for CMDB
-const client = new CmdbPrismaClient();
+const clientPromise = getCmdbPrisma();
 
 export class DiscoveryService {
   constructor() {
-    this.client = client;
+    this.client = clientPromise;
   }
 
   /**
@@ -21,24 +26,15 @@ export class DiscoveryService {
    */
   async startDiscoveryRun(config) {
     try {
-      const discoveryRun = await this.client.discoveryRun.create({
-        data: {
-          scheduleId: config.scheduleId,
-          status: 'Running',
-          startTime: new Date(),
-          itemsDiscovered: 0,
-          itemsUpdated: 0,
-          itemsCreated: 0
-        }
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      const discoveryRun = await client.discoveryRun.create({
+        data: { scheduleId: config.scheduleId, status: 'Running', startTime: new Date(), itemsDiscovered: 0, itemsUpdated: 0, itemsCreated: 0 }
       });
-
-      // Start discovery process asynchronously
-      this._executeDiscovery(discoveryRun.id, config)
-        .catch(error => {
-          logger.error('Discovery run failed:', error);
-          this._updateDiscoveryRunStatus(discoveryRun.id, 'Failed', { error: error.message });
-        });
-
+      this._executeDiscovery(discoveryRun.id, config).catch(error => {
+        logger.error('Discovery run failed:', error);
+        this._updateDiscoveryRunStatus(discoveryRun.id, 'Failed', { error: error.message });
+      });
       logger.info(`Discovery run started: ${discoveryRun.id} (${config.discoveryType})`);
       return discoveryRun;
     } catch (error) {
@@ -52,15 +48,12 @@ export class DiscoveryService {
    */
   async getDiscoveryRuns(limit = 50) {
     try {
-      return await this.client.discoveryRun.findMany({
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      return await client.discoveryRun.findMany({
         orderBy: { startTime: 'desc' },
         take: limit,
-        include: {
-          discoveredItems: {
-            take: 5, // Just a sample of discovered items
-            orderBy: { discoveredAt: 'desc' }
-          }
-        }
+        include: { discoveredItems: { take: 5, orderBy: { discoveredAt: 'desc' } } }
       });
     } catch (error) {
       logger.error('Error fetching discovery runs:', error);
@@ -73,13 +66,9 @@ export class DiscoveryService {
    */
   async getDiscoveredItems(runId, status = 'New') {
     try {
-      return await this.client.discoveredItem.findMany({
-        where: {
-          runId,
-          status
-        },
-        orderBy: { discoveredAt: 'asc' }
-      });
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      return await client.discoveredItem.findMany({ where: { runId, status }, orderBy: { discoveredAt: 'asc' } });
     } catch (error) {
       logger.error('Error fetching discovered items:', error);
       throw new Error('Failed to fetch discovered items');
@@ -91,41 +80,26 @@ export class DiscoveryService {
    */
   async processDiscoveredItem(itemId, processingOptions = {}) {
     try {
-      const item = await this.client.discoveredItem.findUnique({
-        where: { id: itemId }
-      });
-
-      if (!item) {
-        throw new Error('Discovered item not found');
-      }
-
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      const item = await client.discoveredItem.findUnique({ where: { id: itemId } });
+      if (!item) throw new Error('Discovered item not found');
       const discoveredData = item.discoveredData;
       let ci = null;
-
-      // Check if CI already exists based on fingerprint or unique identifiers
       const existingCi = await this._findExistingCi(discoveredData);
-
       if (existingCi) {
-        // Update existing CI
         ci = await this._updateExistingCi(existingCi, discoveredData);
         await this._updateDiscoveredItemStatus(itemId, 'Processed', 'Updated existing CI', ci.id);
       } else if (processingOptions.autoCreate !== false) {
-        // Create new CI
         ci = await this._createCiFromDiscoveredData(discoveredData);
         await this._updateDiscoveredItemStatus(itemId, 'Processed', 'Created new CI', ci.id);
       } else {
-        // Mark for manual review
         await this._updateDiscoveredItemStatus(itemId, 'New', 'Requires manual review');
       }
-
       return ci;
     } catch (error) {
       logger.error('Error processing discovered item:', error);
-      await this._updateDiscoveredItemStatus(
-        itemId, 
-        'Error', 
-        `Processing failed: ${error.message}`
-      );
+      await this._updateDiscoveredItemStatus(itemId, 'Error', `Processing failed: ${error.message}`);
       throw new Error('Failed to process discovered item');
     }
   }
@@ -135,13 +109,11 @@ export class DiscoveryService {
    */
   async createDiscoverySchedule(scheduleData) {
     try {
-      const schedule = await this.client.discoverySchedule.create({
-        data: {
-          ...scheduleData,
-          nextRunDate: this._calculateNextRunDate(scheduleData.cronExpression)
-        }
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      const schedule = await client.discoverySchedule.create({
+        data: { ...scheduleData, nextRunDate: this._calculateNextRunDate(scheduleData.cronExpression) }
       });
-
       logger.info(`Discovery schedule created: ${schedule.name}`);
       return schedule;
     } catch (error) {
@@ -155,9 +127,9 @@ export class DiscoveryService {
    */
   async getDiscoverySchedules() {
     try {
-      return await this.client.discoverySchedule.findMany({
-        orderBy: { name: 'asc' }
-      });
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      return await client.discoverySchedule.findMany({ orderBy: { name: 'asc' } });
     } catch (error) {
       logger.error('Error fetching discovery schedules:', error);
       throw new Error('Failed to fetch discovery schedules');
@@ -197,8 +169,10 @@ export class DiscoveryService {
 
       // Store discovered items
       const createdItems = [];
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
       for (const item of discoveredItems) {
-        const discoveredItem = await this.client.discoveredItem.create({
+        const discoveredItem = await client.discoveredItem.create({
           data: {
             runId,
             discoveredData: item,
@@ -232,35 +206,32 @@ export class DiscoveryService {
     try {
       const { ipRange, scanPorts = [22, 80, 443, 3389] } = config;
       
-      // Simple ping sweep for demonstration
-      // In production, this would use more sophisticated tools like nmap
+      // Simple TCP-based sweep for demonstration
       const ipAddresses = this._generateIpRange(ipRange);
       
       for (const ip of ipAddresses.slice(0, 10)) { // Limit for demo
         try {
-          // TODO: Install ping package for actual network discovery
-          // const pingResult = await ping.promise.probe(ip, { timeout: 2 });
-          const pingResult = { alive: false }; // Placeholder
-          
-          if (pingResult.alive) {
+          const openPorts = await this._scanPorts(ip, scanPorts);
+          const isAlive = openPorts.length > 0;
+          if (isAlive) {
             const deviceData = {
               name: `Device-${ip}`,
               ipAddress: ip,
               discoveryType: 'Network',
               discoveredAt: new Date(),
               alive: true,
-              responseTime: pingResult.time,
+              responseTime: null,
               ciType: 'network-device'
             };
 
             // Try to determine device type through port scanning (simplified)
-            deviceData.openPorts = await this._scanPorts(ip, scanPorts);
-            deviceData.deviceType = this._inferDeviceType(deviceData.openPorts);
+            deviceData.openPorts = openPorts;
+            deviceData.deviceType = this._inferDeviceType(openPorts);
 
             discoveredItems.push(deviceData);
           }
         } catch (error) {
-          logger.debug(`Failed to ping ${ip}:`, error.message);
+          logger.debug(`Failed to check ${ip}:`, error.message);
         }
       }
     } catch (error) {
@@ -423,17 +394,10 @@ export class DiscoveryService {
    */
   async _updateDiscoveryRunStatus(runId, status, updates = {}) {
     try {
-      await this.client.discoveryRun.update({
-        where: { id: runId },
-        data: {
-          status,
-          endTime: status === 'Completed' || status === 'Failed' ? new Date() : undefined,
-          ...updates
-        }
-      });
-    } catch (error) {
-      logger.error('Error updating discovery run status:', error);
-    }
+      const client = await this.client;
+      if (!client) return;
+      await client.discoveryRun.update({ where: { id: runId }, data: { status, endTime: status === 'Completed' || status === 'Failed' ? new Date() : undefined, ...updates } });
+    } catch (error) { logger.error('Error updating discovery run status:', error); }
   }
 
   /**
@@ -441,18 +405,10 @@ export class DiscoveryService {
    */
   async _updateDiscoveredItemStatus(itemId, status, notes, ciId = null) {
     try {
-      await this.client.discoveredItem.update({
-        where: { id: itemId },
-        data: {
-          status,
-          processingNotes: notes,
-          processedAt: new Date(),
-          ciId
-        }
-      });
-    } catch (error) {
-      logger.error('Error updating discovered item status:', error);
-    }
+      const client = await this.client;
+      if (!client) return;
+      await client.discoveredItem.update({ where: { id: itemId }, data: { status, processingNotes: notes, processedAt: new Date(), ciId } });
+    } catch (error) { logger.error('Error updating discovered item status:', error); }
   }
 
   /**
@@ -480,43 +436,22 @@ export class DiscoveryService {
    */
   async _findExistingCi(discoveredData) {
     try {
-      // Try to match by serial number first
+      const client = await this.client;
+      if (!client) return null;
       if (discoveredData.serialNumber) {
-        const ci = await this.client.configurationItem.findFirst({
-          where: {
-            serialNumber: discoveredData.serialNumber
-          }
-        });
+        const ci = await client.configurationItem.findFirst({ where: { serialNumber: discoveredData.serialNumber } });
         if (ci) return ci;
       }
-
-      // Try to match by hostname
       if (discoveredData.hostname) {
-        const ci = await this.client.configurationItem.findFirst({
-          where: {
-            name: discoveredData.hostname
-          }
-        });
+        const ci = await client.configurationItem.findFirst({ where: { name: discoveredData.hostname } });
         if (ci) return ci;
       }
-
-      // Try to match by IP address for network devices
       if (discoveredData.ipAddress) {
-        const ci = await this.client.configurationItem.findFirst({
-          where: {
-            networkDetails: {
-              ipAddress: discoveredData.ipAddress
-            }
-          }
-        });
+        const ci = await client.configurationItem.findFirst({ where: { networkDetails: { ipAddress: discoveredData.ipAddress } } });
         if (ci) return ci;
       }
-
       return null;
-    } catch (error) {
-      logger.error('Error finding existing CI:', error);
-      return null;
-    }
+    } catch (error) { logger.error('Error finding existing CI:', error); return null; }
   }
 
   /**
@@ -524,32 +459,16 @@ export class DiscoveryService {
    */
   async _updateExistingCi(existingCi, discoveredData) {
     try {
-      const updateData = {
-        lastDiscoveredDate: new Date(),
-        isDiscovered: true,
-        discoverySource: discoveredData.discoveryType
-      };
-
-      // Update specific fields based on discovery type
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      const updateData = { lastDiscoveredDate: new Date(), isDiscovered: true, discoverySource: discoveredData.discoveryType };
       if (discoveredData.operatingSystem) {
-        updateData.attributes = {
-          ...existingCi.attributes,
-          operatingSystem: discoveredData.operatingSystem,
-          version: discoveredData.version
-        };
+        updateData.attributes = { ...existingCi.attributes, operatingSystem: discoveredData.operatingSystem, version: discoveredData.version };
       }
-
-      const updatedCi = await this.client.configurationItem.update({
-        where: { id: existingCi.id },
-        data: updateData
-      });
-
+      const updatedCi = await client.configurationItem.update({ where: { id: existingCi.id }, data: updateData });
       logger.info(`Updated existing CI: ${updatedCi.ciId} from discovery`);
       return updatedCi;
-    } catch (error) {
-      logger.error('Error updating existing CI:', error);
-      throw error;
-    }
+    } catch (error) { logger.error('Error updating existing CI:', error); throw error; }
   }
 
   /**
@@ -557,37 +476,15 @@ export class DiscoveryService {
    */
   async _createCiFromDiscoveredData(discoveredData) {
     try {
-      // Map discovered data to CI fields
-      const ciData = {
-        name: discoveredData.hostname || discoveredData.name,
-        displayName: discoveredData.name,
-        description: `Discovered ${discoveredData.discoveryType} device`,
-        ciType: this._mapToCiType(discoveredData.ciType),
-        ciSubType: discoveredData.subType,
-        serialNumber: discoveredData.serialNumber,
-        manufacturer: discoveredData.manufacturer,
-        model: discoveredData.model,
-        isDiscovered: true,
-        firstDiscoveredDate: new Date(),
-        lastDiscoveredDate: new Date(),
-        discoverySource: discoveredData.discoveryType,
-        attributes: discoveredData
-      };
-
-      // Generate CI ID
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      const ciData = { name: discoveredData.hostname || discoveredData.name, displayName: discoveredData.name, description: `Discovered ${discoveredData.discoveryType} device`, ciType: this._mapToCiType(discoveredData.ciType), ciSubType: discoveredData.subType, serialNumber: discoveredData.serialNumber, manufacturer: discoveredData.manufacturer, model: discoveredData.model, isDiscovered: true, firstDiscoveredDate: new Date(), lastDiscoveredDate: new Date(), discoverySource: discoveredData.discoveryType, attributes: discoveredData };
       const ciId = await this._generateCiId();
       ciData.ciId = ciId;
-
-      const ci = await this.client.configurationItem.create({
-        data: ciData
-      });
-
+      const ci = await client.configurationItem.create({ data: ciData });
       logger.info(`Created new CI from discovery: ${ci.ciId}`);
       return ci;
-    } catch (error) {
-      logger.error('Error creating CI from discovered data:', error);
-      throw error;
-    }
+    } catch (error) { logger.error('Error creating CI from discovered data:', error); throw error; }
   }
 
   /**
@@ -611,20 +508,16 @@ export class DiscoveryService {
    * Generate CI ID
    */
   async _generateCiId() {
+    const client = await this.client;
+    if (!client) return 'CI000001';
     const prefix = 'CI';
-    let ciId;
-    let exists = true;
-
+    let ciId; let exists = true;
     while (exists) {
       const number = Math.floor(100000 + Math.random() * 900000);
       ciId = `${prefix}${number}`;
-      
-      const existing = await this.client.configurationItem.findUnique({
-        where: { ciId }
-      });
+      const existing = await client.configurationItem.findUnique({ where: { ciId } });
       exists = !!existing;
     }
-
     return ciId;
   }
 
@@ -653,22 +546,38 @@ export class DiscoveryService {
    * Scan ports on an IP address
    */
   async _scanPorts(ip, ports) {
-    // Simplified port scanning - in production use proper tools
-    const openPorts = [];
-    
-    for (const port of ports) {
-      try {
-        // This is a very basic check - use proper port scanning tools in production
-        const { stdout } = await execAsync(`timeout 2 nc -z ${ip} ${port} && echo "open" || echo "closed"`, { timeout: 3000 });
-        if (stdout.trim() === 'open') {
-          openPorts.push(port);
+    const tryPort = (port) => new Promise((resolve) => {
+      const socket = new net.Socket();
+      let resolved = false;
+      const timeoutMs = 1500;
+      socket.setTimeout(timeoutMs);
+      socket.once('connect', () => {
+        resolved = true;
+        socket.destroy();
+        resolve({ port, open: true });
+      });
+      socket.once('timeout', () => {
+        if (!resolved) {
+          resolved = true;
+          socket.destroy();
+          resolve({ port, open: false });
         }
-      } catch (error) {
-        // Port is likely closed or filtered
+      });
+      socket.once('error', () => {
+        if (!resolved) {
+          resolved = true;
+          resolve({ port, open: false });
+        }
+      });
+      try {
+        socket.connect(port, ip);
+      } catch {
+        resolve({ port, open: false });
       }
-    }
-    
-    return openPorts;
+    });
+
+    const results = await Promise.all(ports.map((p) => tryPort(p)));
+    return results.filter(r => r.open).map(r => r.port);
   }
 
   /**

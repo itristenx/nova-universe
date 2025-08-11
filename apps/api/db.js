@@ -375,7 +375,13 @@ class DatabaseWrapper {
     // If callback is provided, use callback style
     if (typeof cb === 'function') {
       this.query(sql, params)
-        .then(result => cb(null, result))
+        .then(result => {
+          const context = {
+            lastID: (result && result.rows && result.rows[0] && (result.rows[0].id || result.rows[0].uuid)) || undefined,
+            changes: typeof result?.rowCount === 'number' ? result.rowCount : 0
+          };
+          cb.call(context, null, result);
+        })
         .catch(cb);
     } else {
       // Otherwise, return a promise

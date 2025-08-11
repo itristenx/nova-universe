@@ -10,10 +10,21 @@ import inventoryService from '../services/inventory.js';
 import helixKioskIntegration from '../services/helixKioskIntegration.js';
 import { logger } from '../logger.js';
 import { encrypt, decrypt } from '../utils/encryption.js';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+// import { PrismaClient } from '../../../prisma/generated/core/index.js';
+
+async function getPrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../prisma/generated/core/index.js');
+    return new mod.PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+  } catch (e) {
+    logger.warn('Prisma unavailable in pulse-inventory routes', { error: e?.message });
+    return null;
+  }
+}
 
 const router = express.Router();
-const prisma = new PrismaClient();
+let prismaPromise = getPrisma();
 
 /**
  * @swagger
@@ -138,7 +149,7 @@ router.get('/assets',
       }
 
       // Get assets with related data
-      const assets = await prisma.inventoryAsset.findMany({
+      const assets = await prismaPromise.inventoryAsset.findMany({
         where,
         include: {
           statusLogs: {
@@ -171,7 +182,7 @@ router.get('/assets',
 
       // Get warranty alerts for these assets
       const assetIds = assets.map(a => a.id);
-      const warrantyAlerts = await prisma.$queryRaw`
+      const warrantyAlerts = await prismaPromise.$queryRaw`
         SELECT 
           asset_id,
           alert_type,
@@ -187,7 +198,7 @@ router.get('/assets',
       // Get ticket history if requested
       let ticketHistory = [];
       if (includeHistory === 'true' || includeHistory === true) {
-        ticketHistory = await prisma.$queryRaw`
+        ticketHistory = await prismaPromise.$queryRaw`
           SELECT 
             ath.asset_id,
             ath.ticket_id,
@@ -272,7 +283,7 @@ router.get('/assets',
       });
 
       // Get total count for pagination
-      const totalCount = await prisma.inventoryAsset.count({ where });
+      const totalCount = await prismaPromise.inventoryAsset.count({ where });
 
       res.json({
         success: true,
@@ -321,7 +332,7 @@ router.get('/assets/:assetId',
       const { assetId } = req.params;
 
       // Get asset with all related data
-      const asset = await prisma.inventoryAsset.findUnique({
+      const asset = await prismaPromise.inventoryAsset.findUnique({
         where: { id: parseInt(assetId) },
         include: {
           statusLogs: {
@@ -361,7 +372,7 @@ router.get('/assets/:assetId',
       }
 
       // Get warranty alerts
-      const warrantyAlerts = await prisma.$queryRaw`
+      const warrantyAlerts = await prismaPromise.$queryRaw`
         SELECT 
           id,
           alert_type,
@@ -379,7 +390,7 @@ router.get('/assets/:assetId',
       `;
 
       // Get ticket history
-      const ticketHistory = await prisma.$queryRaw`
+      const ticketHistory = await prismaPromise.$queryRaw`
         SELECT 
           ath.id,
           ath.ticket_id,
@@ -402,7 +413,7 @@ router.get('/assets/:assetId',
       `;
 
       // Get kiosk registry info
-      const kioskRegistrations = await prisma.$queryRaw`
+      const kioskRegistrations = await prismaPromise.$queryRaw`
         SELECT 
           kar.kiosk_id,
           kar.registration_date,
@@ -514,7 +525,7 @@ router.post('/assets/:assetId/tickets',
       const userId = req.user.id;
 
       // Verify asset exists
-      const asset = await prisma.inventoryAsset.findUnique({
+      const asset = await prismaPromise.inventoryAsset.findUnique({
         where: { id: parseInt(assetId) }
       });
 
@@ -527,7 +538,7 @@ router.post('/assets/:assetId/tickets',
       }
 
       // Verify ticket exists
-      const ticket = await prisma.supportTicket.findUnique({
+      const ticket = await prismaPromise.supportTicket.findUnique({
         where: { id: parseInt(ticketId) }
       });
 
@@ -540,7 +551,7 @@ router.post('/assets/:assetId/tickets',
       }
 
       // Create ticket-asset relationship
-      await prisma.$executeRaw`
+      await prismaPromise.$executeRaw`
         INSERT INTO asset_ticket_history (asset_id, ticket_id, relationship_type, created_by, notes)
         VALUES (${parseInt(assetId)}, ${parseInt(ticketId)}, ${relationshipType}, ${userId}, ${notes || null})
       `;
@@ -594,7 +605,7 @@ router.get('/assets/:id/tickets',
       const { id: assetId } = req.params;
 
       // Get asset with ticket history
-      const ticketHistory = await prisma.assetTicketHistory.findMany({
+      const ticketHistory = await prismaPromise.assetTicketHistory.findMany({
         where: {
           assetId: parseInt(assetId),
           endedAt: null // Only active relationships
@@ -678,7 +689,7 @@ router.get('/warranty-alerts',
         whereClause += ` AND awa.alert_type = '${alertType}'`;
       }
 
-      const alerts = await prisma.$queryRaw`
+      const alerts = await prismaPromise.$queryRaw`
         SELECT 
           awa.id,
           awa.asset_id,
@@ -702,7 +713,7 @@ router.get('/warranty-alerts',
         LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
       `;
 
-      const totalCount = await prisma.$queryRaw`
+      const totalCount = await prismaPromise.$queryRaw`
         SELECT COUNT(*) as count
         FROM asset_warranty_alerts awa
         ${whereClause}
@@ -755,7 +766,7 @@ router.post('/warranty-alerts/:alertId/dismiss',
       const { alertId } = req.params;
       const userId = req.user.id;
 
-      await prisma.$executeRaw`
+      await prismaPromise.$executeRaw`
         UPDATE asset_warranty_alerts 
         SET dismissed = true,
             dismissed_by = ${userId},
@@ -826,7 +837,7 @@ router.get('/kiosk-assets',
       const whereClause = whereConditions.length > 0 ? 
         `WHERE ${whereConditions.join(' AND ')}` : '';
 
-      const kioskAssets = await prisma.$queryRaw`
+      const kioskAssets = await prismaPromise.$queryRaw`
         SELECT 
           kar.id as registry_id,
           kar.kiosk_id,
@@ -851,7 +862,7 @@ router.get('/kiosk-assets',
         LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
       `;
 
-      const totalCount = await prisma.$queryRaw`
+      const totalCount = await prismaPromise.$queryRaw`
         SELECT COUNT(*) as count
         FROM kiosk_asset_registry kar
         ${whereClause}

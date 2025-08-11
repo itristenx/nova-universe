@@ -1,12 +1,20 @@
-import { PrismaClient as CmdbPrismaClient } from '../../../../prisma/generated/cmdb/index.js';
 import { logger } from '../../logger.js';
 
-// Initialize Prisma client for CMDB
-const client = new CmdbPrismaClient();
+async function getCmdbPrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../../prisma/generated/cmdb/index.js');
+    return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
+  } catch {
+    return null;
+  }
+}
+
+const clientPromise = getCmdbPrisma();
 
 export class RelationshipService {
   constructor() {
-    this.client = client;
+    this.clientPromise = clientPromise;
   }
 
   /**
@@ -14,72 +22,44 @@ export class RelationshipService {
    */
   async getCiRelationships(ciId, options = {}) {
     try {
+      const client = await this.clientPromise;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
       const where = this._isUUID(ciId) 
         ? { id: ciId }
         : { ciId: ciId };
 
       // First, find the CI
-      const ci = await this.client.configurationItem.findFirst({ where });
+      const ci = await client.configurationItem.findFirst({ where });
       if (!ci) {
         throw new Error('Configuration Item not found');
       }
 
       const relationshipWhere = { isActive: true };
       if (options.relationshipType) {
-        relationshipWhere.relationshipType = {
-          name: options.relationshipType
-        };
+        relationshipWhere.relationshipType = { name: options.relationshipType };
       }
 
       let relationships = [];
 
       if (options.direction === 'outgoing' || options.direction === 'both') {
-        const outgoing = await this.client.ciRelationship.findMany({
-          where: {
-            sourceCiId: ci.id,
-            ...relationshipWhere
-          },
-          include: {
-            targetCi: {
-              include: {
-                ciType_rel: true
-              }
-            },
-            relationshipType: true
-          }
+        const outgoing = await client.ciRelationship.findMany({
+          where: { sourceCiId: ci.id, ...relationshipWhere },
+          include: { targetCi: { include: { ciType_rel: true } }, relationshipType: true }
         });
 
         relationships = relationships.concat(
-          outgoing.map(rel => ({
-            ...rel,
-            direction: 'outgoing',
-            relatedCi: rel.targetCi
-          }))
+          outgoing.map(rel => ({ ...rel, direction: 'outgoing', relatedCi: rel.targetCi }))
         );
       }
 
       if (options.direction === 'incoming' || options.direction === 'both') {
-        const incoming = await this.client.ciRelationship.findMany({
-          where: {
-            targetCiId: ci.id,
-            ...relationshipWhere
-          },
-          include: {
-            sourceCi: {
-              include: {
-                ciType_rel: true
-              }
-            },
-            relationshipType: true
-          }
+        const incoming = await client.ciRelationship.findMany({
+          where: { targetCiId: ci.id, ...relationshipWhere },
+          include: { sourceCi: { include: { ciType_rel: true } }, relationshipType: true }
         });
 
         relationships = relationships.concat(
-          incoming.map(rel => ({
-            ...rel,
-            direction: 'incoming',
-            relatedCi: rel.sourceCi
-          }))
+          incoming.map(rel => ({ ...rel, direction: 'incoming', relatedCi: rel.sourceCi }))
         );
       }
 
@@ -95,17 +75,15 @@ export class RelationshipService {
    */
   async createRelationship(relationshipData) {
     try {
+      const client = await this.clientPromise;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
       // Validate source and target CIs exist
       const [sourceCi, targetCi] = await Promise.all([
-        this.client.configurationItem.findFirst({
-          where: this._isUUID(relationshipData.sourceCiId) 
-            ? { id: relationshipData.sourceCiId }
-            : { ciId: relationshipData.sourceCiId }
+        client.configurationItem.findFirst({
+          where: this._isUUID(relationshipData.sourceCiId) ? { id: relationshipData.sourceCiId } : { ciId: relationshipData.sourceCiId }
         }),
-        this.client.configurationItem.findFirst({
-          where: this._isUUID(relationshipData.targetCiId) 
-            ? { id: relationshipData.targetCiId }
-            : { ciId: relationshipData.targetCiId }
+        client.configurationItem.findFirst({
+          where: this._isUUID(relationshipData.targetCiId) ? { id: relationshipData.targetCiId } : { ciId: relationshipData.targetCiId }
         })
       ]);
 
@@ -117,16 +95,14 @@ export class RelationshipService {
       }
 
       // Validate relationship type exists
-      const relationshipType = await this.client.ciRelationshipType.findUnique({
-        where: { id: relationshipData.relationshipTypeId }
-      });
+      const relationshipType = await client.ciRelationshipType.findUnique({ where: { id: relationshipData.relationshipTypeId } });
 
       if (!relationshipType) {
         throw new Error('Relationship type not found');
       }
 
       // Check if relationship already exists
-      const existingRelationship = await this.client.ciRelationship.findFirst({
+      const existingRelationship = await client.ciRelationship.findFirst({
         where: {
           sourceCiId: sourceCi.id,
           targetCiId: targetCi.id,
@@ -140,14 +116,10 @@ export class RelationshipService {
       }
 
       // Validate relationship type constraints
-      await this._validateRelationshipConstraints(
-        sourceCi,
-        targetCi,
-        relationshipType
-      );
+      await this._validateRelationshipConstraints(sourceCi, targetCi, relationshipType);
 
       // Create the relationship
-      const relationship = await this.client.ciRelationship.create({
+      const relationship = await client.ciRelationship.create({
         data: {
           sourceCiId: sourceCi.id,
           targetCiId: targetCi.id,
@@ -156,11 +128,7 @@ export class RelationshipService {
           criticality: relationshipData.criticality,
           createdBy: relationshipData.createdBy
         },
-        include: {
-          sourceCi: true,
-          targetCi: true,
-          relationshipType: true
-        }
+        include: { sourceCi: true, targetCi: true, relationshipType: true }
       });
 
       logger.info(`Relationship created: ${sourceCi.ciId} -> ${targetCi.ciId} (${relationshipType.name})`);
@@ -176,25 +144,20 @@ export class RelationshipService {
    */
   async deleteRelationship(relationshipId, deletedBy) {
     try {
-      const relationship = await this.client.ciRelationship.findUnique({
+      const client = await this.clientPromise;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      const relationship = await client.ciRelationship.findUnique({
         where: { id: relationshipId },
-        include: {
-          sourceCi: true,
-          targetCi: true,
-          relationshipType: true
-        }
+        include: { sourceCi: true, targetCi: true, relationshipType: true }
       });
 
       if (!relationship) {
         return false;
       }
 
-      await this.client.ciRelationship.update({
+      await client.ciRelationship.update({
         where: { id: relationshipId },
-        data: { 
-          isActive: false,
-          updatedAt: new Date()
-        }
+        data: { isActive: false, updatedAt: new Date() }
       });
 
       logger.info(`Relationship deleted: ${relationship.sourceCi.ciId} -> ${relationship.targetCi.ciId} (${relationship.relationshipType.name})`);
@@ -210,11 +173,10 @@ export class RelationshipService {
    */
   async getRelationshipTypes() {
     try {
-      return await this.client.ciRelationshipType.findMany({
-        include: {
-          sourceCiType: true,
-          targetCiType: true
-        },
+      const client = await this.clientPromise;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      return await client.ciRelationshipType.findMany({
+        include: { sourceCiType: true, targetCiType: true },
         orderBy: { name: 'asc' }
       });
     } catch (error) {
@@ -228,7 +190,9 @@ export class RelationshipService {
    */
   async createRelationshipType(typeData) {
     try {
-      const relationshipType = await this.client.ciRelationshipType.create({
+      const client = await this.clientPromise;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      const relationshipType = await client.ciRelationshipType.create({
         data: typeData,
         include: {
           sourceCiType: true,
@@ -249,14 +213,10 @@ export class RelationshipService {
    */
   async performImpactAnalysis(ciId, depth = 3) {
     try {
-      const where = this._isUUID(ciId) 
-        ? { id: ciId }
-        : { ciId: ciId };
-
-      const rootCi = await this.client.configurationItem.findFirst({
-        where,
-        include: { ciType_rel: true }
-      });
+      const client = await this.clientPromise;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      const where = this._isUUID(ciId) ? { id: ciId } : { ciId: ciId };
+      const rootCi = await client.configurationItem.findFirst({ where, include: { ciType_rel: true } });
 
       if (!rootCi) {
         throw new Error('Configuration Item not found');
@@ -306,14 +266,10 @@ export class RelationshipService {
    */
   async getDependencyTree(ciId, direction = 'both', depth = 3) {
     try {
-      const where = this._isUUID(ciId) 
-        ? { id: ciId }
-        : { ciId: ciId };
-
-      const rootCi = await this.client.configurationItem.findFirst({
-        where,
-        include: { ciType_rel: true }
-      });
+      const client = await this.clientPromise;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
+      const where = this._isUUID(ciId) ? { id: ciId } : { ciId: ciId };
+      const rootCi = await client.configurationItem.findFirst({ where, include: { ciType_rel: true } });
 
       if (!rootCi) {
         throw new Error('Configuration Item not found');
@@ -373,7 +329,9 @@ export class RelationshipService {
 
     // Check multiple relationship constraint
     if (!relationshipType.allowMultiple) {
-      const existingCount = await this.client.ciRelationship.count({
+      const client = await this.clientPromise;
+      if (!client) return;
+      const existingCount = await client.ciRelationship.count({
         where: {
           sourceCiId: sourceCi.id,
           relationshipTypeId: relationshipType.id,
@@ -398,25 +356,16 @@ export class RelationshipService {
     visited.add(ci.id);
 
     if (currentDepth > 0) {
-      impactMap.set(ci.id, {
-        ci,
-        depth: currentDepth,
-        impactType: this._determineImpactType(ci, currentDepth)
-      });
+      impactMap.set(ci.id, { ci, depth: currentDepth, impactType: this._determineImpactType(ci, currentDepth) });
     }
 
+    const client = await this.clientPromise;
+    if (!client) return;
+
     // Get all outgoing relationships (dependencies)
-    const outgoingRelationships = await this.client.ciRelationship.findMany({
-      where: {
-        sourceCiId: ci.id,
-        isActive: true
-      },
-      include: {
-        targetCi: {
-          include: { ciType_rel: true }
-        },
-        relationshipType: true
-      }
+    const outgoingRelationships = await client.ciRelationship.findMany({
+      where: { sourceCiId: ci.id, isActive: true },
+      include: { targetCi: { include: { ciType_rel: true } }, relationshipType: true }
     });
 
     // Recursively traverse dependencies
@@ -438,9 +387,11 @@ export class RelationshipService {
    */
   async _calculateBusinessServiceImpact(ciId, impactMap) {
     try {
+      const client = await this.clientPromise;
+      if (!client) return [];
       const allCiIds = [ciId, ...Array.from(impactMap.keys())];
       
-      const businessServices = await this.client.ciBusinessService.findMany({
+      const businessServices = await client.ciBusinessService.findMany({
         where: {
           ciId: { in: allCiIds }
         },
@@ -484,26 +435,20 @@ export class RelationshipService {
    */
   async _buildDependencyTree(ci, direction, remainingDepth, visited) {
     if (remainingDepth <= 0 || visited.has(ci.id)) {
-      return {
-        ci,
-        children: []
-      };
+      return { ci, children: [] };
     }
 
     visited.add(ci.id);
 
+    const client = await this.clientPromise;
+    if (!client) return { ci, children: [] };
+
     const children = [];
     
     if (direction === 'outgoing' || direction === 'both') {
-      const outgoingRels = await this.client.ciRelationship.findMany({
-        where: {
-          sourceCiId: ci.id,
-          isActive: true
-        },
-        include: {
-          targetCi: { include: { ciType_rel: true } },
-          relationshipType: true
-        }
+      const outgoingRels = await client.ciRelationship.findMany({
+        where: { sourceCiId: ci.id, isActive: true },
+        include: { targetCi: { include: { ciType_rel: true } }, relationshipType: true }
       });
 
       for (const rel of outgoingRels) {
@@ -522,15 +467,9 @@ export class RelationshipService {
     }
 
     if (direction === 'incoming' || direction === 'both') {
-      const incomingRels = await this.client.ciRelationship.findMany({
-        where: {
-          targetCiId: ci.id,
-          isActive: true
-        },
-        include: {
-          sourceCi: { include: { ciType_rel: true } },
-          relationshipType: true
-        }
+      const incomingRels = await client.ciRelationship.findMany({
+        where: { targetCiId: ci.id, isActive: true },
+        include: { sourceCi: { include: { ciType_rel: true } }, relationshipType: true }
       });
 
       for (const rel of incomingRels) {
@@ -570,12 +509,10 @@ export class RelationshipService {
 
     visited.add(currentCiId);
 
-    const relationships = await this.client.ciRelationship.findMany({
-      where: {
-        sourceCiId: currentCiId,
-        isActive: true
-      }
-    });
+    const client = await this.clientPromise;
+    if (!client) return false;
+
+    const relationships = await client.ciRelationship.findMany({ where: { sourceCiId: currentCiId, isActive: true } });
 
     for (const rel of relationships) {
       if (await this._checkCircularDependency(rel.targetCiId, targetCiId, visited)) {

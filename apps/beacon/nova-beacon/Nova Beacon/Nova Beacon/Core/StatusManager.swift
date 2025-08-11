@@ -190,24 +190,6 @@ class StatusManager: ObservableObject {
     
     private func syncManualStatusToBackend() async {
         guard connectionManager.isConnected,
-<<<<<<< Current (Your changes)
-              let _ = configManager.serverConfiguration else {
-            return
-        }
-        
-        // TODO: Implement status sync when API types are resolved
-        print("Would sync status to backend: \(currentStatus.rawValue)")
-    }
-    
-    private func fetchStatusConfiguration(serverURL: String) async {
-        // TODO: Implement status configuration fetch when API types are resolved
-        print("Would fetch status configuration from: \(serverURL)")
-    }
-    
-    private func fetchCurrentStatus(serverURL: String) async {
-        // TODO: Implement API call to fetch current status
-        // For now, keep current status
-=======
               let serverConfig = configManager.serverConfiguration else {
             return
         }
@@ -304,7 +286,6 @@ class StatusManager: ObservableObject {
         } catch {
             print("Error fetching current status: \(error)")
         }
->>>>>>> Incoming (Background Agent changes)
     }
     
     private func saveStatus() {

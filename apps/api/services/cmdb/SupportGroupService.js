@@ -1,16 +1,29 @@
-import { PrismaClient as CmdbPrismaClient } from '../../../../prisma/generated/cmdb/index.js';
-import { PrismaClient as CorePrismaClient } from '../../../../prisma/generated/core/index.js';
 import { logger } from '../../logger.js';
 
-// Initialize database clients
-const coreClient = new CorePrismaClient();
+async function getCorePrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../../prisma/generated/core/index.js');
+    return new mod.PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+  } catch { return null; }
+}
 
-const cmdbClient = new CmdbPrismaClient();
+async function getCmdbPrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../../prisma/generated/cmdb/index.js');
+    return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
+  } catch { return null; }
+}
+
+// Initialize database clients
+const coreClientPromise = getCorePrisma();
+const cmdbClientPromise = getCmdbPrisma();
 
 class SupportGroupService {
   constructor() {
-    this.coreDb = coreClient;
-    this.cmdbDb = cmdbClient;
+    this.coreDb = coreClientPromise;
+    this.cmdbDb = cmdbClientPromise;
   }
 
   // ============================================================================

@@ -20,6 +20,9 @@ const nextConfig = {
   // Compression
   compress: true,
 
+  // Generate standalone server.js for Docker runtime
+  output: 'standalone',
+
   // Bundle analyzer (conditional)
   ...(process.env.ANALYZE === 'true' && {
     webpack: (config, { dev, isServer }) => {

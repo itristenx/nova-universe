@@ -145,7 +145,6 @@ function generateSecurePassword() {
   
   if (!process.env.CLI_MODE) {
     logger.warn('⚠️  Database password generated automatically. Please set proper credentials in environment variables.');
-    logger.warn(`Generated password: ${password}`);
   }
   
   return password;

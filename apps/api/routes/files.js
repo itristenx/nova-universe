@@ -11,6 +11,23 @@ import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 
+function canReadFile(reqUser, fileRow) {
+  if (!reqUser) return false;
+  const isOwner = fileRow.uploadedBy === reqUser.id;
+  const isAdmin = reqUser.roles?.includes('admin') || reqUser.roles?.includes('superadmin');
+  const hasGlobalRead = reqUser.permissions?.includes?.('files:read:any');
+  return Boolean(isOwner || isAdmin || hasGlobalRead);
+}
+
+function canDeleteFile(reqUser, fileRow, permanent) {
+  if (!reqUser) return false;
+  const isOwner = fileRow.uploadedBy === reqUser.id;
+  const isAdmin = reqUser.roles?.includes('admin') || reqUser.roles?.includes('superadmin');
+  if (permanent === true) return Boolean(isAdmin);
+  const hasGlobalDelete = reqUser.permissions?.includes?.('files:delete:any');
+  return Boolean(isOwner || isAdmin || hasGlobalDelete);
+}
+
 const router = express.Router();
 
 // Configure multer for file uploads
@@ -333,11 +350,8 @@ router.get('/:id',
             });
           }
 
-          // TODO: Implement file access control based on user roles/permissions
-          // For now, allow access to the file uploader and admins
-          const hasAccess = file.uploadedBy === req.user.id || 
-                           req.user.roles?.includes('admin') ||
-                           req.user.roles?.includes('superadmin');
+          // Access control check
+          const hasAccess = canReadFile(req.user, file);
 
           if (!hasAccess) {
             logger.warn('Unauthorized file access attempt', {
@@ -559,9 +573,7 @@ router.delete('/:id',
           }
 
           // Check access permissions
-          const canDelete = file.uploadedBy === req.user.id || 
-                          req.user.roles?.includes('admin') ||
-                          req.user.roles?.includes('superadmin');
+          const canDelete = canDeleteFile(req.user, file, permanent === 'true');
 
           if (!canDelete) {
             return res.status(403).json({

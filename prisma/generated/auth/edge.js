@@ -35,12 +35,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.12.0
- * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+ * Prisma Client JS version: 6.13.0
+ * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
  */
 Prisma.prismaVersion = {
-  client: "6.12.0",
-  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
+  client: "6.13.0",
+  engine: "361e86d0ea4987e9f53a565309b3eed797a6bcbd"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -107,7 +107,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/tneibarger/nova-universe/prisma/generated/auth",
+      "value": "/workspace/prisma/generated/auth",
       "fromEnvVar": null
     },
     "config": {
@@ -116,21 +116,24 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "debian-openssl-3.0.x",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/tneibarger/nova-universe/prisma/auth/schema.prisma",
+    "sourceFilePath": "/workspace/prisma/auth/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../.env",
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../auth",
-  "clientVersion": "6.12.0",
-  "engineVersion": "8047c96bbd92db98a2abc7c9323ce77c02c89dbc",
+  "clientVersion": "6.13.0",
+  "engineVersion": "361e86d0ea4987e9f53a565309b3eed797a6bcbd",
   "datasourceNames": [
     "auth_db"
   ],
@@ -144,8 +147,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "datasource auth_db {\n  provider = \"postgresql\"\n  url      = env(\"AUTH_DATABASE_URL\")\n}\n\ngenerator authClient {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/auth\"\n}\n",
-  "inlineSchemaHash": "50421d87b10af9095956781676e626d5760334c08560a1dd752439b1f85e45d8",
+  "inlineSchema": "datasource auth_db {\n  provider = \"postgresql\"\n  url      = env(\"AUTH_DATABASE_URL\")\n}\n\ngenerator authClient {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated/auth\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n",
+  "inlineSchemaHash": "52b1ca6d2228d9bd75127db22a48b3fca0458fb45a33c1aabdc4a9a1c2e27efa",
   "copyEngine": true
 }
 config.dirname = '/'

@@ -8,9 +8,22 @@
 
 import express from 'express';
 import { logger } from '../logger.js';
-import { novaIntegrationLayer } from '../../lib/integration/nova-integration-layer.js';
+// import { novaIntegrationLayer } from '../../lib/integration/nova-integration-layer.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import rateLimit from 'express-rate-limit';
+
+let nilPromise;
+async function getIntegrationLayer() {
+  if (!nilPromise) {
+    nilPromise = import('../../lib/integration/nova-integration-layer.js')
+      .then(m => m.novaIntegrationLayer)
+      .catch(err => {
+        logger.warn('Integration layer unavailable; continuing in degraded mode', { error: err?.message });
+        return null;
+      });
+  }
+  return nilPromise;
+}
 
 const router = express.Router();
 
@@ -61,6 +74,11 @@ router.get('/profile/:helix_uid', authenticateJWT, async (req, res) => {
     const { helix_uid } = req.params;
     const { include = 'all' } = req.query;
     
+    const integration = await getIntegrationLayer();
+    if (!integration) {
+      return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+    }
+
     // Check authorization (RBAC)
     const hasAccess = await checkUserAccess(req.user, helix_uid, 'read');
     if (!hasAccess) {
@@ -71,7 +89,7 @@ router.get('/profile/:helix_uid', authenticateJWT, async (req, res) => {
     }
 
     // Get comprehensive user profile
-    const profile = await novaIntegrationLayer.getUserProfile(helix_uid);
+    const profile = await integration.getUserProfile(helix_uid);
     
     // Filter data based on include parameter
     const filteredProfile = filterProfileData(profile, include, req.user.role);
@@ -130,6 +148,11 @@ router.get('/assets/:helix_uid', authenticateJWT, async (req, res) => {
     const { helix_uid } = req.params;
     const { type = 'all' } = req.query;
     
+    const integration = await getIntegrationLayer();
+    if (!integration) {
+      return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+    }
+
     const hasAccess = await checkUserAccess(req.user, helix_uid, 'read');
     if (!hasAccess) {
       return res.status(403).json({ 
@@ -139,7 +162,7 @@ router.get('/assets/:helix_uid', authenticateJWT, async (req, res) => {
     }
 
     // Get assets from integration layer
-    const assets = await novaIntegrationLayer.getUserAssets(helix_uid, type);
+    const assets = await integration.getUserAssets(helix_uid, type);
     
     res.json({
       assets,
@@ -191,6 +214,11 @@ router.get('/tickets/:helix_uid', authenticateJWT, async (req, res) => {
     const { helix_uid } = req.params;
     const { status = 'all', limit = 20 } = req.query;
     
+    const integration = await getIntegrationLayer();
+    if (!integration) {
+      return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+    }
+
     const hasAccess = await checkUserAccess(req.user, helix_uid, 'read');
     if (!hasAccess) {
       return res.status(403).json({ 
@@ -199,7 +227,7 @@ router.get('/tickets/:helix_uid', authenticateJWT, async (req, res) => {
       });
     }
 
-    const tickets = await novaIntegrationLayer.getUserTickets(helix_uid, {
+    const tickets = await integration.getUserTickets(helix_uid, {
       status,
       limit: parseInt(limit)
     });
@@ -259,7 +287,14 @@ router.get('/activity/:helix_uid', authenticateJWT, async (req, res) => {
     }
 
     const since = new Date(Date.now() - (parseInt(hours) * 60 * 60 * 1000));
-    const activity = await novaIntegrationLayer.getUserActivity(helix_uid, since);
+    const integration = await getIntegrationLayer();
+  if (!integration) {
+    return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+  }
+    if (!integration) {
+      return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+    }
+    const activity = await integration.getUserActivity(helix_uid, since);
     
     res.json({
       activity,
@@ -459,13 +494,45 @@ async function checkUserAccess(requestingUser, targetUserId, accessType) {
     return accessType === 'read' || accessType === 'read_activity';
   }
   
-  // Managers can access their direct reports
+  // Managers can access their direct reports (basic check; integrate with org directory when available)
   if (requestingUser.role === 'manager') {
-    // TODO: Implement manager-report relationship check
-    return accessType === 'read';
+    const managesTarget = await isManagerOf(requestingUser.id, targetUserId);
+    return managesTarget && (accessType === 'read' || accessType === 'read_activity');
   }
   
   return false;
+}
+
+async function isManagerOf(managerUserId, reportUserId) {
+  try {
+    // Simple in-memory cache; can be hydrated by an external service
+    if (!globalThis.__managerReportMap) {
+      globalThis.__managerReportMap = Object.create(null);
+    }
+    const map = globalThis.__managerReportMap;
+    const reports = map[managerUserId];
+
+    if (Array.isArray(reports)) {
+      return reports.includes(reportUserId);
+    }
+
+    // Fallback: attempt to resolve via integration layer if available
+    try {
+      const integration = await getIntegrationLayer();
+      if (integration?.getDirectReports) {
+        const list = await integration.getDirectReports(managerUserId);
+        if (Array.isArray(list)) {
+          map[managerUserId] = list;
+          return list.includes(reportUserId);
+        }
+      }
+    } catch {}
+    
+    // Default deny if unknown
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 /**

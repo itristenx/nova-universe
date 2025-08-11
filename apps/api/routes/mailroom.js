@@ -1,18 +1,33 @@
 // Nova Mailroom API routes
-const express = require('express');
+import express from 'express';
+import { authenticateJWT, requireAnyRole } from '../middleware/auth.js';
+import { logger } from '../logger.js';
+
+let PrismaClient = null;
+async function getCorePrisma() {
+  if (process.env.PRISMA_DISABLED === 'true') return null;
+  try {
+    const mod = await import('../../../prisma/generated/core/index.js');
+    PrismaClient = mod.PrismaClient;
+    return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+  } catch (e) {
+    logger.warn('Prisma unavailable in Mailroom routes', { error: e?.message });
+    return null;
+  }
+}
+
+const prismaPromise = getCorePrisma();
 const router = express.Router();
-const { PrismaClient } = require('../../../prisma/generated/core');
-const prisma = new PrismaClient();
-const { requireRole } = require('../middleware/rbac');
-const { logAudit } = require('../middleware/audit');
 
 // RBAC: Only ops_technician, ops_lead, admin can create/update
-const canEdit = requireRole(['ops_technician', 'ops_lead', 'admin']);
+const canEdit = requireAnyRole(['ops_technician', 'ops_lead', 'admin']);
 
 // POST /mailroom/packages - Create a new package record
-router.post('/packages', canEdit, async (req, res) => {
+router.post('/packages', authenticateJWT, canEdit, async (req, res) => {
   try {
-    const { trackingNumber, carrier, sender, recipientId, department, packageType, assignedLocation, flags, linkedTicketId, linkedAssetId } = req.body;
+    const prisma = await prismaPromise;
+    if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
+    const { trackingNumber, carrier, sender, recipientId, department, packageType, assignedLocation, flags, linkedTicketId, linkedAssetId } = req.body || {};
     const pkg = await prisma.mailroomPackage.create({
       data: {
         trackingNumber,
@@ -28,22 +43,36 @@ router.post('/packages', canEdit, async (req, res) => {
         linkedAssetId,
       },
     });
-    logAudit('mailroom_package_create', req.user, { packageId: pkg.id });
     res.status(201).json({ package: pkg });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// PATCH /mailroom/packages/:id/status - Update package status
-router.patch('/packages/:id/status', canEdit, async (req, res) => {
+// GET /mailroom/packages/:id - Retrieve package details
+router.get('/packages/:id', authenticateJWT, async (req, res) => {
   try {
+    const prisma = await prismaPromise;
+    if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
+    const id = parseInt(req.params.id);
+    const pkg = await prisma.mailroomPackage.findUnique({ where: { id } });
+    if (!pkg) return res.status(404).json({ error: 'Package not found' });
+    res.json({ package: pkg });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// PATCH /mailroom/packages/:id/status - Update package status
+router.patch('/packages/:id/status', authenticateJWT, canEdit, async (req, res) => {
+  try {
+    const prisma = await prismaPromise;
+    if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
     const { status } = req.body;
     const pkg = await prisma.mailroomPackage.update({
       where: { id: parseInt(req.params.id) },
       data: { status },
     });
-    logAudit('mailroom_package_status_update', req.user, { packageId: pkg.id, status });
     res.json({ package: pkg });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -51,9 +80,11 @@ router.patch('/packages/:id/status', canEdit, async (req, res) => {
 });
 
 // POST /mailroom/packages/:id/assign-proxy - Assign proxy for pickup
-router.post('/packages/:id/assign-proxy', canEdit, async (req, res) => {
+router.post('/packages/:id/assign-proxy', authenticateJWT, canEdit, async (req, res) => {
   try {
-    const { proxyId, expiration } = req.body;
+    const prisma = await prismaPromise;
+    if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
+    const { proxyId, expiration } = req.body || {};
     const pkgId = parseInt(req.params.id);
     const pkg = await prisma.mailroomPackage.findUnique({ where: { id: pkgId } });
     if (!pkg) return res.status(404).json({ error: 'Package not found' });
@@ -66,23 +97,39 @@ router.post('/packages/:id/assign-proxy', canEdit, async (req, res) => {
         status: 'active',
       },
     });
-    logAudit('mailroom_proxy_assign', req.user, { packageId: pkgId, proxyId });
     res.status(201).json({ proxy });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// POST /mailroom/packages/bulk - Bulk import packages
-router.post('/packages/bulk', canEdit, async (req, res) => {
+// POST /mailroom/packages/:id/link-ticket - Link to ticket
+router.post('/packages/:id/link-ticket', authenticateJWT, canEdit, async (req, res) => {
   try {
-    const { packages } = req.body; // Array of package objects
+    const prisma = await prismaPromise;
+    if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
+    const id = parseInt(req.params.id);
+    const { ticketId } = req.body || {};
+    if (!ticketId) return res.status(400).json({ error: 'ticketId required' });
+    const pkg = await prisma.mailroomPackage.update({ where: { id }, data: { linkedTicketId: ticketId } });
+    res.json({ package: pkg });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /mailroom/packages/bulk - Bulk import packages
+router.post('/packages/bulk', authenticateJWT, canEdit, async (req, res) => {
+  try {
+    const prisma = await prismaPromise;
+    if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
+    const { packages } = req.body || {};
+    if (!Array.isArray(packages) || packages.length === 0) return res.status(400).json({ error: 'packages array required' });
     const created = await prisma.mailroomPackage.createMany({ data: packages });
-    logAudit('mailroom_package_bulk_import', req.user, { count: created.count });
     res.status(201).json({ count: created.count });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-module.exports = router;
+export default router;
