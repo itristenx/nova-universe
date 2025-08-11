@@ -291,7 +291,10 @@ router.get('/activity/:helix_uid', authenticateJWT, async (req, res) => {
   if (!integration) {
     return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
   }
-  const activity = await integration.getUserActivity(helix_uid, since);
+    if (!integration) {
+      return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+    }
+    const activity = await integration.getUserActivity(helix_uid, since);
     
     res.json({
       activity,
