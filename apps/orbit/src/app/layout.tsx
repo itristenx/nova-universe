@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { KioskRedirect } from "../components/KioskRedirect";
@@ -6,6 +6,12 @@ import { PWAInstaller } from "../components/PWAInstaller";
 import { defaultBranding } from "../lib/branding";
 import { OutageBanner } from "../components/OutageBanner";
 import { ClientInit } from "../components/ClientInit";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#1e40af",
+};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,8 +27,6 @@ export const metadata: Metadata = {
   title: "Nova Universe - IT Service Management",
   description: "Advanced IT Service Management platform with AI-powered automation and intelligent workflows",
   manifest: "/manifest.json",
-  themeColor: "#1e40af",
-  viewport: "width=device-width, initial-scale=1",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
