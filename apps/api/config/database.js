@@ -12,10 +12,10 @@ export const databaseConfig = {
 
   core_db: {
     // Connection pool configuration
-    host: process.env.CORE_DB_HOST || 'localhost',
-    port: parseInt(process.env.CORE_DB_PORT || '5432'),
-    database: process.env.CORE_DB_NAME || 'nova_universe',
-    user: process.env.CORE_DB_USER || 'nova_user',
+    host: process.env.CORE_DB_HOST || process.env.POSTGRES_HOST || 'localhost',
+    port: parseInt(process.env.CORE_DB_PORT || process.env.POSTGRES_PORT || '5432'),
+    database: process.env.CORE_DB_NAME || process.env.POSTGRES_DB || 'nova_universe',
+    user: process.env.CORE_DB_USER || process.env.POSTGRES_USER || 'nova_admin',
     password: (() => {
       const password = process.env.CORE_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
@@ -52,10 +52,10 @@ export const databaseConfig = {
   },
 
   auth_db: {
-    host: process.env.AUTH_DB_HOST || 'localhost',
-    port: parseInt(process.env.AUTH_DB_PORT || '5432'),
-    database: process.env.AUTH_DB_NAME || 'nova_universe',
-    user: process.env.AUTH_DB_USER || 'nova_user',
+    host: process.env.AUTH_DB_HOST || process.env.POSTGRES_HOST || 'localhost',
+    port: parseInt(process.env.AUTH_DB_PORT || process.env.POSTGRES_PORT || '5432'),
+    database: process.env.AUTH_DB_NAME || process.env.POSTGRES_DB || 'nova_universe',
+    user: process.env.AUTH_DB_USER || process.env.POSTGRES_USER || 'nova_admin',
     password: (() => {
       const password = process.env.AUTH_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {

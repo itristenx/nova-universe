@@ -1,0 +1,190 @@
+
+# Nova User 360 – Full Specification
+
+## 1. Overview
+
+**Nova User 360** is the **single source of truth** for all user-related data across the **Nova Universe**.
+It consolidates identity, activity, asset, ticket, security, and productivity data into a **unified technician view**, enabling fast, contextual decision-making.
+
+**Primary Goals**
+
+* Centralize **all relevant user data** in a **real-time, single pane of glass**.
+* Enrich user profiles automatically via integrations with internal/external systems.
+* Support **role-based access** (RBAC) and **tenant-scoped views**.
+* Serve as the **data backbone** for Nova Pulse, Nova Orbit, Cosmo AI, and reporting.
+
+---
+
+## 2. Core Data Model
+
+### 2.1 Primary Entities
+
+| Entity                  | Description                                                              | Source(s)                    |
+| ----------------------- | ------------------------------------------------------------------------ | ---------------------------- |
+| **User Profile**        | Core identity record containing personal, organizational, and role data. | Nova Helix, HRIS, SCIM       |
+| **Accounts**            | Linked accounts across platforms (Okta, M365, Slack, Zoom, etc.).        | Integration Layer            |
+| **Assets**              | Devices, licenses, and assigned hardware/software.                       | CMDB, Jamf, Intune           |
+| **Tickets**             | All tickets associated with the user.                                    | Nova Ticketing               |
+| **Activity Logs**       | Login history, MFA usage, application access, suspicious events.         | IdP logs, SIEM               |
+| **Org Hierarchy**       | Department, manager, peers, team memberships.                            | HRIS, SCIM                   |
+| **Security Posture**    | Risk score, vulnerabilities, incident history.                           | CrowdStrike, Cisco, Sentinel |
+| **Training/Compliance** | Security awareness completion, required certifications.                  | LMS, Compliance system       |
+
+---
+
+### 2.2 Data Schema (Condensed ERD)
+
+```
+[User_Profile] --1:1--> [Helix_Identity]
+[User_Profile] --1:N--> [Linked_Accounts]
+[User_Profile] --1:N--> [Assets]
+[User_Profile] --1:N--> [Tickets]
+[User_Profile] --1:N--> [Activity_Logs]
+[User_Profile] --1:1--> [Org_Hierarchy]
+[User_Profile] --1:1--> [Security_Posture]
+[User_Profile] --1:N--> [Training_Records]
+```
+
+*All entities reference `user_id` as the master key, resolved via **Nova Helix**.*
+
+---
+
+## 3. Key Features
+
+### 3.1 Profile Aggregation
+
+* **Dynamic Federation** – Pull from multiple sources via **Nova Integration Layer** (Okta, M365, Slack, Zoom, HRIS).
+* **Real-Time Merge** – Apply matching logic (`email`, `employee_id`, `helix_uid`).
+* **Data Confidence Scores** – Track field reliability per source.
+
+### 3.2 Technician View
+
+* **360° Dashboard** in **Nova Pulse**:
+
+  * Summary panel (contact info, role, manager, location).
+  * Live status (online, in meeting, on PTO).
+  * Linked assets with compliance flags.
+  * Open tickets, recent resolutions.
+  * Security alerts & MFA status.
+  * Quick actions (reset password, disable account, wipe device, open ticket).
+
+### 3.3 Orbit End-User View
+
+* Minimal, privacy-filtered version:
+
+  * Assigned devices & licenses.
+  * Active tickets & statuses.
+  * Training/compliance progress.
+  * Personalized announcements.
+
+### 3.4 Cosmo AI Integration
+
+* **Context Injection** – Cosmo uses User 360 context in real time for:
+
+  * Auto-triaging tickets.
+  * Proactive issue alerts.
+  * Personalized knowledge base results.
+* **Audit Trails** for AI recommendations.
+
+---
+
+## 4. Data Sources & Integration Layer
+
+### 4.1 Core Integrations
+
+| System                          | Purpose                                   | Connector Type   |
+| ------------------------------- | ----------------------------------------- | ---------------- |
+| **Okta / Entra ID**             | SSO, SCIM user sync                       | REST / SCIM      |
+| **Microsoft Graph API**         | M365 data, Teams, mailbox, OneDrive       | REST             |
+| **Slack API**                   | Workspace profile, activity, DMs to Cosmo | Web API / Events |
+| **Jamf / Intune**               | Device inventory & compliance             | REST             |
+| **CrowdStrike / Cisco SecureX** | Security events, posture                  | REST             |
+| **HRIS**                        | Org chart, employment data                | REST / CSV       |
+| **LMS**                         | Training status                           | REST / SCORM     |
+
+---
+
+## 5. Data Matching & Enrichment
+
+### 5.1 Matching Rules
+
+* Primary key: `helix_uid`
+* Secondary: `email_canonical` (lowercased, normalized)
+* Tertiary: `employee_id`
+
+### 5.2 Enrichment Examples
+
+* IP geolocation → location history.
+* Device compliance → security score.
+* HR events → auto-update department/manager.
+
+---
+
+## 6. Security & Compliance
+
+* **RBAC**:
+
+  * Technicians: Full view within tenant scope.
+  * Managers: Limited to direct reports.
+  * End Users: Self view only.
+* **Data Residency**:
+
+  * Support tenant-based storage region selection.
+* **Audit Logs**:
+
+  * Every view/write event recorded.
+* **PII Masking**:
+
+  * Optional partial masking for high-sensitivity fields.
+* **Retention**:
+
+  * Configurable per tenant; default 7 years for audit trails.
+
+---
+
+## 7. API Specification
+
+**Base URL:**
+`/api/v2/user360`
+
+| Method  | Endpoint               | Description           | Auth          |
+| ------- | ---------------------- | --------------------- | ------------- |
+| `GET`   | `/profile/:helix_uid`  | Get full user profile | OAuth2 / SCIM |
+| `GET`   | `/assets/:helix_uid`   | Get assets for user   | OAuth2        |
+| `GET`   | `/tickets/:helix_uid`  | List user tickets     | OAuth2        |
+| `GET`   | `/activity/:helix_uid` | Activity logs         | OAuth2        |
+| `PATCH` | `/profile/:helix_uid`  | Update profile fields | OAuth2 + RBAC |
+| `POST`  | `/merge`               | Merge profiles        | Admin token   |
+
+---
+
+## 8. UI/UX Standards
+
+### Technician Dashboard
+
+* **Three-column layout**:
+
+  1. Summary & quick actions.
+  2. Assets & tickets.
+  3. Security & compliance.
+* **Status Indicators**:
+
+  * Green: Compliant
+  * Yellow: Warning
+  * Red: Critical issue
+* **Contextual Actions**: Actions adapt based on role and available integrations.
+
+---
+
+## 9. Interconnection with Other Nova Systems
+
+| System                     | Role                                                              |
+| -------------------------- | ----------------------------------------------------------------- |
+| **Nova Helix**             | Identity backbone, master UID resolution, RBAC enforcement.       |
+| **Nova CMDB**              | Asset, device, license data feed into User 360 assets tab.        |
+| **Nova Integration Layer** | Connects all external sources, applies matching/enrichment rules. |
+| **Nova Pulse**             | Main technician interface for User 360.                           |
+| **Nova Orbit**             | End-user self-service portal for filtered User 360 view.          |
+| **Cosmo AI**               | Consumes User 360 context for AI reasoning and recommendations.   |
+
+---

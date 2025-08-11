@@ -1,0 +1,484 @@
+// Nova Integration Layer (NIL) Schema
+// Enhanced enterprise-grade integration framework
+// Following industry standards for identity management, data governance, and security
+
+datasource integration_db {
+  provider = "postgresql"
+  url      = env("INTEGRATION_DATABASE_URL")
+}
+
+generator integrationClient {
+  provider = "prisma-client-js"
+  output   = "../generated/integration"
+}
+
+// ============================================================================
+// CONNECTOR MANAGEMENT
+// ============================================================================
+
+// Base connector registry
+model Connector {
+  id                String               @id @default(uuid())
+  name              String               @unique
+  type              ConnectorType        
+  version           String               @default("1.0.0")
+  provider          String               // okta, jamf, crowdstrike, etc.
+  
+  // Configuration
+  config            Json                 // Connection settings, credentials, etc.
+  capabilities      Json                 // Supported operations, rate limits, etc.
+  
+  // Status and Health
+  status            ConnectorStatus      @default(INACTIVE)
+  health            HealthStatus         @default(UNKNOWN)
+  lastHealthCheck   DateTime?            @map("last_health_check")
+  lastSync          DateTime?            @map("last_sync")
+  nextSync          DateTime?            @map("next_sync")
+  
+  // Sync Configuration
+  syncEnabled       Boolean              @default(true) @map("sync_enabled")
+  syncInterval      Int                  @default(3600) @map("sync_interval") // seconds
+  syncStrategy      SyncStrategy         @default(POLLING) @map("sync_strategy")
+  
+  // Rate Limiting
+  rateLimitPerMin   Int                  @default(100) @map("rate_limit_per_min")
+  rateLimitPerHour  Int                  @default(1000) @map("rate_limit_per_hour")
+  
+  // Security
+  encryptionKey     String?              @map("encryption_key") // For encrypted config
+  certificate       String?              // For mTLS
+  
+  // Tenant and Access Control
+  tenantId          String               @map("tenant_id")
+  createdBy         String               @map("created_by")
+  
+  // Audit
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  
+  // Relationships
+  syncJobs          SyncJob[]
+  events            IntegrationEvent[]
+  metrics           ConnectorMetric[]
+  
+  @@map("connectors")
+}
+
+// Sync job execution tracking
+model SyncJob {
+  id                String               @id @default(uuid())
+  connectorId       String               @map("connector_id")
+  connector         Connector            @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+  
+  // Job Configuration
+  jobType           SyncJobType          @map("job_type")
+  strategy          SyncStrategy         
+  options           Json?                // Job-specific options
+  
+  // Execution Details
+  status            JobStatus            @default(PENDING)
+  startedAt         DateTime?            @map("started_at")
+  completedAt       DateTime?            @map("completed_at")
+  duration          Int?                 // milliseconds
+  
+  // Results
+  recordsProcessed  Int                  @default(0) @map("records_processed")
+  recordsSucceeded  Int                  @default(0) @map("records_succeeded")
+  recordsFailed     Int                  @default(0) @map("records_failed")
+  errorMessage      String?              @map("error_message")
+  errorDetails      Json?                @map("error_details")
+  
+  // Metadata
+  correlationId     String?              @map("correlation_id")
+  triggerType       TriggerType          @default(SCHEDULED) @map("trigger_type")
+  triggeredBy       String?              @map("triggered_by")
+  
+  // Audit
+  createdAt         DateTime             @default(now()) @map("created_at")
+  
+  @@index([connectorId, status])
+  @@index([startedAt])
+  @@map("sync_jobs")
+}
+
+// ============================================================================
+// DATA INTEGRATION AND MAPPING
+// ============================================================================
+
+// Identity mapping and correlation
+model IdentityMapping {
+  id                String               @id @default(uuid())
+  
+  // Nova Identity
+  novaUserId        String               @map("nova_user_id") // Primary Nova user ID
+  email             String               
+  emailCanonical    String               @map("email_canonical")
+  
+  // External Identities
+  externalMappings  Json                 // { "okta": "user123", "jamf": "device456" }
+  
+  // Correlation Confidence
+  confidence        Float                @default(1.0) // 0.0 - 1.0
+  lastVerified      DateTime?            @map("last_verified")
+  verificationMethod String?             @map("verification_method")
+  
+  // Status
+  status            MappingStatus        @default(ACTIVE)
+  conflictResolution Json?               @map("conflict_resolution") // Rules for handling conflicts
+  
+  // Audit
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  createdBy         String               @map("created_by")
+  
+  @@unique([novaUserId])
+  @@unique([emailCanonical])
+  @@map("identity_mappings")
+}
+
+// Data transformation rules
+model TransformationRule {
+  id                String               @id @default(uuid())
+  name              String               
+  
+  // Source and Target
+  sourceConnector   String               @map("source_connector")
+  sourceField       String               @map("source_field")
+  targetField       String               @map("target_field")
+  
+  // Transformation Logic
+  transformType     TransformationType   @map("transform_type")
+  transformConfig   Json                 @map("transform_config") // Transformation parameters
+  
+  // Validation Rules
+  validationRules   Json?                @map("validation_rules")
+  defaultValue      String?              @map("default_value")
+  
+  // Status and Metrics
+  enabled           Boolean              @default(true)
+  priority          Int                  @default(100) // Higher number = higher priority
+  lastApplied       DateTime?            @map("last_applied")
+  successCount      Int                  @default(0) @map("success_count")
+  errorCount        Int                  @default(0) @map("error_count")
+  
+  // Audit
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  createdBy         String               @map("created_by")
+  
+  @@unique([sourceConnector, sourceField, targetField])
+  @@map("transformation_rules")
+}
+
+// ============================================================================
+// EVENT MANAGEMENT
+// ============================================================================
+
+// Integration events and webhooks
+model IntegrationEvent {
+  id                String               @id @default(uuid())
+  
+  // Event Classification
+  eventType         String               @map("event_type") // user.created, device.updated, etc.
+  eventCategory     EventCategory        @map("event_category")
+  source            String               // Source system/connector
+  
+  // Event Data
+  data              Json                 // Event payload
+  metadata          Json?                // Additional metadata
+  correlationId     String?              @map("correlation_id")
+  
+  // Processing Status
+  status            EventStatus          @default(PENDING)
+  processedAt       DateTime?            @map("processed_at")
+  retryCount        Int                  @default(0) @map("retry_count")
+  maxRetries        Int                  @default(3) @map("max_retries")
+  
+  // Error Handling
+  errorMessage      String?              @map("error_message")
+  errorDetails      Json?                @map("error_details")
+  deadLetterQueue   Boolean              @default(false) @map("dead_letter_queue")
+  
+  // Relationships
+  connectorId       String?              @map("connector_id")
+  connector         Connector?           @relation(fields: [connectorId], references: [id])
+  
+  // Audit
+  timestamp         DateTime             @default(now())
+  expiresAt         DateTime?            @map("expires_at")
+  
+  @@index([eventType, status])
+  @@index([source, timestamp])
+  @@index([correlationId])
+  @@map("integration_events")
+}
+
+// ============================================================================
+// MONITORING AND METRICS
+// ============================================================================
+
+// Connector health and performance metrics
+model ConnectorMetric {
+  id                String               @id @default(uuid())
+  connectorId       String               @map("connector_id")
+  connector         Connector            @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+  
+  // Metric Details
+  metricType        MetricType           @map("metric_type")
+  metricName        String               @map("metric_name")
+  value             Float                
+  unit              String?              
+  
+  // Dimensions
+  dimensions        Json?                // Additional metric dimensions
+  tags              String[]             @default([])
+  
+  // Time and Context
+  timestamp         DateTime             @default(now())
+  interval          Int?                 // Aggregation interval in seconds
+  
+  @@index([connectorId, metricType, timestamp])
+  @@index([metricName, timestamp])
+  @@map("connector_metrics")
+}
+
+// Data quality tracking
+model DataQualityCheck {
+  id                String               @id @default(uuid())
+  
+  // Check Configuration
+  checkName         String               @map("check_name")
+  checkType         QualityCheckType     @map("check_type")
+  dataSource        String               @map("data_source")
+  field             String?              
+  
+  // Check Rules
+  rules             Json                 // Quality rules and thresholds
+  
+  // Results
+  status            QualityStatus        @default(PENDING)
+  score             Float?               // Quality score 0.0 - 1.0
+  recordsChecked    Int                  @default(0) @map("records_checked")
+  recordsPassed     Int                  @default(0) @map("records_passed")
+  recordsFailed     Int                  @default(0) @map("records_failed")
+  
+  // Issues Found
+  issues            Json?                // Details of quality issues
+  severity          QualitySeverity      @default(LOW)
+  
+  // Execution
+  executedAt        DateTime             @default(now()) @map("executed_at")
+  duration          Int?                 // milliseconds
+  
+  @@index([dataSource, checkType])
+  @@index([executedAt])
+  @@map("data_quality_checks")
+}
+
+// ============================================================================
+// CONFIGURATION AND POLICIES
+// ============================================================================
+
+// Integration policies and rules
+model IntegrationPolicy {
+  id                String               @id @default(uuid())
+  name              String               @unique
+  description       String?              
+  
+  // Policy Type and Scope
+  policyType        PolicyType           @map("policy_type")
+  scope             Json                 // Which connectors/data types this applies to
+  
+  // Policy Rules
+  rules             Json                 // Policy implementation rules
+  conditions        Json?                // When this policy applies
+  actions           Json?                // What actions to take
+  
+  // Status and Priority
+  enabled           Boolean              @default(true)
+  priority          Int                  @default(100)
+  
+  // Enforcement
+  enforcementMode   EnforcementMode      @default(ADVISORY) @map("enforcement_mode")
+  violationAction   String?              @map("violation_action")
+  
+  // Audit
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  createdBy         String               @map("created_by")
+  
+  @@map("integration_policies")
+}
+
+// Configuration templates for connectors
+model ConnectorTemplate {
+  id                String               @id @default(uuid())
+  name              String               @unique
+  connectorType     ConnectorType        @map("connector_type")
+  
+  // Template Configuration
+  configTemplate    Json                 @map("config_template") // Default configuration
+  validation        Json?                // Validation schema
+  documentation     String?              // Setup instructions
+  
+  // Categorization
+  category          String?              
+  tags              String[]             @default([])
+  isOfficial        Boolean              @default(false) @map("is_official")
+  
+  // Version and Compatibility
+  version           String               @default("1.0.0")
+  minNovaVersion    String?              @map("min_nova_version")
+  maxNovaVersion    String?              @map("max_nova_version")
+  
+  // Usage Statistics
+  usageCount        Int                  @default(0) @map("usage_count")
+  rating            Float?               // User rating 0.0 - 5.0
+  
+  // Audit
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  createdBy         String               @map("created_by")
+  
+  @@map("connector_templates")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum ConnectorType {
+  IDENTITY_PROVIDER     // Okta, Azure AD, etc.
+  DEVICE_MANAGEMENT     // Jamf, Intune, etc.
+  SECURITY_PLATFORM     // CrowdStrike, Sentinel One, etc.
+  COLLABORATION         // Slack, Teams, Zoom, etc.
+  HR_SYSTEM            // Workday, BambooHR, etc.
+  MONITORING           // Uptime Kuma, Datadog, etc.
+  PROJECT_MANAGEMENT   // Monday.com, Jira, etc.
+  TICKETING            // ServiceNow, Zendesk, etc.
+  CUSTOM               // Custom integrations
+}
+
+enum ConnectorStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+  MAINTENANCE
+  DEPRECATED
+}
+
+enum HealthStatus {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+  UNKNOWN
+}
+
+enum SyncStrategy {
+  POLLING          // Regular polling
+  WEBHOOK          // Real-time webhooks
+  EVENT_STREAM     // Event streaming
+  HYBRID           // Combination approach
+}
+
+enum SyncJobType {
+  FULL_SYNC
+  INCREMENTAL_SYNC
+  DELTA_SYNC
+  VALIDATION_SYNC
+  HEALTH_CHECK
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  TIMEOUT
+}
+
+enum TriggerType {
+  SCHEDULED
+  MANUAL
+  WEBHOOK
+  EVENT_DRIVEN
+  DEPENDENCY
+}
+
+enum MappingStatus {
+  ACTIVE
+  INACTIVE
+  CONFLICTED
+  PENDING_REVIEW
+}
+
+enum TransformationType {
+  DIRECT_MAPPING
+  FORMAT_CONVERSION
+  DATA_ENRICHMENT
+  AGGREGATION
+  VALIDATION
+  CUSTOM_FUNCTION
+}
+
+enum EventCategory {
+  USER_EVENT
+  DEVICE_EVENT
+  SECURITY_EVENT
+  SYSTEM_EVENT
+  AUDIT_EVENT
+}
+
+enum EventStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  RETRY
+  DEAD_LETTER
+}
+
+enum MetricType {
+  COUNTER
+  GAUGE
+  HISTOGRAM
+  SUMMARY
+}
+
+enum QualityCheckType {
+  COMPLETENESS
+  ACCURACY
+  CONSISTENCY
+  VALIDITY
+  UNIQUENESS
+  TIMELINESS
+}
+
+enum QualityStatus {
+  PENDING
+  PASSED
+  FAILED
+  WARNING
+}
+
+enum QualitySeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum PolicyType {
+  DATA_GOVERNANCE
+  SECURITY_POLICY
+  COMPLIANCE_RULE
+  BUSINESS_RULE
+  TECHNICAL_POLICY
+}
+
+enum EnforcementMode {
+  ADVISORY      // Log violations but allow
+  BLOCKING      // Block violations
+  QUARANTINE    // Quarantine violating data
+}

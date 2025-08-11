@@ -1,8 +1,8 @@
 // db.js - Consolidated database layer with PostgreSQL/MongoDB support
 // (merged from the former db.js and db-new.js implementations)
-import dotenv from 'dotenv';
 
 // Configure environment variables before importing database config
+import dotenv from 'dotenv';
 dotenv.config();
 
 import { logger } from './logger.js';
@@ -78,36 +78,50 @@ async function setupRolesAndPermissions() {
       { id: 2, name: 'admin', description: 'Administrator - User Management Access' },
       { id: 3, name: 'user', description: 'Regular User - No Admin Access' }
     ];
+
     for (const role of roles) {
       await db.query(
         'INSERT INTO roles (id, name, description, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT (id) DO NOTHING',
         [role.id, role.name, role.description]
       );
     }
+
     const permissions = [
       { id: 1, name: 'manage_users' },
       { id: 2, name: 'manage_roles' },
-      { id: 3, name: 'manage_integrations' },
-      { id: 4, name: 'manage_system' },
-      { id: 5, name: 'view_admin_ui' },
-      { id: 6, name: 'manage_admins' }
+      { id: 3, name: 'manage_permissions' },
+      { id: 4, name: 'view_admin_panel' },
+      { id: 5, name: 'manage_integrations' },
+      { id: 6, name: 'view_audit_logs' }
     ];
+
     for (const permission of permissions) {
       await db.query(
         'INSERT INTO permissions (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING',
         [permission.id, permission.name]
       );
     }
+
+    // Assign permissions to roles
     const rolePermissions = [
-      [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6],
-      [2, 1], [2, 5]
+      { roleId: 1, permissionId: 1 }, // superadmin - manage_users
+      { roleId: 1, permissionId: 2 }, // superadmin - manage_roles
+      { roleId: 1, permissionId: 3 }, // superadmin - manage_permissions
+      { roleId: 1, permissionId: 4 }, // superadmin - view_admin_panel
+      { roleId: 1, permissionId: 5 }, // superadmin - manage_integrations
+      { roleId: 1, permissionId: 6 }, // superadmin - view_audit_logs
+      { roleId: 2, permissionId: 1 }, // admin - manage_users
+      { roleId: 2, permissionId: 4 }, // admin - view_admin_panel
+      { roleId: 2, permissionId: 6 }, // admin - view_audit_logs
     ];
-    for (const [roleId, permissionId] of rolePermissions) {
+
+    for (const rp of rolePermissions) {
       await db.query(
         'INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-        [roleId, permissionId]
+        [rp.roleId, rp.permissionId]
       );
     }
+
     logger.info('Roles and permissions setup completed');
   } catch (error) {
     logger.error('Error setting up roles and permissions:', error);
@@ -115,61 +129,53 @@ async function setupRolesAndPermissions() {
   }
 }
 
+/**
+ * Set up default configuration
+ */
 async function setupDefaultConfig() {
   try {
     const defaults = {
       logoUrl: process.env.LOGO_URL || '/logo.png',
-      faviconUrl: process.env.FAVICON_URL || '/vite.svg',
-      organizationName: process.env.ORGANIZATION_NAME || 'Your Organization',
-      welcomeMessage: 'Welcome to the Help Desk',
-      helpMessage: 'Need to report an issue?',
-      statusOpenMsg: 'Open',
-      statusClosedMsg: 'Closed',
-      statusErrorMsg: 'Error',
-      statusMeetingMsg: 'In a Meeting - Back Soon',
-      statusBrbMsg: 'Be Right Back',
-      statusLunchMsg: 'Out to Lunch - Back in 1 Hour',
-      statusUnavailableMsg: 'Status Unavailable',
-      rateLimitWindow: process.env.RATE_LIMIT_WINDOW || '900000',
-      rateLimitMax: process.env.RATE_LIMIT_MAX || '100',
-      minPinLength: process.env.MIN_PIN_LENGTH || '4',
-      maxPinLength: process.env.MAX_PIN_LENGTH || '8',
-      scimToken: process.env.SCIM_TOKEN || '',
-      directoryEnabled: '0',
-      directoryProvider: 'mock',
-      directoryUrl: '',
-      directoryToken: '',
-      integration_smtp: JSON.stringify({
-        enabled: true,
-        config: {
-          host: process.env.SMTP_HOST || '',
-          port: parseInt(process.env.SMTP_PORT || '587'),
-          secure: process.env.SMTP_SECURE === 'true',
-          username: process.env.SMTP_USER || '',
-          password: process.env.SMTP_PASS || ''
-        },
-        updatedAt: new Date().toISOString()
-      }),
-      integration_m365: JSON.stringify({
-        enabled: false,
-        config: {
-          clientId: process.env.M365_CLIENT_ID || '',
-          tenantId: process.env.M365_TENANT_ID || '',
-        },
-        updatedAt: new Date().toISOString()
-      })
+      companyName: process.env.COMPANY_NAME || 'Nova Universe',
+      enableRegistration: process.env.ENABLE_REGISTRATION || 'false',
+      enableSSOLogin: process.env.ENABLE_SSO_LOGIN || 'false',
+      enablePasswordLogin: process.env.ENABLE_PASSWORD_LOGIN || 'true',
+      enableWebauthn: process.env.ENABLE_WEBAUTHN || 'true',
+      sessionTimeout: process.env.SESSION_TIMEOUT || '3600',
+      maxLoginAttempts: process.env.MAX_LOGIN_ATTEMPTS || '5',
+      lockoutDuration: process.env.LOCKOUT_DURATION || '900',
+      passwordMinLength: process.env.PASSWORD_MIN_LENGTH || '8',
+      enablePasswordComplexity: process.env.ENABLE_PASSWORD_COMPLEXITY || 'true',
+      enableMFA: process.env.ENABLE_MFA || 'false',
+      enableAuditLogging: process.env.ENABLE_AUDIT_LOGGING || 'true',
+      retentionDays: process.env.LOG_RETENTION_DAYS || '90',
+      backupEnabled: process.env.BACKUP_ENABLED || 'true',
+      backupFrequency: process.env.BACKUP_FREQUENCY || 'daily',
+      maintenanceMode: process.env.MAINTENANCE_MODE || 'false',
+      apiRateLimit: process.env.API_RATE_LIMIT || '1000',
+      maxFileSize: process.env.MAX_FILE_SIZE || '10485760',
+      allowedFileTypes: process.env.ALLOWED_FILE_TYPES || 'jpg,jpeg,png,gif,pdf,doc,docx',
+      smtpEnabled: process.env.SMTP_ENABLED || 'false',
+      smtpHost: process.env.SMTP_HOST || 'localhost',
+      smtpPort: process.env.SMTP_PORT || '587',
+      emailFrom: process.env.EMAIL_FROM || 'noreply@novauniverse.com',
+      themePrimary: process.env.THEME_PRIMARY || '#3b82f6',
+      themeSecondary: process.env.THEME_SECONDARY || '#64748b'
     };
-    defaults.adminPassword = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 12);
+
     for (const [key, value] of Object.entries(defaults)) {
       await db.query(
-        'INSERT INTO configurations (id, key, value, type, category, "createdAt", "updatedAt") VALUES (gen_random_uuid(), $1, $2, \'string\', \'general\', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT (key) DO NOTHING',
-        [key, value]
+        'INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT (key) DO NOTHING',
+        [key, value, 'string', 'general']
       );
     }
+
+    // Add default directory integration
     await db.query(
-      'INSERT INTO integrations (id, type, name, config, enabled, "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
-      ['directory-mock', 'directory', 'Mock Directory', '{}', true, new Date().toISOString(), new Date().toISOString()]
+      'INSERT INTO directory_integrations (provider, enabled, settings, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT DO NOTHING',
+      ['mock', true, '{}']
     );
+
     logger.info('Default configuration setup completed');
   } catch (error) {
     logger.error('Error setting up default configuration:', error);
@@ -177,35 +183,60 @@ async function setupDefaultConfig() {
   }
 }
 
+/**
+ * Set up default admin user
+ */
 async function setupDefaultAdmin() {
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
-    const adminName = process.env.ADMIN_NAME || 'Admin';
-    const adminPass = process.env.ADMIN_PASSWORD || 'admin';
-    const adminHash = bcrypt.hashSync(adminPass, 12);
-    const existingAdmin = await db.query(
-      'SELECT id FROM users WHERE email = $1 LIMIT 1',
-      [adminEmail]
-    );
-    if (existingAdmin.rows.length === 0) {
-      logger.info('Creating default admin user...');
-      const newUserId = uuidv4();
-      const now = new Date().toISOString();
-      const result = await db.query(
-        'INSERT INTO users (id, "clerkId", "novaId", email, "firstName", "lastName", password_hash, role, "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
-        [newUserId, newUserId, newUserId, adminEmail, adminName, 'User', adminHash, 'ADMIN', now, now]
+    // Use a single transaction to avoid race conditions
+    const client = await db.coreDb.pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      // Check if admin user already exists
+      const existingAdmin = await client.query(
+        'SELECT id FROM users WHERE email = $1',
+        ['admin@novauniverse.com']
       );
-      const userId = result.rows[0].id;
-      if (!process.env.CLI_MODE) {
-        logger.info(`Default admin user created: ${adminEmail} (password: ${adminPass})`);
+
+      if (existingAdmin.rows && existingAdmin.rows.length > 0) {
+        logger.info('Default admin user already exists');
+        await client.query('COMMIT');
+        return;
       }
-    } else {
-      const userId = existingAdmin.rows[0].id;
-      if (!process.env.CLI_MODE) {
-        logger.info(`Admin user already exists: ${adminEmail}`);
-      }
+
+      // Create default admin user using the correct schema
+      const hashedPassword = await bcrypt.hash('admin123!', 12);
+      const adminUuid = uuidv4();
+
+      const result = await client.query(
+        'INSERT INTO users (uuid, name, email, password_hash, disabled, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id',
+        [adminUuid, 'System Administrator', 'admin@novauniverse.com', hashedPassword, false]
+      );
+
+      const adminId = result.rows[0].id;
+
+      // Assign superadmin role
+      await client.query(
+        'INSERT INTO user_roles (user_id, role_id, created_at) VALUES ($1, $2, CURRENT_TIMESTAMP)',
+        [adminId, 1] // superadmin role
+      );
+
+      await client.query('COMMIT');
+      logger.info('Default admin user created: admin@novauniverse.com / admin123!');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
   } catch (error) {
+    // If it's a duplicate key error, it means another process already created the admin user
+    if (error.code === '23505' && error.constraint === 'users_email_key') {
+      logger.info('Default admin user already exists (created by another process)');
+      return;
+    }
     logger.error('Error setting up default admin:', error);
     throw error;
   }
@@ -216,95 +247,122 @@ async function setupDefaultAdmin() {
  */
 class DatabaseWrapper {
   constructor() {
-    this.ready = false;
-    this.initPromise = null;
+    this.db = null;
   }
 
   async ensureReady() {
-    if (this.ready) return;
-    if (!this.initPromise) {
-      this.initPromise = initializeDatabase();
+    if (!this.db) {
+      this.db = await initializeDatabase();
     }
-    await this.initPromise;
-    this.ready = true;
+    return this.db;
   }
 
   // Modern async methods
   async query(sql, params = []) {
-    await this.ensureReady();
-    return db.query(sql, params);
+    const database = await this.ensureReady();
+    return await database.query(sql, params);
   }
 
   async transaction(callback) {
-    await this.ensureReady();
-    return db.transaction(callback);
+    const database = await this.ensureReady();
+    return await database.transaction(callback);
   }
 
   async storeDocument(collection, document) {
-    await this.ensureReady();
-    return db.storeDocument(collection, document);
+    const database = await this.ensureReady();
+    return await database.storeDocument(collection, document);
   }
 
   async findDocuments(collection, query = {}, options = {}) {
-    await this.ensureReady();
-    return db.findDocuments(collection, query, options);
+    const database = await this.ensureReady();
+    return await database.findDocuments(collection, query, options);
   }
 
   async createAuditLog(action, userId, details) {
-    await this.ensureReady();
-    return db.createAuditLog(action, userId, details);
+    try {
+      const database = await this.ensureReady();
+      await database.storeDocument('audit_logs', {
+        action,
+        userId,
+        details,
+        timestamp: new Date(),
+        ip: details.ip || 'unknown',
+        userAgent: details.userAgent || 'unknown'
+      });
+    } catch (error) {
+      logger.error('Failed to create audit log:', error);
+    }
   }
 
   async purgeOldLogs(days, cb) {
     try {
-      await this.ensureReady();
-      const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-      await db.query('DELETE FROM logs WHERE timestamp < $1', [cutoff]);
-      if (cb) cb(null);
-    } catch (err) {
-      if (cb) cb(err);
+      const database = await this.ensureReady();
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+      
+      // Check if system_logs table exists first
+      const tableExists = await database.query(
+        `SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'system_logs'
+        )`
+      );
+      
+      if (!tableExists.rows[0].exists) {
+        logger.info('system_logs table does not exist, skipping log purge');
+        if (cb) cb(null, { rowCount: 0 });
+        return { rowCount: 0 };
+      }
+      
+      const result = await database.query(
+        'DELETE FROM system_logs WHERE created_at < $1',
+        [cutoffDate]
+      );
+      
+      if (cb) cb(null, result);
+      return result;
+    } catch (error) {
+      logger.error('Failed to purge old logs:', error);
+      if (cb) cb(error);
+      throw error;
     }
   }
 
   // Compatibility: .get(sql, params, cb)
   get(sql, params, cb) {
-    console.log('DEBUG: get() called with sql:', sql);
-    this.query(sql, params)
-      .then(result => {
-        console.log('DEBUG: query result:', result);
-        if (result && result.rows && result.rows.length > 0) {
-          console.log('DEBUG: returning row:', result.rows[0]);
-          console.log('DEBUG: row keys:', Object.keys(result.rows[0]));
-          cb(null, result.rows[0]);
-        } else {
-          console.log('DEBUG: no rows found');
-          cb(null, undefined);
-        }
-      })
-      .catch(err => {
-        console.log('DEBUG: query error:', err);
-        cb(err);
-      });
+    // If only two arguments and second is a function, shift
+    if (typeof params === 'function') {
+      cb = params;
+      params = [];
+    }
+    // If callback is provided, use callback style
+    if (typeof cb === 'function') {
+      this.query(sql, params)
+        .then(result => cb(null, result.rows?.[0] || null))
+        .catch(cb);
+    } else {
+      // Otherwise, return a promise
+      return this.query(sql, params).then(result => result.rows?.[0] || null);
+    }
   }
 
   // Compatibility: .all(sql, params, cb)
   all(sql, params, cb) {
-    console.log('DEBUG: all() called with sql:', sql);
-    this.query(sql, params)
-      .then(result => {
-        console.log('DEBUG: all query result:', result);
-        if (result && result.rows) {
-          console.log('DEBUG: returning rows:', result.rows);
-          cb(null, result.rows);
-        } else {
-          console.log('DEBUG: no rows found');
-          cb(null, []);
-        }
-      })
-      .catch(err => {
-        console.log('DEBUG: all query error:', err);
-        cb(err);
-      });
+    // If only two arguments and second is a function, shift
+    if (typeof params === 'function') {
+      cb = params;
+      params = [];
+    }
+    // If callback is provided, use callback style
+    if (typeof cb === 'function') {
+      this.query(sql, params)
+        .then(result => cb(null, result.rows || []))
+        .catch(cb);
+    } else {
+      // Otherwise, return a promise
+      return this.query(sql, params).then(result => result.rows || []);
+    }
   }
 
   // Compatibility: .run(sql, params, cb) or .run(sql, params) returning a promise

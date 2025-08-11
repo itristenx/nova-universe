@@ -162,3 +162,76 @@ export function issueJWT(user) {
     audience: 'nova-universe'
   });
 }
+
+/**
+ * Middleware to require a specific permission
+ */
+export function requirePermission(permission) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ 
+        error: 'Authentication required', 
+        errorCode: 'AUTH_REQUIRED' 
+      });
+    }
+    
+    if (!req.user.permissions || !Array.isArray(req.user.permissions)) {
+      return res.status(403).json({ 
+        error: 'Invalid user permission data', 
+        errorCode: 'INVALID_PERMISSION_DATA' 
+      });
+    }
+    
+    if (!req.user.permissions.includes(permission) && !req.user.permissions.includes('*')) {
+      logger.warn('Access denied - insufficient permissions', {
+        userId: req.user.id,
+        requiredPermission: permission,
+        userPermissions: req.user.permissions,
+        ip: req.ip
+      });
+      
+      return res.status(403).json({ 
+        error: `Permission required: ${permission}`, 
+        errorCode: 'INSUFFICIENT_PERMISSIONS' 
+      });
+    }
+    
+    next();
+  };
+}
+
+/**
+ * Creates a rate limiter with custom configuration
+ */
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+
+export const createRateLimit = (windowMs, max, message = 'Too many requests') => {
+  return rateLimit({
+    windowMs,
+    max,
+    message: {
+      success: false,
+      error: message,
+      retryAfter: Math.ceil(windowMs / 1000)
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      return req.user?.id || ipKeyGenerator(req);
+    },
+    handler: (req, res) => {
+      logger.warn('Rate limit exceeded:', {
+        userId: req.user?.id,
+        ip: req.ip,
+        endpoint: req.originalUrl,
+        method: req.method
+      });
+
+      res.status(429).json({
+        success: false,
+        error: message,
+        retryAfter: Math.ceil(windowMs / 1000)
+      });
+    }
+  });
+};

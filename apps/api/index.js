@@ -29,6 +29,8 @@ import beaconRouter from './routes/beacon.js';
 import goalertProxyRouter from './routes/goalert-proxy.js';
 import cmdbRouter from './routes/cmdb.js';
 import cmdbExtendedRouter from './routes/cmdbExtended.js';
+import notificationsRouter from './routes/notifications.js'; // Universal Notification Platform
+import user360Router from './routes/user360.js'; // User 360 API
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -1710,6 +1712,7 @@ app.use('/api/v1/inventory', inventoryRouter);
 app.use('/api/v1/cmdb', cmdbRouter);
 app.use('/api/v1/cmdb', cmdbExtendedRouter);
 app.use('/api/v1/integrations', integrationsRouter);
+app.use('/api/v2/user360', user360Router); // User 360 API
 app.use('/api/catalog-items', catalogItemsRouter);
 app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
@@ -1726,6 +1729,7 @@ app.use('/api/analytics', analyticsRouter);
 app.use('/api/monitoring', monitoringRouter);
 app.use('/api/v2/sentinel', monitoringRouter);
 app.use('/api/v2/goalert', goalertProxyRouter);
+app.use('/api/v2/notifications', notificationsRouter); // Universal Notification Platform
 app.use('/api/ai-fabric', aiFabricRouter);
 app.use('/api/setup', setupRouter);
 

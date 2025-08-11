@@ -338,4 +338,135 @@ router.post('/:id/test', async (req, res, next) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/integrations/connectors/health:
+ *   get:
+ *     summary: Get health status of all connectors
+ *     responses:
+ *       200:
+ *         description: Connector health status
+ */
+router.get('/connectors/health', async (req, res) => {
+  try {
+    // Import here to avoid circular dependencies
+    const { novaIntegrationLayer } = await import('../../lib/integration/nova-integration-layer.js');
+    
+    const healthStatuses = await novaIntegrationLayer.getConnectorHealth();
+    
+    res.json({
+      connectors: healthStatuses,
+      overall: healthStatuses.every(h => h.status === 'healthy') ? 'healthy' : 'degraded',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error(`Failed to get connector health: ${error.message}`);
+    res.status(500).json({ 
+      error: 'Failed to get connector health', 
+      code: 'HEALTH_CHECK_FAILED' 
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/integrations/connectors/{id}/sync:
+ *   post:
+ *     summary: Trigger sync for a specific connector
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ */
+router.post('/connectors/:id/sync', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { type = 'incremental', dryRun = false } = req.body;
+    
+    // Import here to avoid circular dependencies
+    const { novaIntegrationLayer } = await import('../../lib/integration/nova-integration-layer.js');
+    
+    const result = await novaIntegrationLayer.executeSync(id, {
+      type,
+      dryRun
+    });
+    
+    res.json({
+      success: true,
+      jobId: result.jobId,
+      status: result.status,
+      metrics: result.metrics
+    });
+  } catch (error) {
+    logger.error(`Failed to trigger sync for connector ${req.params.id}: ${error.message}`);
+    res.status(500).json({ 
+      error: 'Failed to trigger sync', 
+      code: 'SYNC_FAILED' 
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/integrations/actions:
+ *   post:
+ *     summary: Execute action on external system
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - connectorId
+ *               - action
+ *               - target
+ *             properties:
+ *               connectorId:
+ *                 type: string
+ *               action:
+ *                 type: string
+ *               target:
+ *                 type: string
+ *               parameters:
+ *                 type: object
+ */
+router.post('/actions', async (req, res) => {
+  try {
+    const { connectorId, action, target, parameters = {} } = req.body;
+    
+    if (!connectorId || !action || !target) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: connectorId, action, target', 
+        code: 'MISSING_FIELDS' 
+      });
+    }
+    
+    // Import here to avoid circular dependencies
+    const { novaIntegrationLayer } = await import('../../lib/integration/nova-integration-layer.js');
+    
+    const result = await novaIntegrationLayer.executeAction({
+      connectorId,
+      action,
+      target,
+      parameters,
+      requestedBy: req.user?.id || 'api'
+    });
+    
+    res.json({
+      success: result.success,
+      message: result.message,
+      data: result.data
+    });
+  } catch (error) {
+    logger.error(`Failed to execute action: ${error.message}`);
+    res.status(500).json({ 
+      error: 'Failed to execute action', 
+      code: 'ACTION_FAILED' 
+    });
+  }
+});
+
 export default router;
