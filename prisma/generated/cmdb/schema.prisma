@@ -7,8 +7,9 @@ datasource cmdb_db {
 }
 
 generator cmdbClient {
-  provider = "prisma-client-js"
-  output   = "../generated/cmdb"
+  provider      = "prisma-client-js"
+  output        = "../generated/cmdb"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 // ============================================================================

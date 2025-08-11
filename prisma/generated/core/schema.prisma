@@ -4,8 +4,9 @@ datasource core_db {
 }
 
 generator coreClient {
-  provider = "prisma-client-js"
-  output   = "../generated/core"
+  provider      = "prisma-client-js"
+  output        = "../generated/core"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 model User {

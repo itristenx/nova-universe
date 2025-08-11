@@ -8,8 +8,9 @@ datasource integration_db {
 }
 
 generator integrationClient {
-  provider = "prisma-client-js"
-  output   = "../generated/integration"
+  provider      = "prisma-client-js"
+  output        = "../generated/integration"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 // ============================================================================
