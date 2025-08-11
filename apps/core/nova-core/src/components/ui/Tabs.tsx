@@ -27,7 +27,7 @@ export const Tabs: React.FC<TabsProps> & { Tab?: React.FC<{ key?: string; title:
   const childTabs = React.Children.toArray(children) as React.ReactElement[];
   const resolvedTabs: { key: string; label: React.ReactNode; content: React.ReactNode }[] =
     tabs?.map((t, i) => ({ key: t.key ?? String(i), label: t.label, content: t.content })) ||
-    childTabs.map((el, i) => ({ key: (el.key as string) ?? String(i), label: el.props.title, content: el.props.children }));
+    childTabs.map((el, i) => ({ key: (el.key as string) ?? String(i), label: (el.props as any).title, content: (el.props as any).children }));
 
   const initial = selectedKey ? Math.max(0, resolvedTabs.findIndex(t => t.key === selectedKey)) : initialIndex;
   const [active, setActive] = useState(initial);
@@ -55,4 +55,4 @@ export const Tabs: React.FC<TabsProps> & { Tab?: React.FC<{ key?: string; title:
   );
 };
 
-Tabs.Tab = ({ children }) => <>{children}</> as any;
+Tabs.Tab = (({ children }: { children: React.ReactNode }) => <>{children}</>) as any;

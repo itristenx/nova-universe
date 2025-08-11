@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
-import { Card, Button } from '@/components/ui';
+import { Card, Button, Tabs, Table, TableHead as TableHeader, TableBody, TableCell, TableRow, Chip, Modal, Input, Select, Switch, Textarea } from '@/components/ui';
 import { 
   UserIcon, 
   UserGroupIcon, 
@@ -13,29 +13,6 @@ import {
   WifiIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
-import { 
-  Tabs, 
-  Tab, 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableColumn, 
-  TableRow, 
-  TableCell,
-  Chip,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-  Progress,
-  Switch,
-  Input,
-  Select,
-  SelectItem,
-  Spinner
-} from '@heroui/react';
 import { useToastStore } from '@/stores/toast';
 
 interface SCIMUser {
@@ -702,35 +679,33 @@ export default function SCIMProvisioningMonitor() {
                     <p className="text-sm text-gray-600">Sync group memberships</p>
                   </div>
                   <Switch
-                    isSelected={scimConfig.groupSyncEnabled}
-                    onValueChange={(groupSyncEnabled) => setSCIMConfig(prev => ({ ...prev, groupSyncEnabled }))}
+                    checked={scimConfig.groupSyncEnabled}
+                    onChange={(groupSyncEnabled: boolean) => setSCIMConfig(prev => ({ ...prev, groupSyncEnabled }))}
                   />
                 </div>
               </div>
 
               <Select
                 label="Sync Interval"
-                selectedKeys={[scimConfig.syncInterval.toString()]}
-                onSelectionChange={(keys) => {
-                  const interval = Array.from(keys)[0] as string;
-                  setSCIMConfig(prev => ({ ...prev, syncInterval: parseInt(interval) }));
-                }}
-              >
-                <SelectItem key="300" value="300">5 minutes</SelectItem>
-                <SelectItem key="900" value="900">15 minutes</SelectItem>
-                <SelectItem key="1800" value="1800">30 minutes</SelectItem>
-                <SelectItem key="3600" value="3600">1 hour</SelectItem>
-                <SelectItem key="21600" value="21600">6 hours</SelectItem>
-                <SelectItem key="43200" value="43200">12 hours</SelectItem>
-                <SelectItem key="86400" value="86400">24 hours</SelectItem>
-              </Select>
+                value={scimConfig.syncInterval.toString()}
+                onChange={(value: string) => setSCIMConfig(prev => ({ ...prev, syncInterval: parseInt(value) }))}
+                options={[
+                  { value: '300', label: '5 minutes' },
+                  { value: '900', label: '15 minutes' },
+                  { value: '1800', label: '30 minutes' },
+                  { value: '3600', label: '1 hour' },
+                  { value: '21600', label: '6 hours' },
+                  { value: '43200', label: '12 hours' },
+                  { value: '86400', label: '24 hours' },
+                ]}
+              />
             </div>
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={onClose}>
               Cancel
             </Button>
-            <Button color="primary" onPress={handleConfigSave}>
+            <Button variant="primary" onPress={handleConfigSave}>
               Save Configuration
             </Button>
           </ModalFooter>

@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Input, Modal } from '@heroui/react';
+import { Button, Card, Checkbox, Input, Modal } from '@/components/ui';
 import { UserFilters, useUsers } from '@/hooks/useUsers';
 import type { User, Role } from '@/types';
 import { api } from '@/lib/api';
@@ -418,9 +418,10 @@ export const UserManagementPage: React.FC = () => {
     const newUser = await createUser({
       name: formData.name,
       email: formData.email,
-      password: formData.password,
       roles: formData.roles,
-    });
+      permissions: [],
+      disabled: false,
+    } as Omit<User, 'id'>);
     if (newUser) {
       addToast({ type: 'success', title: 'User Created', description: 'User created successfully' });
       setShowCreateModal(false);
