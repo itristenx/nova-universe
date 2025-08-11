@@ -465,7 +465,7 @@ const SupportGroupsPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {supportGroupsData.supportGroups.map((group: any) => (
+                {supportGroupsData.supportGroups.map((group: SupportGroup) => (
                   <TableRow key={group.id}>
                     <TableCell>
                       <div>
