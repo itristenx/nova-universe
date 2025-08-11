@@ -317,7 +317,7 @@ export const LoginPage: React.FC = () => {
                   {passkeyAvailable && (
                     <Button
                       type="button"
-                      variant="secondary"
+                      variant="default"
                       className="w-full"
                       onClick={handlePasskeyLogin}
                       isLoading={isPasskeyLoading}
@@ -331,7 +331,7 @@ export const LoginPage: React.FC = () => {
                   {ssoAvailable && ssoLoginUrl && (
                     <Button
                       type="button"
-                      variant="secondary"
+                      variant="default"
                       className="w-full"
                       onClick={() => {
                         window.location.href = ssoLoginUrl;

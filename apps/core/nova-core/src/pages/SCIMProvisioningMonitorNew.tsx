@@ -396,7 +396,7 @@ export default function SCIMProvisioningMonitor() {
         </div>
         <div className="flex gap-2">
           <Button
-            variant="outline"
+            variant="bordered"
             size="sm"
             onClick={handleRefresh}
             disabled={refreshing}
@@ -405,7 +405,7 @@ export default function SCIMProvisioningMonitor() {
             {refreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
           <Button
-            color="primary"
+            variant="primary"
             size="sm"
             onClick={onOpen}
             startContent={<Cog6ToothIcon className="h-4 w-4" />}

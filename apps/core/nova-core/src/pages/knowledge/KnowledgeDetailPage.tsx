@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, Textarea } from '@heroui/react';
+import { Button, Card, Textarea } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import type { KnowledgeArticle, KnowledgeArticleVersion } from '@/types';
 
 const KnowledgeDetailPage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug } = useParams<{ slug?: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const userRoles = user?.roles || [];
@@ -24,7 +24,7 @@ const KnowledgeDetailPage: React.FC = () => {
     async function load() {
       try {
         setLoading(true);
-        const art = await api.getKnowledgeArticle(slug);
+        const art = await api.getKnowledgeArticle(slug!);
         setArticle(art);
         if (art) {
           const vers = await api.getKnowledgeVersions(art.id);

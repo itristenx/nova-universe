@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Card, Input } from '@heroui/react';
+import { Button, Card, Input } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import type { KnowledgeArticle } from '@/types';

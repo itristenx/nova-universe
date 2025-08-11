@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input, Modal, Checkbox, Select } from '@heroui/react';
+import { Button, Card, Input, Modal, Checkbox, Select } from '@/components/ui';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
@@ -66,7 +66,15 @@ export const EmailAccountsPage: React.FC = () => {
 
   const openEdit = (acc: EmailAccount) => {
     setEditing(acc);
-    setFormData({ ...acc });
+    setFormData({
+      queue: acc.queue,
+      address: acc.address,
+      displayName: acc.displayName || '',
+      enabled: acc.enabled,
+      graphImpersonation: acc.graphImpersonation,
+      autoCreateTickets: acc.autoCreateTickets,
+      webhookMode: acc.webhookMode,
+    });
     setShowModal(true);
   };
 

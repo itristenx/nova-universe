@@ -7,7 +7,6 @@ export { Select } from './Select';
 export { Textarea } from './Textarea';
 export { Checkbox } from './checkbox';
 export { FileInput } from './FileInput';
-
 export { Table } from './Table';
 export { TableRow } from './TableRow';
 export { TableCell } from './TableCell';
@@ -56,3 +55,6 @@ export { Schedule } from './Schedule';
 export { LinearProgress } from './LinearProgress';
 export { TextField } from './TextField';
 export { FormControlLabel } from './FormControlLabel';
+export { Tabs } from './Tabs';
+export { Accordion } from './Accordion';
+export { ColorPicker } from './color-picker';

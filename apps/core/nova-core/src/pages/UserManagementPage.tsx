@@ -365,7 +365,8 @@ export const UserManagementPage: React.FC = () => {
       console.error('Failed to load roles:', e);
       addToast({
         type: 'error',
-        message: 'Failed to load roles. Please try again later.',
+        title: 'Error',
+        description: 'Failed to load roles. Please try again later.',
       });
     });
   }, []);

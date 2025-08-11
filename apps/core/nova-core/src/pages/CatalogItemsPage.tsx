@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Input, Modal } from '@heroui/react';
+import { Button, Card, Input, Modal } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
 import type { RequestCatalogItem } from '@/types';

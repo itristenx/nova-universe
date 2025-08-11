@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BuildingOfficeIcon, GlobeAltIcon, PaintBrushIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
-import { ColorPicker } from '../../ui/ColorPicker';
+import { ColorPicker } from '../../ui/color-picker';
 
 interface OrganizationStepProps {
   data: any;

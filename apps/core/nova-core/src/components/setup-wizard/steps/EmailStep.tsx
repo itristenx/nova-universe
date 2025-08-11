@@ -301,7 +301,7 @@ export const EmailStep: React.FC<EmailStepProps> = ({
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Connection Test</h3>
                 <Button
-                  variant="outline"
+                  variant="bordered"
                   onClick={testEmailConnection}
                   disabled={connectionStatus === 'testing'}
                   isLoading={connectionStatus === 'testing'}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input, Modal, Checkbox } from '@heroui/react';
+import { Button, Card, Input, Modal, Checkbox } from '@/components/ui';
 import { 
   UsersIcon, 
   PlusIcon, 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Modal } from '@heroui/react';
+import { Button, Card, Modal } from '@/components/ui';
 import { ScheduleManager } from '@/components/ScheduleManager';
 import { 
   ComputerDesktopIcon, 

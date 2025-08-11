@@ -548,4 +548,5 @@ export interface RequestCatalogItem {
   price?: number;
   sla?: string;
   enabled?: boolean;
+  formSchema?: any;
 }

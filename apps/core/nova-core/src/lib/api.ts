@@ -22,6 +22,8 @@ import type {
   DashboardStats,
   ActivityLog,
   EmailAccount,
+  OrganizationBranding,
+  RequestCatalogItem,
 } from '@/types';
 import {
   mockUsers,
