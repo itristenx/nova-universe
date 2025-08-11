@@ -1,7 +1,3 @@
-<<<<<<< Current (Your changes)
-// Placeholder TypeScript file to satisfy tsconfig.json
-export {};
-=======
 // Configuration utilities and shared types for development tools
 export interface ToolConfig {
   enabled: boolean;
@@ -37,4 +33,3 @@ export const defaultConfig: BuildConfig = {
 };
 
 export default defaultConfig;
->>>>>>> Incoming (Background Agent changes)
