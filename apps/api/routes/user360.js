@@ -498,11 +498,31 @@ async function checkUserAccess(requestingUser, targetUserId, accessType) {
 
 async function isManagerOf(managerUserId, reportUserId) {
   try {
-    // Basic heuristic: compare against a cached mapping if available on the request context
-    // Replace with integration to the org directory service when available
-    const map = globalThis.__managerReportMap || {};
-    const reports = map[managerUserId] || [];
-    return reports.includes(reportUserId);
+    // Simple in-memory cache; can be hydrated by an external service
+    if (!globalThis.__managerReportMap) {
+      globalThis.__managerReportMap = Object.create(null);
+    }
+    const map = globalThis.__managerReportMap;
+    const reports = map[managerUserId];
+
+    if (Array.isArray(reports)) {
+      return reports.includes(reportUserId);
+    }
+
+    // Fallback: attempt to resolve via integration layer if available
+    try {
+      const integration = await getIntegrationLayer();
+      if (integration?.getDirectReports) {
+        const list = await integration.getDirectReports(managerUserId);
+        if (Array.isArray(list)) {
+          map[managerUserId] = list;
+          return list.includes(reportUserId);
+        }
+      }
+    } catch {}
+    
+    // Default deny if unknown
+    return false;
   } catch {
     return false;
   }

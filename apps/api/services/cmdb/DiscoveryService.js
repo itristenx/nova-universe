@@ -2,13 +2,14 @@ import { logger } from '../../logger.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import dns from 'dns';
+import net from 'net';
 // import ping from 'ping'; // Optional: enable 'ping' package for real ICMP checks
 
 async function getCmdbPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
     const mod = await import('../../../../prisma/generated/cmdb/index.js');
-    return new mod.PrismaClient();
+    return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch { return null; }
 }
 
@@ -168,8 +169,10 @@ export class DiscoveryService {
 
       // Store discovered items
       const createdItems = [];
+      const client = await this.client;
+      if (!client) throw new Error('CMDB Prisma client unavailable');
       for (const item of discoveredItems) {
-        const discoveredItem = await this.client.discoveredItem.create({
+        const discoveredItem = await client.discoveredItem.create({
           data: {
             runId,
             discoveredData: item,
@@ -203,35 +206,32 @@ export class DiscoveryService {
     try {
       const { ipRange, scanPorts = [22, 80, 443, 3389] } = config;
       
-      // Simple ping sweep for demonstration
-      // In production, this would use more sophisticated tools like nmap
+      // Simple TCP-based sweep for demonstration
       const ipAddresses = this._generateIpRange(ipRange);
       
       for (const ip of ipAddresses.slice(0, 10)) { // Limit for demo
         try {
-          // Ping disabled by default; enable 'ping' package for real ICMP checks
-          // const pingResult = await (await import('ping')).promise.probe(ip, { timeout: 2 });
-          const pingResult = { alive: false };
-          
-          if (pingResult.alive) {
+          const openPorts = await this._scanPorts(ip, scanPorts);
+          const isAlive = openPorts.length > 0;
+          if (isAlive) {
             const deviceData = {
               name: `Device-${ip}`,
               ipAddress: ip,
               discoveryType: 'Network',
               discoveredAt: new Date(),
               alive: true,
-              responseTime: pingResult.time,
+              responseTime: null,
               ciType: 'network-device'
             };
 
             // Try to determine device type through port scanning (simplified)
-            deviceData.openPorts = await this._scanPorts(ip, scanPorts);
-            deviceData.deviceType = this._inferDeviceType(deviceData.openPorts);
+            deviceData.openPorts = openPorts;
+            deviceData.deviceType = this._inferDeviceType(openPorts);
 
             discoveredItems.push(deviceData);
           }
         } catch (error) {
-          logger.debug(`Failed to ping ${ip}:`, error.message);
+          logger.debug(`Failed to check ${ip}:`, error.message);
         }
       }
     } catch (error) {
@@ -546,22 +546,38 @@ export class DiscoveryService {
    * Scan ports on an IP address
    */
   async _scanPorts(ip, ports) {
-    // Simplified port scanning - in production use proper tools
-    const openPorts = [];
-    
-    for (const port of ports) {
-      try {
-        // This is a very basic check - use proper port scanning tools in production
-        const { stdout } = await promisify(exec)(`timeout 2 nc -z ${ip} ${port} && echo "open" || echo "closed"`, { timeout: 3000 });
-        if (stdout.trim() === 'open') {
-          openPorts.push(port);
+    const tryPort = (port) => new Promise((resolve) => {
+      const socket = new net.Socket();
+      let resolved = false;
+      const timeoutMs = 1500;
+      socket.setTimeout(timeoutMs);
+      socket.once('connect', () => {
+        resolved = true;
+        socket.destroy();
+        resolve({ port, open: true });
+      });
+      socket.once('timeout', () => {
+        if (!resolved) {
+          resolved = true;
+          socket.destroy();
+          resolve({ port, open: false });
         }
-      } catch (error) {
-        // Port is likely closed or filtered
+      });
+      socket.once('error', () => {
+        if (!resolved) {
+          resolved = true;
+          resolve({ port, open: false });
+        }
+      });
+      try {
+        socket.connect(port, ip);
+      } catch {
+        resolve({ port, open: false });
       }
-    }
-    
-    return openPorts;
+    });
+
+    const results = await Promise.all(ports.map((p) => tryPort(p)));
+    return results.filter(r => r.open).map(r => r.port);
   }
 
   /**
