@@ -176,6 +176,9 @@ services:
       REDIS_URL: redis://${TEST_PREFIX}-redis:6379
       JWT_SECRET: test_jwt_secret_${TEST_ENV_NAME}
       SESSION_SECRET: test_session_secret_${TEST_ENV_NAME}
+      KIOSK_TOKEN: kiosk_token_${TEST_ENV_NAME}
+      SCIM_TOKEN: scim_token_${TEST_ENV_NAME}
+      AUTH_DB_PASSWORD: test_password_${TEST_ENV_NAME}
       TEST_ENV: ${TEST_ENV_NAME}
       FORCE_LISTEN: "true"
     ports:
