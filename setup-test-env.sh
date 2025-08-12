@@ -125,8 +125,6 @@ generate_test_compose() {
     log_step "Generating test environment configuration..."
     
     cat > "docker-compose.test-${TEST_ENV_NAME}.yml" << EOF
-version: '3.8'
-
 services:
   # Database
   ${TEST_PREFIX}-postgres:
@@ -180,6 +178,11 @@ services:
       TEST_ENV: ${TEST_ENV_NAME}
     ports:
       - "${API_PORT}:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     depends_on:
       ${TEST_PREFIX}-postgres:
         condition: service_healthy

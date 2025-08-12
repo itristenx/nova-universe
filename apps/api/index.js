@@ -517,7 +517,7 @@ if (!DISABLE_AUTH) {
   } // End SAML conditional
 }
 
-const PORT = process.env.API_PORT || 3000;
+const PORT = Number(process.env.API_PORT || 3000);
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
 const CERT_PATH = process.env.TLS_CERT_PATH;
 const KEY_PATH = process.env.TLS_KEY_PATH;
@@ -1139,6 +1139,11 @@ v1Router.post('/api/login', apiLoginLimiter, authRateLimit, [
     const token = sign({ id: row.id, name: row.name, email: row.email });
     res.json({ token });
   });
+});
+
+// Root health for external checks
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 // Health check endpoint for debugging frontend connectivity
