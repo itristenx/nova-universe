@@ -212,26 +212,22 @@ services:
       - /app/node_modules
     command: ["npm", "start"]
 
-  # Beacon Service
+  # Beacon Service (placeholder HTTP server for UAT/integration)
   ${TEST_PREFIX}-beacon:
-    build:
-      context: ./apps/beacon/nova-beacon
-      dockerfile: Dockerfile.dev
+    image: node:20-alpine
     container_name: ${TEST_PREFIX}-beacon
     environment:
       NODE_ENV: test
       PORT: 3002
       API_URL: http://${TEST_PREFIX}-api:3000
       TEST_ENV: ${TEST_ENV_NAME}
+    command: ["sh", "-c", "node -e 'require(\"http\").createServer((req,res)=>{res.end(\"Beacon placeholder\")}).listen(3002)' "]
     ports:
       - "${BEACON_PORT}:3002"
     depends_on:
       - ${TEST_PREFIX}-api
     networks:
       - ${TEST_NETWORK}
-    volumes:
-      - ./apps/beacon/nova-beacon:/app
-      - /app/node_modules
 
   # Communications Service
   ${TEST_PREFIX}-comms:
