@@ -25,11 +25,19 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install
       - name: Start test environment (integration)
+        shell: bash
         run: |
           chmod +x ./setup-test-env.sh
           ./setup-test-env.sh integration
-          echo "Waiting for API to become healthy..."
-          for i in {1..60}; do curl -fsS http://localhost:4102/health && break || sleep 2; done
+          echo "Waiting for API container health..."
+          for i in {1..120}; do \
+            STATUS=$(docker inspect -f '{{.State.Health.Status}}' nova-test-integration-api 2>/dev/null || echo "unknown"); \
+            echo "api health: $STATUS"; \
+            if [[ "$STATUS" == "healthy" ]]; then break; fi; \
+            sleep 2; \
+          done
+          echo "Waiting for host port to accept connections..."
+          curl --retry 60 --retry-connrefused --retry-delay 1 -fsS http://localhost:4102/health || (docker logs nova-test-integration-api | tail -200; exit 1)
           echo "Checking monitoring health endpoint..."
           curl -fsS http://localhost:4102/api/monitoring/health | jq '.status' || true
       - run: pnpm run test:ci

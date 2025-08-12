@@ -235,7 +235,7 @@ function getCliVersion() {
 
 // Swagger/OpenAPI setup
 let swaggerJSDoc, swaggerUi;
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true') {
   swaggerJSDoc = (await import('swagger-jsdoc')).default;
   swaggerUi = (await import('swagger-ui-express')).default;
 } else {
@@ -1770,8 +1770,8 @@ export async function createApp() {
   return { app, server, io };
 }
 
-// Only start the server if not in test mode
-if (process.env.NODE_ENV !== 'test') {
+// Only start the server if not in test mode (unless FORCE_LISTEN=true)
+if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true') {
   createApp().then(({ app, server, io }) => {
     server.listen(PORT, () => {
       console.log(`🚀 Nova Universe API Server running on port ${PORT}`);
