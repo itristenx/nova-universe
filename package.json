@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "prepare": "husky install || true",
+    "seed:uat:api": "node apps/api/scripts/seed-uat.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules node --test test/*.test.js",
     "test:all": "NODE_OPTIONS=--experimental-vm-modules node test/test-runner.js",
     "test:integration": "NODE_OPTIONS=--experimental-vm-modules node test/test-runner.js integration",
