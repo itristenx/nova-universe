@@ -176,6 +176,7 @@ services:
       REDIS_URL: redis://${TEST_PREFIX}-redis:6379
       JWT_SECRET: test_jwt_secret_${TEST_ENV_NAME}
       TEST_ENV: ${TEST_ENV_NAME}
+      FORCE_LISTEN: "true"
     ports:
       - "${API_PORT}:3000"
     healthcheck:
