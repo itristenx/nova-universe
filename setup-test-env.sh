@@ -181,7 +181,7 @@ services:
     ports:
       - "${API_PORT}:3000"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/health || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 20

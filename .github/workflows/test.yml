@@ -34,6 +34,7 @@ jobs:
             STATUS=$(docker inspect -f '{{.State.Health.Status}}' nova-test-integration-api 2>/dev/null || echo "unknown"); \
             echo "api health: $STATUS"; \
             if [[ "$STATUS" == "healthy" ]]; then break; fi; \
+            docker logs --tail 50 nova-test-integration-api || true; \
             sleep 2; \
           done
           echo "Waiting for host port to accept connections..."
