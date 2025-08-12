@@ -455,7 +455,7 @@ const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
 const KIOSK_TOKEN = process.env.KIOSK_TOKEN || '';
 const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET;
 
-if (!DISABLE_AUTH && !process.env.SESSION_SECRET) {
+if (!DISABLE_AUTH && !process.env.SESSION_SECRET && process.env.NODE_ENV !== 'test') {
   logger.error('SESSION_SECRET environment variable is required');
   process.exit(1);
 }
@@ -1148,6 +1148,9 @@ app.get('/health', (req, res) => {
 
 // Health check endpoint for debugging frontend connectivity
 app.get('/api/health', (req, res) => {
+  if (!db || !db.query) {
+    return res.status(503).json({ status: 'starting' });
+  }
   const uptime = Math.floor(process.uptime());
   const hours = Math.floor(uptime / 3600);
   const minutes = Math.floor((uptime % 3600) / 60);
