@@ -562,6 +562,17 @@ Additional features planned for future releases:
 - **API Rate Limiting** – Per-user rate limiting for API endpoints
 - **Database Encryption** – At-rest encryption for sensitive data
 
+## UAT Readiness
+
+- Node.js version: 18 (CI uses Node 18; lock your local to 18 for parity)
+- Start integration UAT environment:
+  - `./setup-test-env.sh integration`
+  - Wait for API health: `curl http://localhost:4102/health`
+- Run CI-equivalent test suite: `pnpm run test:ci` (hybrid runner handles Node/Jest tests)
+- Default accounts and test data are created automatically by the API on startup (admin and demo users). See `apps/api/db.js` for details.
+- Security: DEBUG_CORS is disabled by default; CSP is strict via Helmet. Configure CORS origins via `CORS_ORIGINS`.
+- PWA: Orbit app includes manifest and service worker; test install on iOS/Android and desktop.
+
 ## License
 
 See [LICENSE](LICENSE) file for details.
