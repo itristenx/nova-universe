@@ -169,6 +169,8 @@ services:
       context: ./apps/api
       dockerfile: Dockerfile.dev
     container_name: ${TEST_PREFIX}-api
+    env_file:
+      - .env.test-${TEST_ENV_NAME}
     environment:
       NODE_ENV: test
       PORT: 3000
@@ -179,6 +181,18 @@ services:
       KIOSK_TOKEN: kiosk_token_${TEST_ENV_NAME}
       SCIM_TOKEN: scim_token_${TEST_ENV_NAME}
       AUTH_DB_PASSWORD: test_password_${TEST_ENV_NAME}
+      # Core DB (used by databaseConfig)
+      CORE_DB_HOST: ${TEST_PREFIX}-postgres
+      CORE_DB_PORT: 5432
+      CORE_DB_NAME: nova_test
+      CORE_DB_USER: nova_test
+      CORE_DB_PASSWORD: test_password_${TEST_ENV_NAME}
+      # Fallback POSTGRES_* vars (used if CORE_* not provided)
+      POSTGRES_HOST: ${TEST_PREFIX}-postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: nova_test
+      POSTGRES_USER: nova_test
+      POSTGRES_PASSWORD: test_password_${TEST_ENV_NAME}
       TEST_ENV: ${TEST_ENV_NAME}
       FORCE_LISTEN: "true"
     ports:
