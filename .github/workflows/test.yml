@@ -8,6 +8,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        ports:
+          - 5433:5432
+        env:
+          POSTGRES_DB: nova_test
+          POSTGRES_USER: nova_test
+          POSTGRES_PASSWORD: test_ci_db
+        options: >-
+          --health-cmd="pg_isready -U nova_test -d nova_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      # App secrets
+      SESSION_SECRET: test_ci_session
+      JWT_SECRET: test_ci_jwt
+      KIOSK_TOKEN: test_ci_kiosk
+      SCIM_TOKEN: test_ci_scim
+      # DB credentials
+      POSTGRES_PASSWORD: test_ci_db
+      AUTH_DB_PASSWORD: test_ci_db
+      POSTGRES_USER: nova_test
+      POSTGRES_DB: nova_test
+      POSTGRES_HOST: localhost
+      # App config
+      CORS_ORIGINS: http://localhost:4101,http://localhost:4102
+      DISABLE_AUTH: true
+      API_PORT: 3000
+      DEBUG_CORS: false
+      DISABLE_CLEANUP: true
+      # Prisma datasource for generate (point to service port 5433)
+      CORE_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
@@ -24,6 +58,8 @@ jobs:
           node-version: 18
           cache: 'pnpm'
       - run: pnpm install
+      - name: Generate Prisma Client
+        run: npx prisma generate
       - name: Start test environment (integration)
         shell: bash
         run: |
