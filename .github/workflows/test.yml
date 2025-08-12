@@ -33,3 +33,24 @@ jobs:
       - run: pnpm run test:ci
         env:
           TEST_API_URL: http://localhost:4102
+
+  playwright-smoke:
+    name: Playwright Smoke (Orbit)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - run: pnpm install
+      - name: Install Playwright Browsers
+        working-directory: apps/orbit
+        run: npx playwright install --with-deps
+      - name: Run Playwright smoke tests
+        working-directory: apps/orbit
+        run: pnpm run test:e2e -- --reporter=line
