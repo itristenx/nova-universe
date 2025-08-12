@@ -194,7 +194,7 @@ services:
     volumes:
       - ./apps/api:/app
       - /app/node_modules
-    command: ["npm", "run", "test:watch"]
+    command: ["npm", "start"]
 
   # Core UI Service
   ${TEST_PREFIX}-core:
