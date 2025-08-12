@@ -2,7 +2,7 @@ import { logger } from '../logger.js';
 import { v4 as uuidv4 } from 'uuid';
 // MCP SDK is optional; loaded dynamically in initializeMCPServer
 // import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
+// import { z } from 'zod'; // Lazy-loaded in registerNovaTools
 import db from '../db.js';
 import { CosmoTicketProcessor } from '../services/cosmo-ticket-processor.js';
 
@@ -76,6 +76,7 @@ export async function initializeMCPServer() {
  * Register Nova Universe MCP tools
  */
 async function registerNovaTools(server) {
+  const { z } = await import('zod');
   // Ticket management tools with AI processing
   server.registerTool(
     'nova.tickets.create',
