@@ -1,6 +1,7 @@
 import { logger } from '../logger.js';
 import { v4 as uuidv4 } from 'uuid';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+// MCP SDK is optional; loaded dynamically in initializeMCPServer
+// import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import db from '../db.js';
 import { CosmoTicketProcessor } from '../services/cosmo-ticket-processor.js';
@@ -23,7 +24,20 @@ export async function initializeMCPServer() {
     return mcpServer;
   }
 
-  mcpServer = new McpServer({
+  let McpServerCtor = null;
+  try {
+    ({ McpServer: McpServerCtor } = await import('@modelcontextprotocol/sdk/server/mcp.js'));
+  } catch (e) {
+    logger.warn('MCP SDK not installed; Cosmo features disabled');
+    // Provide a minimal no-op server to satisfy callers
+    mcpServer = {
+      registerTool: () => {},
+      callTool: async () => ({ content: [{ type: 'text', text: 'MCP not available' }], isError: true })
+    };
+    return mcpServer;
+  }
+
+  mcpServer = new McpServerCtor({
     name: 'nova-cosmo-server',
     version: '1.0.0'
   });
