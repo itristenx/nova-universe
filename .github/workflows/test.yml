@@ -22,6 +22,8 @@ jobs:
         run: |
           chmod +x ./setup-test-env.sh
           ./setup-test-env.sh integration
+          echo "Waiting for API to become healthy..."
+          for i in {1..60}; do curl -fsS http://localhost:4102/health && break || sleep 2; done
       - run: pnpm run test:ci
         env:
           TEST_API_URL: http://localhost:4102

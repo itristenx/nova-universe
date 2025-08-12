@@ -1159,6 +1159,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Add root health endpoint expected by tests
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 // Auth status endpoint for admin UI
 app.get('/api/auth/status', (req, res) => {
   res.json({
