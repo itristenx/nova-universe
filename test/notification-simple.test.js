@@ -3,7 +3,7 @@
  */
 
 import { strict as assert } from 'assert';
-import { NovaUniversalNotificationPlatform } from '../src/lib/notification/nova-notification-platform.ts';
+import { NovaUniversalNotificationPlatform } from '../src/lib/notification/nova-notification-platform.js';
 
 // Mock Prisma clients for testing
 const mockNotificationClient = {
@@ -131,7 +131,7 @@ async function testNotificationPlatform() {
 }
 
 // Run tests
-testNotificationPlatform()
+await testNotificationPlatform()
   .then(success => {
     process.exit(success ? 0 : 1);
   })

@@ -18,4 +18,10 @@ jobs:
           node-version: 18
           cache: 'pnpm'
       - run: pnpm install
-      - run: npm test
+      - name: Start test environment (integration)
+        run: |
+          chmod +x ./setup-test-env.sh
+          ./setup-test-env.sh integration
+      - run: pnpm run test:ci
+        env:
+          TEST_API_URL: http://localhost:4102
