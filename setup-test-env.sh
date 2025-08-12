@@ -4,6 +4,13 @@ set -euo pipefail
 # Nova Universe - Test Environment Setup Script
 # Creates isolated test environments for development and testing
 
+# Provide docker-compose compatibility shim for environments with only docker compose v2
+if ! command -v docker-compose >/dev/null 2>&1; then
+  docker-compose() {
+    docker compose "$@"
+  }
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$SCRIPT_DIR"
 cd "$PROJECT_ROOT"
