@@ -42,6 +42,11 @@ jobs:
       DISABLE_CLEANUP: true
       # Prisma datasource for generate (point to service port 5433)
       CORE_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      CMDB_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      INTEGRATION_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      NOTIFICATION_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      USER360_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      AUTH_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
@@ -55,9 +60,13 @@ jobs:
           version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
       - run: pnpm install
+      - name: Clean Prisma engines
+        run: rm -rf node_modules/.prisma || true
+      - name: Use Prisma WASM engine (CI)
+        run: echo "PRISMA_CLIENT_ENGINE_TYPE=wasm" >> $GITHUB_ENV
       - name: Generate Prisma Client (all schemas)
         run: pnpm run prisma:generate:all
       - name: Start test environment (integration)
@@ -76,10 +85,11 @@ jobs:
           echo "Waiting for host port to accept connections..."
           curl --retry 60 --retry-connrefused --retry-delay 1 -fsS http://localhost:4102/health || (docker logs nova-test-integration-api | tail -200; exit 1)
           echo "Checking monitoring health endpoint..."
-          curl -fsS http://localhost:4102/api/monitoring/health | jq '.status' || true
+          curl -fsS http://localhost:4102/api/monitoring/health | sed -n '1,200p' || true
       - run: pnpm run test:ci
         env:
           TEST_API_URL: http://localhost:4102
+          CI: true
 
   playwright-smoke:
     name: Playwright Smoke (Orbit)
@@ -92,7 +102,7 @@ jobs:
           version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
       - run: pnpm install
       - name: Install Playwright Browsers
@@ -114,7 +124,7 @@ jobs:
           version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
       - run: pnpm install
       - run: pnpm audit --json | tee audit.json || true
@@ -131,7 +141,7 @@ jobs:
           version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
       - run: pnpm install
       - run: npx depcheck || true

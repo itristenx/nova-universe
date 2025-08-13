@@ -73,6 +73,26 @@ async function setupInitialData() {
  */
 async function setupRolesAndPermissions() {
   try {
+    // Ensure baseline tables exist (idempotent on clean DBs)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS roles (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS permissions (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS role_permissions (
+        role_id INTEGER NOT NULL,
+        permission_id INTEGER NOT NULL,
+        PRIMARY KEY (role_id, permission_id)
+      );
+    `);
+
     const roles = [
       { id: 1, name: 'superadmin', description: 'Super Administrator - Full System Access' },
       { id: 2, name: 'admin', description: 'Administrator - User Management Access' },
@@ -104,15 +124,15 @@ async function setupRolesAndPermissions() {
 
     // Assign permissions to roles
     const rolePermissions = [
-      { roleId: 1, permissionId: 1 }, // superadmin - manage_users
-      { roleId: 1, permissionId: 2 }, // superadmin - manage_roles
-      { roleId: 1, permissionId: 3 }, // superadmin - manage_permissions
-      { roleId: 1, permissionId: 4 }, // superadmin - view_admin_panel
-      { roleId: 1, permissionId: 5 }, // superadmin - manage_integrations
-      { roleId: 1, permissionId: 6 }, // superadmin - view_audit_logs
-      { roleId: 2, permissionId: 1 }, // admin - manage_users
-      { roleId: 2, permissionId: 4 }, // admin - view_admin_panel
-      { roleId: 2, permissionId: 6 }, // admin - view_audit_logs
+      { roleId: 1, permissionId: 1 },
+      { roleId: 1, permissionId: 2 },
+      { roleId: 1, permissionId: 3 },
+      { roleId: 1, permissionId: 4 },
+      { roleId: 1, permissionId: 5 },
+      { roleId: 1, permissionId: 6 },
+      { roleId: 2, permissionId: 1 },
+      { roleId: 2, permissionId: 4 },
+      { roleId: 2, permissionId: 6 },
     ];
 
     for (const rp of rolePermissions) {

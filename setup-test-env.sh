@@ -170,10 +170,10 @@ services:
       dockerfile: Dockerfile.dev
     container_name: ${TEST_PREFIX}-api
     env_file:
-      - .env.test-${TEST_ENV_NAME}
+      - .env.test.${TEST_ENV_NAME}
     environment:
       NODE_ENV: test
-      PORT: 3000
+      API_PORT: 3000
       DATABASE_URL: postgresql://nova_test:test_password_${TEST_ENV_NAME}@${TEST_PREFIX}-postgres:5432/nova_test
       REDIS_URL: redis://${TEST_PREFIX}-redis:6379
       JWT_SECRET: test_jwt_secret_${TEST_ENV_NAME}
@@ -187,6 +187,8 @@ services:
       CORE_DB_NAME: nova_test
       CORE_DB_USER: nova_test
       CORE_DB_PASSWORD: test_password_${TEST_ENV_NAME}
+      # Use WASM Prisma engine to avoid native binary issues in CI
+      PRISMA_CLIENT_ENGINE_TYPE: wasm
       # Fallback POSTGRES_* vars (used if CORE_* not provided)
       POSTGRES_HOST: ${TEST_PREFIX}-postgres
       POSTGRES_PORT: 5432
@@ -195,6 +197,7 @@ services:
       POSTGRES_PASSWORD: test_password_${TEST_ENV_NAME}
       TEST_ENV: ${TEST_ENV_NAME}
       FORCE_LISTEN: "true"
+      DISABLE_CLEANUP: "true"
     ports:
       - "${API_PORT}:3000"
     healthcheck:
@@ -211,6 +214,7 @@ services:
       - ${TEST_NETWORK}
     volumes:
       - ./apps/api:/app
+      - ./prisma/generated:/prisma/generated:ro
       - /app/node_modules
     command: ["npm", "start"]
 

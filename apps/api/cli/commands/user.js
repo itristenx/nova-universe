@@ -5,7 +5,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import Table from 'cli-table3';
 import { 
   logger, 
