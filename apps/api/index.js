@@ -1769,6 +1769,7 @@ app.use('/api/v1/status', statusSummaryRouter);
 app.use('/status', deprecateUnversionedRoute({ replacement: '/api/v1/status', version: 'v1' }), statusSummaryRouter);
 app.use('/api/v1/announcements', announcementsRouter);
 app.use('/announcements', deprecateUnversionedRoute({ replacement: '/api/v1/announcements', version: 'v1' }), announcementsRouter);
+app.use('/api/v1/approvals', (await import('./routes/approvals.js')).default);
 app.use('/api/v1/cosmo', cosmoRouter);
 app.use('/api/v2/beacon', beaconRouter);
 
