@@ -19,7 +19,7 @@
     "@as-integrations/express4": "^1.1.2",
     "@aws-sdk/client-s3": "^3.864.0",
     "@azure/msal-node": "^3.7.0",
-    "@elastic/elasticsearch": "^8.19.0",
+    "@elastic/elasticsearch": "^9.1.1",
     "@node-saml/passport-saml": "^5.1.0",
     "@simplewebauthn/server": "^13.1.2",
     "@types/nodemailer": "^6.4.17",
