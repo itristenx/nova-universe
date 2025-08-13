@@ -229,8 +229,8 @@ router.delete('/:id', authenticateJWT, requireAdmin, (req, res) => {
   if (id === '1') {
     return res.status(400).json({ error: 'Cannot delete admin role', errorCode: 'CANNOT_DELETE_ADMIN_ROLE' });
   }
-  db.run('DELETE FROM user_roles WHERE roleId=$1', [id]);
-  db.run('DELETE FROM role_permissions WHERE roleId=$1', [id]);
+  db.run('DELETE FROM user_roles WHERE role_id=$1', [id]);
+  db.run('DELETE FROM role_permissions WHERE role_id=$1', [id]);
   db.run('DELETE FROM roles WHERE id=$1', [id], (err) => {
     if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
     res.json({ message: 'Role deleted' });
@@ -309,8 +309,8 @@ router.get('/:id/permissions', authenticateJWT, requireAdmin, (req, res) => {
   const { id } = req.params;
   db.all(
     `SELECT p.* FROM permissions p
-     JOIN role_permissions rp ON p.id = rp."permissionId"
-     WHERE rp."roleId" = $1`,
+     JOIN role_permissions rp ON p.id = rp."permission_id"
+     WHERE rp."role_id" = $1`,
     [id],
     (err, rows) => {
       if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
@@ -384,11 +384,11 @@ router.put('/:id/permissions', authenticateJWT, requireAdmin, (req, res) => {
   if (!Array.isArray(permissionIds)) {
     return res.status(400).json({ error: 'Permission IDs must be an array', errorCode: 'PERMISSION_IDS_NOT_ARRAY' });
   }
-  db.run('DELETE FROM role_permissions WHERE "roleId"=$1', [id]);
+  db.run('DELETE FROM role_permissions WHERE "role_id"=$1', [id]);
   if (permissionIds.length > 0) {
     const values = permissionIds.map((pid, i) => `($1, $${i + 2})`).join(', ');
     const params = [id, ...permissionIds];
-    db.run(`INSERT INTO role_permissions ("roleId", "permissionId") VALUES ${values}`, params, (err) => {
+    db.run(`INSERT INTO role_permissions ("role_id", "permission_id") VALUES ${values}`, params, (err) => {
       if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       res.json({ message: 'Role permissions updated' });
     });

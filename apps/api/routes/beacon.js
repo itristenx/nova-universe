@@ -604,7 +604,7 @@ router.post('/activate',
 
               // Mark activation as used
               db.run(
-                'UPDATE kiosk_activations SET isUsed = 1, usedAt = datetime("now") WHERE id = $1',
+                'UPDATE kiosk_activations SET used = 1, used_at = CURRENT_TIMESTAMP WHERE id = $1',
                 [activation.id]
               );
 
@@ -652,8 +652,8 @@ router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req,
     const code = crypto.randomBytes(4).toString('hex').toUpperCase();
     const expiresAt = new Date(Date.now() + 1000 * 60 * 15).toISOString(); // 15 min
     db.run(
-      `INSERT INTO kiosk_activations (kioskId, kioskName, location, activationCode, configuration, isUsed, expiresAt)
-       VALUES ($1, $2, $3, $4, $5, 0, $6)`,
+      `INSERT INTO kiosk_activations (used_by_kiosk, code, location, configuration, used, expires_at)
+       VALUES ($1, $2, $3, $4, 0, $5)`,
       [kioskId, kioskName || kioskId, location || '', code, JSON.stringify(configuration || {}), expiresAt],
       function(err) {
         if (err) return res.status(500).json({ success: false, error: 'DB error' });

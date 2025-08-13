@@ -84,7 +84,7 @@ async function assignAdminRole(userId = null) {
       if (!res.rows.length) throw new Error('User not found');
       id = res.rows[0].id;
     }
-    await db.query('INSERT INTO user_roles ("userId", "roleId") VALUES ($1, 1) ON CONFLICT DO NOTHING', [id]);
+    await db.query('INSERT INTO user_roles ("user_id", "role_id") VALUES ($1, 1) ON CONFLICT DO NOTHING', [id]);
     console.log('✅ Admin role assigned');
     console.log(`🔑 Login credentials: ${email} / ${password}`);
     process.exit(0);
