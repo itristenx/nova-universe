@@ -1788,8 +1788,8 @@ export async function createApp() {
   return { app, server, io };
 }
 
-// Only start the server if not in test mode (unless FORCE_LISTEN=true or API_PORT is provided for CI)
-if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true' || process.env.API_PORT) {
+// Only start the server if not in test mode (unless FORCE_LISTEN=true)
+if ((process.env.NODE_ENV !== 'test' && process.env.TEST_MODE !== 'true') || process.env.FORCE_LISTEN === 'true') {
   createApp().then(({ app, server, io }) => {
     server.listen(PORT, () => {
       console.log(`🚀 Nova Universe API Server running on port ${PORT}`);
