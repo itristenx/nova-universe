@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { apiFetch } from '../../../../lib/api';
+import { apiTry } from '../../../../lib/api';
 
 export default function PortalTicketsPage() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -10,7 +10,7 @@ export default function PortalTicketsPage() {
 
   async function load() {
     try {
-      const list = await apiFetch<any[]>('/api/tickets');
+      const list = await apiTry<any[]>(['/api/v1/orbit/tickets','/api/tickets']);
       setTickets(list);
     } catch(e:any){ setError(e.message); }
   }
@@ -20,7 +20,7 @@ export default function PortalTicketsPage() {
   async function submitTicket() {
     setError(null);
     try {
-      await apiFetch('/api/tickets', { method: 'POST', body: JSON.stringify({ title, description, priority: 'medium', category: 'general', requester_email: 'user@example.com' }) });
+      await apiTry([ '/api/v1/orbit/tickets','/api/tickets' ], { method: 'POST', body: JSON.stringify({ title, description, priority: 'medium', category: 'general', requester_email: 'user@example.com' }) });
       setTitle(''); setDescription('');
       await load();
     } catch(e:any){ setError(e.message); }
@@ -35,7 +35,7 @@ export default function PortalTicketsPage() {
         <div className="space-y-2">
           <input value={title} onChange={e=>setTitle(e.target.value)} className="w-full border rounded px-3 py-2" placeholder="Title" />
           <textarea value={description} onChange={e=>setDescription(e.target.value)} className="w-full border rounded px-3 py-2" placeholder="Describe your issue" />
-          <button onClick={submitTicket} className="rounded px-3 py-2 border">Submit</button>
+          <button className="rounded px-3 py-2 border" onClick={submitTicket}>Submit</button>
         </div>
       </div>
       <ul className="divide-y rounded border">

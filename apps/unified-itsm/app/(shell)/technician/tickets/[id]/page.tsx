@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { apiFetch } from '../../../../../lib/api';
+import { apiTry } from '../../../../../lib/api';
 
 export default function TicketDetailPage() {
   const params = useParams();
@@ -10,11 +10,11 @@ export default function TicketDetailPage() {
   const [status, setStatus] = useState('in_progress');
   const [error, setError] = useState<string | null>(null);
 
-  async function load(){ try{ setTicket(await apiFetch(`/api/tickets/${id}`)); }catch(e:any){ setError(e.message);} }
+  async function load(){ try{ setTicket(await apiTry([`/api/v1/pulse/tickets/${id}`,`/api/tickets/${id}`])); }catch(e:any){ setError(e.message);} }
 
-  async function update(){ setError(null); try{ const t = await apiFetch(`/api/tickets/${id}`, { method:'PATCH', body: JSON.stringify({ status })}); setTicket(t);}catch(e:any){ setError(e.message);} }
+  async function update(){ setError(null); try{ const t = await apiTry([`/api/v1/pulse/tickets/${id}`,`/api/tickets/${id}`], { method:'PATCH', body: JSON.stringify({ status })}); setTicket(t);}catch(e:any){ setError(e.message);} }
 
-  async function addComment(){ setError(null); try{ await apiFetch(`/api/tickets/${id}/comments`, { method:'POST', body: JSON.stringify({ content: 'Acknowledged', type: 'internal' })}); await load(); }catch(e:any){ setError(e.message);} }
+  async function addComment(){ setError(null); try{ await apiTry([`/api/v1/pulse/tickets/${id}/comments`, `/api/tickets/${id}/comments`], { method:'POST', body: JSON.stringify({ content: 'Acknowledged', type: 'internal' })}); await load(); }catch(e:any){ setError(e.message);} }
 
   useEffect(()=>{ if(id) load(); }, [id]);
 

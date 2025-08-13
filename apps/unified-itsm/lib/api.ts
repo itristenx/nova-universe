@@ -33,3 +33,11 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
   if (ct.includes('application/json')) return (await res.json()) as T;
   return (await res.text()) as unknown as T;
 }
+
+export async function apiTry<T = any>(paths: string[], options: RequestInit = {}): Promise<T> {
+  let lastErr: any;
+  for (const p of paths) {
+    try { return await apiFetch<T>(p, options); } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('All API attempts failed');
+}

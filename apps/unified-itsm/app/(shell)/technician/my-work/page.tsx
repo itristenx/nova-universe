@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { apiFetch } from '../../../../lib/api';
+import { apiTry } from '../../../../lib/api';
 
 export default function MyWorkPage() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -9,7 +9,7 @@ export default function MyWorkPage() {
   useEffect(() => {
     (async ()=>{
       try {
-        const list = await apiFetch<any[]>('/api/tickets');
+        const list = await apiTry<any[]>(['/api/v1/pulse/tickets','/api/tickets']);
         setTickets(list);
       } catch(e:any) { setError(e.message); }
     })();
