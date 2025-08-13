@@ -1840,3 +1840,11 @@ kiosksRouter.get('/', async (req, res) => {
 // --- END Kiosks Router ---
 
 // --- END: Move all direct /api/* endpoint definitions to v1Router ---
+
+// Lightweight health checks (no DB)
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
