@@ -525,11 +525,15 @@ const LOG_RETENTION_DAYS = Number(process.env.LOG_RETENTION_DAYS || 30);
 
 if (process.env.DISABLE_CLEANUP !== 'true') {
   const purge = () => {
-    db.purgeOldLogs(LOG_RETENTION_DAYS, (err) => {
-      if (err) {
-        logger.error('Failed to purge old logs:', err.message);
-      }
-    });
+    try {
+      db.purgeOldLogs(LOG_RETENTION_DAYS, (err) => {
+        if (err) {
+          logger.error('Failed to purge old logs:', err.message);
+        }
+      });
+    } catch (err) {
+      logger.error('Cleanup job error (continuing):', err.message);
+    }
   };
   purge();
   setInterval(purge, 24 * 60 * 60 * 1000);
@@ -1773,8 +1777,11 @@ export async function createApp() {
   return { app, server, io };
 }
 
+// Only start the server if this module is executed directly (not when imported)
+const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === __filename;
+
 // Only start the server if not in test mode (unless FORCE_LISTEN=true or API_PORT is provided for CI)
-if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true' || process.env.API_PORT) {
+if (isDirectRun && (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true' || process.env.API_PORT)) {
   createApp().then(({ app, server, io }) => {
     server.listen(PORT, () => {
       console.log(`🚀 Nova Universe API Server running on port ${PORT}`);

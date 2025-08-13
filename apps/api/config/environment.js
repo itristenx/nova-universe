@@ -2,24 +2,33 @@ import dotenv from 'dotenv';
 import { validateDatabaseConfig } from './database.js';
 dotenv.config();
 
-const required = [
-  'SESSION_SECRET',
-  'JWT_SECRET',
-  'KIOSK_TOKEN',
-  'SCIM_TOKEN'
-];
+const env = process.env.NODE_ENV || 'development';
+const isProduction = env === 'production';
+
+// Only enforce hard requirements in production. In dev/test, provide safe defaults.
+const required = [];
+if (isProduction) {
+  required.push(
+    'SESSION_SECRET',
+    'JWT_SECRET',
+    'KIOSK_TOKEN',
+    'SCIM_TOKEN'
+  );
+}
 
 // Database configuration
-if (!process.env.DATABASE_URL) {
+// In production, require explicit DB configuration if no DATABASE_URL is provided
+if (isProduction && !process.env.DATABASE_URL) {
   required.push('POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB');
 }
 
 if (process.env.MONGO_ENABLED === 'true') {
-  required.push('MONGO_HOST', 'MONGO_DB');
+  // If Mongo is explicitly enabled, ensure required vars in production
+  if (isProduction) required.push('MONGO_HOST', 'MONGO_DB');
 }
 
 // Only require SMTP in production
-if (process.env.NODE_ENV === 'production') {
+if (isProduction) {
   required.push('SMTP_HOST', 'SMTP_USER', 'SMTP_PASS');
 }
 
@@ -29,30 +38,29 @@ if (missing.length) {
 }
 
 const config = {
-  sessionSecret: process.env.SESSION_SECRET,
-  jwtSecret: process.env.JWT_SECRET,
-  assetEncryptionKey: process.env.ASSET_ENCRYPTION_KEY,
+  sessionSecret: process.env.SESSION_SECRET || (isProduction ? undefined : 'dev_session_secret'),
+  jwtSecret: process.env.JWT_SECRET || (isProduction ? undefined : 'dev_jwt_secret'),
+  assetEncryptionKey: process.env.ASSET_ENCRYPTION_KEY || (isProduction ? undefined : 'dev_asset_key'),
   smtp: {
     host: process.env.SMTP_HOST,
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
   corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['*'],
-  nodeEnv: process.env.NODE_ENV || 'development',
+  nodeEnv: env,
   helpdeskEmail: process.env.HELPDESK_EMAIL,
-// Add more config as needed
+  // Add more config as needed
 };
 
 // Validate environment and return status info
 export const validateEnvironment = () => {
-  const env = process.env.NODE_ENV || 'development';
   const warnings = [];
   
-  if (!process.env.SESSION_SECRET) {
+  if (!config.sessionSecret) {
     warnings.push('SESSION_SECRET not set - using default (insecure)');
   }
   
-  if (!process.env.JWT_SECRET) {
+  if (!config.jwtSecret) {
     warnings.push('JWT_SECRET not set - using default (insecure)');
   }
   
@@ -66,7 +74,7 @@ export const validateEnvironment = () => {
   
   return {
     environment: env,
-    isProduction: env === 'production',
+    isProduction: isProduction,
     isDevelopment: env === 'development',
     isTest: env === 'test',
     authDisabled: process.env.DISABLE_AUTH === 'true',
@@ -82,15 +90,15 @@ export default config;
 
 export const getConfig = () => {
   return {
-    NODE_ENV: process.env.NODE_ENV || 'development',
+    NODE_ENV: env,
     API_PORT: parseInt(process.env.API_PORT) || 3000,
     DATABASE_PATH: process.env.DATABASE_PATH || 'log.sqlite',
     ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@example.com',
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin',
     ADMIN_NAME: process.env.ADMIN_NAME || 'Admin',
-    SESSION_SECRET: process.env.SESSION_SECRET,
-    KIOSK_TOKEN: process.env.KIOSK_TOKEN,
-    SCIM_TOKEN: process.env.SCIM_TOKEN,
+    SESSION_SECRET: process.env.SESSION_SECRET || (isProduction ? undefined : 'dev_session_secret'),
+    KIOSK_TOKEN: process.env.KIOSK_TOKEN || (isProduction ? undefined : 'dev_kiosk_token'),
+    SCIM_TOKEN: process.env.SCIM_TOKEN || (isProduction ? undefined : 'dev_scim_token'),
     DISABLE_AUTH: process.env.DISABLE_AUTH === 'true',
     CORS_ORIGINS: process.env.CORS_ORIGINS,
     RATE_LIMIT_WINDOW: parseInt(process.env.RATE_LIMIT_WINDOW) || 60000,
@@ -115,15 +123,15 @@ export const getConfig = () => {
 
 // Log environment status
 export const logEnvironmentStatus = () => {
-  const config = validateEnvironment();
+  const cfg = validateEnvironment();
   
-  console.log(`🌍 Environment: ${config.environment}`);
-  console.log(`🔐 Authentication: ${config.authDisabled ? 'DISABLED' : 'ENABLED'}`);
-  console.log(`📧 Email: ${config.hasSmtp ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
-  console.log(`🎫 HelpScout: ${config.hasHelpScout ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
-  console.log(`📱 Kiosk Token: ${config.hasKioskToken ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
-  console.log(`🔐 SCIM Token: ${config.hasScimToken ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
-  console.log(`🔒 TLS: ${config.tlsEnabled ? 'ENABLED' : 'DISABLED'}`);
+  console.log(`🌍 Environment: ${cfg.environment}`);
+  console.log(`🔐 Authentication: ${cfg.authDisabled ? 'DISABLED' : 'ENABLED'}`);
+  console.log(`📧 Email: ${cfg.hasSmtp ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
+  console.log(`🎫 HelpScout: ${cfg.hasHelpScout ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
+  console.log(`📱 Kiosk Token: ${cfg.hasKioskToken ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
+  console.log(`🔐 SCIM Token: ${cfg.hasScimToken ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
+  console.log(`🔒 TLS: ${cfg.tlsEnabled ? 'ENABLED' : 'DISABLED'}`);
   
-  return config;
+  return cfg;
 };

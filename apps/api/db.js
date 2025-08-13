@@ -344,7 +344,11 @@ class DatabaseWrapper {
       return result;
     } catch (error) {
       logger.error('Failed to purge old logs:', error);
-      if (cb) cb(error);
+      if (cb) {
+        // Do not throw if using callback style; return a safe result
+        cb(error);
+        return { rowCount: 0 };
+      }
       throw error;
     }
   }
