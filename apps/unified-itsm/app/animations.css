@@ -1,0 +1,57 @@
+/* Apple-inspired motion and glass styles */
+
+:root {
+  --motion-duration-fast: 160ms;
+  --motion-duration: 240ms;
+  --motion-duration-slow: 420ms;
+  --motion-ease: cubic-bezier(0.20, 0.80, 0.20, 1.00);
+  --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-in: cubic-bezier(0.32, 0, 0.67, 0);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes scale-in {
+  from { transform: scale(0.98); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.motion-base {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter;
+  transition-duration: var(--motion-duration);
+  transition-timing-function: var(--motion-ease);
+}
+.motion-fast { transition-duration: var(--motion-duration-fast); }
+.motion-slow { transition-duration: var(--motion-duration-slow); }
+
+.animate-fade-in { animation: fade-in var(--motion-duration) var(--motion-ease) both; }
+.animate-slide-up { animation: slide-up var(--motion-duration) var(--motion-ease-out) both; }
+.animate-scale-in { animation: scale-in var(--motion-duration-fast) var(--motion-ease) both; }
+
+/* Glass (translucent) surfaces */
+.glass {
+  background-color: color-mix(in oklab, Canvas 75%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  backdrop-filter: saturate(180%) blur(16px);
+  border: 1px solid color-mix(in oklab, CanvasText 12%, transparent);
+}
+.glass-strong {
+  background-color: color-mix(in oklab, Canvas 60%, transparent);
+  -webkit-backdrop-filter: saturate(200%) blur(24px);
+  backdrop-filter: saturate(200%) blur(24px);
+  border: 1px solid color-mix(in oklab, CanvasText 16%, transparent);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .motion-base, .animate-fade-in, .animate-slide-up, .animate-scale-in {
+    animation: none !important;
+    transition: none !important;
+  }
+}

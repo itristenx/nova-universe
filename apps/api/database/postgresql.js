@@ -15,8 +15,8 @@ class PostgreSQLManager {
     this.pool = null;
     this.isConnected = false;
     this.connectionAttempts = 0;
-    this.maxConnectionAttempts = 5;
-    this.reconnectDelay = 5000;
+    this.maxConnectionAttempts = (process.env.TEST_MODE === 'true' || process.env.NODE_ENV === 'test') ? 1 : 5;
+    this.reconnectDelay = (process.env.TEST_MODE === 'true' || process.env.NODE_ENV === 'test') ? 100 : 5000;
   }
 
   /**
@@ -126,10 +126,7 @@ class PostgreSQLManager {
     this.pool.on('error', (error, client) => {
       logger.error('💥 PostgreSQL pool error:', error.message);
       this.isConnected = false;
-      
-      // Don't automatically reinitialize on error to prevent stack overflow
-      // Let the application handle reconnection logic externally
-      logger.warn('� PostgreSQL connection lost. Manual reconnection required.');
+      logger.warn('🔌 PostgreSQL connection lost. Manual reconnection required.');
     });
   }
 
@@ -139,10 +136,9 @@ class PostgreSQLManager {
   async testConnection() {
     const client = await this.pool.connect();
     try {
-      const result = await client.query('SELECT NOW() as current_time, version() as postgres_version');
+      const result = await client.query('SELECT NOW() as current_time');
       logger.debug('🏥 PostgreSQL health check passed:', {
         current_time: result.rows[0].current_time,
-        version: result.rows[0].postgres_version.split(' ')[0]
       });
     } finally {
       client.release();

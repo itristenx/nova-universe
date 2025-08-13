@@ -11,6 +11,7 @@ import rateLimit from 'express-rate-limit';
 import { authenticateJWT, requirePermission, createRateLimit } from '../middleware/auth.js';
 import { novaNotificationPlatform } from '../lib/notification/nova-notification-platform.js';
 import { logger } from '../logger.js';
+import db from '../db.js';
 
 const router = express.Router();
 // Rate limiting for notification endpoints
@@ -46,103 +47,16 @@ const validateNotificationPayload = [
  *     description: Creates and processes a notification event for delivery to specified recipients
  *     security:
  *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - module
- *               - eventType
- *               - title
- *               - message
- *             properties:
- *               module:
- *                 type: string
- *                 description: Source module (e.g., pulse.tickets, sentinel, goalert)
- *               eventType:
- *                 type: string
- *                 description: Type of event (e.g., sla_breach, system_alert)
- *               title:
- *                 type: string
- *                 maxLength: 255
- *               message:
- *                 type: string
- *                 maxLength: 2000
- *               details:
- *                 type: string
- *                 maxLength: 10000
- *                 description: Rich text details (HTML supported)
- *               priority:
- *                 type: string
- *                 enum: [CRITICAL, HIGH, NORMAL, LOW]
- *                 default: NORMAL
- *               recipientRoles:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: Array of role names
- *               recipientUsers:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: Array of user IDs
- *               actions:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                     label:
- *                       type: string
- *                     url:
- *                       type: string
- *                     action:
- *                       type: string
- *                     style:
- *                       type: string
- *                       enum: [primary, secondary, danger]
- *               metadata:
- *                 type: object
- *                 description: Additional event-specific data
- *               scheduledFor:
- *                 type: string
- *                 format: date-time
- *                 description: Schedule notification for future delivery
- *               expiresAt:
- *                 type: string
- *                 format: date-time
- *                 description: Notification expiry time
- *     responses:
- *       201:
- *         description: Notification event created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 eventId:
- *                   type: string
- *                   description: Unique event identifier
- *                 timestamp:
- *                   type: string
- *                   format: date-time
- *       400:
- *         description: Invalid request data
- *       401:
- *         description: Unauthorized
- *       429:
- *         description: Rate limit exceeded
- *       500:
- *         description: Internal server error
  */
 router.post('/send',
   authenticateJWT,
+  // Admin-only custom sends
+  (req, res, next) => {
+    if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    next();
+  },
   notificationRateLimit,
   validateNotificationPayload,
   async (req, res) => {
@@ -172,13 +86,25 @@ router.post('/send',
       }
 
       // Send notification
-      const eventId = await novaNotificationPlatform.sendNotification(payload);
+      const result = await novaNotificationPlatform.sendNotification(payload);
+      const eventId = result?.notificationId || result?.eventId || result;
 
       logger.info(`Notification sent by user ${req.user.id}:`, {
         eventId,
         module: payload.module,
         eventType: payload.eventType,
         priority: payload.priority
+      });
+
+      // Audit send with recipients
+      await db.createAuditLog('notification.send', req.user.id, {
+        eventId,
+        module: payload.module,
+        eventType: payload.eventType,
+        recipientRoles: payload.recipientRoles || [],
+        recipientUsers: payload.recipientUsers || [],
+        ip: req.ip,
+        userAgent: req.get('User-Agent') || null
       });
 
       res.status(201).json({
@@ -242,6 +168,12 @@ router.post('/send',
  */
 router.post('/send/batch',
   authenticateJWT,
+  (req, res, next) => {
+    if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    next();
+  },
   requirePermission('notifications:bulk_send'),
   bulkRateLimit,
   [
@@ -267,13 +199,27 @@ router.post('/send/batch',
       }));
 
       // Send batch
-      const eventIds = await novaNotificationPlatform.sendBatch(enrichedNotifications);
+      const batchResults = await novaNotificationPlatform.sendBatch(enrichedNotifications);
+      const eventIds = batchResults.map((r:any)=> (r?.value?.notificationId || r?.value?.eventId || null)).filter(Boolean);
 
       logger.info(`Batch notifications sent by user ${req.user.id}:`, {
         count: notifications.length,
         successCount: eventIds.length,
         failureCount: notifications.length - eventIds.length
       });
+
+      // Audit each event briefly (non-blocking best-effort)
+      try {
+        await Promise.all(eventIds.map((eventId, idx) => db.createAuditLog('notification.send', req.user.id, {
+          eventId,
+          module: enrichedNotifications[idx]?.module,
+          eventType: enrichedNotifications[idx]?.eventType,
+          recipientRoles: enrichedNotifications[idx]?.recipientRoles || [],
+          recipientUsers: enrichedNotifications[idx]?.recipientUsers || [],
+          ip: req.ip,
+          userAgent: req.get('User-Agent') || null
+        })));
+      } catch {}
 
       res.status(201).json({
         success: true,

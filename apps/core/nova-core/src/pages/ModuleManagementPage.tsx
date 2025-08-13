@@ -263,6 +263,9 @@ export const ModuleManagementPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <div className="p-3 rounded border border-yellow-300 bg-yellow-50 text-yellow-900">
+        This legacy UI is deprecated. Please use the new Unified ITSM app for administration at <a className="underline" href="/(shell)/admin/dashboard">Unified Admin</a>.
+      </div>
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Module Management</h1>

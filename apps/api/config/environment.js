@@ -11,7 +11,15 @@ const required = [
 
 // Database configuration
 if (!process.env.DATABASE_URL) {
-  required.push('POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB');
+  const allowTestDefaults = process.env.TEST_MODE === 'true' || process.env.NODE_ENV === 'test';
+  if (allowTestDefaults) {
+    process.env.POSTGRES_HOST ||= 'localhost';
+    process.env.POSTGRES_USER ||= 'nova_admin';
+    process.env.POSTGRES_PASSWORD ||= 'nova_password';
+    process.env.POSTGRES_DB ||= 'nova_universe';
+  } else {
+    required.push('POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB');
+  }
 }
 
 if (process.env.MONGO_ENABLED === 'true') {
@@ -61,8 +69,13 @@ export const validateEnvironment = () => {
     warnings.forEach(warning => console.warn(`   - ${warning}`));
   }
 
-  // Validate database configuration separately
-  validateDatabaseConfig();
+  // Validate database configuration separately (skip strict in TEST_MODE)
+  const allowTestDefaults = process.env.TEST_MODE === 'true' || process.env.NODE_ENV === 'test';
+  try {
+    validateDatabaseConfig();
+  } catch (e) {
+    if (!allowTestDefaults) throw e;
+  }
   
   return {
     environment: env,
