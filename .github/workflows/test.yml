@@ -55,9 +55,11 @@ jobs:
           version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
       - run: pnpm install
+      - name: Clean Prisma engines
+        run: rm -rf node_modules/.prisma || true
       - name: Generate Prisma Client (all schemas)
         run: pnpm run prisma:generate:all
       - name: Start test environment (integration)
@@ -93,7 +95,7 @@ jobs:
           version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
       - run: pnpm install
       - name: Install Playwright Browsers
@@ -115,7 +117,7 @@ jobs:
           version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
       - run: pnpm install
       - run: pnpm audit --json | tee audit.json || true
@@ -132,7 +134,7 @@ jobs:
           version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
       - run: pnpm install
       - run: npx depcheck || true
