@@ -948,7 +948,7 @@ export class NovaGoAlertIntegration extends EventEmitter {
 
   private async syncSchedules(): Promise<void> {
     // Sync schedule information from GoAlert
-    // This is a placeholder for now
+    // TODO: implement syncing schedules (not critical for API availability)
   }
 
   private async checkAutoAcknowledgmentTimeouts(): Promise<void> {

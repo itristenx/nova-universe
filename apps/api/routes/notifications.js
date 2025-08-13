@@ -632,22 +632,44 @@ router.get('/',
 
       // Build filters
       const where = {
-        userId: req.user.id
+        user_id: req.user.id
       };
 
+      const conditions = ['(target_user_id = $1 OR target_user_id IS NULL)'];
+      const params = [req.user.id];
       if (req.query.status) {
-        where.status = req.query.status;
+        conditions.push('status = $' + (params.length + 1));
+        params.push(req.query.status);
       }
       if (req.query.channel) {
-        where.channel = req.query.channel;
+        conditions.push('type = $' + (params.length + 1));
+        params.push(req.query.channel);
       }
       if (req.query.priority) {
-        where.priority = req.query.priority;
+        conditions.push('level = $' + (params.length + 1));
+        params.push(req.query.priority.toLowerCase());
       }
 
-      // This would be implemented in the notification platform
-      const notifications = []; // Placeholder
-      const total = 0; // Placeholder
+      const baseWhere = conditions.length ? ('WHERE ' + conditions.join(' AND ')) : '';
+      // Query notifications (gracefully handle missing table)
+      let notifications = [];
+      let total = 0;
+      try {
+        const countRes = await req.app.get('db').query(`SELECT COUNT(*)::int AS cnt FROM notifications ${baseWhere}`, params);
+        total = countRes.rows?.[0]?.cnt || 0;
+        const listRes = await req.app.get('db').query(
+          `SELECT id, uuid, message AS title, level AS priority, type AS channel, created_at, expires_at
+           FROM notifications ${baseWhere}
+           ORDER BY created_at DESC
+           LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+          [...params, limit, offset]
+        );
+        notifications = listRes.rows || [];
+      } catch (e) {
+        // If table doesn't exist yet, return empty without failing the API
+        notifications = [];
+        total = 0;
+      }
 
       res.json({
         success: true,
@@ -754,8 +776,8 @@ router.get('/admin/analytics',
         });
       }
 
-      // Placeholder analytics data
-      const analytics = {
+      // Basic analytics from notifications table; fall back to zeros
+      let analytics = {
         totalEvents: 0,
         totalNotifications: 0,
         deliveryRate: 0,
@@ -763,6 +785,13 @@ router.get('/admin/analytics',
         moduleBreakdown: {},
         timeline: []
       };
+      try {
+        const totalRes = await req.app.get('db').query('SELECT COUNT(*)::int AS cnt FROM notifications');
+        analytics.totalNotifications = totalRes.rows?.[0]?.cnt || 0;
+        const byType = await req.app.get('db').query('SELECT type, COUNT(*)::int AS cnt FROM notifications GROUP BY type');
+        analytics.channelBreakdown = Object.fromEntries(byType.rows.map(r => [r.type, r.cnt]));
+      } catch {}
+
 
       res.json({
         success: true,
@@ -795,8 +824,8 @@ router.get('/admin/providers',
   adminRateLimit,
   async (req, res) => {
     try {
-      // Placeholder provider data
-      const providers = [];
+      // Pull provider list from configuration if available; otherwise empty
+      const providers = (await novaNotificationPlatform.listProviders?.()) || [];
 
       res.json({
         success: true,

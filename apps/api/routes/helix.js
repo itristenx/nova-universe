@@ -217,8 +217,8 @@ router.post('/login',
         // Get user roles
         db.all(
           `SELECT r.name FROM roles r 
-           JOIN user_roles ur ON r.id = ur.roleId 
-           WHERE ur.userId = $1`,
+           JOIN user_roles ur ON r.id = ur.role_id 
+           WHERE ur.user_id = $1`,
           [user.id],
           (roleErr, roles) => {
             if (roleErr) {
@@ -316,10 +316,10 @@ router.get('/me/roles',
       db.all(
         `SELECT r.name, r.description, p.name as permission_name
          FROM roles r
-         JOIN user_roles ur ON r.id = ur.roleId
-         LEFT JOIN role_permissions rp ON r.id = rp.roleId
-         LEFT JOIN permissions p ON rp.permissionId = p.id
-         WHERE ur.userId = $1
+         JOIN user_roles ur ON r.id = ur.role_id
+         LEFT JOIN role_permissions rp ON r.id = rp.role_id
+         LEFT JOIN permissions p ON rp.permission_id = p.id
+         WHERE ur.user_id = $1
          ORDER BY r.name, p.name`,
         [userId],
         (err, rows) => {

@@ -20,7 +20,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@nova-universe/ui": ["../../packages/ui/dist/index.js"],
-      "@nova-universe/theme": ["../../packages/theme/dist/theme.js"]
+      "@nova-universe/theme": ["../../packages/theme/theme.ts"]
     }
   },
   "include": ["src"],

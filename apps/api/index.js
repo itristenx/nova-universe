@@ -150,10 +150,10 @@ io.on('connection', (socket) => {
     db.all(
       `SELECT r.name AS role, p.name AS perm
        FROM user_roles ur
-       JOIN roles r ON ur.roleId=r.id
-       LEFT JOIN role_permissions rp ON r.id=rp."roleId"
-       LEFT JOIN permissions p ON rp."permissionId"=p.id
-       WHERE ur.userId=$1`,
+       JOIN roles r ON ur.role_id=r.id
+       LEFT JOIN role_permissions rp ON r.id=rp."role_id"
+       LEFT JOIN permissions p ON rp."permission_id"=p.id
+       WHERE ur.user_id=$1`,
       [socket.userId],
       (err, rows) => {
         if (!err) {
@@ -574,11 +574,11 @@ const ensureAuth = DISABLE_AUTH
       const finalize = (user) => {
         db.all(
           `SELECT r.name AS role, p.name AS perm
-             FROM user_roles ur
-             JOIN roles r ON ur.roleId=r.id
-             LEFT JOIN role_permissions rp ON r.id=rp."roleId"
-             LEFT JOIN permissions p ON rp."permissionId"=p.id
-            WHERE ur.userId=$1`,
+                         FROM user_roles ur
+            JOIN roles r ON ur.role_id=r.id
+            LEFT JOIN role_permissions rp ON r.id=rp."role_id"
+            LEFT JOIN permissions p ON rp."permission_id"=p.id
+           WHERE ur.user_id=$1`,
           [user.id],
           (e, rows) => {
             if (e) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });

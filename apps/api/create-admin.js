@@ -65,7 +65,7 @@ const passwordHash = bcrypt.hashSync(password, 12); // Increase salt rounds for 
     const userId = uuidv4();
     const now = new Date().toISOString();
     await db.query(
-      'INSERT INTO users (id, name, email, "passwordHash", "isDefault", "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, true, $5, $6)',
+      'INSERT INTO users (uuid, name, email, password_hash, is_default, created_at, updated_at) VALUES ($1, $2, $3, $4, true, $5, $6)',
       [userId, name, email, passwordHash, now, now]
     );
     console.log(`✅ Created new admin user: ${email}`);
@@ -84,7 +84,7 @@ async function assignAdminRole(userId = null) {
       if (!res.rows.length) throw new Error('User not found');
       id = res.rows[0].id;
     }
-    await db.query('INSERT INTO user_roles ("userId", "roleId") VALUES ($1, 1) ON CONFLICT DO NOTHING', [id]);
+    await db.query('INSERT INTO user_roles ("user_id", "role_id") VALUES ($1, 1) ON CONFLICT DO NOTHING', [id]);
     console.log('✅ Admin role assigned');
     console.log(`🔑 Login credentials: ${email} / ${password}`);
     process.exit(0);

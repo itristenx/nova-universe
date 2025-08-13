@@ -251,13 +251,15 @@ export function isCI() {
 
 // Database connection (simplified for CLI)
 export async function connectDatabase() {
-  // This is a placeholder for database connection
-  // In a real implementation, this would connect to the actual database
-  // For now, we'll simulate it
-  return {
-    connected: true,
-    type: 'mock'
-  };
+  const { Pool } = await import('pg');
+  const host = process.env.CORE_DB_HOST || process.env.POSTGRES_HOST || 'localhost';
+  const port = Number(process.env.CORE_DB_PORT || process.env.POSTGRES_PORT || 5432);
+  const database = process.env.CORE_DB_NAME || process.env.POSTGRES_DB || 'nova_universe';
+  const user = process.env.CORE_DB_USER || process.env.POSTGRES_USER || 'nova_admin';
+  const password = process.env.CORE_DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'nova_password';
+  const pool = new Pool({ host, port, database, user, password, ssl: false });
+  const client = await pool.connect();
+  return { pool, client };
 }
 
 // Validate email (alias for isValidEmail for consistency)

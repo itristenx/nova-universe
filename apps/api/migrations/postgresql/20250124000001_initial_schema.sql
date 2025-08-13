@@ -331,27 +331,27 @@ CREATE TABLE audit_logs (
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_uuid ON users(uuid);
 CREATE INDEX IF NOT EXISTS idx_users_disabled ON users(disabled);
-CREATE INDEX IF NOT EXISTS idx_users_lastLogin ON users("lastLogin");
-CREATE INDEX IF NOT EXISTS idx_users_createdAt ON users("createdAt");
-CREATE INDEX IF NOT EXISTS idx_users_updatedAt ON users("updatedAt");
+CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
+CREATE INDEX IF NOT EXISTS idx_users_updated_at ON users(updated_at);
 
-CREATE INDEX IF NOT EXISTS idx_passkeys_userId ON passkeys("userId");
-CREATE INDEX IF NOT EXISTS idx_passkeys_credentialId ON passkeys("credentialId");
+CREATE INDEX IF NOT EXISTS idx_passkeys_user_id ON passkeys(user_id);
+CREATE INDEX IF NOT EXISTS idx_passkeys_credential_id ON passkeys(credential_id);
 
 CREATE INDEX IF NOT EXISTS idx_config_key ON config(key);
 CREATE INDEX IF NOT EXISTS idx_config_category ON config(category);
 CREATE INDEX IF NOT EXISTS idx_config_is_public ON config(is_public);
 
 CREATE INDEX IF NOT EXISTS idx_kiosks_active ON kiosks(active);
-CREATE INDEX IF NOT EXISTS idx_kiosks_lastSeen ON kiosks("lastSeen");
+CREATE INDEX IF NOT EXISTS idx_kiosks_last_seen ON kiosks(last_seen);
 -- CREATE INDEX IF NOT EXISTS idx_kiosks_uuid ON kiosks(uuid);
 
 CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs("timestamp");
-CREATE INDEX IF NOT EXISTS idx_logs_ticketId ON logs("ticketId");
+CREATE INDEX IF NOT EXISTS idx_logs_ticket_id ON logs(ticket_id);
 CREATE INDEX IF NOT EXISTS idx_logs_email ON logs(email);
 -- CREATE INDEX IF NOT EXISTS idx_logs_status ON logs(status);
--- CREATE INDEX IF NOT EXISTS idx_logs_kioskId ON logs("kioskId");
-CREATE INDEX IF NOT EXISTS idx_logs_userId ON logs("userId");
+-- CREATE INDEX IF NOT EXISTS idx_logs_kiosk_id ON logs(kiosk_id);
+CREATE INDEX IF NOT EXISTS idx_logs_user_id ON logs(user_id);
 -- CREATE INDEX IF NOT EXISTS idx_logs_uuid ON logs(uuid);
 
 CREATE INDEX IF NOT EXISTS idx_notifications_active ON notifications(active);

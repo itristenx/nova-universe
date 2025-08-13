@@ -14,7 +14,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@heroui/react": "^2.8.1",
-    "@nova-universe/cosmo-sdk": "file:../../../packages/cosmo-sdk",
+    "@nova-universe/cosmo-sdk": "workspace:^",
     "@nova-universe/design-tokens": "file:../../../packages/design-tokens",
     "@nova-universe/theme": "file:../../../packages/theme",
     "@nova-universe/ui": "file:../../../packages/ui",
@@ -35,6 +35,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",

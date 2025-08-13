@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, type ReactNode, type ElementType } from 'react';
 import './Tabs.css';
 
 interface TabDef {
-  label: string;
+  label: React.ReactNode;
   content: React.ReactNode;
   key?: string;
 }
@@ -16,7 +16,7 @@ export interface TabsProps {
   children?: React.ReactNode;
 }
 
-export const Tabs: React.FC<TabsProps> & { Tab?: React.FC<{ key?: string; title: React.ReactNode; children: React.ReactNode }>; } = ({
+export const Tabs: React.FC<TabsProps> & { Tab: React.FC<{ title: ReactNode; children: React.ReactNode }>; } = ({
   tabs,
   initialIndex = 0,
   className = '',
@@ -55,4 +55,4 @@ export const Tabs: React.FC<TabsProps> & { Tab?: React.FC<{ key?: string; title:
   );
 };
 
-Tabs.Tab = (({ children }: { children: React.ReactNode }) => <>{children}</>) as any;
+Tabs.Tab = (({ children }: { title: ReactNode; children: React.ReactNode }) => <>{children}</>) as React.FC<{ title: ReactNode; children: React.ReactNode }>;

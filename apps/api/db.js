@@ -46,6 +46,59 @@ async function initializeDatabase() {
  */
 async function setupSchemas() {
   try {
+    // Create essential baseline tables if missing so the API can bootstrap on a fresh DB
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        uuid UUID DEFAULT gen_random_uuid() UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password_hash VARCHAR(255),
+        disabled BOOLEAN DEFAULT FALSE,
+        is_default BOOLEAN DEFAULT FALSE,
+        last_login TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS user_roles (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        role_id INTEGER NOT NULL,
+        assigned_by INTEGER,
+        assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP NULL,
+        PRIMARY KEY (user_id, role_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS config (
+        id SERIAL PRIMARY KEY,
+        key VARCHAR(255) NOT NULL UNIQUE,
+        value TEXT,
+        value_type VARCHAR(20) DEFAULT 'string',
+        description TEXT,
+        is_public BOOLEAN DEFAULT FALSE,
+        is_encrypted BOOLEAN DEFAULT FALSE,
+        category VARCHAR(100) DEFAULT 'general',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS directory_integrations (
+        id SERIAL PRIMARY KEY,
+        provider VARCHAR(50) NOT NULL,
+        enabled BOOLEAN DEFAULT FALSE,
+        settings JSONB DEFAULT '{}',
+        url TEXT,
+        username VARCHAR(255),
+        password_encrypted TEXT,
+        sync_enabled BOOLEAN DEFAULT FALSE,
+        last_sync TIMESTAMP,
+        sync_interval INTEGER DEFAULT 3600,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     logger.info('Database schemas verified');
   } catch (error) {
     logger.error('Error setting up schemas:', error);

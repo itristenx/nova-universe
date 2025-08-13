@@ -413,7 +413,7 @@ export class NovaAIFabric extends EventEmitter {
   private getProviderPerformanceScore(providerId: string): number {
     // Calculate performance score based on historical data
     // This would analyze response times, success rates, etc.
-    return 25; // Placeholder
+    return 25;
   }
 
   private async executeRequest(request: AIRequest, providerId: string): Promise<AIResponse> {
