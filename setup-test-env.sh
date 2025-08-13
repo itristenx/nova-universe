@@ -170,7 +170,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: ${TEST_PREFIX}-api
     env_file:
-      - .env.test-${TEST_ENV_NAME}
+      - .env.test.${TEST_ENV_NAME}
     environment:
       NODE_ENV: test
       PORT: 3000
@@ -210,9 +210,10 @@ services:
     networks:
       - ${TEST_NETWORK}
     volumes:
-      - ./apps/api:/app
+            - ./apps/api:/app
+      - ./prisma/generated:/prisma/generated:ro
       - /app/node_modules
-    command: ["npm", "start"]
+     command: ["npm", "start"]
 
   # Core UI Service
   ${TEST_PREFIX}-core:

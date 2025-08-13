@@ -76,7 +76,7 @@ jobs:
           echo "Waiting for host port to accept connections..."
           curl --retry 60 --retry-connrefused --retry-delay 1 -fsS http://localhost:4102/health || (docker logs nova-test-integration-api | tail -200; exit 1)
           echo "Checking monitoring health endpoint..."
-          curl -fsS http://localhost:4102/api/monitoring/health | jq '.status' || true
+          curl -fsS http://localhost:4102/api/monitoring/health | sed -n '1,200p' || true
       - run: pnpm run test:ci
         env:
           TEST_API_URL: http://localhost:4102
