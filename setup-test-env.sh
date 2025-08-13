@@ -173,7 +173,7 @@ services:
       - .env.test.${TEST_ENV_NAME}
     environment:
       NODE_ENV: test
-      PORT: 3000
+      API_PORT: 3000
       DATABASE_URL: postgresql://nova_test:test_password_${TEST_ENV_NAME}@${TEST_PREFIX}-postgres:5432/nova_test
       REDIS_URL: redis://${TEST_PREFIX}-redis:6379
       JWT_SECRET: test_jwt_secret_${TEST_ENV_NAME}

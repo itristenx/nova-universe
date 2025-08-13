@@ -42,6 +42,11 @@ jobs:
       DISABLE_CLEANUP: true
       # Prisma datasource for generate (point to service port 5433)
       CORE_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      CMDB_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      INTEGRATION_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      NOTIFICATION_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      USER360_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
+      AUTH_DATABASE_URL: postgresql://nova_test:test_ci_db@localhost:5433/nova_test
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
