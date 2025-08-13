@@ -79,6 +79,7 @@ import synthRouter from './routes/synth.js';
 import synthV2Router from './routes/synth-v2.js';
 import { getEmailStrategy } from './utils/serviceHelpers.js';
 import { setupGraphQL } from './graphql.js';
+import { deprecateUnversionedRoute } from './middleware/apiVersioning.js';
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -1724,20 +1725,26 @@ app.use('/api/v1/cmdb', cmdbRouter);
 app.use('/api/v1/cmdb', cmdbExtendedRouter);
 app.use('/api/v1/integrations', integrationsRouter);
 app.use('/api/v2/user360', user360Router); // User 360 API
-app.use('/api/catalog-items', catalogItemsRouter);
+app.use('/api/v1/catalog-items', catalogItemsRouter);
+app.use('/api/catalog-items', deprecateUnversionedRoute({ replacement: '/api/v1/catalog-items', version: 'v1' }), catalogItemsRouter);
 app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
 app.use('/api/v1/logs', logsRouter); // Register logsRouter
-app.use('/api/reports', reportsRouter);
+app.use('/api/v1/reports', reportsRouter);
+app.use('/api/reports', deprecateUnversionedRoute({ replacement: '/api/v1/reports', version: 'v1' }), reportsRouter);
 app.use('/api/v1/vip', vipRouter);
-app.use('/api/workflows', workflowsRouter);
+app.use('/api/v1/workflows', workflowsRouter);
+app.use('/api/workflows', deprecateUnversionedRoute({ replacement: '/api/v1/workflows', version: 'v1' }), workflowsRouter);
 app.use('/api/v1/modules', modulesRouter);
 app.use('/api/v1/api-keys', apiKeysRouter);
 app.use('/api/v1/websocket', websocketRouter);
-app.use('/api/helpscout', helpscoutRouter);
-app.use('/api/analytics', analyticsRouter);
-app.use('/api/monitoring', monitoringRouter);
+app.use('/api/v1/helpscout', helpscoutRouter);
+app.use('/api/helpscout', deprecateUnversionedRoute({ replacement: '/api/v1/helpscout', version: 'v1' }), helpscoutRouter);
+app.use('/api/v1/analytics', analyticsRouter);
+app.use('/api/analytics', deprecateUnversionedRoute({ replacement: '/api/v1/analytics', version: 'v1' }), analyticsRouter);
+app.use('/api/v1/monitoring', monitoringRouter);
+app.use('/api/monitoring', deprecateUnversionedRoute({ replacement: '/api/v1/monitoring', version: 'v1' }), monitoringRouter);
 app.use('/api/v2/sentinel', monitoringRouter);
 app.use('/api/v2/goalert', goalertProxyRouter);
 app.use('/api/v2/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
@@ -1755,11 +1762,11 @@ app.use('/api/v2/synth', synthV2Router);   // Nova Synth - AI Engine (v2 - Full 
 app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
 app.use('/api/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
 app.use('/api/v1/core', coreRouter);
-app.use('/core', coreRouter);
+app.use('/core', deprecateUnversionedRoute({ replacement: '/api/v1/core', version: 'v1' }), coreRouter);
 app.use('/api/v1/status', statusSummaryRouter);
-app.use('/status', statusSummaryRouter);
+app.use('/status', deprecateUnversionedRoute({ replacement: '/api/v1/status', version: 'v1' }), statusSummaryRouter);
 app.use('/api/v1/announcements', announcementsRouter);
-app.use('/announcements', announcementsRouter);
+app.use('/announcements', deprecateUnversionedRoute({ replacement: '/api/v1/announcements', version: 'v1' }), announcementsRouter);
 app.use('/api/v1/cosmo', cosmoRouter);
 app.use('/api/v2/beacon', beaconRouter);
 
