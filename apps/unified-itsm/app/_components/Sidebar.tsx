@@ -2,9 +2,11 @@ import Link from 'next/link';
 
 const links = [
   { href: '/', label: 'Home' },
-  { href: '/admin', label: 'Admin' },
-  { href: '/technician', label: 'Technician' },
-  { href: '/portal', label: 'End-User' },
+  { href: '/(shell)/admin/dashboard', label: 'Admin Dashboard' },
+  { href: '/(shell)/admin/approvals', label: 'Admin Approvals' },
+  { href: '/(shell)/admin/integrations', label: 'Integrations' },
+  { href: '/(shell)/technician/my-work', label: 'Technician' },
+  { href: '/(shell)/portal', label: 'End-User' },
 ];
 
 export function Sidebar() {

@@ -163,6 +163,42 @@ class DatabaseFactory {
     const primaryDb = this.getPrimaryDatabase();
     return primaryDb.query(sql, params);
   }
+
+  /**
+   * Store a document in the audit/document database if available
+   */
+  async storeDocument(collection, document) {
+    try {
+      if (this.isDatabaseAvailable('audit_db') && this.auditDb && this.auditDb.collection) {
+        const col = this.auditDb.collection(collection);
+        return await col.insertOne(document);
+      }
+      // Fallback: no-op, but do not throw to avoid breaking main flow
+      logger.warn(`Audit storeDocument skipped: collection=${collection} (audit_db unavailable)`);
+      return null;
+    } catch (err) {
+      logger.error('storeDocument failed', { collection, error: err?.message });
+      return null;
+    }
+  }
+
+  /**
+   * Find documents in the audit/document database if available
+   */
+  async findDocuments(collection, query = {}, options = {}) {
+    try {
+      if (this.isDatabaseAvailable('audit_db') && this.auditDb && this.auditDb.collection) {
+        const col = this.auditDb.collection(collection);
+        const cursor = col.find(query, options);
+        return await cursor.toArray();
+      }
+      logger.warn(`Audit findDocuments skipped: collection=${collection} (audit_db unavailable)`);
+      return [];
+    } catch (err) {
+      logger.error('findDocuments failed', { collection, error: err?.message });
+      return [];
+    }
+  }
 }
 
 const dbFactory = new DatabaseFactory();

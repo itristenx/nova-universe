@@ -716,6 +716,14 @@ router.post('/catalog/:id',
       if (workflowId) {
         triggerWorkflow(String(workflowId));
       }
+      // Audit
+      await db.createAuditLog('catalog.submit', req.user.id, {
+        catalog_item_id: catalogId,
+        ritm_id: ritmId,
+        workflow_id: workflowId,
+        ip: req.ip,
+        userAgent: req.get('User-Agent') || null
+      });
       res.status(201).json({ success: true, ritmId });
     } catch (error) {
       logger.error('Error submitting catalog item:', error);

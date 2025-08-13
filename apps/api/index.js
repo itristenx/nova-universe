@@ -82,6 +82,7 @@ import { setupGraphQL } from './graphql.js';
 import { deprecateUnversionedRoute } from './middleware/apiVersioning.js';
 import authDevRouter from './routes/auth-dev.js';
 import ticketsDevRouter from './routes/tickets-dev.js';
+import enhancedMonitoringRouter from './routes/enhanced-monitoring.js';
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -1748,6 +1749,7 @@ app.use('/api/analytics', deprecateUnversionedRoute({ replacement: '/api/v1/anal
 app.use('/api/v1/monitoring', monitoringRouter);
 app.use('/api/monitoring', deprecateUnversionedRoute({ replacement: '/api/v1/monitoring', version: 'v1' }), monitoringRouter);
 app.use('/api/v2/sentinel', monitoringRouter);
+app.use('/api/enhanced-monitoring', enhancedMonitoringRouter);
 app.use('/api/v2/goalert', goalertProxyRouter);
 app.use('/api/v2/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
 app.use('/api/ai-fabric', aiFabricRouter);

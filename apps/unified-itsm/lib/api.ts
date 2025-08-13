@@ -36,6 +36,10 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
 
 export async function apiTry<T = any>(paths: string[], options: RequestInit = {}): Promise<T> {
   let lastErr: any;
+  // In production, do not fallback to dev endpoints
+  if (process.env.NODE_ENV === 'production') {
+    return apiFetch<T>(paths[0], options);
+  }
   for (const p of paths) {
     try { return await apiFetch<T>(p, options); } catch (e) { lastErr = e; }
   }
