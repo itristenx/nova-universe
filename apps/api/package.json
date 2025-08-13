@@ -7,6 +7,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --config ./jest.config.mjs",
     "test:simple": "node --test",
     "start": "node index.js",
+    "build": "node -e \"console.log('no build step for API')\"",
     "cli": "node cli/index.js",
     "nova": "node cli/index.js"
   },

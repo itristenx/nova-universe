@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy package files
 COPY package*.json ./
-COPY ../../package*.json ../../
+# Removed: root package files are outside the Docker build context
 
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci --include=dev
@@ -29,7 +29,7 @@ RUN npm ci --include=dev
 COPY . .
 
 # Build the application (if needed)
-RUN npm run build 2>/dev/null || echo "No build script found"
+RUN npm run build || echo "No build script found (skipped)"
 
 # Remove dev dependencies
 RUN npm prune --production
