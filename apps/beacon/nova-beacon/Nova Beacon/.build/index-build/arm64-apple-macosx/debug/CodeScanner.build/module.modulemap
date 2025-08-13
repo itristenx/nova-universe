@@ -1,0 +1,4 @@
+module CodeScanner {
+    header "/Users/tneibarger/nova-universe/apps/beacon/nova-beacon/Nova Beacon/.build/index-build/arm64-apple-macosx/debug/CodeScanner.build/CodeScanner-Swift.h"
+    requires objc
+}

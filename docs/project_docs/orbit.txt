@@ -1,0 +1,206 @@
+Here is a full explanation and implementation document in markdown format for Nova Orbit, the end-user portal of the Nova Universe platform:
+
+⸻
+
+🪐 Nova Orbit — End User Portal
+
+Part of the Nova Universe Platform
+
+⸻
+
+🌌 Overview
+
+Nova Orbit is the unified, intuitive portal where all end users (employees, contractors, partners) interact with the Nova ITSM ecosystem. Designed for simplicity and speed, it allows users to submit and track support tickets, access knowledge base articles, view service updates, and engage with the AI assistant (Cosmo).
+
+Orbit supports SSO, is multi-tenant aware, responsive across devices, and built for scale.
+
+⸻
+
+📦 Features
+
+🔁 Ticket Lifecycle
+	•	Submit new tickets via request catalog or freeform
+	•	View active, resolved, and closed tickets
+	•	Update or comment on open tickets
+	•	Attach files or screenshots
+	•	Ticket types:
+	•	Incident (INC)
+	•	Request (REQ)
+	•	Feedback (FDBK)
+	•	HR, Cyber, Ops (role-based access)
+
+📚 Knowledge Base (Lore Integration)
+	•	Article search with categories
+	•	Cosmo-powered suggestions
+	•	Mark helpful/unhelpful
+	•	Linked to past or current tickets
+	•	Auto-suggest while submitting tickets
+
+🧠 Cosmo AI Assistant
+	•	Embedded chatbot for help
+	•	Can create, update, and follow-up on tickets
+	•	Suggests knowledge base articles
+	•	Pulls past tickets and current statuses
+	•	Escalation and opt-out logic included
+
+📆 Status & Announcements
+	•	View planned maintenance, outages, and recent changes
+	•	Filter by service or severity
+	•	Custom banner alerts (e.g., degraded Slack)
+
+🎨 Custom Branding per Tenant
+	•	Logo, theme colors, help text
+	•	Fallback to Nova defaults if none configured
+	•	Managed via Core Admin UI
+
+🧾 Request Catalog
+	•	Dynamic forms per item
+	•	Categories: Access, Hardware, Software, Onboarding, etc.
+	•	Approval flows shown visually
+	•	Auto-routing to appropriate queue
+
+💬 Notifications
+	•	In-app and optional email alerts
+	•	Ticket updates, approvals, new comments
+
+📱 Kiosk View Fallback
+	•	Auto-detects tablet/iPad and simplifies UI
+	•	Ideal for Beacon/Kiosk deployments
+
+⸻
+
+🛠 Technical Implementation
+
+📁 Frontend
+	•	Framework: React (Next.js w/ App Router)
+	•	UI: TailwindCSS + ShadCN + Framer Motion
+	•	AI Assistant: Cosmo SDK
+	•	SSO: Nova Helix (OIDC/SCIM)
+	•	API: Nova Universe API v2 (GraphQL/REST Hybrid)
+
+Pages
+
+Page	Description
+/	Home/Dashboard
+/tickets	List + filter all user tickets
+/tickets/new	Ticket creation wizard
+/catalog	Request catalog view
+/knowledge	Searchable KB
+/status	Real-time service updates
+/cosmo	Cosmo assistant interface
+/profile	User profile and settings
+
+Components
+	•	TicketCard, TicketDetail, StatusBanner
+	•	CosmoWidget, KnowledgeCard, CatalogFormRenderer
+	•	BrandingWrapper, SSOGuard, DeviceDetector
+
+⸻
+
+🧬 Backend Integration
+
+Core APIs Used
+
+Service	Endpoint	Description
+Nova API	/tickets	Ticket CRUD
+Lore	/kb/search	KB lookup
+Helix	/whoami, /profile	User session/identity
+Mailroom	/email/submit	Email-driven ticketing
+Pulse	/status	System health & alert
+Deck	/apps	Orbit home modules
+
+Access Control
+	•	End users only see their own tickets
+	•	KB articles filtered by visibility
+	•	RBAC-enforced via JWT + Nova Helix
+
+Authentication
+	•	SSO via Helix OIDC
+	•	Fallback to local login (if enabled)
+	•	Tenant-based branding on login screen
+
+⸻
+
+🔧 Admin Configuration (via Nova Core)
+	•	Enable/disable modules in Orbit
+	•	Set default ticket type and routing
+	•	Configure Request Catalog items
+	•	Add KB categories and tags
+	•	Manage Cosmo intents and escalation rules
+	•	Branding (logos, theme, text)
+	•	SLA indicators and breach warnings
+
+⸻
+
+📱 Kiosk Mode (Nova Beacon Fallback)
+	•	Automatically launches simplified /tickets/new
+	•	Device must be enrolled and activated via Core
+	•	Offline-safe caching for ticket creation
+	•	Configurable form based on user role/type
+	•	Remote managed config (logo, categories)
+
+⸻
+
+🛡️ Security & Compliance
+	•	All user actions logged (Helix + Core)
+	•	Tickets filtered by org/tenant
+	•	Role-based views of KB, status, and catalog
+	•	Support for JIT provisioning via SCIM
+	•	Audit log for all ticket and AI actions
+	•	Retention rules configurable per org
+
+⸻
+
+🎨 Theming & Branding
+
+type BrandingConfig = {
+  tenantId: string;
+  logoUrl: string;
+  primaryColor: string;
+  secondaryColor: string;
+  helpText: string;
+  fallbackToNova: boolean;
+}
+
+
+⸻
+
+🧪 Testing & QA
+
+Unit/Component Tests
+	•	Jest + React Testing Library
+	•	Focus: ticket logic, form rendering, Cosmo behaviors
+
+E2E Tests
+	•	Playwright
+	•	User flows: create ticket, use Cosmo, view status, etc.
+
+Accessibility
+	•	WCAG 2.2 compliance
+	•	Keyboard nav, ARIA roles, readable colors
+
+⸻
+
+🚀 Deployment & Performance
+	•	CDN-cached via edge deployment (Vercel/Fly.io)
+	•	SSR + ISR for performance
+	•	Prefetching for common pages
+	•	Lazy load Cosmo and heavy components
+	•	Offline mode support (PWAs + Kiosk)
+
+⸻
+
+🌟 Future Enhancements
+	•	Ticket ratings and satisfaction surveys
+	•	In-app approvals and workflow confirmations
+	•	Saved drafts and form resumes
+	•	Cosmo intent recall and KB linking
+	•	Nova ID XP tracking visible in Orbit
+
+⸻
+
+🔚 Summary
+
+Nova Orbit is the first-class citizen of the Nova Universe for end users, giving them a delightful, responsive, and AI-powered experience for requesting help, getting updates, and solving problems. It blends ITSM power with simplicity, modern design, and automation, fully integrated with the rest of the Nova stack.
+
+⸻

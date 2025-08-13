@@ -1,0 +1,203 @@
+Here is a full breakdown and implementation plan for Nova Deck, the central launchpad of the Nova Universe:
+
+⸻
+
+🪐 Nova Deck
+
+Type: Core Module
+Purpose: Centralized portal and launchpad for all Nova Universe modules
+Users: All roles (End Users, Technicians, Admins, Leads, Executives)
+
+⸻
+
+🔍 Overview
+
+Nova Deck is the unified, brandable, access-aware dashboard that serves as the central entry point for the entire Nova Universe. It dynamically renders module access, alerts, shortcuts, branding, and user-specific data based on RBAC and tenant configurations. Think of it as the “mission control” of the Nova Universe.
+
+⸻
+
+🧩 Key Features
+
+1. Dynamic App Grid (Universal Launcher)
+	•	Auto-displays only the modules user has access to (based on Helix/SCIM roles)
+	•	Supports:
+	•	Custom icons and names
+	•	Module deep links (e.g., open Pulse directly in HR queue)
+	•	Hover tooltips / module descriptions
+	•	Modules include: Orbit, Pulse, Lore, Core, Mailroom, Beacon, Inventory, Forge, Admin, Comms, Synth, etc.
+
+2. Unified Notification Center
+	•	Displays alerts from:
+	•	Workflow engine (Nova Core)
+	•	Pulse (assigned tickets, escalations)
+	•	GoAlert (alerts for on-call)
+	•	Orbit (status changes, form approvals)
+	•	Cosmo (AI nudges, suggestions)
+	•	Supports filters, grouping, and pinning
+
+3. Cosmo Panel (AI Assistant Sidebar)
+	•	AI Assistant docked or collapsible panel
+	•	Persistent across Deck
+	•	Responds with:
+	•	Status of tickets
+	•	Guidance through modules
+	•	Help with policies
+	•	Navigational aid
+
+4. Tenant + Theme Switcher
+	•	For MSPs or federated orgs:
+	•	Switch between multiple Nova environments (tenants)
+	•	For end users:
+	•	Theme switcher (light/dark + brand skin if allowed)
+
+5. Quick Actions Bar
+	•	Context-aware shortcuts:
+	•	“Open Ticket”
+	•	“Search Knowledge Base”
+	•	“Go On Call”
+	•	“Run Workflow”
+	•	“Import Asset”
+	•	Customizable per role
+
+6. Recent Activity Feed
+	•	Unified cross-module history
+	•	Recently opened tickets
+	•	Last viewed article
+	•	Device assigned
+	•	Supports Cosmo summarization
+
+7. Bookmarks + Pinned Items
+	•	User-custom bookmarks
+	•	Persistent across sessions
+	•	Support deep-linking into modules or specific actions
+
+⸻
+
+🧱 Submodules
+
+Submodule	Description
+Deck Shell	Core UI shell used across all Nova frontends for unified look and feel
+Deck App Grid	Dynamically rendered module launcher
+Deck Notifications	Unified system for cross-module alerts
+Deck Cosmo Panel	Dockable assistant powered by Cosmo
+Deck Admin	(For global admins) control what modules are visible per tenant/role
+Deck Metrics	Optional global KPI dashboard for exec users or admins
+Deck Onboarding	First-time wizard to guide new users based on role
+
+
+⸻
+
+👤 Role-based Experience
+
+Role	Deck Experience
+End User	Access to Orbit, Mailroom, Cosmo, limited Pulse (requests only)
+Technician	Quick links to queues in Pulse, alerts via GoAlert, asset import shortcuts
+Admin	Access to all modules + Deck Admin + metrics + settings
+Lead	Cross-module visibility for their domain (e.g., HR Lead sees HR Pulse metrics)
+Executive	High-level metrics, trend graphs, access to Deck Metrics module
+
+
+⸻
+
+🎨 Branding Support
+	•	Fully white-label capable
+	•	Supports:
+	•	Custom logo in top left
+	•	Theme override per tenant
+	•	URL: deck.novauniverse.{tld} or tenant subdomain
+	•	Mobile and iPad-optimized (also launching Nova Mobile from here)
+
+⸻
+
+🧠 AI Integration (Cosmo)
+	•	Cosmo helps you navigate the Nova Universe, perform actions, and find insights.
+	•	Example prompts:
+	•	“Show my last 5 tickets”
+	•	“Create a new onboarding request for Taylor”
+	•	“What’s the SLA for VIP hardware delivery?”
+
+⸻
+
+🔒 Security & Access
+	•	Access controlled via Nova Helix (SCIM + SSO)
+	•	All modules require valid Nova ID session
+	•	RBAC is used to:
+	•	Show/hide modules
+	•	Enable/disable quick actions
+	•	Filter activity feeds
+	•	All activity is logged via Core Audit Trail
+
+⸻
+
+🌐 API + SDK
+	•	GET /deck/apps – Returns visible modules per user
+	•	GET /deck/notifications – Unified alerts feed
+	•	POST /deck/quick-actions – Execute common actions
+	•	GET /deck/history – Recently viewed items
+	•	JS/React SDK:
+	•	useDeckContext()
+	•	launchModule(id: string)
+	•	openCosmoPrompt(prompt: string)
+
+⸻
+
+🧪 Implementation Plan
+
+Phase 1 – Shell & Launcher
+	•	Build React-based Deck Shell with app grid
+	•	Integrate with Nova Helix for role-based module list
+
+Phase 2 – Notifications + Cosmo
+	•	Unified alert engine + Cosmo sidebar
+	•	Integrate alert providers from Mailroom, Core, Pulse, GoAlert
+
+Phase 3 – Quick Actions + Activity Feed
+	•	Build unified feed
+	•	Implement shortcut bar (Pulse, Orbit, Inventory)
+
+Phase 4 – Admin Controls + White Label
+	•	Allow Deck Admins to toggle visibility
+	•	Implement branding engine (logo, theme, favicon)
+
+Phase 5 – Metrics Dashboard (Optional)
+	•	Executive KPI cards (SLA trends, open tickets, MTTR)
+	•	Scoped by role and department
+
+⸻
+
+📁 Tech Stack
+	•	Frontend: React + Tailwind + shadcn/ui
+	•	State: Zustand or Redux
+	•	Cosmo: ChatGPT or OpenAI Assistant API wrapper
+	•	Notifications: WebSocket / Server-sent events via Nova Core
+	•	Auth: Nova Helix (SCIM + OIDC SSO)
+	•	Mobile App: SwiftUI (iOS), React Native fallback
+	•	Backend API: Unified Nova v2 API Gateway
+
+⸻
+
+🧩 Integrations
+	•	Slack (launch Deck from /nova deck slash command)
+	•	Email (notifications)
+	•	Browser Extension (optional pinned Deck shortcut)
+	•	Nova Mobile (Deck is default view)
+
+⸻
+
+📊 Sample Metrics for Exec Users (Optional Deck Module)
+	•	Avg ticket resolution time by queue
+	•	tickets opened last 7 days by type
+	•	Top 3 most searched KB terms
+	•	Pulse SLA adherence % (per submodule)
+	•	Open Alerts (GoAlert) per shift/team
+
+⸻
+
+✅ Benefits
+	•	One place to access the entire Nova Universe
+	•	Modular, scalable, and brandable
+	•	Reduces friction across roles and modules
+	•	Powers Cosmo AI workflows from one place
+	•	Role-aware with unified design language
+
+⸻

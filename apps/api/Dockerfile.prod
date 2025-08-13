@@ -1,0 +1,87 @@
+# Nova Universe API - Production Dockerfile
+# Multi-stage build for optimized production image
+
+# Stage 1: Build dependencies and application
+FROM node:20-bookworm-slim AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    libc6 \
+    libssl3 \
+    ca-certificates \
+    curl \
+  && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
+COPY package*.json ./
+COPY ../../package*.json ../../
+
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci --include=dev
+
+# Copy source code
+COPY . .
+
+# Build the application (if needed)
+RUN npm run build 2>/dev/null || echo "No build script found"
+
+# Remove dev dependencies
+RUN npm prune --production
+
+# Stage 2: Production runtime
+FROM node:20-bookworm-slim AS runtime
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Install production runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tini \
+    curl \
+    dumb-init \
+  && rm -rf /var/lib/apt/lists/*
+
+# Copy built application from builder stage
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
+COPY --from=builder --chown=nextjs:nodejs /app .
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/logs /app/uploads /app/temp && \
+    chown -R nextjs:nodejs /app/logs /app/uploads /app/temp
+
+# Set security permissions
+RUN chmod -R 755 /app && \
+    chmod -R 700 /app/logs /app/uploads /app/temp
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Use tini as PID 1 for proper signal handling
+ENTRYPOINT ["tini", "--"]
+
+# Start the application
+CMD ["node", "index.js"]
+
+# Labels for container metadata
+LABEL maintainer="Nova Universe Team"
+LABEL version="1.0.0"
+LABEL description="Nova Universe API Server - Production"
+LABEL org.opencontainers.image.source="https://github.com/your-org/nova-universe"

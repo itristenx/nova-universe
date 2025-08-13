@@ -1,7 +1,7 @@
 // src/lib/db/elastic.ts
 // Elasticsearch client for full-text search and analytics
 import { Client } from '@elastic/elasticsearch';
-import { logger } from '../../../nova-api/logger.js';
+import { logger } from '../../../apps/api/logger.js';
 
 // Configuration from environment with robust defaults and validation
 const validateElasticConfig = () => {
@@ -40,14 +40,14 @@ const validateElasticConfig = () => {
   }
 
   // Log configuration (without sensitive data)
-  logger.info('Elasticsearch configuration loaded', {
+  logger.info('Elasticsearch configuration loaded: ' + JSON.stringify({
     node: config.node,
     requestTimeout: config.requestTimeout,
     pingTimeout: config.pingTimeout,
     maxRetries: config.maxRetries,
     compression: config.compression,
     ssl: !!config.ssl
-  });
+  }));
 
   return config;
 };
@@ -82,7 +82,7 @@ class ElasticsearchManager {
       this.isInitialized = true;
       logger.info('Elasticsearch initialization completed');
     } catch (error) {
-      logger.error('Failed to initialize Elasticsearch:', error);
+      logger.error('Failed to initialize Elasticsearch: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -263,7 +263,7 @@ class ElasticsearchManager {
 
       logger.info('Elasticsearch index templates created');
     } catch (error) {
-      logger.error('Error setting up Elasticsearch index templates:', error);
+      logger.error('Error setting up Elasticsearch index templates: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -276,7 +276,7 @@ class ElasticsearchManager {
       logger.debug(`Created Elasticsearch index template: ${name}`);
     } catch (error: any) {
       if (!error.message.includes('already exists')) {
-        logger.error(`Error creating index template ${name}:`, error);
+        logger.error(`Error creating index template ${name}: ` + (error instanceof Error ? error.message : String(error)));
       }
     }
   }
@@ -301,7 +301,7 @@ class ElasticsearchManager {
 
       return response;
     } catch (error) {
-      logger.error('Error indexing ticket:', error);
+      logger.error('Error indexing ticket: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -326,7 +326,7 @@ class ElasticsearchManager {
 
       return response;
     } catch (error) {
-      logger.error('Error indexing KB article:', error);
+      logger.error('Error indexing KB article: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -343,7 +343,7 @@ class ElasticsearchManager {
 
       return response;
     } catch (error) {
-      logger.error('Error indexing log entry:', error);
+      logger.error('Error indexing log entry: ' + (error instanceof Error ? error.message : String(error)));
       // Don't throw for logging errors
     }
   }
@@ -413,7 +413,7 @@ class ElasticsearchManager {
         maxScore: response.hits.max_score
       };
     } catch (error) {
-      logger.error('Error searching tickets:', error);
+      logger.error('Error searching tickets: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -484,7 +484,7 @@ class ElasticsearchManager {
         maxScore: response.hits.max_score
       };
     } catch (error) {
-      logger.error('Error searching knowledge base:', error);
+      logger.error('Error searching knowledge base: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -544,7 +544,7 @@ class ElasticsearchManager {
         maxScore: response.hits.max_score
       };
     } catch (error) {
-      logger.error('Error performing semantic search on knowledge base:', error);
+      logger.error('Error performing semantic search on knowledge base: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -634,7 +634,7 @@ class ElasticsearchManager {
         maxScore: response.hits.max_score
       };
     } catch (error) {
-      logger.error('Error performing hybrid search on knowledge base:', error);
+      logger.error('Error performing hybrid search on knowledge base: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -708,7 +708,7 @@ class ElasticsearchManager {
         maxScore: response.hits.max_score
       };
     } catch (error) {
-      logger.error('Error searching logs:', error);
+      logger.error('Error searching logs: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -719,7 +719,7 @@ class ElasticsearchManager {
       await this.ensureInitialized();
       
       const suggestions: any[] = [];
-      const { type = 'all', limit = 10, userId } = options;
+      const { type = 'all', limit = 10 } = options;
 
       // Get suggestions from different indexes based on type
       const searchPromises: Promise<{ type: string; suggestions: any[] }>[] = [];
@@ -788,7 +788,7 @@ class ElasticsearchManager {
         .slice(0, limit);
 
     } catch (error) {
-      logger.error('Error getting search suggestions:', error);
+      logger.error('Error getting search suggestions: ' + (error instanceof Error ? error.message : String(error)));
       // Return fallback suggestions based on query
       return this.getFallbackSuggestions(query, options);
     }
@@ -858,7 +858,7 @@ class ElasticsearchManager {
 
       return response.aggregations;
     } catch (error) {
-      logger.error('Error getting search analytics:', error);
+      logger.error('Error getting search analytics: ' + (error instanceof Error ? error.message : String(error)));
       return null;
     }
   }
@@ -901,7 +901,7 @@ class ElasticsearchManager {
       await this.client.close();
       logger.info('Elasticsearch connection closed');
     } catch (error) {
-      logger.error('Error closing Elasticsearch connection:', error);
+      logger.error('Error closing Elasticsearch connection: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 }

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tools/config/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@nova-universe/ui/*": ["src/*"],
+      "@nova-universe/theme": ["../../theme/dist/theme.js"]
+    }
+  },
+  "include": ["src", "../../design/**/*", "../../theme/**/*"]
+}

@@ -1,0 +1,203 @@
+Here is a full breakdown of the Nova Ticketing System—the operational heart of the Nova Universe ITSM platform. This documentation details how tickets work, flows, ticket types, routing, lifecycle, tech stack, and key enterprise features, including Cosmo AI, RBAC, SLAs, and modular integrations.
+
+⸻
+
+🛰️ Nova Ticketing System Overview
+
+Nova’s ticketing system is the central engine that powers IT, HR, Cybersecurity, Operations, and general service workflows. It is modular, multi-channel, AI-enhanced, SLA-governed, and fully auditable. Tickets are unified across all modules but routed based on type, source, metadata, and role-based access control.
+
+⸻
+
+📌 Ticket Entry Points
+
+Channel	Description
+Nova Orbit	End-user web portal
+Nova Comms	Slack integration (/it-help, /hr-help, etc.)
+Nova Beacon	iOS kiosk interface
+Email	Ingested via Nova Mailroom
+API	External systems or devices (via Nova Core APIs)
+Cosmo AI	Smart triage and submission via chat or conversational UI
+
+
+⸻
+
+🗂️ Ticket Types (Unified and ITIL-Aligned)
+
+Type	Description	Default Routing To
+INC	Incident — Unexpected disruption or degraded service	IT → Pulse (IT Queue)
+REQ	Request — Services, hardware, onboarding, access, etc.	Catalog-driven routing
+PRB	Problem — Root cause analysis, often linked to multiple Incidents	Problem Management
+CHG	Change — Change management (hardware, software, access, infra)	Change Board
+TASK	Task — Child of other tickets; assigned to individuals or teams	Custom route
+HR	HR — Confidential HR issues or requests (leave, grievances)	Pulse (HR Queue)
+OPS	Operations — Facilities, equipment, logistics, etc.	Pulse (Ops Queue)
+ISAC	Cybersecurity — Security incident, alert, or review	Pulse (Cyber Queue)
+FEEDBACK	Feedback — User experience suggestions or comments	Feedback Pool
+OTHER	Fallback type if not classified (will be triaged by Cosmo or manually reclassified)	Default Tier 1
+
+
+⸻
+
+🔄 Ticket Lifecycle Flow
+
+For INC, REQ, HR, etc.
+	1.	Submission → via any channel
+	2.	Classification → Cosmo NLP or manual (assigns type, urgency, impact)
+	3.	Routing → Queue based on type, metadata, requestor org/role
+	4.	Triage → Technician reviews, assigns or responds
+	5.	Work Execution → Tasks assigned, comments, attachments added
+	6.	Resolution → Solution recorded, Cosmo KB suggested
+	7.	Feedback → Optional survey, feedback recorded
+	8.	Closure → SLA compliance checked, ticket locked for audit
+
+⸻
+
+🧠 Cosmo AI Involvement
+	•	Auto-categorization of ticket types
+	•	Smart suggestions for resolution (from Nova Lore KB)
+	•	Impact/Urgency estimation using historical context
+	•	Intent matching to catalog or routing rules
+	•	Auto-fill forms with inferred data
+	•	Loopbacks to Cosmo KB after resolution for article suggestions
+
+⸻
+
+🧭 Request Catalog Flow (REQ)
+	1.	End user browses Request Catalog (Nova Orbit)
+	2.	Form is dynamically rendered based on selection (form config stored in Nova Core)
+	3.	Required fields (name, device, access level, etc.) validated
+	4.	Workflow triggered (approvals, sub-tasks, automations)
+	5.	SLA timer begins
+	6.	Approval → Assignment → Fulfillment → Close
+
+Catalog is scoped by role, org, and location using Nova Helix + RBAC.
+
+⸻
+
+🧩 Ticket Metadata
+
+Each ticket supports:
+	•	Type, Status, Priority, Impact, Urgency
+	•	Submitter & Organization (via Helix)
+	•	Assigned Technician or Team
+	•	Flags: VIP, Security, Legal Hold, Audit Required
+	•	Timestamps: Created, Updated, Resolved, SLA Breach
+	•	Custom Fields: Defined per catalog item or ticket type
+
+⸻
+
+⏱️ SLA Engine
+
+Feature	Description
+SLA Policies	Defined per type or catalog item
+SLA Matrix	Urgency × Impact → Response/Resolve Targets
+Breach Alerts	Trigger escalation, alerts, or auto-routing
+SLA Exceptions & Overrides	Manual or policy-based
+SLA Reporting	Tracked per queue, org, or tech
+
+
+⸻
+
+🔐 RBAC & Access Control
+
+Role	Access
+end_user	Can submit, view own tickets
+tech	Can view/respond to tickets in assigned queues
+tech_lead	Can assign tickets, modify queue SLAs, manage approvals
+admin	Full access across queues + audit trail + config
+hr_tech	Can only see HR tickets
+cyber_tech	Can only see ISAC tickets
+ops_tech	Can only see OPS tickets
+
+These are assigned via SCIM + Helix, and refined via Pulse submodule permissions.
+
+⸻
+
+⚙️ Automation & Workflows
+	•	Triggers: New ticket, status change, SLA breach
+	•	Actions: Email, webhook, reassign, escalate, Slack notify
+	•	Approval Flows: Multi-step with fallback and SLA
+	•	Auto-assignment: Based on skillset, tags, org
+
+Powered by Nova Core Workflow Engine.
+
+⸻
+
+📦 Integrations
+
+System	Purpose
+GoAlert	On-call alerting based on ticket escalation
+Slack (Nova Comms)	Bi-directional updates, creation, resolution, comment threads
+Azure AD / Okta	User roles, metadata, org scoping
+Nova Lore	Knowledge base suggestions, Cosmo learning loop
+Nova Inventory	Link CI / Assets to tickets
+Nova Pulse	Technician dashboard, ticket queues
+
+
+⸻
+
+🔧 Tech Stack
+
+Layer	Tools/Tech
+Frontend	React (Nova Pulse, Orbit), SwiftUI (Beacon), Slack UI Kit (Comms)
+Backend	Node.js / Express.js API, Prisma ORM, Nova Core API Gateway
+DBs	PostgreSQL (structured ticket data), MongoDB (conversational/meta), Redis
+Queue	BullMQ / Redis Queue for async tasks
+AI	OpenAI (Cosmo AI), LangChain pipelines
+Audit	Write-ahead logs, access logs, field-level audit trail
+
+
+⸻
+
+📊 Reporting & Analytics
+	•	SLA reports by type/queue
+	•	Technician performance metrics (XP, resolve rate)
+	•	Category breakdowns
+	•	Incident-to-Problem mappings
+	•	Feedback ratings and trends
+	•	Cosmo impact reports
+
+⸻
+
+🎮 Gamification Layer (Pulse + Cosmo)
+	•	XP per ticket based on:
+	•	Speed
+	•	Feedback score
+	•	SLA compliance
+	•	Badge system (Streaks, Fast Fixer, Resolver Pro)
+	•	Leaderboards across team/org
+	•	Cosmo shout-outs in Slack & Pulse
+
+⸻
+
+🧱 Ticket Relationships
+	•	Tickets can have:
+	•	Linked tasks (TASK)
+	•	Linked incidents to problems
+	•	Parent/child hierarchy
+	•	Relation to configuration items (via Inventory)
+	•	Approvals or dependencies in workflows
+
+⸻
+
+🧾 Auditing & Compliance
+	•	Immutable logs of status changes, comments, field edits
+	•	Access-based viewing history
+	•	Export to CSV/JSON for legal teams
+	•	Configurable retention policies
+	•	Legal hold and security flags for sensitive tickets
+
+⸻
+
+🧭 Ticket Workspace (Pulse UI)
+	•	Expandable full-screen ticket view
+	•	Left: Metadata, SLAs, flags
+	•	Center: Comments, history, attachments
+	•	Right: Cosmo suggestions, Knowledge Base links, Workflow status
+	•	Tabs for:
+	•	Subtasks
+	•	Linked Assets
+	•	SLA Timeline
+	•	Audit Trail
+
+⸻

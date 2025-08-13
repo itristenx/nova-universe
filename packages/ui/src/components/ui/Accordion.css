@@ -1,0 +1,28 @@
+.accordion {
+  font-family: var(--font-sans);
+}
+.accordion-item {
+  margin-bottom: var(--spacing-xs);
+}
+.accordion-label {
+  width: 100%;
+  text-align: left;
+  background: var(--color-surface);
+  color: var(--color-content);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--spacing-xs);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.accordion-label:hover {
+  background: var(--color-muted);
+}
+.accordion-content {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-base);
+  border-radius: var(--spacing-xs);
+  margin-top: 2px;
+}

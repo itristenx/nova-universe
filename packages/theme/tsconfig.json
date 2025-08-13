@@ -1,0 +1,9 @@
+{
+  "extends": "../../tools/config/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "composite": true
+  },
+  "include": ["theme.ts"]
+}

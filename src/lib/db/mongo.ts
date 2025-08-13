@@ -1,7 +1,7 @@
 // src/lib/db/mongo.ts
-// Native MongoDB client for logs and telemetry
-import { MongoClient, Db } from 'mongodb';
-import { logger } from '../../../nova-api/logger.js';
+// Enhanced MongoDB client with connection management, schema validation, and auditing
+import { Db, MongoClient } from 'mongodb';
+import { logger } from '../../../apps/api/logger.js';
 
 const uri = process.env.MONGO_URL || process.env.MONGO_URI || 'mongodb://localhost:27017';
 const dbName = process.env.MONGO_DB_NAME || 'nova_logs';
@@ -134,7 +134,7 @@ class EnhancedMongoClient {
 
       logger.info('MongoDB collections and indexes setup completed');
     } catch (error) {
-      logger.error('Error setting up MongoDB collections:', error);
+      logger.error('Error setting up MongoDB collections: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -173,7 +173,7 @@ class EnhancedMongoClient {
         logger.debug(`Audit log created: ${action} by ${userId}`);
       }
     } catch (error) {
-      logger.error('Error creating audit log:', error);
+      logger.error('Error creating audit log: ' + (error instanceof Error ? error.message : String(error)));
       // Don't throw - audit logging failures shouldn't break main operations
     }
   }
@@ -192,7 +192,7 @@ class EnhancedMongoClient {
 
       await db.collection('system_logs').insertOne(logEntry);
     } catch (error) {
-      logger.error('Error creating system log:', error);
+      logger.error('Error creating system log: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -210,7 +210,7 @@ class EnhancedMongoClient {
 
       await db.collection('user_activity').insertOne(activityEntry);
     } catch (error) {
-      logger.error('Error logging user activity:', error);
+      logger.error('Error logging user activity: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -228,7 +228,7 @@ class EnhancedMongoClient {
 
       await db.collection('performance_metrics').insertOne(metricsEntry);
     } catch (error) {
-      logger.error('Error logging performance metrics:', error);
+      logger.error('Error logging performance metrics: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -251,7 +251,7 @@ class EnhancedMongoClient {
 
       await db.collection('error_logs').insertOne(errorEntry);
     } catch (logError) {
-      logger.error('Error logging error:', logError);
+      logger.error('Error logging error: ' + (logError instanceof Error ? logError.message : String(logError)));
     }
   }
 
@@ -270,7 +270,7 @@ class EnhancedMongoClient {
 
       await db.collection('api_usage').insertOne(usageEntry);
     } catch (error) {
-      logger.error('Error logging API usage:', error);
+      logger.error('Error logging API usage: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -289,7 +289,7 @@ class EnhancedMongoClient {
 
       await db.collection('search_analytics').insertOne(searchEntry);
     } catch (error) {
-      logger.error('Error logging search analytics:', error);
+      logger.error('Error logging search analytics: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -299,7 +299,7 @@ class EnhancedMongoClient {
       const db = await this.getDb();
       return await db.collection('user_preferences').findOne({ userId });
     } catch (error) {
-      logger.error('Error getting user preferences:', error);
+      logger.error('Error getting user preferences: ' + (error instanceof Error ? error.message : String(error)));
       return null;
     }
   }
@@ -313,7 +313,7 @@ class EnhancedMongoClient {
         { upsert: true }
       );
     } catch (error) {
-      logger.error('Error setting user preferences:', error);
+      logger.error('Error setting user preferences: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }
@@ -350,7 +350,7 @@ class EnhancedMongoClient {
       await client.close();
       logger.info('MongoDB connection closed');
     } catch (error) {
-      logger.error('Error closing MongoDB connection:', error);
+      logger.error('Error closing MongoDB connection: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 }

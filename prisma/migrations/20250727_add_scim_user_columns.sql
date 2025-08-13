@@ -1,0 +1,10 @@
+-- Migration: Add SCIM-compatible columns to users table
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE,
+  ADD COLUMN IF NOT EXISTS name VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS auth_method VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Optionally, drop old columns if not needed
+-- ALTER TABLE users DROP COLUMN IF EXISTS username, DROP COLUMN IF EXISTS passwordHash, DROP COLUMN IF EXISTS role;

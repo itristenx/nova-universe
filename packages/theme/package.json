@@ -1,0 +1,6 @@
+{
+  "name": "@nova-universe/theme",
+  "version": "1.0.0",
+  "main": "theme.ts",
+  "types": "theme.ts"
+}

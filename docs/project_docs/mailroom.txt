@@ -1,0 +1,451 @@
+# 📦 Nova Mailroom Module  
+_A submodule of `Pulse:Ops` with Orbit and Workflow integrations_
+
+## 🔧 Module Info
+- **Name:** Nova Mailroom
+- **Parent Module:** Pulse > Ops
+- **Integrations:** Orbit, Inventory, Workflows, Helix, Notifications, Audit, Cosmo
+- **Primary Users:** Ops Technicians, Ops Leads, Admins, End Users (via Orbit)
+
+---
+
+## 🎯 Purpose
+
+Nova Mailroom manages the full lifecycle of all deliveries entering and leaving a company location:
+- Physical package and document intake
+- Smart routing to recipients or internal departments
+- Secure pickup and auditing
+- SLA and notification management
+- Optional locker/kiosk workflows
+
+---
+
+## 🧩 Core Features
+
+### 📬 Inbound Delivery
+- `Scan Label (OCR + Barcode)`
+- `Auto-match Recipient (Nova ID)`
+- `Assign Delivery Zone or Locker`
+- `Link to Existing Tickets or Assets`
+- `Notify Recipient (Slack/Email)`
+- `Track Status (Inbound > Ready > Picked Up)`
+
+### 📤 Outbound Delivery
+- `Create Shipment`
+- `Auto-fill Label (UPS/FedEx Integration)`
+- `Schedule Pickup`
+- `Track Outbound Status`
+- `Link to Tickets or Requests`
+
+### 🏷 Label & Tagging
+- Support: QR / Barcode / NFC
+- AI-parsed fields via Cosmo:
+  - Sender / Recipient
+  - Department
+  - Package Type
+  - Flags (e.g., Sensitive, Hardware)
+  - Related Ticket ID
+
+### 🧑‍💼 Recipient Matching
+- Cross-check with:
+  - Nova ID
+  - SCIM Directory
+- Support proxy pickup
+- Confirmation photo / PIN / kiosk login
+
+### 📦 Bulk Package Intake
+- Multi-item scanning and batching
+- Spreadsheet imports
+- Bulk assign and notify
+
+### 🔐 Secure Pickup + Lockers
+- Smart locker API integration
+- Scheduled pickup support
+- Expiration and alert system
+- Signature/photo verification on pickup
+
+### 📲 Notification Engine
+- Channels:
+  - Slack
+  - Email
+  - SMS (optional)
+- Alerts:
+  - Package arrived
+  - Ready for pickup
+  - Auto-reminders
+  - Expired or escalated
+
+---
+
+## 🔁 Workflow Integration
+
+### Triggers
+- `Package linked to asset` → Notifies IT
+- `Sensitive docs received` → Notifies HR / ISAC
+- `HR welcome package delivered` → Workflow trigger
+
+### Request Catalog Support
+- Request outbound shipment
+- Request secure delivery
+- Log missed delivery
+
+### Cosmo-Driven Logic
+- NLP parsing on label or user request
+- “Where is my package?” conversational queries
+- Smart suggestions for routing or assignment
+
+---
+
+## 🔐 RBAC Matrix
+
+| Role             | Access Level                                                  |
+|------------------|---------------------------------------------------------------|
+| `ops_technician` | Full create/update/view of packages, assign, log handoffs     |
+| `ops_lead`       | Override permissions, edit SLA, view all records              |
+| `admin`          | Configure module settings, API keys, locker integrations      |
+| `end_user`       | View personal deliveries, schedule pickups, delegate proxy    |
+| `hr`, `it`, etc. | Can view delivery metadata only if linked to related ticket   |
+
+---
+
+## 🗃 Data Schema
+
+### `packages`
+- `id`
+- `tracking_number`
+- `carrier`
+- `sender`
+- `recipient_id` (linked to Nova ID)
+- `department`
+- `package_type`
+- `status` (`inbound`, `ready`, `picked_up`, `returned`)
+- `assigned_location`
+- `linked_ticket_id`
+- `linked_asset_id`
+- `flags[]`
+- `timestamps`
+
+### `delivery_events`
+- `event_type` (e.g., scanned, moved, picked_up)
+- `performed_by`
+- `location`
+- `timestamp`
+- `photo_url`
+- `signature_blob`
+
+### `proxy_authorizations`
+- `recipient_id`
+- `proxy_id`
+- `package_id`
+- `expiration`
+- `status`
+
+---
+
+## 🌐 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/mailroom/packages` | `POST` | Create a new package record |
+| `/mailroom/packages/:id` | `GET` | Retrieve package details |
+| `/mailroom/packages/:id/status` | `PATCH` | Update package status |
+| `/mailroom/packages/:id/assign-proxy` | `POST` | Assign proxy for pickup |
+| `/mailroom/packages/:id/link-ticket` | `POST` | Link to ticket |
+| `/mailroom/workflows/trigger` | `POST` | Trigger custom workflow |
+| `/mailroom/packages/bulk` | `POST` | Bulk import packages |
+
+---
+
+## 📲 Kiosk & Mobile
+
+### iPad Kiosk App
+- Pickup flow with:
+  - PIN
+  - Face/photo verification
+- Scan-to-log
+- Offline cache + sync
+
+### iOS Admin View
+- Scanner with OCR + barcode
+- Assignment and tagging UI
+- Quick pickup confirmation flow
+
+---
+
+## ⚙️ Config Flags (Core Admin Panel)
+
+| Flag | Description |
+|------|-------------|
+| `enable_locker_support` | Enable locker integration (external API) |
+| `enable_photo_verification` | Require photo at pickup |
+| `max_package_retention_days` | Auto-escalate/expire after X days |
+| `enable_sms_alerts` | Send SMS alerts in addition to Slack/Email |
+| `allowed_carriers[]` | Restrict package carriers shown to agents |
+| `proxy_pickup_enabled` | Allow proxy pickups for users |
+
+---
+
+## 🔐 Auditing & Compliance
+
+- All handoffs, changes, pickups, and escalations are logged
+- Includes:
+  - IP address
+  - Device ID (if via kiosk)
+  - Timestamp
+  - Photo/signature
+- Full export API for audits
+- SLA breach alerts
+- Retention policy support
+
+---
+
+## 🧠 Cosmo AI Support
+
+- Suggest recipient and priority from scanned labels
+- Answer questions like:
+  - “Has my laptop arrived?”
+  - “Who picked up my package?”
+- Proactive notification summaries
+- Assistant view in Orbit + Pulse
+
+---
+
+## 🧩 Integrations
+
+| System        | Purpose                                      |
+|---------------|----------------------------------------------|
+| Nova Orbit    | End user delivery notifications              |
+| Nova Inventory| Tag assets received via package              |
+| Nova Workflow | Trigger actions upon delivery events         |
+| Helix         | Recipient lookup, SSO-proxy auth             |
+| Notifications | Delivery status alerts                       |
+| Slack App     | Alerts, pickup reminders, Cosmo queries      |
+| Kiosk (Beacon)| Secure pickup and drop-off interface         |
+| Lockers (API) | Smart locker hardware integration            |
+
+---
+
+## 🧪 Sample Use Cases
+
+1. **IT Asset Arrival**
+   - Package scanned → matched to John Doe
+   - Linked to REQ12345 (new hire)
+   - Notification sent to IT tech
+   - Pickup confirmed and linked to Inventory asset
+
+2. **Secure HR Document**
+   - Delivered envelope flagged "Sensitive"
+   - Routed to HR
+   - Only HR Lead can view package metadata
+   - Pickup requires kiosk face scan + signature
+
+3. **Bulk Equipment Shipment**
+   - Ops receives 20 laptops
+   - Bulk scan assigns all to IT queue
+   - Each scanned and tracked individually
+   - Linked to batch REQ ticket
+
+---
+
+## 🧭 Future Enhancements
+
+- Auto disposal flows
+- Smart sensors for locker units
+- Integration with ID badge readers
+- Visitor/package merge (interview kits)
+- Pre-scheduled pickup with calendar integration
+
+---
+
+## 📂 File Naming + Ticket Linking
+
+| Prefix | Use |
+|--------|-----|
+| `PKG123456` | Unique package ID |
+| `PKG-REQ123456` | Package linked to ticket |
+| `PKG-INV987654` | Package linked to asset |
+
+---
+
+
+# 📦 Pulse:Ops Mailroom — Spec Document
+
+_A submodule within Nova Pulse’s Ops queue dedicated to managing physical mail, deliveries, internal shipments, and logistics workflows._
+
+---
+
+## 🧭 Overview
+
+Pulse:Ops Mailroom is the digital control center for managing all physical mailroom operations within the Nova Pulse Ops environment. It allows facilities teams and delivery personnel to register, track, deliver, and audit incoming and outgoing packages, as well as inter-office mail — with full traceability, label printing, and compliance support.
+
+---
+
+## 🔑 Core Capabilities
+
+### 1. 📬 Package Intake & Registration
+- Manual entry or barcode scan
+- Auto-carrier detection from tracking number
+- Log fields:
+  - Carrier
+  - Tracking number
+  - Recipient (Nova ID)
+  - Sender (Optional)
+  - Package type (box, envelope, large, fragile)
+  - Photos (optional but configurable)
+  - Location (mailroom ID, intake bay)
+- Duplicate scan detection:
+  - Alert on same tracking number or recipient intake within time threshold
+  - Override with reason + audit trail
+
+### 2. 🏢 Inter-Office Mail Support
+- Requestable via Nova Orbit or agent creation
+- Internal label generation with:
+  - Package ID
+  - From / To
+  - Delivery priority (optional)
+  - Barcode
+- Batch print supported
+- Staging zone support for outgoing deliveries
+
+### 3. 🚚 Delivery Management
+- Assign delivery agents
+- Mark in transit / delivered
+- Support batching by floor, building, department
+- Capture delivery photo (optional)
+- Capture recipient signature (via mobile or Beacon)
+- Confirm delivery via barcode or badge scan
+
+### 4. 🏢 Pickup Flow
+- Recipient notified via Nova Orbit/Slack
+- Pickup location and deadline included
+- Beacon kiosk check-in:
+  - Badge scan or Nova ID QR code
+  - Signature or confirmation tap
+  - Optional photo confirmation
+
+### 5. 📥 Outgoing Mail & Shipping
+- Outbound shipping request flow from Orbit or Pulse
+- Admin config: available carriers (FedEx, USPS, UPS, internal courier)
+- Track outbound request lifecycle
+- Label generation and export for approved carriers
+- Assign handoff to agent or driver
+
+### 6. 🔍 Search, Inventory & Audit
+- Search by:
+  - Tracking number
+  - Recipient
+  - Sender
+  - Date range
+  - Package status
+- Filters: unclaimed, staged, lost, returned
+- Export logs and reports
+- Full audit trail with timestamps and agent/user actions
+
+### 7. 🛡️ Security & Compliance
+- Configurable SLAs by package type
+- Audit trails for all actions
+- Signature capture (digital)
+- Badge scan or verification for pickups
+- Notifications for unclaimed packages
+- Escalation flows (e.g., undelivered > X days)
+
+---
+
+## 🧪 Enhancements (Now Included)
+
+| Feature | Status | Notes |
+|--------|--------|-------|
+| 🔁 Duplicate Tracking Detection | ✅ | Warns on existing matching tracking numbers |
+| 🖨 Inter-Office Mail Label Printing | ✅ | Generates barcoded slip with routing info |
+| ✍️ Signature Capture | ✅ | Mobile or kiosk signature on delivery/pickup |
+| 🗺 Route Optimization (Internal) | ✅ | Batch deliveries by location; future smart routing |
+| 📸 Photo Capture (Configurable) | ✅ | At intake or delivery; stored in audit log |
+| 👤 Self-Service Delivery Driver Intake | ✅ | Kiosk flow for FedEx/UPS dropoff with scan and leave |
+| 🧾 SLA Rules per Package Type | ✅ | Configurable per org, with default policies |
+| 🧰 Smart Package Sorting | ✅ | Label/stage by area for batch delivery |
+| 🧠 Real-Time Directory Lookup | ✅ | Nova ID integration for fast recipient selection |
+
+---
+
+## 🧑‍💻 Agent UX (Pulse)
+- “Mailroom” tab in Ops queue
+- Inbox-style layout:
+  - Today’s Intake
+  - Needs Delivery
+  - Unclaimed / Staged
+  - Flagged / Escalated
+- Barcode scan input always available
+- Intake and Delivery workflows as separate panes
+- Batch action support
+
+---
+
+## 🧑‍🚀 End-User UX (Orbit)
+- “My Packages” section
+  - Packages awaiting pickup/delivery
+  - Confirm delivery or report issue
+- Request outbound shipments or inter-office mail
+- Notification settings
+- Pickup instructions and location info
+
+---
+
+## ⚙️ Admin Config (Nova Core)
+- Mailroom locations
+- Carriers + routing labels
+- SLA definitions per org/site/package type
+- Required fields + intake rules
+- Badge verification toggle
+- Notification policies
+- Package type and status tags
+
+---
+
+## 📊 Reporting & Metrics
+- Daily/weekly package volume
+- Delivery SLA compliance
+- Agent performance (delivery throughput)
+- Unclaimed or lost package rate
+- Carrier handoff accuracy
+- Peak hours by intake volume
+
+---
+
+## 📦 Data Schema Overview (Simplified)
+
+```plaintext
+MailroomPackage
+- id
+- tracking_number
+- internal_package_id
+- sender
+- recipient_id (FK to Nova ID)
+- carrier
+- type (box, envelope, etc.)
+- status (intake, staged, in_transit, delivered, lost, escalated)
+- intake_photo_url
+- delivery_photo_url
+- signature_url
+- intake_location
+- delivery_location
+- timestamps (intake, staged, delivered, claimed)
+- created_by / updated_by
+
+DeliveryBatch
+- id
+- agent_id
+- mailroom_location
+- package_ids[]
+- route_hint
+- status
+- created_at
+
+InterOfficeMail
+- id
+- sender_id
+- recipient_id
+- from_location
+- to_location
+- requested_delivery_time
+- printed_label_url
+- status

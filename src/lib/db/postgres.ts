@@ -1,7 +1,7 @@
 // src/lib/db/postgres.ts
-// Prisma client for PostgreSQL core data
-import { PrismaClient } from '@prisma/client';
-import { logger } from '../../../nova-api/logger.js';
+// Enhanced Prisma client with connection management, query optimization, and error handling
+import { PrismaClient } from '../../../prisma/generated/core';
+import { logger } from '../../../apps/api/logger.js';
 
 declare global {
   var __prisma: PrismaClient | undefined;
@@ -13,11 +13,17 @@ let prismaInstance: PrismaClient;
 if (process.env.NODE_ENV === 'production') {
   prismaInstance = new PrismaClient({
     log: ['error', 'warn'],
+    datasources: {
+      core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL }
+    }
   });
 } else {
   if (!global.__prisma) {
     global.__prisma = new PrismaClient({
       log: ['query', 'info', 'warn', 'error'],
+      datasources: {
+        core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL }
+      }
     });
   }
   prismaInstance = global.__prisma;
@@ -51,11 +57,11 @@ class EnhancedPrismaClient {
       try {
         return await next(params);
       } catch (error: any) {
-        logger.error('Prisma operation failed:', {
+        logger.error('Prisma operation failed: ' + JSON.stringify({
           model: params.model,
           action: params.action,
-          error: error.message
-        });
+          error: error instanceof Error ? error.message : String(error)
+        }));
         throw error;
       }
     });
@@ -67,11 +73,11 @@ class EnhancedPrismaClient {
       
       if (sensitiveModels.includes(params.model || '') && 
           sensitiveActions.includes(params.action)) {
-        logger.info('Sensitive operation:', {
+        logger.info('Sensitive operation: ' + JSON.stringify({
           model: params.model,
           action: params.action,
           args: JSON.stringify(params.args, null, 2)
-        });
+        }));
       }
       
       return await next(params);
@@ -104,11 +110,11 @@ class EnhancedPrismaClient {
   }
 
   // Transaction wrapper with enhanced error handling
-  async transaction<T>(fn: (tx: PrismaClient) => Promise<T>): Promise<T> {
+  async transaction<T>(fn: (tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => Promise<T>): Promise<T> {
     try {
       return await this.client.$transaction(fn);
     } catch (error: any) {
-      logger.error('Prisma transaction failed:', error);
+      logger.error('Prisma transaction failed: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
   }

@@ -1,0 +1,223 @@
+# 🌌 Nova Sentinel Monitoring (Uptime Kuma Headless Integration) – Full Implementation Spec
+
+https://github.com/louislam/uptime-kuma
+
+## 1. Overview
+
+Nova Sentinel provides enterprise-grade uptime and service status management by integrating Uptime Kuma’s backend into Nova’s ecosystem while replacing its UI with Nova-native interfaces across:
+
+* **Core (Admin):** Full configuration and reporting.
+* **Pulse (Technician):** Troubleshooting and escalation.
+* **Orbit (End-User):** Simplified, branded service status dashboards with alerts for major incidents.
+
+All authentication and RBAC are handled through **Nova Helix**, while **Cosmo/Synth** provides AI-driven insights and event correlation. **GoAlert** handles escalations.
+
+---
+
+## 2. Features
+
+### ✅ Uptime Kuma Feature Parity
+
+* HTTP, TCP, Ping, DNS, Push monitors
+* Tags, groups, and service categorization
+* SSL certificate monitoring
+* Maintenance windows
+* Notifications (via Nova Comms / GoAlert)
+* Monitor history and logs
+* Public status pages (replaced by Orbit UI)
+* Retry/interval settings
+* Backup and restore of configs
+
+### 🔥 Nova Enhancements
+
+* Helix SSO and RBAC
+* Native UI (Core, Pulse, Orbit)
+* Cosmo-driven incident summaries
+* Integration with Nova Ticketing
+* Orbit alert banners for major outages
+* Service subscriptions (email/Slack notifications)
+* Predictive alerts (AI-driven)
+
+---
+
+## 3. Architecture
+
+```mermaid
+flowchart LR
+  subgraph Nova Universe
+    Helix[(Helix Auth/SSO)]
+    Synth[Cosmo/Synth AI]
+    Core[Core (Admin UI)]
+    Pulse[Pulse (Technician UI)]
+    Orbit[Orbit (End-User UI)]
+    Ticketing[Ticketing Engine]
+    GoAlert[GoAlert Proxy]
+    Comms[Nova Comms]
+  end
+
+  Kuma[Uptime Kuma (Headless)]
+  KumaAPI[(Nova Kuma API Adapter)]
+
+  Helix --> Core
+  Helix --> Pulse
+  Helix --> Orbit
+  Core --> KumaAPI --> Kuma
+  Pulse --> KumaAPI --> Kuma
+  Orbit --> KumaAPI --> Kuma
+  Kuma --> Synth
+  Synth --> Ticketing
+  Synth --> GoAlert
+  Ticketing --> Pulse
+  Ticketing --> Orbit
+  Synth --> Comms
+  Orbit --> Comms
+```
+
+---
+
+## 4. API Design (Nova Kuma Adapter)
+
+| Method | Endpoint                       | Description                            | Auth          |
+| ------ | ------------------------------ | -------------------------------------- | ------------- |
+| GET    | `/api/monitoring/monitors`     | List monitors (scoped by role)         | Helix JWT     |
+| POST   | `/api/monitoring/monitors`     | Create a new monitor                   | Helix JWT     |
+| PATCH  | `/api/monitoring/monitors/:id` | Update monitor                         | Helix JWT     |
+| DELETE | `/api/monitoring/monitors/:id` | Delete monitor                         | Helix JWT     |
+| GET    | `/api/monitoring/monitors/:id` | Get monitor details                    | Helix JWT     |
+| GET    | `/api/monitoring/incidents`    | List current incidents                 | Helix JWT     |
+| POST   | `/api/monitoring/events`       | Kuma → Nova webhook for event handling | Signed Secret |
+| POST   | `/api/monitoring/subscribe`    | Subscribe user to service updates      | Helix JWT     |
+| GET    | `/api/monitoring/history/:id`  | Fetch uptime history                   | Helix JWT     |
+
+---
+
+## 5. Database Schema
+
+### `monitors`
+
+| Field       | Type   | Description                |
+| ----------- | ------ | -------------------------- |
+| id          | UUID   | Primary key                |
+| kuma\_id    | String | Uptime Kuma monitor ID     |
+| name        | String | Service name               |
+| type        | Enum   | HTTP, TCP, Ping, DNS, Push |
+| tenant\_id  | UUID   | Tenant scoping for Orbit   |
+| tags        | JSON   | Array of tags              |
+| interval    | Int    | Check frequency            |
+| created\_by | UUID   | Helix user ID              |
+
+### `monitor_incidents`
+
+| Field       | Type   | Description                  |
+| ----------- | ------ | ---------------------------- |
+| id          | UUID   | Primary key                  |
+| monitor\_id | UUID   | FK to monitors               |
+| ticket\_id  | UUID   | Linked ticket                |
+| status      | Enum   | Open, Acknowledged, Resolved |
+| summary     | String | AI-generated summary         |
+| severity    | Enum   | Minor, Major, Critical       |
+
+### `monitor_subscriptions`
+
+| Field              | Type | Description         |
+| ------------------ | ---- | ------------------- |
+| id                 | UUID | Primary key         |
+| monitor\_id        | UUID | FK to monitors      |
+| user\_id           | UUID | Helix user ID       |
+| notification\_type | Enum | Email, Slack, Comms |
+
+---
+
+## 6. UI Wireframes
+
+### Orbit (End-User)
+
+1. **Status Dashboard**
+
+   * Service list (Green/Yellow/Red)
+   * Uptime % (24h/7d/30d)
+   * Last incident summary (AI-enhanced)
+   * “Subscribe” button for alerts
+
+2. **Major Outage Alert Banner**
+
+   * Full-width banner for tenant-wide or critical services
+   * Cosmo-generated summary:
+
+     > “🚨 Major outage affecting Nova Core API. Our team is investigating. ETA: 30 minutes.”
+
+3. **Service Detail View**
+
+   * Uptime graph
+   * Incident timeline
+   * Linked tickets (read-only)
+   * Cosmo’s natural language explanation
+
+---
+
+### Pulse (Technician)
+
+* Real-time dashboard
+* Service detail view (full logs)
+* Pause/resume monitor
+* AI correlation with related events
+* One-click ticket linking
+
+---
+
+### Core (Admin)
+
+* Monitor management (create/edit/delete)
+* Tenant assignments
+* SLA and reporting
+* Integration settings (GoAlert, Ticketing, Comms)
+* Backup/restore configs
+
+---
+
+## 7. Event Flow
+
+1. **Service Down (Kuma → Nova)**
+
+   * Kuma sends webhook to Nova Kuma API.
+   * API validates, forwards to Synth.
+   * Synth:
+
+     * Analyzes root cause.
+     * Opens/updates ticket.
+     * Pushes alert to GoAlert (if needed).
+     * Updates Orbit dashboard and banner.
+
+2. **Service Recovery**
+
+   * Kuma sends event.
+   * Synth resolves incident and closes ticket.
+   * Orbit banner removed.
+   * Comms sends “service restored” notification.
+
+---
+
+## 8. Security
+
+* Kuma backend is private and API-only.
+* All UI/API calls authenticated via Helix JWT.
+* Orbit users see **only tenant-scoped data**.
+* All actions logged in Nova Core audit log.
+
+---
+
+## 9. Roadmap
+
+* **Phase 1**: Core & Pulse integration, API adapter.
+* **Phase 2**: Orbit UI with major outage banners.
+* **Phase 3**: Subscriptions and predictive AI alerts.
+* **Phase 4**: SLA and advanced reporting.
+
+---
+
+✅ 1:1 Kuma feature parity.
+✅ Orbit major outage alerts and subscriptions.
+✅ AI-driven incident summaries and ticket linkage.
+✅ Unified Helix authentication and tenant scoping.
+
+---

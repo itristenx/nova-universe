@@ -22,7 +22,7 @@ Nova Universe is an internal help desk application for submitting and tracking I
 
 ### Prerequisites
 - Node.js 18+ and npm
-- SQLite3
+- PostgreSQL
 - For iOS kiosk: Xcode 15+ and iOS 16+
 
 ### Installation
@@ -46,11 +46,11 @@ cd nova-universe
 Nova Universe is a comprehensive IT help desk system with multiple components:
 
 ### Core Components
-- **cueit-api** - Backend API server (Node.js/Express/SQLite)
-- **cueit-admin** - Web admin interface (React/TypeScript/Vite)
-- **cueit-kiosk** - iOS kiosk application (Swift/SwiftUI)
-- **cueit-slack** - Slack integration service
-- **cueit-macos-swift** - macOS launcher application
+- **nova-api** - Backend API server (Node.js/Express/PostgreSQL)
+- **nova-admin** - Web admin interface (React/TypeScript/Vite)
+- **nova-kiosk** - iOS kiosk application (Swift/SwiftUI)
+- **nova-slack** - Slack integration service
+- **nova-macos-swift** - macOS launcher application
 
 ### Key Features
 - Ticket submission and management
@@ -62,17 +62,17 @@ Nova Universe is a comprehensive IT help desk system with multiple components:
 
 ## Components
 
-### cueit-api
-Express.js backend with SQLite database. Handles ticket submission, user management, kiosk activation, and integrations.
+### nova-api
+Express.js backend with PostgreSQL database. Handles ticket submission, user management, kiosk activation, and integrations.
 
 **Key Features:**
 - REST API for all operations
-- SQLite database with automatic migrations
+- PostgreSQL database with automatic migrations
 - Comprehensive security middleware
 - Rate limiting and input validation
-- Integration with HelpScout, ServiceNow, and Slack
+- Integration with HelpScout and Slack (ServiceNow integration removed)
 
-### cueit-admin
+### nova-admin
 React admin interface for managing the help desk system.
 
 **Key Features:**
@@ -82,7 +82,7 @@ React admin interface for managing the help desk system.
 - Real-time status monitoring
 - Responsive design
 
-### cueit-kiosk
+### nova-kiosk
 SwiftUI iPad application for end-user ticket submission.
 
 **Key Features:**
@@ -91,25 +91,25 @@ SwiftUI iPad application for end-user ticket submission.
 - Directory integration for user lookup
 - Touch-friendly interface
 
-### cueit-slack
+### nova-slack
 Slack integration for ticket submission via slash commands.
 
-### cueit-macos-swift
+### nova-macos-swift
 Native macOS launcher application.
 
 ## Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   cueit-admin   │    │   cueit-kiosk   │    │   cueit-slack   │
+│   nova-admin   │    │   nova-kiosk   │    │   nova-slack   │
 │  (React SPA)    │    │  (iPad App)     │    │ (Slack Bot)     │
 └─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
           │                      │                      │
           └──────────────────────┼──────────────────────┘
                                  │
                     ┌─────────────▼──────────────┐
-                    │        cueit-api           │
-                    │   (Express + SQLite)       │
+                    │        nova-api           │
+                    │   (Express + PostgreSQL)   │
                     └────────────────────────────┘
 ```
 
@@ -123,23 +123,23 @@ Native macOS launcher application.
 ### Manual Setup
 ```bash
 # Install dependencies for each component
-cd cueit-api && npm ci
-cd ../cueit-admin && npm ci
-cd ../cueit-slack && npm ci
+cd nova-api && npm ci
+cd ../nova-admin && npm ci
+cd ../nova-slack && npm ci
 
 # Initialize environment files
 ./scripts/init-env.sh
 
 # Start services individually
-cd cueit-api && npm start &
-cd cueit-admin && npm run dev &
-cd cueit-slack && npm start &
+cd apps/api && npm start &
+cd apps/core/nova-core && npm run dev &
+cd apps/comms/nova-comms && npm start &
 ```
 
 ### Environment Configuration
 Edit the `.env` files in each component directory:
 
-#### cueit-api/.env
+#### apps/api/.env
 ```
 API_PORT=3000
 SESSION_SECRET=your-secure-secret
@@ -148,9 +148,10 @@ ADMIN_PASSWORD=your-secure-password
 KIOSK_TOKEN=your-kiosk-token
 SMTP_HOST=your-smtp-server
 HELPDESK_EMAIL=helpdesk@example.com
+DATABASE_URL=postgres://user:password@localhost:5432/nova_universe
 ```
 
-#### cueit-admin/.env
+#### apps/core/nova-core/.env
 ```
 VITE_API_URL=http://localhost:3000
 VITE_ADMIN_URL=http://localhost:5173
@@ -175,7 +176,7 @@ VITE_ADMIN_URL=http://localhost:5173
    ```
 
 4. **Access Applications**
-   - Nova Universe Portal: http://localhost:5173
+   - Admin UI: http://localhost:5173
    - API: http://localhost:3000
    - Kiosk: Build and run in Xcode
 
@@ -210,22 +211,19 @@ See [SECURITY_FIXES.md](SECURITY_FIXES.md) for detailed security implementation.
 
 ### Testing
 ```bash
-# Run tests for each component
-cd cueit-api && npm test
-cd cueit-admin && npm test
-cd cueit-slack && npm test
+# Run tests for each component from the repository root
+pnpm --filter nova-universe-api test
+pnpm --filter nova-core-admin test
+pnpm --filter nova-comms test
 ```
 
 ### Development Scripts
 ```bash
 # Start development environment
-./cueit-dev.sh
-
-# Test local setup
-./test-local-setup.sh
+./scripts/start-all.sh
 
 # Clean iOS build (if needed)
-cd cueit-kiosk && ./clean-build.sh
+cd apps/beacon/nova-beacon && ./clean-build.sh
 ```
 
 ## Deployment
@@ -233,8 +231,8 @@ cd cueit-kiosk && ./clean-build.sh
 ### Production Deployment
 1. Build all components:
    ```bash
-   cd cueit-admin && npm run build
-   cd cueit-api && npm run build # if applicable
+   cd apps/core/nova-core && npm run build
+   cd apps/api && npm run build # if applicable
    ```
 
 2. Configure production environment variables
@@ -244,9 +242,9 @@ cd cueit-kiosk && ./clean-build.sh
 6. Configure log rotation
 
 ### Platform-Specific Installers
-- **Windows**: `installers/make-windows-installer.ps1`
-- **macOS**: `installers/make-installer.sh`
-- **Linux**: `installers/make-linux-installer.sh`
+- **Windows**: `tools/scripts/scripts/make-windows-installer.ps1`
+- **macOS**: `tools/scripts/scripts/make-installer.sh`
+- **Linux**: `tools/scripts/scripts/make-linux-installer.sh`
 
 ## Troubleshooting
 
@@ -255,17 +253,17 @@ cd cueit-kiosk && ./clean-build.sh
 #### API Connection Issues
 1. Check if API is running: `curl http://localhost:3000/api/health` (see also `/api/version` for version info)
 2. Verify environment variables are set
-3. Check database file permissions
+3. Check database connection and migrations
 
 #### iOS Kiosk Build Issues
-1. Clean build: `cd cueit-kiosk && ./clean-build.sh`
+1. Clean build: `cd apps/beacon/nova-beacon && ./clean-build.sh`
 2. Check Xcode version compatibility
 3. Verify iOS simulator connectivity to localhost
 
 #### Authentication Problems
 1. Check session secret is set
-2. Verify admin user exists: `cd cueit-api && node cli.js list`
-3. Reset admin password: `cd cueit-api && node cli.js update-password`
+2. Verify admin user exists: `cd apps/api && node cli.js list`
+3. Reset admin password: `cd apps/api && node cli.js update-password`
 
 ### Log Locations
 - API logs: Check console output or configured log file
@@ -285,8 +283,7 @@ cd cueit-kiosk && ./clean-build.sh
 - See [development guide](development.md) for contributing
 
 ## Component Documentation
-- [API Documentation](cueit-api/README.md)
-- [Admin UI Documentation](cueit-admin/README.md)
-- [iOS Kiosk Documentation](cueit-kiosk/README.md)
-- [Slack Integration](cueit-slack/README.md)
-- [macOS Launcher](cueit-macos-swift/README.md)
+- [API Documentation](../apps/api/README.md)
+- [Admin UI Documentation](../apps/core/nova-core/README.md)
+- [iOS Kiosk Documentation](../apps/beacon/nova-beacon/README.md)
+- [Slack Integration](../apps/comms/nova-comms/README.md)

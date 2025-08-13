@@ -1,0 +1,164 @@
+Here’s a full **Nova Helix Universal Login Implementation Spec** ensuring that Nova has a single, secure, tenant-aware authentication entry point across the entire Nova Universe.
+
+---
+
+# **Nova Helix Universal Login Implementation**
+
+**Module:** Nova Helix (Identity & Authentication)
+**Goal:** Provide a **centralized, enterprise-grade, universal login** experience that supports all Nova modules, is tenant-aware, and integrates with SSO, SCIM, MFA, and branding.
+
+---
+
+## 1. **Overview**
+
+Helix will act as the **single identity provider and login gateway** for all Nova modules:
+
+* Core (Admin)
+* Pulse (Technician)
+* Orbit (End-User Portal)
+* Deck (Unified Portal)
+* Comms (Slack App)
+* Beacon (Mobile/Kiosk)
+* Lore (Knowledge Base)
+* Third-party integrations (GoAlert, Uptime Monitor, etc.)
+
+All authentication flows must route through **Helix Universal Login** to ensure **one identity, one session, one audit trail**.
+
+---
+
+## 2. **Key Features**
+
+| Feature                         | Description                                                                                               |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Single Login**                | One login page for all modules and tenants, with contextual redirects.                                    |
+| **Tenant-Aware**                | Branded login for each tenant, similar to Okta or Microsoft login.                                        |
+| **SSO Integration**             | Supports SAML, OIDC, and SCIM for enterprise identity providers (Okta, Azure Entra ID, Google Workspace). |
+| **MFA Support**                 | Native MFA or federated MFA through IDP.                                                                  |
+| **Session Management**          | Centralized session handling (access + refresh tokens) across modules.                                    |
+| **Custom Branding**             | Tenant logos, colors, and custom messages on login screen.                                                |
+| **API-First Architecture**      | Login endpoints exposed via Helix API for web, mobile, and native apps.                                   |
+| **Audit & Compliance**          | Full audit trail of authentication events stored in Helix DB.                                             |
+| **Extensible Policies**         | Conditional access (e.g., IP allowlists, device posture).                                                 |
+| **Cosmo Assistant Integration** | Cosmo-driven login help (e.g., "reset password", "contact admin" prompts).                                |
+
+---
+
+## 3. **Authentication Flow**
+
+### 3.1 Web (Modules: Core, Pulse, Orbit, Deck)
+
+```mermaid
+flowchart TD
+A[User Accesses Nova Module] --> B[Redirect to Helix Universal Login]
+B --> C[Identify Tenant via Domain or Subdomain]
+C --> D[Render Tenant-Branded Login UI]
+D --> E{SSO Enabled?}
+E -->|Yes| F[Redirect to IDP (SAML/OIDC)]
+E -->|No| G[Native Helix Authentication (Password/MFA)]
+F --> H[Helix Token Service]
+G --> H[Helix Token Service]
+H --> I[Issue Access + Refresh Tokens]
+I --> J[Redirect to Original Module with Auth Session]
+```
+
+---
+
+### 3.2 Mobile (Beacon)
+
+* Mobile apps use the same Helix Universal Login endpoint, but **presented in a native in-app webview**.
+* After login, tokens are stored securely (Keychain for iOS, Keystore for Android).
+
+---
+
+### 3.3 API (Comms, GoAlert, Uptime, Integrations)
+
+* OAuth 2.0 (Client Credentials or Service Accounts).
+* API keys or signed JWTs for service-to-service.
+* All API tokens validated through Helix.
+
+---
+
+## 4. **Helix Universal Login API**
+
+| Endpoint              | Method | Description                                             |
+| --------------------- | ------ | ------------------------------------------------------- |
+| `/auth/login`         | POST   | User login (username/password or SSO redirect).         |
+| `/auth/tenant/:id`    | GET    | Fetch tenant-specific branding & login config.          |
+| `/auth/token`         | POST   | Exchange authorization code for access + refresh token. |
+| `/auth/refresh`       | POST   | Refresh access token.                                   |
+| `/auth/logout`        | POST   | Revoke session.                                         |
+| `/auth/mfa/challenge` | POST   | MFA challenge endpoint.                                 |
+| `/auth/sso/initiate`  | GET    | Start SAML/OIDC login.                                  |
+| `/auth/sso/callback`  | POST   | Handle SAML/OIDC response.                              |
+| `/auth/audit`         | GET    | Retrieve login event logs (admin-only).                 |
+
+---
+
+## 5. **Database Changes (Helix)**
+
+### New Tables
+
+| Table           | Purpose                                               |
+| --------------- | ----------------------------------------------------- |
+| `tenants`       | Tenant metadata (branding, SSO settings).             |
+| `auth_sessions` | Active sessions (token storage & revocation).         |
+| `mfa_methods`   | MFA configuration per user.                           |
+| `sso_configs`   | IDP metadata for each tenant.                         |
+| `audit_logs`    | Authentication events (login, logout, MFA, failures). |
+
+---
+
+## 6. **GoAlert, Synth, and Sentinel Expansion**
+
+* **GoAlert:**
+
+  * Use Helix for authentication/authorization (no standalone login).
+  * Alerts tied to Nova ID (for audit).
+* **Synth (Cosmo):**
+
+  * Token exchange to impersonate user (delegation for workflows).
+  * MFA bypass for system-initiated actions.
+* **Sentinel (Notifications):**
+
+  * Subscription preferences linked to Nova ID.
+  * Cross-module notification rules stored against user identity.
+
+* **Sentinel:**
+
+  * Use Helix for authentication/authorization (no standalone login).
+
+---
+
+## 7. **Security Considerations**
+
+* TLS 1.3 enforced for all login traffic.
+* Password hashing: Argon2id.
+* Token signing: RSA 4096 or EdDSA.
+* Session timeout: 12 hours (refresh token up to 30 days).
+* Device fingerprinting for risk-based authentication.
+* Full audit trail stored in `audit_logs`.
+* Optional adaptive MFA (IP, device, geo).
+
+---
+
+## 8. **UI/UX Requirements**
+
+* **Custom Branding:** Tenant logo, color, background.
+* **Dynamic Messaging:** Support for login banners (e.g., compliance notice).
+* **Social Login (Optional):** Google, Microsoft for smaller orgs.
+* **Dark Mode Support.**
+* **Helix-Hosted:** Single URL: `login.nova.app` (or per-tenant vanity).
+
+---
+
+## 9. **Implementation Phases**
+
+| Phase        | Description                                                       |
+| ------------ | ----------------------------------------------------------------- |
+| **Phase 1:** | Build universal login backend + API (Helix).                      |
+| **Phase 2:** | Implement tenant-aware UI with SSO + MFA support.                 |
+| **Phase 3:** | Integrate Core, Pulse, Orbit.                                     |
+| **Phase 4:** | Add Deck, Beacon, Comms, GoAlert integration.                     |
+| **Phase 5:** | Implement Cosmo (AI) login assistance + notification preferences. |
+
+---

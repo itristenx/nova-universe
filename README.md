@@ -1,60 +1,207 @@
-<p align="center"><img src="assets/logo.png" alt="Nova Universe logo" width="50"/></p>
+<p align="center"><img src="assets/branding/Nova_Universe_Dark.png" alt="Nova Universe logo" width="200"/></p>
+
 # Nova Universe
+
+**Modern help desk that just works.**
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/itristenx/nova-universe/ci.yml?branch=main)](https://github.com/itristenx/nova-universe/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Open Issues](https://img.shields.io/github/issues/itristenx/nova-universe)](https://github.com/itristenx/nova-universe/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/itristenx/nova-universe)](https://github.com/itristenx/nova-universe/pulls)
 
 ---
 
-## About
+## What is Nova Universe?
 
-**Nova** is an open source, enterprise-grade help desk platform for submitting and tracking IT tickets. It features a modern admin UI, kiosk support, Slack integration, and robust security. Designed for easy deployment and extensibility.
+Nova Universe is an enterprise help desk platform designed for teams who want powerful features without complexity. Submit tickets, track progress, and resolve issues faster.
 
----
-
-## Features
-- Multi-app monorepo: Platform API, Core Admin UI, Beacon Kiosk, Comms (Slack integration)
-- Modern React/TypeScript admin interface
-- Secure Express/SQLite backend
-- iPad kiosk support
-- Slack slash command integration
-- SAML SSO, JWT, and RBAC
-- Rate limiting, input validation, and audit logging
-- Installer scripts for all major OSes
-- Automated tests and CI/CD ready
-
----
-
-[→ Quickstart Guide](docs/quickstart.md)
-
-## Repository Structure
-
-- **nova-api** – Nova Platform API (Express/SQLite backend)
-- **nova-core** – Nova Core (React admin interface with integrated kiosk activation management)
-- **nova-beacon** – Nova Beacon (iPad kiosk for ticket submission)
-- **nova-comms** – Nova Comms (Slack slash command integration)
-
-The `design/theme.js` file defines shared colors, fonts and spacing. Frontends import these tokens so styles remain consistent across the admin UI and kiosk app.
+**Key Features:**
+- 🎯 **Simple Setup** - Running in minutes, not hours
+- 📱 **iPad Kiosk** - Self-service ticket submission 
+- 🔍 **Smart Search** - AI-powered ticket discovery
+- 📊 **Real-time Monitoring** - Built-in uptime tracking
+- 🚨 **Smart Alerts** - Intelligent incident management
+- 💬 **Team Integration** - Slack, Teams, webhooks
+- 🔒 **Enterprise Security** - SAML SSO, RBAC, audit logs
 
 ---
 
 ## Quick Start
 
-### Requirements
-- [Node.js](https://nodejs.org/) 18 or higher
-- npm
-- sqlite3
-- [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
+**One command to get started:**
 
-### Steps
+```bash
+git clone https://github.com/itristenx/nova-universe.git
+cd nova-universe
+./setup.sh
+```
+
+That's it. Open http://localhost:3001 and start using Nova Universe.
+
+**Default login:**
+- Email: `admin@example.com`
+- Password: `admin`
+
+---
+
+## What's Included
+
+**Core Platform:**
+- **Nova Core** - Admin interface and dashboard
+- **Nova API** - REST API and GraphQL backend  
+- **Nova Beacon** - iPad kiosk for ticket submission
+- **Nova Comms** - Slack integration and webhooks
+
+**Monitoring & Alerting:**
+- **Nova Sentinel** - Uptime monitoring (Uptime Kuma)
+- **GoAlert** - Incident response and escalation
+- **AI Fabric** - Machine learning and automation
+
+**Everything works together seamlessly.**
+
+---
+
+## Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Nova Core     │    │   Nova Beacon   │    │   Nova Comms    │
+│  (Admin UI)     │    │   (iPad Kiosk)  │    │ (Integrations)  │
+└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
+          │                      │                      │
+          └──────────────────────┼──────────────────────┘
+                                 │
+                    ┌─────────────┴───────────┐
+                    │      Nova API          │
+                    │   (Core Backend)       │
+                    └─────────────┬───────────┘
+                                 │
+               ┌─────────────────┼─────────────────┐
+               │                 │                 │
+    ┌──────────┴────────┐ ┌──────┴──────┐ ┌───────┴──────┐
+    │  Nova Sentinel    │ │  GoAlert    │ │  AI Fabric   │
+    │  (Monitoring)     │ │ (Alerting)  │ │    (AI)      │
+    └───────────────────┘ └─────────────┘ └──────────────┘
+```
+
+---
+
+## Management
+
+**CLI Commands:**
+```bash
+# Service management
+cd apps/api && node cli.js start    # Start all services
+cd apps/api && node cli.js stop     # Stop all services  
+cd apps/api && node cli.js health   # Check system health
+
+# User management  
+cd apps/api && node cli.js passwd newpassword123  # Change admin password
+cd apps/api && node cli.js users    # List admin users
+
+# System operations
+cd apps/api && node cli.js reset    # Reset to clean state
+cd apps/api && node cli.js status   # Show service URLs
+```
+
+**Testing:**
+```bash
+# Create test environment
+./setup-test-env.sh                 # Default test environment
+./setup-test-env.sh integration     # Integration testing
+./setup-test-env.sh e2e             # End-to-end testing
+
+# Manage test environments
+./test-[env].sh start               # Start test environment
+./test-[env].sh test                # Run tests
+./test-[env].sh clean               # Clean up
+```
+
+**Deployment:**
+```bash
+# Production deployment
+./scripts/deploy-production.sh
+
+# Restart services (keep data)
+./teardown.sh --restart
+
+# Graceful shutdown
+./teardown.sh --shutdown
+
+# Complete teardown
+./teardown.sh
+```
+
+---
+
+## Requirements
+
+- **Node.js** 18+
+- **Docker** (recommended)
+- **PostgreSQL** 15+ (or use Docker)
+
+**Optional for full features:**
+- **Redis** (caching)
+- **Elasticsearch** (advanced search)
+- **S3** (file storage)
+
+---
+
+## Configuration
+
+Nova Universe configures itself during setup. For advanced configuration:
+
+1. **Setup Wizard** - Visit http://localhost:3001/setup after installation
+2. **Admin Panel** - Configure services in the admin interface
+3. **Environment Files** - Manual configuration in `.env` files
+
+**Key integrations:**
+- Slack/Teams notifications
+- SAML/OIDC authentication  
+- Monitoring and alerting
+- AI-powered features
+
+---
+
+## Production Deployment
+
+**Quick production setup:**
+```bash
+# Generate production configuration
+bash scripts/generate-production-secrets.sh
+
+# Deploy with monitoring and SSL
+bash scripts/deploy-production.sh
+```
+
+**What you get:**
+- SSL/TLS encryption
+- Production database  
+- Monitoring dashboard
+- Automated backups
+- Health checks
+- Log aggregation
+
+---
+
+## Support
+
+- **Documentation** - [docs/quickstart.md](docs/quickstart.md)
+- **API Reference** - http://localhost:3000/docs (after setup)
+- **Issues** - [GitHub Issues](https://github.com/itristenx/nova-universe/issues)
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file.
+
+**Nova Universe** - Help desk that scales with your team.
+
+### Quick Start
 
 ```bash
 git clone https://github.com/itristenx/nova-universe.git
 cd nova-universe
 ./scripts/setup.sh
-./scripts/init-env.sh
 ./scripts/start-all.sh
 ```
 
@@ -102,30 +249,50 @@ This project is licensed under the [MIT License](LICENSE).
 
 For questions, suggestions, or support, please use [GitHub Discussions](https://github.com/itristenx/nova-universe/discussions) or open an issue.
 
+---
+
+## Requirements
+- [Node.js](https://nodejs.org/) 18 or higher
+- npm
+- [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
+- PostgreSQL 15 or higher
+
 
 ## Setup
 
-Run `./scripts/setup.sh` to install Node.js, SQLite and all project dependencies in one step.
+Run `./scripts/setup.sh` to install Node.js.
 Copy `.env.local.example` to `.env.local` and adjust any values for your machine.
-Next run `./scripts/init-env.sh` to create the `.env` files for each app (edit them before launching).
+`setup.sh` creates missing `.env` files automatically. You can rerun `./scripts/init-env.sh` to regenerate them.
 You can also follow the manual instructions below.
 See [Local vs Production Setup](docs/environments.md) for details on configuring the environment variables used by each service.
 
 ### Platform API
 1. Navigate to `nova-api`.
-2. Run `npm install` to install dependencies.
+2. Dependencies should already be installed from the repository root with `pnpm install`.
 3. Edit the `.env` file with your SMTP configuration and `HELPDESK_EMAIL`.
    To send tickets directly to HelpScout instead, provide
    `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` (optionally set
-   `HELPSCOUT_SMTP_FALLBACK=true` to also send email). Alternatively set
-   `SERVICENOW_INSTANCE`, `SERVICENOW_USER` and `SERVICENOW_PASS` to
-   create incidents in ServiceNow. You can also customize `API_PORT`,
-   `LOGO_URL` and other defaults.
+   `HELPSCOUT_SMTP_FALLBACK=true` to also send email).
+   **Note:** ServiceNow integration has been fully deprecated and removed.
+   You can customize `API_PORT`, `LOGO_URL`, `FAVICON_URL` and `ORGANIZATION_NAME`.
 4. Start the server with `node index.js` (uses `API_PORT`, default `3000`).
+
+The API also exposes a GraphQL endpoint at `/api/v2/graphql` for internal tools.
+Authenticate with an admin JWT token before making requests. You can explore it with Apollo Sandbox or `curl`:
+
+```graphql
+query {
+  tickets {
+    id
+    title
+    priority
+  }
+}
+```
 
 ### Core Admin UI
 1. Navigate to `nova-core`.
-2. Run `npm install` to install dependencies.
+2. Dependencies should already be installed from the repository root with `pnpm install`.
 3. Edit the `.env` file and set `VITE_API_URL`. You can also set `VITE_LOGO_URL`.
 4. Start the development server with `npm run dev` and open `http://localhost:5173`.
 
@@ -136,12 +303,12 @@ The admin interface includes comprehensive kiosk management functionality, inclu
 - User management with role-based access control
 - Integrated security features with rate limiting and input validation
 
-The backend stores ticket logs in a local SQLite database (`nova-api/log.sqlite`).
+The backend stores ticket logs in a local PostgreSQL database.
 Configuration values are stored in the same database and can be edited from the admin UI.
 
 ### Comms (Slack Service)
 1. Create a Slack app following [Slack's app setup guide](https://api.slack.com/apps) and add a `/new-ticket` slash command (see [Slash commands documentation](https://api.slack.com/interactivity/slash-commands)). Set its request URL to this service.
-2. Navigate to `nova-comms` and run `npm install`.
+2. Navigate to `nova-comms` (dependencies were installed from the repository root with `pnpm install`).
 3. Edit the `.env` file and set:
    - `SLACK_SIGNING_SECRET`
    - `SLACK_BOT_TOKEN`
@@ -176,7 +343,7 @@ dependencies if the `node_modules` directory is missing. Each service is
 started with `npm start` so its environment file loads correctly.
 
 ```powershell
-./installers/start-all.ps1
+./scripts/start-all.ps1
 ```
 
 ### Windows Installer
@@ -185,7 +352,7 @@ Install [Inno Setup](https://jrsoftware.org/isinfo.php) along with Node.js and n
 Run the following command to generate `Nova-<version>.exe`:
 
 ```powershell
-./installers/make-windows-installer.ps1 -Version 1.0.0
+./tools/scripts/scripts/make-windows-installer.ps1 -Version 1.0.0
 ```
 
 Run the generated `.exe` to install Nova Universe.
@@ -201,12 +368,12 @@ npm install -g electron-installer-appimage
 Then build the AppImage:
 
 ```bash
-./installers/make-linux-installer.sh 1.0.0
+./tools/scripts/scripts/make-linux-installer.sh 1.0.0
 ```
 
 Mark the output file executable and run it to start the application.
 
-All installer and upgrade scripts live in `installers/` and should include basic tests to verify they work.
+All installer and upgrade scripts live in `tools/scripts/scripts/` and should include basic tests to verify they work.
 
 ## Running Tests
 
@@ -214,17 +381,15 @@ Nova Universe includes automated test suites for the backend API and the admin U
 
 ### nova-api
 
-1. `cd nova-api`
-2. `npm install`
-3. `npm test`
+Run from the repository root:
+1. `pnpm --filter nova-universe-api test`
 
 The API tests are written with Mocha and exercise the main Express endpoints.
 
 ### nova-core
 
-1. `cd nova-core`
-2. `npm install`
-3. `npm test`
+Run from the repository root:
+1. `pnpm --filter nova-core-admin test`
 
 This suite uses Jest and React Testing Library to validate the UI.
 
@@ -251,19 +416,17 @@ curl -X POST http://localhost:3000/submit-ticket \
 For a complete description of all endpoints see
 [nova-api/README.md](nova-api/README.md#api-endpoints).
 
-## HelpScout Integration
+## HelpScout Integration (Import Only)
 
 When `HELPSCOUT_API_KEY` and `HELPSCOUT_MAILBOX_ID` are defined in
 `nova-api/.env`, the API creates a new HelpScout conversation for each ticket
 submitted to `POST /submit-ticket`. Set `HELPSCOUT_SMTP_FALLBACK=true` if you
 want the server to also send the ticket email using your SMTP configuration.
 
-## ServiceNow Integration
+## ServiceNow Integration (Deprecated)
 
-Set `SERVICENOW_INSTANCE`, `SERVICENOW_USER` and `SERVICENOW_PASS` in
-`nova-api/.env` to create incidents via ServiceNow's REST API when tickets are
-submitted. The incident ID returned by ServiceNow is stored with each log
-entry.
+ServiceNow support has been **removed** from the platform and no
+ServiceNow-specific configuration or endpoints remain.
 
 ## Kiosk Activation
 
@@ -286,7 +449,7 @@ check detects the change.
 
 ## Components
 
-- **nova-api** – Nova Platform API (Express backend with SQLite database)
+- **nova-api** – Nova Platform API (Express backend with PostgreSQL database)
 - **nova-core** – Nova Core (React admin interface)
 - **nova-beacon** – Nova Beacon (iPad kiosk app for ticket submission)
 - **nova-comms** – Nova Comms (Slack integration)
@@ -294,7 +457,7 @@ check detects the change.
 ## Requirements
 
 - Node.js 18+
-- SQLite3
+- PostgreSQL 15+
 
 ## Environment Variables
 
@@ -308,11 +471,9 @@ Each app relies on a few environment variables:
 - `HELPSCOUT_API_KEY`, `HELPSCOUT_MAILBOX_ID` – enable HelpScout integration
   for ticket submissions.
 - `HELPSCOUT_SMTP_FALLBACK` – set to `true` to also send email via SMTP.
-- `SERVICENOW_INSTANCE`, `SERVICENOW_USER`, `SERVICENOW_PASS` – create
-  incidents in ServiceNow instead of email.
 - `SESSION_SECRET`, `SAML_ENTRY_POINT`, `SAML_ISSUER`, `SAML_CERT`,
   `SAML_CALLBACK_URL`, `ADMIN_URL` – required for SAML login.
-- Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`.
+ - Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`, `ORGANIZATION_NAME`.
 - Optional: set `TLS_CERT_PATH` and `TLS_KEY_PATH` to enable HTTPS.
 - `ADMIN_PASSWORD` – seeds the initial admin password for kiosk login and the
   password management endpoints.
@@ -329,6 +490,10 @@ Each app relies on a few environment variables:
 - `VITE_LOGO_URL` – default logo shown before configuration is loaded.
 - `VITE_FAVICON_URL` – default favicon for the page.
 
+### Pulse Performance Dashboard
+
+- `VITE_API_URL` – base URL of the backend API.
+
 ### Comms (Slack Service)
 
 - `SLACK_SIGNING_SECRET` – Slack app signing secret.
@@ -336,6 +501,33 @@ Each app relies on a few environment variables:
   messages.
   - `API_URL` – base URL of the backend API for ticket submission.
   - Optional: `SLACK_PORT` (default `3001`).
+
+## Theme-Based Logo Configuration
+
+Nova Universe applications automatically load appropriate logos based on the current theme:
+
+### Logo Assets Location
+- **Core Admin UI**: `apps/core/nova-core/public/`
+- **Pulse Dashboard**: `apps/pulse/public/`
+
+### Required Logo Files
+- `logo.png` – Logo for light theme
+- `logo-dark.png` – Logo for dark theme (automatically used when dark mode is enabled)
+
+### Logo Loading Behavior
+- Applications automatically detect the current theme setting
+- Light theme displays `logo.png`
+- Dark theme displays `logo-dark.png` 
+- Fallback: If `logo-dark.png` is missing, `logo.png` is used for all themes
+- Error fallback: If both logos fail to load, a default icon is displayed
+
+### Customizing Logos
+1. Replace the logo files in each app's `public/` directory
+2. Keep the same filenames: `logo.png` and `logo-dark.png`
+3. Recommended dimensions: 200x60px for optimal display
+4. Ensure both light and dark variants are provided for the best user experience
+
+The logo will be automatically updated in the application header and sidebar without requiring any configuration changes.
 
 ## Development
 

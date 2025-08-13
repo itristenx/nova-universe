@@ -1,0 +1,70 @@
+Thanks for the clarification — here is a full explanation of what type of database each group belongs in, why, and how they fit into the Nova Universe’s architecture.
+
+⸻
+
+🧠 Nova ITSM DB Architecture by DB Type
+
+Table	Database	DB Type	Rationale
+tickets	core_db	PostgreSQL (SQL)	Highly relational; needs joins, indexing, constraints (e.g., SLA, urgency × impact matrix), workflows.
+ticket_metadata	core_db	PostgreSQL with JSONB	Uses JSONB to support type-specific dynamic fields, with indexing for querying metadata.
+ticket_flags	core_db	PostgreSQL	Fast filterable tags/flags; stored relationally for performance (VIP, security_review, etc.).
+users	auth_db	PostgreSQL	Core SCIM/SSO-compatible identity store; supports strong referential integrity and joins.
+roles	auth_db	PostgreSQL	Global role definitions managed centrally (e.g., admin, tech_lead).
+user_roles	auth_db	PostgreSQL	Many-to-many linking of users to roles; used for RBAC.
+departments	core_db	PostgreSQL	Ticket routing, team logic, and policy scoping rely on this.
+teams	core_db	PostgreSQL	Visibility and assignment scoping; also maps to submodules in Pulse.
+ticket_relationships	core_db	PostgreSQL	Used to relate REQ→TASK, INC→PRB etc. Needs joins and referential rules.
+sla_policies	core_db	PostgreSQL	SLA matrices (impact × urgency) must be efficiently queryable and enforceable.
+ticket_audits	audit_db	MongoDB (NoSQL)	Immutable, write-heavy, append-only log. Can scale horizontally and store flexible structures.
+
+
+⸻
+
+💡 Why this DB architecture?
+
+🔹 PostgreSQL (core_db, auth_db)
+	•	Strong relational data model
+	•	Rich support for:
+	•	JSONB for semi-structured data
+	•	Foreign keys and integrity constraints
+	•	Indexes and materialized views
+	•	Native RLS (Row-Level Security) — critical for RBAC enforcement
+
+🔹 MongoDB (audit_db)
+	•	Ideal for append-only, flexible, high-throughput write workloads (audit trail, logs, user actions)
+	•	Schema-less design makes it future-proof
+	•	Can store:
+
+{
+  "ticket_id": "REQ-1234",
+  "actor": "user-789",
+  "action": "status_changed",
+  "details": {
+    "from": "open",
+    "to": "resolved"
+  },
+  "timestamp": "2025-07-25T14:30:00Z",
+  "ip": "192.0.2.44"
+}
+
+
+
+⸻
+
+📁 Suggested DB Breakdown
+
+core_db (PostgreSQL)
+	•	Mission-critical transactional data
+	•	All ticket types, relationships, SLA enforcement, workflows
+
+auth_db (PostgreSQL)
+	•	Managed by Nova Helix
+	•	SCIM/SSO directory sync
+	•	Centralized RBAC
+
+audit_db (MongoDB)
+	•	Write-optimized append-only logs
+	•	Retention-policy driven
+	•	Searchable by ticket/user/type
+
+⸻

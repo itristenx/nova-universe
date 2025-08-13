@@ -1,0 +1,412 @@
+openapi: 3.0.0
+info:
+  title: Nova-Universe API
+  description: API documentation for the Nova-Universe platform.
+  version: 1.0.0
+servers:
+  - url: https://api.nova-universe.com
+    description: Production server
+  - url: https://staging.api.nova-universe.com
+    description: Staging server
+paths:
+  /auth/login:
+    post:
+      summary: User login
+      description: Authenticate a user and return a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '401':
+          description: Invalid credentials
+  /tickets:
+    get:
+      summary: List tickets
+      description: Retrieve a list of tickets.
+      responses:
+        '200':
+          description: A list of tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    title:
+                      type: string
+                    status:
+                      type: string
+    post:
+      summary: Create a ticket
+      description: Create a new ticket.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                priority:
+                  type: string
+              required:
+                - title
+                - description
+      responses:
+        '201':
+          description: Ticket created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+
+  /api/v2/graphql:
+    post:
+      summary: GraphQL endpoint
+      description: Execute GraphQL queries against the Nova API. Requires a Bearer JWT from the admin login.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: GraphQL response
+  /users:
+    get:
+      summary: List users
+      description: Retrieve a list of users.
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    username:
+                      type: string
+                    role:
+                      type: string
+    post:
+      summary: Create a user
+      description: Create a new user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+              required:
+                - username
+                - password
+                - role
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+
+  /api/reports/usage:
+    get:
+      summary: Get usage metrics
+      responses:
+        '200':
+          description: Usage metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: integer
+                  kiosks:
+                    type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/reports/insights:
+    get:
+      summary: Get system insights
+      responses:
+        '200':
+          description: Insights list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    message:
+                      type: string
+
+  /api/workflows/trigger:
+    post:
+      summary: Trigger a workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workflow:
+                  type: string
+      responses:
+        '200':
+          description: Workflow triggered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  runId:
+                    type: integer
+                  status:
+                    type: string
+        '400':
+          description: Missing workflow
+
+  /api/workflows/status:
+    get:
+      summary: Get workflow status
+      responses:
+        '200':
+          description: Workflow status list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    workflow:
+                      type: string
+                    status:
+                      type: string
+                    triggeredAt:
+                      type: string
+                      format: date-time
+
+  /api/scim/monitor/logs:
+    get:
+      summary: Get SCIM provisioning logs
+      description: Retrieve SCIM operation logs with filtering and pagination
+      tags:
+        - SCIM Monitoring
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: operation
+          schema:
+            type: string
+            enum: [create, update, delete, get, list]
+          description: Filter by SCIM operation type
+        - in: query
+          name: entityType
+          schema:
+            type: string
+          description: Filter by entity type (e.g., user, group)
+        - in: query
+          name: statusCode
+          schema:
+            type: integer
+          description: Filter by HTTP status code
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+          description: Filter logs from this date onwards
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+          description: Filter logs up to this date
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+          description: Number of logs per page
+      responses:
+        '200':
+          description: SCIM logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        operation:
+                          type: string
+                        entityType:
+                          type: string
+                        entityId:
+                          type: string
+                        statusCode:
+                          type: integer
+                        message:
+                          type: string
+                        userAgent:
+                          type: string
+                        ipAddress:
+                          type: string
+                        duration:
+                          type: integer
+                        createdAt:
+                          type: string
+                          format: date-time
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '429':
+          description: Too many requests
+        '500':
+          description: Internal server error
+
+  /api/scim/monitor/status:
+    get:
+      summary: Get SCIM provisioning status and statistics
+      description: Retrieve SCIM system status, operation statistics, and health metrics
+      tags:
+        - SCIM Monitoring
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: timeframe
+          schema:
+            type: string
+            enum: [1h, 24h, 7d, 30d]
+            default: 24h
+          description: Timeframe for statistics
+      responses:
+        '200':
+          description: SCIM status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, error]
+                  lastActivity:
+                    type: string
+                    format: date-time
+                  statistics:
+                    type: object
+                    properties:
+                      totalOperations:
+                        type: integer
+                      operationsByType:
+                        type: object
+                      operationsByStatus:
+                        type: object
+                      averageResponseTime:
+                        type: number
+                      errorRate:
+                        type: number
+                  healthMetrics:
+                    type: object
+                    properties:
+                      uptime:
+                        type: string
+                      lastErrorTime:
+                        type: string
+                        format: date-time
+                      recentErrors:
+                        type: integer
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '429':
+          description: Too many requests
+        '500':
+          description: Internal server error
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

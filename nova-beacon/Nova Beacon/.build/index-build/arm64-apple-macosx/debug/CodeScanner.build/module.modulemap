@@ -1,4 +1,0 @@
-module CodeScanner {
-    header "/Users/tneibarger/Documents/GitHub/CueIT/cueit-kiosk/CueIT Kiosk/.build/index-build/arm64-apple-macosx/debug/CodeScanner.build/CodeScanner-Swift.h"
-    requires objc
-}

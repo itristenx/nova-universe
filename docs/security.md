@@ -1,6 +1,6 @@
 # Security
 
-CueIT includes comprehensive security features designed for enterprise deployment.
+Nova Universe includes comprehensive security features designed for enterprise deployment.
 
 ## Security Features
 
@@ -28,7 +28,7 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Token-based kiosk authentication
 - Auto-expiring activation codes (1 hour)
 
-## CueIT Security Fixes and Bug Fixes
+## Nova Universe Security Fixes and Bug Fixes
 
 ### Summary of Issues Fixed
 
@@ -41,7 +41,7 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Modified the admin creation logic to check for both email and superadmin role
 
 **Files Modified**:
-- `cueit-api/db.js` - Enhanced admin user creation logic
+- `apps/api/db.js` - Enhanced admin user creation logic
 
 #### 2. Kiosk Activation Security & Functionality (Critical Bug)
 **Issues**: 
@@ -59,8 +59,8 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Added timeout and better error messaging
 
 **Files Modified**:
-- `cueit-api/index.js` - Enhanced activation endpoints
-- `cueit-kiosk/CueIT Kiosk/CueIT Kiosk/Services/KioskService.swift` - Improved iOS validation
+- `apps/api/index.js` - Enhanced activation endpoints
+- `apps/beacon/nova-beacon/Nova Beacon/Nova Beacon/Services/KioskService.swift` - Improved iOS validation
 
 #### 3. Password Security Vulnerabilities (High Risk)
 **Issues**: 
@@ -75,9 +75,9 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Added email format validation
 
 **Files Modified**:
-- `cueit-api/db.js` - Increased salt rounds
-- `cueit-api/create-admin.js` - Added validation and stronger hashing
-- `cueit-api/cli.js` - Enhanced password strength requirements
+- `apps/api/db.js` - Increased salt rounds
+- `apps/api/create-admin.js` - Added validation and stronger hashing
+- `apps/api/cli.js` - Enhanced password strength requirements
 
 #### 4. Input Validation & SQL Injection Prevention (High Risk)
 **Issues**: 
@@ -93,7 +93,7 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Applied validation to all user-facing endpoints
 
 **Files Created**:
-- `cueit-api/middleware/validation.js` - Input validation middleware
+- `nova-api/middleware/validation.js` - Input validation middleware
 
 #### 5. Rate Limiting & DoS Protection (Medium Risk)
 **Issues**: 
@@ -108,7 +108,7 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Applied rate limiting to login, registration, and API endpoints
 
 **Files Created**:
-- `cueit-api/middleware/rateLimiter.js` - Rate limiting middleware
+- `nova-api/middleware/rateLimiter.js` - Rate limiting middleware
 
 #### 6. Security Headers & General Security (Medium Risk)
 **Issues**: 
@@ -124,7 +124,7 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Added HTTPS-only settings for production
 
 **Files Created**:
-- `cueit-api/middleware/security.js` - Security headers and logging
+- `nova-api/middleware/security.js` - Security headers and logging
 
 #### 7. Database Schema Improvements (Low Risk)
 **Issues**: 
@@ -138,7 +138,7 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Added timestamp tracking for security auditing
 
 **Files Modified**:
-- `cueit-api/db.js` - Enhanced database schema
+- `nova-api/db.js` - Enhanced database schema
 
 #### 8. Environment Configuration Security (Medium Risk)
 **Issues**: 
@@ -152,7 +152,7 @@ CueIT includes comprehensive security features designed for enterprise deploymen
 - Proper configuration management
 
 **Files Created**:
-- `cueit-api/config/environment.js` - Environment validation
+- `nova-api/config/environment.js` - Environment validation
 
 ## Security Improvements Applied
 

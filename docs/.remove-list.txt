@@ -1,0 +1,15 @@
+apps/comms/nova-comms/.env.example
+apps/core/nova-core/.env.example
+tools/scripts/scripts/.env.local.example
+apps/comms/nova-comms/package-lock.json
+apps/core/nova-core/package-lock.json
+apps/api/package-lock.json
+packages/ui/package-lock.json
+packages/theme/package-lock.json
+prisma/migrate-database.js
+uploads/
+tools/ci/
+backups/elasticsearch/
+backups/mongodb/
+backups/postgres/
+log.sqlite

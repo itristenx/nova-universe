@@ -1,0 +1,742 @@
+// Nova Universe CMDB Schema - Following ITIL & ServiceNow Standards
+// Configuration Management Database (CMDB) for managing Configuration Items (CIs)
+
+datasource cmdb_db {
+  provider = "postgresql"
+  url      = env("CMDB_DATABASE_URL")
+}
+
+generator cmdbClient {
+  provider = "prisma-client-js"
+  output   = "../generated/cmdb"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+// ============================================================================
+// CORE CI MODELS - Following ITIL CI Type Standards
+// ============================================================================
+
+// Base Configuration Item model - parent of all CIs
+model ConfigurationItem {
+  id                    String              @id @default(uuid())
+  ciId                  String              @unique @map("ci_id") // CI123456 format
+  name                  String
+  displayName           String?             @map("display_name")
+  description           String?
+  ciType                String              @map("ci_type") // Reference to CiType
+  ciSubType             String?             @map("ci_sub_type")
+  ciStatus              String              @default("Active") @map("ci_status") // Active, Inactive, Retired, etc.
+  operationalStatus     String?             @map("operational_status") // Operational, Non-Operational, etc.
+  environment           String?             // Production, Development, Test, etc.
+  criticality           String?             // Critical, High, Medium, Low
+  businessService       String?             @map("business_service")
+  owner                 String?             // Business owner
+  technicalOwner        String?             @map("technical_owner")
+  supportGroup          String?             @map("support_group")
+  
+  // Location and Organization
+  location              String?
+  site                  String?
+  building              String?
+  floor                 String?
+  room                  String?
+  rack                  String?
+  rackPosition          String?             @map("rack_position")
+  department            String?
+  costCenter            String?             @map("cost_center")
+  
+  // Lifecycle Management
+  installDate           DateTime?           @map("install_date")
+  firstDiscoveredDate   DateTime?           @map("first_discovered_date")
+  lastDiscoveredDate    DateTime?           @map("last_discovered_date")
+  warrantyExpiryDate    DateTime?           @map("warranty_expiry_date")
+  maintenanceExpiryDate DateTime?           @map("maintenance_expiry_date")
+  retirementDate        DateTime?           @map("retirement_date")
+  
+  // Discovery and Integration
+  discoverySource       String?             @map("discovery_source")
+  isDiscovered          Boolean             @default(false) @map("is_discovered")
+  lastScanDate          DateTime?           @map("last_scan_date")
+  
+  // Financial Information
+  purchasePrice         Decimal?            @map("purchase_price") @cmdb_db.Decimal(10,2)
+  currentValue          Decimal?            @map("current_value") @cmdb_db.Decimal(10,2)
+  vendor                String?
+  manufacturer          String?
+  model                 String?
+  serialNumber          String?             @map("serial_number")
+  assetTag              String?             @map("asset_tag")
+  
+  // Custom Fields and Metadata
+  customFields          Json?               @map("custom_fields")
+  attributes            Json?               // Dynamic attributes based on CI type
+  tags                  String[]            @default([])
+  
+  // Audit Fields
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+  createdBy             String?             @map("created_by")
+  updatedBy             String?             @map("updated_by")
+  
+  // Relationships
+  ciType_rel            CiType              @relation(fields: [ciType], references: [id])
+  outgoingRelationships CiRelationship[]    @relation("SourceCI")
+  incomingRelationships CiRelationship[]    @relation("TargetCI")
+  incidents             CiIncident[]
+  changes               CiChange[]
+  businessServices      CiBusinessService[]
+  ownership             CiOwnership[]
+  inventoryMapping      CmdbInventoryMapping[]
+  supportGroups         SupportGroup[]
+  
+  // Specific CI Type Models
+  hardwareDetails       HardwareCi?
+  softwareDetails       SoftwareCi?
+  applicationDetails    ApplicationCi?
+  networkDetails        NetworkCi?
+  serviceDetails        ServiceCi?
+  databaseDetails       DatabaseCi?
+  virtualDetails        VirtualCi?
+  facilityDetails       FacilityCi?
+
+  @@map("configuration_items")
+  @@index([ciId])
+  @@index([ciType])
+  @@index([ciStatus])
+  @@index([environment])
+  @@index([criticality])
+  @@index([location])
+  @@index([serialNumber])
+  @@index([assetTag])
+}
+
+// CI Type definitions following ITIL standards
+model CiType {
+  id                    String                @id @default(uuid())
+  name                  String                @unique
+  displayName           String?               @map("display_name")
+  description           String?
+  category              String                // Hardware, Software, Service, Documentation, etc.
+  icon                  String?               // Icon for UI representation
+  color                 String?               // Color for UI representation
+  parentTypeId          String?               @map("parent_type_id")
+  isAbstract            Boolean               @default(false) @map("is_abstract") // Cannot be instantiated directly
+  isActive              Boolean               @default(true) @map("is_active")
+  
+  // Schema definition for this CI type
+  attributeSchema       Json?                 @map("attribute_schema")
+  validationRules       Json?                 @map("validation_rules")
+  
+  // Lifecycle rules
+  defaultStatus         String?               @map("default_status")
+  allowedStatuses       String[]              @map("allowed_statuses") @default([])
+  
+  // Auto-discovery settings
+  discoveryEnabled      Boolean               @default(false) @map("discovery_enabled")
+  discoveryRules        Json?                 @map("discovery_rules")
+  
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+  
+  // Relationships
+  parentType            CiType?               @relation("CiTypeHierarchy", fields: [parentTypeId], references: [id])
+  childTypes            CiType[]              @relation("CiTypeHierarchy")
+  configurationItems    ConfigurationItem[]
+  allowedRelationships  CiRelationshipType[]  @relation("SourceCiType")
+  targetRelationships   CiRelationshipType[]  @relation("TargetCiType")
+
+  @@map("ci_types")
+}
+
+// ============================================================================
+// CI RELATIONSHIP MODELS
+// ============================================================================
+
+// Relationship types between CIs
+model CiRelationshipType {
+  id                    String              @id @default(uuid())
+  name                  String              @unique
+  displayName           String?             @map("display_name")
+  description           String?
+  isDirectional         Boolean             @default(true) @map("is_directional")
+  category              String?             // Dependency, Containment, Connection, etc.
+  
+  // Type constraints
+  sourceCiTypeId        String?             @map("source_ci_type_id")
+  targetCiTypeId        String?             @map("target_ci_type_id")
+  allowMultiple         Boolean             @default(true) @map("allow_multiple")
+  
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+  
+  // Relationships
+  sourceCiType          CiType?             @relation("SourceCiType", fields: [sourceCiTypeId], references: [id])
+  targetCiType          CiType?             @relation("TargetCiType", fields: [targetCiTypeId], references: [id])
+  relationships         CiRelationship[]
+
+  @@map("ci_relationship_types")
+}
+
+// Actual relationships between CIs
+model CiRelationship {
+  id                    String                @id @default(uuid())
+  sourceCiId            String                @map("source_ci_id")
+  targetCiId            String                @map("target_ci_id")
+  relationshipTypeId    String                @map("relationship_type_id")
+  
+  // Relationship metadata
+  strength              String?               // Strong, Weak
+  criticality           String?               // Critical, High, Medium, Low
+  description           String?
+  attributes            Json?                 // Additional relationship attributes
+  
+  // Lifecycle
+  isActive              Boolean               @default(true) @map("is_active")
+  validFrom             DateTime?             @map("valid_from")
+  validTo               DateTime?             @map("valid_to")
+  
+  // Discovery
+  discoveredDate        DateTime?             @map("discovered_date")
+  isDiscovered          Boolean               @default(false) @map("is_discovered")
+  
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+  createdBy             String?               @map("created_by")
+  
+  // Relationships
+  sourceCi              ConfigurationItem     @relation("SourceCI", fields: [sourceCiId], references: [id], onDelete: Cascade)
+  targetCi              ConfigurationItem     @relation("TargetCI", fields: [targetCiId], references: [id], onDelete: Cascade)
+  relationshipType      CiRelationshipType    @relation(fields: [relationshipTypeId], references: [id])
+
+  @@map("ci_relationships")
+  @@unique([sourceCiId, targetCiId, relationshipTypeId])
+  @@index([sourceCiId])
+  @@index([targetCiId])
+  @@index([relationshipTypeId])
+}
+
+// ============================================================================
+// SPECIALIZED CI MODELS
+// ============================================================================
+
+// Hardware Configuration Items
+model HardwareCi {
+  ciId                  String              @id @map("ci_id")
+  processorType         String?             @map("processor_type")
+  processorSpeed        String?             @map("processor_speed")
+  coreCount             Int?                @map("core_count")
+  memorySize            String?             @map("memory_size")
+  storageSize           String?             @map("storage_size")
+  storageType           String?             @map("storage_type")
+  
+  // Network Hardware
+  macAddress            String?             @map("mac_address")
+  ipAddress             String?             @map("ip_address")
+  portCount             Int?                @map("port_count")
+  
+  // Physical characteristics
+  formFactor            String?             @map("form_factor")
+  dimensions            String?
+  weight                String?
+  powerRequirements     String?             @map("power_requirements")
+  
+  configurationItem     ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@map("hardware_cis")
+}
+
+// Software Configuration Items
+model SoftwareCi {
+  ciId                  String              @id @map("ci_id")
+  version               String?
+  edition               String?
+  architecture          String?             // x86, x64, ARM, etc.
+  licenseType           String?             @map("license_type")
+  licenseKey            String?             @map("license_key")
+  licenseCount          Int?                @map("license_count")
+  
+  // Installation details
+  installPath           String?             @map("install_path")
+  installDate           DateTime?           @map("install_date")
+  installedBy           String?             @map("installed_by")
+  
+  // Software lifecycle
+  isLatestVersion       Boolean?            @map("is_latest_version")
+  patchLevel            String?             @map("patch_level")
+  supportEndDate        DateTime?           @map("support_end_date")
+  
+  configurationItem     ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@map("software_cis")
+}
+
+// Application Configuration Items
+model ApplicationCi {
+  ciId                  String              @id @map("ci_id")
+  applicationUrl        String?             @map("application_url")
+  applicationPort       Int?                @map("application_port")
+  applicationProtocol   String?             @map("application_protocol")
+  
+  // Business context
+  businessFunction     String?             @map("business_function")
+  userCount             Int?                @map("user_count")
+  dataClassification    String?             @map("data_classification")
+  
+  // Technical details
+  programmingLanguage   String?             @map("programming_language")
+  framework             String?
+  databaseType          String?             @map("database_type")
+  
+  // Performance
+  slaTarget             String?             @map("sla_target")
+  availabilityTarget    Decimal?            @map("availability_target") @cmdb_db.Decimal(5,2)
+  
+  configurationItem     ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@map("application_cis")
+}
+
+// Network Configuration Items
+model NetworkCi {
+  ciId                  String              @id @map("ci_id")
+  ipAddress             String?             @map("ip_address")
+  subnetMask            String?             @map("subnet_mask")
+  gateway               String?
+  vlanId                String?             @map("vlan_id")
+  
+  // Network device specific
+  portConfiguration     Json?               @map("port_configuration")
+  routingTable          Json?               @map("routing_table")
+  firewallRules         Json?               @map("firewall_rules")
+  
+  configurationItem     ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@map("network_cis")
+}
+
+// Service Configuration Items
+model ServiceCi {
+  ciId                  String              @id @map("ci_id")
+  serviceType           String?             @map("service_type")
+  serviceLevel          String?             @map("service_level")
+  businessOwner         String?             @map("business_owner")
+  
+  // SLA information
+  slaDocument           String?             @map("sla_document")
+  availabilityTarget    Decimal?            @map("availability_target") @cmdb_db.Decimal(5,2)
+  performanceTarget     String?             @map("performance_target")
+  
+  // Service hours
+  serviceHours          Json?               @map("service_hours")
+  maintenanceWindow     Json?               @map("maintenance_window")
+  
+  configurationItem     ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@map("service_cis")
+}
+
+// Database Configuration Items
+model DatabaseCi {
+  ciId                  String              @id @map("ci_id")
+  databaseType          String?             @map("database_type") // PostgreSQL, MySQL, Oracle, etc.
+  databaseVersion       String?             @map("database_version")
+  databaseSize          String?             @map("database_size")
+  
+  // Connection details
+  connectionString      String?             @map("connection_string")
+  port                  Int?
+  schemaCount           Int?                @map("schema_count")
+  
+  // Performance and maintenance
+  backupSchedule        Json?               @map("backup_schedule")
+  lastBackupDate        DateTime?           @map("last_backup_date")
+  
+  configurationItem     ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@map("database_cis")
+}
+
+// Virtual Configuration Items
+model VirtualCi {
+  ciId                  String              @id @map("ci_id")
+  hypervisorType        String?             @map("hypervisor_type")
+  hostCiId              String?             @map("host_ci_id")
+  
+  // Virtual machine details
+  allocatedCpu          Int?                @map("allocated_cpu")
+  allocatedMemory       String?             @map("allocated_memory")
+  allocatedStorage      String?             @map("allocated_storage")
+  
+  // Virtual network
+  virtualNetworks       Json?               @map("virtual_networks")
+  
+  configurationItem     ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@map("virtual_cis")
+}
+
+// Facility Configuration Items
+model FacilityCi {
+  ciId                  String              @id @map("ci_id")
+  facilityType          String?             @map("facility_type") // Data Center, Office, etc.
+  address               String?
+  coordinates           String?
+  
+  // Facility details
+  squareFootage         Int?                @map("square_footage")
+  capacity              Int?
+  powerCapacity         String?             @map("power_capacity")
+  coolingCapacity       String?             @map("cooling_capacity")
+  
+  configurationItem     ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@map("facility_cis")
+}
+
+// ============================================================================
+// BUSINESS SERVICE MAPPING
+// ============================================================================
+
+model BusinessService {
+  id                    String                @id @default(uuid())
+  name                  String                @unique
+  description           String?
+  businessOwner         String?               @map("business_owner")
+  technicalOwner        String?               @map("technical_owner")
+  criticality           String?               // Critical, High, Medium, Low
+  
+  // SLA information
+  availabilityTarget    Decimal?              @map("availability_target") @cmdb_db.Decimal(5,2)
+  performanceTarget     String?               @map("performance_target")
+  
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+  
+  configurationItems    CiBusinessService[]
+
+  @@map("business_services")
+}
+
+model CiBusinessService {
+  ciId                  String                @map("ci_id")
+  businessServiceId     String                @map("business_service_id")
+  relationshipType      String                @map("relationship_type") // Supports, Depends On, etc.
+  criticality           String?               // How critical this CI is to the service
+  
+  createdAt             DateTime              @default(now()) @map("created_at")
+  
+  configurationItem     ConfigurationItem     @relation(fields: [ciId], references: [id], onDelete: Cascade)
+  businessService       BusinessService       @relation(fields: [businessServiceId], references: [id], onDelete: Cascade)
+
+  @@id([ciId, businessServiceId])
+  @@map("ci_business_services")
+}
+
+// ============================================================================
+// INCIDENT AND CHANGE INTEGRATION
+// ============================================================================
+
+model CiIncident {
+  ciId                  String                @map("ci_id")
+  incidentId            String                @map("incident_id")
+  relationshipType      String                @map("relationship_type") // Caused By, Affected, etc.
+  
+  createdAt             DateTime              @default(now()) @map("created_at")
+  
+  configurationItem     ConfigurationItem     @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@id([ciId, incidentId])
+  @@map("ci_incidents")
+}
+
+model CiChange {
+  ciId                  String                @map("ci_id")
+  changeId              String                @map("change_id")
+  relationshipType      String                @map("relationship_type") // Affects, Modifies, etc.
+  
+  createdAt             DateTime              @default(now()) @map("created_at")
+  
+  configurationItem     ConfigurationItem     @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@id([ciId, changeId])
+  @@map("ci_changes")
+}
+
+// ============================================================================
+// DISCOVERY AND AUTOMATION
+// ============================================================================
+
+model DiscoverySchedule {
+  id                    String                @id @default(uuid())
+  name                  String
+  description           String?
+  isActive              Boolean               @default(true) @map("is_active")
+  
+  // Schedule configuration
+  cronExpression        String                @map("cron_expression")
+  nextRunDate           DateTime?             @map("next_run_date")
+  lastRunDate           DateTime?             @map("last_run_date")
+  
+  // Discovery scope
+  discoveryType         String                @map("discovery_type") // Network, Windows, Linux, Cloud, etc.
+  scopeConfiguration    Json                  @map("scope_configuration")
+  
+  // Credentials and authentication
+  credentialIds         String[]              @map("credential_ids") @default([])
+  
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+  createdBy             String?               @map("created_by")
+
+  @@map("discovery_schedules")
+}
+
+model DiscoveryRun {
+  id                    String                @id @default(uuid())
+  scheduleId            String?               @map("schedule_id")
+  status                String                // Running, Completed, Failed
+  startTime             DateTime              @map("start_time")
+  endTime               DateTime?             @map("end_time")
+  
+  // Results
+  itemsDiscovered       Int                   @default(0) @map("items_discovered")
+  itemsUpdated          Int                   @default(0) @map("items_updated")
+  itemsCreated          Int                   @default(0) @map("items_created")
+  errors                Json?
+  
+  discoveredItems       DiscoveredItem[]
+
+  @@map("discovery_runs")
+}
+
+model DiscoveredItem {
+  id                    String                @id @default(uuid())
+  runId                 String                @map("run_id")
+  ciId                  String?               @map("ci_id") // Linked CI if processed
+  
+  // Discovered data
+  discoveredData        Json                  @map("discovered_data")
+  fingerprint           String                // Unique identifier for deduplication
+  
+  // Processing status
+  status                String                // New, Processed, Ignored, Error
+  processingNotes       String?               @map("processing_notes")
+  
+  discoveredAt          DateTime              @default(now()) @map("discovered_at")
+  processedAt           DateTime?             @map("processed_at")
+  
+  discoveryRun          DiscoveryRun          @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@map("discovered_items")
+  @@index([fingerprint])
+  @@index([status])
+}
+
+// ============================================================================
+// CMDB HEALTH AND METRICS
+// ============================================================================
+
+model CmdbHealth {
+  id                    String                @id @default(uuid())
+  metricDate            DateTime              @map("metric_date")
+  
+  // Data quality metrics
+  totalCis              Int                   @map("total_cis")
+  activeCis             Int                   @map("active_cis")
+  staleCis              Int                   @map("stale_cis") // Not updated in X days
+  orphanedCis           Int                   @map("orphaned_cis") // No relationships
+  
+  // Relationship metrics
+  totalRelationships    Int                   @map("total_relationships")
+  discoveredRelationships Int               @map("discovered_relationships")
+  manualRelationships   Int                   @map("manual_relationships")
+  
+  // Discovery metrics
+  discoveredCis         Int                   @map("discovered_cis")
+  manualCis             Int                   @map("manual_cis")
+  
+  // Data completeness
+  completenessScore     Decimal               @map("completeness_score") @cmdb_db.Decimal(5,2)
+  accuracyScore         Decimal               @map("accuracy_score") @cmdb_db.Decimal(5,2)
+  
+  createdAt             DateTime              @default(now()) @map("created_at")
+
+  @@map("cmdb_health")
+  @@index([metricDate])
+}
+
+// ============================================================================
+// AUDIT AND CHANGE TRACKING
+// ============================================================================
+
+model CiAuditLog {
+  id                    String                @id @default(uuid())
+  ciId                  String                @map("ci_id")
+  operation             String                // CREATE, UPDATE, DELETE
+  fieldName             String?               @map("field_name")
+  oldValue              String?               @map("old_value")
+  newValue              String?               @map("new_value")
+  changedBy             String?               @map("changed_by")
+  changeReason          String?               @map("change_reason")
+  changeTicket          String?               @map("change_ticket")
+  
+  timestamp             DateTime              @default(now())
+
+  @@map("ci_audit_logs")
+  @@index([ciId])
+  @@index([timestamp])
+  @@index([changedBy])
+}
+
+// ============================================================================
+// SUPPORT GROUP MODELS - User-based technical ownership and support teams
+// ============================================================================
+
+// Support Groups for CMDB CI ownership and management
+model SupportGroup {
+  id                  String                  @id @default(uuid())
+  name                String                  @unique
+  description         String?
+  type                String                  @default("technical") // technical, business, application, infrastructure
+  email               String?
+  phone               String?
+  manager             String?                 // Reference to User.id
+  escalationGroup     String?                 @map("escalation_group") // Reference to another SupportGroup.id
+  isActive            Boolean                 @default(true) @map("is_active")
+  businessHours       Json?                   @map("business_hours") // Working hours and timezone
+  slaTarget           Int?                    @map("sla_target") // Response time in minutes
+  
+  // External Integration
+  externalId          String?                 @map("external_id") // Reference to external ITSM system
+  adGroupDn           String?                 @map("ad_group_dn") // Active Directory group
+  
+  // Audit Fields
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
+  createdBy           String?                 @map("created_by")
+  updatedBy           String?                 @map("updated_by")
+  
+  // Relations
+  members             SupportGroupMember[]
+  permissions         SupportGroupPermission[]
+  configurationItems  ConfigurationItem[]
+  ownerships          CiOwnership[]
+  escalationTarget    SupportGroup[]          @relation("GroupEscalation")
+  escalationSource    SupportGroup?           @relation("GroupEscalation", fields: [escalationGroup], references: [id])
+
+  @@map("support_groups")
+  @@index([name])
+  @@index([type])
+  @@index([isActive])
+}
+
+// Support Group membership with user references
+model SupportGroupMember {
+  id              String        @id @default(uuid())
+  supportGroupId  String        @map("support_group_id")
+  userId          String        @map("user_id") // Reference to core.User.id
+  role            String        @default("member") // member, lead, manager, backup
+  isPrimary       Boolean       @default(false) @map("is_primary")
+  isActive        Boolean       @default(true) @map("is_active")
+  startDate       DateTime?     @map("start_date")
+  endDate         DateTime?     @map("end_date")
+  
+  // Audit Fields
+  assignedAt      DateTime      @default(now()) @map("assigned_at")
+  assignedBy      String?       @map("assigned_by")
+  
+  // Relations
+  supportGroup    SupportGroup  @relation(fields: [supportGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([supportGroupId, userId])
+  @@map("support_group_members")
+  @@index([userId])
+  @@index([supportGroupId])
+  @@index([role])
+}
+
+// RBAC permissions for support groups
+model SupportGroupPermission {
+  id              String        @id @default(uuid())
+  supportGroupId  String        @map("support_group_id")
+  resource        String        // cmdb, inventory, tickets, knowledge
+  action          String        // read, write, admin, approve
+  scope           String?       // Scope limitations (e.g., ci_type, location)
+  conditions      Json?         // Additional conditions for permission
+  isActive        Boolean       @default(true) @map("is_active")
+  
+  // Audit Fields
+  grantedAt       DateTime      @default(now()) @map("granted_at")
+  grantedBy       String?       @map("granted_by")
+  
+  // Relations
+  supportGroup    SupportGroup  @relation(fields: [supportGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([supportGroupId, resource, action])
+  @@map("support_group_permissions")
+  @@index([resource])
+  @@index([action])
+}
+
+// ============================================================================
+// ENHANCED CI MODELS WITH USER-BASED OWNERSHIP
+// ============================================================================
+
+// Enhanced Configuration Item ownership model
+model CiOwnership {
+  id                  String              @id @default(uuid())
+  ciId                String              @map("ci_id")
+  ownershipType       String              @map("ownership_type") // technical, business, application, data
+  userId              String              @map("user_id") // Reference to core.User.id
+  supportGroupId      String?             @map("support_group_id")
+  isPrimary           Boolean             @default(false) @map("is_primary")
+  isActive            Boolean             @default(true) @map("is_active")
+  startDate           DateTime?           @map("start_date")
+  endDate             DateTime?           @map("end_date")
+  responsibilities    String[]            @default([]) // Specific responsibilities
+  
+  // Audit Fields
+  assignedAt          DateTime            @default(now()) @map("assigned_at")
+  assignedBy          String?             @map("assigned_by")
+  
+  // Relations
+  configurationItem   ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+  supportGroup        SupportGroup?       @relation(fields: [supportGroupId], references: [id])
+
+  @@unique([ciId, ownershipType, userId])
+  @@map("ci_ownership")
+  @@index([ciId])
+  @@index([userId])
+  @@index([ownershipType])
+}
+
+// CMDB-Inventory Asset integration mapping
+model CmdbInventoryMapping {
+  id                    String              @id @default(uuid())
+  ciId                  String              @map("ci_id")
+  inventoryAssetId      Int                 @map("inventory_asset_id") // Reference to core.InventoryAsset.id
+  mappingType           String              @map("mapping_type") // direct, related, component
+  relationship          String?             // describes the relationship
+  syncEnabled           Boolean             @default(true) @map("sync_enabled")
+  lastSyncAt            DateTime?           @map("last_sync_at")
+  syncStatus            String?             @map("sync_status") // success, failed, pending
+  syncErrors            String?             @map("sync_errors")
+  
+  // Conflict Resolution
+  conflictResolution    String              @default("cmdb_wins") @map("conflict_resolution") // cmdb_wins, inventory_wins, manual
+  fieldMapping          Json?               @map("field_mapping") // Custom field mappings
+  
+  // Audit Fields
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+  createdBy             String?             @map("created_by")
+  
+  // Relations
+  configurationItem     ConfigurationItem   @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@unique([ciId, inventoryAssetId])
+  @@map("cmdb_inventory_mapping")
+  @@index([inventoryAssetId])
+  @@index([mappingType])
+  @@index([syncEnabled])
+}

@@ -1,0 +1,20 @@
+{
+  "extends": "../../../tools/config/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@nova-universe/ui": ["../../packages/ui/dist/index.js"],
+      "@nova-universe/theme": ["../../packages/theme/dist/theme.js"]
+    },
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": [
+    "src",
+    "../../design/**/*",
+    "../../packages/theme/**/*"
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

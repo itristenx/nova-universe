@@ -1,0 +1,6 @@
+.modal {
+  background-color: var(--modal-bg, #f9fafb);
+  color: var(--modal-color, #1f2937);
+  font-family: var(--modal-font, 'Inter, system-ui, sans-serif');
+  border-radius: var(--modal-radius, 1rem);
+}

@@ -16,8 +16,8 @@
 ## Testing
 - Run `./setup.sh` to install Node.js, SQLite and all project dependencies if needed
 - Each package has its own test suite
-- Navigate to a package and run `npm test`
-- Run `npm run lint` before committing changes
+- Navigate to a package and run `pnpm test` or run `pnpm --filter <workspace> test` from the repository root
+- Run `pnpm run lint` before committing changes
 - Installer and upgrade scripts live in `installers/` and must include basic tests
 
 ## Linting
@@ -25,11 +25,11 @@
 - This also applies to any JavaScript tests added for installer-related packages
 
 ## Project Structure
-- `cueit-api/` - Express backend with SQLite
-- `cueit-admin/` - React admin interface  
-- `cueit-kiosk/` - iPad SwiftUI app
-- `cueit-slack/` - Slack integration
-- `cueit-macos-swift/` - macOS launcher
+- `nova-api/` - Express backend with SQLite
+- `nova-admin/` - React admin interface  
+- `nova-kiosk/` - iPad SwiftUI app
+- `nova-slack/` - Slack integration
+- `nova-macos-swift/` - macOS launcher
 - `docs/` - Documentation
 - `installers/` - Build scripts
 

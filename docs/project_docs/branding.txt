@@ -1,0 +1,259 @@
+Here is everything known to date about the branding of Nova, including its modules, submodules, brand voice, Cosmo AI persona, commands, themes, icons, colors, and design philosophy — fully consolidated and structured for implementation, marketing, or developer/design handoff.
+
+⸻
+
+🌌 Nova Universe — Brand Overview
+
+🪐 Nova Universe (Platform Name)
+	•	Tagline: “Your entire service galaxy in one universe.”
+	•	Theme: Space meets tech — inspired by NASA, OpenAI, and Apple design ethos.
+	•	Voice: Professional but friendly, slightly playful. Think Slack + Stripe + Apple.
+	•	Tone: Clear, modern, and conversational — avoids overly corporate jargon but keeps a sense of authority.
+
+⸻
+
+💫 Brand Voice
+
+Nova (Platform-wide)
+	•	Tone: Friendly, competent, innovative.
+	•	Use cases: End-user support, admin dashboards, technician interfaces.
+	•	Examples:
+	•	✅ “Let’s get that sorted for you.”
+	•	🔧 “You’ve got an open incident — want to review it now?”
+	•	📦 “You’re all set. Your asset has been assigned.”
+
+Cosmo (AI Assistant)
+	•	Name: Cosmo
+	•	Internal Name: Nova Synth
+	•	Voice Style: Fun, fast, contextual, like a witty sci-fi co-pilot.
+	•	Tone per context:
+	•	In Pulse: Efficient, a teammate.
+	•	In Orbit: Helpful and calm, onboarding-style.
+	•	In Slack: Casual, fast, slightly witty.
+
+✨ Cosmo Examples:
+	•	“🚀 Ready to resolve that ticket?”
+	•	“Heads up, this looks urgent — shall we prioritize it?”
+	•	“🌟 You just earned an XP boost for solving that in under 5 mins!”
+	•	“Hey there 👋 need help creating a new request or want to search the knowledge base?”
+
+⸻
+
+🎨 Color Palette
+
+Color Use	Light Theme	Dark Theme
+Primary	#3F57FF (Nova Blue)	#7C88FF (Light Nova Blue)
+Accent	#FF5C8A (Nova Pink)	#FF85A1
+Success	#32D18A	#42E4A0
+Warning	#FFB02E	#FFC75F
+Error	#FF4D4F	#FF6F6F
+Background	#F9FAFB	#101216
+Surface / Cards	#FFFFFF	#1C1F25
+Text Primary	#1F2937	#F3F4F6
+Text Secondary	#6B7280	#9CA3AF
+
+
+⸻
+
+🚀 Core Modules & Brands
+
+Each module has a distinct brand identity, color accent, and icon. Logos/icons are styled like space mission badges or modern OS icons.
+
+1. 🌌 Nova Core
+	•	Function: Central admin & system config
+	•	Color: Slate/Neutral Gray + Blue
+	•	Icon: Gear with planetary rings
+	•	Voice: Serious, powerful
+	•	Audience: Admins, platform leads
+
+⸻
+
+2. 🛸 Nova Orbit (End-User Portal)
+	•	Function: Ticket submission, search, knowledge base, request catalog
+	•	Color: Purple Gradient
+	•	Icon: Orbiting planets
+	•	Voice: Friendly, calm, helpful
+	•	Audience: All users (via SSO/SCIM)
+
+⸻
+
+3. 🛰️ Nova Pulse (Technician Portal)
+	•	Function: Agent workspace, ticketing, CMDB, workflow execution
+	•	Color: Electric Blue
+	•	Icon: Pulsar/radar with pulse waves
+	•	Voice: Quick, focused, slightly gamified
+
+Pulse Submodules:
+
+Submodule	Description	Color	Notes
+Pulse:IT	Traditional IT support	Blue	Incident handling, ops
+Pulse:Cyber	Security, ISAC alerting	Dark Purple	Handles secure queues, threat tickets
+Pulse:HR	HR-related tickets	Soft Red	Sensitive data isolation
+Pulse:Ops	Operations (facilities, logistics)	Green	Mailroom, inventory, workflows
+Pulse:Inventory	Asset tracking, assignment	Teal	Shared with Ops & IT
+
+
+⸻
+
+4. 👾 Nova Synth (AI/Workflow Engine)
+	•	Public Name: Cosmo (when user-facing)
+	•	Function: NLP, automation, workflow routing, agent assist
+	•	Color: Neon Cyan or Vanta Black (depending on theme)
+	•	Voice: AI-core: Silent, powerful. Cosmo: Humanlike.
+	•	Icon: Core nucleus, orbiting AI shapes
+
+⸻
+
+5. 📡 Nova Comms (Slack & Chat Apps)
+	•	Function: Slack app, slash commands, Cosmo interaction, notifications
+	•	Color: Indigo / Slate
+	•	Voice: Fast, snappy, tailored to chat UX
+	•	Command Examples:
+	•	/it-help
+	•	/nova open-ticket
+	•	/nova status
+	•	/nova leaderboard
+	•	/nova cosmo (brings up assistant)
+
+⸻
+
+6. 🌠 Nova Beacon (Kiosk / Mobile)
+	•	Function: On-prem iPad ticketing kiosk & mobile quick entry
+	•	Color: Bright Gold & Navy
+	•	Voice: Minimal, touch-optimized, visual
+	•	Features:
+	•	Offline fallback
+	•	Configurable branding
+	•	User-first flows
+
+⸻
+
+7. 🧭 Nova Deck (Universal App Launcher)
+	•	Function: Home page / dashboard for all modules
+	•	Color: Steel Gray & Space Silver
+	•	Icon: Navigation deck / hex switcher
+	•	Voice: Straightforward
+	•	Note: Replaces Dock branding
+
+⸻
+
+8. 📚 Nova Lore (Knowledge Base)
+	•	Function: KB with gamification, auto-suggested articles, verified content
+	•	Color: Sapphire & Cream
+	•	Voice: Factual, supportive
+	•	Features:
+	•	Auto-suggest from tickets
+	•	Author XP + Badges
+	•	Cosmo-powered search
+
+⸻
+
+9. 🧪 Nova Forge (Dev Portal / Backstage)
+	•	Function: Developer module; tightly integrates with Backstage
+	•	Color: Rust Red / Graphite
+	•	Audience: Internal & external devs
+	•	Features: CI/CD dashboards, build tools, package registries
+
+⸻
+
+10. ✉️ Nova Mailroom (Email Handler)
+	•	Function: Ingests emails into tickets
+	•	Merged Into: Ops + Orbit
+	•	Features:
+	•	Parsing engine
+	•	Mapping to request types
+	•	Bounce/loop detection
+
+⸻
+
+🧠 Cosmo (AI Branding)
+	•	Name Meaning: “Cosmo” = the guide through the Nova Universe
+	•	Persona: Chatty co-pilot + silent genius in the background
+	•	Style: Emojis used sparingly to enhance friendliness (🎯 ✅ 🛰️)
+	•	XP Features:
+	•	Awards XP for fast response/resolve
+	•	“Cosmo MVP” badges
+	•	Daily/weekly leaderboard participation
+	•	Also appears in: Slack, Orbit, Beacon, Pulse, Comms
+	•	Fallback phrase: “Let me get that for you…”
+
+⸻
+
+🪪 Identity & Access: Nova Helix
+	•	Name: Nova Helix
+	•	Purpose: Handles login, SCIM, SSO, role provisioning
+	•	Color: Deep blue + gradient helix pattern
+	•	Login Page Features:
+	•	Per-tenant branding
+	•	Light/dark toggle
+	•	Optional Cosmo tips
+
+⸻
+
+🕹️ Gamification & XP System
+	•	Name: Nova Ascend
+	•	Point system: Stardust (XP currency)
+	•	Ranks: e.g., Cadet → Explorer → Commander
+	•	XP Triggers:
+	•	Ticket resolved
+	•	Verified solution created
+	•	Helpful Cosmo response
+	•	Peer recognition
+	•	Used in: Pulse, Orbit, Lore, Comms
+
+⸻
+
+🧩 Slash Command Ideas (Nova Comms / Cosmo)
+
+Command	Action
+/it-help	Open a modal to submit help request
+/nova open-ticket	Pre-fills form from Slack context
+/nova status	Show current ticket status
+/nova escalate	Prompt escalation options
+/nova cosmo	Invoke Cosmo directly
+/nova kb	Search Nova Lore
+/nova feedback	Submit product feedback or feature request
+/nova leaderboard	View gamification leaderboard by department/team
+
+
+⸻
+
+🧑‍🎨 App Icons & UI Branding
+	•	All apps have native icons for:
+	•	iOS
+	•	macOS
+	•	Android
+	•	Windows
+	•	Style: Rounded rectangles (Apple style), subtle gradients, flat-light shadows
+	•	Themes: Light and dark versions of each icon
+	•	Kiosk & Beacon Icons: More vibrant with bold contrast
+
+⸻
+
+📄 Branding Deliverables (To Be Generated / Finalized)
+	•	✅ Logo files (SVG, PNG, dark/light variants) for each module
+	•	✅ Full brand guide PDF
+	•	✅ brand.md file for devs/designers
+	•	✅ Color palette + typography specs
+	•	✅ UI mock cards
+	•	✅ Slack emoji pack
+	•	✅ Slack avatar for Cosmo (GIF format)
+	•	✅ App icons (iOS/macOS/Android/Favicons)
+
+⸻
+
+🌐 Domains & Links (To Register or Confirm)
+
+Module	Suggested Subdomain / Path
+Nova Core	core.novauniverse.app
+Orbit	orbit.novauniverse.app
+Pulse	pulse.novauniverse.app
+Helix	id.novauniverse.app
+Deck	deck.novauniverse.app
+Comms	Slack app integrated; not a direct UI
+Beacon	beacon.novauniverse.app
+Lore	lore.novauniverse.app
+Forge	forge.novauniverse.app
+
+
+⸻

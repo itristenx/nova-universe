@@ -1,8 +1,6 @@
 # Docker Compose for Nova Universe Local Development
 # Provides PostgreSQL, MongoDB, Elasticsearch, and management tools
 
-version: '3.8'
-
 services:
   # PostgreSQL Database (Core Data with Prisma)
   postgres:
@@ -12,7 +10,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-nova_universe}
       POSTGRES_USER: ${POSTGRES_USER:-nova_admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nova_secure_pass_2024}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nova_password}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -57,7 +55,7 @@ services:
     container_name: nova-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@nova.local}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
@@ -99,11 +97,9 @@ services:
       retries: 5
     command: >
       mongod
-      --auth
       --bind_ip_all
       --logpath=/var/log/mongodb/mongod.log
       --logappend
-      --replSet rs0
 
   # Elasticsearch (Search and Analytics)
   elasticsearch:
@@ -116,9 +112,7 @@ services:
       - node.name=nova-node-1
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=true
-      - xpack.security.authc.basic_realm.enabled=true
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -207,8 +201,68 @@ services:
       retries: 5
     security_opt:
       - no-new-privileges:true
-    profiles:
-      - cache
+
+  # Nova API (Main Application)
+  # nova-api:
+  #   build:
+  #     context: ./nova-api
+  #     dockerfile: Dockerfile
+  #   container_name: nova-api
+  #   restart: unless-stopped
+  #   environment:
+  #     NODE_ENV: development
+  #     DATABASE_URL: postgres://nova_admin:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/nova_universe
+  #     MONGO_URL: mongodb://admin:mongo_secure_pass_2024@mongodb:27017/nova_logs
+  #     # Add any other required environment variables here
+  #   ports:
+  #     - "3001:3000"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     mongodb:
+  #       condition: service_healthy
+  #     elasticsearch:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - nova-network
+
+  # Nova Comms (Slack/Messaging Service)
+  # nova-comms:
+  #   build:
+  #     context: ./nova-comms
+  #     dockerfile: Dockerfile
+  #   container_name: nova-comms
+  #   restart: unless-stopped
+  #   environment:
+  #     NODE_ENV: development
+  #     # Add any required environment variables for comms here
+  #   ports:
+  #     - "3002:3002"
+  #   depends_on:
+  #     - postgres
+  #     - mongodb
+  #     - redis
+  #   networks:
+  #     - nova-network
+
+  # Nova Core (Admin UI)
+  # nova-core:
+  #   build:
+  #     context: ./nova-core
+  #     dockerfile: Dockerfile
+  #   container_name: nova-core
+  #   restart: unless-stopped
+  #   environment:
+  #     NODE_ENV: development
+  #     # Add any required environment variables for UI here
+  #   ports:
+  #     - "5173:5173"
+  #   depends_on:
+  #     - nova-api
+  #   networks:
+  #     - nova-network
 
 volumes:
   postgres_data:

@@ -1,0 +1,256 @@
+📘 Nova Universe - Ticketing & Database Architecture
+
+⸻
+
+📂 Overview
+
+This document details the entire database structure, ticketing logic, and system flow for Nova Universe’s ITSM platform, with full alignment to industry standards (ITIL, ServiceNow, etc.). It includes:
+	•	Relational and NoSQL database schemas
+	•	Ticket lifecycle and types
+	•	RITM (Request Item) logic
+	•	SLA enforcement
+	•	Catalog-to-Workflow architecture
+	•	ERD (Entity-Relationship Diagram) - Textual
+
+⸻
+
+🧱 Database Architecture
+
+🎯 Architecture Model
+
+Database	Purpose	Tech
+PostgreSQL	Core records, relationships, workflows	Relational
+MongoDB	Logs, activity, AI context, audit	Document DB
+Elasticsearch	Optional: Search, observability	Indexing
+
+
+⸻
+
+🧩 PostgreSQL Schema (Relational)
+
+Core Entities
+
+users
+	•	id
+	•	name
+	•	email
+	•	organization_id → organizations.id
+
+roles
+	•	id
+	•	name
+	•	permissions
+
+user_roles
+	•	user_id → users.id
+	•	role_id → roles.id
+
+organizations
+	•	id
+	•	name
+	•	location
+
+⸻
+
+Ticketing Core
+
+tickets
+	•	id
+	•	user_id → users.id
+	•	type_id → ticket_types.id
+	•	status
+	•	ritm_id → ritms.id
+	•	configuration_item_id → configuration_items.id
+	•	submitted_via (Slack, Email, Portal, etc.)
+
+ticket_types
+	•	id
+	•	code (INC, REQ, CHG, PRB, TASK, HR, ISAC, OPS, FB)
+	•	name
+
+ticket_flags
+	•	id
+	•	ticket_id → tickets.id
+	•	flag_type (VIP, NewHire, LegalHold, Outage, etc.)
+
+sla_policies
+	•	id
+	•	type_id → ticket_types.id
+	•	urgency
+	•	impact
+	•	response_time
+	•	resolution_time
+
+sla_breaches
+	•	id
+	•	ticket_id → tickets.id
+	•	breach_type
+	•	breach_time
+
+tasks
+	•	id
+	•	ticket_id → tickets.id
+	•	assigned_to → users.id
+	•	status
+
+⸻
+
+RITM & Catalog
+
+ritms (Request Items)
+	•	id
+	•	req_id → tickets.id
+	•	catalog_item_id → request_catalog_items.id
+	•	status
+
+request_catalog_items
+	•	id
+	•	name
+	•	form_schema
+	•	workflow_id → workflows.id
+
+⸻
+
+Workflow System
+
+workflows
+	•	id
+	•	name
+	•	linked_to_type (REQ, CHG, etc.)
+
+workflow_steps
+	•	id
+	•	workflow_id → workflows.id
+	•	step_type (approval, task, notify, condition)
+
+⸻
+
+Configuration & Assets
+
+configuration_items
+	•	id
+	•	name
+	•	type (Server, App, User, Site, etc.)
+	•	status
+
+assets
+	•	id
+	•	user_id → users.id
+	•	model
+	•	serial_number
+	•	assigned_to → users/orgs
+
+⸻
+
+Auditing
+
+audit_logs
+	•	id
+	•	user_id → users.id
+	•	action
+	•	timestamp
+	•	ip_address
+
+⸻
+
+📦 MongoDB (Document DB)
+
+Collections include:
+	•	audit_logs (replicated)
+	•	access_logs
+	•	cosmo_context (AI memory)
+	•	agent_activity
+	•	event_logs
+	•	form_submissions
+	•	raw_email
+
+⸻
+
+🎟️ Ticketing Logic
+
+Ticket Types
+
+Code	Name	Description
+INC	Incident	Unplanned disruption
+REQ	Request	Access, services, onboarding
+CHG	Change	Controlled environment change
+PRB	Problem	Root cause tracking
+TASK	Task	Internal work item
+FB	Feedback	Suggestions, comments
+HR	HR Request	Confidential HR matters
+OPS	Ops Request	Facilities, logistics
+ISAC	Cyber Alert	Cybersecurity events
+
+
+⸻
+
+Metadata & Flags
+	•	VIP, NewHire, LegalHold, Outage, etc.
+	•	Structured Metadata (OS, Office, Location, etc.) stored in forms
+
+⸻
+
+Lifecycle Flows
+
+Incident (INC) / Request (REQ)
+	1.	Submitted
+	2.	Classified
+	3.	Queued → Assigned
+	4.	In Progress
+	5.	Resolved
+	6.	Closed
+
+Change (CHG)
+	1.	Draft → Approval → Scheduled
+	2.	Implemented → Reviewed → Closed
+
+Problem (PRB)
+	1.	Detection → Analysis
+	2.	RCA → Linked Change → Closure
+
+⸻
+
+SLA Engine
+	•	SLA Policy by ticket_type or catalog_item
+	•	Uses Urgency × Impact Matrix
+	•	Tracks:
+	•	First Response SLA
+	•	Resolution SLA
+	•	Stores breaches in sla_breaches
+
+⸻
+
+🧠 Cosmo AI Agent
+	•	Uses MongoDB (cosmo_context, intent_logs)
+	•	Classifies tickets
+	•	Suggests workflows, flags
+	•	Triggers feedback collection post-resolution
+
+⸻
+
+🗃️ Entity-Relationship Diagram (Text-Only)
+
+[users]──┬────────[tickets]──────┬──[ticket_flags]
+         ├────────[roles]        ├──[sla_breaches]
+         ├────────[organizations]├──[tasks]
+         ├────────[assets]       ├──[ritms]
+         └──[audit_logs]         └──[configuration_items]
+
+[tickets]────→ [ticket_types]
+[tickets]────→ [sla_policies]
+[ritms]──────→ [request_catalog_items]────→ [workflows]────→ [workflow_steps]
+
+
+⸻
+
+✅ Summary
+	•	REQ tickets → RITMs → Catalog Items → Workflows → Tasks
+	•	Flags & Metadata steer routing/SLA
+	•	SLA tracked at each stage
+	•	Cosmo drives classification & automation
+	•	Secure RBAC ensures HR, Cyber, Ops are isolated
+	•	Everything is audit-logged & analytics-ready
+
+⸻
+
+Let me know if you’d like a .sql, .json, or .yml implementation file next.
