@@ -197,6 +197,7 @@ services:
       POSTGRES_PASSWORD: test_password_${TEST_ENV_NAME}
       TEST_ENV: ${TEST_ENV_NAME}
       FORCE_LISTEN: "true"
+      DISABLE_CLEANUP: "true"
     ports:
       - "${API_PORT}:3000"
     healthcheck:
