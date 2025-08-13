@@ -11,7 +11,9 @@
   "dependencies": {
     "next": "15.4.5",
     "react": "19.1.1",
-    "react-dom": "19.1.1"
+    "react-dom": "19.1.1",
+    "@nova-universe/design-system": "workspace:*",
+    "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "typescript": "^5",
