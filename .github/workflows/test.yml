@@ -80,6 +80,7 @@ jobs:
       - run: pnpm run test:ci
         env:
           TEST_API_URL: http://localhost:4102
+          CI: true
 
   playwright-smoke:
     name: Playwright Smoke (Orbit)
