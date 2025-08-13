@@ -1,0 +1,82 @@
+Yes—**Nova Helix and User360 should be tightly integrated** but remain **separate components** with clear responsibilities.
+
+Helix is the **identity and access engine** (authentication, roles, SCIM, credential vault), while User360 is a **context and intelligence layer** for technicians. Their integration ensures a unified, secure, and automated user view across the Nova Universe.
+
+---
+
+## Why They Should Be Integrated
+
+| Area                   | Reason                                                                                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Identity Linking**   | Helix is the single source of truth for identity (Nova ID). User360 depends on this to correctly map users, assets, tickets, and integrations. |
+| **SSO & MFA**          | Helix handles login, MFA enforcement, and token issuance. User360 should not duplicate this logic.                                             |
+| **RBAC Enforcement**   | User360’s visibility (HR data, security info, assets) is entirely role-driven. Helix is the role provider.                                     |
+| **Audit Trail**        | Actions taken in User360 (reset MFA, disable account, reassign asset) must be logged against the user’s Helix identity.                        |
+| **Integration Access** | User360 queries NIL for enriched user context. Helix ensures only properly scoped service tokens are used.                                     |
+
+---
+
+## Recommended Integration Model
+
+```
++-----------------------------+
+|        Nova Helix           |
+|  (Identity & Access Layer)  |
+|-----------------------------|
+| • SSO / MFA                |
+| • SCIM Provisioning        |
+| • Roles & Permissions      |
+| • Credential Vault         |
+| • Audit Trail              |
++--------------+--------------+
+               |
+               v
++--------------+--------------+
+|         User360             |
+| (User Context & Intelligence)|
+|-----------------------------|
+| • Unified Profile          |
+| • Linked Assets (via CMDB) |
+| • Linked Tickets           |
+| • HR & Security Context    |
+| • Technician Actions       |
++--------------+--------------+
+               |
+               v
++--------------+--------------+
+|    Nova Integration Layer    |
+| (NIL)                        |
+|------------------------------|
+| • Data Sync (Jamf, Intune)  |
+| • HR, Security, IT Data     |
+| • Normalization             |
+| • Event Bus                 |
++--------------+--------------+
+               |
+               v
++--------------+--------------+
+|          CMDB               |
+| • Assets & Services         |
+| • Relationships             |
+| • Ownership (Helix IDs)     |
++-----------------------------+
+```
+
+---
+
+## Integration Principles
+
+* **Helix is always the identity authority** — User360 never stores or modifies identity data outside of Helix.
+* **User360 consumes Helix tokens** — all access is scoped based on Helix-issued role claims.
+* **Helix drives contextual access** — for example, HR roles can see HR-related data in User360, but IT cannot unless granted specific access.
+* **Cosmo AI uses Helix identities** — any automation or AI-driven action is traceable to a Helix identity for compliance.
+
+---
+
+✅ **Conclusion:**
+Helix and User360 should remain separate but deeply connected.
+
+* Helix = **Who a user is and what they can do.**
+* User360 = **What context a technician or admin can see and act upon for that user.**
+
+---
