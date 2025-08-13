@@ -6,8 +6,25 @@
 
 :root {
   color-scheme: light dark;
+  --h-space: 16px;
+  --h-radius: 12px;
 }
 
-html, body {
-  height: 100%;
+@media (prefers-contrast: more) {
+  :root { --h-contrast: 1; }
+}
+
+html, body { height: 100%; }
+
+/* Typography scale inspired by HIG */
+.h-title { font-size: clamp(20px, 3vw, 28px); font-weight: 600; letter-spacing: -0.01em; }
+.h-subtitle { font-size: 16px; opacity: 0.8; }
+.h-mono { font-feature-settings: "tnum" on, "ss01" on; }
+
+/* Containers */
+.card { border: 1px solid color-mix(in oklab, CanvasText 12%, transparent); border-radius: var(--h-radius); padding: var(--h-space); background: color-mix(in oklab, Canvas 92%, transparent); }
+
+@media (prefers-color-scheme: dark) {
+  body { background-color: Canvas; color: CanvasText; }
+  .card { background: color-mix(in oklab, Canvas 85%, transparent); }
 }
