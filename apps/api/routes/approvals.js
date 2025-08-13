@@ -106,13 +106,19 @@ router.get('/', authenticateJWT, async (req, res) => {
     if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
       return res.status(403).json({ error: 'Admin access required' });
     }
-    const { status } = req.query || {};
+    const { status, q } = req.query || {};
     let sql = 'SELECT id, title, status, requester_user_id, approver_user_id, created_at, acted_by, acted_at FROM approvals';
+    const clauses = [];
     const params = [];
     if (status) {
-      sql += ' WHERE status = $1';
       params.push(status);
+      clauses.push(`status = $${params.length}`);
     }
+    if (q) {
+      params.push(`%${q}%`);
+      clauses.push(`title ILIKE $${params.length}`);
+    }
+    if (clauses.length) sql += ' WHERE ' + clauses.join(' AND ');
     sql += ' ORDER BY created_at DESC LIMIT 500';
     const { rows } = await db.query(sql, params);
     res.json({ items: rows || [] });

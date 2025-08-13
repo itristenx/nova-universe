@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../../../lib/api';
+import Link from 'next/link';
 
 function uuidv4() {
   return (globalThis.crypto?.randomUUID && globalThis.crypto.randomUUID()) ||
@@ -37,7 +38,10 @@ export default function CatalogPage() {
           <div key={it.id} className="card animate-scale-in">
             <div className="font-medium">{it.name}</div>
             <div className="text-sm opacity-80">{it.description || 'Standard request'}</div>
-            <button className="mt-2 rounded px-3 py-2 border" onClick={()=>request(it)}>Request</button>
+            <div className="flex gap-2 mt-2">
+              <button className="rounded px-3 py-2 border" onClick={()=>request(it)}>Quick Request</button>
+              <Link className="rounded px-3 py-2 border" href={`/(shell)/portal/catalog/${it.id}`}>Details</Link>
+            </div>
           </div>
         ))}
       </div>

@@ -21,6 +21,7 @@ export default function IntegrationsOverview() {
         <Link className="card" href="/(shell)/admin/integrations/goalert">GoAlert</Link>
         <Link className="card" href="/(shell)/admin/integrations/helpscout">HelpScout</Link>
         <Link className="card" href="/(shell)/admin/integrations/scim">SCIM</Link>
+        <Link className="card" href="/(shell)/admin/status">Sentinel Monitors</Link>
       </div>
       <div className="rounded border p-3">
         <div className="font-medium mb-2">Catalog</div>

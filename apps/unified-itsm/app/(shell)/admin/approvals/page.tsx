@@ -9,11 +9,16 @@ export default function AdminApprovalsPage() {
   const [history, setHistory] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [q, setQ] = useState('');
+  const [status, setStatus] = useState('');
 
   async function load() {
     setError(null);
     try {
-      const r:any = await apiFetch('/api/v1/approvals');
+      const qs = new URLSearchParams();
+      if (q) qs.set('q', q);
+      if (status) qs.set('status', status);
+      const r:any = await apiFetch('/api/v1/approvals' + (qs.toString()?`?${qs.toString()}`:''));
       setItems(Array.isArray(r) ? r : (r.items || []));
     } catch (e:any) { setError(e.message); }
   }
@@ -34,6 +39,16 @@ export default function AdminApprovalsPage() {
       <h2 className="text-xl font-semibold">Admin: Approvals Management</h2>
       {error && <div className="text-sm text-red-600">{error}</div>}
       {message && <div className="text-sm text-green-600">{message}</div>}
+      <div className="flex flex-wrap gap-2">
+        <input className="border rounded px-3 py-2" placeholder="Search title" value={q} onChange={e=>setQ(e.target.value)} />
+        <select className="border rounded px-3 py-2" value={status} onChange={e=>setStatus(e.target.value)}>
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <button className="rounded px-3 py-2 border" onClick={load}>Search</button>
+      </div>
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <div className="font-medium mb-2">Approvals</div>
