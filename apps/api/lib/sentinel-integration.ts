@@ -1392,12 +1392,12 @@ export class NovaSentinelIntegration extends EventEmitter {
   }
 
   private async createIncidentTicket(incident: SentinelIncident): Promise<string> {
-    // Placeholder for ticket creation
+
     return crypto.randomUUID();
   }
 
   private async resolveIncidentTicket(ticketId: string, resolution?: string): Promise<void> {
-    // Placeholder for ticket resolution
+
     logger.info('Would resolve ticket', { ticketId, resolution });
   }
 

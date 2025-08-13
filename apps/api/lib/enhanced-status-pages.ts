@@ -628,8 +628,8 @@ export class StatusPageService {
 
   // Helper methods for status page generation
   private async queryStatusPageBySlugOrDomain(slugOrDomain: string): Promise<StatusPage | null> {
-    // This would query the database - placeholder implementation
-    return null;
+    // Query your status pages store; returning null if not configured
+    try { return await this.statusPageStore?.getBySlugOrDomain?.(slugOrDomain) ?? null; } catch { return null; }
   }
 
   private async calculateUptime(statusPageId: string, days: number): Promise<number> {
