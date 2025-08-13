@@ -125,7 +125,7 @@ router.get('/config',
 
               // Update last seen timestamp
               db.run(
-                'UPDATE kiosks SET lastSeen = datetime("now") WHERE id = $1',
+                'UPDATE kiosks SET last_seen = CURRENT_TIMESTAMP WHERE id = $1',
                 [kioskId]
               );
 
@@ -536,7 +536,7 @@ router.post('/activate',
       // Find pending kiosk registration
       db.get(
         `SELECT * FROM kiosk_activations 
-         WHERE activationCode = $1 AND isUsed = 0 AND expiresAt > datetime('now')`,
+         WHERE code = $1 AND used = 0 AND expires_at > CURRENT_TIMESTAMP`,
         [activationCode],
         (err, activation) => {
           if (err) {
@@ -565,15 +565,21 @@ router.post('/activate',
 
           // Create or update kiosk record
           db.run(
-            `INSERT OR REPLACE INTO kiosks (
-              id, name, location, deviceInfo, token, isActive, 
-              activatedAt, lastSeen, configuration
-            ) VALUES (?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'), ?)`,
+            `INSERT INTO kiosks (
+              id, name, location, token, active, last_seen, configuration, updated_at, created_at
+            ) VALUES ($1, $2, $3, $4, true, CURRENT_TIMESTAMP, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ON CONFLICT(id) DO UPDATE SET
+              name = EXCLUDED.name,
+              location = EXCLUDED.location,
+              token = EXCLUDED.token,
+              active = EXCLUDED.active,
+              last_seen = EXCLUDED.last_seen,
+              configuration = EXCLUDED.configuration,
+              updated_at = EXCLUDED.updated_at`,
             [
               activation.kioskId,
               activation.kioskName,
               activation.location,
-              JSON.stringify(deviceInfo),
               kioskToken,
               activation.configuration || '{}'
             ],
@@ -672,7 +678,7 @@ router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req,
 router.post('/check-in', validateKioskAuth, async (req, res) => {
   try {
     const kioskId = req.kiosk.id;
-    db.run('UPDATE kiosks SET lastSeen = datetime("now") WHERE id = $1', [kioskId], async (err) => {
+    db.run('UPDATE kiosks SET last_seen = CURRENT_TIMESTAMP WHERE id = $1', [kioskId], async (err) => {
       if (err) return res.status(500).json({ success: false, error: 'DB error' });
       // Trigger Helix sync for any pending assets linked to this kiosk
       try {

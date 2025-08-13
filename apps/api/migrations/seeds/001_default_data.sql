@@ -96,12 +96,12 @@ INSERT INTO directory_integrations (id, provider, enabled, settings, created_at,
 ON CONFLICT (id) DO NOTHING;
 
 -- Insert default admin PIN configuration
-INSERT INTO admin_pins (id, "globalPin", "kioskPins", "updatedAt") VALUES 
+INSERT INTO admin_pins (id, global_pin, kiosk_pins, updated_at) VALUES 
 (1, NULL, '{}', CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
 -- Insert default admin user (if not present)
-INSERT INTO users (id, name, email, passwordHash, isDefault, createdAt, updatedAt)
+INSERT INTO users (uuid, name, email, password_hash, is_default, created_at, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000001', 'Admin', 'admin@example.com', '$2a$12$dummyhash', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 

@@ -65,7 +65,7 @@ const passwordHash = bcrypt.hashSync(password, 12); // Increase salt rounds for 
     const userId = uuidv4();
     const now = new Date().toISOString();
     await db.query(
-      'INSERT INTO users (id, name, email, "passwordHash", "isDefault", "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, true, $5, $6)',
+      'INSERT INTO users (uuid, name, email, password_hash, is_default, created_at, updated_at) VALUES ($1, $2, $3, $4, true, $5, $6)',
       [userId, name, email, passwordHash, now, now]
     );
     console.log(`✅ Created new admin user: ${email}`);
