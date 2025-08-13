@@ -577,7 +577,7 @@ router.post('/activate',
               kioskToken,
               activation.configuration || '{}'
             ],
-            function(err) {
+            async function(err) {
               if (err) {
                 logger.error('Error creating kiosk record:', err);
                 return res.status(500).json({

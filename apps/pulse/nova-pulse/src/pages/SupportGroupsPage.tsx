@@ -50,8 +50,13 @@ import {
 
 // API functions
 const api = {
-  getSupportGroups: async (filters = {}) => {
-    const params = new URLSearchParams(filters);
+  getSupportGroups: async (filters: Record<string, string | number | undefined> = {}) => {
+    const params = new URLSearchParams(
+      Object.entries(filters).reduce<Record<string, string>>((acc, [k, v]) => {
+        if (v !== undefined && v !== null) acc[k] = String(v);
+        return acc;
+      }, {})
+    );
     const response = await fetch(`/api/v1/cmdb/support-groups?${params}`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     });
@@ -59,7 +64,7 @@ const api = {
     return response.json();
   },
 
-  createSupportGroup: async (data) => {
+  createSupportGroup: async (data: Record<string, unknown>) => {
     const response = await fetch('/api/v1/cmdb/support-groups', {
       method: 'POST',
       headers: {
@@ -72,7 +77,7 @@ const api = {
     return response.json();
   },
 
-  updateSupportGroup: async ({ id, ...data }) => {
+  updateSupportGroup: async ({ id, ...data }: { id: string } & Record<string, unknown>) => {
     const response = await fetch(`/api/v1/cmdb/support-groups/${id}`, {
       method: 'PUT',
       headers: {
@@ -85,7 +90,7 @@ const api = {
     return response.json();
   },
 
-  deleteSupportGroup: async (id) => {
+  deleteSupportGroup: async (id: string) => {
     const response = await fetch(`/api/v1/cmdb/support-groups/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -94,7 +99,7 @@ const api = {
     return response.json();
   },
 
-  getUsers: async () => {
+  getUsers: async (): Promise<Array<{ id: string; name: string; email: string }>> => {
     const response = await fetch('/api/v1/users', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     });
@@ -132,7 +137,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
     queryFn: () => api.getSupportGroups({ limit: 100 })
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const submitData = {
       ...formData,
@@ -242,7 +247,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
             <SelectValue placeholder="Select escalation group" />
           </SelectTrigger>
           <SelectContent>
-            {supportGroups?.supportGroups?.filter(sg => sg.id !== group?.id).map((sg) => (
+            {supportGroups?.supportGroups?.filter((sg: SupportGroup) => sg.id !== group?.id).map((sg: SupportGroup) => (
               <SelectItem key={sg.id} value={sg.id}>
                 {sg.name}
               </SelectItem>
@@ -290,54 +295,58 @@ const SupportGroupsPage = () => {
   const createMutation = useMutation({
     mutationFn: api.createSupportGroup,
     onSuccess: () => {
-      queryClient.invalidateQueries(['supportGroups']);
+      queryClient.invalidateQueries({ queryKey: ['supportGroups'] });
       setShowCreateDialog(false);
       toast.success('Support group created successfully');
     },
-    onError: (error) => {
-      toast.error(`Failed to create support group: ${error.message}`);
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Failed to create support group: ${message}`);
     }
   });
 
   const updateMutation = useMutation({
     mutationFn: api.updateSupportGroup,
     onSuccess: () => {
-      queryClient.invalidateQueries(['supportGroups']);
+      queryClient.invalidateQueries({ queryKey: ['supportGroups'] });
       setEditingGroup(null);
       toast.success('Support group updated successfully');
     },
-    onError: (error) => {
-      toast.error(`Failed to update support group: ${error.message}`);
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Failed to update support group: ${message}`);
     }
   });
 
   const deleteMutation = useMutation({
     mutationFn: api.deleteSupportGroup,
     onSuccess: () => {
-      queryClient.invalidateQueries(['supportGroups']);
+      queryClient.invalidateQueries({ queryKey: ['supportGroups'] });
       toast.success('Support group deleted successfully');
     },
-    onError: (error) => {
-      toast.error(`Failed to delete support group: ${error.message}`);
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Failed to delete support group: ${message}`);
     }
   });
 
-  const handleCreate = (data) => {
+  const handleCreate = (data: Record<string, unknown>) => {
     createMutation.mutate(data);
   };
 
-  const handleUpdate = (data) => {
-    updateMutation.mutate({ id: editingGroup.id, ...data });
+  const handleUpdate = (data: Record<string, unknown>) => {
+    if (!editingGroup) return;
+    updateMutation.mutate({ id: (editingGroup as any).id, ...data });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this support group?')) {
       deleteMutation.mutate(id);
     }
   };
 
-  const getTypeColor = (type) => {
-    const colors = {
+  const getTypeColor = (type: string) => {
+    const colors: Record<string, string> = {
       technical: 'bg-blue-100 text-blue-800',
       business: 'bg-green-100 text-green-800',
       application: 'bg-purple-100 text-purple-800',
@@ -353,7 +362,7 @@ const SupportGroupsPage = () => {
           <CardContent className="flex items-center justify-center h-32">
             <div className="text-center">
               <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-              <p className="text-red-600">Error loading support groups: {error.message}</p>
+              <p className="text-red-600">Error loading support groups: {(error as Error).message}</p>
             </div>
           </CardContent>
         </Card>
@@ -456,7 +465,7 @@ const SupportGroupsPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {supportGroupsData.supportGroups.map((group) => (
+                {supportGroupsData.supportGroups.map((group: SupportGroup) => (
                   <TableRow key={group.id}>
                     <TableCell>
                       <div>

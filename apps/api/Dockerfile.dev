@@ -1,21 +1,25 @@
 # Development Dockerfile for nova-api (Node.js)
-FROM node:20-alpine
+FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-# Install development dependencies
-RUN apk add --no-cache git
+# Install development dependencies and system libs required by Prisma engines
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    ca-certificates \
+    openssl \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
-# Copy source code
+# Copy source code (node_modules excluded by .dockerignore)
 COPY . .
 
 # Create development user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser --system --uid 1001 nextjs
 
 # Change ownership
 RUN chown -R nextjs:nodejs /app
@@ -24,5 +28,5 @@ USER nextjs
 
 EXPOSE 3000
 
-# Development command with hot reload
-CMD ["npm", "run", "dev"]
+# Start API
+CMD ["npm", "start"]

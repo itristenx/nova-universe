@@ -2,5 +2,15 @@
   "name": "@nova-universe/theme",
   "version": "1.0.0",
   "main": "theme.ts",
-  "types": "theme.ts"
+  "types": "theme.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
 }

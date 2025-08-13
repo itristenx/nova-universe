@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Select } from '@heroui/react';
+import { Card, Select } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
 import type { User } from '@/types';
@@ -29,7 +29,7 @@ export const VIPManagementPage: React.FC = () => {
   const updateVip = async (user: User, isVip: boolean, vipLevel: string) => {
     try {
       await api.updateVipStatus(user.id, { isVip, vipLevel });
-      setUsers(users.map(u => u.id === user.id ? { ...u, is_vip: isVip, vip_level: vipLevel } : u));
+      setUsers(users.map(u => u.id === user.id ? { ...u, isVip, vipLevel } : u));
       addToast({ type: 'success', title: 'Updated', description: 'VIP status saved' });
     } catch (e) {
       console.error(e);
@@ -48,7 +48,6 @@ export const VIPManagementPage: React.FC = () => {
             <th className="px-4 py-2 text-left">User</th>
             <th className="px-4 py-2 text-left">VIP</th>
             <th className="px-4 py-2 text-left">Level</th>
-            
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -56,14 +55,18 @@ export const VIPManagementPage: React.FC = () => {
             <tr key={u.id}>
               <td className="px-4 py-2">{u.name}</td>
               <td className="px-4 py-2">
-                <input type="checkbox" checked={!!u.is_vip} onChange={e => updateVip(u, e.target.checked, u.vip_level || 'priority')} />
+                <input type="checkbox" checked={!!(u as any).isVip} onChange={e => updateVip(u, e.target.checked, (u as any).vipLevel || 'priority')} />
               </td>
               <td className="px-4 py-2">
-                <Select value={u.vip_level || 'priority'} onChange={val => updateVip(u, !!u.is_vip, val)}>
-                  <option value="priority">priority</option>
-                  <option value="gold">gold</option>
-                  <option value="exec">exec</option>
-                </Select>
+                <Select
+                  value={(u as any).vipLevel || 'priority'}
+                  onChange={val => updateVip(u, !!(u as any).isVip, val)}
+                  options={[
+                    { value: 'priority', label: 'priority' },
+                    { value: 'gold', label: 'gold' },
+                    { value: 'exec', label: 'exec' },
+                  ]}
+                />
               </td>
             </tr>
           ))}

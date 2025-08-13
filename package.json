@@ -5,6 +5,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prepare": "husky install || true",
+    "seed:uat:api": "node apps/api/scripts/seed-uat.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules node --test test/*.test.js",
     "test:all": "NODE_OPTIONS=--experimental-vm-modules node test/test-runner.js",
     "test:integration": "NODE_OPTIONS=--experimental-vm-modules node test/test-runner.js integration",
@@ -60,6 +62,7 @@
     "eslint": "^9.32.0",
     "esmock": "^2.7.1",
     "globals": "^16.3.0",
+    "husky": "^9.1.7",
     "jest": "^30.0.5",
     "mongoose": "^8.16.4",
     "node-fetch": "^3.3.2",

@@ -1,7 +1,7 @@
 // Comprehensive Test Runner for Nova Universe
 // Orchestrates all testing phases: Integration, Performance, Security, UAT, and Load Testing
 
-import { spawn, exec } from 'child_process';
+import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -14,6 +14,16 @@ const TEST_CONFIG = {
   parallel: process.env.TEST_PARALLEL === 'true',
   verbose: process.env.TEST_VERBOSE === 'true'
 };
+
+// Detect whether a test file imports @jest/globals
+async function isJestTest(filePath) {
+  try {
+    const content = await fs.readFile(filePath, 'utf8');
+    return content.includes("'@jest/globals'") || content.includes('"@jest/globals"');
+  } catch {
+    return false;
+  }
+}
 
 // Test Suite Definitions
 const TEST_SUITES = {
@@ -55,7 +65,6 @@ const TEST_SUITES = {
   }
 };
 
-// Test Result Tracker
 class TestResultTracker {
   constructor() {
     this.results = {
@@ -126,7 +135,8 @@ class TestResultTracker {
     }
     
     console.log('\n🎯 Test Quality Assessment:');
-    const successRate = (report.summary.passed / (report.summary.total - report.summary.skipped)) * 100;
+    const denom = Math.max(1, (report.summary.total - report.summary.skipped));
+    const successRate = (report.summary.passed / denom) * 100;
     console.log(`   Success Rate: ${successRate.toFixed(1)}%`);
     
     if (successRate >= 95) {
@@ -161,7 +171,6 @@ class TestResultTracker {
   }
 }
 
-// Test Suite Runner
 class TestSuiteRunner {
   constructor() {
     this.tracker = new TestResultTracker();
@@ -170,12 +179,8 @@ class TestSuiteRunner {
 
   async setup() {
     try {
-      // Ensure test reports directory exists
       await fs.mkdir(TEST_CONFIG.reportDir, { recursive: true });
-      
-      // Verify test environment
       await this.verifyEnvironment();
-      
       console.log('🔧 Test environment setup completed');
       return true;
     } catch (error) {
@@ -186,37 +191,29 @@ class TestSuiteRunner {
 
   async verifyEnvironment() {
     console.log('🔍 Verifying test environment...');
-    
-    // Check if API is accessible
+    // API check omitted in CI if not reachable
     try {
       const fetch = (await import('node-fetch')).default;
       const response = await fetch(`${TEST_CONFIG.apiUrl}/health`, { timeout: 10000 });
-      
-      if (response.ok) {
-        console.log(`   ✅ API accessible at ${TEST_CONFIG.apiUrl}`);
-      } else {
-        console.log(`   ⚠️  API returned status ${response.status} at ${TEST_CONFIG.apiUrl}`);
-      }
+      if (response.ok) console.log(`   ✅ API accessible at ${TEST_CONFIG.apiUrl}`);
+      else console.log(`   ⚠️  API returned status ${response.status} at ${TEST_CONFIG.apiUrl}`);
     } catch (error) {
       console.log(`   ⚠️  API not accessible at ${TEST_CONFIG.apiUrl} - some tests may fail`);
       console.log(`      Error: ${error.message}`);
     }
-    
-    // Check Node.js version
+
     const nodeVersion = process.version;
     console.log(`   📦 Node.js version: ${nodeVersion}`);
-    
-    // Check available memory
+
     const memoryUsage = process.memoryUsage();
     console.log(`   💾 Available memory: ${(memoryUsage.heapTotal / 1024 / 1024).toFixed(2)}MB`);
-    
-    // Check test files exist
-    for (const [suiteKey, suite] of Object.entries(TEST_SUITES)) {
+
+    for (const [, suite] of Object.entries(TEST_SUITES)) {
       const testFile = path.join(TEST_CONFIG.testDir, suite.file);
       try {
         await fs.access(testFile);
         console.log(`   📄 Test file found: ${suite.file}`);
-      } catch (error) {
+      } catch {
         console.log(`   ⚠️  Test file missing: ${suite.file}`);
       }
     }
@@ -226,170 +223,116 @@ class TestSuiteRunner {
     console.log(`\n🧪 Running ${suite.name}...`);
     console.log(`   📝 ${suite.description}`);
     console.log(`   ⏱️  Estimated duration: ${(suite.estimatedDuration / 1000).toFixed(0)}s`);
-    
+
     const startTime = Date.now();
-    
+
     try {
       const testFile = path.join(TEST_CONFIG.testDir, suite.file);
-      
-      // Check if test file exists
       await fs.access(testFile);
-      
-      // Run the test
-      const result = await this.executeTest(testFile, suite);
-      
+
+      const useJest = await isJestTest(testFile);
+      const result = await this.executeTest(testFile, suite, useJest);
+
       const duration = Date.now() - startTime;
-      
       this.tracker.addSuiteResult(suiteKey, {
         name: suite.name,
         success: result.success,
-        duration: duration,
+        duration,
         output: result.output,
         error: result.error,
         warnings: result.warnings || []
       });
-      
+
       const icon = result.success ? '✅' : '❌';
       console.log(`   ${icon} ${suite.name} completed in ${(duration / 1000).toFixed(2)}s`);
-      
+
       if (result.warnings && result.warnings.length > 0) {
-        result.warnings.forEach(warning => {
-          console.log(`   ⚠️  ${warning}`);
-        });
+        result.warnings.forEach(warning => console.log(`   ⚠️  ${warning}`));
       }
-      
+
       return result;
-      
     } catch (error) {
       const duration = Date.now() - startTime;
-      
       this.tracker.addSuiteResult(suiteKey, {
         name: suite.name,
         success: false,
-        duration: duration,
+        duration,
         error: error.message
       });
-      
       console.log(`   ❌ ${suite.name} failed: ${error.message}`);
       return { success: false, error: error.message };
     }
   }
 
-  async executeTest(testFile, suite) {
+  async executeTest(testFile, suite, useJest) {
     return new Promise((resolve) => {
       const startTime = Date.now();
       let output = '';
       let error = '';
-      
-      // Set test-specific environment variables
-      const testEnv = {
+
+      const env = {
         ...process.env,
         TEST_API_URL: TEST_CONFIG.apiUrl,
         TEST_TIMEOUT: suite.estimatedDuration.toString(),
         NODE_OPTIONS: '--experimental-vm-modules'
       };
-      
-      const child = spawn('node', ['--test', testFile], {
-        env: testEnv,
-        cwd: process.cwd(),
-        stdio: ['pipe', 'pipe', 'pipe']
-      });
-      
-      child.stdout.on('data', (data) => {
-        const text = data.toString();
-        output += text;
-        if (TEST_CONFIG.verbose) {
-          process.stdout.write(text);
-        }
-      });
-      
-      child.stderr.on('data', (data) => {
-        const text = data.toString();
-        error += text;
-        if (TEST_CONFIG.verbose) {
-          process.stderr.write(text);
-        }
-      });
-      
+
+      const args = useJest
+        ? ['--runInBand', '--silent', testFile]
+        : ['--test', testFile];
+
+      const cmd = useJest ? 'jest' : 'node';
+      const child = spawn(cmd, args, { env, cwd: process.cwd(), stdio: ['pipe', 'pipe', 'pipe'] });
+
+      child.stdout.on('data', (d) => { const t = d.toString(); output += t; if (TEST_CONFIG.verbose) process.stdout.write(t); });
+      child.stderr.on('data', (d) => { const t = d.toString(); error += t; if (TEST_CONFIG.verbose) process.stderr.write(t); });
+
       child.on('close', (code) => {
         const duration = Date.now() - startTime;
         const success = code === 0;
         const warnings = [];
-        
-        // Analyze output for warnings
-        if (output.includes('Warning') || output.includes('WARN')) {
-          warnings.push('Test execution produced warnings');
-        }
-        
-        if (duration > suite.estimatedDuration * 1.5) {
-          warnings.push(`Test took longer than expected (${(duration / 1000).toFixed(2)}s vs ${(suite.estimatedDuration / 1000).toFixed(2)}s)`);
-        }
-        
-        resolve({
-          success,
-          output,
-          error: error || (success ? null : `Process exited with code ${code}`),
-          warnings,
-          duration
-        });
+        if (output.includes('Warning') || output.includes('WARN')) warnings.push('Test execution produced warnings');
+        if (duration > suite.estimatedDuration * 1.5) warnings.push(`Test took longer than expected (${(duration / 1000).toFixed(2)}s vs ${(suite.estimatedDuration / 1000).toFixed(2)}s)`);
+        resolve({ success, output, error: error || (success ? null : `Process exited with code ${code}`), warnings, duration });
       });
-      
-      // Set timeout
+
       setTimeout(() => {
         child.kill();
-        resolve({
-          success: false,
-          error: `Test timed out after ${TEST_CONFIG.timeout / 1000}s`,
-          warnings: ['Test execution timed out'],
-          duration: TEST_CONFIG.timeout
-        });
+        resolve({ success: false, error: `Test timed out after ${TEST_CONFIG.timeout / 1000}s`, warnings: ['Test execution timed out'], duration: TEST_CONFIG.timeout });
       }, TEST_CONFIG.timeout);
     });
   }
 
   async runAllSuites() {
     await this.setupPromise;
-    
+
     console.log('🚀 Starting Nova Universe Comprehensive Test Suite');
     console.log(`   Test API URL: ${TEST_CONFIG.apiUrl}`);
     console.log(`   Parallel Execution: ${TEST_CONFIG.parallel ? 'Enabled' : 'Disabled'}`);
     console.log(`   Verbose Output: ${TEST_CONFIG.verbose ? 'Enabled' : 'Disabled'}`);
-    
-    // Sort test suites by priority
-    const sortedSuites = Object.entries(TEST_SUITES)
-      .sort(([,a], [,b]) => a.priority - b.priority);
-    
+
+    const sortedSuites = Object.entries(TEST_SUITES).sort(([, a], [, b]) => a.priority - b.priority);
+
     if (TEST_CONFIG.parallel) {
       console.log('\n⚡ Running test suites in parallel...');
-      
       const promises = sortedSuites
         .filter(([, suite]) => !suite.skipInCI)
         .map(([suiteKey, suite]) => this.runSuite(suiteKey, suite));
-      
       await Promise.allSettled(promises);
     } else {
       console.log('\n📋 Running test suites sequentially...');
-      
       for (const [suiteKey, suite] of sortedSuites) {
         if (suite.skipInCI) {
           console.log(`\n⏭️  Skipping ${suite.name} (CI environment)`);
-          this.tracker.addSuiteResult(suiteKey, {
-            name: suite.name,
-            success: true,
-            skipped: true,
-            duration: 0
-          });
+          this.tracker.addSuiteResult(suiteKey, { name: suite.name, success: true, skipped: true, duration: 0 });
           continue;
         }
-        
         await this.runSuite(suiteKey, suite);
       }
     }
-    
-    // Generate and save final report
+
     const finalReport = this.tracker.generateReport();
     await this.saveReport(finalReport);
-    
     return finalReport;
   }
 
@@ -398,60 +341,41 @@ class TestSuiteRunner {
       const reportFile = path.join(TEST_CONFIG.reportDir, `test-report-${Date.now()}.json`);
       await fs.writeFile(reportFile, JSON.stringify(report, null, 2));
       console.log(`\n💾 Test report saved to: ${reportFile}`);
-      
-      // Also save a latest report
       const latestReportFile = path.join(TEST_CONFIG.reportDir, 'latest-test-report.json');
       await fs.writeFile(latestReportFile, JSON.stringify(report, null, 2));
-      
     } catch (error) {
       console.error('❌ Failed to save test report:', error.message);
     }
   }
 }
 
-// Command Line Interface
 class TestCLI {
   static parseArgs() {
     const args = process.argv.slice(2);
-    const options = {
-      suites: [],
-      parallel: false,
-      verbose: false,
-      help: false
-    };
-    
+    const options = { suites: [], parallel: false, verbose: false, help: false };
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
-      
       switch (arg) {
         case '--help':
         case '-h':
-          options.help = true;
-          break;
+          options.help = true; break;
         case '--parallel':
         case '-p':
-          options.parallel = true;
-          break;
+          options.parallel = true; break;
         case '--verbose':
         case '-v':
-          options.verbose = true;
-          break;
+          options.verbose = true; break;
         case '--suite':
         case '-s':
-          if (i + 1 < args.length) {
-            options.suites.push(args[++i]);
-          }
+          if (i + 1 < args.length) options.suites.push(args[++i]);
           break;
         default:
-          if (!arg.startsWith('-')) {
-            options.suites.push(arg);
-          }
+          if (!arg.startsWith('-')) options.suites.push(arg);
       }
     }
-    
     return options;
   }
-  
+
   static showHelp() {
     console.log(`
 🧪 Nova Universe Test Runner
@@ -487,61 +411,37 @@ Environment Variables:
   }
 }
 
-// Main execution
 async function main() {
   const options = TestCLI.parseArgs();
-  
-  if (options.help) {
-    TestCLI.showHelp();
-    return;
-  }
-  
-  // Override config with CLI options
+  if (options.help) { TestCLI.showHelp(); return; }
   if (options.parallel) TEST_CONFIG.parallel = true;
   if (options.verbose) TEST_CONFIG.verbose = true;
-  
+
   const runner = new TestSuiteRunner();
-  
   try {
     let finalReport;
-    
     if (options.suites.length > 0) {
-      // Run specific test suites
       console.log(`🎯 Running selected test suites: ${options.suites.join(', ')}`);
-      
       for (const suiteName of options.suites) {
         const suite = TEST_SUITES[suiteName];
-        if (suite) {
-          await runner.runSuite(suiteName, suite);
-        } else {
-          console.error(`❌ Unknown test suite: ${suiteName}`);
-          console.log('Available suites:', Object.keys(TEST_SUITES).join(', '));
-        }
+        if (suite) await runner.runSuite(suiteName, suite);
+        else { console.error(`❌ Unknown test suite: ${suiteName}`); console.log('Available suites:', Object.keys(TEST_SUITES).join(', ')); }
       }
-      
       finalReport = runner.tracker.generateReport();
     } else {
-      // Run all test suites
       finalReport = await runner.runAllSuites();
     }
-    
-    // Exit with appropriate code
     const exitCode = finalReport.summary.failed > 0 ? 1 : 0;
     process.exit(exitCode);
-    
   } catch (error) {
     console.error('❌ Test runner failed:', error.message);
-    if (TEST_CONFIG.verbose) {
-      console.error(error.stack);
-    }
+    if (TEST_CONFIG.verbose) console.error(error.stack);
     process.exit(1);
   }
 }
 
-// Export for programmatic use
 export { TestSuiteRunner, TestResultTracker, TEST_SUITES, TEST_CONFIG };
 
-// Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }

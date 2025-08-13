@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input, FileInput, Checkbox } from '@heroui/react';
+import { Button, Card, Input, Checkbox } from '@heroui/react';
+import { FileInput } from '@/components/ui';
 import { CogIcon, PaintBrushIcon, KeyIcon, BellIcon, ServerIcon, ClockIcon, UserGroupIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { ScheduleManager } from '@/components/ScheduleManager';
 import { ThemeSelector } from '@/components/ThemeSelector';

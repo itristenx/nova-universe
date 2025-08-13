@@ -1,5 +1,5 @@
 import React from 'react';
-import { Chip } from '@heroui/react';
+import { Chip } from '@/components/ui';
 import { useWebSocketContext } from '@/contexts/WebSocketContext';
 
 export const WebSocketStatus: React.FC = () => {
@@ -20,12 +20,12 @@ export const WebSocketStatus: React.FC = () => {
 
   return (
     <Chip 
-      color={isConnected ? "success" : "warning"} 
+      color={isConnected ? 'success' : 'warning'} 
       variant="flat" 
       size="sm"
-      title={isConnected ? "WebSocket Connected" : "WebSocket Disconnected"}
+      title={isConnected ? 'WebSocket Connected' : 'WebSocket Disconnected'}
     >
-      {isConnected ? "🟢 Live" : "🟡 Offline"}
+      {isConnected ? '🟢 Live' : '🟡 Offline'}
     </Chip>
   );
 };

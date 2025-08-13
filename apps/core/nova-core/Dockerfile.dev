@@ -8,9 +8,9 @@ RUN apk add --no-cache git
 
 # Copy package files
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN if [ -f package-lock.json ]; then npm ci --legacy-peer-deps; else npm install --legacy-peer-deps; fi
 
-# Copy source code
+# Copy source code (node_modules excluded by .dockerignore)
 COPY . .
 
 # Create development user

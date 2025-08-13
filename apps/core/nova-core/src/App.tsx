@@ -16,7 +16,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Showcase } from '@/components/ui/Showcase';
-import { HeroUIProvider } from '@heroui/react';
 
 // Lazy load other pages for better performance
 const TicketsPage = React.lazy(() => import('@/pages/TicketsPage').then(m => ({ default: m.TicketsPage })));
@@ -268,18 +267,16 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <HeroUIProvider>
-        <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <WebSocketProvider>
-              <Router>
-                <AppRoutes />
-                <ConnectedToastContainer />
-              </Router>
-            </WebSocketProvider>
-          </QueryClientProvider>
-        </ThemeProvider>
-      </HeroUIProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <WebSocketProvider>
+            <Router>
+              <AppRoutes />
+              <ConnectedToastContainer />
+            </Router>
+          </WebSocketProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 };

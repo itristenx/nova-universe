@@ -145,10 +145,9 @@ function testConfigurationManagement() {
   return true;
 }
 
-// Run the test
-if (require.main === module) {
-  const success = testConfigurationManagement();
-  process.exit(success ? 0 : 1);
-}
+import test from 'node:test';
 
-module.exports = { testConfigurationManagement };
+await test('Configuration Management Component', async () => {
+  const success = testConfigurationManagement();
+  if (!success) throw new Error('Configuration Management Component test failed');
+});

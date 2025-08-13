@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input, Card } from '@heroui/react';
+import { Button, Input, Card } from '@/components/ui';
 import { KeyIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
 import { useApiHealth } from '@/hooks/useApiHealth';
 import { ServerConnectionModal } from '@/components/ServerConnectionModal';
 import { api } from '@/lib/api';
-
-interface Branding {
-  logo?: string | null;
-  themeColor?: string;
-}
+import type { OrganizationBranding } from '@/types';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -22,7 +18,7 @@ export const LoginPage: React.FC = () => {
   const [ssoAvailable, setSsoAvailable] = useState(false);
   const [ssoLoginUrl, setSsoLoginUrl] = useState<string | null>(null);
   const [passkeyAvailable, setPasskeyAvailable] = useState(false);
-  const [branding, setBranding] = useState<Branding>({});
+  const [branding, setBranding] = useState<OrganizationBranding>({});
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const { addToast } = useToastStore();
@@ -85,7 +81,7 @@ export const LoginPage: React.FC = () => {
       .then(setBranding)
       .catch((error) => {
         console.error('Failed to fetch organization branding:', error);
-        setBranding({ logo: null, themeColor: '#000000' }); // Fallback branding
+        setBranding({ logoUrl: '/logo.png', welcomeMessage: 'Sign in to Nova Universe Portal', helpMessage: 'Manage your kiosks, users, and support tickets' }); // Fallback branding
       });
   }, [login, navigate, addToast]);
 
@@ -317,7 +313,7 @@ export const LoginPage: React.FC = () => {
                   {passkeyAvailable && (
                     <Button
                       type="button"
-                      variant="secondary"
+                      variant="default"
                       className="w-full"
                       onClick={handlePasskeyLogin}
                       isLoading={isPasskeyLoading}
@@ -331,7 +327,7 @@ export const LoginPage: React.FC = () => {
                   {ssoAvailable && ssoLoginUrl && (
                     <Button
                       type="button"
-                      variant="secondary"
+                      variant="default"
                       className="w-full"
                       onClick={() => {
                         window.location.href = ssoLoginUrl;

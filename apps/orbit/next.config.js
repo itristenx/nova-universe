@@ -1,3 +1,6 @@
+const createNextIntlPlugin = require('next-intl/plugin');
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable experimental features for better performance
@@ -6,6 +9,7 @@ const nextConfig = {
     scrollRestoration: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
+
 
   // Image optimization
   images: {
@@ -128,4 +132,4 @@ const nextConfig = {
   }),
 };
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);

@@ -4,7 +4,18 @@
     "description": "مستقبل الاستكشاف والاكتشاف الفضائي",
     "about": "اذهب إلى صفحة حول",
     "getStarted": "ابدأ",
-    "learnMore": "اعرف المزيد"
+    "learnMore": "اعرف المزيد",
+    "features": "الميزات",
+    "featuresDescription": "اكتشف ما الذي يجعل نوفا يونيفرس المنصة المثالية لإمكانية الوصول عالمياً.",
+    "internationalFeature": "دعم دولي",
+    "internationalFeatureDesc": "دعم كامل لعدة لغات وتكيّفات ثقافية.",
+    "timeFeature": "التنسيق الثقافي",
+    "timeFeatureDesc": "تنسيق تلقائي للتاريخ والوقت والأرقام حسب اللغة.",
+    "accessibilityFeature": "إمكانية الوصول أولاً",
+    "accessibilityFeatureDesc": "متوافق مع WCAG 2.1 AA مع ميزات شاملة لإمكانية الوصول.",
+    "culturalAdaptation": "التكيّف الثقافي",
+    "culturalAdaptationDesc": "اطلع على كيفية تكيّف المحتوى مع تفضيلاتك الثقافية ولغتك.",
+    "formatExamples": "أمثلة على التنسيق"
   },
   "Navigation": {
     "home": "الرئيسية",
@@ -14,12 +25,17 @@
     "profile": "الملف الشخصي",
     "logout": "تسجيل الخروج",
     "login": "تسجيل الدخول",
-    "signup": "التسجيل"
+    "signup": "التسجيل",
+    "accessibility": "إمكانية الوصول",
+    "security": "الأمان",
+    "language": "اللغة",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة"
   },
   "Common": {
     "loading": "جاري التحميل...",
     "error": "خطأ",
-    "success": "نجح",
+    "success": "نجاح",
     "cancel": "إلغاء",
     "confirm": "تأكيد",
     "save": "حفظ",
@@ -31,7 +47,16 @@
     "previous": "السابق",
     "next": "التالي",
     "close": "إغلاق",
-    "open": "فتح"
+    "open": "فتح",
+    "footerDescription": "نبني المستقبل بتقنية ميسّرة وعالمية.",
+    "links": "روابط",
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الخدمة",
+    "support": "الدعم",
+    "accessibility": "إمكانية الوصول",
+    "accessibilityAudit": "تدقيق إمكانية الوصول",
+    "accessibilityStatement": "بيان إمكانية الوصول",
+    "allRightsReserved": "جميع الحقوق محفوظة."
   },
   "Forms": {
     "required": "هذا الحقل مطلوب",

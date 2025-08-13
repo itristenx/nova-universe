@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input, Modal, Select, Checkbox } from '@heroui/react';
+import { Button, Card, Input, Modal, Select, Checkbox } from '@/components/ui';
 import { 
   Cog6ToothIcon,
   CheckCircleIcon,

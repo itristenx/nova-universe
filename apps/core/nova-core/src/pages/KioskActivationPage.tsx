@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input } from '@heroui/react';
+import { Button, Card, Input } from '@/components/ui';
 import { useToastStore } from '@/stores/toast';
 import { api } from '../lib/api';
 import { KioskActivation } from '../types';
@@ -253,8 +253,7 @@ export const KioskActivationPage: React.FC = () => {
               placeholder="Enter kiosk ID to activate"
             />
             <Button
-              color="primary"
-              variant="solid"
+              variant="primary"
               onClick={activateKiosk}
               disabled={loading || !kioskId.trim()}
               className="w-full"
@@ -273,8 +272,7 @@ export const KioskActivationPage: React.FC = () => {
             Generate a QR code that kiosks can scan to activate themselves.
           </p>
           <Button
-            color="primary"
-            variant="solid"
+            variant="primary"
             onClick={generateActivation}
             disabled={generatingQR}
             className="w-full"
@@ -309,7 +307,7 @@ export const KioskActivationPage: React.FC = () => {
           <Input label="Kiosk ID" value={linkKioskId} onChange={e => setLinkKioskId(e.target.value)} placeholder="kiosk-001" />
           <Input label="Asset Tag" value={assetTag} onChange={e => setAssetTag(e.target.value)} placeholder="ASSET-123" />
           <Input label="Serial Number" value={serialNumber} onChange={e => setSerialNumber(e.target.value)} placeholder="SN123456" />
-          <Button color="primary" onClick={linkAsset} className="w-full">Link Asset</Button>
+          <Button variant="primary" onClick={linkAsset} className="w-full">Link Asset</Button>
         </div>
       </Card>
 
@@ -333,8 +331,7 @@ export const KioskActivationPage: React.FC = () => {
               className="flex-1"
             />
             <Button
-              color="primary"
-              variant="solid"
+              variant="primary"
               onClick={addSystem}
               disabled={!newSystem.trim() || systemsLoading}
               className="flex items-center space-x-2"

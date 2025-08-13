@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Input, FileInput, Checkbox } from '@heroui/react';
+import { Button, Card, Input, Checkbox } from '@/components/ui';
+import { FileInput } from '@/components/ui';
 import { CogIcon, PaintBrushIcon, KeyIcon, BellIcon, ServerIcon, ClockIcon, UserGroupIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { ScheduleManager } from '@/components/ScheduleManager';
 import { ThemeSelector } from '@/components/ThemeSelector';
@@ -729,7 +730,7 @@ export const SettingsPage: React.FC = () => {
                       type="number"
                       value={config?.rateLimitWindow || ''}
                       onChange={(e) =>
-                        setConfig((prev) => (prev ? { ...prev, rateLimitWindow: e.target.value } : null))
+                        setConfig((prev) => (prev ? { ...prev, rateLimitWindow: parseInt(e.target.value) || 0 } : null))
                       }
                       helperText="Time window for rate limits"
                     />
@@ -738,7 +739,7 @@ export const SettingsPage: React.FC = () => {
                       type="number"
                       value={config?.rateLimitMax || ''}
                       onChange={(e) =>
-                        setConfig((prev) => (prev ? { ...prev, rateLimitMax: e.target.value } : null))
+                        setConfig((prev) => (prev ? { ...prev, rateLimitMax: parseInt(e.target.value) || 0 } : null))
                       }
                       helperText="Requests allowed per window"
                     />

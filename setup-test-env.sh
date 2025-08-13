@@ -4,6 +4,13 @@ set -euo pipefail
 # Nova Universe - Test Environment Setup Script
 # Creates isolated test environments for development and testing
 
+# Provide docker-compose compatibility shim for environments with only docker compose v2
+if ! command -v docker-compose >/dev/null 2>&1; then
+  docker-compose() {
+    docker compose "$@"
+  }
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$SCRIPT_DIR"
 cd "$PROJECT_ROOT"
@@ -118,8 +125,6 @@ generate_test_compose() {
     log_step "Generating test environment configuration..."
     
     cat > "docker-compose.test-${TEST_ENV_NAME}.yml" << EOF
-version: '3.8'
-
 services:
   # Database
   ${TEST_PREFIX}-postgres:
@@ -164,15 +169,42 @@ services:
       context: ./apps/api
       dockerfile: Dockerfile.dev
     container_name: ${TEST_PREFIX}-api
+    env_file:
+      - .env.test.${TEST_ENV_NAME}
     environment:
       NODE_ENV: test
-      PORT: 3000
+      API_PORT: 3000
       DATABASE_URL: postgresql://nova_test:test_password_${TEST_ENV_NAME}@${TEST_PREFIX}-postgres:5432/nova_test
       REDIS_URL: redis://${TEST_PREFIX}-redis:6379
       JWT_SECRET: test_jwt_secret_${TEST_ENV_NAME}
+      SESSION_SECRET: test_session_secret_${TEST_ENV_NAME}
+      KIOSK_TOKEN: kiosk_token_${TEST_ENV_NAME}
+      SCIM_TOKEN: scim_token_${TEST_ENV_NAME}
+      AUTH_DB_PASSWORD: test_password_${TEST_ENV_NAME}
+      # Core DB (used by databaseConfig)
+      CORE_DB_HOST: ${TEST_PREFIX}-postgres
+      CORE_DB_PORT: 5432
+      CORE_DB_NAME: nova_test
+      CORE_DB_USER: nova_test
+      CORE_DB_PASSWORD: test_password_${TEST_ENV_NAME}
+      # Use WASM Prisma engine to avoid native binary issues in CI
+      PRISMA_CLIENT_ENGINE_TYPE: wasm
+      # Fallback POSTGRES_* vars (used if CORE_* not provided)
+      POSTGRES_HOST: ${TEST_PREFIX}-postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: nova_test
+      POSTGRES_USER: nova_test
+      POSTGRES_PASSWORD: test_password_${TEST_ENV_NAME}
       TEST_ENV: ${TEST_ENV_NAME}
+      FORCE_LISTEN: "true"
+      DISABLE_CLEANUP: "true"
     ports:
       - "${API_PORT}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     depends_on:
       ${TEST_PREFIX}-postgres:
         condition: service_healthy
@@ -182,8 +214,9 @@ services:
       - ${TEST_NETWORK}
     volumes:
       - ./apps/api:/app
+      - ./prisma/generated:/prisma/generated:ro
       - /app/node_modules
-    command: ["npm", "run", "test:watch"]
+    command: ["npm", "start"]
 
   # Core UI Service
   ${TEST_PREFIX}-core:
@@ -205,26 +238,22 @@ services:
       - /app/node_modules
     command: ["npm", "start"]
 
-  # Beacon Service
+  # Beacon Service (placeholder HTTP server for UAT/integration)
   ${TEST_PREFIX}-beacon:
-    build:
-      context: ./apps/beacon/nova-beacon
-      dockerfile: Dockerfile.dev
+    image: node:20-alpine
     container_name: ${TEST_PREFIX}-beacon
     environment:
       NODE_ENV: test
       PORT: 3002
       API_URL: http://${TEST_PREFIX}-api:3000
       TEST_ENV: ${TEST_ENV_NAME}
+    command: ["sh", "-c", "node -e 'require(\"http\").createServer((req,res)=>{res.end(\"Beacon placeholder\")}).listen(3002)' "]
     ports:
       - "${BEACON_PORT}:3002"
     depends_on:
       - ${TEST_PREFIX}-api
     networks:
       - ${TEST_NETWORK}
-    volumes:
-      - ./apps/beacon/nova-beacon:/app
-      - /app/node_modules
 
   # Communications Service
   ${TEST_PREFIX}-comms:

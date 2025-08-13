@@ -1,25 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-  Input,
-  Switch,
-  Select,
-  SelectItem,
-  Tabs,
-  Tab,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-  Chip,
-  Textarea,
-  Divider
-} from '@heroui/react';
+import { Card, Button, Input, Switch, Select, Tabs, Chip, Textarea } from '@/components/ui';
 import {
   CogIcon,
   ServerIcon,
@@ -112,7 +92,7 @@ const SystemConfigurationPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('general');
   const [saving, setSaving] = useState(false);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  // const { isOpen, onOpen, onClose } = useDisclosure(); // Removed useDisclosure
   const [selectedEnvVar, setSelectedEnvVar] = useState<EnvironmentVariable | null>(null);
   const addToast = useToastStore((state: any) => state.addToast);
 
@@ -383,474 +363,492 @@ const SystemConfigurationPage: React.FC = () => {
 
       {/* Configuration Tabs */}
       <Card>
-        <CardBody>
-          <Tabs 
-            selectedKey={activeTab} 
-            onSelectionChange={(key) => setActiveTab(key as string)}
-            aria-label="System Configuration Tabs"
-          >
-            <Tab key="general" title={<div className="flex items-center gap-2"><CogIcon className="w-4 h-4" />General</div>}>
-              <div className="space-y-6 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="System Name"
-                    value={config.general.systemName}
-                    onChange={(e) => updateConfig('general', 'systemName', e.target.value)}
-                  />
-                  <Input
-                    label="Timezone"
-                    value={config.general.timezone}
-                    onChange={(e) => updateConfig('general', 'timezone', e.target.value)}
-                  />
-                  <Select
-                    label="Default Language"
-                    selectedKeys={[config.general.defaultLanguage]}
-                    onSelectionChange={(keys) => updateConfig('general', 'defaultLanguage', Array.from(keys)[0])}
-                  >
-                    <SelectItem key="en">English</SelectItem>
-                    <SelectItem key="es">Spanish</SelectItem>
-                    <SelectItem key="fr">French</SelectItem>
-                    <SelectItem key="de">German</SelectItem>
-                  </Select>
-                  <Select
-                    label="Log Level"
-                    selectedKeys={[config.general.logLevel]}
-                    onSelectionChange={(keys) => updateConfig('general', 'logLevel', Array.from(keys)[0])}
-                  >
-                    <SelectItem key="error">Error</SelectItem>
-                    <SelectItem key="warn">Warning</SelectItem>
-                    <SelectItem key="info">Info</SelectItem>
-                    <SelectItem key="debug">Debug</SelectItem>
-                  </Select>
-                </div>
-                
-                <Textarea
-                  label="System Description"
-                  value={config.general.systemDescription}
-                  onChange={(e) => updateConfig('general', 'systemDescription', e.target.value)}
-                />
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Maintenance Mode</h4>
-                      <p className="text-sm text-gray-600">Put the system into maintenance mode</p>
+        <div className="p-4">
+          <Tabs
+            selectedKey={activeTab}
+            onSelectionChange={(key: string) => setActiveTab(key)}
+            tabs={[
+              {
+                key: 'general',
+                label: 'General',
+                content: (
+                  <div className="space-y-6 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        label="System Name"
+                        value={config.general.systemName}
+                        onChange={(e) => updateConfig('general', 'systemName', e.target.value)}
+                      />
+                      <Input
+                        label="Timezone"
+                        value={config.general.timezone}
+                        onChange={(e) => updateConfig('general', 'timezone', e.target.value)}
+                      />
+                      <Select
+                        label="Default Language"
+                        value={config.general.defaultLanguage}
+                        onChange={(value) => updateConfig('general', 'defaultLanguage', value)}
+                        options={[
+                          { value: 'en', label: 'English' },
+                          { value: 'es', label: 'Spanish' },
+                          { value: 'fr', label: 'French' },
+                          { value: 'de', label: 'German' },
+                        ]}
+                      />
+                      <Select
+                        label="Log Level"
+                        value={config.general.logLevel}
+                        onChange={(value) => updateConfig('general', 'logLevel', value as any)}
+                        options={[
+                          { value: 'error', label: 'Error' },
+                          { value: 'warn', label: 'Warning' },
+                          { value: 'info', label: 'Info' },
+                          { value: 'debug', label: 'Debug' },
+                        ]}
+                      />
                     </div>
-                    <Switch
-                      isSelected={config.general.maintenanceMode}
-                      onValueChange={(checked) => updateConfig('general', 'maintenanceMode', checked)}
+                    
+                    <Textarea
+                      label="System Description"
+                      value={config.general.systemDescription}
+                      onChange={(e) => updateConfig('general', 'systemDescription', e.target.value)}
                     />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Debug Mode</h4>
-                      <p className="text-sm text-gray-600">Enable debug logging and error details</p>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">Maintenance Mode</h4>
+                          <p className="text-sm text-gray-600">Put the system into maintenance mode</p>
+                        </div>
+                        <Switch
+                          checked={config.general.maintenanceMode}
+                          onChange={(checked) => updateConfig('general', 'maintenanceMode', checked)}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">Debug Mode</h4>
+                          <p className="text-sm text-gray-600">Enable debug logging and error details</p>
+                        </div>
+                        <Switch
+                          checked={config.general.debugMode}
+                          onChange={(checked) => updateConfig('general', 'debugMode', checked)}
+                        />
+                      </div>
                     </div>
-                    <Switch
-                      isSelected={config.general.debugMode}
-                      onValueChange={(checked) => updateConfig('general', 'debugMode', checked)}
-                    />
                   </div>
-                </div>
-              </div>
-            </Tab>
+                ),
+              },
+              {
+                key: 'security',
+                label: 'Security',
+                content: (
+                  <div className="space-y-6 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        type="number"
+                        label="Session Timeout (seconds)"
+                        value={config.security.sessionTimeout.toString()}
+                        onChange={(e) => updateConfig('security', 'sessionTimeout', parseInt(e.target.value))}
+                      />
+                      <Input
+                        type="number"
+                        label="Max Login Attempts"
+                        value={config.security.maxLoginAttempts.toString()}
+                        onChange={(e) => updateConfig('security', 'maxLoginAttempts', parseInt(e.target.value))}
+                      />
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Password Policy</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          type="number"
+                          label="Minimum Length"
+                          value={config.security.passwordPolicy.minLength.toString()}
+                          onChange={(e) => updateNestedConfig('security', 'passwordPolicy', 'minLength', parseInt(e.target.value))}
+                        />
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span>Require Uppercase</span>
+                            <Switch
+                              checked={config.security.passwordPolicy.requireUppercase}
+                              onChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireUppercase', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Require Lowercase</span>
+                            <Switch
+                              checked={config.security.passwordPolicy.requireLowercase}
+                              onChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireLowercase', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Require Numbers</span>
+                            <Switch
+                              checked={config.security.passwordPolicy.requireNumbers}
+                              onChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireNumbers', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Require Special Characters</span>
+                            <Switch
+                              checked={config.security.passwordPolicy.requireSpecialChars}
+                              onChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireSpecialChars', checked)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">Two-Factor Authentication</h4>
+                        <p className="text-sm text-gray-600">Require 2FA for all users</p>
+                      </div>
+                      <Switch
+                        checked={config.security.twoFactorEnabled}
+                        onChange={(checked) => updateConfig('security', 'twoFactorEnabled', checked)}
+                      />
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'email',
+                label: 'Email',
+                content: (
+                  <div className="space-y-6 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        label="SMTP Host"
+                        value={config.email.smtpHost}
+                        onChange={(e) => updateConfig('email', 'smtpHost', e.target.value)}
+                      />
+                      <Input
+                        type="number"
+                        label="SMTP Port"
+                        value={config.email.smtpPort.toString()}
+                        onChange={(e) => updateConfig('email', 'smtpPort', parseInt(e.target.value))}
+                      />
+                      <Input
+                        label="SMTP Username"
+                        value={config.email.smtpUsername}
+                        onChange={(e) => updateConfig('email', 'smtpUsername', e.target.value)}
+                      />
+                      <Input
+                        type="password"
+                        label="SMTP Password"
+                        value={config.email.smtpPassword}
+                        onChange={(e) => updateConfig('email', 'smtpPassword', e.target.value)}
+                      />
+                      <Input
+                        label="From Email"
+                        value={config.email.fromEmail}
+                        onChange={(e) => updateConfig('email', 'fromEmail', e.target.value)}
+                      />
+                      <Input
+                        label="From Name"
+                        value={config.email.fromName}
+                        onChange={(e) => updateConfig('email', 'fromName', e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">SMTP Secure (TLS/SSL)</h4>
+                        <p className="text-sm text-gray-600">Use secure connection for SMTP</p>
+                      </div>
+                      <Switch
+                        checked={config.email.smtpSecure}
+                        onChange={(checked) => updateConfig('email', 'smtpSecure', checked)}
+                      />
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'notifications',
+                label: 'Notifications',
+                content: (
+                  <div className="space-y-6 pt-4">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">Email Notifications</h4>
+                          <p className="text-sm text-gray-600">Enable email notifications</p>
+                        </div>
+                        <Switch
+                          checked={config.notifications.emailNotifications}
+                          onChange={(checked) => updateConfig('notifications', 'emailNotifications', checked)}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">Critical Alerts</h4>
+                          <p className="text-sm text-gray-600">Send alerts for critical system events</p>
+                        </div>
+                        <Switch
+                          checked={config.notifications.criticalAlerts}
+                          onChange={(checked) => updateConfig('notifications', 'criticalAlerts', checked)}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">System Updates</h4>
+                          <p className="text-sm text-gray-600">Send notifications for system updates</p>
+                        </div>
+                        <Switch
+                          checked={config.notifications.systemUpdates}
+                          onChange={(checked) => updateConfig('notifications', 'systemUpdates', checked)}
+                        />
+                      </div>
+                    </div>
 
-            <Tab key="security" title={<div className="flex items-center gap-2"><ShieldCheckIcon className="w-4 h-4" />Security</div>}>
-              <div className="space-y-6 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    type="number"
-                    label="Session Timeout (seconds)"
-                    value={config.security.sessionTimeout.toString()}
-                    onChange={(e) => updateConfig('security', 'sessionTimeout', parseInt(e.target.value))}
-                  />
-                  <Input
-                    type="number"
-                    label="Max Login Attempts"
-                    value={config.security.maxLoginAttempts.toString()}
-                    onChange={(e) => updateConfig('security', 'maxLoginAttempts', parseInt(e.target.value))}
-                  />
-                </div>
-
-                <Divider />
-                
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Password Policy</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input
-                      type="number"
-                      label="Minimum Length"
-                      value={config.security.passwordPolicy.minLength.toString()}
-                      onChange={(e) => updateNestedConfig('security', 'passwordPolicy', 'minLength', parseInt(e.target.value))}
-                    />
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Webhook URLs</h3>
+                      <Input
+                        label="Slack Webhook"
+                        value={config.notifications.slackWebhook}
+                        onChange={(e) => updateConfig('notifications', 'slackWebhook', e.target.value)}
+                        placeholder="https://hooks.slack.com/services/..."
+                      />
+                      <Input
+                        label="Discord Webhook"
+                        value={config.notifications.discordWebhook}
+                        onChange={(e) => updateConfig('notifications', 'discordWebhook', e.target.value)}
+                        placeholder="https://discord.com/api/webhooks/..."
+                      />
+                      <Input
+                        label="Teams Webhook"
+                        value={config.notifications.teamsWebhook}
+                        onChange={(e) => updateConfig('notifications', 'teamsWebhook', e.target.value)}
+                        placeholder="https://outlook.office.com/webhook/..."
+                      />
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'integrations',
+                label: 'Integrations',
+                content: (
+                  <div className="space-y-6 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card>
+                        <div className="p-4 border-b">
+                          <h3 className="text-lg font-semibold">Elasticsearch</h3>
+                        </div>
+                        <div className="p-4">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span>Enable Elasticsearch</span>
+                              <Switch
+                                checked={config.integrations.elasticsearchEnabled}
+                                onChange={(checked) => updateConfig('integrations', 'elasticsearchEnabled', checked)}
+                              />
+                            </div>
+                            <Input
+                              label="Elasticsearch URL"
+                              value={config.integrations.elasticsearchUrl}
+                              onChange={(e) => updateConfig('integrations', 'elasticsearchUrl', e.target.value)}
+                              disabled={!config.integrations.elasticsearchEnabled}
+                            />
+                          </div>
+                        </div>
+                      </Card>
+                      
+                      <Card>
+                        <div className="p-4 border-b">
+                          <h3 className="text-lg font-semibold">Redis</h3>
+                        </div>
+                        <div className="p-4">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span>Enable Redis</span>
+                              <Switch
+                                checked={config.integrations.redisEnabled}
+                                onChange={(checked) => updateConfig('integrations', 'redisEnabled', checked)}
+                              />
+                            </div>
+                            <Input
+                              label="Redis URL"
+                              value={config.integrations.redisUrl}
+                              onChange={(e) => updateConfig('integrations', 'redisUrl', e.target.value)}
+                              disabled={!config.integrations.redisEnabled}
+                            />
+                          </div>
+                        </div>
+                      </Card>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">Webhooks</h4>
+                          <p className="text-sm text-gray-600">Enable outgoing webhooks</p>
+                        </div>
+                        <Switch
+                          checked={config.integrations.webhooksEnabled}
+                          onChange={(checked) => updateConfig('integrations', 'webhooksEnabled', checked)}
+                        />
+                      </div>
+                      
+                      <Input
+                        type="number"
+                        label="API Rate Limit (per minute)"
+                        value={config.integrations.apiRateLimit.toString()}
+                        onChange={(e) => updateConfig('integrations', 'apiRateLimit', parseInt(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'feature-flags',
+                label: 'Feature Flags',
+                content: (
+                  <div className="space-y-6 pt-4">
+                    <div className="space-y-4">
+                      {featureFlags.map((flag) => (
+                        <Card key={flag.id}>
+                          <div className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3">
+                                  <h4 className="font-medium">{flag.name}</h4>
+                                  <Chip
+                                    color={
+                                      flag.category === 'ui' ? 'primary' :
+                                      flag.category === 'api' ? 'secondary' :
+                                      flag.category === 'integration' ? 'success' : 'warning'
+                                    }
+                                    variant="flat"
+                                    size="sm"
+                                  >
+                                    {flag.category}
+                                  </Chip>
+                                  {flag.enabled && (
+                                    <Chip color="success" variant="flat" size="sm">
+                                      Active
+                                    </Chip>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">{flag.description}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Rollout: {flag.rolloutPercentage}%
+                                </p>
+                              </div>
+                              <Switch
+                                checked={flag.enabled}
+                                onChange={() => toggleFeatureFlag(flag.id)}
+                              />
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'environment',
+                label: 'Environment',
+                content: (
+                  <div className="space-y-6 pt-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold">Environment Variables</h3>
+                      {/* <Button size="sm" onPress={onOpen}> */}
+                      {/* Add Variable */}
+                      {/* </Button> */}
+                    </div>
+                    
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span>Require Uppercase</span>
-                        <Switch
-                          isSelected={config.security.passwordPolicy.requireUppercase}
-                          onValueChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireUppercase', checked)}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Require Lowercase</span>
-                        <Switch
-                          isSelected={config.security.passwordPolicy.requireLowercase}
-                          onValueChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireLowercase', checked)}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Require Numbers</span>
-                        <Switch
-                          isSelected={config.security.passwordPolicy.requireNumbers}
-                          onValueChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireNumbers', checked)}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Require Special Characters</span>
-                        <Switch
-                          isSelected={config.security.passwordPolicy.requireSpecialChars}
-                          onValueChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireSpecialChars', checked)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Divider />
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Two-Factor Authentication</h4>
-                    <p className="text-sm text-gray-600">Require 2FA for all users</p>
-                  </div>
-                  <Switch
-                    isSelected={config.security.twoFactorEnabled}
-                    onValueChange={(checked) => updateConfig('security', 'twoFactorEnabled', checked)}
-                  />
-                </div>
-              </div>
-            </Tab>
-
-            <Tab key="email" title={<div className="flex items-center gap-2"><EnvelopeIcon className="w-4 h-4" />Email</div>}>
-              <div className="space-y-6 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="SMTP Host"
-                    value={config.email.smtpHost}
-                    onChange={(e) => updateConfig('email', 'smtpHost', e.target.value)}
-                  />
-                  <Input
-                    type="number"
-                    label="SMTP Port"
-                    value={config.email.smtpPort.toString()}
-                    onChange={(e) => updateConfig('email', 'smtpPort', parseInt(e.target.value))}
-                  />
-                  <Input
-                    label="SMTP Username"
-                    value={config.email.smtpUsername}
-                    onChange={(e) => updateConfig('email', 'smtpUsername', e.target.value)}
-                  />
-                  <Input
-                    type="password"
-                    label="SMTP Password"
-                    value={config.email.smtpPassword}
-                    onChange={(e) => updateConfig('email', 'smtpPassword', e.target.value)}
-                  />
-                  <Input
-                    label="From Email"
-                    value={config.email.fromEmail}
-                    onChange={(e) => updateConfig('email', 'fromEmail', e.target.value)}
-                  />
-                  <Input
-                    label="From Name"
-                    value={config.email.fromName}
-                    onChange={(e) => updateConfig('email', 'fromName', e.target.value)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">SMTP Secure (TLS/SSL)</h4>
-                    <p className="text-sm text-gray-600">Use secure connection for SMTP</p>
-                  </div>
-                  <Switch
-                    isSelected={config.email.smtpSecure}
-                    onValueChange={(checked) => updateConfig('email', 'smtpSecure', checked)}
-                  />
-                </div>
-              </div>
-            </Tab>
-
-            <Tab key="notifications" title={<div className="flex items-center gap-2"><BellIcon className="w-4 h-4" />Notifications</div>}>
-              <div className="space-y-6 pt-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Email Notifications</h4>
-                      <p className="text-sm text-gray-600">Enable email notifications</p>
-                    </div>
-                    <Switch
-                      isSelected={config.notifications.emailNotifications}
-                      onValueChange={(checked) => updateConfig('notifications', 'emailNotifications', checked)}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Critical Alerts</h4>
-                      <p className="text-sm text-gray-600">Send alerts for critical system events</p>
-                    </div>
-                    <Switch
-                      isSelected={config.notifications.criticalAlerts}
-                      onValueChange={(checked) => updateConfig('notifications', 'criticalAlerts', checked)}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">System Updates</h4>
-                      <p className="text-sm text-gray-600">Send notifications for system updates</p>
-                    </div>
-                    <Switch
-                      isSelected={config.notifications.systemUpdates}
-                      onValueChange={(checked) => updateConfig('notifications', 'systemUpdates', checked)}
-                    />
-                  </div>
-                </div>
-
-                <Divider />
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Webhook URLs</h3>
-                  <Input
-                    label="Slack Webhook"
-                    value={config.notifications.slackWebhook}
-                    onChange={(e) => updateConfig('notifications', 'slackWebhook', e.target.value)}
-                    placeholder="https://hooks.slack.com/services/..."
-                  />
-                  <Input
-                    label="Discord Webhook"
-                    value={config.notifications.discordWebhook}
-                    onChange={(e) => updateConfig('notifications', 'discordWebhook', e.target.value)}
-                    placeholder="https://discord.com/api/webhooks/..."
-                  />
-                  <Input
-                    label="Teams Webhook"
-                    value={config.notifications.teamsWebhook}
-                    onChange={(e) => updateConfig('notifications', 'teamsWebhook', e.target.value)}
-                    placeholder="https://outlook.office.com/webhook/..."
-                  />
-                </div>
-              </div>
-            </Tab>
-
-            <Tab key="integrations" title={<div className="flex items-center gap-2"><ServerIcon className="w-4 h-4" />Integrations</div>}>
-              <div className="space-y-6 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <h3 className="text-lg font-semibold">Elasticsearch</h3>
-                    </CardHeader>
-                    <CardBody>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span>Enable Elasticsearch</span>
-                          <Switch
-                            isSelected={config.integrations.elasticsearchEnabled}
-                            onValueChange={(checked) => updateConfig('integrations', 'elasticsearchEnabled', checked)}
-                          />
-                        </div>
-                        <Input
-                          label="Elasticsearch URL"
-                          value={config.integrations.elasticsearchUrl}
-                          onChange={(e) => updateConfig('integrations', 'elasticsearchUrl', e.target.value)}
-                          isDisabled={!config.integrations.elasticsearchEnabled}
-                        />
-                      </div>
-                    </CardBody>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <h3 className="text-lg font-semibold">Redis</h3>
-                    </CardHeader>
-                    <CardBody>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span>Enable Redis</span>
-                          <Switch
-                            isSelected={config.integrations.redisEnabled}
-                            onValueChange={(checked) => updateConfig('integrations', 'redisEnabled', checked)}
-                          />
-                        </div>
-                        <Input
-                          label="Redis URL"
-                          value={config.integrations.redisUrl}
-                          onChange={(e) => updateConfig('integrations', 'redisUrl', e.target.value)}
-                          isDisabled={!config.integrations.redisEnabled}
-                        />
-                      </div>
-                    </CardBody>
-                  </Card>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Webhooks</h4>
-                      <p className="text-sm text-gray-600">Enable outgoing webhooks</p>
-                    </div>
-                    <Switch
-                      isSelected={config.integrations.webhooksEnabled}
-                      onValueChange={(checked) => updateConfig('integrations', 'webhooksEnabled', checked)}
-                    />
-                  </div>
-                  
-                  <Input
-                    type="number"
-                    label="API Rate Limit (per minute)"
-                    value={config.integrations.apiRateLimit.toString()}
-                    onChange={(e) => updateConfig('integrations', 'apiRateLimit', parseInt(e.target.value))}
-                  />
-                </div>
-              </div>
-            </Tab>
-
-            <Tab key="feature-flags" title={<div className="flex items-center gap-2"><KeyIcon className="w-4 h-4" />Feature Flags</div>}>
-              <div className="space-y-6 pt-4">
-                <div className="space-y-4">
-                  {featureFlags.map((flag) => (
-                    <Card key={flag.id}>
-                      <CardBody>
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                              <h4 className="font-medium">{flag.name}</h4>
-                              <Chip
-                                color={
-                                  flag.category === 'ui' ? 'primary' :
-                                  flag.category === 'api' ? 'secondary' :
-                                  flag.category === 'integration' ? 'success' : 'warning'
-                                }
-                                variant="flat"
+                      {envVars.map((envVar) => (
+                        <Card key={envVar.key}>
+                          <div className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3">
+                                  <code className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                                    {envVar.key}
+                                  </code>
+                                  {envVar.sensitive && (
+                                    <Chip color="warning" variant="flat" size="sm">
+                                      Sensitive
+                                    </Chip>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">{envVar.description}</p>
+                                <p className="text-xs font-mono text-gray-500 mt-1">
+                                  {envVar.sensitive ? '***REDACTED***' : envVar.value}
+                                </p>
+                              </div>
+                              {/* <Button
                                 size="sm"
+                                variant="light"
+                                onPress={() => {
+                                  setSelectedEnvVar(envVar);
+                                  onOpen();
+                                }}
                               >
-                                {flag.category}
-                              </Chip>
-                              {flag.enabled && (
-                                <Chip color="success" variant="flat" size="sm">
-                                  Active
-                                </Chip>
-                              )}
+                                Edit
+                              </Button> */}
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">{flag.description}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Rollout: {flag.rolloutPercentage}%
-                            </p>
                           </div>
-                          <Switch
-                            isSelected={flag.enabled}
-                            onValueChange={() => toggleFeatureFlag(flag.id)}
-                          />
-                        </div>
-                      </CardBody>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </Tab>
-
-            <Tab key="environment" title={<div className="flex items-center gap-2"><DocumentIcon className="w-4 h-4" />Environment</div>}>
-              <div className="space-y-6 pt-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Environment Variables</h3>
-                  <Button size="sm" onPress={onOpen}>
-                    Add Variable
-                  </Button>
-                </div>
-                
-                <div className="space-y-3">
-                  {envVars.map((envVar) => (
-                    <Card key={envVar.key}>
-                      <CardBody>
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                              <code className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
-                                {envVar.key}
-                              </code>
-                              {envVar.sensitive && (
-                                <Chip color="warning" variant="flat" size="sm">
-                                  Sensitive
-                                </Chip>
-                              )}
-                            </div>
-                            <p className="text-sm text-gray-600 mt-1">{envVar.description}</p>
-                            <p className="text-xs font-mono text-gray-500 mt-1">
-                              {envVar.sensitive ? '***REDACTED***' : envVar.value}
-                            </p>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="light"
-                            onPress={() => {
-                              setSelectedEnvVar(envVar);
-                              onOpen();
-                            }}
-                          >
-                            Edit
-                          </Button>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </Tab>
-          </Tabs>
-        </CardBody>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </div>
       </Card>
 
       {/* Environment Variable Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="lg">
-        <ModalContent>
-          <ModalHeader>
-            {selectedEnvVar ? 'Edit Environment Variable' : 'Add Environment Variable'}
-          </ModalHeader>
-          <ModalBody>
-            <div className="space-y-4">
-              <Input
-                label="Key"
-                placeholder="VARIABLE_NAME"
-                defaultValue={selectedEnvVar?.key || ''}
-              />
-              <Input
-                label="Value"
-                placeholder="variable value"
-                defaultValue={selectedEnvVar?.value || ''}
-              />
-              <Textarea
-                label="Description"
-                placeholder="Description of this environment variable"
-                defaultValue={selectedEnvVar?.description || ''}
-              />
-              <div className="flex items-center justify-between">
-                <span>Sensitive Variable</span>
-                <Switch defaultSelected={selectedEnvVar?.sensitive || false} />
-              </div>
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onClose}>
-              Cancel
-            </Button>
-            <Button color="primary" onPress={onClose}>
-              {selectedEnvVar ? 'Update' : 'Add'} Variable
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* <Modal isOpen={isOpen} onClose={onClose} size="lg"> */}
+      {/* <ModalContent> */}
+      {/* <ModalHeader> */}
+      {/* {selectedEnvVar ? 'Edit Environment Variable' : 'Add Environment Variable'} */}
+      {/* </ModalHeader> */}
+      {/* <ModalBody> */}
+      {/* <div className="space-y-4"> */}
+      {/* <Input */}
+      {/* label="Key" */}
+      {/* placeholder="VARIABLE_NAME" */}
+      {/* defaultValue={selectedEnvVar?.key || ''} */}
+      {/* /> */}
+      {/* <Input */}
+      {/* label="Value" */}
+      {/* placeholder="variable value" */}
+      {/* defaultValue={selectedEnvVar?.value || ''} */}
+      {/* /> */}
+      {/* <Textarea */}
+      {/* label="Description" */}
+      {/* placeholder="Description of this environment variable" */}
+      {/* defaultValue={selectedEnvVar?.description || ''} */}
+      {/* /> */}
+      {/* <div className="flex items-center justify-between"> */}
+      {/* <span>Sensitive Variable</span> */}
+      {/* <Switch defaultSelected={selectedEnvVar?.sensitive || false} /> */}
+      {/* </div> */}
+      {/* </div> */}
+      {/* </ModalBody> */}
+      {/* <ModalFooter> */}
+      {/* <Button variant="light" onPress={onClose}> */}
+      {/* Cancel */}
+      {/* </Button> */}
+      {/* <Button color="primary" onPress={onClose}> */}
+      {/* {selectedEnvVar ? 'Update' : 'Add'} Variable */}
+      {/* </Button> */}
+      {/* </ModalFooter> */}
+      {/* </ModalContent> */}
+      {/* </Modal> */}
     </div>
   );
 };
