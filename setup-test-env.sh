@@ -187,9 +187,8 @@ services:
       CORE_DB_NAME: nova_test
       CORE_DB_USER: nova_test
       CORE_DB_PASSWORD: test_password_${TEST_ENV_NAME}
-      # Prisma engines for generated clients (mount from host node_modules)
-      PRISMA_QUERY_ENGINE_LIBRARY: /app/node_modules/.prisma/client/libquery_engine-debian-openssl-3.0.x.so.node
-      PRISMA_QUERY_ENGINE_BINARY: /app/node_modules/.prisma/client/query-engine-debian-openssl-3.0.x
+      # Use WASM Prisma engine to avoid native binary issues in CI
+      PRISMA_CLIENT_ENGINE_TYPE: wasm
       # Fallback POSTGRES_* vars (used if CORE_* not provided)
       POSTGRES_HOST: ${TEST_PREFIX}-postgres
       POSTGRES_PORT: 5432
