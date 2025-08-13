@@ -8,7 +8,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@nova-universe/ui': path.resolve(__dirname, '../../../packages/ui/dist/index.mjs'),
-      '@nova-universe/theme': path.resolve(__dirname, '../../../packages/theme/dist/theme.js'),
+      '@nova-universe/theme': path.resolve(__dirname, '../../../packages/theme/theme.ts'),
     },
   },
   server: {

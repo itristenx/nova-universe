@@ -1,6 +1,24 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import { Card, Button, Tabs, Table, TableHead as TableHeader, TableBody, TableCell, TableRow, Chip, Modal, Input, Select, Switch, Textarea } from '@/components/ui';
+import {
+  Card,
+  Button,
+  Tabs,
+  Table,
+  TableHead as TableHeader,
+  TableBody,
+  TableCell,
+  TableRow,
+  Chip,
+  Modal,
+  Input,
+  Select,
+  Switch,
+  Textarea,
+  LoadingSpinner,
+  LinearProgress,
+} from '@/components/ui';
+
 import { 
   UserIcon, 
   UserGroupIcon, 
@@ -85,7 +103,9 @@ export default function SCIMProvisioningMonitor() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { addToast } = useToastStore();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
+  const onOpen = () => setIsOpen(true);
+  const onClose = () => setIsOpen(false);
   
   // SCIM Data State
   const [scimConfig, setSCIMConfig] = useState<SCIMConfig>({
@@ -102,6 +122,7 @@ export default function SCIMProvisioningMonitor() {
   const [scimUsers, setSCIMUsers] = useState<SCIMUser[]>([]);
   const [scimGroups, setSCIMGroups] = useState<SCIMGroup[]>([]);
   const [provisioningEvents, setProvisioningEvents] = useState<ProvisioningEvent[]>([]);
+
   const [syncMetrics, setSyncMetrics] = useState<SyncMetrics>({
     totalUsers: 0,
     activeUsers: 0,
@@ -355,7 +376,7 @@ export default function SCIMProvisioningMonitor() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Spinner size="lg" />
+        <LoadingSpinner size={48} />
         <span className="ml-4 text-lg">Loading SCIM provisioning data...</span>
       </div>
     );
@@ -455,17 +476,17 @@ export default function SCIMProvisioningMonitor() {
 
       {/* Main Content Tabs */}
       <Card className="p-6">
-        <Tabs aria-label="SCIM provisioning tabs" defaultSelectedKey="users">
-          <Tab key="users" title="Users">
+        <Tabs selectedKey="users">
+          <Tabs.Tab key="users" title="Users">
             <div className="mt-4">
               <Table aria-label="SCIM Users">
                 <TableHeader>
-                  <TableColumn>USERNAME</TableColumn>
-                  <TableColumn>NAME</TableColumn>
-                  <TableColumn>EMAIL</TableColumn>
-                  <TableColumn>STATUS</TableColumn>
-                  <TableColumn>GROUPS</TableColumn>
-                  <TableColumn>LAST MODIFIED</TableColumn>
+                  <TableCell>USERNAME</TableCell>
+                  <TableCell>NAME</TableCell>
+                  <TableCell>EMAIL</TableCell>
+                  <TableCell>STATUS</TableCell>
+                  <TableCell>GROUPS</TableCell>
+                  <TableCell>LAST MODIFIED</TableCell>
                 </TableHeader>
                 <TableBody>
                   {scimUsers.map((user) => (
@@ -499,17 +520,17 @@ export default function SCIMProvisioningMonitor() {
                 </TableBody>
               </Table>
             </div>
-          </Tab>
+          </Tabs.Tab>
 
-          <Tab key="groups" title="Groups">
+          <Tabs.Tab key="groups" title="Groups">
             <div className="mt-4">
               <Table aria-label="SCIM Groups">
                 <TableHeader>
-                  <TableColumn>GROUP NAME</TableColumn>
-                  <TableColumn>MEMBERS</TableColumn>
-                  <TableColumn>EXTERNAL ID</TableColumn>
-                  <TableColumn>CREATED</TableColumn>
-                  <TableColumn>LAST MODIFIED</TableColumn>
+                  <TableCell>GROUP NAME</TableCell>
+                  <TableCell>MEMBERS</TableCell>
+                  <TableCell>EXTERNAL ID</TableCell>
+                  <TableCell>CREATED</TableCell>
+                  <TableCell>LAST MODIFIED</TableCell>
                 </TableHeader>
                 <TableBody>
                   {scimGroups.map((group) => (
@@ -533,9 +554,9 @@ export default function SCIMProvisioningMonitor() {
                 </TableBody>
               </Table>
             </div>
-          </Tab>
+          </Tabs.Tab>
 
-          <Tab key="activity" title="Activity Log">
+          <Tabs.Tab key="activity" title="Activity Log">
             <div className="mt-4 space-y-4">
               {provisioningEvents.map((event) => (
                 <div key={event.id} className="flex items-start space-x-3 p-4 border rounded-lg">
@@ -562,9 +583,9 @@ export default function SCIMProvisioningMonitor() {
                 </div>
               ))}
             </div>
-          </Tab>
+          </Tabs.Tab>
 
-          <Tab key="analytics" title="Analytics">
+          <Tabs.Tab key="analytics" title="Analytics">
             <div className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="p-4">
@@ -616,100 +637,92 @@ export default function SCIMProvisioningMonitor() {
                       <span className="text-sm text-gray-600">Inactive Users</span>
                       <span className="text-sm font-medium text-red-600">{syncMetrics.inactiveUsers}</span>
                     </div>
-                    <Progress 
-                      value={(syncMetrics.activeUsers / syncMetrics.totalUsers) * 100}
-                      color="success"
-                      className="mt-2"
-                    />
+                    <LinearProgress value={(syncMetrics.activeUsers / Math.max(1, syncMetrics.totalUsers)) * 100} />
                   </div>
                 </Card>
               </div>
             </div>
-          </Tab>
+          </Tabs.Tab>
         </Tabs>
       </Card>
 
       {/* Configuration Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-        <ModalContent>
-          <ModalHeader>SCIM Configuration</ModalHeader>
-          <ModalBody>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Enable SCIM Provisioning</p>
-                  <p className="text-sm text-gray-600">Allow automatic user and group provisioning</p>
-                </div>
-                <Switch
-                  isSelected={scimConfig.enabled}
-                  onValueChange={(enabled) => setSCIMConfig(prev => ({ ...prev, enabled }))}
-                />
+      <Modal isOpen={isOpen} onClose={onClose} title="SCIM Configuration" size="xl">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Enable SCIM Provisioning</p>
+              <p className="text-sm text-gray-600">Allow automatic user and group provisioning</p>
+            </div>
+            <Switch
+              checked={scimConfig.enabled}
+              onChange={(enabled: boolean) => setSCIMConfig(prev => ({ ...prev, enabled }))}
+            />
+          </div>
+
+          <Input
+            label="SCIM Endpoint"
+            value={scimConfig.endpoint}
+            onChange={(e) => setSCIMConfig(prev => ({ ...prev, endpoint: (e.target as HTMLInputElement).value }))}
+            placeholder="/scim/v2"
+          />
+
+          <Input
+            label="Bearer Token"
+            type="password"
+            value={scimConfig.token}
+            onChange={(e) => setSCIMConfig(prev => ({ ...prev, token: (e.target as HTMLInputElement).value }))}
+            placeholder="Enter SCIM bearer token"
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">User Sync</p>
+                <p className="text-sm text-gray-600">Sync user accounts</p>
               </div>
-
-              <Input
-                label="SCIM Endpoint"
-                value={scimConfig.endpoint}
-                onChange={(e) => setSCIMConfig(prev => ({ ...prev, endpoint: e.target.value }))}
-                placeholder="/scim/v2"
-              />
-
-              <Input
-                label="Bearer Token"
-                type="password"
-                value={scimConfig.token}
-                onChange={(e) => setSCIMConfig(prev => ({ ...prev, token: e.target.value }))}
-                placeholder="Enter SCIM bearer token"
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">User Sync</p>
-                    <p className="text-sm text-gray-600">Sync user accounts</p>
-                  </div>
-                  <Switch
-                    isSelected={scimConfig.userSyncEnabled}
-                    onValueChange={(userSyncEnabled) => setSCIMConfig(prev => ({ ...prev, userSyncEnabled }))}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Group Sync</p>
-                    <p className="text-sm text-gray-600">Sync group memberships</p>
-                  </div>
-                  <Switch
-                    checked={scimConfig.groupSyncEnabled}
-                    onChange={(groupSyncEnabled: boolean) => setSCIMConfig(prev => ({ ...prev, groupSyncEnabled }))}
-                  />
-                </div>
-              </div>
-
-              <Select
-                label="Sync Interval"
-                value={scimConfig.syncInterval.toString()}
-                onChange={(value: string) => setSCIMConfig(prev => ({ ...prev, syncInterval: parseInt(value) }))}
-                options={[
-                  { value: '300', label: '5 minutes' },
-                  { value: '900', label: '15 minutes' },
-                  { value: '1800', label: '30 minutes' },
-                  { value: '3600', label: '1 hour' },
-                  { value: '21600', label: '6 hours' },
-                  { value: '43200', label: '12 hours' },
-                  { value: '86400', label: '24 hours' },
-                ]}
+              <Switch
+                checked={scimConfig.userSyncEnabled}
+                onChange={(userSyncEnabled: boolean) => setSCIMConfig(prev => ({ ...prev, userSyncEnabled }))}
               />
             </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onClose}>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Group Sync</p>
+                <p className="text-sm text-gray-600">Sync group memberships</p>
+              </div>
+              <Switch
+                checked={scimConfig.groupSyncEnabled}
+                onChange={(groupSyncEnabled: boolean) => setSCIMConfig(prev => ({ ...prev, groupSyncEnabled }))}
+              />
+            </div>
+          </div>
+
+          <Select
+            label="Sync Interval"
+            value={scimConfig.syncInterval.toString()}
+            onChange={(value: string) => setSCIMConfig(prev => ({ ...prev, syncInterval: parseInt(value) }))}
+            options={[
+              { value: '300', label: '5 minutes' },
+              { value: '900', label: '15 minutes' },
+              { value: '1800', label: '30 minutes' },
+              { value: '3600', label: '1 hour' },
+              { value: '21600', label: '6 hours' },
+              { value: '43200', label: '12 hours' },
+              { value: '86400', label: '24 hours' },
+            ]}
+          />
+
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="default" onClick={onClose}>
               Cancel
             </Button>
-            <Button variant="primary" onPress={handleConfigSave}>
+            <Button variant="primary" onClick={handleConfigSave}>
               Save Configuration
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </div>
+        </div>
       </Modal>
     </div>
   );
