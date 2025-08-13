@@ -484,23 +484,6 @@ TEST002,SN987654321,HP ProDesk 400,Finance,active`;
     });
   });
 });
-      const testData = [
-        {
-          asset_tag: 'TEST-001',
-          model: 'Test Device',
-          serial_number: 'SN123456',
-          warranty_expiry: '2026-12-31'
-        }
-      ];
-
-      const validationResult = await inventoryService.validateRecords(testData);
-      
-      expect(validationResult.isValid).toBe(true);
-      expect(validationResult.validRecords).toHaveLength(1);
-      expect(validationResult.errors).toHaveLength(0);
-    });
-
-    });
 
     it('should detect validation errors', async () => {
       const testData = [

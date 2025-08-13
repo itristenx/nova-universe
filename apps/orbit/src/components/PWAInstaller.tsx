@@ -9,7 +9,6 @@ export function PWAInstaller() {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('SW registered: ', registration);
           
           // Check for updates
           registration.addEventListener('updatefound', () => {
@@ -26,8 +25,8 @@ export function PWAInstaller() {
             }
           });
         })
-        .catch((registrationError) => {
-          console.log('SW registration failed: ', registrationError);
+        .catch(() => {
+          // Silent fail in production
         });
     }
 
@@ -102,8 +101,7 @@ export function PWAInstaller() {
         installBtn.addEventListener('click', async () => {
           if (deferredPrompt && 'prompt' in deferredPrompt) {
             (deferredPrompt as any).prompt();
-            const result = await (deferredPrompt as any).userChoice;
-            console.log(`User response to the install prompt: ${result.outcome}`);
+            await (deferredPrompt as any).userChoice;
             deferredPrompt = null;
           }
           banner.remove();
@@ -139,7 +137,7 @@ export function PWAInstaller() {
 
     // Handle app installed event
     window.addEventListener('appinstalled', () => {
-      console.log('PWA was installed');
+      // No-op in production
       deferredPrompt = null;
       
       // Show success message
@@ -170,8 +168,8 @@ export function PWAInstaller() {
     // Request notification permission
     if ('Notification' in window && Notification.permission === 'default') {
       setTimeout(() => {
-        Notification.requestPermission().then((permission) => {
-          console.log('Notification permission:', permission);
+        Notification.requestPermission().then(() => {
+          // Silent
         });
       }, 5000);
     }

@@ -9,7 +9,7 @@ import express from 'express';
 import { body, query, param, validationResult } from 'express-validator';
 import rateLimit from 'express-rate-limit';
 import { authenticateJWT, requirePermission, createRateLimit } from '../middleware/auth.js';
-import { novaNotificationPlatform } from '../../lib/notification/nova-notification-platform.js';
+import { novaNotificationPlatform } from '../lib/notification/nova-notification-platform.js';
 import { logger } from '../logger.js';
 
 const router = express.Router();

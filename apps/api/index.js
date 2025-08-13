@@ -235,7 +235,7 @@ function getCliVersion() {
 
 // Swagger/OpenAPI setup
 let swaggerJSDoc, swaggerUi;
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true') {
   swaggerJSDoc = (await import('swagger-jsdoc')).default;
   swaggerUi = (await import('swagger-ui-express')).default;
 } else {
@@ -455,7 +455,7 @@ const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
 const KIOSK_TOKEN = process.env.KIOSK_TOKEN || '';
 const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET;
 
-if (!DISABLE_AUTH && !process.env.SESSION_SECRET) {
+if (!DISABLE_AUTH && !process.env.SESSION_SECRET && process.env.NODE_ENV !== 'test') {
   logger.error('SESSION_SECRET environment variable is required');
   process.exit(1);
 }
@@ -517,7 +517,7 @@ if (!DISABLE_AUTH) {
   } // End SAML conditional
 }
 
-const PORT = process.env.API_PORT || 3000;
+const PORT = Number(process.env.API_PORT || 3000);
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
 const CERT_PATH = process.env.TLS_CERT_PATH;
 const KEY_PATH = process.env.TLS_KEY_PATH;
@@ -1141,8 +1141,16 @@ v1Router.post('/api/login', apiLoginLimiter, authRateLimit, [
   });
 });
 
+// Root health for external checks
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 // Health check endpoint for debugging frontend connectivity
 app.get('/api/health', (req, res) => {
+  if (!db || !db.query) {
+    return res.status(503).json({ status: 'starting' });
+  }
   const uptime = Math.floor(process.uptime());
   const hours = Math.floor(uptime / 3600);
   const minutes = Math.floor((uptime % 3600) / 60);
@@ -1157,6 +1165,11 @@ app.get('/api/health', (req, res) => {
     uptime: `${hours}h ${minutes}m ${seconds}s`,
     uptimeSeconds: uptime
   });
+});
+
+// Add root health endpoint expected by tests
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 // Auth status endpoint for admin UI
@@ -1760,8 +1773,8 @@ export async function createApp() {
   return { app, server, io };
 }
 
-// Only start the server if not in test mode
-if (process.env.NODE_ENV !== 'test') {
+// Only start the server if not in test mode (unless FORCE_LISTEN=true)
+if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true') {
   createApp().then(({ app, server, io }) => {
     server.listen(PORT, () => {
       console.log(`🚀 Nova Universe API Server running on port ${PORT}`);

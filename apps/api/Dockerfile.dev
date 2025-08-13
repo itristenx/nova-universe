@@ -8,9 +8,9 @@ RUN apk add --no-cache git
 
 # Copy package files
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
-# Copy source code
+# Copy source code (node_modules excluded by .dockerignore)
 COPY . .
 
 # Create development user
@@ -24,5 +24,5 @@ USER nextjs
 
 EXPOSE 3000
 
-# Development command with hot reload
-CMD ["npm", "run", "dev"]
+# Start API
+CMD ["npm", "start"]

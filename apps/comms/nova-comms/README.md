@@ -173,8 +173,8 @@ CMD ["npm", "start"]
 ## Security
 
 - All requests verified using Slack signing secrets
-<<<<<<< Current (Your changes)
 - JWT tokens used for API authentication
+- Service JWTs include tenant and role claims used by Nova API auth
 - Environment variables for sensitive configuration
 - Input validation on all user data
 
@@ -206,6 +206,3 @@ This project is licensed under the [MIT License](../LICENSE).
 ## Credits & Acknowledgments
 - [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) for README inspiration
 - All contributors and open source dependencies
-=======
-- Service JWTs include tenant and role claims used by Nova API auth
->>>>>>> Incoming (Background Agent changes)

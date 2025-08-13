@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { KioskRedirect } from "../components/KioskRedirect";
@@ -6,12 +6,6 @@ import { PWAInstaller } from "../components/PWAInstaller";
 import { defaultBranding } from "../lib/branding";
 import { OutageBanner } from "../components/OutageBanner";
 import { ClientInit } from "../components/ClientInit";
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: "#1e40af",
-};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
