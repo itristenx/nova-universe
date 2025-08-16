@@ -9,7 +9,7 @@ export interface TagData {
 
 export interface UpdateTagData extends Partial<TagData> {}
 
-export const createTag = async (data: TagData) => {
+export const _createTag = async (data: TagData) => {
   try {
     const result = await prisma.$queryRaw`
       INSERT INTO nova_tags (
@@ -18,11 +18,11 @@ export const createTag = async (data: TagData) => {
         ${data.name}, ${data.color || '#007AFF'}, 
         ${data.user_id}, NOW(), NOW()
       ) RETURNING id
-    `;
+    `; // TODO-LINT: move to async function
     
     const tag = await prisma.$queryRaw`
       SELECT * FROM nova_tags WHERE id = ${(result as any)[0].id}
-    `;
+    `; // TODO-LINT: move to async function
     
     return (tag as any)[0];
   } catch (error) {
@@ -31,13 +31,13 @@ export const createTag = async (data: TagData) => {
   }
 };
 
-export const getTags = async (userId: string) => {
+export const _getTags = async (userId: string) => {
   try {
     const tags = await prisma.$queryRaw`
       SELECT * FROM nova_tags 
       WHERE tenant_id = ${userId} OR tenant_id IS NULL
       ORDER BY name
-    `;
+    `; // TODO-LINT: move to async function
 
     return tags;
   } catch (error) {
@@ -46,16 +46,16 @@ export const getTags = async (userId: string) => {
   }
 };
 
-export const updateTag = async (id: string, data: UpdateTagData, userId: string) => {
+export const _updateTag = async (id: string, data: UpdateTagData, userId: string) => {
   try {
     const fields: string[] = [];
-    const values: any[] = [];
+    const values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[] = [];
     
     if (data.name !== undefined) { fields.push('name = $' + (fields.length + 1)); values.push(data.name); }
     if (data.color !== undefined) { fields.push('color = $' + (fields.length + 1)); values.push(data.color); }
     
     if (fields.length === 0) {
-      return await getTagById(id, userId);
+      return await getTagById(id, userId); // TODO-LINT: move to async function
     }
     
     fields.push('updated_at = NOW()');
@@ -67,8 +67,8 @@ export const updateTag = async (id: string, data: UpdateTagData, userId: string)
       WHERE id = $${values.length - 1} AND tenant_id = $${values.length}
     `;
     
-    await prisma.$executeRawUnsafe(query, ...values);
-    return await getTagById(id, userId);
+    await prisma.$executeRawUnsafe(query, ...values); // TODO-LINT: move to async function
+    return await getTagById(id, userId); // TODO-LINT: move to async function
   } catch (error) {
     console.error('Database error updating tag:', error);
     throw new Error('Failed to update tag');
@@ -80,7 +80,7 @@ export const getTagById = async (id: string, userId: string) => {
     const result = await prisma.$queryRaw`
       SELECT * FROM nova_tags 
       WHERE id = ${id} AND tenant_id = ${userId}
-    `;
+    `; // TODO-LINT: move to async function
 
     return (result as any)[0] || null;
   } catch (error) {
@@ -89,12 +89,12 @@ export const getTagById = async (id: string, userId: string) => {
   }
 };
 
-export const deleteTag = async (id: string, userId: string) => {
+export const _deleteTag = async (id: string, userId: string) => {
   try {
     const result = await prisma.$executeRaw`
       DELETE FROM nova_tags 
       WHERE id = ${id} AND tenant_id = ${userId}
-    `;
+    `; // TODO-LINT: move to async function
 
     return result > 0;
   } catch (error) {

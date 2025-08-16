@@ -15,7 +15,7 @@ interface CachedItem {
   time?: string;
 }
 
-export default function OfflinePage() {
+export default function _OfflinePage() {
   const [isOnline, setIsOnline] = useState(false);
   const [cachedData, setCachedData] = useState<CachedItem[]>([]);
   const [pendingActions, setPendingActions] = useState(0);

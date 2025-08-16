@@ -41,7 +41,7 @@ export const QueueSwitcher: React.FC<Props> = ({ currentQueue, onQueueChange, qu
     }
   }
 
-  // Mock function to get current user ID - replace with actual auth
+  // Mock function _to _get current user _ID - _replace _with _actual auth
   const getCurrentUserId = () => {
     // This should come from your auth context
     return 'current-user-id'
@@ -179,3 +179,4 @@ export const QueueSwitcher: React.FC<Props> = ({ currentQueue, onQueueChange, qu
     </div>
   )
 }
+ // TODO-LINT: move to async function

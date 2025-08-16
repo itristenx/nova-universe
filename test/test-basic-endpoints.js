@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 
 const API_BASE = 'http://localhost:3000/api/v1';
 
-// Helper function to make requests without authentication
+// Helper function to _make _requests without authentication
 async function makeRequest(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
   const headers = {
@@ -19,9 +19,9 @@ async function makeRequest(endpoint, options = {}) {
     const response = await fetch(url, {
       ...options,
       headers
-    });
+    }); // TODO-LINT: move to async function
     
-    const data = await response.json();
+    const data = await response.json(); // TODO-LINT: move to async function
     return {
       status: response.status,
       success: response.ok,
@@ -42,21 +42,21 @@ async function testEndpoints() {
   
   // Test 1: Try to access queue metrics
   console.log('1️⃣ Testing GET /pulse/queues/metrics');
-  const metricsResult = await makeRequest('/pulse/queues/metrics');
+  const metricsResult = await makeRequest('/pulse/queues/metrics'); // TODO-LINT: move to async function
   
   console.log(`Status: ${metricsResult.status}`);
   console.log('Response:', JSON.stringify(metricsResult.data, null, 2));
   
   // Test 2: Try to access health endpoint
   console.log('\n2️⃣ Testing GET /health');
-  const healthResult = await makeRequest('/health');
+  const healthResult = await makeRequest('/health'); // TODO-LINT: move to async function
   
   console.log(`Status: ${healthResult.status}`);
   console.log('Response:', JSON.stringify(healthResult.data, null, 2));
   
   // Test 3: Check available endpoints
   console.log('\n3️⃣ Testing GET /server-info');
-  const infoResult = await makeRequest('/server-info');
+  const infoResult = await makeRequest('/server-info'); // TODO-LINT: move to async function
   
   console.log(`Status: ${infoResult.status}`);
   if (infoResult.success) {

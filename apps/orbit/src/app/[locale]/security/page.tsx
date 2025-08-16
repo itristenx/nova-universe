@@ -5,8 +5,8 @@ interface SecurityPageProps {
   params: Promise<{ locale: string }>;
 }
 
-export default async function SecurityPage({ params }: SecurityPageProps) {
-  const { locale } = await params;
+export default async function _SecurityPage({ params }: SecurityPageProps) {
+  const { locale } = await params; // TODO-LINT: move to async function
   
   // Enable static rendering
   setRequestLocale(locale);
@@ -14,7 +14,7 @@ export default async function SecurityPage({ params }: SecurityPageProps) {
   return <SecurityHub />;
 }
 
-export function generateStaticParams() {
+export function _generateStaticParams() {
   return [
     { locale: 'en' },
     { locale: 'es' },

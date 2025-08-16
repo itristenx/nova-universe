@@ -21,7 +21,7 @@ const TestFocusTrap = ({ active = true }: { active?: boolean }) => {
 describe('FocusManager', () => {
   beforeEach(() => {
     // Reset focus stack
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (FocusManager as any).stack = [];
     document.body.innerHTML = '';
   });
@@ -108,7 +108,7 @@ describe('useAutoFocus Hook', () => {
     const button = screen.getByText('Auto Focus Button');
     
     await waitFor(() => {
-      expect(button).toHaveFocus();
+      expect(button).toHaveFocus(); // TODO-LINT: move to async function
     }, { timeout: 200 });
   });
 
@@ -118,7 +118,7 @@ describe('useAutoFocus Hook', () => {
     const button = screen.getByText('Auto Focus Button');
     
     // Wait a bit to ensure focus doesn't happen
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => setTimeout(resolve, 150)); // TODO-LINT: move to async function
     expect(button).not.toHaveFocus();
   });
 });

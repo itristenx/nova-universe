@@ -40,7 +40,7 @@ const SEVERITY = {
  */
 router.get('/alerts', authenticateJWT, async (req, res) => {
   try {
-    const alerts = await generateSystemAlerts();
+    const alerts = await generateSystemAlerts(); // TODO-LINT: move to async function
     res.json({
       alerts,
       count: alerts.length,
@@ -73,7 +73,7 @@ router.get('/health', async (req, res) => {
       checkAPIHealth(),
       checkServiceHealth(),
       checkExternalDependencies()
-    ]);
+    ]); // TODO-LINT: move to async function
 
     const health = {
       status: 'healthy',
@@ -117,7 +117,7 @@ router.get('/health', async (req, res) => {
  */
 router.get('/performance', authenticateJWT, async (req, res) => {
   try {
-    const performance = await getPerformanceMetrics();
+    const performance = await getPerformanceMetrics(); // TODO-LINT: move to async function
     res.json(performance);
   } catch (error) {
     logger.error('Failed to get performance metrics', { error: error.message });
@@ -136,7 +136,7 @@ async function generateSystemAlerts() {
       SELECT COUNT(*) as count 
       FROM support_tickets 
       WHERE created_at >= NOW() - INTERVAL '1 hour'
-    `);
+    `); // TODO-LINT: move to async function
     
     const hourlyTickets = parseInt(ticketVolume.rows[0].count);
     if (hourlyTickets > ALERT_THRESHOLDS.TICKET_VOLUME_HIGH) {
@@ -158,7 +158,7 @@ async function generateSystemAlerts() {
       FROM support_tickets 
       WHERE resolved_at IS NOT NULL 
       AND resolved_at >= NOW() - INTERVAL '24 hours'
-    `);
+    `); // TODO-LINT: move to async function
     
     const avgResolutionHours = parseFloat(resolutionTime.rows[0]?.avg_hours || 0);
     if (avgResolutionHours > ALERT_THRESHOLDS.RESOLUTION_TIME_HIGH) {
@@ -179,7 +179,7 @@ async function generateSystemAlerts() {
       SELECT COUNT(*) as count 
       FROM support_tickets 
       WHERE vip_priority_score > 0 AND status IN ('open', 'in_progress')
-    `);
+    `); // TODO-LINT: move to async function
     
     const vipWaiting = parseInt(vipQueue.rows[0].count);
     if (vipWaiting > ALERT_THRESHOLDS.VIP_QUEUE_HIGH) {
@@ -215,7 +215,7 @@ async function generateSystemAlerts() {
       SELECT COUNT(*) as active_connections 
       FROM pg_stat_activity 
       WHERE state = 'active'
-    `).catch(() => ({ rows: [{ active_connections: 0 }] }));
+    `).catch(() => ({ rows: [{ active_connections: 0 }] })); // TODO-LINT: move to async function
     
     const connections = parseInt(dbConnections.rows[0].active_connections);
     if (connections > 50) { // Arbitrary threshold
@@ -249,8 +249,8 @@ async function generateSystemAlerts() {
 // Database health check
 async function checkDatabaseHealth() {
   try {
-    const result = await db.query('SELECT 1 as health');
-    const connectionCount = await db.query('SELECT COUNT(*) FROM pg_stat_activity');
+    const result = await db.query('SELECT 1 as health'); // TODO-LINT: move to async function
+    const connectionCount = await db.query('SELECT COUNT(*) FROM pg_stat_activity'); // TODO-LINT: move to async function
     
     return {
       status: 'healthy',
@@ -340,7 +340,7 @@ async function getPerformanceMetrics() {
       size: await db.query('SELECT pg_database_size(current_database())').then(r => parseInt(r.rows[0].pg_database_size)).catch(() => 0)
     },
     timestamp: new Date().toISOString()
-  };
+  }; // TODO-LINT: move to async function
 }
 
 export default router;
@@ -412,7 +412,7 @@ router.get('/monitors', authenticateJWT, async (req, res) => {
       ORDER BY m.name
     `;
 
-    const result = await db.query(query, params);
+    const result = await db.query(query, params); // TODO-LINT: move to async function
     
     res.json({
       monitors: result.rows,
@@ -476,13 +476,13 @@ router.post('/monitors', authenticateJWT, async (req, res) => {
       interval_seconds, timeout_seconds, retry_interval_seconds, max_retries,
       http_method, JSON.stringify(http_headers), JSON.stringify(accepted_status_codes),
       follow_redirects, ignore_ssl, user.id
-    ]);
+    ]); // TODO-LINT: move to async function
 
     const monitor = result.rows[0];
 
     // Create corresponding Uptime Kuma monitor via API (best-effort)
     try {
-      const { kumaClient } = await import('../lib/uptime-kuma.js');
+      const { kumaClient } = await import('../lib/uptime-kuma.js'); // TODO-LINT: move to async function
       const kuma = await kumaClient.createMonitor({
         name: monitor.name,
         type: monitor.type,
@@ -492,9 +492,9 @@ router.post('/monitors', authenticateJWT, async (req, res) => {
         interval: monitor.interval_seconds,
         timeout: monitor.timeout_seconds,
         active: monitor.status !== 'disabled'
-      });
+      }); // TODO-LINT: move to async function
       // persist kuma_id
-      await db.query('UPDATE monitors SET kuma_id = $1 WHERE id = $2', [kuma.id, monitor.id]);
+      await db.query('UPDATE monitors SET kuma_id = $1 WHERE id = $2', [kuma.id, monitor.id]); // TODO-LINT: move to async function
     } catch (e) {
       logger.warn('Failed to create Kuma monitor (non-blocking)', { error: e.message, monitorId: monitor.id });
     }
@@ -541,7 +541,7 @@ router.get('/monitors/:id', authenticateJWT, async (req, res) => {
         AND h.checked_at >= NOW() - INTERVAL '${period === '7d' ? '7 days' : '24 hours'}'
       WHERE m.id = $1
       GROUP BY m.id, mg.name
-    `, [id]);
+    `, [id]); // TODO-LINT: move to async function
 
     if (monitorResult.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
@@ -556,7 +556,7 @@ router.get('/monitors/:id', authenticateJWT, async (req, res) => {
       WHERE monitor_id = $1
       ORDER BY checked_at DESC
       LIMIT 100
-    `, [id]);
+    `, [id]); // TODO-LINT: move to async function
 
     // Get active incidents
     const incidentsResult = await db.query(`
@@ -564,7 +564,7 @@ router.get('/monitors/:id', authenticateJWT, async (req, res) => {
       FROM monitor_incidents
       WHERE monitor_id = $1 AND status IN ('open', 'acknowledged', 'investigating')
       ORDER BY started_at DESC
-    `, [id]);
+    `, [id]); // TODO-LINT: move to async function
 
     res.json({
       monitor,
@@ -628,7 +628,7 @@ router.patch('/monitors/:id', authenticateJWT, async (req, res) => {
       RETURNING *
     `;
 
-    const result = await db.query(query, values);
+    const result = await db.query(query, values); // TODO-LINT: move to async function
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
@@ -638,7 +638,7 @@ router.patch('/monitors/:id', authenticateJWT, async (req, res) => {
     try {
       const updated = result.rows[0];
       if (updated.kuma_id) {
-        const { kumaClient } = await import('../lib/uptime-kuma.js');
+        const { kumaClient } = await import('../lib/uptime-kuma.js'); // TODO-LINT: move to async function
         await kumaClient.updateMonitor(updated.kuma_id, {
           name: updated.name,
           type: updated.type,
@@ -648,7 +648,7 @@ router.patch('/monitors/:id', authenticateJWT, async (req, res) => {
           interval: updated.interval_seconds,
           timeout: updated.timeout_seconds,
           active: updated.status !== 'disabled'
-        });
+        }); // TODO-LINT: move to async function
       }
     } catch (e) {
       logger.warn('Failed to update Kuma monitor (non-blocking)', { error: e.message, monitorId: id });
@@ -682,7 +682,7 @@ router.delete('/monitors/:id', authenticateJWT, async (req, res) => {
     const { id } = req.params;
     const user = req.user;
 
-    const result = await db.query('DELETE FROM monitors WHERE id = $1 RETURNING name, kuma_id', [id]);
+    const result = await db.query('DELETE FROM monitors WHERE id = $1 RETURNING name, kuma_id', [id]); // TODO-LINT: move to async function
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
@@ -692,8 +692,8 @@ router.delete('/monitors/:id', authenticateJWT, async (req, res) => {
     try {
       const kumaId = result.rows[0].kuma_id;
       if (kumaId) {
-        const { kumaClient } = await import('../lib/uptime-kuma.js');
-        await kumaClient.deleteMonitor(kumaId);
+        const { kumaClient } = await import('../lib/uptime-kuma.js'); // TODO-LINT: move to async function
+        await kumaClient.deleteMonitor(kumaId); // TODO-LINT: move to async function
       }
     } catch (e) {
       logger.warn('Failed to delete Kuma monitor (non-blocking)', { error: e.message, monitorId: id });
@@ -762,7 +762,7 @@ router.get('/incidents', authenticateJWT, async (req, res) => {
 
     query += ` ORDER BY i.started_at DESC LIMIT 100`;
 
-    const result = await db.query(query, params);
+    const result = await db.query(query, params); // TODO-LINT: move to async function
 
     res.json({
       incidents: result.rows,
@@ -799,7 +799,7 @@ router.post('/events', async (req, res) => {
       heartbeat,
       message: msg,
       timestamp: new Date().toISOString()
-    });
+    }); // TODO-LINT: move to async function
 
     // Emit realtime update to monitoring subscribers
     if (req.app?.wsManager) {
@@ -842,7 +842,7 @@ router.post('/subscribe', authenticateJWT, async (req, res) => {
       ON CONFLICT (monitor_id, user_id, notification_type) 
       DO UPDATE SET active = true, notification_config = $4, updated_at = CURRENT_TIMESTAMP
       RETURNING *
-    `, [monitor_id, user.id, notification_type, JSON.stringify(notification_config)]);
+    `, [monitor_id, user.id, notification_type, JSON.stringify(notification_config)]); // TODO-LINT: move to async function
 
     logger.info('User subscribed to monitor', { 
       monitorId: monitor_id, 
@@ -912,7 +912,7 @@ router.get('/history/:id', authenticateJWT, async (req, res) => {
       ORDER BY time_bucket
     `;
 
-    const result = await db.query(query, [id]);
+    const result = await db.query(query, [id]); // TODO-LINT: move to async function
 
     // Calculate overall statistics
     const statsQuery = `
@@ -926,7 +926,7 @@ router.get('/history/:id', authenticateJWT, async (req, res) => {
         AND checked_at >= NOW() - INTERVAL '${timeRange}'
     `;
 
-    const statsResult = await db.query(statsQuery, [id]);
+    const statsResult = await db.query(statsQuery, [id]); // TODO-LINT: move to async function
     const stats = statsResult.rows[0];
 
     res.json({
@@ -968,7 +968,7 @@ async function processKumaEvent(event) {
     const monitorResult = await db.query(
       'SELECT * FROM monitors WHERE kuma_id = $1',
       [monitor.id]
-    );
+    ); // TODO-LINT: move to async function
 
     if (monitorResult.rows.length === 0) {
       logger.warn('Received event for unknown monitor', { kumaId: monitor.id });
@@ -991,15 +991,15 @@ async function processKumaEvent(event) {
       heartbeat.msg || null,
       new Date(heartbeat.time),
       heartbeat.important || false
-    ]);
+    ]); // TODO-LINT: move to async function
 
     // Handle incident management
     if (heartbeat.status === 0 && heartbeat.important) {
       // Service went down - create/update incident
-      await handleServiceDown(novaMonitor, heartbeat, message);
+      await handleServiceDown(novaMonitor, heartbeat, message); // TODO-LINT: move to async function
     } else if (heartbeat.status === 1 && heartbeat.important) {
       // Service recovered - resolve incident
-      await handleServiceRecovered(novaMonitor, heartbeat);
+      await handleServiceRecovered(novaMonitor, heartbeat); // TODO-LINT: move to async function
     }
 
     logger.debug('Kuma event processed', { 
@@ -1055,12 +1055,12 @@ async function handleServiceDown(monitor, heartbeat, message) {
       SELECT id FROM monitor_incidents 
       WHERE monitor_id = $1 AND status IN ('open', 'acknowledged', 'investigating')
       ORDER BY started_at DESC LIMIT 1
-    `, [monitor.id]);
+    `, [monitor.id]); // TODO-LINT: move to async function
 
     if (existingIncident.rows.length === 0) {
       // Create new incident
       const severity = determineSeverity(monitor, heartbeat);
-      const summary = await generateIncidentSummary(monitor, heartbeat, message);
+      const summary = await generateIncidentSummary(monitor, heartbeat, message); // TODO-LINT: move to async function
 
       const result = await db.query(`
         INSERT INTO monitor_incidents (
@@ -1073,7 +1073,7 @@ async function handleServiceDown(monitor, heartbeat, message) {
         summary,
         `Monitor ${monitor.name} is experiencing issues: ${heartbeat.msg || 'Unknown error'}`,
         new Date(heartbeat.time)
-      ]);
+      ]); // TODO-LINT: move to async function
 
       const incident = result.rows[0];
 
@@ -1093,7 +1093,7 @@ async function handleServiceDown(monitor, heartbeat, message) {
         monitor_id: monitor.id,
         severity,
         summary,
-      });
+      }); // TODO-LINT: move to async function
 
       logger.info('Incident created', { 
         incidentId: incident.id, 
@@ -1112,7 +1112,7 @@ async function handleServiceDown(monitor, heartbeat, message) {
 async function handleServiceRecovered(monitor, heartbeat) {
   try {
     // Auto-resolve open incidents if configured
-    const autoResolve = await getConfigValue('monitoring.incident_auto_resolve', 'true');
+    const autoResolve = await getConfigValue('monitoring.incident_auto_resolve', 'true'); // TODO-LINT: move to async function
     
     if (autoResolve === 'true') {
       const result = await db.query(`
@@ -1120,7 +1120,7 @@ async function handleServiceRecovered(monitor, heartbeat) {
         SET status = 'resolved', resolved_at = $1, auto_resolved = true
         WHERE monitor_id = $2 AND status IN ('open', 'acknowledged', 'investigating')
         RETURNING *
-      `, [new Date(heartbeat.time), monitor.id]);
+      `, [new Date(heartbeat.time), monitor.id]); // TODO-LINT: move to async function
 
       const resolved = result.rows;
 
@@ -1137,11 +1137,11 @@ async function handleServiceRecovered(monitor, heartbeat) {
       await db.createAuditLog('sentinel.incident.auto_resolved', 'system', {
         monitor_id: monitor.id,
         resolved_count: resolved.length,
-      });
+      }); // TODO-LINT: move to async function
 
       // Send recovery notifications
       try {
-        const { notificationService } = await import('../lib/notifications.js');
+        const { notificationService } = await import('../lib/notifications.js'); // TODO-LINT: move to async function
         await notificationService.sendNotification({
           type: 'incident_resolved',
           monitor_id: monitor.id,
@@ -1151,7 +1151,7 @@ async function handleServiceRecovered(monitor, heartbeat) {
           title: `Service recovered: ${monitor.name}`,
           message: `Monitor ${monitor.name} has recovered at ${new Date(heartbeat.time).toISOString()}.`,
           data: { monitor, heartbeat }
-        });
+        }); // TODO-LINT: move to async function
       } catch (notifyErr) {
         logger.warn('Failed to send recovery notifications', { error: notifyErr.message });
       }
@@ -1197,8 +1197,8 @@ function determineSeverity(monitor, heartbeat) {
 async function generateIncidentSummary(monitor, heartbeat, message) {
   // Attempt AI-generated summary via Nova Synth MCP
   try {
-    const { initializeMCPServer } = await import('../utils/cosmo.js');
-    const mcp = await initializeMCPServer();
+    const { initializeMCPServer } = await import('../utils/cosmo.js'); // TODO-LINT: move to async function
+    const mcp = await initializeMCPServer(); // TODO-LINT: move to async function
     const analysis = await mcp.callTool('nova.alerts.analyze', {
       userId: monitor.updated_by || monitor.created_by || 'system',
       module: 'pulse',
@@ -1212,7 +1212,7 @@ async function generateIncidentSummary(monitor, heartbeat, message) {
       },
       message: `Monitor ${monitor.name} is ${heartbeat.status === 1 ? 'up' : 'down'}.
 Reason: ${heartbeat.msg || message || 'Unknown'}`
-    });
+    }); // TODO-LINT: move to async function
     const parsed = JSON.parse(analysis.content?.[0]?.text || '{}');
     return parsed.reasoning || `Incident detected on ${monitor.name}: ${heartbeat.msg || 'Service appears to be down.'}`;
   } catch (e) {
@@ -1240,11 +1240,11 @@ router.get('/kuma/monitors', authenticateJWT, async (req, res) => {
     const tenantId = req.user.tenant_id;
     
     // Import Kuma client dynamically to avoid module loading issues
-    const { kumaClient, syncStatusFromKuma } = await import('../lib/uptime-kuma.js');
+    const { kumaClient, syncStatusFromKuma } = await import('../lib/uptime-kuma.js'); // TODO-LINT: move to async function
     
     // Sync latest status from Kuma (non-blocking)
     try {
-      await syncStatusFromKuma();
+      await syncStatusFromKuma(); // TODO-LINT: move to async function
     } catch (syncError) {
       logger.warn('Failed to sync from Kuma, using cached data', { error: syncError.message });
     }
@@ -1258,7 +1258,7 @@ router.get('/kuma/monitors', authenticateJWT, async (req, res) => {
       WHERE m.tenant_id = $1 AND m.deleted_at IS NULL
       GROUP BY m.id
       ORDER BY m.name ASC
-    `, [tenantId]);
+    `, [tenantId]); // TODO-LINT: move to async function
     
     res.json({
       monitors: result.rows,
@@ -1283,10 +1283,10 @@ router.post('/kuma/webhook', async (req, res) => {
     logger.info('Received Kuma webhook', { payload: req.body });
     
     // Import webhook processor dynamically
-    const { processKumaWebhook } = await import('../lib/uptime-kuma.js');
+    const { processKumaWebhook } = await import('../lib/uptime-kuma.js'); // TODO-LINT: move to async function
     
     // Process the webhook
-    await processKumaWebhook(req.body);
+    await processKumaWebhook(req.body); // TODO-LINT: move to async function
     
     res.json({ message: 'Webhook processed successfully' });
   } catch (error) {
@@ -1317,7 +1317,7 @@ router.get('/status/:tenant', async (req, res) => {
     const configResult = await db.query(`
       SELECT * FROM status_page_configs 
       WHERE tenant_id = $1
-    `, [tenantId]);
+    `, [tenantId]); // TODO-LINT: move to async function
     
     const config = configResult.rows[0] || {
       title: 'Service Status',
@@ -1346,7 +1346,7 @@ router.get('/status/:tenant', async (req, res) => {
       LEFT JOIN monitor_groups mg ON mgm.group_id = mg.id
       WHERE m.tenant_id = $1 AND m.deleted_at IS NULL AND m.status != 'disabled'
       ORDER BY m.name ASC
-    `, [tenantId]);
+    `, [tenantId]); // TODO-LINT: move to async function
     
     // Get active incidents
     const incidentsResult = await db.query(`
@@ -1357,7 +1357,7 @@ router.get('/status/:tenant', async (req, res) => {
       JOIN monitors m ON i.monitor_id = m.id
       WHERE i.tenant_id = $1 AND i.status != 'resolved'
       ORDER BY i.started_at DESC
-    `, [tenantId]);
+    `, [tenantId]); // TODO-LINT: move to async function
     
     // Calculate overall status
     const monitors = monitorsResult.rows;
@@ -1375,7 +1375,7 @@ router.get('/status/:tenant', async (req, res) => {
       WHERE tenant_id = $1 
       AND (status = 'in_progress' OR (status = 'scheduled' AND scheduled_start <= NOW() + INTERVAL '24 hours'))
       ORDER BY scheduled_start ASC
-    `, [tenantId]);
+    `, [tenantId]); // TODO-LINT: move to async function
     
     if (maintenanceResult.rows.length > 0) {
       overallStatus = 'maintenance';
@@ -1418,13 +1418,13 @@ router.get('/status/:tenant', async (req, res) => {
 router.get('/health', async (req, res) => {
   try {
     // Check database connectivity
-    await db.query('SELECT 1');
+    await db.query('SELECT 1'); // TODO-LINT: move to async function
     
     // Check Uptime Kuma connectivity
     let kumaHealth = false;
     try {
-      const { kumaClient } = await import('../lib/uptime-kuma.js');
-      kumaHealth = await kumaClient.ping();
+      const { kumaClient } = await import('../lib/uptime-kuma.js'); // TODO-LINT: move to async function
+      kumaHealth = await kumaClient.ping(); // TODO-LINT: move to async function
     } catch (kumaError) {
       logger.warn('Kuma health check failed', { error: kumaError.message });
     }
@@ -1454,7 +1454,7 @@ router.get('/health', async (req, res) => {
  */
 async function getConfigValue(key, defaultValue) {
   try {
-    const result = await db.query('SELECT value FROM config WHERE key = $1', [key]);
+    const result = await db.query('SELECT value FROM config WHERE key = $1', [key]); // TODO-LINT: move to async function
     return result.rows.length > 0 ? result.rows[0].value : defaultValue;
   } catch (error) {
     logger.error('Failed to get config value', { key, error: error.message });
@@ -1474,20 +1474,20 @@ router.post('/monitor-incident', authenticateJWT, audit('sentinel.incident.creat
       ? { sql: 'SELECT * FROM monitors WHERE id = $1', params: [monitorId] }
       : { sql: 'SELECT * FROM monitors WHERE kuma_id = $1', params: [monitorId] };
 
-    const monitorResult = await db.query(monitorQuery.sql, monitorQuery.params);
+    const monitorResult = await db.query(monitorQuery.sql, monitorQuery.params); // TODO-LINT: move to async function
     if (monitorResult.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
     }
     const monitor = monitorResult.rows[0];
 
     const severity = determineSeverity(monitor, { status: status === 'up' ? 1 : 0, statusCode: null });
-    const summary = await generateIncidentSummary(monitor, { msg: errorMessage }, errorMessage);
+    const summary = await generateIncidentSummary(monitor, { msg: errorMessage }, errorMessage); // TODO-LINT: move to async function
 
     const result = await db.query(`
       INSERT INTO monitor_incidents (monitor_id, status, severity, summary, description, started_at)
       VALUES ($1, 'open', $2, $3, $4, NOW())
       RETURNING *
-    `, [monitor.id, severity, summary, `Manual incident: ${errorMessage || 'Triggered from Pulse'}`]);
+    `, [monitor.id, severity, summary, `Manual incident: ${errorMessage || 'Triggered from Pulse'}`]); // TODO-LINT: move to async function
 
     const incident = result.rows[0];
 
@@ -1506,7 +1506,7 @@ router.post('/monitor-incident', authenticateJWT, audit('sentinel.incident.creat
       monitor_name: monitorName || monitor.name,
       severity,
       status,
-    });
+    }); // TODO-LINT: move to async function
 
     res.status(201).json({ success: true, incident });
   } catch (error) {

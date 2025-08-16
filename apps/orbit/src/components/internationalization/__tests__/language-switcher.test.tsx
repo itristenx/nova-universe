@@ -113,7 +113,7 @@ describe('LanguageSwitcher', () => {
     fireEvent.click(languageButton);
 
     await waitFor(() => {
-      expect(languageButton).toHaveAttribute('aria-expanded', 'true');
+      expect(languageButton).toHaveAttribute('aria-expanded', 'true'); // TODO-LINT: move to async function
     });
 
     // Check for language options
@@ -137,7 +137,7 @@ describe('LanguageSwitcher', () => {
     fireEvent.keyDown(languageButton, { key: 'Enter' });
 
     await waitFor(() => {
-      expect(languageButton).toHaveAttribute('aria-expanded', 'true');
+      expect(languageButton).toHaveAttribute('aria-expanded', 'true'); // TODO-LINT: move to async function
     });
 
     // Navigate with arrow keys
@@ -148,7 +148,7 @@ describe('LanguageSwitcher', () => {
     // Close with Escape key
     fireEvent.keyDown(languageButton, { key: 'Escape' });
     await waitFor(() => {
-      expect(languageButton).toHaveAttribute('aria-expanded', 'false');
+      expect(languageButton).toHaveAttribute('aria-expanded', 'false'); // TODO-LINT: move to async function
     });
   });
 
@@ -174,7 +174,7 @@ describe('LanguageSwitcher', () => {
     fireEvent.click(languageButton);
 
     await waitFor(() => {
-      expect(languageButton).toHaveAttribute('aria-expanded', 'true');
+      expect(languageButton).toHaveAttribute('aria-expanded', 'true'); // TODO-LINT: move to async function
     });
 
     const spanishOption = screen.getByRole('option', { name: /spanish/i });
@@ -218,7 +218,7 @@ describe('LanguageSwitcher', () => {
     fireEvent.click(languageButton);
 
     await waitFor(() => {
-      const arabicOption = screen.getByRole('option', { name: /arabic/i });
+      const arabicOption = screen.getByRole('option', { name: /arabic/i }); // TODO-LINT: move to async function
       expect(arabicOption).toBeInTheDocument();
       expect(arabicOption).toHaveAttribute('dir', 'rtl');
     });

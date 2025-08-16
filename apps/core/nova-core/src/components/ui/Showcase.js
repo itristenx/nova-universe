@@ -8,7 +8,7 @@ import { Accordion } from './Accordion';
 import { Menu } from './Menu';
 import { Snackbar } from './Snackbar';
 import { Skeleton } from './Skeleton';
-export const Showcase = () => {
+export const _Showcase = () => {
     const [progress, setProgress] = useState(40);
     const [page, setPage] = useState(1);
     const [drawerOpen, setDrawerOpen] = useState(false);

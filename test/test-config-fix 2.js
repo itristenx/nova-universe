@@ -9,16 +9,16 @@ async function testConfigurationLoading() {
     logger.info('Testing configuration loading...');
     
     // Test loading from database
-    const dbConfig = await ConfigurationManager.loadFromDatabase();
+    const dbConfig = await ConfigurationManager.loadFromDatabase(); // TODO-LINT: move to async function
     logger.info('✅ Database configuration loaded successfully:', Object.keys(dbConfig));
     
     // Test full configuration loading
-    const fullConfig = await ConfigurationManager.getFullConfig();
+    const fullConfig = await ConfigurationManager.getFullConfig(); // TODO-LINT: move to async function
     logger.info('✅ Full configuration loaded successfully');
     logger.info('Configuration structure:', Object.keys(fullConfig));
     
     // Test initialization
-    await ConfigurationManager.initialize();
+    await ConfigurationManager.initialize(); // TODO-LINT: move to async function
     logger.info('✅ Configuration manager initialized successfully');
     
     logger.info('🎉 All configuration tests passed!');

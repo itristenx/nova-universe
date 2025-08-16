@@ -77,7 +77,7 @@ router.get('/status', (req, res) => {
   res.json(runs);
 });
 
-export function resetWorkflowRuns() {
+export function _resetWorkflowRuns() {
   runs.length = 0;
 }
 

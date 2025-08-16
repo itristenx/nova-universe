@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Button } from './Button';
 import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
-export const FileInput = ({ label, accept, onChange, disabled = false, helperText, error, className = '', }) => {
+export const _FileInput = ({ label, accept, onChange, disabled = false, helperText, error, className = '', }) => {
     const fileInputRef = useRef(null);
     const handleFileChange = (e) => {
         const file = e.target.files?.[0] || null;

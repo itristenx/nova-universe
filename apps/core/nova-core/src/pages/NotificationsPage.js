@@ -4,7 +4,7 @@ import { BellIcon, PlusIcon, TrashIcon, ExclamationTriangleIcon, InformationCirc
 import { formatDate } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-export const NotificationsPage = () => {
+export const _NotificationsPage = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
@@ -21,7 +21,7 @@ export const NotificationsPage = () => {
     const loadNotifications = async () => {
         try {
             setLoading(true);
-            const data = await api.getNotifications();
+            const data = await api.getNotifications(); // TODO-LINT: move to async function
             setNotifications(data);
         }
         catch (error) {
@@ -47,7 +47,7 @@ export const NotificationsPage = () => {
                 type: formData.type,
                 level: formData.level,
                 read: false
-            });
+            }); // TODO-LINT: move to async function
             setNotifications([newNotification, ...notifications]);
             setShowCreateModal(false);
             resetForm();
@@ -79,7 +79,7 @@ export const NotificationsPage = () => {
     const deleteNotification = async (id) => {
         if (confirm('Are you sure you want to delete this notification?')) {
             try {
-                await api.deleteNotification(id);
+                await api.deleteNotification(id); // TODO-LINT: move to async function
                 setNotifications(notifications.filter(n => n.id !== id));
                 addToast({
                     type: 'success',

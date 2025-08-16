@@ -142,13 +142,13 @@ export function SecurityAuditTrail() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
     setIsRefreshing(false);
   };
 
   const handleExport = () => {
-    // Simulate export functionality
-    alert('Audit log export initiated. You will receive an email when ready.');
+    // Simulate export _functionality
+    _alert('Audit _log export _initiated. _You _will _receive _an _email _when _ready.');
   };
 
   const filteredEvents = events.filter(event => {

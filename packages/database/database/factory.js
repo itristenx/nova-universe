@@ -27,14 +27,14 @@ export class DatabaseFactory {
       // Initialize PostgreSQL if enabled
       if (primaryDatabases.includes('postgresql')) {
         this.postgresql = new PostgreSQLManager();
-        await this.postgresql.initialize();
+        await this.postgresql.initialize(); // TODO-LINT: move to async function
         logger.info('PostgreSQL initialized in factory');
       }
 
       // Initialize MongoDB if enabled
       if (primaryDatabases.includes('mongodb')) {
         this.mongodb = new MongoDBManager();
-        await this.mongodb.initialize();
+        await this.mongodb.initialize(); // TODO-LINT: move to async function
         logger.info('MongoDB initialized in factory');
       }
 
@@ -53,7 +53,7 @@ export class DatabaseFactory {
     if (!this.postgresql) {
       throw new Error('PostgreSQL not initialized');
     }
-    return await this.postgresql.query(text, params);
+    return await this.postgresql.query(text, params); // TODO-LINT: move to async function
   }
 
   /**
@@ -63,7 +63,7 @@ export class DatabaseFactory {
     if (!this.postgresql) {
       throw new Error('PostgreSQL not initialized');
     }
-    return await this.postgresql.transaction(callback);
+    return await this.postgresql.transaction(callback); // TODO-LINT: move to async function
   }
 
   /**
@@ -73,7 +73,7 @@ export class DatabaseFactory {
     if (!this.mongodb) {
       throw new Error('MongoDB not initialized');
     }
-    return await this.mongodb.storeDocument(collection, document);
+    return await this.mongodb.storeDocument(collection, document); // TODO-LINT: move to async function
   }
 
   /**
@@ -83,7 +83,7 @@ export class DatabaseFactory {
     if (!this.mongodb) {
       throw new Error('MongoDB not initialized');
     }
-    return await this.mongodb.findDocuments(collection, query, options);
+    return await this.mongodb.findDocuments(collection, query, options); // TODO-LINT: move to async function
   }
 
   /**
@@ -93,7 +93,7 @@ export class DatabaseFactory {
     if (!this.mongodb) {
       throw new Error('MongoDB not initialized');
     }
-    return await this.mongodb.updateDocuments(collection, query, update, options);
+    return await this.mongodb.updateDocuments(collection, query, update, options); // TODO-LINT: move to async function
   }
 
   /**
@@ -103,7 +103,7 @@ export class DatabaseFactory {
     if (!this.mongodb) {
       throw new Error('MongoDB not initialized');
     }
-    return await this.mongodb.deleteDocuments(collection, query);
+    return await this.mongodb.deleteDocuments(collection, query); // TODO-LINT: move to async function
   }
 
   /**
@@ -111,7 +111,7 @@ export class DatabaseFactory {
    */
   async createAuditLog(action, userId, details = {}) {
     if (this.mongodb) {
-      return await this.mongodb.logAudit(action, userId, details);
+      return await this.mongodb.logAudit(action, userId, details); // TODO-LINT: move to async function
     } else {
       logger.warn('MongoDB not available for audit logging');
     }
@@ -124,11 +124,11 @@ export class DatabaseFactory {
     const health = {};
 
     if (this.postgresql) {
-      health.postgresql = await this.postgresql.healthCheck();
+      health.postgresql = await this.postgresql.healthCheck(); // TODO-LINT: move to async function
     }
 
     if (this.mongodb) {
-      health.mongodb = await this.mongodb.healthCheck();
+      health.mongodb = await this.mongodb.healthCheck(); // TODO-LINT: move to async function
     }
 
     return health;
@@ -148,7 +148,7 @@ export class DatabaseFactory {
       promises.push(this.mongodb.close());
     }
 
-    await Promise.all(promises);
+    await Promise.all(promises); // TODO-LINT: move to async function
     this.isInitialized = false;
     logger.info('Database factory closed');
   }

@@ -9,7 +9,7 @@ async function validateScimMonitorRouter() {
 
     // Test 1: Import the router
     console.log('1. Testing router import...');
-    const { default: scimMonitorRouter } = await import('./routes/scimMonitor.js');
+    const { default: scimMonitorRouter } = await import('./routes/scimMonitor.js'); // TODO-LINT: move to async function
     console.log('✅ Router imported successfully');
 
     // Test 2: Create a test express app
@@ -29,15 +29,15 @@ async function validateScimMonitorRouter() {
     // Test 3: Verify database connection
     console.log('3. Testing database connection...');
     const prisma = new PrismaClient();
-    await prisma.$connect();
+    await prisma.$connect(); // TODO-LINT: move to async function
     console.log('✅ Database connection successful');
     
     // Test 4: Verify ScimLog model exists
     console.log('4. Testing ScimLog model...');
-    const count = await prisma.scimLog.count();
+    const count = await prisma.scimLog.count(); // TODO-LINT: move to async function
     console.log(`✅ ScimLog model working, found ${count} existing logs`);
     
-    await prisma.$disconnect();
+    await prisma.$disconnect(); // TODO-LINT: move to async function
 
     console.log('\n🎉 All validation tests passed! SCIM Monitor is ready for production.');
     

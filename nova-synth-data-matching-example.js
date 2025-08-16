@@ -98,27 +98,27 @@ const exampleCode = `
 // In getUserProfile method - Nova Synth integration:
 
 // 1. Normalize data from each connector
-const normalizedOktaData = await nil.normalizeUserAttributesWithSynth(
+const _normalizedOktaData = await nil.normalizeUserAttributesWithSynth(
   oktaData, 'IDENTITY_PROVIDER'
-);
+); // TODO-LINT: move to async function
 
 // 2. Find matching profiles across systems
-const matchResults = await nil.matchUserProfilesWithSynth(
+const _matchResults = await nil.matchUserProfilesWithSynth(
   primaryProfile, [oktaUser, slackUser]
-);
+); // TODO-LINT: move to async function
 
 // 3. Intelligently merge profile data
 const mergedProfile = await nil.mergeProfilesWithSynth(
   primaryProfile, matchingProfile
-);
+); // TODO-LINT: move to async function
 
 // 4. Validate final profile quality
-const validation = await nil.validateProfileWithSynth(mergedProfile);
+const validation = await nil.validateProfileWithSynth(mergedProfile); // TODO-LINT: move to async function
 
 // 5. Deduplicate devices/assets
-const uniqueDevices = await nil.deduplicateProfileDataWithSynth([
+const _uniqueDevices = await nil.deduplicateProfileDataWithSynth([
   jamfDevice, crowdStrikeHost
-]);
+]); // TODO-LINT: move to async function
 `;
 
 console.log(exampleCode);

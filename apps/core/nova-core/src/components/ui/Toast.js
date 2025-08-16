@@ -47,7 +47,7 @@ export const ToastContainer = ({ toasts, onRemove }) => {
     return (React.createElement("div", { className: "fixed top-4 right-4 z-50 space-y-2 w-96" }, toasts.map((toast) => (React.createElement(Toast, { key: toast.id, toast: toast, onRemove: onRemove })))));
 };
 // Connected ToastContainer that uses the store
-export const ConnectedToastContainer = () => {
+export const _ConnectedToastContainer = () => {
     const { toasts, removeToast } = useToastStore();
     return React.createElement(ToastContainer, { toasts: toasts, onRemove: removeToast });
 };

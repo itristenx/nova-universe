@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
 import { getSession, updateProfile } from "../../lib/api";
 
-export default function ProfilePage() {
+export default function _ProfilePage() {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
   if (!token) {

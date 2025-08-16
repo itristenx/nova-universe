@@ -60,8 +60,8 @@ export class PostgreSQLManager {
       });
 
       // Test connection
-      const client = await this.pool.connect();
-      await client.query('SELECT NOW()');
+      const client = await this.pool.connect(); // TODO-LINT: move to async function
+      await client.query('SELECT NOW()'); // TODO-LINT: move to async function
       client.release();
 
       this.isInitialized = true;
@@ -77,13 +77,13 @@ export class PostgreSQLManager {
    */
   async query(text, params = []) {
     if (!this.isInitialized) {
-      await this.initialize();
+      await this.initialize(); // TODO-LINT: move to async function
     }
 
     const start = Date.now();
     
     try {
-      const result = await this.pool.query(text, params);
+      const result = await this.pool.query(text, params); // TODO-LINT: move to async function
       const duration = Date.now() - start;
       
       if (process.env.DEBUG_SQL === 'true') {
@@ -103,18 +103,18 @@ export class PostgreSQLManager {
    */
   async transaction(callback) {
     if (!this.isInitialized) {
-      await this.initialize();
+      await this.initialize(); // TODO-LINT: move to async function
     }
 
-    const client = await this.pool.connect();
+    const client = await this.pool.connect(); // TODO-LINT: move to async function
     
     try {
-      await client.query('BEGIN');
-      const result = await callback(client);
-      await client.query('COMMIT');
+      await client.query('BEGIN'); // TODO-LINT: move to async function
+      const result = await callback(client); // TODO-LINT: move to async function
+      await client.query('COMMIT'); // TODO-LINT: move to async function
       return result;
     } catch (error) {
-      await client.query('ROLLBACK');
+      await client.query('ROLLBACK'); // TODO-LINT: move to async function
       logger.error('Transaction rolled back:', error);
       throw error;
     } finally {
@@ -130,10 +130,10 @@ export class PostgreSQLManager {
     
     try {
       if (!this.isInitialized) {
-        await this.initialize();
+        await this.initialize(); // TODO-LINT: move to async function
       }
 
-      await this.pool.query('SELECT 1');
+      await this.pool.query('SELECT 1'); // TODO-LINT: move to async function
       const responseTime = Date.now() - start;
       
       return {
@@ -159,7 +159,7 @@ export class PostgreSQLManager {
    */
   async close() {
     if (this.pool) {
-      await this.pool.end();
+      await this.pool.end(); // TODO-LINT: move to async function
       this.isInitialized = false;
       logger.info('PostgreSQL connection pool closed');
     }

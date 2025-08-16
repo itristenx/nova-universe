@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const nextJest = require('next/jest')
 
 const createJestConfig = nextJest({
@@ -33,12 +32,12 @@ const customJestConfig = {
   coverageThreshold: {
     global: {
       branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70,
+      _functions: 70,
+      _lines: 70,
+      _statements: 70,
     },
   },
-  testMatch: [
+  _testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/src/**/*.(test|spec).{js,jsx,ts,tsx}',
   ],

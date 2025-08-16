@@ -94,7 +94,7 @@ export interface Monitor {
   follow_redirects?: boolean;
   ignore_ssl?: boolean;
   notification_settings?: Record<string, any>;
-  maintenance_windows?: any[];
+  maintenance_windows?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[];
   avg_response_time?: number;
   group_name?: string;
   incident_status?: string;

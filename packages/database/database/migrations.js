@@ -24,7 +24,7 @@ export class MigrationManager {
   async initialize() {
     if (!this.postgresql) {
       this.postgresql = new PostgreSQLManager();
-      await this.postgresql.initialize();
+      await this.postgresql.initialize(); // TODO-LINT: move to async function
     }
   }
 
@@ -32,25 +32,25 @@ export class MigrationManager {
    * Run all pending migrations
    */
   async runMigrations() {
-    await this.initialize();
+    await this.initialize(); // TODO-LINT: move to async function
     
     try {
       logger.info('Running database migrations...');
       
       // Create migrations table if it doesn't exist
-      await this.createMigrationsTable();
+      await this.createMigrationsTable(); // TODO-LINT: move to async function
       
       // Get list of migration files
-      const migrationFiles = await this.getMigrationFiles();
+      const migrationFiles = await this.getMigrationFiles(); // TODO-LINT: move to async function
       
       // Get applied migrations
-      const appliedMigrations = await this.getAppliedMigrations();
+      const appliedMigrations = await this.getAppliedMigrations(); // TODO-LINT: move to async function
       const appliedSet = new Set(appliedMigrations.map(m => m.filename));
       
       // Run pending migrations
       for (const file of migrationFiles) {
         if (!appliedSet.has(file)) {
-          await this.runMigration(file);
+          await this.runMigration(file); // TODO-LINT: move to async function
         } else {
           logger.debug(`Migration already applied: ${file}`);
         }
@@ -76,7 +76,7 @@ export class MigrationManager {
       )
     `;
     
-    await this.postgresql.query(sql);
+    await this.postgresql.query(sql); // TODO-LINT: move to async function
     logger.debug('Migrations table ready');
   }
 
@@ -85,15 +85,15 @@ export class MigrationManager {
    */
   async getMigrationFiles() {
     try {
-      const files = await fs.readdir(this.migrationsPath);
+      const files = await fs.readdir(this.migrationsPath); // TODO-LINT: move to async function
       return files
         .filter(file => file.endsWith('.sql'))
         .sort();
     } catch (error) {
       if (error.code === 'ENOENT') {
         logger.warn('Migrations directory not found, creating default migrations...');
-        await this.createDefaultMigrations();
-        return await this.getMigrationFiles();
+        await this.createDefaultMigrations(); // TODO-LINT: move to async function
+        return await this.getMigrationFiles(); // TODO-LINT: move to async function
       }
       throw error;
     }
@@ -106,7 +106,7 @@ export class MigrationManager {
     try {
       const result = await this.postgresql.query(
         'SELECT filename, checksum, applied_at FROM _migrations ORDER BY applied_at'
-      );
+      ); // TODO-LINT: move to async function
       return result.rows;
     } catch (error) {
       logger.error('Error fetching applied migrations:', error);
@@ -124,7 +124,7 @@ export class MigrationManager {
       logger.info(`Running migration: ${filename}`);
       
       // Read migration file
-      const sql = await fs.readFile(filePath, 'utf8');
+      const sql = await fs.readFile(filePath, 'utf8'); // TODO-LINT: move to async function
       
       // Calculate checksum
       const checksum = crypto.createHash('sha256').update(sql).digest('hex');
@@ -133,19 +133,19 @@ export class MigrationManager {
       await this.postgresql.transaction(async (client) => {
         // Split SQL into statements and execute each
         const statements = sql
-          .split(';')
+          .split('; // TODO-LINT: move to async function')
           .map(stmt => stmt.trim())
           .filter(stmt => stmt.length > 0);
         
         for (const statement of statements) {
-          await client.query(statement);
+          await client.query(statement); // TODO-LINT: move to async function
         }
         
         // Record migration as applied
         await client.query(
           'INSERT INTO _migrations (filename, checksum) VALUES ($1, $2)',
           [filename, checksum]
-        );
+        ); // TODO-LINT: move to async function
       });
       
       logger.info(`Migration completed: ${filename}`);
@@ -182,8 +182,8 @@ export class MigrationManager {
 `;
     
     try {
-      await fs.mkdir(this.migrationsPath, { recursive: true });
-      await fs.writeFile(filePath, template);
+      await fs.mkdir(this.migrationsPath, { recursive: true }); // TODO-LINT: move to async function
+      await fs.writeFile(filePath, template); // TODO-LINT: move to async function
       logger.info(`Migration created: ${filePath}`);
       return filePath;
     } catch (error) {
@@ -196,7 +196,7 @@ export class MigrationManager {
    * Create default migrations for Nova Universe schema
    */
   async createDefaultMigrations() {
-    await fs.mkdir(this.migrationsPath, { recursive: true });
+    await fs.mkdir(this.migrationsPath, { recursive: true }); // TODO-LINT: move to async function
     
     // Main schema migration
     const initMigration = `-- Initial Nova Universe Schema
@@ -403,7 +403,7 @@ CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXE
     const timestamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
     const initPath = path.join(this.migrationsPath, `${timestamp}_init_schema.sql`);
     
-    await fs.writeFile(initPath, initMigration);
+    await fs.writeFile(initPath, initMigration); // TODO-LINT: move to async function
     logger.info('Default migration created: init_schema.sql');
   }
 
@@ -418,7 +418,7 @@ CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXE
       const results = {};
       
       Promise.resolve().then(async () => {
-        await this.initialize();
+        await this.initialize(); // TODO-LINT: move to async function
         
         // Tables to migrate to PostgreSQL
         const pgTables = [
@@ -435,7 +435,7 @@ CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXE
             try {
               results.postgresql[table] = await this.migrateSQLiteTable(
                 db, table, 'postgresql', { dryRun, force }
-              );
+              ); // TODO-LINT: move to async function
             } catch (error) {
               results.postgresql[table] = { error: error.message, recordsProcessed: 0 };
             }
@@ -493,7 +493,7 @@ CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXE
               if (target === 'postgresql' && rows.length > 0) {
                 // Clear existing data if force flag is set
                 if (force) {
-                  await this.postgresql.query(`DELETE FROM ${tableName}`);
+                  await this.postgresql.query(`DELETE FROM ${tableName}`); // TODO-LINT: move to async function
                 }
                 
                 // Get column information
@@ -505,11 +505,11 @@ CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXE
                 // Insert data in batches
                 await this.postgresql.transaction(async (client) => {
                   for (const row of rows) {
-                    const values = columns.map(col => row[col]);
+                    const values = columns.map(col => row[col]); // TODO-LINT: move to async function
                     await client.query(
                       `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`,
                       values
-                    );
+                    ); // TODO-LINT: move to async function
                   }
                 });
               }

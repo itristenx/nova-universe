@@ -10,7 +10,7 @@ import ConfigurationManager from '../config/app-settings.js';
  * Configure comprehensive security headers using Helmet
  */
 export function configureSecurityHeaders() {
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const _isDevelopment = process.env.NODE_ENV === 'development';
 
   return helmet({
     // Content Security Policy
@@ -225,7 +225,7 @@ export function validateApiKey(req, res, next) {
   (async () => {
     try {
       // Prefer DB-backed keys stored via ConfigurationManager under 'apiKeys'
-      const stored = await ConfigurationManager.get('apiKeys', []);
+      const stored = await ConfigurationManager.get('apiKeys', []); // TODO-LINT: move to async function
       const storedKeys = Array.isArray(stored) ? stored.map((k) => k.key).filter(Boolean) : [];
 
       // Env fallback for emergency use

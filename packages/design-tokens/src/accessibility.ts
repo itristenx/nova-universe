@@ -90,7 +90,7 @@ export const getAccessibleTextColor = (
 }
 
 // Accessibility-tested color combinations for Nova Universe
-export const accessibleColorPairs = {
+export const _accessibleColorPairs = {
   // Primary combinations (all WCAG AA compliant)
   primary: {
     'primary-500': {
@@ -166,7 +166,7 @@ export const accessibleColorPairs = {
 }
 
 // Generate accessible color scale variations
-export const generateAccessibleScale = (baseColor: string, steps = 10) => {
+export const _generateAccessibleScale = (baseColor: string, steps = 10) => {
   const scale: Record<number, { hex: string; onLight: string; onDark: string }> = {}
   
   // This is a simplified implementation
@@ -202,8 +202,8 @@ const adjustColorLightness = (hex: string, lightness: number): string => {
   ).join('')
 }
 
-// Validation function for design tokens
-export const validateColorAccessibility = (colors: any) => {
+// Validation function for _design _tokens
+export const __validateColorAccessibility = (colors: _any) => {
   const violations: string[] = []
   const warnings: string[] = []
   

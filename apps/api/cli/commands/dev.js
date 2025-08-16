@@ -30,7 +30,7 @@ devCommand
   .option('--hot', 'Enable hot reload')
   .action(async (options) => {
     try {
-      await startDevelopment(options);
+      await startDevelopment(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to start development: ${error.message}`);
       process.exit(1);
@@ -49,7 +49,7 @@ devCommand
   .option('--unit', 'Run unit tests only')
   .action(async (options) => {
     try {
-      await runTests(options);
+      await runTests(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Tests failed: ${error.message}`);
       process.exit(1);
@@ -64,7 +64,7 @@ devCommand
   .option('--staged', 'Lint staged files only')
   .action(async (options) => {
     try {
-      await runLinting(options);
+      await runLinting(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Linting failed: ${error.message}`);
       process.exit(1);
@@ -80,7 +80,7 @@ devCommand
   .option('--analyze', 'Analyze bundle')
   .action(async (options) => {
     try {
-      await buildApplication(options);
+      await buildApplication(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Build failed: ${error.message}`);
       process.exit(1);
@@ -97,7 +97,7 @@ devCommand
   .option('--clean', 'Clean node_modules and reinstall')
   .action(async (options) => {
     try {
-      await manageDependencies(options);
+      await manageDependencies(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Dependency management failed: ${error.message}`);
       process.exit(1);
@@ -114,7 +114,7 @@ devCommand
   .option('--studio', 'Open database studio')
   .action(async (options) => {
     try {
-      await databaseTools(options);
+      await databaseTools(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Database operation failed: ${error.message}`);
       process.exit(1);
@@ -130,7 +130,7 @@ devCommand
   .option('-d, --directory <dir>', 'Target directory')
   .action(async (type, options) => {
     try {
-      await generateCode(type, options);
+      await generateCode(type, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Code generation failed: ${error.message}`);
       process.exit(1);
@@ -146,7 +146,7 @@ devCommand
   .option('-p, --port <port>', 'Port for documentation server', '8080')
   .action(async (options) => {
     try {
-      await manageDocs(options);
+      await manageDocs(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Documentation command failed: ${error.message}`);
       process.exit(1);
@@ -224,10 +224,10 @@ async function startDevelopment(options) {
 
   // Wait for services to start
   console.log(chalk.cyan('\n⏳ Waiting for services to start...\n'));
-  await sleep(3000);
+  await sleep(3000); // TODO-LINT: move to async function
 
   // Check service status
-  const status = await checkServiceStatus();
+  const status = await checkServiceStatus(); // TODO-LINT: move to async function
   displayServiceStatus(status);
 
   console.log(chalk.green('\n🎉 Development environment is ready!\n'));
@@ -257,7 +257,7 @@ async function startDevelopment(options) {
   });
 
   // Keep the process alive
-  await new Promise(() => {});
+  await new Promise(() => {}); // TODO-LINT: move to async function
 }
 
 // Run tests
@@ -302,7 +302,7 @@ async function runTests(options) {
       await runCommand(command, [...args, ...jestOptions], {
         cwd: projectRoot,
         stdio: 'inherit'
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       if (!options.watch) {
         throw error;
@@ -354,7 +354,7 @@ async function runLinting(options) {
     spinner.start();
 
     try {
-      await runCommand(command, args, { cwd: projectRoot });
+      await runCommand(command, args, { cwd: projectRoot }); // TODO-LINT: move to async function
       spinner.succeed(`${command} completed`);
     } catch (error) {
       spinner.fail(`${command} failed`);
@@ -398,7 +398,7 @@ async function buildApplication(options) {
       await runCommand('npm', buildArgs, { 
         cwd: servicePath,
         silent: !options.watch 
-      });
+      }); // TODO-LINT: move to async function
 
       spinner.succeed(`${service} built successfully`);
     } catch (error) {
@@ -407,7 +407,7 @@ async function buildApplication(options) {
     }
   });
 
-  await Promise.all(buildPromises);
+  await Promise.all(buildPromises); // TODO-LINT: move to async function
 
   if (options.analyze) {
     console.log(chalk.cyan('\n📊 Analyzing bundle...\n'));
@@ -415,7 +415,7 @@ async function buildApplication(options) {
     try {
       await runCommand('npm', ['run', 'analyze'], {
         cwd: path.join(projectRoot, 'nova-core')
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.warning('Bundle analysis not available');
     }
@@ -438,7 +438,7 @@ async function manageDependencies(options) {
       if (existsSync(servicePath)) {
         console.log(chalk.blue(`\n📦 ${service}:`));
         try {
-          await runCommand('npm', ['outdated'], { cwd: servicePath });
+          await runCommand('npm', ['outdated'], { cwd: servicePath }); // TODO-LINT: move to async function
         } catch (error) {
           // npm outdated returns exit code 1 when outdated packages are found
           console.log(chalk.gray('All packages are up to date'));
@@ -457,7 +457,7 @@ async function manageDependencies(options) {
       if (existsSync(servicePath)) {
         console.log(chalk.blue(`\n🔍 Auditing ${service}:`));
         try {
-          await runCommand('npm', ['audit'], { cwd: servicePath });
+          await runCommand('npm', ['audit'], { cwd: servicePath }); // TODO-LINT: move to async function
         } catch (error) {
           console.log(chalk.yellow('Security vulnerabilities found'));
         }
@@ -475,7 +475,7 @@ async function manageDependencies(options) {
         message: 'This will update all packages. Continue?',
         default: false
       }
-    ]);
+    ]); // TODO-LINT: move to async function
 
     if (confirm) {
       const services = ['nova-api', 'nova-core', 'nova-comms'];
@@ -487,7 +487,7 @@ async function manageDependencies(options) {
           spinner.start();
           
           try {
-            await runCommand('npm', ['update'], { cwd: servicePath });
+            await runCommand('npm', ['update'], { cwd: servicePath }); // TODO-LINT: move to async function
             spinner.succeed(`${service} packages updated`);
           } catch (error) {
             spinner.fail(`${service} update failed`);
@@ -507,7 +507,7 @@ async function manageDependencies(options) {
         message: 'This will delete node_modules and reinstall. Continue?',
         default: false
       }
-    ]);
+    ]); // TODO-LINT: move to async function
 
     if (confirm) {
       const services = ['nova-api', 'nova-core', 'nova-comms'];
@@ -519,8 +519,8 @@ async function manageDependencies(options) {
           spinner.start();
           
           try {
-            await runCommand('rm', ['-rf', 'node_modules'], { cwd: servicePath });
-            await runCommand('npm', ['install'], { cwd: servicePath });
+            await runCommand('rm', ['-rf', 'node_modules'], { cwd: servicePath }); // TODO-LINT: move to async function
+            await runCommand('npm', ['install'], { cwd: servicePath }); // TODO-LINT: move to async function
             spinner.succeed(`${service} dependencies reinstalled`);
           } catch (error) {
             spinner.fail(`${service} clean failed`);
@@ -539,7 +539,7 @@ async function databaseTools(options) {
     console.log(chalk.cyan('📊 Running database migrations...\n'));
     
     try {
-      await runCommand('npm', ['run', 'migrate'], { cwd: projectRoot });
+      await runCommand('npm', ['run', 'migrate'], { cwd: projectRoot }); // TODO-LINT: move to async function
       logger.success('✅ Migrations completed');
     } catch (error) {
       logger.error('Migration failed');
@@ -551,7 +551,7 @@ async function databaseTools(options) {
     console.log(chalk.cyan('🌱 Seeding database...\n'));
     
     try {
-      await runCommand('npm', ['run', 'seed'], { cwd: projectRoot });
+      await runCommand('npm', ['run', 'seed'], { cwd: projectRoot }); // TODO-LINT: move to async function
       logger.success('✅ Database seeded');
     } catch (error) {
       logger.error('Seeding failed');
@@ -569,11 +569,11 @@ async function databaseTools(options) {
         message: 'This will delete all data. Continue?',
         default: false
       }
-    ]);
+    ]); // TODO-LINT: move to async function
 
     if (confirm) {
       try {
-        await runCommand('npm', ['run', 'db:reset'], { cwd: projectRoot });
+        await runCommand('npm', ['run', 'db:reset'], { cwd: projectRoot }); // TODO-LINT: move to async function
         logger.success('✅ Database reset');
       } catch (error) {
         logger.error('Reset failed');
@@ -589,7 +589,7 @@ async function databaseTools(options) {
       await runCommand('npm', ['run', 'db:studio'], { 
         cwd: projectRoot,
         stdio: 'inherit'
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Failed to open database studio');
     }
@@ -610,22 +610,22 @@ async function generateCode(type, options) {
         message: `Enter ${type} name:`,
         validate: (input) => input.trim() !== '' || 'Name is required'
       }
-    ]);
+    ]); // TODO-LINT: move to async function
     options.name = name;
   }
 
   switch (type) {
     case 'component':
-      await generateComponent(options, projectRoot);
+      await generateComponent(options, projectRoot); // TODO-LINT: move to async function
       break;
     case 'route':
-      await generateRoute(options, projectRoot);
+      await generateRoute(options, projectRoot); // TODO-LINT: move to async function
       break;
     case 'model':
-      await generateModel(options, projectRoot);
+      await generateModel(options, projectRoot); // TODO-LINT: move to async function
       break;
     case 'api':
-      await generateAPI(options, projectRoot);
+      await generateAPI(options, projectRoot); // TODO-LINT: move to async function
       break;
     default:
       throw new Error(`Unknown generator type: ${type}`);
@@ -641,7 +641,7 @@ async function generateComponent(options, projectRoot) {
   const componentPath = path.join(projectRoot, targetDir, componentName);
 
   // Create component directory
-  await runCommand('mkdir', ['-p', componentPath]);
+  await runCommand('mkdir', ['-p', componentPath]); // TODO-LINT: move to async function
 
   // Generate component file
   const componentContent = `import React from 'react';
@@ -769,7 +769,7 @@ export default ${modelName};
 // Generate API endpoint
 async function generateAPI(options, projectRoot) {
   // This would generate both route and controller
-  await generateRoute(options, projectRoot);
+  await generateRoute(options, projectRoot); // TODO-LINT: move to async function
   
   // Generate controller
   const controllerName = options.name;
@@ -834,7 +834,7 @@ export class ${controllerName}Controller {
 `;
 
   // Ensure controller directory exists
-  await runCommand('mkdir', ['-p', path.join(projectRoot, targetDir)]);
+  await runCommand('mkdir', ['-p', path.join(projectRoot, targetDir)]); // TODO-LINT: move to async function
   require('fs').writeFileSync(controllerPath, controllerContent);
 }
 
@@ -850,7 +850,7 @@ async function manageDocs(options) {
 
     try {
       // Generate JSDoc documentation
-      await runCommand('npm', ['run', 'docs:generate'], { cwd: projectRoot });
+      await runCommand('npm', ['run', 'docs:generate'], { cwd: projectRoot }); // TODO-LINT: move to async function
       spinner.succeed('Documentation generated');
       
       logger.success('✅ Documentation generated in ./docs');

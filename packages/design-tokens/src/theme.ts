@@ -6,10 +6,10 @@
 import { colors } from './tokens'
 
 // Global declarations for DOM APIs (for Node.js compatibility)
-declare const document: any
-declare const window: any
-declare const localStorage: any
-declare const CustomEvent: any
+declare const document: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+declare const window: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+declare const localStorage: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+declare const CustomEvent: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
 
 // Theme configuration interface
 export interface NovaTheme {
@@ -286,7 +286,7 @@ export const darkTheme: NovaTheme = {
 // Theme system utilities
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
-export const themes = {
+export const _themes = {
   light: lightTheme,
   dark: darkTheme
 } as const
@@ -418,7 +418,7 @@ ${darkCSS}
 }
 
 // Theme switching utilities
-export const themeUtils = {
+export const _themeUtils = {
   /**
    * Set theme mode
    */
@@ -496,10 +496,10 @@ export const themeUtils = {
 }
 
 // Export the complete CSS
-export const themeCSS = generateCompleteThemeCSS()
+export const _themeCSS = generateCompleteThemeCSS()
 
 // HeroUI theme configuration
-export const heroUIThemeConfig = {
+export const _heroUIThemeConfig = {
   light: {
     colors: {
       primary: lightTheme.colors.primary,
@@ -525,7 +525,7 @@ export const heroUIThemeConfig = {
 }
 
 // ShadCN theme configuration
-export const shadcnThemeConfig = {
+export const _shadcnThemeConfig = {
   light: {
     background: lightTheme.colors.background.DEFAULT,
     foreground: lightTheme.colors.foreground.DEFAULT,

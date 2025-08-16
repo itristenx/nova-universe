@@ -30,7 +30,7 @@ const router = express.Router();
  */
 router.get('/config', async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT key, value FROM config');
+    const { rows } = await db.query('SELECT key, value FROM config'); // TODO-LINT: move to async function
     const config = Object.fromEntries(rows.map((r) => [r.key, r.value]));
 
     // Parse known JSON fields

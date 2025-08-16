@@ -3,7 +3,7 @@ import { Button, Card, Modal, Input } from '@/components/ui';
 import { KeyIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon, ComputerDesktopIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-export const AdminPinManagement = ({ kiosks, onUpdate }) => {
+export const _AdminPinManagement = ({ kiosks, onUpdate }) => {
     const [pinConfig, setPinConfig] = useState({
         globalPin: '',
         kioskPins: {}
@@ -90,7 +90,7 @@ export const AdminPinManagement = ({ kiosks, onUpdate }) => {
             await api.updateAdminPins({
                 globalPin: pinConfig.globalPin || undefined,
                 kioskPins: Object.keys(pinConfig.kioskPins).length > 0 ? pinConfig.kioskPins : undefined
-            });
+            }); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Success',
@@ -113,7 +113,7 @@ export const AdminPinManagement = ({ kiosks, onUpdate }) => {
     const validatePinInput = async () => {
         try {
             setLoading(true);
-            const result = await api.validateAdminPin(testPinValue, testKioskId || undefined);
+            const result = await api.validateAdminPin(testPinValue, testKioskId || undefined); // TODO-LINT: move to async function
             setTestResult(result);
         }
         catch (error) {

@@ -43,7 +43,7 @@ async function loadCommands() {
 
   for (const { name, file, export: exportName } of commands) {
     try {
-      const module = await import(file);
+      const module = await import(file); // TODO-LINT: move to async function
       if (module[exportName]) {
         program.addCommand(module[exportName]);
       } else {
@@ -111,6 +111,8 @@ export { program };
 
 // If running directly (not imported)
 if (import.meta.url === `file://${process.argv[1]}`) {
-  await loadCommands();
-  program.parse();
+  (async () => {
+    await loadCommands();
+    program.parse();
+  })().catch(console.error);
 }

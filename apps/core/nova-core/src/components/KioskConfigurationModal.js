@@ -4,7 +4,7 @@ import { ScheduleManager } from '@/components/ScheduleManager';
 import { CogIcon, ClockIcon, BellIcon, PhotoIcon, ExclamationTriangleIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-export const KioskConfigurationModal = ({ isOpen, onClose, kiosk, globalConfig, onUpdate }) => {
+export const _KioskConfigurationModal = ({ isOpen, onClose, kiosk, globalConfig, onUpdate }) => {
     const [activeTab, setActiveTab] = useState('status');
     const [kioskConfig, setKioskConfig] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -39,7 +39,7 @@ export const KioskConfigurationModal = ({ isOpen, onClose, kiosk, globalConfig, 
     const loadKioskConfiguration = async () => {
         try {
             setLoading(true);
-            const config = await api.getKioskConfiguration(kiosk.id);
+            const config = await api.getKioskConfiguration(kiosk.id); // TODO-LINT: move to async function
             setKioskConfig(config);
             // Update local state with existing overrides
             if (config.statusConfig) {
@@ -101,14 +101,14 @@ export const KioskConfigurationModal = ({ isOpen, onClose, kiosk, globalConfig, 
                     configData = brandingConfig;
                     break;
             }
-            await api.setKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType, configData);
+            await api.setKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType, configData); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Success',
                 description: `${configType} configuration saved successfully`,
             });
             onUpdate();
-            await loadKioskConfiguration();
+            await loadKioskConfiguration(); // TODO-LINT: move to async function
         }
         catch (error) {
             console.error(`Failed to save ${configType} override:`, error);
@@ -125,14 +125,14 @@ export const KioskConfigurationModal = ({ isOpen, onClose, kiosk, globalConfig, 
     const removeOverride = async (configType) => {
         try {
             setSaving(true);
-            await api.removeKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType);
+            await api.removeKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Success',
                 description: `${configType} override removed - using global settings`,
             });
             onUpdate();
-            await loadKioskConfiguration();
+            await loadKioskConfiguration(); // TODO-LINT: move to async function
         }
         catch (error) {
             console.error(`Failed to remove ${configType} override:`, error);

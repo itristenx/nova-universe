@@ -108,7 +108,7 @@ describe('NovaUniversalNotificationPlatform', () => {
         createdBy: testUser.id
       };
 
-      const eventId = await notificationPlatform.sendNotification(payload);
+      const eventId = await notificationPlatform.sendNotification(payload); // TODO-LINT: move to async function
       
       expect(eventId).toBe('event-123');
       expect(notificationClient.notificationEvent.create).toHaveBeenCalledWith({
@@ -134,7 +134,7 @@ describe('NovaUniversalNotificationPlatform', () => {
         createdBy: testUser.id
       };
 
-      await notificationPlatform.sendNotification(payload);
+      await notificationPlatform.sendNotification(payload); // TODO-LINT: move to async function
       
       expect(coreClient.user.findMany).toHaveBeenCalledWith({
         where: {
@@ -156,7 +156,7 @@ describe('NovaUniversalNotificationPlatform', () => {
       };
 
       await expect(notificationPlatform.sendNotification(invalidPayload))
-        .rejects.toThrow();
+        .rejects.toThrow(); // TODO-LINT: move to async function
     });
 
     test('should handle scheduled notifications', async () => {
@@ -172,7 +172,7 @@ describe('NovaUniversalNotificationPlatform', () => {
         createdBy: testUser.id
       };
 
-      const eventId = await notificationPlatform.sendNotification(payload);
+      const eventId = await notificationPlatform.sendNotification(payload); // TODO-LINT: move to async function
       
       expect(notificationClient.notificationEvent.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -198,7 +198,7 @@ describe('NovaUniversalNotificationPlatform', () => {
     });
 
     test('should retrieve user preferences', async () => {
-      const preferences = await notificationPlatform.getUserPreferences(testUser.id);
+      const preferences = await notificationPlatform.getUserPreferences(testUser.id); // TODO-LINT: move to async function
       
       expect(preferences).toHaveLength(1);
       expect(preferences[0]).toMatchObject({
@@ -229,7 +229,7 @@ describe('NovaUniversalNotificationPlatform', () => {
         }
       ];
 
-      await notificationPlatform.updateUserPreferences(testUser.id, preferences);
+      await notificationPlatform.updateUserPreferences(testUser.id, preferences); // TODO-LINT: move to async function
       
       expect(notificationClient.notificationPreference.upsert).toHaveBeenCalledWith({
         where: {
@@ -275,7 +275,7 @@ describe('NovaUniversalNotificationPlatform', () => {
         }
       ];
 
-      const eventIds = await notificationPlatform.sendBatch(notifications);
+      const eventIds = await notificationPlatform.sendBatch(notifications); // TODO-LINT: move to async function
       
       expect(eventIds).toHaveLength(2);
       expect(notificationClient.notificationEvent.create).toHaveBeenCalledTimes(2);
@@ -304,7 +304,7 @@ describe('NovaUniversalNotificationPlatform', () => {
         }
       ];
 
-      const eventIds = await notificationPlatform.sendBatch(notifications);
+      const eventIds = await notificationPlatform.sendBatch(notifications); // TODO-LINT: move to async function
       
       // Should return only successful event IDs
       expect(eventIds).toHaveLength(1);
@@ -333,7 +333,7 @@ describe('Notification API Routes', () => {
         .post('/api/v2/notifications/send')
         .set('Authorization', `Bearer ${testToken}`)
         .send(payload)
-        .expect(201);
+        .expect(201); // TODO-LINT: move to async function
 
       expect(response.body).toMatchObject({
         success: true,
@@ -352,7 +352,7 @@ describe('Notification API Routes', () => {
         .post('/api/v2/notifications/send')
         .set('Authorization', `Bearer ${testToken}`)
         .send(invalidPayload)
-        .expect(400);
+        .expect(400); // TODO-LINT: move to async function
 
       expect(response.body).toMatchObject({
         success: false,
@@ -372,7 +372,7 @@ describe('Notification API Routes', () => {
       await request(app)
         .post('/api/v2/notifications/send')
         .send(payload)
-        .expect(401);
+        .expect(401); // TODO-LINT: move to async function
     });
   });
 
@@ -401,7 +401,7 @@ describe('Notification API Routes', () => {
         .post('/api/v2/notifications/send/batch')
         .set('Authorization', `Bearer ${adminToken}`)
         .send(payload)
-        .expect(201);
+        .expect(201); // TODO-LINT: move to async function
 
       expect(response.body).toMatchObject({
         success: true,
@@ -424,7 +424,7 @@ describe('Notification API Routes', () => {
         .post('/api/v2/notifications/send/batch')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ notifications })
-        .expect(400);
+        .expect(400); // TODO-LINT: move to async function
 
       expect(response.body).toMatchObject({
         success: false,
@@ -438,7 +438,7 @@ describe('Notification API Routes', () => {
       const response = await request(app)
         .get('/api/v2/notifications/preferences')
         .set('Authorization', `Bearer ${testToken}`)
-        .expect(200);
+        .expect(200); // TODO-LINT: move to async function
 
       expect(response.body).toMatchObject({
         success: true,
@@ -464,7 +464,7 @@ describe('Notification API Routes', () => {
         .put('/api/v2/notifications/preferences')
         .set('Authorization', `Bearer ${testToken}`)
         .send({ preferences })
-        .expect(200);
+        .expect(200); // TODO-LINT: move to async function
 
       expect(response.body).toMatchObject({
         success: true,
@@ -477,7 +477,7 @@ describe('Notification API Routes', () => {
     test('should return health status', async () => {
       const response = await request(app)
         .get('/api/v2/notifications/health')
-        .expect(200);
+        .expect(200); // TODO-LINT: move to async function
 
       expect(response.body).toMatchObject({
         status: 'healthy',
@@ -517,7 +517,7 @@ describe('Notification System Integration', () => {
         .post('/api/v2/notifications/send')
         .set('Authorization', `Bearer ${testToken}`)
         .send(notificationPayload)
-        .expect(201);
+        .expect(201); // TODO-LINT: move to async function
 
       const eventId = sendResponse.body.eventId;
 
@@ -528,7 +528,7 @@ describe('Notification System Integration', () => {
       const notificationsResponse = await request(app)
         .get('/api/v2/notifications')
         .set('Authorization', `Bearer ${testToken}`)
-        .expect(200);
+        .expect(200); // TODO-LINT: move to async function
 
       expect(notificationsResponse.body.success).toBe(true);
 
@@ -536,7 +536,7 @@ describe('Notification System Integration', () => {
       const readResponse = await request(app)
         .post(`/api/v2/notifications/${eventId}/read`)
         .set('Authorization', `Bearer ${testToken}`)
-        .expect(200);
+        .expect(200); // TODO-LINT: move to async function
 
       expect(readResponse.body.success).toBe(true);
     });
@@ -558,7 +558,7 @@ describe('Notification System Integration', () => {
         .post('/api/v2/notifications/schedule')
         .set('Authorization', `Bearer ${adminToken}`)
         .send(payload)
-        .expect(201);
+        .expect(201); // TODO-LINT: move to async function
 
       expect(response.body).toMatchObject({
         success: true,
@@ -570,7 +570,7 @@ describe('Notification System Integration', () => {
       const cancelResponse = await request(app)
         .post(`/api/v2/notifications/${response.body.eventId}/cancel`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
+        .expect(200); // TODO-LINT: move to async function
 
       expect(cancelResponse.body.success).toBe(true);
     });
@@ -610,7 +610,7 @@ describe('Notification System Integration', () => {
           .post('/api/v2/notifications/send')
           .set('Authorization', `Bearer ${testToken}`)
           .send(payload)
-          .expect(201);
+          .expect(201); // TODO-LINT: move to async function
 
         expect(response.body.success).toBe(true);
       }
@@ -640,7 +640,7 @@ describe('Notification System Performance', () => {
       .post('/api/v2/notifications/send/batch')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ notifications })
-      .expect(201);
+      .expect(201); // TODO-LINT: move to async function
 
     const duration = Date.now() - startTime;
 
@@ -671,7 +671,7 @@ describe('Notification System Performance', () => {
       );
     }
 
-    const responses = await Promise.all(promises);
+    const responses = await Promise.all(promises); // TODO-LINT: move to async function
 
     responses.forEach(response => {
       expect(response.status).toBe(201);
@@ -704,7 +704,7 @@ describe('Notification System Error Handling', () => {
       .post('/api/v2/notifications/send')
       .set('Authorization', `Bearer ${testToken}`)
       .send(payload)
-      .expect(500);
+      .expect(500); // TODO-LINT: move to async function
 
     expect(response.body).toMatchObject({
       success: false,
@@ -729,7 +729,7 @@ describe('Notification System Error Handling', () => {
       const response = await request(app)
         .post('/api/v2/notifications/send')
         .set('Authorization', `Bearer ${testToken}`)
-        .send(payload);
+        .send(payload); // TODO-LINT: move to async function
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
@@ -755,19 +755,19 @@ describe('Notification System Security', () => {
     await request(app)
       .post('/api/v2/notifications/send')
       .send(payload)
-      .expect(401);
+      .expect(401); // TODO-LINT: move to async function
 
     // Invalid token
     await request(app)
       .post('/api/v2/notifications/send')
       .set('Authorization', 'Bearer invalid-token')
       .send(payload)
-      .expect(401);
+      .expect(401); // TODO-LINT: move to async function
   });
 
   test('should enforce permission-based access control', async () => {
     // Mock user without required permissions
-    const limitedUser = {
+    const _limitedUser = {
       id: 'limited-user',
       email: 'limited@test.com',
       roles: ['viewer'],
@@ -800,7 +800,7 @@ describe('Notification System Security', () => {
       .post('/api/v2/notifications/send')
       .set('Authorization', `Bearer ${testToken}`)
       .send(payload)
-      .expect(201);
+      .expect(201); // TODO-LINT: move to async function
 
     expect(response.body.success).toBe(true);
     

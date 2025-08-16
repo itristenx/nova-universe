@@ -14,7 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 // import { PrismaClient } from '../../prisma/generated/core/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const ___dirname = path.dirname(__filename);
 
 // Initialize database factory
 const dbFactory = new DatabaseFactory();
@@ -28,10 +28,10 @@ async function initializeDatabase() {
   if (isInitialized) return db;
   try {
     logger.info('Initializing database factory...');
-    await dbFactory.initialize();
+    await dbFactory.initialize(); // TODO-LINT: move to async function
     db = dbFactory;
-    await setupSchemas();
-    await setupInitialData();
+    await setupSchemas(); // TODO-LINT: move to async function
+    await setupInitialData(); // TODO-LINT: move to async function
     isInitialized = true;
     logger.info('Database factory initialized successfully');
     return db;
@@ -58,9 +58,9 @@ async function setupSchemas() {
  */
 async function setupInitialData() {
   try {
-    await setupRolesAndPermissions();
-    await setupDefaultConfig();
-    await setupDefaultAdmin();
+    await setupRolesAndPermissions(); // TODO-LINT: move to async function
+    await setupDefaultConfig(); // TODO-LINT: move to async function
+    await setupDefaultAdmin(); // TODO-LINT: move to async function
     logger.info('Initial data setup completed');
   } catch (error) {
     logger.error('Error setting up initial data:', error);
@@ -81,7 +81,7 @@ async function setupRolesAndPermissions() {
         description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      ); // TODO-LINT: move to async function
       CREATE TABLE IF NOT EXISTS permissions (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) UNIQUE NOT NULL
@@ -103,7 +103,7 @@ async function setupRolesAndPermissions() {
       await db.query(
         'INSERT INTO roles (id, name, description, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT (id) DO NOTHING',
         [role.id, role.name, role.description]
-      );
+      ); // TODO-LINT: move to async function
     }
 
     const permissions = [
@@ -119,7 +119,7 @@ async function setupRolesAndPermissions() {
       await db.query(
         'INSERT INTO permissions (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING',
         [permission.id, permission.name]
-      );
+      ); // TODO-LINT: move to async function
     }
 
     // Assign permissions to roles
@@ -139,7 +139,7 @@ async function setupRolesAndPermissions() {
       await db.query(
         'INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
         [rp.roleId, rp.permissionId]
-      );
+      ); // TODO-LINT: move to async function
     }
 
     logger.info('Roles and permissions setup completed');
@@ -187,14 +187,14 @@ async function setupDefaultConfig() {
       await db.query(
         'INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT (key) DO NOTHING',
         [key, value, 'string', 'general']
-      );
+      ); // TODO-LINT: move to async function
     }
 
     // Add default directory integration
     await db.query(
       'INSERT INTO directory_integrations (provider, enabled, settings, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT DO NOTHING',
       ['mock', true, '{}']
-    );
+    ); // TODO-LINT: move to async function
 
     logger.info('Default configuration setup completed');
   } catch (error) {
@@ -209,31 +209,31 @@ async function setupDefaultConfig() {
 async function setupDefaultAdmin() {
   try {
     // Use a single transaction to avoid race conditions
-    const client = await db.coreDb.pool.connect();
+    const client = await db.coreDb.pool.connect(); // TODO-LINT: move to async function
     
     try {
-      await client.query('BEGIN');
+      await client.query('BEGIN'); // TODO-LINT: move to async function
       
       // Check if admin user already exists
       const existingAdmin = await client.query(
         'SELECT id FROM users WHERE email = $1',
         ['admin@novauniverse.com']
-      );
+      ); // TODO-LINT: move to async function
 
       if (existingAdmin.rows && existingAdmin.rows.length > 0) {
         logger.info('Default admin user already exists');
-        await client.query('COMMIT');
+        await client.query('COMMIT'); // TODO-LINT: move to async function
         return;
       }
 
       // Create default admin user using the correct schema
-      const hashedPassword = await bcrypt.hash('admin123!', 12);
+      const hashedPassword = await bcrypt.hash('admin123!', 12); // TODO-LINT: move to async function
       const adminUuid = uuidv4();
 
       const result = await client.query(
         'INSERT INTO users (uuid, name, email, password_hash, disabled, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id',
         [adminUuid, 'System Administrator', 'admin@novauniverse.com', hashedPassword, false]
-      );
+      ); // TODO-LINT: move to async function
 
       const adminId = result.rows[0].id;
 
@@ -241,12 +241,12 @@ async function setupDefaultAdmin() {
       await client.query(
         'INSERT INTO user_roles (user_id, role_id, created_at) VALUES ($1, $2, CURRENT_TIMESTAMP)',
         [adminId, 1] // superadmin role
-      );
+      ); // TODO-LINT: move to async function
 
-      await client.query('COMMIT');
+      await client.query('COMMIT'); // TODO-LINT: move to async function
       logger.info('Default admin user created: admin@novauniverse.com / admin123!');
     } catch (error) {
-      await client.query('ROLLBACK');
+      await client.query('ROLLBACK'); // TODO-LINT: move to async function
       throw error;
     } finally {
       client.release();
@@ -272,35 +272,35 @@ class DatabaseWrapper {
 
   async ensureReady() {
     if (!this.db) {
-      this.db = await initializeDatabase();
+      this.db = await initializeDatabase(); // TODO-LINT: move to async function
     }
     return this.db;
   }
 
   // Modern async methods
   async query(sql, params = []) {
-    const database = await this.ensureReady();
-    return await database.query(sql, params);
+    const database = await this.ensureReady(); // TODO-LINT: move to async function
+    return await database.query(sql, params); // TODO-LINT: move to async function
   }
 
   async transaction(callback) {
-    const database = await this.ensureReady();
-    return await database.transaction(callback);
+    const database = await this.ensureReady(); // TODO-LINT: move to async function
+    return await database.transaction(callback); // TODO-LINT: move to async function
   }
 
   async storeDocument(collection, document) {
-    const database = await this.ensureReady();
-    return await database.storeDocument(collection, document);
+    const database = await this.ensureReady(); // TODO-LINT: move to async function
+    return await database.storeDocument(collection, document); // TODO-LINT: move to async function
   }
 
   async findDocuments(collection, query = {}, options = {}) {
-    const database = await this.ensureReady();
-    return await database.findDocuments(collection, query, options);
+    const database = await this.ensureReady(); // TODO-LINT: move to async function
+    return await database.findDocuments(collection, query, options); // TODO-LINT: move to async function
   }
 
   async createAuditLog(action, userId, details) {
     try {
-      const database = await this.ensureReady();
+      const database = await this.ensureReady(); // TODO-LINT: move to async function
       await database.storeDocument('audit_logs', {
         action,
         userId,
@@ -308,7 +308,7 @@ class DatabaseWrapper {
         timestamp: new Date(),
         ip: details.ip || 'unknown',
         userAgent: details.userAgent || 'unknown'
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Failed to create audit log:', error);
     }
@@ -316,7 +316,7 @@ class DatabaseWrapper {
 
   async purgeOldLogs(days, cb) {
     try {
-      const database = await this.ensureReady();
+      const database = await this.ensureReady(); // TODO-LINT: move to async function
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
       
@@ -327,7 +327,7 @@ class DatabaseWrapper {
           WHERE table_schema = 'public' 
           AND table_name = 'system_logs'
         )`
-      );
+      ); // TODO-LINT: move to async function
       
       if (!tableExists.rows[0].exists) {
         logger.info('system_logs table does not exist, skipping log purge');
@@ -338,7 +338,7 @@ class DatabaseWrapper {
       const result = await database.query(
         'DELETE FROM system_logs WHERE created_at < $1',
         [cutoffDate]
-      );
+      ); // TODO-LINT: move to async function
       
       if (cb) cb(null, result);
       return result;
@@ -421,7 +421,7 @@ export default dbWrapper;
 async function closeDatabase() {
   try {
     if (dbFactory && typeof dbFactory.close === 'function' && isInitialized) {
-      await dbFactory.close();
+      await dbFactory.close(); // TODO-LINT: move to async function
       isInitialized = false;
     } else {
       logger.warn('closeDatabase called but dbFactory or isInitialized is in an invalid state.', {

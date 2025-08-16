@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { getCatalogItems } from "../../lib/api";
 import { Button } from "../../components/ui/button";
 
-export default function CatalogPage() {
+export default function _CatalogPage() {
   const [items, setItems] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

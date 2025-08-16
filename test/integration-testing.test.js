@@ -20,12 +20,12 @@ class TestHelper {
     const start = Date.now();
     while (Date.now() - start < timeout) {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url); // TODO-LINT: move to async function
         if (response.ok) return true;
       } catch (error) {
         // Service not ready yet
       }
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
     }
     throw new Error(`Service at ${url} not ready after ${timeout}ms`);
   }
@@ -39,7 +39,7 @@ class TestHelper {
       }
     };
     
-    const response = await fetch(url, { ...defaultOptions, ...options });
+    const response = await fetch(url, { ...defaultOptions, ...options }); // TODO-LINT: move to async function
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -71,22 +71,22 @@ class TestHelper {
 // Service Health Checks
 test('Service Health Checks', async (t) => {
   await t.test('API service is running', async () => {
-    await TestHelper.waitForService(`${CONFIG.apiUrl}/health`);
-    const response = await TestHelper.makeRequest('/health');
+    await TestHelper.waitForService(`${CONFIG.apiUrl}/health`); // TODO-LINT: move to async function
+    const response = await TestHelper.makeRequest('/health'); // TODO-LINT: move to async function
     assert.strictEqual(response.status, 200);
   });
 
   await t.test('Database connectivity', async () => {
-    const response = await TestHelper.makeRequest('/api/monitoring/health');
-    const health = await response.json();
+    const response = await TestHelper.makeRequest('/api/monitoring/health'); // TODO-LINT: move to async function
+    const health = await response.json(); // TODO-LINT: move to async function
     
     assert.strictEqual(health.status, 'healthy');
     assert.strictEqual(health.database.status, 'connected');
   });
 
   await t.test('Redis connectivity', async () => {
-    const response = await TestHelper.makeRequest('/api/monitoring/health');
-    const health = await response.json();
+    const response = await TestHelper.makeRequest('/api/monitoring/health'); // TODO-LINT: move to async function
+    const health = await response.json(); // TODO-LINT: move to async function
     
     assert.strictEqual(health.redis.status, 'connected');
   });
@@ -98,14 +98,14 @@ test('Authentication & Authorization', async (t) => {
   let testUser = null;
 
   await t.test('User registration', async () => {
-    const userData = TestHelper.generateTestData().user;
+    const userData = TestHelper.generateTestData().user; // TODO-LINT: move to async function
     const response = await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({ ...userData, password: 'TestPassword123!' })
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 201);
-    testUser = await response.json();
+    testUser = await response.json(); // TODO-LINT: move to async function
     assert.ok(testUser.id);
     assert.strictEqual(testUser.email, userData.email);
   });
@@ -117,10 +117,10 @@ test('Authentication & Authorization', async (t) => {
         email: testUser.email,
         password: 'TestPassword123!'
       })
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 200);
-    const loginResult = await response.json();
+    const loginResult = await response.json(); // TODO-LINT: move to async function
     assert.ok(loginResult.token);
     authToken = loginResult.token;
   });
@@ -130,7 +130,7 @@ test('Authentication & Authorization', async (t) => {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 200);
   });
@@ -141,7 +141,7 @@ test('Authentication & Authorization', async (t) => {
         headers: {
           'Authorization': 'Bearer invalid-token'
         }
-      });
+      }); // TODO-LINT: move to async function
       assert.fail('Should have rejected invalid token');
     } catch (error) {
       assert.ok(error.message.includes('401'));
@@ -156,11 +156,11 @@ test('Ticket Management System', async (t) => {
 
   // Setup: Create test user and get auth token
   await t.test('Setup test user', async () => {
-    const userData = TestHelper.generateTestData().user;
+    const userData = TestHelper.generateTestData().user; // TODO-LINT: move to async function
     await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({ ...userData, password: 'TestPassword123!' })
-    });
+    }); // TODO-LINT: move to async function
 
     const loginResponse = await TestHelper.makeRequest('/api/auth/login', {
       method: 'POST',
@@ -168,24 +168,24 @@ test('Ticket Management System', async (t) => {
         email: userData.email,
         password: 'TestPassword123!'
       })
-    });
+    }); // TODO-LINT: move to async function
 
-    const loginResult = await loginResponse.json();
+    const loginResult = await loginResponse.json(); // TODO-LINT: move to async function
     authToken = loginResult.token;
   });
 
   await t.test('Create ticket', async () => {
-    const ticketData = TestHelper.generateTestData().ticket;
+    const ticketData = TestHelper.generateTestData().ticket; // TODO-LINT: move to async function
     const response = await TestHelper.makeRequest('/api/tickets', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify(ticketData)
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 201);
-    testTicket = await response.json();
+    testTicket = await response.json(); // TODO-LINT: move to async function
     assert.ok(testTicket.id);
     assert.strictEqual(testTicket.title, ticketData.title);
     assert.strictEqual(testTicket.status, 'open');
@@ -196,10 +196,10 @@ test('Ticket Management System', async (t) => {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 200);
-    const ticket = await response.json();
+    const ticket = await response.json(); // TODO-LINT: move to async function
     assert.strictEqual(ticket.id, testTicket.id);
   });
 
@@ -210,10 +210,10 @@ test('Ticket Management System', async (t) => {
         'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify({ status: 'in_progress' })
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 200);
-    const updatedTicket = await response.json();
+    const updatedTicket = await response.json(); // TODO-LINT: move to async function
     assert.strictEqual(updatedTicket.status, 'in_progress');
   });
 
@@ -221,7 +221,7 @@ test('Ticket Management System', async (t) => {
     const commentData = {
       content: 'Test comment for integration testing',
       type: 'internal'
-    };
+    }; // TODO-LINT: move to async function
 
     const response = await TestHelper.makeRequest(`/api/tickets/${testTicket.id}/comments`, {
       method: 'POST',
@@ -229,10 +229,10 @@ test('Ticket Management System', async (t) => {
         'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify(commentData)
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 201);
-    const comment = await response.json();
+    const comment = await response.json(); // TODO-LINT: move to async function
     assert.strictEqual(comment.content, commentData.content);
   });
 });
@@ -249,12 +249,12 @@ test('Analytics & Reporting System', async (t) => {
       last_name: 'User',
       role: 'admin',
       password: 'AdminPassword123!'
-    };
+    }; // TODO-LINT: move to async function
 
     await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(adminData)
-    });
+    }); // TODO-LINT: move to async function
 
     const loginResponse = await TestHelper.makeRequest('/api/auth/login', {
       method: 'POST',
@@ -262,9 +262,9 @@ test('Analytics & Reporting System', async (t) => {
         email: adminData.email,
         password: adminData.password
       })
-    });
+    }); // TODO-LINT: move to async function
 
-    const loginResult = await loginResponse.json();
+    const loginResult = await loginResponse.json(); // TODO-LINT: move to async function
     authToken = loginResult.token;
   });
 
@@ -273,10 +273,10 @@ test('Analytics & Reporting System', async (t) => {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 200);
-    const analytics = await response.json();
+    const analytics = await response.json(); // TODO-LINT: move to async function
     
     assert.ok(analytics.summary);
     assert.ok(typeof analytics.summary.totalTickets === 'number');
@@ -289,10 +289,10 @@ test('Analytics & Reporting System', async (t) => {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 200);
-    const metrics = await response.json();
+    const metrics = await response.json(); // TODO-LINT: move to async function
     
     assert.ok(metrics.currentLoad);
     assert.ok(typeof metrics.currentLoad.activeUsers === 'number');
@@ -304,10 +304,10 @@ test('Analytics & Reporting System', async (t) => {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 200);
-    const report = await response.json();
+    const report = await response.json(); // TODO-LINT: move to async function
     
     assert.ok(report.kpis);
     assert.ok(report.trends);
@@ -327,12 +327,12 @@ test('VIP Priority System', async (t) => {
       last_name: 'Customer',
       role: 'vip',
       password: 'VIPPassword123!'
-    };
+    }; // TODO-LINT: move to async function
 
     await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(vipUserData)
-    });
+    }); // TODO-LINT: move to async function
 
     const loginResponse = await TestHelper.makeRequest('/api/auth/login', {
       method: 'POST',
@@ -340,9 +340,9 @@ test('VIP Priority System', async (t) => {
         email: vipUserData.email,
         password: vipUserData.password
       })
-    });
+    }); // TODO-LINT: move to async function
 
-    const loginResult = await loginResponse.json();
+    const loginResult = await loginResponse.json(); // TODO-LINT: move to async function
     authToken = loginResult.token;
   });
 
@@ -352,7 +352,7 @@ test('VIP Priority System', async (t) => {
       description: 'Testing VIP priority system',
       priority: 'high',
       category: 'technical'
-    };
+    }; // TODO-LINT: move to async function
 
     const response = await TestHelper.makeRequest('/api/tickets', {
       method: 'POST',
@@ -360,10 +360,10 @@ test('VIP Priority System', async (t) => {
         'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify(ticketData)
-    });
+    }); // TODO-LINT: move to async function
 
     assert.strictEqual(response.status, 201);
-    vipTicket = await response.json();
+    vipTicket = await response.json(); // TODO-LINT: move to async function
     
     // VIP tickets should have elevated priority score
     assert.ok(vipTicket.vip_priority_score > 0);
@@ -378,12 +378,12 @@ test('VIP Priority System', async (t) => {
       last_name: 'User',
       role: 'user',
       password: 'RegularPassword123!'
-    };
+    }; // TODO-LINT: move to async function
 
     await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(regularUserData)
-    });
+    }); // TODO-LINT: move to async function
 
     const regularLoginResponse = await TestHelper.makeRequest('/api/auth/login', {
       method: 'POST',
@@ -391,9 +391,9 @@ test('VIP Priority System', async (t) => {
         email: regularUserData.email,
         password: regularUserData.password
       })
-    });
+    }); // TODO-LINT: move to async function
 
-    const regularLoginResult = await regularLoginResponse.json();
+    const regularLoginResult = await regularLoginResponse.json(); // TODO-LINT: move to async function
     const regularToken = regularLoginResult.token;
 
     const regularTicketResponse = await TestHelper.makeRequest('/api/tickets', {
@@ -407,9 +407,9 @@ test('VIP Priority System', async (t) => {
         priority: 'high',
         category: 'technical'
       })
-    });
+    }); // TODO-LINT: move to async function
 
-    const regularTicket = await regularTicketResponse.json();
+    const regularTicket = await regularTicketResponse.json(); // TODO-LINT: move to async function
 
     // VIP ticket should have higher priority score
     assert.ok(vipTicket.vip_priority_score > (regularTicket.vip_priority_score || 0));
@@ -421,7 +421,7 @@ test('WebSocket Communication', async (t) => {
   await t.test('WebSocket connection establishment', async () => {
     // Note: This test would require WebSocket testing library
     // For now, we'll test the HTTP endpoint that supports WebSocket upgrades
-    const response = await TestHelper.makeRequest('/api/monitoring/health');
+    const response = await TestHelper.makeRequest('/api/monitoring/health'); // TODO-LINT: move to async function
     assert.strictEqual(response.status, 200);
     
     // In a full implementation, we would:
@@ -436,7 +436,7 @@ test('WebSocket Communication', async (t) => {
 test('Error Handling & Edge Cases', async (t) => {
   await t.test('Invalid endpoint returns 404', async () => {
     try {
-      await TestHelper.makeRequest('/api/nonexistent-endpoint');
+      await TestHelper.makeRequest('/api/nonexistent-endpoint'); // TODO-LINT: move to async function
       assert.fail('Should have returned 404');
     } catch (error) {
       assert.ok(error.message.includes('404'));
@@ -451,7 +451,7 @@ test('Error Handling & Edge Cases', async (t) => {
         headers: {
           'Content-Type': 'application/json'
         }
-      });
+      }); // TODO-LINT: move to async function
       assert.fail('Should have returned 400');
     } catch (error) {
       assert.ok(error.message.includes('400'));
@@ -460,14 +460,14 @@ test('Error Handling & Edge Cases', async (t) => {
 
   await t.test('Rate limiting protection', async () => {
     // Test rate limiting by making multiple rapid requests
-    const promises = [];
+    const promises = []; // TODO-LINT: move to async function
     for (let i = 0; i < 100; i++) {
       promises.push(
         TestHelper.makeRequest('/api/health').catch(error => error)
       );
     }
 
-    const results = await Promise.all(promises);
+    const results = await Promise.all(promises); // TODO-LINT: move to async function
     
     // Should have some rate limited responses if rate limiting is enabled
     const rateLimitedResponses = results.filter(result => 
@@ -484,7 +484,7 @@ test('Cleanup and Teardown', async (t) => {
   await t.test('Test data cleanup', async () => {
     // In a real implementation, we would clean up test data
     // This ensures tests don't interfere with each other
-    console.log('Test cleanup completed');
+    console.log('Test cleanup completed'); // TODO-LINT: move to async function
     assert.ok(true);
   });
 });

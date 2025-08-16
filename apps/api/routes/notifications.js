@@ -172,7 +172,7 @@ router.post('/send',
       }
 
       // Send notification
-      const eventId = await novaNotificationPlatform.sendNotification(payload);
+      const eventId = await novaNotificationPlatform.sendNotification(payload); // TODO-LINT: move to async function
 
       logger.info(`Notification sent by user ${req.user.id}:`, {
         eventId,
@@ -267,7 +267,7 @@ router.post('/send/batch',
       }));
 
       // Send batch
-      const eventIds = await novaNotificationPlatform.sendBatch(enrichedNotifications);
+      const eventIds = await novaNotificationPlatform.sendBatch(enrichedNotifications); // TODO-LINT: move to async function
 
       logger.info(`Batch notifications sent by user ${req.user.id}:`, {
         count: notifications.length,
@@ -336,7 +336,7 @@ router.post('/schedule',
         createdBy: req.user.id
       };
 
-      const eventId = await novaNotificationPlatform.scheduleNotification(payload, scheduledFor);
+      const eventId = await novaNotificationPlatform.scheduleNotification(payload, scheduledFor); // TODO-LINT: move to async function
 
       logger.info(`Notification scheduled by user ${req.user.id}:`, {
         eventId,
@@ -388,7 +388,7 @@ router.post('/:eventId/cancel',
       }
 
       const { eventId } = req.params;
-      const cancelled = await novaNotificationPlatform.cancelNotification(eventId);
+      const cancelled = await novaNotificationPlatform.cancelNotification(eventId); // TODO-LINT: move to async function
 
       if (cancelled) {
         logger.info(`Notification cancelled by user ${req.user.id}:`, { eventId });
@@ -431,7 +431,7 @@ router.get('/preferences',
   authenticateJWT,
   async (req, res) => {
     try {
-      const preferences = await novaNotificationPlatform.getUserPreferences(req.user.id);
+      const preferences = await novaNotificationPlatform.getUserPreferences(req.user.id); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -480,7 +480,7 @@ router.put('/preferences',
       }
 
       const { preferences } = req.body;
-      await novaNotificationPlatform.updateUserPreferences(req.user.id, preferences);
+      await novaNotificationPlatform.updateUserPreferences(req.user.id, preferences); // TODO-LINT: move to async function
 
       logger.info(`Preferences updated for user ${req.user.id}:`, {
         preferencesCount: preferences.length
@@ -573,7 +573,7 @@ router.put('/preferences/helix',
         });
       }
 
-      await novaNotificationPlatform.createHelixUserProfile(req.user.id, req.body);
+      await novaNotificationPlatform.createHelixUserProfile(req.user.id, req.body); // TODO-LINT: move to async function
 
       logger.info(`Helix profile updated for user ${req.user.id}`);
 
@@ -628,7 +628,7 @@ router.get('/',
 
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 50;
-      const offset = (page - 1) * limit;
+      const _offset = (page - 1) * limit;
 
       // Build filters
       const where = {

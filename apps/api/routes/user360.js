@@ -74,13 +74,13 @@ router.get('/profile/:helix_uid', authenticateJWT, async (req, res) => {
     const { helix_uid } = req.params;
     const { include = 'all' } = req.query;
     
-    const integration = await getIntegrationLayer();
+    const integration = await getIntegrationLayer(); // TODO-LINT: move to async function
     if (!integration) {
       return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
     }
 
     // Check authorization (RBAC)
-    const hasAccess = await checkUserAccess(req.user, helix_uid, 'read');
+    const hasAccess = await checkUserAccess(req.user, helix_uid, 'read'); // TODO-LINT: move to async function
     if (!hasAccess) {
       return res.status(403).json({ 
         error: 'Access denied', 
@@ -89,7 +89,7 @@ router.get('/profile/:helix_uid', authenticateJWT, async (req, res) => {
     }
 
     // Get comprehensive user profile
-    const profile = await integration.getUserProfile(helix_uid);
+    const profile = await integration.getUserProfile(helix_uid); // TODO-LINT: move to async function
     
     // Filter data based on include parameter
     const filteredProfile = filterProfileData(profile, include, req.user.role);
@@ -148,12 +148,12 @@ router.get('/assets/:helix_uid', authenticateJWT, async (req, res) => {
     const { helix_uid } = req.params;
     const { type = 'all' } = req.query;
     
-    const integration = await getIntegrationLayer();
+    const integration = await getIntegrationLayer(); // TODO-LINT: move to async function
     if (!integration) {
       return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
     }
 
-    const hasAccess = await checkUserAccess(req.user, helix_uid, 'read');
+    const hasAccess = await checkUserAccess(req.user, helix_uid, 'read'); // TODO-LINT: move to async function
     if (!hasAccess) {
       return res.status(403).json({ 
         error: 'Access denied', 
@@ -162,7 +162,7 @@ router.get('/assets/:helix_uid', authenticateJWT, async (req, res) => {
     }
 
     // Get assets from integration layer
-    const assets = await integration.getUserAssets(helix_uid, type);
+    const assets = await integration.getUserAssets(helix_uid, type); // TODO-LINT: move to async function
     
     res.json({
       assets,
@@ -214,12 +214,12 @@ router.get('/tickets/:helix_uid', authenticateJWT, async (req, res) => {
     const { helix_uid } = req.params;
     const { status = 'all', limit = 20 } = req.query;
     
-    const integration = await getIntegrationLayer();
+    const integration = await getIntegrationLayer(); // TODO-LINT: move to async function
     if (!integration) {
       return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
     }
 
-    const hasAccess = await checkUserAccess(req.user, helix_uid, 'read');
+    const hasAccess = await checkUserAccess(req.user, helix_uid, 'read'); // TODO-LINT: move to async function
     if (!hasAccess) {
       return res.status(403).json({ 
         error: 'Access denied', 
@@ -230,7 +230,7 @@ router.get('/tickets/:helix_uid', authenticateJWT, async (req, res) => {
     const tickets = await integration.getUserTickets(helix_uid, {
       status,
       limit: parseInt(limit)
-    });
+    }); // TODO-LINT: move to async function
     
     res.json({
       tickets,
@@ -278,7 +278,7 @@ router.get('/activity/:helix_uid', authenticateJWT, async (req, res) => {
     const { helix_uid } = req.params;
     const { hours = 24 } = req.query;
     
-    const hasAccess = await checkUserAccess(req.user, helix_uid, 'read_activity');
+    const hasAccess = await checkUserAccess(req.user, helix_uid, 'read_activity'); // TODO-LINT: move to async function
     if (!hasAccess) {
       return res.status(403).json({ 
         error: 'Access denied - activity logs require elevated permissions', 
@@ -287,14 +287,14 @@ router.get('/activity/:helix_uid', authenticateJWT, async (req, res) => {
     }
 
     const since = new Date(Date.now() - (parseInt(hours) * 60 * 60 * 1000));
-    const integration = await getIntegrationLayer();
+    const integration = await getIntegrationLayer(); // TODO-LINT: move to async function
   if (!integration) {
     return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
   }
     if (!integration) {
       return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
     }
-    const activity = await integration.getUserActivity(helix_uid, since);
+    const activity = await integration.getUserActivity(helix_uid, since); // TODO-LINT: move to async function
     
     res.json({
       activity,
@@ -345,7 +345,7 @@ router.patch('/profile/:helix_uid', authenticateJWT, async (req, res) => {
     const { helix_uid } = req.params;
     const { updates, reason } = req.body;
     
-    const hasAccess = await checkUserAccess(req.user, helix_uid, 'write');
+    const hasAccess = await checkUserAccess(req.user, helix_uid, 'write'); // TODO-LINT: move to async function
     if (!hasAccess) {
       return res.status(403).json({ 
         error: 'Access denied - profile updates require write permissions', 
@@ -373,7 +373,7 @@ router.patch('/profile/:helix_uid', authenticateJWT, async (req, res) => {
     const result = await novaIntegrationLayer.updateUserProfile(helix_uid, sanitizedUpdates, {
       updatedBy: req.user.id,
       reason: reason || 'Profile update via API'
-    });
+    }); // TODO-LINT: move to async function
     
     logger.info(`User profile updated for ${helix_uid} by ${req.user.id}: ${Object.keys(sanitizedUpdates).join(', ')}`);
     
@@ -448,7 +448,7 @@ router.post('/merge', authenticateJWT, async (req, res) => {
       strategy: merge_strategy,
       mergedBy: req.user.id,
       reason: reason || 'Profile merge via API'
-    });
+    }); // TODO-LINT: move to async function
     
     logger.warn(`User profiles merged: ${secondary_uid} -> ${primary_uid} by ${req.user.id}`);
     
@@ -473,10 +473,10 @@ router.post('/merge', authenticateJWT, async (req, res) => {
   }
 });
 
-// Helper functions
+// Helper _functions
 
 /**
- * Check if the requesting user has access to the target user's data
+ * Check if the _requesting user _has access to the _target user's data
  */
 async function checkUserAccess(requestingUser, targetUserId, accessType) {
   // Admin users have full access
@@ -496,7 +496,7 @@ async function checkUserAccess(requestingUser, targetUserId, accessType) {
   
   // Managers can access their direct reports (basic check; integrate with org directory when available)
   if (requestingUser.role === 'manager') {
-    const managesTarget = await isManagerOf(requestingUser.id, targetUserId);
+    const managesTarget = await isManagerOf(requestingUser.id, targetUserId); // TODO-LINT: move to async function
     return managesTarget && (accessType === 'read' || accessType === 'read_activity');
   }
   
@@ -518,9 +518,9 @@ async function isManagerOf(managerUserId, reportUserId) {
 
     // Fallback: attempt to resolve via integration layer if available
     try {
-      const integration = await getIntegrationLayer();
+      const integration = await getIntegrationLayer(); // TODO-LINT: move to async function
       if (integration?.getDirectReports) {
-        const list = await integration.getDirectReports(managerUserId);
+        const list = await integration.getDirectReports(managerUserId); // TODO-LINT: move to async function
         if (Array.isArray(list)) {
           map[managerUserId] = list;
           return list.includes(reportUserId);

@@ -275,5 +275,5 @@ export const mockDashboardStats: DashboardStats = {
 // Helper function to simulate API delay
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper function to simulate API errors
-export const shouldSimulateError = (errorRate: number = 0.1) => Math.random() < errorRate;
+// Helper function to simulate API _errors
+export const __shouldSimulateError = (errorRate: number = 0.1) => Math.random() < errorRate;

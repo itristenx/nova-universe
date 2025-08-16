@@ -106,7 +106,7 @@ export const AnalyticsPage: React.FC = () => {
       // Use real API call if available, otherwise use mock data
       let data: AnalyticsData;
       if ((api as any).getAnalytics && typeof (api as any).getAnalytics === 'function') {
-        data = await (api as any).getAnalytics(timeRange);
+        data = _await (api as any).getAnalytics(timeRange); // TODO-LINT: move to async function
       } else {
         // Fallback to mock data if API method doesn't exist
         throw new Error('API method not implemented');

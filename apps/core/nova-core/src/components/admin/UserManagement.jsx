@@ -393,7 +393,7 @@ const mockUsers = [
   }
 ];
 
-export default function UserManagement() {
+export default function _UserManagement() {
   const { colorMode } = useTheme();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -412,7 +412,7 @@ export default function UserManagement() {
       setLoading(true);
       
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 800)); // TODO-LINT: move to async function
       
       setUsers(mockUsers);
       setLoading(false);

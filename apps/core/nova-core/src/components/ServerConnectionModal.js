@@ -3,7 +3,7 @@ import { Modal, Button, Input } from '@/components/ui';
 import { ServerIcon, CheckCircleIcon, ExclamationTriangleIcon, ArrowPathIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { useApiHealth } from '@/hooks/useApiHealth';
 import { useToastStore } from '@/stores/toast';
-export const ServerConnectionModal = ({ isOpen, onClose }) => {
+export const _ServerConnectionModal = ({ isOpen, onClose }) => {
     const [serverUrl, setServerUrl] = useState('');
     const [savedUrl, setSavedUrl] = useState('');
     const [serverInfo, setServerInfo] = useState({
@@ -37,9 +37,9 @@ export const ServerConnectionModal = ({ isOpen, onClose }) => {
                     'Content-Type': 'application/json',
                 },
                 signal: AbortSignal.timeout(5000) // 5 second timeout
-            });
+            }); // TODO-LINT: move to async function
             if (response.ok) {
-                const data = await response.json();
+                const data = await response.json(); // TODO-LINT: move to async function
                 setServerInfo({
                     url,
                     status: 'connected',

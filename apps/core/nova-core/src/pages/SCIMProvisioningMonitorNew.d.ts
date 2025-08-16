@@ -1,3 +1,3 @@
 import React from 'react';
-export default function SCIMProvisioningMonitor(): React.JSX.Element;
+export default function _SCIMProvisioningMonitor(): React.JSX.Element;
 //# sourceMappingURL=SCIMProvisioningMonitorNew.d.ts.map

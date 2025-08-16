@@ -30,7 +30,7 @@ configCommand
   .option('-a, --all', 'Show all configuration values')
   .action(async (key, options) => {
     try {
-      await getConfig(key, options);
+      await getConfig(key, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to get config: ${error.message}`);
       process.exit(1);
@@ -45,7 +45,7 @@ configCommand
   .option('-c, --create', 'Create file if it doesn\'t exist')
   .action(async (key, value, options) => {
     try {
-      await setConfig(key, value, options);
+      await setConfig(key, value, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to set config: ${error.message}`);
       process.exit(1);
@@ -60,7 +60,7 @@ configCommand
   .option('-e, --env <env>', 'Environment file (.env, .env.local, etc)', '.env')
   .action(async (key, options) => {
     try {
-      await unsetConfig(key, options);
+      await unsetConfig(key, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to unset config: ${error.message}`);
       process.exit(1);
@@ -75,7 +75,7 @@ configCommand
   .option('-j, --json', 'Output in JSON format')
   .action(async (options) => {
     try {
-      await listConfigFiles(options);
+      await listConfigFiles(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to list config files: ${error.message}`);
       process.exit(1);
@@ -89,7 +89,7 @@ configCommand
   .option('-e, --env <env>', 'Environment file to validate', '.env')
   .action(async (options) => {
     try {
-      await validateConfig(options);
+      await validateConfig(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to validate config: ${error.message}`);
       process.exit(1);
@@ -103,7 +103,7 @@ configCommand
   .option('-d, --directory <dir>', 'Backup directory', 'backups')
   .action(async (options) => {
     try {
-      await backupConfig(options);
+      await backupConfig(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to backup config: ${error.message}`);
       process.exit(1);
@@ -117,7 +117,7 @@ configCommand
   .option('-f, --force', 'Overwrite existing files')
   .action(async (backup, options) => {
     try {
-      await restoreConfig(backup, options);
+      await restoreConfig(backup, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to restore config: ${error.message}`);
       process.exit(1);
@@ -131,7 +131,7 @@ configCommand
   .option('-e, --env <env>', 'Environment file to edit', '.env')
   .action(async (file, options) => {
     try {
-      await editConfig(file || options.env);
+      await editConfig(file || options.env); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to edit config: ${error.message}`);
       process.exit(1);
@@ -144,7 +144,7 @@ configCommand
   .description('Interactive configuration setup wizard')
   .action(async () => {
     try {
-      await configWizard();
+      await configWizard(); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Configuration wizard failed: ${error.message}`);
       process.exit(1);
@@ -426,7 +426,7 @@ async function backupConfig(options) {
     const backupPath = path.join(backupDir, `config-backup-${timestamp}`);
 
     // Create backup directory
-    await runCommand('mkdir', ['-p', backupPath], { silent: true });
+    await runCommand('mkdir', ['-p', backupPath], { silent: true }); // TODO-LINT: move to async function
 
     const configFiles = ['.env', '.env.local', '.env.development', '.env.production'];
     let backedUpFiles = 0;
@@ -434,7 +434,7 @@ async function backupConfig(options) {
     for (const file of configFiles) {
       const filePath = path.join(projectRoot, file);
       if (existsSync(filePath)) {
-        await runCommand('cp', [filePath, path.join(backupPath, file)], { silent: true });
+        await runCommand('cp', [filePath, path.join(backupPath, file)], { silent: true }); // TODO-LINT: move to async function
         backedUpFiles++;
       }
     }
@@ -445,7 +445,7 @@ async function backupConfig(options) {
       const filePath = path.join(projectRoot, file);
       if (existsSync(filePath)) {
         const backupFileName = file.replace('/', '-');
-        await runCommand('cp', [filePath, path.join(backupPath, backupFileName)], { silent: true });
+        await runCommand('cp', [filePath, path.join(backupPath, backupFileName)], { silent: true }); // TODO-LINT: move to async function
         backedUpFiles++;
       }
     }
@@ -482,7 +482,7 @@ async function restoreConfig(backup, options) {
           message: 'This will overwrite existing configuration files. Continue?',
           default: false
         }
-      ]);
+      ]); // TODO-LINT: move to async function
 
       if (!confirm) {
         spinner.stop();
@@ -507,7 +507,7 @@ async function restoreConfig(backup, options) {
         destPath = path.join(projectRoot, file);
       }
 
-      await runCommand('cp', [srcPath, destPath], { silent: true });
+      await runCommand('cp', [srcPath, destPath], { silent: true }); // TODO-LINT: move to async function
       restoredFiles++;
     }
 
@@ -534,7 +534,7 @@ async function editConfig(filename) {
         message: `File ${filename} doesn't exist. Create it?`,
         default: true
       }
-    ]);
+    ]); // TODO-LINT: move to async function
 
     if (create) {
       writeFileSync(filePath, '# Nova Universe Configuration\n');
@@ -548,7 +548,7 @@ async function editConfig(filename) {
   console.log(chalk.cyan(`Opening ${filename} in ${editor}...`));
   
   try {
-    await runCommand(editor, [filePath], { stdio: 'inherit' });
+    await runCommand(editor, [filePath], { stdio: 'inherit' }); // TODO-LINT: move to async function
     logger.success('Configuration file saved');
   } catch (error) {
     logger.error(`Failed to open editor: ${error.message}`);
@@ -595,7 +595,7 @@ async function configWizard() {
       name: 'adminEmail',
       message: 'Admin email address:',
       validate: (input) => {
-        if (!input) return true;
+        if (!input) return true; // TODO-LINT: move to async function
         return validateEmail(input) || 'Please enter a valid email address';
       }
     }

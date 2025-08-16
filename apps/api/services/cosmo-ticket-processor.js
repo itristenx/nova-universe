@@ -504,7 +504,7 @@ export class CosmoTicketProcessor extends EventEmitter {
   }
 
   async processTicket(ticketData) {
-    const enrichedTicket = await this.enrichTicketData(ticketData);
+    const enrichedTicket = await this.enrichTicketData(ticketData); // TODO-LINT: move to async function
     
     // Add to processing queue
     this.ticketQueue.push(enrichedTicket);
@@ -707,7 +707,7 @@ export class CosmoTicketProcessor extends EventEmitter {
         }
         
         // Small delay to prevent overwhelming the system
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
       }
       
       // Continue processing after a short delay

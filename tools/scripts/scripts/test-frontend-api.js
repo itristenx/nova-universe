@@ -14,14 +14,14 @@ async function testConnectivity() {
     console.log('1. Testing health endpoint...');
     const health = await axios.get(`${API_URL}/api/health`, {
       headers: { Origin: FRONTEND_ORIGIN }
-    });
+    }); // TODO-LINT: move to async function
     console.log('✅ Health check:', health.data);
 
     // Test 2: Auth status
     console.log('\n2. Testing auth status...');
     const authStatus = await axios.get(`${API_URL}/api/auth/status`, {
       headers: { Origin: FRONTEND_ORIGIN }
-    });
+    }); // TODO-LINT: move to async function
     console.log('✅ Auth status:', authStatus.data);
 
     // Test 3: Login
@@ -34,7 +34,7 @@ async function testConnectivity() {
         'Content-Type': 'application/json',
         Origin: FRONTEND_ORIGIN 
       }
-    });
+    }); // TODO-LINT: move to async function
     console.log('✅ Login successful, token length:', login.data.token.length);
 
     // Test 4: Profile with token
@@ -44,7 +44,7 @@ async function testConnectivity() {
         Authorization: `Bearer ${login.data.token}`,
         Origin: FRONTEND_ORIGIN 
       }
-    });
+    }); // TODO-LINT: move to async function
     console.log('✅ Profile:', profile.data);
 
     console.log('\n🎉 All tests passed! Frontend should be able to communicate with API.');

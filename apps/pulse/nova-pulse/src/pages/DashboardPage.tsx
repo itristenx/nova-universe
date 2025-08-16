@@ -291,3 +291,4 @@ export const DashboardPage: React.FC = () => {
     </div>
   )
 }
+ // TODO-LINT: move to async function

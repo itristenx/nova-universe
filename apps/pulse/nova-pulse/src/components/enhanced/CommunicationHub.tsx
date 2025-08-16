@@ -122,11 +122,11 @@ export const CommunicationHub: React.FC<Props> = ({
   const { data: messages = [] } = useQuery({
     queryKey: ['communication-messages', selectedTicket?.id],
     queryFn: async (): Promise<CommunicationMessage[]> => {
-      const response = await fetch(`/api/v1/communication/messages${selectedTicket?.id ? `?ticketId=${selectedTicket.id}` : ''}`);
+      const response = await fetch(`/api/v1/communication/messages${selectedTicket?.id ? `?ticketId=${selectedTicket.id}` : ''}`); // TODO-LINT: move to async function
       if (!response.ok) {
         throw new Error('Failed to fetch communication messages');
       }
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.messages || [];
     }
   });

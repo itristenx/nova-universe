@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
     const userId = req.user.id;
 
     // Get monitors from Uptime Kuma
-    const monitors = await req.services.uptimeKuma.getAllMonitors();
+    const monitors = await req.services.uptimeKuma.getAllMonitors(); // TODO-LINT: move to async function
     
     // Apply filters
     let filteredMonitors = monitors;
@@ -74,10 +74,10 @@ router.get('/', async (req, res) => {
           userId, 
           `sentinel.monitor.${monitor.id}`,
           { favorite: false, lastViewed: null, customName: null }
-        );
+        ); // TODO-LINT: move to async function
 
         const heartbeat = req.services.monitoring.getLatestHeartbeat(monitor.id);
-        const uptime = await req.services.monitoring.getUptimeStats(monitor.id);
+        const uptime = await req.services.monitoring.getUptimeStats(monitor.id); // TODO-LINT: move to async function
 
         return {
           ...monitor,
@@ -162,7 +162,7 @@ router.post('/',
       const userId = req.user.id;
       
       // Create monitor in Uptime Kuma
-      const monitor = await req.services.uptimeKuma.createMonitor(req.body);
+      const monitor = await req.services.uptimeKuma.createMonitor(req.body); // TODO-LINT: move to async function
 
       // Store in Nova database for correlation
       await req.services.database.createMonitor({
@@ -172,7 +172,7 @@ router.post('/',
         name: monitor.name,
         type: monitor.type,
         config: monitor
-      });
+      }); // TODO-LINT: move to async function
 
       // Set default user preferences in Helix
       await req.services.helix.setUserPreference(
@@ -183,7 +183,7 @@ router.post('/',
           createdAt: new Date().toISOString(),
           customName: null
         }
-      );
+      ); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.to(`tenant_${req.user.tenantId}`).emit('monitor_created', monitor);
@@ -222,7 +222,7 @@ router.get('/:id',
       const userId = req.user.id;
 
       // Get monitor from Uptime Kuma
-      const monitor = await req.services.uptimeKuma.getMonitor(id);
+      const monitor = await req.services.uptimeKuma.getMonitor(id); // TODO-LINT: move to async function
       if (!monitor) {
         return res.status(404).json({
           success: false,
@@ -231,24 +231,24 @@ router.get('/:id',
       }
 
       // Get heartbeat history
-      const heartbeats = await req.services.uptimeKuma.getMonitorHeartbeats(id, period);
+      const heartbeats = await req.services.uptimeKuma.getMonitorHeartbeats(id, period); // TODO-LINT: move to async function
       
       // Get user preferences
       const preferences = await req.services.helix.getUserPreference(
         userId,
         `sentinel.monitor.${id}`,
         { favorite: false, lastViewed: null, customName: null }
-      );
+      ); // TODO-LINT: move to async function
 
       // Update last viewed timestamp
       await req.services.helix.setUserPreference(
         userId,
         `sentinel.monitor.${id}`,
         { ...preferences, lastViewed: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
 
       // Calculate uptime statistics
-      const uptime = await req.services.monitoring.getUptimeStats(id, period);
+      const uptime = await req.services.monitoring.getUptimeStats(id, period); // TODO-LINT: move to async function
       const currentHeartbeat = req.services.monitoring.getLatestHeartbeat(id);
 
       res.json({
@@ -300,14 +300,14 @@ router.put('/:id',
       const userId = req.user.id;
 
       // Update monitor in Uptime Kuma
-      const monitor = await req.services.uptimeKuma.updateMonitor(id, req.body);
+      const monitor = await req.services.uptimeKuma.updateMonitor(id, req.body); // TODO-LINT: move to async function
 
       // Update in Nova database
       await req.services.database.updateMonitor(id, {
         updatedBy: userId,
         config: monitor,
         updatedAt: new Date().toISOString()
-      });
+      }); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.to(`tenant_${req.user.tenantId}`).emit('monitor_updated', monitor);
@@ -345,13 +345,13 @@ router.delete('/:id',
       const userId = req.user.id;
 
       // Delete from Uptime Kuma
-      await req.services.uptimeKuma.deleteMonitor(id);
+      await req.services.uptimeKuma.deleteMonitor(id); // TODO-LINT: move to async function
 
       // Delete from Nova database
-      await req.services.database.deleteMonitor(id);
+      await req.services.database.deleteMonitor(id); // TODO-LINT: move to async function
 
       // Clean up user preferences
-      await req.services.helix.deleteUserPreference(userId, `sentinel.monitor.${id}`);
+      await req.services.helix.deleteUserPreference(userId, `sentinel.monitor.${id}`); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.to(`tenant_${req.user.tenantId}`).emit('monitor_deleted', { id });
@@ -390,7 +390,7 @@ router.post('/:id/pause',
     try {
       const { id } = req.params;
 
-      await req.services.uptimeKuma.pauseMonitor(id);
+      await req.services.uptimeKuma.pauseMonitor(id); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.to(`tenant_${req.user.tenantId}`).emit('monitor_paused', { id });
@@ -425,7 +425,7 @@ router.post('/:id/resume',
     try {
       const { id } = req.params;
 
-      await req.services.uptimeKuma.resumeMonitor(id);
+      await req.services.uptimeKuma.resumeMonitor(id); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.to(`tenant_${req.user.tenantId}`).emit('monitor_resumed', { id });
@@ -469,7 +469,7 @@ router.get('/:id/heartbeats',
       const { id } = req.params;
       const { period = '24h', limit = 100 } = req.query;
 
-      const heartbeats = await req.services.uptimeKuma.getMonitorHeartbeats(id, period);
+      const heartbeats = await req.services.uptimeKuma.getMonitorHeartbeats(id, period); // TODO-LINT: move to async function
       const limitedHeartbeats = heartbeats.slice(-parseInt(limit));
 
       // Calculate statistics
@@ -521,7 +521,7 @@ router.get('/:id/uptime',
       const { id } = req.params;
       const { period = '24h' } = req.query;
 
-      const uptime = await req.services.monitoring.getUptimeStats(id, period);
+      const uptime = await req.services.monitoring.getUptimeStats(id, period); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -563,13 +563,13 @@ router.post('/:id/favorite',
         userId,
         `sentinel.monitor.${id}`,
         { favorite: false }
-      );
+      ); // TODO-LINT: move to async function
 
       await req.services.helix.setUserPreference(
         userId,
         `sentinel.monitor.${id}`,
         { ...preferences, favorite: true, favoritedAt: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -606,13 +606,13 @@ router.post('/:id/unfavorite',
         userId,
         `sentinel.monitor.${id}`,
         {}
-      );
+      ); // TODO-LINT: move to async function
 
       await req.services.helix.setUserPreference(
         userId,
         `sentinel.monitor.${id}`,
         { ...preferences, favorite: false, unfavoritedAt: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -653,13 +653,13 @@ router.put('/:id/custom-name',
         userId,
         `sentinel.monitor.${id}`,
         {}
-      );
+      ); // TODO-LINT: move to async function
 
       await req.services.helix.setUserPreference(
         userId,
         `sentinel.monitor.${id}`,
         { ...preferences, customName, customNameUpdatedAt: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
 
       res.json({
         success: true,

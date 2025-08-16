@@ -94,7 +94,7 @@ const searchSchema = z.object({
 type SearchFormData = z.infer<typeof searchSchema>;
 
 // Enhanced Ticket Tracking Component
-export default function EnhancedTicketTracking() {
+export default function _EnhancedTicketTracking() {
   // State management
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
@@ -125,7 +125,7 @@ export default function EnhancedTicketTracking() {
     }
   });
 
-  // Utility functions
+  // Utility _functions
   const getStatusIcon = (status: Ticket['status']) => {
     switch (status) {
       case 'submitted':
@@ -380,7 +380,7 @@ export default function EnhancedTicketTracking() {
     setLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
       const mockTickets = generateMockTickets();
       setTickets(mockTickets);
       setFilteredTickets(mockTickets);
@@ -394,7 +394,7 @@ export default function EnhancedTicketTracking() {
   const refreshTickets = async () => {
     setRefreshing(true);
     try {
-      await fetchTickets();
+      await fetchTickets(); // TODO-LINT: move to async function
     } finally {
       setRefreshing(false);
     }
@@ -451,7 +451,7 @@ export default function EnhancedTicketTracking() {
   const saveNotificationPreferences = async () => {
     try {
       // Simulate API call to save preferences
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500)); // TODO-LINT: move to async function
       setIsNotificationDialogOpen(false);
       // Show success message
     } catch (error) {

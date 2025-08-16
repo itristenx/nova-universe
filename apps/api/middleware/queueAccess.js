@@ -1,6 +1,6 @@
 export const VALID_QUEUE_IDENTIFIER_REGEX = /^[A-Za-z0-9_-]+$/;
 
-export function checkQueueAccess(queueGetter) {
+export function _checkQueueAccess(queueGetter) {
   return (req, res, next) => {
     const queue = typeof queueGetter === 'function' ? queueGetter(req) : queueGetter
     if (typeof queue !== 'string') {

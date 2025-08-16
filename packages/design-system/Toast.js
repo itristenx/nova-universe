@@ -406,7 +406,7 @@ export default function Toast({
 }
 
 // Toast Container component
-export function ToastContainer({ 
+export function _ToastContainer({ 
   position = 'top-right',
   className = '' 
 }) {

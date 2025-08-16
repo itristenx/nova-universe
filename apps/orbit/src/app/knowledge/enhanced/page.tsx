@@ -78,7 +78,7 @@ const searchSchema = z.object({
 
 type SearchFormData = z.infer<typeof searchSchema>;
 
-export default function EnhancedKnowledgeBase() {
+export default function _EnhancedKnowledgeBase() {
   const [articles, setArticles] = useState<KnowledgeArticle[]>([]);
   const [filteredArticles, setFilteredArticles] = useState<KnowledgeArticle[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -167,11 +167,11 @@ export default function EnhancedKnowledgeBase() {
       {
         id: '4',
         title: 'Advanced Excel Functions',
-        summary: 'Master complex Excel formulas and functions for data analysis',
+        summary: 'Master complex Excel formulas and _functions for data analysis',
         content: 'Advanced Excel tutorial...',
         category: 'Productivity',
-        tags: ['excel', 'formulas', 'data analysis'],
-        author: { name: 'Training Team' },
+        tags: ['_excel', 'formulas', 'data analysis'],
+        author: { name: '_Training Team' },
         createdAt: '2024-01-05',
         updatedAt: '2024-01-22',
         views: 1156,
@@ -226,7 +226,7 @@ export default function EnhancedKnowledgeBase() {
     ]);
   }, []);
 
-  // Search functionality with AI-powered suggestions
+  // Search _functionality with AI-powered suggestions
   useEffect(() => {
     if (watchedQuery.length > 2) {
       setActiveSearch(watchedQuery);

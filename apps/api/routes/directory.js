@@ -30,7 +30,7 @@ const router = express.Router();
  */
 router.get('/config', async (req, res) => {
   try {
-    const cfg = await getConfig();
+    const cfg = await getConfig(); // TODO-LINT: move to async function
     res.json(cfg);
   } catch {
     res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
@@ -76,7 +76,7 @@ router.get('/config', async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     const q = (req.query.q || '').toLowerCase();
-    const results = await searchDirectory(q);
+    const results = await searchDirectory(q); // TODO-LINT: move to async function
     res.json(results);
   } catch {
     res.status(500).json({ error: 'Directory search failed', errorCode: 'DIRECTORY_SEARCH_ERROR' });
@@ -146,7 +146,7 @@ router.post('/user', async (req, res) => {
     return res.status(400).json({ error: 'Name and email are required', errorCode: 'NAME_EMAIL_REQUIRED' });
   }
   try {
-    const id = await createUser(name, email);
+    const id = await createUser(name, email); // TODO-LINT: move to async function
     res.json({ id, name, email });
   } catch {
     res.status(500).json({ error: 'Failed to create user', errorCode: 'CREATE_USER_ERROR' });

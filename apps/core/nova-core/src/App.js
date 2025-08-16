@@ -67,7 +67,7 @@ const ProtectedRoute = ({ children }) => {
             const token = localStorage.getItem('auth_token');
             if (token) {
                 try {
-                    const user = await api.me(token);
+                    const user = await api.me(token); // TODO-LINT: move to async function
                     login(token, user);
                 }
                 catch {

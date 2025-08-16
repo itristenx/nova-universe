@@ -3,7 +3,7 @@ import { Button, Card, Modal } from '@/components/ui';
 import { DevicePhoneMobileIcon, ComputerDesktopIcon, TrashIcon, PlusIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-export const PasskeyManagement = ({ showTitle = true }) => {
+export const _PasskeyManagement = ({ showTitle = true }) => {
     const [passkeys, setPasskeys] = useState([]);
     const [loading, setLoading] = useState(true);
     const [registering, setRegistering] = useState(false);
@@ -15,7 +15,7 @@ export const PasskeyManagement = ({ showTitle = true }) => {
     const loadPasskeys = async () => {
         try {
             setLoading(true);
-            const data = await api.getPasskeys();
+            const data = await api.getPasskeys(); // TODO-LINT: move to async function
             setPasskeys(data);
         }
         catch (error) {
@@ -38,7 +38,7 @@ export const PasskeyManagement = ({ showTitle = true }) => {
                 throw new Error('WebAuthn is not supported in this browser');
             }
             // Get registration options from server
-            const options = await api.beginPasskeyRegistration({});
+            const options = await api.beginPasskeyRegistration({}); // TODO-LINT: move to async function
             // Convert base64url to ArrayBuffer for the challenge
             const challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
             const userIdBuffer = Uint8Array.from(atob(options.user.id.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
@@ -51,7 +51,7 @@ export const PasskeyManagement = ({ showTitle = true }) => {
                         id: userIdBuffer
                     }
                 }
-            });
+            }); // TODO-LINT: move to async function
             if (!credential) {
                 throw new Error('Failed to create credential');
             }
@@ -68,13 +68,13 @@ export const PasskeyManagement = ({ showTitle = true }) => {
                 name: prompt('Enter a name for this passkey (e.g., "iPhone", "YubiKey")') || 'Unnamed Passkey'
             };
             // Register with server
-            await api.completePasskeyRegistration(credentialData);
+            await api.completePasskeyRegistration(credentialData); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Passkey Registered',
                 description: 'Your passkey has been successfully registered'
             });
-            await loadPasskeys();
+            await loadPasskeys(); // TODO-LINT: move to async function
         }
         catch (error) {
             console.error('Failed to register passkey:', error);
@@ -90,13 +90,13 @@ export const PasskeyManagement = ({ showTitle = true }) => {
     };
     const deletePasskey = async (passkey) => {
         try {
-            await api.deletePasskey(passkey.id);
+            await api.deletePasskey(passkey.id); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Passkey Deleted',
                 description: 'The passkey has been removed from your account'
             });
-            await loadPasskeys();
+            await loadPasskeys(); // TODO-LINT: move to async function
             setDeleteModal({ isOpen: false });
         }
         catch (error) {

@@ -223,10 +223,10 @@ if (!isMainThread) {
       while (Date.now() < endTime && this.isRunning) {
         try {
           const endpoint = this.selectEndpoint(endpoints);
-          await this.makeRequest(endpoint);
+          await this.makeRequest(endpoint); // TODO-LINT: move to async function
           
           // Simulate user think time
-          await this.sleep(Math.random() * 2000 + 500); // 500-2500ms think time
+          await this.sleep(Math.random() * 2000 + 500); // TODO-LINT: move to async function // 500-2500ms think time
         } catch (error) {
           parentPort.postMessage({
             type: 'error',
@@ -265,7 +265,7 @@ if (!isMainThread) {
           headers: {
             'User-Agent': `LoadTest-Worker-${this.workerId}`
           }
-        });
+        }); // TODO-LINT: move to async function
 
         const duration = performance.now() - start;
         
@@ -320,9 +320,9 @@ test('Load Testing Suite', async (t) => {
   const loadTester = new LoadTestEngine();
 
   await t.test('Smoke Test - Basic Functionality', async () => {
-    console.log('💨 Running smoke test to verify basic functionality...');
+    console.log('💨 Running smoke test to verify basic functionality...'); // TODO-LINT: move to async function
     
-    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.smoke, 'Smoke Test');
+    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.smoke, 'Smoke Test'); // TODO-LINT: move to async function
     
     console.log('📊 Smoke Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
@@ -331,17 +331,17 @@ test('Load Testing Suite', async (t) => {
     console.log(`   Throughput: ${report.summary.throughput.toFixed(2)} req/s`);
 
     // Basic functionality assertions
-    assert.ok(report.summary.totalRequests > 0, 'Should complete at least some requests');
+    assert.ok(report.summary.totalRequests > 0, 'Should complete at _least some requests');
     assert.ok(report.summary.errorRate < 0.1, 'Error rate should be under 10% for smoke test');
     assert.ok(report.responseTime.avg < 10000, 'Average response time should be under 10 seconds');
 
     console.log('  ✅ Smoke test passed - basic functionality verified');
   });
 
-  await t.test('Light Load Test - Normal Usage', async () => {
-    console.log('🌤️ Running light load test for normal usage patterns...');
+  await t.test('Light Load Test - Normal _Usage', async () => {
+    console.log('🌤️ Running light load test for normal usage patterns...'); // TODO-LINT: move to async function
     
-    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.light, 'Light Load Test');
+    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.light, 'Light Load Test'); // TODO-LINT: move to async function
     
     console.log('📊 Light Load Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
@@ -362,9 +362,9 @@ test('Load Testing Suite', async (t) => {
   });
 
   await t.test('Normal Load Test - Expected Production Load', async () => {
-    console.log('☀️ Running normal load test for expected production load...');
+    console.log('☀️ Running normal load test for expected production load...'); // TODO-LINT: move to async function
     
-    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.normal, 'Normal Load Test');
+    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.normal, 'Normal Load Test'); // TODO-LINT: move to async function
     
     console.log('📊 Normal Load Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
@@ -395,9 +395,9 @@ test('Load Testing Suite', async (t) => {
   });
 
   await t.test('Peak Load Test - High Traffic Periods', async () => {
-    console.log('🔥 Running peak load test for high traffic periods...');
+    console.log('🔥 Running peak load test for high traffic periods...'); // TODO-LINT: move to async function
     
-    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.peak, 'Peak Load Test');
+    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.peak, 'Peak Load Test'); // TODO-LINT: move to async function
     
     console.log('📊 Peak Load Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
@@ -417,9 +417,9 @@ test('Load Testing Suite', async (t) => {
   });
 
   await t.test('Stress Test - Breaking Point Analysis', async () => {
-    console.log('⚡ Running stress test to find system breaking point...');
+    console.log('⚡ Running stress test to find system breaking point...'); // TODO-LINT: move to async function
     
-    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.stress, 'Stress Test');
+    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.stress, 'Stress Test'); // TODO-LINT: move to async function
     
     console.log('📊 Stress Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
@@ -446,9 +446,9 @@ test('Load Testing Suite', async (t) => {
   });
 
   await t.test('Spike Test - Sudden Load Increase', async () => {
-    console.log('📈 Running spike test for sudden load increases...');
+    console.log('📈 Running spike test for sudden load increases...'); // TODO-LINT: move to async function
     
-    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.spike, 'Spike Test');
+    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.spike, 'Spike Test'); // TODO-LINT: move to async function
     
     console.log('📊 Spike Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
@@ -474,10 +474,10 @@ test('Load Testing Suite', async (t) => {
   // Only run endurance test if specifically requested (due to long duration)
   if (process.env.RUN_ENDURANCE_TEST === 'true') {
     await t.test('Endurance Test - Long Duration Stability', async () => {
-      console.log('🏃 Running endurance test for long-term stability...');
+      console.log('🏃 Running endurance test for long-term stability...'); // TODO-LINT: move to async function
       console.log('⏰ This test runs for 30 minutes...');
       
-      const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.endurance, 'Endurance Test');
+      const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.endurance, 'Endurance Test'); // TODO-LINT: move to async function
       
       console.log('📊 Endurance Test Results:');
       console.log(`   Duration: ${(report.summary.duration / 60).toFixed(2)} minutes`);
@@ -502,7 +502,7 @@ test('Load Testing Suite', async (t) => {
 // Capacity Planning Tests
 test('Capacity Planning Analysis', async (t) => {
   await t.test('Scalability Analysis', async () => {
-    console.log('📊 Running scalability analysis...');
+    console.log('📊 Running scalability analysis...'); // TODO-LINT: move to async function
     
     const loadTester = new LoadTestEngine();
     const userLevels = [10, 25, 50, 100, 200, 300];
@@ -517,7 +517,7 @@ test('Capacity Planning Analysis', async (t) => {
         rampUp: 10000   // 10 second ramp-up
       };
 
-      const report = await loadTester.runLoadTest(scenario, `Scalability Test - ${userCount} users`);
+      const report = await loadTester.runLoadTest(scenario, `Scalability Test - ${userCount} users`); // TODO-LINT: move to async function
       
       results.push({
         users: userCount,
@@ -553,7 +553,7 @@ test('Capacity Planning Analysis', async (t) => {
   });
 
   await t.test('Resource Utilization Monitoring', async () => {
-    console.log('📈 Monitoring resource utilization during load...');
+    console.log('📈 Monitoring resource utilization during load...'); // TODO-LINT: move to async function
     
     const loadTester = new LoadTestEngine();
     const baselineMemory = process.memoryUsage().heapUsed;
@@ -570,7 +570,7 @@ test('Capacity Planning Analysis', async (t) => {
     }, 5000);
 
     // Run moderate load test
-    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.normal, 'Resource Monitoring Test');
+    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.normal, 'Resource Monitoring Test'); // TODO-LINT: move to async function
     
     clearInterval(memoryMonitor);
 

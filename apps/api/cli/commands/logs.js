@@ -34,7 +34,7 @@ logsCommand
   .option('--json', 'Parse and format JSON logs')
   .action(async (service, options) => {
     try {
-      await viewLogs(service, options);
+      await viewLogs(service, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to view logs: ${error.message}`);
       process.exit(1);
@@ -51,7 +51,7 @@ logsCommand
   .option('--sort <field>', 'Sort by: name, size, date', 'date')
   .action(async (options) => {
     try {
-      await listLogFiles(options);
+      await listLogFiles(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to list logs: ${error.message}`);
       process.exit(1);
@@ -71,7 +71,7 @@ logsCommand
   .option('--since <time>', 'Search logs since time (1h, 30m, 2d)')
   .action(async (pattern, options) => {
     try {
-      await searchLogs(pattern, options);
+      await searchLogs(pattern, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to search logs: ${error.message}`);
       process.exit(1);
@@ -89,7 +89,7 @@ logsCommand
   .option('--force', 'Skip confirmation')
   .action(async (options) => {
     try {
-      await cleanLogs(options);
+      await cleanLogs(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to clean logs: ${error.message}`);
       process.exit(1);
@@ -105,7 +105,7 @@ logsCommand
   .option('--compress', 'Compress archived logs', true)
   .action(async (options) => {
     try {
-      await archiveLogs(options);
+      await archiveLogs(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to archive logs: ${error.message}`);
       process.exit(1);
@@ -121,7 +121,7 @@ logsCommand
   .option('-j, --json', 'Output in JSON format')
   .action(async (options) => {
     try {
-      await showLogStats(options);
+      await showLogStats(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to get log stats: ${error.message}`);
       process.exit(1);
@@ -139,7 +139,7 @@ logsCommand
   .option('--until <time>', 'Export logs until time')
   .action(async (options) => {
     try {
-      await exportLogs(options);
+      await exportLogs(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to export logs: ${error.message}`);
       process.exit(1);
@@ -149,7 +149,7 @@ logsCommand
 // View logs
 async function viewLogs(service, options) {
   const projectRoot = getProjectRoot();
-  const logFiles = await findLogFiles(projectRoot, service);
+  const logFiles = await findLogFiles(projectRoot, service); // TODO-LINT: move to async function
 
   if (logFiles.length === 0) {
     logger.warning(`No log files found${service ? ` for ${service}` : ''}`);
@@ -159,15 +159,15 @@ async function viewLogs(service, options) {
   if (service || logFiles.length === 1) {
     // View specific service or single log file
     const logFile = logFiles[0];
-    await displaySingleLog(logFile, options);
+    await displaySingleLog(logFile, options); // TODO-LINT: move to async function
   } else {
     // Multiple services - let user choose or show all
     if (options.follow) {
       // For follow mode, show all logs interleaved
-      await followMultipleLogs(logFiles, options);
+      await followMultipleLogs(logFiles, options); // TODO-LINT: move to async function
     } else {
       // Show recent logs from all services
-      await displayMultipleLogs(logFiles, options);
+      await displayMultipleLogs(logFiles, options); // TODO-LINT: move to async function
     }
   }
 }
@@ -272,14 +272,14 @@ async function displaySingleLog(logFile, options) {
     });
 
     await new Promise((resolve) => {
-      tail.on('close', resolve);
+      tail.on('close', resolve); // TODO-LINT: move to async function
     });
   } else {
     // Static view
     const tailArgs = ['-n', options.lines, logFile.path];
     
     try {
-      let { stdout } = await runCommand('tail', tailArgs, { silent: true });
+      let { stdout } = await runCommand('tail', tailArgs, { silent: true }); // TODO-LINT: move to async function
       
       // Apply filters
       if (options.level) {
@@ -313,7 +313,7 @@ async function displayMultipleLogs(logFiles, options) {
     console.log(chalk.yellow(`\n=== ${logFile.service.toUpperCase()} (${logFile.relativePath}) ===`));
     
     try {
-      const { stdout } = await runCommand('tail', ['-n', '10', logFile.path], { silent: true });
+      const { stdout } = await runCommand('tail', ['-n', '10', logFile.path], { silent: true }); // TODO-LINT: move to async function
       
       let filteredOutput = stdout;
       
@@ -376,13 +376,13 @@ async function followMultipleLogs(logFiles, options) {
   });
 
   // Keep alive
-  await new Promise(() => {});
+  await new Promise(() => {}); // TODO-LINT: move to async function
 }
 
 // List log files
 async function listLogFiles(options) {
   const projectRoot = getProjectRoot();
-  const logFiles = await findLogFiles(projectRoot);
+  const logFiles = await findLogFiles(projectRoot); // TODO-LINT: move to async function
 
   if (logFiles.length === 0) {
     logger.warning('No log files found');
@@ -412,7 +412,7 @@ async function listLogFiles(options) {
 // Search logs
 async function searchLogs(pattern, options) {
   const projectRoot = getProjectRoot();
-  const logFiles = await findLogFiles(projectRoot, options.service);
+  const logFiles = await findLogFiles(projectRoot, options.service); // TODO-LINT: move to async function
 
   if (logFiles.length === 0) {
     logger.warning(`No log files found${options.service ? ` for ${options.service}` : ''}`);
@@ -444,7 +444,7 @@ async function searchLogs(pattern, options) {
       
       grepArgs.push('-n', pattern, logFile.path);
 
-      const { stdout } = await runCommand('grep', grepArgs, { silent: true });
+      const { stdout } = await runCommand('grep', grepArgs, { silent: true }); // TODO-LINT: move to async function
       
       if (stdout.trim()) {
         console.log(chalk.yellow(`\n=== ${logFile.service.toUpperCase()} (${logFile.relativePath}) ===`));
@@ -475,7 +475,7 @@ async function searchLogs(pattern, options) {
 // Clean logs
 async function cleanLogs(options) {
   const projectRoot = getProjectRoot();
-  const logFiles = await findLogFiles(projectRoot);
+  const logFiles = await findLogFiles(projectRoot); // TODO-LINT: move to async function
 
   if (logFiles.length === 0) {
     logger.warning('No log files found');
@@ -533,7 +533,7 @@ async function cleanLogs(options) {
         message: `Delete ${toDelete.length} log file(s)?`,
         default: false
       }
-    ]);
+    ]); // TODO-LINT: move to async function
 
     if (!confirm) {
       logger.info('Cleanup cancelled');
@@ -549,7 +549,7 @@ async function cleanLogs(options) {
     
     for (const file of toDelete) {
       deletedSize += file.size;
-      await runCommand('rm', [file.path], { silent: true });
+      await runCommand('rm', [file.path], { silent: true }); // TODO-LINT: move to async function
     }
 
     spinner.succeed(`Cleaned ${toDelete.length} log file(s)`);
@@ -564,7 +564,7 @@ async function cleanLogs(options) {
 // Archive logs
 async function archiveLogs(options) {
   const projectRoot = getProjectRoot();
-  const logFiles = await findLogFiles(projectRoot);
+  const logFiles = await findLogFiles(projectRoot); // TODO-LINT: move to async function
 
   if (logFiles.length === 0) {
     logger.warning('No log files found');
@@ -587,7 +587,7 @@ async function archiveLogs(options) {
 
   try {
     // Create archive directory
-    await runCommand('mkdir', ['-p', archiveDir]);
+    await runCommand('mkdir', ['-p', archiveDir]); // TODO-LINT: move to async function
 
     let archivedSize = 0;
 
@@ -595,20 +595,20 @@ async function archiveLogs(options) {
       const archiveName = `${file.service}-${timestamp}.log`;
       const archivePath = path.join(archiveDir, archiveName);
       
-      await runCommand('cp', [file.path, archivePath]);
+      await runCommand('cp', [file.path, archivePath]); // TODO-LINT: move to async function
       archivedSize += file.size;
       
       // Remove original
-      await runCommand('rm', [file.path]);
+      await runCommand('rm', [file.path]); // TODO-LINT: move to async function
     }
 
     if (options.compress) {
       // Compress the entire archive directory
       const archiveTarPath = path.join(projectRoot, `logs-archive-${timestamp}.tar.gz`);
-      await runCommand('tar', ['-czf', archiveTarPath, '-C', archiveDir, '.']);
+      await runCommand('tar', ['-czf', archiveTarPath, '-C', archiveDir, '.']); // TODO-LINT: move to async function
       
       // Remove uncompressed files
-      await runCommand('rm', ['-rf', archiveDir]);
+      await runCommand('rm', ['-rf', archiveDir]); // TODO-LINT: move to async function
       
       spinner.succeed(`Archived and compressed ${toArchive.length} log file(s)`);
       console.log(chalk.green(`   Archive: ${archiveTarPath}`));
@@ -628,7 +628,7 @@ async function archiveLogs(options) {
 // Show log statistics
 async function showLogStats(options) {
   const projectRoot = getProjectRoot();
-  const logFiles = await findLogFiles(projectRoot, options.service);
+  const logFiles = await findLogFiles(projectRoot, options.service); // TODO-LINT: move to async function
 
   if (logFiles.length === 0) {
     logger.warning(`No log files found${options.service ? ` for ${options.service}` : ''}`);
@@ -668,7 +668,7 @@ async function showLogStats(options) {
 
       // Analyze log levels (sample from each file)
       try {
-        const { stdout } = await runCommand('head', ['-n', '100', file.path], { silent: true });
+        const { stdout } = await runCommand('head', ['-n', '100', file.path], { silent: true }); // TODO-LINT: move to async function
         const lines = stdout.split('\n');
         
         for (const line of lines) {
@@ -699,7 +699,7 @@ async function showLogStats(options) {
 // Export logs
 async function exportLogs(options) {
   const projectRoot = getProjectRoot();
-  const logFiles = await findLogFiles(projectRoot, options.service);
+  const logFiles = await findLogFiles(projectRoot, options.service); // TODO-LINT: move to async function
 
   if (logFiles.length === 0) {
     logger.warning(`No log files found${options.service ? ` for ${options.service}` : ''}`);
@@ -716,7 +716,7 @@ async function exportLogs(options) {
       const content = readFileSync(file.path, 'utf8');
       
       switch (options.format) {
-        case 'json':
+        case 'json': {
           // Convert each line to JSON object
           const lines = content.split('\n').filter(line => line.trim());
           for (const line of lines) {
@@ -728,8 +728,9 @@ async function exportLogs(options) {
             exportData += JSON.stringify(logEntry) + '\n';
           }
           break;
+        }
           
-        case 'csv':
+        case 'csv': {
           // CSV format
           if (!exportData) {
             exportData = 'timestamp,service,level,message\n';
@@ -740,6 +741,7 @@ async function exportLogs(options) {
             exportData += `"${new Date().toISOString()}","${file.service}","${level}","${line.replace(/"/g, '""')}"\n`;
           }
           break;
+        }
           
         case 'txt':
         default:

@@ -224,7 +224,7 @@ export default function Card({
 }
 
 // Card Header component
-export function CardHeader({ children, className = '' }) {
+export function _CardHeader({ children, className = '' }) {
   return (
     <div className={`nova-card__header ${className}`}>
       {children}
@@ -233,7 +233,7 @@ export function CardHeader({ children, className = '' }) {
 }
 
 // Card Body component
-export function CardBody({ children, className = '' }) {
+export function _CardBody({ children, className = '' }) {
   return (
     <div className={`nova-card__body ${className}`}>
       {children}
@@ -242,7 +242,7 @@ export function CardBody({ children, className = '' }) {
 }
 
 // Card Footer component
-export function CardFooter({ children, className = '' }) {
+export function _CardFooter({ children, className = '' }) {
   return (
     <div className={`nova-card__footer ${className}`}>
       {children}
@@ -251,7 +251,7 @@ export function CardFooter({ children, className = '' }) {
 }
 
 // Card Title component
-export function CardTitle({ children, className = '' }) {
+export function _CardTitle({ children, className = '' }) {
   return (
     <h3 className={`nova-card__title ${className}`}>
       {children}
@@ -260,7 +260,7 @@ export function CardTitle({ children, className = '' }) {
 }
 
 // Card Subtitle component
-export function CardSubtitle({ children, className = '' }) {
+export function _CardSubtitle({ children, className = '' }) {
   return (
     <p className={`nova-card__subtitle ${className}`}>
       {children}
@@ -269,7 +269,7 @@ export function CardSubtitle({ children, className = '' }) {
 }
 
 // Card Text component
-export function CardText({ children, className = '' }) {
+export function _CardText({ children, className = '' }) {
   return (
     <p className={`nova-card__text ${className}`}>
       {children}
@@ -278,7 +278,7 @@ export function CardText({ children, className = '' }) {
 }
 
 // Card Actions component
-export function CardActions({ children, justify = 'left', className = '' }) {
+export function _CardActions({ children, justify = 'left', className = '' }) {
   const justifyClass = justify !== 'left' ? `nova-card__actions--${justify}` : '';
   
   return (

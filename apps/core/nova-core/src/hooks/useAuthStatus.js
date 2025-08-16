@@ -10,7 +10,7 @@ export const useAuthStatus = () => {
                 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
                 const response = await axios.get(`${baseURL}/api/auth/status`, {
                     timeout: 5000,
-                });
+                }); // TODO-LINT: move to async function
                 setAuthStatus(response.data);
                 setError(null);
             }

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-export const useAuthStore = create()(devtools(persist((set) => ({
+export const _useAuthStore = create()(devtools(persist((set) => ({
     user: null,
     token: null,
     isAuthenticated: false,

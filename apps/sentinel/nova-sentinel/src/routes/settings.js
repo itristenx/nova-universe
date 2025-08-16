@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
   try {
     const settings = await req.services.database.db.prepare(`
       SELECT key, value, type, description FROM settings ORDER BY key
-    `).all();
+    `).all(); // TODO-LINT: move to async function
 
     const formattedSettings = {};
     settings.forEach(setting => {
@@ -111,11 +111,11 @@ router.put('/',
         await req.services.database.db.prepare(`
           INSERT OR REPLACE INTO settings (key, value, type, description, updated_by, updated_at)
           VALUES (?, ?, ?, ?, ?, datetime('now'))
-        `).run(key, stringValue, type, description, userId);
+        `).run(key, stringValue, type, description, userId); // TODO-LINT: move to async function
       }
 
       // Update Uptime Kuma settings if needed
-      await req.services.uptimeKuma.updateSettings(settings);
+      await req.services.uptimeKuma.updateSettings(settings); // TODO-LINT: move to async function
 
       res.json({
         success: true,

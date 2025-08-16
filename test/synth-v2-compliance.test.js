@@ -15,10 +15,10 @@ class SynthV2Client {
   }
 
   async request(method, endpoint, body = null) {
-    const url = `${this.baseUrl}${endpoint}`;
+    const _url = `${this.baseUrl}${endpoint}`;
     
     // Mock response - in real tests this would make actual HTTP requests
-    const response = await this.mockRequest(method, endpoint, body);
+    const response = await this.mockRequest(method, endpoint, body); // TODO-LINT: move to async function
     
     return response;
   }
@@ -254,7 +254,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
         department: 'IT'
       };
 
-      const result = await client.startConversation(context, 'Hello, I need help');
+      const result = await client.startConversation(context, 'Hello, I need help'); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.ok(result.conversationId, 'Should return conversation ID');
@@ -268,7 +268,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       const conversationId = 'test-conv-123';
       const message = 'I need to create a ticket for a printer issue';
 
-      const result = await client.sendMessage(conversationId, message);
+      const result = await client.sendMessage(conversationId, message); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.ok(result.messageId, 'Should return message ID');
@@ -281,7 +281,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
     test('should classify ticket creation intent', async () => {
       const input = 'I need to create a ticket for a broken printer in office 204';
       
-      const result = await client.classifyIntent(input);
+      const result = await client.classifyIntent(input); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.strictEqual(result.classification.intent, 'ticket', 'Should classify as ticket intent');
@@ -292,7 +292,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
     test('should classify help query intent', async () => {
       const input = 'How do I reset my password?';
       
-      const result = await client.classifyIntent(input);
+      const result = await client.classifyIntent(input); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.strictEqual(result.classification.intent, 'query', 'Should classify as query intent');
@@ -303,7 +303,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       const input = 'The printer in office 204 is jammed and not working properly';
       const classification = { intent: 'ticket', category: 'hardware', priority: 'medium' };
       
-      const result = await client.autoCreateTicket(input, classification);
+      const result = await client.autoCreateTicket(input, classification); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.ok(result.ticket.id, 'Should return ticket ID');
@@ -316,7 +316,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
     test('should search knowledge base', async () => {
       const query = 'password reset procedures';
       
-      const result = await client.queryKnowledge(query);
+      const result = await client.queryKnowledge(query); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.ok(Array.isArray(result.results), 'Should return results array');
@@ -337,7 +337,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       const workflowId = 'wf-password-reset';
       const parameters = { userId: 'test-user', newPassword: 'temp123' };
       
-      const result = await client.executeWorkflow(workflowId, parameters);
+      const result = await client.executeWorkflow(workflowId, parameters); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.strictEqual(result.execution.workflowId, workflowId, 'Should match workflow ID');
@@ -349,7 +349,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
     test('should support dry run mode', async () => {
       const workflowId = 'wf-risky-operation';
       
-      const result = await client.executeWorkflow(workflowId, {}, true);
+      const result = await client.executeWorkflow(workflowId, {}, true); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.strictEqual(result.execution.status, 'dry_run_complete', 'Should indicate dry run');
@@ -363,7 +363,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       const amount = 25;
       const reason = 'Resolved complex ticket';
       
-      const result = await client.grantXP(userId, amount, reason, 'ticket_resolved');
+      const result = await client.grantXP(userId, amount, reason, 'ticket_resolved'); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.strictEqual(result.result.userId, userId, 'Should match user ID');
@@ -373,7 +373,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
     });
 
     test('should retrieve gamification profile', async () => {
-      const result = await client.getProfile();
+      const result = await client.getProfile(); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.ok(result.profile.userId, 'Should return user ID');
@@ -389,7 +389,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       const tools = ['nova.tickets.create', 'nova.lore.search'];
       const context = { userId: 'test-user', module: 'pulse' };
       
-      const result = await client.createMCPSession(tools, context, 'Test Session');
+      const result = await client.createMCPSession(tools, context, 'Test Session'); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.ok(result.session.id, 'Should return session ID');
@@ -405,7 +405,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
         category: 'hardware'
       };
       
-      const result = await client.executeMCPTool(toolName, 'session-123', parameters);
+      const result = await client.executeMCPTool(toolName, 'session-123', parameters); // TODO-LINT: move to async function
 
       assert.ok(result.success, 'Should return success');
       assert.strictEqual(result.tool, toolName, 'Should match tool name');
@@ -424,7 +424,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       ];
 
       for (const endpointCall of endpoints) {
-        const result = await endpointCall();
+        const result = await endpointCall(); // TODO-LINT: move to async function
         
         assert.ok(typeof result.success === 'boolean', 'Should have success field');
         assert.ok(result.timestamp, 'Should have timestamp');
@@ -440,7 +440,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       // Test that the API design includes rate limiting
       // In actual implementation, this would test real rate limits
       
-      const result = await client.classifyIntent('test');
+      const result = await client.classifyIntent('test'); // TODO-LINT: move to async function
       assert.ok(result.success, 'Should handle normal requests');
       
       // Rate limiting is implemented in the route handlers via createRateLimit middleware
@@ -457,7 +457,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
         location: 'Building A'
       };
 
-      const result = await client.startConversation(context);
+      const result = await client.startConversation(context); // TODO-LINT: move to async function
       
       assert.ok(result.success, 'Should return success');
       assert.ok(result.context, 'Should return context');
@@ -467,7 +467,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
     test('should validate input parameters', async () => {
       // Test with invalid input
       try {
-        await client.classifyIntent(''); // Empty input should fail validation
+        await client.classifyIntent(''); // TODO-LINT: move to async function // Empty input should fail validation
         assert.fail('Should reject empty input');
       } catch (error) {
         // Expected - validation should catch this

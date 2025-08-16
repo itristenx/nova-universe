@@ -22,8 +22,8 @@ class MigrationManager {
    * Initialize migration system
    */
   async initialize() {
-    await this.ensureMigrationsTable();
-    await this.ensureMigrationsDirectory();
+    await this.ensureMigrationsTable(); // TODO-LINT: move to async function
+    await this.ensureMigrationsDirectory(); // TODO-LINT: move to async function
   }
 
   /**
@@ -43,7 +43,7 @@ class MigrationManager {
       CREATE INDEX IF NOT EXISTS idx_schema_migrations_version ON schema_migrations(version);
     `;
 
-    await postgresManager.query(sql);
+    await postgresManager.query(sql); // TODO-LINT: move to async function
     logger.debug('✅ Migration tracking table ensured');
   }
 
@@ -52,16 +52,16 @@ class MigrationManager {
    */
   async ensureMigrationsDirectory() {
     try {
-      await fs.access(this.migrationsPath);
+      await fs.access(this.migrationsPath); // TODO-LINT: move to async function
     } catch (error) {
-      await fs.mkdir(this.migrationsPath, { recursive: true });
+      await fs.mkdir(this.migrationsPath, { recursive: true }); // TODO-LINT: move to async function
       logger.info(`📁 Created migrations directory: ${this.migrationsPath}`);
     }
 
     try {
-      await fs.access(this.seedsPath);
+      await fs.access(this.seedsPath); // TODO-LINT: move to async function
     } catch (error) {
-      await fs.mkdir(this.seedsPath, { recursive: true });
+      await fs.mkdir(this.seedsPath, { recursive: true }); // TODO-LINT: move to async function
       logger.info(`📁 Created seeds directory: ${this.seedsPath}`);
     }
   }
@@ -71,7 +71,7 @@ class MigrationManager {
    */
   async getMigrationFiles() {
     try {
-      const files = await fs.readdir(this.migrationsPath);
+      const files = await fs.readdir(this.migrationsPath); // TODO-LINT: move to async function
       return files
         .filter(file => file.endsWith('.sql'))
         .sort()
@@ -108,7 +108,7 @@ class MigrationManager {
     try {
       const result = await postgresManager.query(
         'SELECT version FROM schema_migrations ORDER BY version'
-      );
+      ); // TODO-LINT: move to async function
       return result.rows.map(row => row.version);
     } catch (error) {
       logger.error('❌ Error getting executed migrations:', error.message);
@@ -120,8 +120,8 @@ class MigrationManager {
    * Calculate file checksum
    */
   async calculateChecksum(filePath) {
-    const crypto = await import('crypto');
-    const content = await fs.readFile(filePath, 'utf8');
+    const crypto = await import('crypto'); // TODO-LINT: move to async function
+    const content = await fs.readFile(filePath, 'utf8'); // TODO-LINT: move to async function
     return crypto.createHash('sha256').update(content).digest('hex');
   }
 
@@ -131,8 +131,8 @@ class MigrationManager {
   async runMigrations() {
     logger.info('🔄 Checking for pending migrations...');
 
-    const migrationFiles = await this.getMigrationFiles();
-    const executedMigrations = await this.getExecutedMigrations();
+    const migrationFiles = await this.getMigrationFiles(); // TODO-LINT: move to async function
+    const executedMigrations = await this.getExecutedMigrations(); // TODO-LINT: move to async function
 
     const pendingMigrations = migrationFiles.filter(
       migration => !executedMigrations.includes(migration.version)
@@ -146,7 +146,7 @@ class MigrationManager {
     logger.info(`📋 Found ${pendingMigrations.length} pending migrations`);
 
     for (const migration of pendingMigrations) {
-      await this.runMigration(migration);
+      await this.runMigration(migration); // TODO-LINT: move to async function
     }
 
     logger.info('✅ All migrations completed successfully');
@@ -162,13 +162,13 @@ class MigrationManager {
       logger.info(`▶️  Running migration: ${migration.version} - ${migration.name}`);
 
       // Read migration file
-      const sql = await fs.readFile(migration.path, 'utf8');
-      const checksum = await this.calculateChecksum(migration.path);
+      const sql = await fs.readFile(migration.path, 'utf8'); // TODO-LINT: move to async function
+      const checksum = await this.calculateChecksum(migration.path); // TODO-LINT: move to async function
 
       // Execute migration in transaction
       await postgresManager.transaction(async (client) => {
         // Execute the migration SQL
-        await postgresManager.executeSQL(sql);
+        await postgresManager.executeSQL(sql); // TODO-LINT: move to async function
 
         // Record migration
         const executionTime = Date.now() - startTime;
@@ -177,7 +177,7 @@ class MigrationManager {
            VALUES ($1, $2, $3, $4)`,
           [migration.version, migration.name, executionTime, checksum],
           { client }
-        );
+        ); // TODO-LINT: move to async function
       });
 
       const executionTime = Date.now() - startTime;
@@ -195,7 +195,7 @@ class MigrationManager {
   async rollbackLastMigration() {
     const result = await postgresManager.query(
       'SELECT * FROM schema_migrations ORDER BY executed_at DESC LIMIT 1'
-    );
+    ); // TODO-LINT: move to async function
 
     if (result.rows.length === 0) {
       logger.info('ℹ️  No migrations to rollback');
@@ -209,15 +209,15 @@ class MigrationManager {
     const rollbackFile = path.join(this.migrationsPath, `${migration.version}_rollback.sql`);
     
     try {
-      const rollbackSQL = await fs.readFile(rollbackFile, 'utf8');
+      const rollbackSQL = await fs.readFile(rollbackFile, 'utf8'); // TODO-LINT: move to async function
       
       await postgresManager.transaction(async (client) => {
-        await postgresManager.executeSQL(rollbackSQL);
+        await postgresManager.executeSQL(rollbackSQL); // TODO-LINT: move to async function
         await postgresManager.query(
           'DELETE FROM schema_migrations WHERE version = $1',
           [migration.version],
           { client }
-        );
+        ); // TODO-LINT: move to async function
       });
 
       logger.info(`✅ Rollback completed: ${migration.version}`);
@@ -258,7 +258,7 @@ class MigrationManager {
 -- CREATE INDEX idx_example_name ON example(name);
 `;
 
-    await fs.writeFile(filePath, template);
+    await fs.writeFile(filePath, template); // TODO-LINT: move to async function
     logger.info(`📝 Created migration file: ${filename}`);
     
     return filePath;
@@ -271,15 +271,15 @@ class MigrationManager {
     logger.info('🌱 Running database seeds...');
 
     try {
-      const seedFiles = await fs.readdir(this.seedsPath);
+      const seedFiles = await fs.readdir(this.seedsPath); // TODO-LINT: move to async function
       const sqlSeeds = seedFiles.filter(file => file.endsWith('.sql')).sort();
 
       for (const seedFile of sqlSeeds) {
         const seedPath = path.join(this.seedsPath, seedFile);
-        const sql = await fs.readFile(seedPath, 'utf8');
+        const sql = await fs.readFile(seedPath, 'utf8'); // TODO-LINT: move to async function
         
         logger.info(`🌱 Running seed: ${seedFile}`);
-        await postgresManager.executeSQL(sql);
+        await postgresManager.executeSQL(sql); // TODO-LINT: move to async function
       }
 
       logger.info('✅ Database seeds completed');
@@ -293,8 +293,8 @@ class MigrationManager {
    * Get migration status
    */
   async getStatus() {
-    const migrationFiles = await this.getMigrationFiles();
-    const executedMigrations = await this.getExecutedMigrations();
+    const migrationFiles = await this.getMigrationFiles(); // TODO-LINT: move to async function
+    const executedMigrations = await this.getExecutedMigrations(); // TODO-LINT: move to async function
 
     return {
       total_migrations: migrationFiles.length,

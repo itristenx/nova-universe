@@ -4,7 +4,7 @@ import { MagnifyingGlassIcon, FunnelIcon, TrashIcon, DocumentTextIcon } from '@h
 import { formatDate, getUrgencyColor, getStatusColor } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-export const TicketsPage = () => {
+export const _TicketsPage = () => {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -17,7 +17,7 @@ export const TicketsPage = () => {
     const loadTickets = async () => {
         try {
             setLoading(true);
-            const data = await api.getLogs();
+            const data = await api.getLogs(); // TODO-LINT: move to async function
             setTickets(data);
         }
         catch (error) {
@@ -35,7 +35,7 @@ export const TicketsPage = () => {
     const deleteTicket = async (id) => {
         if (confirm('Are you sure you want to delete this ticket?')) {
             try {
-                await api.deleteLog(id);
+                await api.deleteLog(id); // TODO-LINT: move to async function
                 setTickets(tickets.filter(t => t.id !== id));
                 addToast({
                     type: 'success',
@@ -56,7 +56,7 @@ export const TicketsPage = () => {
     const clearAllTickets = async () => {
         if (confirm('Are you sure you want to clear all tickets? This action cannot be undone.')) {
             try {
-                await api.clearLogs();
+                await api.clearLogs(); // TODO-LINT: move to async function
                 setTickets([]);
                 addToast({
                     type: 'success',

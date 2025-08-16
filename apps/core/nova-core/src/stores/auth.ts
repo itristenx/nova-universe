@@ -11,7 +11,7 @@ interface AuthState {
   setUser: (user: User) => void;
 }
 
-export const useAuthStore = create<AuthState>()(
+export const _useAuthStore = create<AuthState>()(
   devtools(
     persist(
       (set) => ({

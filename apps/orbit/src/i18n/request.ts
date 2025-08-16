@@ -4,7 +4,7 @@ import { routing } from './routing';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // Typically corresponds to the `[locale]` segment
-  const requested = await requestLocale;
+  const requested = await requestLocale; // TODO-LINT: move to async function
   const locale = hasLocale(routing.locales, requested)
     ? requested
     : routing.defaultLocale;
@@ -12,5 +12,5 @@ export default getRequestConfig(async ({ requestLocale }) => {
   return {
     locale,
     messages: (await import(`../../messages/${locale}.json`)).default
-  };
+  }; // TODO-LINT: move to async function
 });

@@ -112,7 +112,7 @@ router.post('/conversation/start',
         timestamp: new Date().toISOString()
       };
 
-      const result = await startConversation(enhancedContext, initialMessage);
+      const result = await startConversation(enhancedContext, initialMessage); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -208,7 +208,7 @@ router.post('/conversation/:id/send',
         enableTools,
         userId: req.user.id,
         timestamp: new Date().toISOString()
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -262,7 +262,7 @@ router.get('/conversation/:id',
       const conversation = await getConversationHistory(conversationId, {
         userId: req.user.id,
         limit: Math.min(parseInt(limit), 200)
-      });
+      }); // TODO-LINT: move to async function
 
       if (!conversation) {
         return res.status(404).json({
@@ -311,7 +311,7 @@ router.delete('/conversation/:id',
       const result = await endConversation(conversationId, {
         userId: req.user.id,
         reason: 'user_requested'
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -362,7 +362,7 @@ router.post('/intent/classify',
 
       const { input, context = {} } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.ai.classify_intent', {
         input,
         context: {
@@ -370,7 +370,7 @@ router.post('/intent/classify',
           userId: req.user.id,
           userRole: req.user.role
         }
-      });
+      }); // TODO-LINT: move to async function
 
       const classification = JSON.parse(result.content[0].text);
 
@@ -426,7 +426,7 @@ router.post('/ticket/auto-create',
 
       const { input, classification, requesterInfo = {} } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.tickets.auto_create', {
         input,
         classification,
@@ -437,7 +437,7 @@ router.post('/ticket/auto-create',
           userEmail: req.user.email
         },
         useAI: true
-      });
+      }); // TODO-LINT: move to async function
 
       const ticket = JSON.parse(result.content[0].text);
 
@@ -501,7 +501,7 @@ router.post('/lore/query',
 
       const { query, context = {}, limit = 10, includeAttachments = false } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.lore.semantic_search', {
         query,
         context: {
@@ -512,7 +512,7 @@ router.post('/lore/query',
         },
         limit,
         includeAttachments
-      });
+      }); // TODO-LINT: move to async function
 
       const searchResults = JSON.parse(result.content[0].text);
 
@@ -566,7 +566,7 @@ router.post('/lore/feedback',
 
       const { queryId, resultId, rating, feedback, helpful } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       await mcpServer.callTool('nova.lore.submit_feedback', {
         queryId,
         resultId,
@@ -575,7 +575,7 @@ router.post('/lore/feedback',
         helpful,
         userId: req.user.id,
         timestamp: new Date().toISOString()
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -626,7 +626,7 @@ router.post('/workflow/execute',
 
       const { workflowId, parameters = {}, dryRun = false } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.workflows.execute', {
         workflowId,
         parameters: {
@@ -635,7 +635,7 @@ router.post('/workflow/execute',
           timestamp: new Date().toISOString()
         },
         dryRun
-      });
+      }); // TODO-LINT: move to async function
 
       const execution = JSON.parse(result.content[0].text);
 
@@ -693,7 +693,7 @@ router.post('/workflow/custom',
 
       const { name, steps, parameters = {}, dryRun = false } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.workflows.execute_custom', {
         name,
         steps,
@@ -703,7 +703,7 @@ router.post('/workflow/custom',
           timestamp: new Date().toISOString()
         },
         dryRun
-      });
+      }); // TODO-LINT: move to async function
 
       const execution = JSON.parse(result.content[0].text);
 
@@ -766,7 +766,7 @@ router.post('/gamification/xp',
 
       const { userId = req.user.id, amount, reason, category, metadata = {} } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.gamification.grant_xp', {
         userId,
         amount,
@@ -777,7 +777,7 @@ router.post('/gamification/xp',
           grantedBy: req.user.id,
           timestamp: new Date().toISOString()
         }
-      });
+      }); // TODO-LINT: move to async function
 
       const xpResult = JSON.parse(result.content[0].text);
 
@@ -820,12 +820,12 @@ router.get('/gamification/profile',
     try {
       const { userId = req.user.id } = req.query;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.gamification.get_profile', {
         userId,
         includeLeaderboard: true,
         includeHistory: false
-      });
+      }); // TODO-LINT: move to async function
 
       const profile = JSON.parse(result.content[0].text);
 
@@ -890,7 +890,7 @@ router.post('/hook/register',
 
       const { name, event, endpoint, method = 'POST', headers = {}, active = true } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.hooks.register', {
         name,
         event,
@@ -900,7 +900,7 @@ router.post('/hook/register',
         active,
         registeredBy: req.user.id,
         tenantId: req.user.tenantId
-      });
+      }); // TODO-LINT: move to async function
 
       const hook = JSON.parse(result.content[0].text);
 
@@ -998,7 +998,7 @@ router.post('/alerts/analyze',
       const { context, message, module = 'pulse', userRole = 'technician' } = req.body;
 
       // Initialize MCP server for analysis
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       
       // Prepare analysis context for Cosmo
       const analysisPayload = {
@@ -1020,7 +1020,7 @@ Please provide your reasoning, confidence level (0-1), and specific action data 
       };
 
       // Call Cosmo for intelligent analysis
-      const analysisResult = await mcpServer.callTool('nova.alerts.analyze', analysisPayload);
+      const analysisResult = await mcpServer.callTool('nova.alerts.analyze', analysisPayload); // TODO-LINT: move to async function
       
       let analysis;
       try {
@@ -1037,7 +1037,7 @@ Please provide your reasoning, confidence level (0-1), and specific action data 
       }
 
       // Enhance analysis with Nova-specific logic
-      const enhancedAnalysis = await enhanceAnalysisWithRules(analysis, context, req.user);
+      const enhancedAnalysis = await enhanceAnalysisWithRules(analysis, context, req.user); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1176,7 +1176,7 @@ router.post('/hook/trigger',
 
       const { hookId, testData = {} } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.hooks.trigger', {
         hookId,
         testData: {
@@ -1185,7 +1185,7 @@ router.post('/hook/trigger',
           timestamp: new Date().toISOString(),
           manual: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       const triggerResult = JSON.parse(result.content[0].text);
 
@@ -1244,7 +1244,7 @@ router.post('/mcp/session',
 
       const { tools, context = {}, sessionName } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.mcp.create_session', {
         requestedTools: tools,
         context: {
@@ -1254,7 +1254,7 @@ router.post('/mcp/session',
           tenantId: req.user.tenantId
         },
         sessionName
-      });
+      }); // TODO-LINT: move to async function
 
       const session = JSON.parse(result.content[0].text);
 
@@ -1310,12 +1310,12 @@ router.post('/mcp/tool/:name',
       const { name: toolName } = req.params;
       const { sessionId, parameters = {}, timeout = 30000 } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool(toolName, {
         ...parameters,
         userId: req.user.id,
         sessionId
-      }, { timeout });
+      }, { timeout }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1351,11 +1351,11 @@ router.get('/mcp/session/:id',
     try {
       const { id: sessionId } = req.params;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.mcp.get_session', {
         sessionId,
         userId: req.user.id
-      });
+      }); // TODO-LINT: move to async function
 
       const session = JSON.parse(result.content[0].text);
 
@@ -1405,11 +1405,11 @@ router.delete('/mcp/session/:id',
     try {
       const { id: sessionId } = req.params;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.mcp.end_session', {
         sessionId,
         userId: req.user.id
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,

@@ -37,7 +37,7 @@ export function audit(actionKey) {
 export async function logAudit(actionKey, user, details = {}) {
   try {
     const userId = user?.id || 'anonymous';
-    await db.createAuditLog(actionKey, userId, details);
+    await db.createAuditLog(actionKey, userId, details); // TODO-LINT: move to async function
   } catch (err) {
     logger.warn('logAudit failed', { actionKey, error: err?.message });
   }

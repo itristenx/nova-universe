@@ -3,7 +3,7 @@ import { logger } from '../../logger.js';
 async function getCorePrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../../prisma/generated/core/index.js');
+    const mod = await import('../../../../prisma/generated/core/index.js'); // TODO-LINT: move to async function
     return new mod.PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch { return null; }
 }
@@ -11,7 +11,7 @@ async function getCorePrisma() {
 async function getCmdbPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../../prisma/generated/cmdb/index.js');
+    const mod = await import('../../../../prisma/generated/cmdb/index.js'); // TODO-LINT: move to async function
     return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch { return null; }
 }
@@ -52,7 +52,7 @@ class SupportGroupService {
     if (manager) {
       const managerUser = await this.coreDb.user.findUnique({
         where: { id: manager }
-      });
+      }); // TODO-LINT: move to async function
       if (!managerUser) {
         throw new Error('Manager user not found');
       }
@@ -62,7 +62,7 @@ class SupportGroupService {
     if (escalationGroup) {
       const escalationGroupExists = await this.cmdbDb.supportGroup.findUnique({
         where: { id: escalationGroup }
-      });
+      }); // TODO-LINT: move to async function
       if (!escalationGroupExists) {
         throw new Error('Escalation group not found');
       }
@@ -108,7 +108,7 @@ class SupportGroupService {
         escalationTarget: true,
         escalationSource: true
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return supportGroup;
   }
@@ -134,7 +134,7 @@ class SupportGroupService {
     if (manager) {
       const managerUser = await this.coreDb.user.findUnique({
         where: { id: manager }
-      });
+      }); // TODO-LINT: move to async function
       if (!managerUser) {
         throw new Error('Manager user not found');
       }
@@ -163,7 +163,7 @@ class SupportGroupService {
         escalationTarget: true,
         escalationSource: true
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return supportGroup;
   }
@@ -172,7 +172,7 @@ class SupportGroupService {
     // Check if group is referenced by any CIs
     const ciCount = await this.cmdbDb.ciOwnership.count({
       where: { supportGroupId: id }
-    });
+    }); // TODO-LINT: move to async function
 
     if (ciCount > 0) {
       throw new Error('Cannot delete support group - it is assigned to configuration items');
@@ -180,7 +180,7 @@ class SupportGroupService {
 
     await this.cmdbDb.supportGroup.delete({
       where: { id }
-    });
+    }); // TODO-LINT: move to async function
 
     return { success: true };
   }
@@ -199,7 +199,7 @@ class SupportGroupService {
           }
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     if (!supportGroup) {
       throw new Error('Support group not found');
@@ -211,7 +211,7 @@ class SupportGroupService {
         const user = await this.coreDb.user.findUnique({
           where: { id: member.userId },
           select: { id: true, name: true, email: true, department: true }
-        });
+        }); // TODO-LINT: move to async function
         return { ...member, user };
       })
     );
@@ -259,7 +259,7 @@ class SupportGroupService {
         orderBy: { name: 'asc' }
       }),
       this.cmdbDb.supportGroup.count({ where })
-    ]);
+    ]); // TODO-LINT: move to async function
 
     return {
       supportGroups,
@@ -283,7 +283,7 @@ class SupportGroupService {
     const user = await this.coreDb.user.findUnique({
       where: { id: userId },
       select: { id: true, name: true, email: true }
-    });
+    }); // TODO-LINT: move to async function
 
     if (!user) {
       throw new Error('User not found');
@@ -297,7 +297,7 @@ class SupportGroupService {
           userId
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     if (existingMembership) {
       throw new Error('User is already a member of this support group');
@@ -312,7 +312,7 @@ class SupportGroupService {
         startDate,
         assignedBy
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return { ...member, user };
   }
@@ -325,7 +325,7 @@ class SupportGroupService {
           userId
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return { success: true };
   }
@@ -346,7 +346,7 @@ class SupportGroupService {
         endDate,
         isActive: !endDate
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return member;
   }
@@ -367,7 +367,7 @@ class SupportGroupService {
         conditions,
         grantedBy
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return permission;
   }
@@ -381,7 +381,7 @@ class SupportGroupService {
           action
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return { success: true };
   }
@@ -402,7 +402,7 @@ class SupportGroupService {
           }
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Aggregate permissions from all groups
     const permissions = {};
@@ -430,7 +430,7 @@ class SupportGroupService {
   }
 
   async checkPermission(userId, resource, action, context = {}) {
-    const permissions = await this.getUserPermissions(userId);
+    const permissions = await this.getUserPermissions(userId); // TODO-LINT: move to async function
     
     const hasPermission = permissions.some(permission => {
       if (permission.resource !== resource || permission.action !== action) {

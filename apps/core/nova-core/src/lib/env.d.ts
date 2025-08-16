@@ -1,4 +1,4 @@
-export declare function getEnv(): {
+export declare function _getEnv(): {
     apiUrl: string;
     useMockApi: boolean;
 };

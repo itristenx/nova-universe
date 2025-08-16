@@ -2,7 +2,7 @@ import React from 'react';
 import { SunIcon, MoonIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui';
-export const ThemeSelector = ({ className = '' }) => {
+export const _ThemeSelector = ({ className = '' }) => {
     const { mode, setTheme } = useTheme();
     const themes = [
         {

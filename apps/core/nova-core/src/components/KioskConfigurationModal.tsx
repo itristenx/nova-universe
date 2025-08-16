@@ -75,7 +75,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
   const loadKioskConfiguration = async () => {
     try {
       setLoading(true);
-      const config = await api.getKioskConfiguration(kiosk.id);
+      const config = await api.getKioskConfiguration(kiosk.id); // TODO-LINT: move to async function
       setKioskConfig(config);
       
       // Update local state with existing overrides
@@ -142,7 +142,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
           break;
       }
 
-      await api.setKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType, configData);
+      await api.setKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType, configData); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -151,7 +151,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
       });
       
       onUpdate();
-      await loadKioskConfiguration();
+      await loadKioskConfiguration(); // TODO-LINT: move to async function
     } catch (error) {
       console.error(`Failed to save ${configType} override:`, error);
       addToast({
@@ -167,7 +167,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
   const removeOverride = async (configType: ConfigTab) => {
     try {
       setSaving(true);
-      await api.removeKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType);
+      await api.removeKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -176,7 +176,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
       });
       
       onUpdate();
-      await loadKioskConfiguration();
+      await loadKioskConfiguration(); // TODO-LINT: move to async function
     } catch (error) {
       console.error(`Failed to remove ${configType} override:`, error);
       addToast({

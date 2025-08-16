@@ -26,12 +26,12 @@ class SecurityTester {
     };
     
     try {
-      const response = await fetch(url, { ...defaultOptions, ...options });
+      const response = await fetch(url, { ...defaultOptions, ...options }); // TODO-LINT: move to async function
       return {
         status: response.status,
         headers: response.headers,
         body: await response.text()
-      };
+      }; // TODO-LINT: move to async function
     } catch (error) {
       return {
         status: 0,
@@ -103,7 +103,7 @@ class SecurityTester {
 // Authentication & Authorization Security Tests
 test('Authentication Security', async (t) => {
   await t.test('Password Security Requirements', async () => {
-    console.log('🔐 Testing password security requirements...');
+    console.log('🔐 Testing password security requirements...'); // TODO-LINT: move to async function
     
     const weakPasswords = [
       'password',
@@ -127,7 +127,7 @@ test('Authentication Security', async (t) => {
           last_name: 'User',
           password: password
         })
-      });
+      }); // TODO-LINT: move to async function
 
       // Should reject weak passwords
       assert.ok(response.status === 400 || response.status === 422,
@@ -138,7 +138,7 @@ test('Authentication Security', async (t) => {
   });
 
   await t.test('Brute Force Protection', async () => {
-    console.log('🛡️ Testing brute force protection...');
+    console.log('🛡️ Testing brute force protection...'); // TODO-LINT: move to async function
     
     const testEmail = `bruteforce${Date.now()}@example.com`;
     
@@ -151,7 +151,7 @@ test('Authentication Security', async (t) => {
         last_name: 'User',
         password: 'ValidPassword123!'
       })
-    });
+    }); // TODO-LINT: move to async function
 
     // Attempt multiple failed logins
     let lockedOut = false;
@@ -162,7 +162,7 @@ test('Authentication Security', async (t) => {
           email: testEmail,
           password: 'wrongpassword'
         })
-      });
+      }); // TODO-LINT: move to async function
 
       if (response.status === 429 || response.status === 423) {
         lockedOut = true;
@@ -175,7 +175,7 @@ test('Authentication Security', async (t) => {
   });
 
   await t.test('JWT Token Security', async () => {
-    console.log('🎫 Testing JWT token security...');
+    console.log('🎫 Testing JWT token security...'); // TODO-LINT: move to async function
     
     // Test invalid tokens
     const invalidTokens = SecurityTester.generateInvalidTokens();
@@ -185,7 +185,7 @@ test('Authentication Security', async (t) => {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      });
+      }); // TODO-LINT: move to async function
 
       assert.ok(response.status === 401 || response.status === 403,
         `Invalid token should be rejected but got status ${response.status}`);
@@ -195,7 +195,7 @@ test('Authentication Security', async (t) => {
   });
 
   await t.test('Session Security', async () => {
-    console.log('👤 Testing session security...');
+    console.log('👤 Testing session security...'); // TODO-LINT: move to async function
     
     // Test session fixation
     const response1 = await SecurityTester.makeRequest('/api/auth/login', {
@@ -204,7 +204,7 @@ test('Authentication Security', async (t) => {
         email: 'nonexistent@example.com',
         password: 'wrongpassword'
       })
-    });
+    }); // TODO-LINT: move to async function
 
     const response2 = await SecurityTester.makeRequest('/api/auth/login', {
       method: 'POST',
@@ -212,7 +212,7 @@ test('Authentication Security', async (t) => {
         email: 'nonexistent@example.com',
         password: 'wrongpassword'
       })
-    });
+    }); // TODO-LINT: move to async function
 
     // Should not reveal whether user exists
     assert.strictEqual(response1.status, response2.status,
@@ -225,7 +225,7 @@ test('Authentication Security', async (t) => {
 // Input Validation Security Tests
 test('Input Validation Security', async (t) => {
   await t.test('SQL Injection Protection', async () => {
-    console.log('💉 Testing SQL injection protection...');
+    console.log('💉 Testing SQL injection protection...'); // TODO-LINT: move to async function
     
     const sqlPayloads = SecurityTester.generateSQLInjectionPayloads();
     
@@ -237,7 +237,7 @@ test('Input Validation Security', async (t) => {
           email: payload,
           password: payload
         })
-      });
+      }); // TODO-LINT: move to async function
 
       // Should not return 500 (indicates SQL error) or 200 (successful injection)
       assert.ok(response.status !== 500 && response.status !== 200,
@@ -253,7 +253,7 @@ test('Input Validation Security', async (t) => {
           description: payload,
           priority: payload
         })
-      });
+      }); // TODO-LINT: move to async function
 
       assert.ok(response.status !== 500,
         `SQL injection in ticket creation may have succeeded with payload "${payload}"`);
@@ -263,7 +263,7 @@ test('Input Validation Security', async (t) => {
   });
 
   await t.test('XSS Protection', async () => {
-    console.log('🦠 Testing XSS protection...');
+    console.log('🦠 Testing XSS protection...'); // TODO-LINT: move to async function
     
     const xssPayloads = SecurityTester.generateXSSPayloads();
     
@@ -274,7 +274,7 @@ test('Input Validation Security', async (t) => {
           title: payload,
           description: payload
         })
-      });
+      }); // TODO-LINT: move to async function
 
       // Should either reject the payload or sanitize it
       if (response.status === 201) {
@@ -289,7 +289,7 @@ test('Input Validation Security', async (t) => {
   });
 
   await t.test('Command Injection Protection', async () => {
-    console.log('⚡ Testing command injection protection...');
+    console.log('⚡ Testing command injection protection...'); // TODO-LINT: move to async function
     
     const commandPayloads = [
       '; ls -la',
@@ -311,7 +311,7 @@ test('Input Validation Security', async (t) => {
           title: `Test ${payload}`,
           description: payload
         })
-      });
+      }); // TODO-LINT: move to async function
 
       // Should not execute commands (no 500 errors from command execution)
       assert.ok(response.status !== 500,
@@ -322,7 +322,7 @@ test('Input Validation Security', async (t) => {
   });
 
   await t.test('File Upload Security', async () => {
-    console.log('📁 Testing file upload security...');
+    console.log('📁 Testing file upload security...'); // TODO-LINT: move to async function
     
     // Test malicious file types
     const maliciousFiles = [
@@ -344,7 +344,7 @@ test('Input Validation Security', async (t) => {
           'Content-Type': file.type
         },
         body: 'fake file content'
-      });
+      }); // TODO-LINT: move to async function
 
       // Should reject malicious file types
       if (response.status !== 404) { // 404 means endpoint doesn't exist, which is OK
@@ -360,9 +360,9 @@ test('Input Validation Security', async (t) => {
 // API Security Tests
 test('API Security', async (t) => {
   await t.test('HTTP Headers Security', async () => {
-    console.log('📋 Testing security headers...');
+    console.log('📋 Testing security headers...'); // TODO-LINT: move to async function
     
-    const response = await SecurityTester.makeRequest('/api/health');
+    const response = await SecurityTester.makeRequest('/api/health'); // TODO-LINT: move to async function
     const headers = response.headers;
 
     // Check for security headers
@@ -386,13 +386,13 @@ test('API Security', async (t) => {
   });
 
   await t.test('CORS Configuration', async () => {
-    console.log('🌐 Testing CORS configuration...');
+    console.log('🌐 Testing CORS configuration...'); // TODO-LINT: move to async function
     
     const response = await SecurityTester.makeRequest('/api/health', {
       headers: {
         'Origin': 'https://evil.com'
       }
-    });
+    }); // TODO-LINT: move to async function
 
     const corsHeader = response.headers.get('access-control-allow-origin');
     
@@ -407,14 +407,14 @@ test('API Security', async (t) => {
   });
 
   await t.test('Rate Limiting', async () => {
-    console.log('🚦 Testing rate limiting...');
+    console.log('🚦 Testing rate limiting...'); // TODO-LINT: move to async function
     
     const requests = [];
     for (let i = 0; i < 200; i++) {
       requests.push(SecurityTester.makeRequest('/api/health'));
     }
 
-    const responses = await Promise.all(requests);
+    const responses = await Promise.all(requests); // TODO-LINT: move to async function
     const rateLimited = responses.filter(r => r.status === 429);
 
     console.log(`  Rate limited responses: ${rateLimited.length}/200`);
@@ -428,7 +428,7 @@ test('API Security', async (t) => {
   });
 
   await t.test('API Versioning Security', async () => {
-    console.log('🔢 Testing API versioning security...');
+    console.log('🔢 Testing API versioning security...'); // TODO-LINT: move to async function
     
     // Test various API version attempts
     const versionTests = [
@@ -441,7 +441,7 @@ test('API Security', async (t) => {
     ];
 
     for (const endpoint of versionTests) {
-      const response = await SecurityTester.makeRequest(endpoint);
+      const response = await SecurityTester.makeRequest(endpoint); // TODO-LINT: move to async function
       
       // Should not expose internal paths or cause errors
       assert.ok(response.status !== 500,
@@ -455,7 +455,7 @@ test('API Security', async (t) => {
 // Data Security Tests
 test('Data Security', async (t) => {
   await t.test('Sensitive Data Exposure', async () => {
-    console.log('🔍 Testing for sensitive data exposure...');
+    console.log('🔍 Testing for sensitive data exposure...'); // TODO-LINT: move to async function
     
     // Test various endpoints for data leakage
     const endpoints = [
@@ -477,7 +477,7 @@ test('Data Security', async (t) => {
     ];
 
     for (const endpoint of endpoints) {
-      const response = await SecurityTester.makeRequest(endpoint);
+      const response = await SecurityTester.makeRequest(endpoint); // TODO-LINT: move to async function
       
       if (response.body) {
         for (const pattern of sensitivePatterns) {
@@ -491,7 +491,7 @@ test('Data Security', async (t) => {
   });
 
   await t.test('Data Validation', async () => {
-    console.log('✅ Testing data validation...');
+    console.log('✅ Testing data validation...'); // TODO-LINT: move to async function
     
     // Test extreme values
     const extremeValues = [
@@ -516,7 +516,7 @@ test('Data Security', async (t) => {
           description: value,
           priority: value
         })
-      });
+      }); // TODO-LINT: move to async function
 
       // Should handle extreme values gracefully
       assert.ok(response.status !== 500,
@@ -530,7 +530,7 @@ test('Data Security', async (t) => {
 // Authorization Security Tests
 test('Authorization Security', async (t) => {
   await t.test('Privilege Escalation Protection', async () => {
-    console.log('🔐 Testing privilege escalation protection...');
+    console.log('🔐 Testing privilege escalation protection...'); // TODO-LINT: move to async function
     
     // Create a regular user
     const userData = {
@@ -544,7 +544,7 @@ test('Authorization Security', async (t) => {
     await SecurityTester.makeRequest('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData)
-    });
+    }); // TODO-LINT: move to async function
 
     const loginResponse = await SecurityTester.makeRequest('/api/auth/login', {
       method: 'POST',
@@ -552,7 +552,7 @@ test('Authorization Security', async (t) => {
         email: userData.email,
         password: userData.password
       })
-    });
+    }); // TODO-LINT: move to async function
 
     if (loginResponse.status === 200) {
       const loginData = JSON.parse(loginResponse.body);
@@ -570,7 +570,7 @@ test('Authorization Security', async (t) => {
           headers: {
             'Authorization': `Bearer ${token}`
           }
-        });
+        }); // TODO-LINT: move to async function
 
         // Should deny access to admin endpoints
         assert.ok(response.status === 403 || response.status === 401,
@@ -582,7 +582,7 @@ test('Authorization Security', async (t) => {
   });
 
   await t.test('Resource Access Control', async () => {
-    console.log('🗂️ Testing resource access control...');
+    console.log('🗂️ Testing resource access control...'); // TODO-LINT: move to async function
     
     // Test access to non-existent resources
     const invalidResourceIds = [
@@ -598,7 +598,7 @@ test('Authorization Security', async (t) => {
     ];
 
     for (const id of invalidResourceIds) {
-      const response = await SecurityTester.makeRequest(`/api/tickets/${id}`);
+      const response = await SecurityTester.makeRequest(`/api/tickets/${id}`); // TODO-LINT: move to async function
       
       // Should return 404 for non-existent resources, not 500
       assert.ok(response.status === 404 || response.status === 401 || response.status === 403,
@@ -612,7 +612,7 @@ test('Authorization Security', async (t) => {
 // Network Security Tests
 test('Network Security', async (t) => {
   await t.test('SSL/TLS Configuration', async () => {
-    console.log('🔒 Testing SSL/TLS configuration...');
+    console.log('🔒 Testing SSL/TLS configuration...'); // TODO-LINT: move to async function
     
     // Note: This test depends on the actual deployment
     // In a real environment, you would test SSL certificate validity,
@@ -623,7 +623,7 @@ test('Network Security', async (t) => {
     try {
       const response = await SecurityTester.makeRequest('/health', {
         url: httpsUrl
-      });
+      }); // TODO-LINT: move to async function
       
       console.log('  ✅ HTTPS endpoint accessible');
     } catch (error) {
@@ -636,7 +636,7 @@ test('Network Security', async (t) => {
   });
 
   await t.test('Information Disclosure', async () => {
-    console.log('📄 Testing for information disclosure...');
+    console.log('📄 Testing for information disclosure...'); // TODO-LINT: move to async function
     
     // Test for verbose error messages
     const errorEndpoints = [
@@ -646,7 +646,7 @@ test('Network Security', async (t) => {
     ];
 
     for (const endpoint of errorEndpoints) {
-      const response = await SecurityTester.makeRequest(endpoint);
+      const response = await SecurityTester.makeRequest(endpoint); // TODO-LINT: move to async function
       
       if (response.body) {
         // Should not expose stack traces or detailed error information

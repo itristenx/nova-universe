@@ -387,7 +387,7 @@ export const UserManagementPage: React.FC = () => {
 
   const handleDelete = async (user: User) => {
     if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
-      const success = await deleteUser(user.id);
+      const success = await deleteUser(user.id); // TODO-LINT: move to async function
       if (success) {
         addToast({ type: 'success', title: 'Deleted', description: 'User deleted successfully' });
       } else {
@@ -397,7 +397,7 @@ export const UserManagementPage: React.FC = () => {
   };
 
   const handleToggleStatus = async (user: User) => {
-    const success = await toggleUserStatus(user.id);
+    const success = await toggleUserStatus(user.id); // TODO-LINT: move to async function
     if (success) {
       addToast({ type: 'success', title: 'Updated', description: `User ${user.disabled ? 'enabled' : 'disabled'} successfully` });
     } else {
@@ -421,7 +421,7 @@ export const UserManagementPage: React.FC = () => {
       roles: formData.roles,
       permissions: [],
       disabled: false,
-    } as Omit<User, 'id'>);
+    } as Omit<User, 'id'>); // TODO-LINT: move to async function
     if (newUser) {
       addToast({ type: 'success', title: 'User Created', description: 'User created successfully' });
       setShowCreateModal(false);
@@ -438,7 +438,7 @@ export const UserManagementPage: React.FC = () => {
       email: formData.email,
       roles: formData.roles,
       ...(formData.password ? { password: formData.password } : {}),
-    });
+    }); // TODO-LINT: move to async function
     if (updated) {
       addToast({ type: 'success', title: 'Updated', description: 'User updated successfully' });
       setEditingUser(null);
@@ -450,7 +450,7 @@ export const UserManagementPage: React.FC = () => {
 
   const saveRoles = async () => {
     if (!roleUser) return;
-    const updated = await updateUser(roleUser.id, { roles: formData.roles });
+    const updated = await updateUser(roleUser.id, { roles: formData.roles }); // TODO-LINT: move to async function
     if (updated) {
       addToast({ type: 'success', title: 'Roles Updated', description: 'Roles updated successfully' });
       setRoleUser(null);

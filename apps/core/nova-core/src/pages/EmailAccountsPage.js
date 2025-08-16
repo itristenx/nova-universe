@@ -3,7 +3,7 @@ import { Button, Card, Input, Modal, Checkbox, Select } from '@heroui/react';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-export const EmailAccountsPage = () => {
+export const _EmailAccountsPage = () => {
     const [accounts, setAccounts] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
@@ -20,7 +20,7 @@ export const EmailAccountsPage = () => {
     useEffect(() => { load(); }, []);
     const load = async () => {
         try {
-            const data = await api.getEmailAccounts();
+            const data = await api.getEmailAccounts(); // TODO-LINT: move to async function
             setAccounts(data);
         }
         catch {
@@ -30,14 +30,14 @@ export const EmailAccountsPage = () => {
     const save = async () => {
         try {
             if (editing) {
-                await api.updateEmailAccount(editing.id, formData);
+                await api.updateEmailAccount(editing.id, formData); // TODO-LINT: move to async function
             }
             else {
-                await api.createEmailAccount(formData);
+                await api.createEmailAccount(formData); // TODO-LINT: move to async function
             }
             setShowModal(false);
             setEditing(null);
-            await load();
+            await load(); // TODO-LINT: move to async function
             addToast({ type: 'success', title: 'Saved', description: 'Email account saved' });
         }
         catch {
@@ -47,8 +47,8 @@ export const EmailAccountsPage = () => {
     const remove = async (id) => {
         if (!window.confirm('Delete this account?'))
             return;
-        await api.deleteEmailAccount(id);
-        await load();
+        await api.deleteEmailAccount(id); // TODO-LINT: move to async function
+        await load(); // TODO-LINT: move to async function
     };
     const openEdit = (acc) => {
         setEditing(acc);

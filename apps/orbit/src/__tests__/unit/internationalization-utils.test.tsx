@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-// Mock utility functions for testing
+// Mock utility _functions for testing
 const formatCurrency = (value: number, currency: string, locale: string): string => {
   try {
     return new Intl.NumberFormat(locale, {
@@ -404,7 +404,7 @@ describe('Internationalization Utilities', () => {
       render(<TestComponentWithButton />);
 
       const changeButton = screen.getByRole('button', { name: /change to german/i });
-      await userEvent.click(changeButton);
+      await userEvent.click(changeButton); // TODO-LINT: move to async function
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith('preferred-language', 'de-DE');
       expect(screen.getByTestId('currency')).toHaveTextContent(/1\.234,56\s*€/);

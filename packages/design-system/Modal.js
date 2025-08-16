@@ -287,7 +287,7 @@ export default function Modal({
 }
 
 // Modal Header component
-export function ModalHeader({ children, onClose, className = '' }) {
+export function _ModalHeader({ children, onClose, className = '' }) {
   return (
     <div className={`nova-modal__header ${className}`}>
       <h2 className="nova-modal__title">{children}</h2>
@@ -307,7 +307,7 @@ export function ModalHeader({ children, onClose, className = '' }) {
 }
 
 // Modal Body component
-export function ModalBody({ children, noPadding = false, className = '' }) {
+export function _ModalBody({ children, noPadding = false, className = '' }) {
   const bodyClasses = `nova-modal__body ${noPadding ? 'nova-modal__body--no-padding' : ''} ${className}`;
   
   return (
@@ -318,7 +318,7 @@ export function ModalBody({ children, noPadding = false, className = '' }) {
 }
 
 // Modal Footer component
-export function ModalFooter({ children, justify = 'right', className = '' }) {
+export function _ModalFooter({ children, justify = 'right', className = '' }) {
   const justifyClass = justify !== 'right' ? `nova-modal__footer--${justify}` : '';
   
   return (

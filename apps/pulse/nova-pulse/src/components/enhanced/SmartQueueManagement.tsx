@@ -107,11 +107,11 @@ export const SmartQueueManagement: React.FC<Props> = ({
   const { data: queues = [] } = useQuery({
     queryKey: ['queues'],
     queryFn: async (): Promise<Queue[]> => {
-      const response = await fetch('/api/v1/queues');
+      const response = await fetch('/api/v1/queues'); // TODO-LINT: move to async function
       if (!response.ok) {
         throw new Error('Failed to fetch queues');
       }
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.queues || [];
     }
   });

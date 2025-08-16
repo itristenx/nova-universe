@@ -89,9 +89,9 @@ const AlertManagement: React.FC = () => {
     queryFn: async (): Promise<AlertService[]> => {
       const response = await fetch('/api/v2/alerts/services', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch services');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.services;
     }
   });
@@ -102,9 +102,9 @@ const AlertManagement: React.FC = () => {
     queryFn: async (): Promise<EscalationPolicy[]> => {
       const response = await fetch('/api/v2/alerts/escalation-policies', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch policies');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.escalationPolicies;
     }
   });
@@ -115,9 +115,9 @@ const AlertManagement: React.FC = () => {
     queryFn: async (): Promise<Schedule[]> => {
       const response = await fetch('/api/v2/alerts/schedules', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch schedules');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.schedules;
     }
   });
@@ -128,7 +128,7 @@ const AlertManagement: React.FC = () => {
       const response = await fetch(`/api/v2/alerts/${type}/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error(`Failed to delete ${type}`);
       return response.json();
     },

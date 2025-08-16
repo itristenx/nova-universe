@@ -17,7 +17,7 @@ interface KnowledgeResult {
   };
 }
 
-export default function KnowledgePage() {
+export default function _KnowledgePage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<KnowledgeResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,14 +33,14 @@ export default function KnowledgePage() {
     );
   }
 
-  async function handleSearch(e: React.FormEvent) {
+  async function handleSearch(e: React._FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
     setLoading(true);
     setError(null);
     setResults([]);
     try {
-      const res = await searchKnowledge(token, query.trim());
+      const res = await searchKnowledge(token, query.trim()); // TODO-LINT: move to async function
       if (res.success) {
         setResults(res.results || []);
       } else {

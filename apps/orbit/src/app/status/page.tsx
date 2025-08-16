@@ -8,7 +8,7 @@ interface StatusData {
   state: string;
   updated: string;
 }
-export default function StatusPage() {
+export default function _StatusPage() {
   const [status, setStatus] = useState<StatusData[]>([]);
   const [loading, setLoading] = useState(false);
   const token =

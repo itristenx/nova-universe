@@ -55,7 +55,7 @@ export const DirectorySSOConfig: React.FC<DirectorySSOConfigProps> = ({ onConfig
       setLoading(true);
       
       // Load directory config
-      const directoryData = await api.getDirectoryConfig();
+      const directoryData = await api.getDirectoryConfig(); // TODO-LINT: move to async function
       setDirectoryConfig({
         enabled: directoryData.directoryEnabled === '1' || directoryData.directoryEnabled === true,
         provider: directoryData.directoryProvider || 'mock',
@@ -70,11 +70,11 @@ export const DirectorySSOConfig: React.FC<DirectorySSOConfigProps> = ({ onConfig
       });
 
       // Load SSO config
-      const ssoData = await api.getSSOConfig();
+      const ssoData = await api.getSSOConfig(); // TODO-LINT: move to async function
       setSsoConfig(ssoData);
 
       // Load SCIM config
-      const scimData = await api.getSCIMConfig();
+      const scimData = await api.getSCIMConfig(); // TODO-LINT: move to async function
       setScimConfig(scimData);
 
     } catch (error) {
@@ -105,7 +105,7 @@ export const DirectorySSOConfig: React.FC<DirectorySSOConfigProps> = ({ onConfig
         directorySyncInterval: directoryConfig.syncInterval?.toString() || '3600'
       };
 
-      await api.updateDirectoryConfig(configToSave);
+      await api.updateDirectoryConfig(configToSave); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -131,7 +131,7 @@ export const DirectorySSOConfig: React.FC<DirectorySSOConfigProps> = ({ onConfig
       setTesting(true);
       
       // Test directory search with a sample query
-      const response = await api.searchDirectory('test');
+      const response = await api.searchDirectory('test'); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -163,7 +163,7 @@ export const DirectorySSOConfig: React.FC<DirectorySSOConfigProps> = ({ onConfig
         enabled: ssoConfig.enabled,
         provider: ssoConfig.provider,
         configuration: ssoConfig
-      });
+      }); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -195,7 +195,7 @@ export const DirectorySSOConfig: React.FC<DirectorySSOConfigProps> = ({ onConfig
         autoProvisioning: scimConfig.autoProvisioning,
         autoDeprovisioning: scimConfig.autoDeprovisioning,
         syncInterval: scimConfig.syncInterval
-      });
+      }); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',

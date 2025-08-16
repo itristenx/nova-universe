@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
     query += ' ORDER BY start_time DESC LIMIT ? OFFSET ?';
     params.push(parseInt(limit), parseInt(offset));
 
-    const maintenance = await req.services.database.db.prepare(query).all(...params);
+    const maintenance = await req.services.database.db.prepare(query).all(...params); // TODO-LINT: move to async function
 
     const enrichedMaintenance = maintenance.map(m => ({
       ...m,
@@ -137,7 +137,7 @@ router.post('/',
         strategy,
         monitorList: affectedMonitors,
         statusPageList: affectedStatusPages
-      });
+      }); // TODO-LINT: move to async function
 
       // Store in database
       const maintenanceId = crypto.randomUUID();
@@ -159,7 +159,7 @@ router.post('/',
         JSON.stringify(affectedMonitors),
         JSON.stringify(affectedStatusPages),
         'scheduled'
-      );
+      ); // TODO-LINT: move to async function
 
       // Notify affected status page subscribers
       for (const statusPageId of affectedStatusPages) {
@@ -167,7 +167,7 @@ router.post('/',
           type: 'maintenance',
           title: `Scheduled Maintenance: ${title}`,
           content: `${description}\n\nScheduled: ${new Date(startTime).toLocaleString()} - ${new Date(endTime).toLocaleString()}`
-        });
+        }); // TODO-LINT: move to async function
       }
 
       // Emit real-time update
@@ -224,7 +224,7 @@ router.get('/:id',
 
       const maintenance = await req.services.database.db.prepare(`
         SELECT * FROM maintenance WHERE id = ?
-      `).get(id);
+      `).get(id); // TODO-LINT: move to async function
 
       if (!maintenance) {
         return res.status(404).json({
@@ -241,7 +241,7 @@ router.get('/:id',
         const placeholders = affectedMonitors.map(() => '?').join(',');
         const monitors = await req.services.database.db.prepare(`
           SELECT uptime_kuma_id, name, type FROM monitors WHERE uptime_kuma_id IN (${placeholders})
-        `).all(...affectedMonitors);
+        `).all(...affectedMonitors); // TODO-LINT: move to async function
         monitorDetails.push(...monitors);
       }
 
@@ -289,7 +289,7 @@ router.put('/:id',
       // Get existing maintenance
       const existing = await req.services.database.db.prepare(`
         SELECT * FROM maintenance WHERE id = ?
-      `).get(id);
+      `).get(id); // TODO-LINT: move to async function
 
       if (!existing) {
         return res.status(404).json({
@@ -307,7 +307,7 @@ router.put('/:id',
       }
 
       // Update in Uptime Kuma
-      await req.services.uptimeKuma.updateMaintenance(existing.uptime_kuma_id, req.body);
+      await req.services.uptimeKuma.updateMaintenance(existing.uptime_kuma_id, req.body); // TODO-LINT: move to async function
 
       // Update in database
       const fields = [];
@@ -324,13 +324,13 @@ router.put('/:id',
         values.push(id);
         await req.services.database.db.prepare(`
           UPDATE maintenance SET ${fields.join(', ')} WHERE id = ?
-        `).run(...values);
+        `).run(...values); // TODO-LINT: move to async function
       }
 
       // Get updated maintenance
       const updated = await req.services.database.db.prepare(`
         SELECT * FROM maintenance WHERE id = ?
-      `).get(id);
+      `).get(id); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.emit('maintenance_updated', {
@@ -376,7 +376,7 @@ router.delete('/:id',
       // Get maintenance
       const maintenance = await req.services.database.db.prepare(`
         SELECT * FROM maintenance WHERE id = ?
-      `).get(id);
+      `).get(id); // TODO-LINT: move to async function
 
       if (!maintenance) {
         return res.status(404).json({
@@ -386,12 +386,12 @@ router.delete('/:id',
       }
 
       // Cancel in Uptime Kuma
-      await req.services.uptimeKuma.deleteMaintenance(maintenance.uptime_kuma_id);
+      await req.services.uptimeKuma.deleteMaintenance(maintenance.uptime_kuma_id); // TODO-LINT: move to async function
 
       // Update status in database
       await req.services.database.db.prepare(`
         UPDATE maintenance SET status = 'cancelled' WHERE id = ?
-      `).run(id);
+      `).run(id); // TODO-LINT: move to async function
 
       // Notify subscribers
       const affectedStatusPages = JSON.parse(maintenance.affected_status_pages || '[]');
@@ -400,7 +400,7 @@ router.delete('/:id',
           type: 'maintenance',
           title: `Maintenance Cancelled: ${maintenance.title}`,
           content: `The scheduled maintenance "${maintenance.title}" has been cancelled.`
-        });
+        }); // TODO-LINT: move to async function
       }
 
       // Emit real-time update
@@ -439,7 +439,7 @@ router.post('/:id/start',
       // Get maintenance
       const maintenance = await req.services.database.db.prepare(`
         SELECT * FROM maintenance WHERE id = ?
-      `).get(id);
+      `).get(id); // TODO-LINT: move to async function
 
       if (!maintenance) {
         return res.status(404).json({
@@ -458,7 +458,7 @@ router.post('/:id/start',
       // Update status
       await req.services.database.db.prepare(`
         UPDATE maintenance SET status = 'active' WHERE id = ?
-      `).run(id);
+      `).run(id); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.emit('maintenance_started', {
@@ -500,7 +500,7 @@ router.post('/:id/complete',
       // Get maintenance
       const maintenance = await req.services.database.db.prepare(`
         SELECT * FROM maintenance WHERE id = ?
-      `).get(id);
+      `).get(id); // TODO-LINT: move to async function
 
       if (!maintenance) {
         return res.status(404).json({
@@ -519,7 +519,7 @@ router.post('/:id/complete',
       // Update status
       await req.services.database.db.prepare(`
         UPDATE maintenance SET status = 'completed' WHERE id = ?
-      `).run(id);
+      `).run(id); // TODO-LINT: move to async function
 
       // Notify subscribers
       const affectedStatusPages = JSON.parse(maintenance.affected_status_pages || '[]');
@@ -528,7 +528,7 @@ router.post('/:id/complete',
           type: 'maintenance',
           title: `Maintenance Completed: ${maintenance.title}`,
           content: `The maintenance "${maintenance.title}" has been completed successfully.`
-        });
+        }); // TODO-LINT: move to async function
       }
 
       // Emit real-time update

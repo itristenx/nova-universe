@@ -97,7 +97,7 @@ interface PerformanceImpact {
 }
 
 // Feature Flag Hook
-export function useFeatureFlag(flagName: string): boolean {
+export function _useFeatureFlag(flagName: string): boolean {
   const [isEnabled, setIsEnabled] = useState(false);
 
   useEffect(() => {
@@ -113,7 +113,7 @@ export function useFeatureFlag(flagName: string): boolean {
 }
 
 // A/B Test Hook
-export function useABTest(experimentId: string): string {
+export function _useABTest(experimentId: string): string {
   const [variant, setVariant] = useState('control');
 
   useEffect(() => {
@@ -132,7 +132,7 @@ export function useABTest(experimentId: string): string {
   return variant;
 }
 
-export default function ABTestingFramework() {
+export default function _ABTestingFramework() {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([]);
   const [experiments, setExperiments] = useState<ABExperiment[]>([]);
   const [funnels, setFunnels] = useState<ConversionFunnel[]>([]);
@@ -146,7 +146,7 @@ export default function ABTestingFramework() {
       setLoading(true);
       
       // Simulate API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
       
       // Mock feature flags
       setFeatureFlags([

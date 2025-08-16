@@ -361,9 +361,9 @@ const ConfigurationManagement: React.FC = () => {
   const loadConfigurations = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/config/admin');
+      const response = await fetch('/api/config/admin'); // TODO-LINT: move to async function
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json(); // TODO-LINT: move to async function
         const configsMap: Record<string, ConfigValue> = {};
         
         Object.entries(data).forEach(([key, configData]) => {
@@ -393,9 +393,9 @@ const ConfigurationManagement: React.FC = () => {
 
   const loadConfigHistory = async (configKey: string) => {
     try {
-      const response = await fetch(`/api/config/${configKey}/history`);
+      const response = await fetch(`/api/config/${configKey}/history`); // TODO-LINT: move to async function
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json(); // TODO-LINT: move to async function
         setConfigHistory(data.history || []);
       }
     } catch (error) {
@@ -415,10 +415,10 @@ const ConfigurationManagement: React.FC = () => {
           value,
           reason,
         }),
-      });
+      }); // TODO-LINT: move to async function
 
       if (response.ok) {
-        const updatedConfig = await response.json();
+        const updatedConfig = await response.json(); // TODO-LINT: move to async function
         setConfigs(prev => ({
           ...prev,
           [key]: {
@@ -486,7 +486,7 @@ const ConfigurationManagement: React.FC = () => {
   const handleSaveConfig = async (key: string) => {
     const newValue = unsavedChanges[key];
     if (newValue !== undefined) {
-      const success = await saveConfiguration(key, newValue);
+      const success = await saveConfiguration(key, newValue); // TODO-LINT: move to async function
       if (success) {
         // Show success message
       }

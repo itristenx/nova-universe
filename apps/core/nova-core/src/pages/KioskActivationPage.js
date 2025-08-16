@@ -5,7 +5,7 @@ import { Input } from '../components/ui/Input';
 import { useToastStore } from '@/stores/toast';
 import { api } from '../lib/api';
 import { PlusIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-export const KioskActivationPage = () => {
+export const _KioskActivationPage = () => {
     const [kioskId, setKioskId] = useState('');
     const [activations, setActivations] = useState([]);
     const [systems, setSystems] = useState([]);
@@ -24,7 +24,7 @@ export const KioskActivationPage = () => {
     const loadSystems = async () => {
         try {
             setSystemsLoading(true);
-            const data = await api.getKioskSystems();
+            const data = await api.getKioskSystems(); // TODO-LINT: move to async function
             setSystems(data?.systems || []);
         }
         catch (error) {
@@ -43,7 +43,7 @@ export const KioskActivationPage = () => {
     const loadActivations = async () => {
         try {
             setLoading(true);
-            const data = await api.getKioskActivations();
+            const data = await api.getKioskActivations(); // TODO-LINT: move to async function
             setActivations(data);
         }
         catch (error) {
@@ -61,7 +61,7 @@ export const KioskActivationPage = () => {
     const generateActivation = async () => {
         try {
             setGeneratingQR(true);
-            const activation = await api.generateKioskActivation();
+            const activation = await api.generateKioskActivation(); // TODO-LINT: move to async function
             setActivations([activation, ...activations]);
             addToast({
                 type: 'success',
@@ -92,7 +92,7 @@ export const KioskActivationPage = () => {
         }
         try {
             setLoading(true);
-            await api.updateKioskStatus(kioskId, { active: true });
+            await api.updateKioskStatus(kioskId, { active: true }); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Success',
@@ -131,7 +131,7 @@ export const KioskActivationPage = () => {
         }
         try {
             const updatedSystems = [...(systems || []), newSystem.trim()];
-            await api.updateKioskSystems(updatedSystems);
+            await api.updateKioskSystems(updatedSystems); // TODO-LINT: move to async function
             setSystems(updatedSystems);
             setNewSystem('');
             addToast({
@@ -152,7 +152,7 @@ export const KioskActivationPage = () => {
     const removeSystem = async (systemToRemove) => {
         try {
             const updatedSystems = (systems || []).filter(s => s !== systemToRemove);
-            await api.updateKioskSystems(updatedSystems);
+            await api.updateKioskSystems(updatedSystems); // TODO-LINT: move to async function
             setSystems(updatedSystems);
             addToast({
                 type: 'success',

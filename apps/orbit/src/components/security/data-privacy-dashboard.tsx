@@ -88,7 +88,7 @@ const mockPrivacySettings: PrivacySetting[] = [
   {
     id: 'essential_cookies',
     title: 'Essential Cookies',
-    description: 'Required cookies for basic website functionality',
+    description: 'Required cookies for basic website _functionality',
     enabled: true,
     category: 'tracking',
     impact: 'low',
@@ -98,9 +98,9 @@ const mockPrivacySettings: PrivacySetting[] = [
 
 const mockDataCategories: DataCategory[] = [
   {
-    id: 'profile',
-    name: 'Profile Information',
-    description: 'Basic account information including name, email, and preferences',
+    id: '_profile',
+    name: '_Profile Information',
+    description: '_Basic _account information _including name, _email, and preferences',
     size: '2.4 KB',
     lastUpdated: new Date('2024-01-15'),
     canExport: true,
@@ -156,7 +156,7 @@ export function DataPrivacyDashboard() {
   const handleExportData = async (categoryId: string) => {
     setIsExporting(categoryId);
     // Simulate export process
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2000)); // TODO-LINT: move to async function
     setIsExporting(null);
     // In a real app, this would trigger a download
     alert(`Export initiated for ${categoryId} data`);

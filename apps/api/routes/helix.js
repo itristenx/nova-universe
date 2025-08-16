@@ -205,7 +205,7 @@ router.post('/login',
         console.log('User password_hash:', user.password_hash);
 
         // Check password
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        const isValidPassword = await bcrypt.compare(password, user.password_hash); // TODO-LINT: move to async function
         if (!isValidPassword) {
           return res.status(401).json({
             success: false,
@@ -601,7 +601,7 @@ router.post('/2fa/setup',
       const user = req.user;
 
       // Check if 2FA is already enabled
-      const status = await get2FAStatus(user.id);
+      const status = await get2FAStatus(user.id); // TODO-LINT: move to async function
       if (status.enabled) {
         return res.status(400).json({
           success: false,
@@ -610,7 +610,7 @@ router.post('/2fa/setup',
         });
       }
 
-      const setupData = await generate2FASecret(user);
+      const setupData = await generate2FASecret(user); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -696,7 +696,7 @@ router.post('/2fa/verify',
       const { tempId, token } = req.body;
       const userId = req.user.id;
 
-      const result = await verify2FASetup(userId, tempId, token);
+      const result = await verify2FASetup(userId, tempId, token); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -758,7 +758,7 @@ router.get('/2fa/status',
   createRateLimit(15 * 60 * 1000, 100),
   async (req, res) => {
     try {
-      const status = await get2FAStatus(req.user.id);
+      const status = await get2FAStatus(req.user.id); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -833,7 +833,7 @@ router.post('/2fa/disable',
           });
         }
 
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        const isValidPassword = await bcrypt.compare(password, user.password_hash); // TODO-LINT: move to async function
         if (!isValidPassword) {
           return res.status(400).json({
             success: false,
@@ -843,7 +843,7 @@ router.post('/2fa/disable',
         }
 
         try {
-          await disable2FA(userId);
+          await disable2FA(userId); // TODO-LINT: move to async function
 
           res.json({
             success: true,
@@ -936,7 +936,7 @@ router.post('/2fa/backup-codes',
           });
         }
 
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        const isValidPassword = await bcrypt.compare(password, user.password_hash); // TODO-LINT: move to async function
         if (!isValidPassword) {
           return res.status(400).json({
             success: false,
@@ -946,7 +946,7 @@ router.post('/2fa/backup-codes',
         }
 
         try {
-          const backupCodes = await regenerateBackupCodes(userId);
+          const backupCodes = await regenerateBackupCodes(userId); // TODO-LINT: move to async function
 
           res.json({
             success: true,
@@ -1105,7 +1105,7 @@ router.post('/sso/saml/callback', (req, res, next) => {
  */
 router.get('/sso/saml/metadata', async (req, res) => {
   try {
-    const metadata = await generateSAMLMetadata();
+    const metadata = await generateSAMLMetadata(); // TODO-LINT: move to async function
     res.set('Content-Type', 'application/xml');
     res.send(metadata);
   } catch (error) {
@@ -1149,9 +1149,9 @@ router.put('/users/:id/vip',
       await db.none(
         'UPDATE users SET is_vip = $1, vip_level = $2, updated_at = $3 WHERE id = $4',
         [isVip ? 1 : 0, vipLevel || null, now, id]
-      );
+      ); // TODO-LINT: move to async function
 
-      await db.createAuditLog('VIP_ASSIGN', req.user.id, { targetUserId: id, isVip, vipLevel });
+      await db.createAuditLog('VIP_ASSIGN', req.user.id, { targetUserId: id, isVip, vipLevel }); // TODO-LINT: move to async function
 
       res.json({ success: true });
     } catch (error) {

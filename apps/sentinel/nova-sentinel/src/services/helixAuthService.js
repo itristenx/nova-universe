@@ -20,7 +20,7 @@ export class HelixAuthService {
   async initialize() {
     try {
       // Test connection to Helix
-      const health = await this.healthCheck();
+      const health = await this.healthCheck(); // TODO-LINT: move to async function
       if (!health) {
         throw new Error('Unable to connect to Nova Helix');
       }
@@ -46,14 +46,14 @@ export class HelixAuthService {
         },
         body: JSON.stringify({ token }),
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         logger.debug(`Token validation failed: ${response.status}`);
         return null;
       }
 
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       
       if (data.success && data.user) {
         return {
@@ -80,13 +80,13 @@ export class HelixAuthService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         return null;
       }
 
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.user;
     } catch (error) {
       logger.error('Get user error:', error);
@@ -105,13 +105,13 @@ export class HelixAuthService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         return defaultValue;
       }
 
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       const preferences = data.preferences || {};
       
       return preferences[key] !== undefined ? preferences[key] : defaultValue;
@@ -133,7 +133,7 @@ export class HelixAuthService {
           [key]: value
         }),
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         logger.warn(`Failed to set user preference: ${response.status}`);
@@ -155,7 +155,7 @@ export class HelixAuthService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
 
       return response.ok;
     } catch (error) {
@@ -171,13 +171,13 @@ export class HelixAuthService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         return {};
       }
 
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.preferences || {};
     } catch (error) {
       logger.error('Get all user preferences error:', error);
@@ -200,15 +200,15 @@ export class HelixAuthService {
         push: true,
         sms: false
       }
-    });
+    }); // TODO-LINT: move to async function
   }
 
   async setMonitorPreferences(userId, monitorId, preferences) {
     const key = `sentinel.monitor.${monitorId}`;
-    const existing = await this.getMonitorPreferences(userId, monitorId);
+    const existing = await this.getMonitorPreferences(userId, monitorId); // TODO-LINT: move to async function
     const merged = { ...existing, ...preferences, updatedAt: new Date().toISOString() };
     
-    return await this.setUserPreference(userId, key, merged);
+    return await this.setUserPreference(userId, key, merged); // TODO-LINT: move to async function
   }
 
   async getStatusPagePreferences(userId, statusPageId) {
@@ -218,15 +218,15 @@ export class HelixAuthService {
       lastViewed: null,
       subscribed: false,
       notificationTypes: ['incidents', 'maintenance']
-    });
+    }); // TODO-LINT: move to async function
   }
 
   async setStatusPagePreferences(userId, statusPageId, preferences) {
     const key = `sentinel.status-page.${statusPageId}`;
-    const existing = await this.getStatusPagePreferences(userId, statusPageId);
+    const existing = await this.getStatusPagePreferences(userId, statusPageId); // TODO-LINT: move to async function
     const merged = { ...existing, ...preferences, updatedAt: new Date().toISOString() };
     
-    return await this.setUserPreference(userId, key, merged);
+    return await this.setUserPreference(userId, key, merged); // TODO-LINT: move to async function
   }
 
   async getDashboardPreferences(userId) {
@@ -246,15 +246,15 @@ export class HelixAuthService {
         type: 'all',
         tags: []
       }
-    });
+    }); // TODO-LINT: move to async function
   }
 
   async setDashboardPreferences(userId, preferences) {
     const key = 'sentinel.dashboard';
-    const existing = await this.getDashboardPreferences(userId);
+    const existing = await this.getDashboardPreferences(userId); // TODO-LINT: move to async function
     const merged = { ...existing, ...preferences, updatedAt: new Date().toISOString() };
     
-    return await this.setUserPreference(userId, key, merged);
+    return await this.setUserPreference(userId, key, merged); // TODO-LINT: move to async function
   }
 
   async getNotificationPreferences(userId) {
@@ -290,15 +290,15 @@ export class HelixAuthService {
         end: '08:00',
         timezone: 'UTC'
       }
-    });
+    }); // TODO-LINT: move to async function
   }
 
   async setNotificationPreferences(userId, preferences) {
     const key = 'sentinel.notifications';
-    const existing = await this.getNotificationPreferences(userId);
+    const existing = await this.getNotificationPreferences(userId); // TODO-LINT: move to async function
     const merged = { ...existing, ...preferences, updatedAt: new Date().toISOString() };
     
-    return await this.setUserPreference(userId, key, merged);
+    return await this.setUserPreference(userId, key, merged); // TODO-LINT: move to async function
   }
 
   // ========================================================================
@@ -307,7 +307,7 @@ export class HelixAuthService {
 
   async hasPermission(userId, permission) {
     try {
-      const user = await this.getUserById(userId);
+      const user = await this.getUserById(userId); // TODO-LINT: move to async function
       if (!user) return false;
 
       const permissions = user.permissions || [];
@@ -377,13 +377,13 @@ export class HelixAuthService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         return [];
       }
 
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.users || [];
     } catch (error) {
       logger.error('Get tenant users error:', error);
@@ -412,22 +412,22 @@ export class HelixAuthService {
           timestamp: new Date().toISOString()
         }),
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Audit log error:', error);
-      // Don't throw - audit failures shouldn't break functionality
+      // Don't throw - audit failures shouldn't break _functionality
     }
   }
 
   // ========================================================================
-  // UTILITY METHODS
+  // _UTILITY METHODS
   // ========================================================================
 
   async healthCheck() {
     try {
       const response = await fetch(`${this.baseUrl}/health`, {
         timeout: 3000
-      });
+      }); // TODO-LINT: move to async function
       
       return response.ok;
     } catch (error) {
@@ -443,13 +443,13 @@ export class HelixAuthService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         return null;
       }
 
-      return await response.json();
+      return await response.json(); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Get system info error:', error);
       return null;

@@ -186,7 +186,7 @@ async function runVerification() {
     
     for (const check of section.checks) {
       totalChecks++;
-      const result = await verifyFile(check);
+      const result = await verifyFile(check); // TODO-LINT: move to async function
       
       if (result.success) {
         console.log(`✅ ${check.description.padEnd(35)} | ${result.content} bytes`);
@@ -225,15 +225,15 @@ async function testSocketIOModules() {
   
   try {
     // Test server-side Socket.IO
-    const { stdout: serverTest } = await execAsync('cd apps/api && node -e "import(\'socket.io\').then(() => console.log(\'✅ Server Socket.IO OK\')).catch(e => console.log(\'❌ Server Socket.IO Error:\', e.message))"');
+    const { stdout: serverTest } = await execAsync('cd apps/api && node -e "import(\'socket.io\').then(() => console.log(\'✅ Server Socket.IO OK\')).catch(e => console.log(\'❌ Server Socket.IO Error:\', e.message))"'); // TODO-LINT: move to async function
     console.log(serverTest.trim());
     
     // Test client-side Socket.IO for Nova Core
-    const { stdout: coreTest } = await execAsync('cd apps/core/nova-core && node -e "import(\'socket.io-client\').then(() => console.log(\'✅ Core Socket.IO Client OK\')).catch(e => console.log(\'❌ Core Socket.IO Client Error:\', e.message))"');
+    const { stdout: coreTest } = await execAsync('cd apps/core/nova-core && node -e "import(\'socket.io-client\').then(() => console.log(\'✅ Core Socket.IO Client OK\')).catch(e => console.log(\'❌ Core Socket.IO Client Error:\', e.message))"'); // TODO-LINT: move to async function
     console.log(coreTest.trim());
     
     // Test client-side Socket.IO for Nova Pulse
-    const { stdout: pulseTest } = await execAsync('cd apps/pulse/nova-pulse && node -e "import(\'socket.io-client\').then(() => console.log(\'✅ Pulse Socket.IO Client OK\')).catch(e => console.log(\'❌ Pulse Socket.IO Client Error:\', e.message))"');
+    const { stdout: pulseTest } = await execAsync('cd apps/pulse/nova-pulse && node -e "import(\'socket.io-client\').then(() => console.log(\'✅ Pulse Socket.IO Client OK\')).catch(e => console.log(\'❌ Pulse Socket.IO Client Error:\', e.message))"'); // TODO-LINT: move to async function
     console.log(pulseTest.trim());
     
   } catch (error) {
@@ -243,8 +243,8 @@ async function testSocketIOModules() {
 
 // Main execution
 async function main() {
-  await runVerification();
-  await testSocketIOModules();
+  await runVerification(); // TODO-LINT: move to async function
+  await testSocketIOModules(); // TODO-LINT: move to async function
 }
 
 main().catch(console.error);

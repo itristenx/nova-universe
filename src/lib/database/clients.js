@@ -132,14 +132,14 @@ export async function initializeDatabaseConnections() {
     logger.info('Initializing database connections...');
 
     // Test core connection
-    await coreClient.$connect();
-    await coreClient.$executeRaw`SELECT 1`;
+    await coreClient.$connect(); // TODO-LINT: move to async function
+    await coreClient.$executeRaw`SELECT 1`; // TODO-LINT: move to async function
     logger.info('Core database connection established');
 
     // Test CMDB connection (if different from core)
     if (process.env.CMDB_DATABASE_URL && process.env.CMDB_DATABASE_URL !== process.env.DATABASE_URL) {
-      await cmdbClient.$connect();
-      await cmdbClient.$executeRaw`SELECT 1`;
+      await cmdbClient.$connect(); // TODO-LINT: move to async function
+      await cmdbClient.$executeRaw`SELECT 1`; // TODO-LINT: move to async function
       logger.info('CMDB database connection established');
     } else {
       logger.info('CMDB using same database as core');
@@ -147,8 +147,8 @@ export async function initializeDatabaseConnections() {
 
     // Test notification connection (if different from core)
     if (process.env.NOTIFICATION_DATABASE_URL && process.env.NOTIFICATION_DATABASE_URL !== process.env.DATABASE_URL) {
-      await notificationClient.$connect();
-      await notificationClient.$executeRaw`SELECT 1`;
+      await notificationClient.$connect(); // TODO-LINT: move to async function
+      await notificationClient.$executeRaw`SELECT 1`; // TODO-LINT: move to async function
       logger.info('Notification database connection established');
     } else {
       logger.info('Notification using same database as core');
@@ -173,7 +173,7 @@ export async function closeDatabaseConnections() {
       coreClient.$disconnect(),
       cmdbClient.$disconnect(),
       notificationClient.$disconnect()
-    ]);
+    ]); // TODO-LINT: move to async function
 
     logger.info('All database connections closed successfully');
 
@@ -200,7 +200,7 @@ export async function checkDatabaseHealth() {
   // Check core database
   try {
     const start = Date.now();
-    await coreClient.$executeRaw`SELECT 1`;
+    await coreClient.$executeRaw`SELECT 1`; // TODO-LINT: move to async function
     health.core = {
       status: 'healthy',
       latency: Date.now() - start
@@ -215,7 +215,7 @@ export async function checkDatabaseHealth() {
   // Check CMDB database
   try {
     const start = Date.now();
-    await cmdbClient.$executeRaw`SELECT 1`;
+    await cmdbClient.$executeRaw`SELECT 1`; // TODO-LINT: move to async function
     health.cmdb = {
       status: 'healthy',
       latency: Date.now() - start
@@ -230,7 +230,7 @@ export async function checkDatabaseHealth() {
   // Check notification database
   try {
     const start = Date.now();
-    await notificationClient.$executeRaw`SELECT 1`;
+    await notificationClient.$executeRaw`SELECT 1`; // TODO-LINT: move to async function
     health.notification = {
       status: 'healthy',
       latency: Date.now() - start
@@ -260,7 +260,7 @@ export async function executeMultiDbTransaction(operations) {
 
   try {
     for (const operation of operations) {
-      const result = await operation.execute();
+      const result = await operation.execute(); // TODO-LINT: move to async function
       results.push(result);
       
       if (operation.rollback) {
@@ -276,7 +276,7 @@ export async function executeMultiDbTransaction(operations) {
     // Attempt to rollback in reverse order
     for (const rollback of rollbackOperations) {
       try {
-        await rollback();
+        await rollback(); // TODO-LINT: move to async function
       } catch (rollbackError) {
         logger.error('Rollback operation failed:', rollbackError);
       }
@@ -299,8 +299,8 @@ export async function getDatabaseStats() {
 
     // Core database stats
     try {
-      const coreUsers = await coreClient.user.count();
-      const coreRoles = await coreClient.role.count();
+      const coreUsers = await coreClient.user.count(); // TODO-LINT: move to async function
+      const coreRoles = await coreClient.role.count(); // TODO-LINT: move to async function
       stats.core = {
         users: coreUsers,
         roles: coreRoles,
@@ -312,8 +312,8 @@ export async function getDatabaseStats() {
 
     // Notification database stats
     try {
-      const notificationEvents = await notificationClient.notificationEvent.count();
-      const notificationDeliveries = await notificationClient.notificationDelivery.count();
+      const notificationEvents = await notificationClient.notificationEvent.count(); // TODO-LINT: move to async function
+      const notificationDeliveries = await notificationClient.notificationDelivery.count(); // TODO-LINT: move to async function
       stats.notification = {
         events: notificationEvents,
         deliveries: notificationDeliveries,
@@ -349,12 +349,12 @@ export default {
 // Process handlers for graceful shutdown
 process.on('SIGINT', async () => {
   logger.info('Received SIGINT, closing database connections...');
-  await closeDatabaseConnections();
+  await closeDatabaseConnections(); // TODO-LINT: move to async function
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   logger.info('Received SIGTERM, closing database connections...');
-  await closeDatabaseConnections();
+  await closeDatabaseConnections(); // TODO-LINT: move to async function
   process.exit(0);
 });

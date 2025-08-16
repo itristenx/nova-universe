@@ -115,7 +115,7 @@ export const UniversalLoginPage: React.FC = () => {
   const handleSSOCallback = async (token: string) => {
     try {
       setIsLoading(true);
-      const user = await api.me(token);
+      const user = await api.me(token); // TODO-LINT: move to async function
       login(token, user);
       
       addToast({
@@ -150,13 +150,13 @@ export const UniversalLoginPage: React.FC = () => {
           email: email.trim(),
           redirectUrl 
         }),
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         throw new Error('Failed to discover tenant');
       }
 
-      const data: TenantDiscovery = await response.json();
+      const data: TenantDiscovery = await response.json(); // TODO-LINT: move to async function
       setTenantData(data);
       
       // Auto-select primary auth method
@@ -195,13 +195,13 @@ export const UniversalLoginPage: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(authPayload),
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         throw new Error('Authentication failed');
       }
 
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
 
       if (data.authMethod === 'sso' && data.redirectUrl) {
         // Redirect to SSO provider
@@ -252,13 +252,13 @@ export const UniversalLoginPage: React.FC = () => {
           tempSessionId,
           mfaMethod: selectedMfaMethod.type,
         }),
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         throw new Error('MFA challenge failed');
       }
 
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       setMfaChallengeMessage(data.message);
     } catch (error) {
       console.error('MFA challenge error:', error);
@@ -286,13 +286,13 @@ export const UniversalLoginPage: React.FC = () => {
           mfaMethod: selectedMfaMethod.type,
           code: mfaCode.trim(),
         }),
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
         throw new Error('MFA verification failed');
       }
 
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       const user = data.user;
       login(data.token, user);
       

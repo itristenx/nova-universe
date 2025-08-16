@@ -23,7 +23,7 @@ async function testScimMonitorImplementation() {
         ipAddress: '127.0.0.1',
         duration: 250
       }
-    });
+    }); // TODO-LINT: move to async function
 
     await prisma.scimLog.create({
       data: {
@@ -38,7 +38,7 @@ async function testScimMonitorImplementation() {
         ipAddress: '127.0.0.1',
         duration: 180
       }
-    });
+    }); // TODO-LINT: move to async function
 
     await prisma.scimLog.create({
       data: {
@@ -51,7 +51,7 @@ async function testScimMonitorImplementation() {
         ipAddress: '127.0.0.1',
         duration: 50
       }
-    });
+    }); // TODO-LINT: move to async function
 
     console.log('✅ Sample log entries created successfully');
 
@@ -61,7 +61,7 @@ async function testScimMonitorImplementation() {
     const logs = await prisma.scimLog.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5
-    });
+    }); // TODO-LINT: move to async function
 
     console.log(`✅ Found ${logs.length} log entries:`);
     logs.forEach((log, index) => {
@@ -71,13 +71,13 @@ async function testScimMonitorImplementation() {
     // Test 3: Test aggregation queries
     console.log('\n3. Testing aggregation queries...');
     
-    const totalOps = await prisma.scimLog.count();
+    const totalOps = await prisma.scimLog.count(); // TODO-LINT: move to async function
     console.log(`✅ Total operations: ${totalOps}`);
 
     const opsByType = await prisma.scimLog.groupBy({
       by: ['operation'],
       _count: { _all: true }
-    });
+    }); // TODO-LINT: move to async function
     
     console.log('✅ Operations by type:');
     opsByType.forEach(op => {
@@ -87,7 +87,7 @@ async function testScimMonitorImplementation() {
     const avgDuration = await prisma.scimLog.aggregate({
       where: { duration: { not: null } },
       _avg: { duration: true }
-    });
+    }); // TODO-LINT: move to async function
     
     console.log(`✅ Average duration: ${avgDuration._avg.duration?.toFixed(2)}ms`);
 
@@ -97,7 +97,7 @@ async function testScimMonitorImplementation() {
     console.error('❌ Test failed:', error);
     throw error;
   } finally {
-    await prisma.$disconnect();
+    await prisma.$disconnect(); // TODO-LINT: move to async function
   }
 }
 

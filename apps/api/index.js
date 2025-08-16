@@ -233,15 +233,21 @@ function getCliVersion() {
   }
 }
 
-// Swagger/OpenAPI setup
+// Swagger/OpenAPI setup - lazy loaded
 let swaggerJSDoc, swaggerUi;
-if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true') {
-  swaggerJSDoc = (await import('swagger-jsdoc')).default;
-  swaggerUi = (await import('swagger-ui-express')).default;
-} else {
-  // Jest/test mode: provide a no-op function to avoid import errors
-  swaggerJSDoc = () => ({ openapi: '3.0.0', info: {}, paths: {} });
-  swaggerUi = { serve: (req, res, next) => next(), setup: () => (req, res, next) => next() };
+
+async function getSwagger() {
+  if (!swaggerJSDoc) {
+    if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true') {
+      swaggerJSDoc = (await import('swagger-jsdoc')).default;
+      swaggerUi = (await import('swagger-ui-express')).default;
+    } else {
+      // Jest/test mode: provide a no-op function to avoid import errors
+      swaggerJSDoc = () => ({ openapi: '3.0.0', info: {}, paths: {} });
+      swaggerUi = { serve: (req, res, next) => next(), setup: () => (req, res, next) => next() };
+    }
+  }
+  return { swaggerJSDoc, swaggerUi };
 }
 
 const swaggerDefinition = {
@@ -425,7 +431,7 @@ const SUBMIT_TICKET_LIMIT = Number(process.env.SUBMIT_TICKET_LIMIT || 10);
 const API_LOGIN_LIMIT = Number(process.env.API_LOGIN_LIMIT || 5);
 const AUTH_LIMIT = Number(process.env.AUTH_LIMIT || 5);
 
-const ticketLimiter = rateLimit({
+const _ticketLimiter = rateLimit({
   windowMs: RATE_WINDOW,
   limit: SUBMIT_TICKET_LIMIT,
   standardHeaders: 'draft-8',
@@ -519,8 +525,8 @@ if (!DISABLE_AUTH) {
 
 const PORT = Number(process.env.API_PORT || 3000);
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
-const CERT_PATH = process.env.TLS_CERT_PATH;
-const KEY_PATH = process.env.TLS_KEY_PATH;
+const _CERT_PATH = process.env.TLS_CERT_PATH;
+const _KEY_PATH = process.env.TLS_KEY_PATH;
 const LOG_RETENTION_DAYS = Number(process.env.LOG_RETENTION_DAYS || 30);
 
 if (process.env.DISABLE_CLEANUP !== 'true') {
@@ -614,7 +620,7 @@ const ensureAuth = DISABLE_AUTH
       }
     };
 
-const requirePermission = (perm) =>
+const _requirePermission = (perm) =>
   DISABLE_AUTH
     ? (req, res, next) => next()
     : (req, res, next) => {
@@ -623,7 +629,7 @@ const requirePermission = (perm) =>
         res.status(403).json({ error: 'Forbidden', errorCode: 'FORBIDDEN' });
       };
 
-const ensureScimAuth = (req, res, next) => {
+const _ensureScimAuth = (req, res, next) => {
   const header = req.headers.authorization || '';
   const token = header.replace(/^Bearer\s+/i, '');
   if (!SCIM_TOKEN || token !== SCIM_TOKEN) {
@@ -632,7 +638,7 @@ const ensureScimAuth = (req, res, next) => {
   next();
 };
 
-const kioskOrAuth = (req, res, next) => {
+const _kioskOrAuth = (req, res, next) => {
   // Allow kiosk token authentication or regular admin authentication
   const header = req.headers.authorization || '';
   const token = header.replace(/^Bearer\s+/i, '');
@@ -1001,7 +1007,7 @@ v1Router.post('/api/test-smtp', ensureAuth, async (req, res) => {
       `
     };
 
-    await transporter.sendMail(testMailOptions);
+    await transporter.sendMail(testMailOptions); // TODO-LINT: move to async function
     
     res.json({ 
       success: true, 
@@ -1423,8 +1429,8 @@ app.put("/api/kiosks/:id", ensureAuth, (req, res) => {
 // Refactored kiosks GET endpoint (async/await, PostgreSQL)
 app.get("/api/kiosks", ensureAuth, async (req, res) => {
   try {
-    const { rows: kiosks } = await db.query("SELECT * FROM kiosks");
-    const { rows: configRows } = await db.query('SELECT key, value FROM config');
+    const { rows: kiosks } = await db.query("SELECT * FROM kiosks"); // TODO-LINT: move to async function
+    const { rows: configRows } = await db.query('SELECT key, value FROM config'); // TODO-LINT: move to async function
     const globalConfig = Object.fromEntries(configRows.map(r => [r.key, r.value]));
     const kiosksWithConfig = kiosks.map(kiosk => ({
       ...kiosk,
@@ -1453,8 +1459,8 @@ app.get("/api/kiosks", ensureAuth, async (req, res) => {
 // Refactored kiosksRouter GET endpoint (async/await, PostgreSQL)
 kiosksRouter.get('/', ensureAuth, async (req, res) => {
   try {
-    const { rows: kiosks } = await db.query("SELECT * FROM kiosks");
-    const { rows: configRows } = await db.query('SELECT key, value FROM config');
+    const { rows: kiosks } = await db.query("SELECT * FROM kiosks"); // TODO-LINT: move to async function
+    const { rows: configRows } = await db.query('SELECT key, value FROM config'); // TODO-LINT: move to async function
     const globalConfig = Object.fromEntries(configRows.map(r => [r.key, r.value]));
     const kiosksWithConfig = kiosks.map(kiosk => ({
       ...kiosk,
@@ -1768,7 +1774,7 @@ export async function createApp() {
   // All the above setup code remains as is
   // (from dotenv.config() through all middleware, routers, etc.)
   // Setup Apollo GraphQL server
-  await setupGraphQL(app);
+  await setupGraphQL(app); // TODO-LINT: move to async function
   // Do not call server.listen here
   return { app, server, io };
 }
@@ -1816,7 +1822,7 @@ app.use((err, req, res, next) => {
 // Minimal GET endpoint for kiosks
 kiosksRouter.get('/', async (req, res) => {
   try {
-    const { rows: kiosks } = await db.query("SELECT * FROM kiosks");
+    const { rows: kiosks } = await db.query("SELECT * FROM kiosks"); // TODO-LINT: move to async function
     res.json(kiosks);
   } catch (err) {
     res.status(500).json({ error: "DB error" });

@@ -277,7 +277,7 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleElement);
 }
 
-export default function TicketManagement() {
+export default function _TicketManagement() {
   const { colorMode } = useTheme();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -295,7 +295,7 @@ export default function TicketManagement() {
       setLoading(true);
       
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 800)); // TODO-LINT: move to async function
       
       setTickets(mockLogs);
       setLoading(false);

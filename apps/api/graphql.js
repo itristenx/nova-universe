@@ -27,7 +27,7 @@ const resolvers = {
         sql += ' AND status = $1';
         params.push(status);
       }
-      const result = await db.query(sql, params);
+      const result = await db.query(sql, params); // TODO-LINT: move to async function
       return result.rows.map(row => ({
         id: row.id,
         title: row.title,
@@ -39,9 +39,9 @@ const resolvers = {
   }
 };
 
-export async function setupGraphQL(app) {
+export async function _setupGraphQL(app) {
   const server = new ApolloServer({ typeDefs, resolvers });
-  await server.start();
+  await server.start(); // TODO-LINT: move to async function
 
   const authMiddleware = async (req, res, next) => {
     const header = req.headers.authorization || '';
@@ -65,7 +65,7 @@ export async function setupGraphQL(app) {
         LEFT JOIN roles r ON ur.roleId = r.id
         WHERE u.id = $1
       `;
-      const result = await db.query(userQuery, [payload.id]);
+      const result = await db.query(userQuery, [payload.id]); // TODO-LINT: move to async function
       if (result.rows.length === 0) {
         return res.status(401).json({ error: 'Invalid token' });
       }

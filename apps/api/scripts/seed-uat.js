@@ -6,9 +6,9 @@ import bcrypt from 'bcryptjs';
 async function seed() {
   console.log('Seeding UAT data...');
   // Ensure roles exist (db initialization covers this, but re-assert minimal)
-  await db.query("INSERT INTO roles (id, name) VALUES (1,'superadmin') ON CONFLICT (id) DO NOTHING");
-  await db.query("INSERT INTO roles (id, name) VALUES (2,'admin') ON CONFLICT (id) DO NOTHING");
-  await db.query("INSERT INTO roles (id, name) VALUES (3,'user') ON CONFLICT (id) DO NOTHING");
+  await db.query("INSERT INTO roles (id, name) VALUES (1,'superadmin') ON CONFLICT (id) DO NOTHING"); // TODO-LINT: move to async function
+  await db.query("INSERT INTO roles (id, name) VALUES (2,'admin') ON CONFLICT (id) DO NOTHING"); // TODO-LINT: move to async function
+  await db.query("INSERT INTO roles (id, name) VALUES (3,'user') ON CONFLICT (id) DO NOTHING"); // TODO-LINT: move to async function
 
   // Users
   const users = [
@@ -18,20 +18,20 @@ async function seed() {
   ];
 
   for (const u of users) {
-    const hash = await bcrypt.hash(u.password, 12);
+    const hash = await bcrypt.hash(u.password, 12); // TODO-LINT: move to async function
     const res = await db.query(
       `INSERT INTO users (name, email, password_hash, disabled, created_at, updated_at)
        VALUES ($1,$2,$3,false,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
        ON CONFLICT (email) DO NOTHING RETURNING id`,
       [u.name, u.email, hash]
-    );
+    ); // TODO-LINT: move to async function
     const userId = res.rows?.[0]?.id;
     if (userId) {
       await db.query(
         `INSERT INTO user_roles (user_id, role_id, created_at)
          VALUES ($1,$2,CURRENT_TIMESTAMP) ON CONFLICT DO NOTHING`,
         [userId, u.roleId]
-      );
+      ); // TODO-LINT: move to async function
     }
   }
 
@@ -39,7 +39,7 @@ async function seed() {
   await db.query(
     `INSERT INTO config (key, value) VALUES ('organizationName','Nova Universe UAT')
      ON CONFLICT (key) DO NOTHING`
-  );
+  ); // TODO-LINT: move to async function
 
   console.log('UAT seed complete');
 }

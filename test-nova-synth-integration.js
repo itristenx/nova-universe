@@ -30,7 +30,7 @@ async function testNovaSynthIntegration() {
     // Test 1: Check if DATA_INTELLIGENCE connector type exists
     console.log('\n📋 Test 1: Checking DATA_INTELLIGENCE connector type...');
     const connectorTypes = nil.constructor.ConnectorType || 
-      (await import('./apps/lib/integration/nova-integration-layer.js')).ConnectorType;
+      (await import('./apps/lib/integration/nova-integration-layer.js')).ConnectorType; // TODO-LINT: move to async function
     
     if (connectorTypes.DATA_INTELLIGENCE) {
       console.log('✅ DATA_INTELLIGENCE connector type found');
@@ -58,7 +58,7 @@ async function testNovaSynthIntegration() {
           enableMatching: true,
           enableDeduplication: true
         }
-      });
+      }); // TODO-LINT: move to async function
       console.log('✅ Nova Synth connector registered successfully');
     } catch (error) {
       console.log('⚠️  Nova Synth connector registration failed (expected if not running):', error.message);
@@ -127,7 +127,7 @@ async function testNovaSynthIntegration() {
     // Test 6: Test Nova Synth connector capabilities
     console.log('\n📋 Test 6: Testing Nova Synth connector...');
     try {
-      const NovaSynthConnector = (await import('./apps/lib/integration/connectors/nova-synth-connector.js')).NovaSynthConnector;
+      const NovaSynthConnector = (await import('./apps/lib/integration/connectors/nova-synth-connector.js')).NovaSynthConnector; // TODO-LINT: move to async function
       const synthConnector = new NovaSynthConnector();
       
       const capabilities = synthConnector.getCapabilities();
@@ -161,7 +161,7 @@ async function testNovaSynthIntegration() {
 
     // Test transformation (will fail gracefully if Synth not available)
     try {
-      const transformedData = await nil.transformDataWithSynth(mockProfile, 'okta-connector');
+      const _transformedData = await nil.transformDataWithSynth(mockProfile, 'okta-connector'); // TODO-LINT: move to async function
       console.log('✅ Data transformation test completed');
     } catch (error) {
       console.log('⚠️  Data transformation test failed (expected if Synth not running)');
@@ -169,7 +169,7 @@ async function testNovaSynthIntegration() {
 
     // Test validation (will fall back to default if Synth not available)
     try {
-      const validationResult = await nil.validateProfileWithSynth(mockProfile);
+      const validationResult = await nil.validateProfileWithSynth(mockProfile); // TODO-LINT: move to async function
       console.log('✅ Profile validation test completed:', validationResult.isValid ? 'Valid' : 'Invalid');
     } catch (error) {
       console.log('⚠️  Profile validation test failed (expected if Synth not running)');
@@ -177,7 +177,7 @@ async function testNovaSynthIntegration() {
 
     // Test deduplication (will fall back to original if Synth not available)
     try {
-      const deduplicatedDevices = await nil.deduplicateProfileDataWithSynth(mockProfile.devices);
+      const deduplicatedDevices = await nil.deduplicateProfileDataWithSynth(mockProfile.devices); // TODO-LINT: move to async function
       console.log('✅ Deduplication test completed:', deduplicatedDevices.length, 'devices');
     } catch (error) {
       console.log('⚠️  Deduplication test failed (expected if Synth not running)');

@@ -9,7 +9,7 @@ interface Category {
   name: string;
   subcategories?: string[];
 }
-export default function NewTicketPage() {
+export default function _NewTicketPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<TicketCreateData>({
     title: "",
@@ -37,13 +37,13 @@ export default function NewTicketPage() {
     setSubcategories(found && found.subcategories ? found.subcategories : []);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React._FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(false);
     try {
-      const res = await createTicket(token, form);
+      const res = await createTicket(token, form); // TODO-LINT: move to async function
       if (res.success) {
         setSuccess(true);
         setForm({ title: "", description: "", category: "", priority: "medium" });

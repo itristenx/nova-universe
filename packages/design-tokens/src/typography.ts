@@ -216,7 +216,7 @@ export const typographySystem = {
 }
 
 // CSS utility classes for typography
-export const typographyClasses = Object.entries(typographySystem.scale).map(([name, styles]) => {
+export const _typographyClasses = Object.entries(typographySystem.scale).map(([name, styles]) => {
   return `.text-${name} {
     font-size: ${styles.fontSize};
     line-height: ${styles.lineHeight};
@@ -227,7 +227,7 @@ export const typographyClasses = Object.entries(typographySystem.scale).map(([na
 }).join('\n\n')
 
 // Generate responsive CSS
-export const responsiveTypographyClasses = Object.entries(typographySystem.responsive.mobile).map(([name, styles]) => {
+export const _responsiveTypographyClasses = Object.entries(typographySystem.responsive.mobile).map(([name, styles]) => {
   return `@media (max-width: 640px) {
     .text-${name} {
       font-size: ${styles.fontSize};

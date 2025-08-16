@@ -29,13 +29,13 @@ async function testBasicConnectorStructure() {
         console.log(`  📝 Testing ${test.name}...`);
         
         // Check file syntax
-        const { execSync } = await import('child_process');
+        const { execSync } = await import('child_process'); // TODO-LINT: move to async function
         execSync(`node -c ${test.path}`, { stdio: 'pipe' });
         console.log(`    ✅ Syntax check: PASS`);
         
         // Try to import and check basic structure
         try {
-          const module = await import(test.path);
+          const module = await import(test.path); // TODO-LINT: move to async function
           const ConnectorClass = module[test.name];
           
           if (ConnectorClass) {
@@ -73,7 +73,7 @@ async function testIntegrationLayerBasics() {
   
   try {
     // Test syntax only
-    const { execSync } = await import('child_process');
+    const { execSync } = await import('child_process'); // TODO-LINT: move to async function
     
     console.log('  📝 Testing integration layer syntax...');
     execSync('node -c apps/lib/integration/nova-integration-layer.js', { stdio: 'pipe' });
@@ -95,7 +95,7 @@ async function testImplementationCompleteness() {
   console.log('\n📊 Testing Implementation Completeness...');
   
   try {
-    const fs = await import('fs');
+    const fs = await import('fs'); // TODO-LINT: move to async function
     
     // Check file existence
     const requiredFiles = [
@@ -127,7 +127,7 @@ async function testIndustryStandardCompliance() {
   console.log('\n🏅 Testing Industry Standard Compliance...');
   
   try {
-    const fs = await import('fs');
+    const fs = await import('fs'); // TODO-LINT: move to async function
     
     // Check for industry standard implementations in the integration layer
     const integrationLayerContent = fs.default.readFileSync('apps/lib/integration/nova-integration-layer.js', 'utf8');
@@ -162,10 +162,10 @@ async function testIndustryStandardCompliance() {
 async function runBasicTests() {
   const startTime = Date.now();
   
-  await testBasicConnectorStructure();
-  await testIntegrationLayerBasics();
-  await testImplementationCompleteness();
-  await testIndustryStandardCompliance();
+  await testBasicConnectorStructure(); // TODO-LINT: move to async function
+  await testIntegrationLayerBasics(); // TODO-LINT: move to async function
+  await testImplementationCompleteness(); // TODO-LINT: move to async function
+  await testIndustryStandardCompliance(); // TODO-LINT: move to async function
   
   const duration = Date.now() - startTime;
   
@@ -178,10 +178,10 @@ async function runBasicTests() {
   console.log('  • ✅ All required files present');
   console.log('  • ✅ Industry standard patterns detected');
   console.log('\n🚀 Nova Integration Layer implementation is structurally sound!');
-  console.log('\nℹ️  Note: Run with full dependencies for complete functional testing.');
+  console.log('\nℹ️  Note: Run with full dependencies for complete _functional _testing.');
 }
 
-// Run the basic tests
+// Run the basic _tests
 runBasicTests().catch(error => {
   console.error('❌ Basic test suite failed:', error);
   process.exit(1);

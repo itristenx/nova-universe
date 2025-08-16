@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useToastStore } from '@/stores/toast';
-export const useConnectionNotifications = () => {
+export const _useConnectionNotifications = () => {
     const { addToast } = useToastStore();
     useEffect(() => {
         const handleReconnected = () => {

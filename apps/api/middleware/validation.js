@@ -2,7 +2,7 @@
  * Input validation middleware for Nova Universe API
  * Extend with more validators as needed.
  */
-export const validateInput = {
+export const _validateInput = {
   /**
    * Email validation and normalization
    */
@@ -95,23 +95,23 @@ export const validateInput = {
   }
 };
 
-// Alternative validation functions
+// Alternative validation _functions
 export const validateEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
-export const validatePassword = (password) => {
+export const _validatePassword = (password) => {
   return password && password.length >= 6;
 };
 
-export const validateKioskId = (id) => {
+export const _validateKioskId = (id) => {
   // Kiosk IDs should be alphanumeric with hyphens, 36 chars (UUID format)
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(id);
 };
 
-export const validateActivationCode = (code) => {
+export const _validateActivationCode = (code) => {
   // Activation codes should be 6-8 uppercase alphanumeric characters
   return /^[A-Z0-9]{6,8}$/.test(code);
 };
@@ -126,7 +126,7 @@ export const sanitizeInput = (input, maxLength = 255) => {
     .substring(0, maxLength);
 };
 
-export const validateKioskRegistration = (req, res, next) => {
+export const _validateKioskRegistration = (req, res, next) => {
   const { id, token } = req.body;
 
   if (!id) {
@@ -144,7 +144,7 @@ export const validateKioskRegistration = (req, res, next) => {
   next();
 };
 
-export const validateTicketSubmission = (req, res, next) => {
+export const _validateTicketSubmission = (req, res, next) => {
   const { name, email, title, system, urgency } = req.body;
   
   if (!name || !email || !title) {
@@ -174,7 +174,7 @@ export const validateTicketSubmission = (req, res, next) => {
 /**
  * Kiosk authentication validation middleware
  */
-export const validateKioskAuth = (req, res, next) => {
+export const _validateKioskAuth = (req, res, next) => {
   // Kiosk authentication logic
   const kioskToken = req.headers['x-kiosk-token'] || req.query.kioskToken;
   
@@ -205,7 +205,7 @@ export const validateKioskAuth = (req, res, next) => {
 /**
  * Generic request validation middleware
  */
-export const validateRequest = (req, res, next) => {
+export const _validateRequest = (req, res, next) => {
   // Generic validation logic
   const errors = [];
 

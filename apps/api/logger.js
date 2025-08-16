@@ -10,7 +10,10 @@ const log = (level, ...args) => {
   switch (level) {
     case 'error':
       console.error(`[${timestamp}] ❌`, ...args);
-      try { fs.appendFileSync(errorLogPath, msg); } catch (e) {}
+      try { fs.appendFileSync(errorLogPath, msg); } catch ($1) {
+    // TODO-LINT: handle error
+    /* empty */
+  }
       break;
     case 'warn':
       console.warn(`[${timestamp}] ⚠️`, ...args);

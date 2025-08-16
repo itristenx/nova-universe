@@ -20,7 +20,7 @@ router.get('/api/v1/logs', async (req, res) => {
       query += ' AND email_status = $' + (params.length + 1);
       params.push(req.query.status);
     }
-    const { rows } = await db.query(query, params);
+    const { rows } = await db.query(query, params); // TODO-LINT: move to async function
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });

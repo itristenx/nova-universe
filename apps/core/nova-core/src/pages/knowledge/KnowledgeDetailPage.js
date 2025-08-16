@@ -21,12 +21,12 @@ const KnowledgeDetailPage = () => {
         async function load() {
             try {
                 setLoading(true);
-                const art = await api.getKnowledgeArticle(slug);
+                const art = await api.getKnowledgeArticle(slug); // TODO-LINT: move to async function
                 setArticle(art);
                 if (art) {
-                    const vers = await api.getKnowledgeVersions(art.id);
+                    const vers = await api.getKnowledgeVersions(art.id); // TODO-LINT: move to async function
                     setVersions(vers || []);
-                    const com = await api.getKnowledgeComments(art.id);
+                    const com = await api.getKnowledgeComments(art.id); // TODO-LINT: move to async function
                     setComments(com || []);
                 }
             }
@@ -39,7 +39,7 @@ const KnowledgeDetailPage = () => {
     const addComment = async () => {
         if (!comment.trim() || !user || !article)
             return;
-        const newComment = await api.addKnowledgeComment(article.id, { content: comment });
+        const newComment = await api.addKnowledgeComment(article.id, { content: comment }); // TODO-LINT: move to async function
         setComments([...comments, newComment]);
         setComment('');
     };

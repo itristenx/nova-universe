@@ -36,8 +36,8 @@ const NotificationSettings: React.FC = () => {
 
   const fetchChannels = async () => {
     try {
-      const response = await fetch('/api/monitoring/notifications/channels');
-      const data = await response.json();
+      const response = await fetch('/api/monitoring/notifications/channels'); // TODO-LINT: move to async function
+      const data = await response.json(); // TODO-LINT: move to async function
       setChannels(data);
     } catch (error) {
       console.error('Failed to fetch notification channels:', error);
@@ -46,8 +46,8 @@ const NotificationSettings: React.FC = () => {
 
   const fetchTemplates = async () => {
     try {
-      const response = await fetch('/api/monitoring/notifications/templates');
-      const data = await response.json();
+      const response = await fetch('/api/monitoring/notifications/templates'); // TODO-LINT: move to async function
+      const data = await response.json(); // TODO-LINT: move to async function
       setTemplates(data);
     } catch (error) {
       console.error('Failed to fetch notification templates:', error);
@@ -76,7 +76,7 @@ const NotificationSettings: React.FC = () => {
         method: editingChannel ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(channelData)
-      });
+      }); // TODO-LINT: move to async function
 
       if (response.ok) {
         fetchChannels();
@@ -95,7 +95,7 @@ const NotificationSettings: React.FC = () => {
     try {
       const response = await fetch(`/api/monitoring/notifications/channels/${channelId}`, {
         method: 'DELETE'
-      });
+      }); // TODO-LINT: move to async function
 
       if (response.ok) {
         fetchChannels();
@@ -109,9 +109,9 @@ const NotificationSettings: React.FC = () => {
     try {
       const response = await fetch(`/api/monitoring/notifications/channels/${channel.id}/test`, {
         method: 'POST'
-      });
+      }); // TODO-LINT: move to async function
 
-      const result = await response.json();
+      const result = await response.json(); // TODO-LINT: move to async function
       alert(result.success ? 'Test notification sent successfully!' : `Test failed: ${result.error}`);
     } catch (error) {
       console.error('Failed to test channel:', error);

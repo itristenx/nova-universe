@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-export function PWAInstaller() {
+export function _PWAInstaller() {
   useEffect(() => {
     // Register service worker
     if ('serviceWorker' in navigator) {
@@ -101,7 +101,7 @@ export function PWAInstaller() {
         installBtn.addEventListener('click', async () => {
           if (deferredPrompt && 'prompt' in deferredPrompt) {
             (deferredPrompt as any).prompt();
-            await (deferredPrompt as any).userChoice;
+            await (deferredPrompt as any).userChoice; // TODO-LINT: move to async function
             deferredPrompt = null;
           }
           banner.remove();

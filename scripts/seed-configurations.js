@@ -246,7 +246,7 @@ async function seedConfigurations() {
           helpText: config.helpText,
           isAdvanced: config.isAdvanced,
         }
-      });
+      }); // TODO-LINT: move to async function
 
       console.log(`✅ ${config.key}: ${result ? 'created/updated' : 'skipped'}`);
     }
@@ -266,7 +266,7 @@ async function seedConfigurations() {
     console.error('❌ Error during configuration seeding:', error);
     process.exit(1);
   } finally {
-    await prisma.$disconnect();
+    await prisma.$disconnect(); // TODO-LINT: move to async function
   }
 }
 

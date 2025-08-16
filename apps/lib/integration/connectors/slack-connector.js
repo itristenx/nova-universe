@@ -48,7 +48,7 @@ export class SlackConnector extends IConnector {
       });
 
       // Test the connection
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
       
       console.log('Slack connector initialized successfully');
     } catch (error) {
@@ -67,7 +67,7 @@ export class SlackConnector extends IConnector {
       // Test bot token
       const authResponse = await this.client.post('/auth.test', {}, {
         headers: { 'Authorization': `Bearer ${this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
       
       const apiLatency = Date.now() - startTime;
 
@@ -79,7 +79,7 @@ export class SlackConnector extends IConnector {
         const usersStartTime = Date.now();
         await this.client.get('/users.list?limit=1', {
           headers: { 'Authorization': `Bearer ${this.botToken}` }
-        });
+        }); // TODO-LINT: move to async function
         usersLatency = Date.now() - usersStartTime;
       } catch (error) {
         usersStatus = 'degraded';
@@ -93,7 +93,7 @@ export class SlackConnector extends IConnector {
         const channelsStartTime = Date.now();
         await this.client.get('/conversations.list?limit=1', {
           headers: { 'Authorization': `Bearer ${this.botToken}` }
-        });
+        }); // TODO-LINT: move to async function
         channelsLatency = Date.now() - channelsStartTime;
       } catch (error) {
         channelsStatus = 'degraded';
@@ -154,14 +154,14 @@ export class SlackConnector extends IConnector {
       console.log(`Starting ${syncType} sync from Slack...`);
 
       // Sync users
-      const usersResult = await this.syncUsers(options);
+      const usersResult = await this.syncUsers(options); // TODO-LINT: move to async function
       totalRecords += usersResult.totalRecords;
       successCount += usersResult.successCount;
       errorCount += usersResult.errorCount;
       errors.push(...usersResult.errors);
 
       // Sync channels/conversations
-      const channelsResult = await this.syncChannels(options);
+      const channelsResult = await this.syncChannels(options); // TODO-LINT: move to async function
       totalRecords += channelsResult.totalRecords;
       successCount += channelsResult.successCount;
       errorCount += channelsResult.errorCount;
@@ -169,7 +169,7 @@ export class SlackConnector extends IConnector {
 
       // Sync recent messages (if enabled)
       if (options.includeMessages) {
-        const messagesResult = await this.syncMessages(options);
+        const messagesResult = await this.syncMessages(options); // TODO-LINT: move to async function
         totalRecords += messagesResult.totalRecords;
         successCount += messagesResult.successCount;
         errorCount += messagesResult.errorCount;
@@ -220,14 +220,14 @@ export class SlackConnector extends IConnector {
       // Get recent public channel messages
       const channelsResponse = await this.client.get('/conversations.list?types=public_channel&limit=50', {
         headers: { 'Authorization': `Bearer ${this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       for (const channel of channelsResponse.data.channels || []) {
         try {
           const messagesResponse = await this.client.get(
             `/conversations.history?channel=${channel.id}&oldest=${sinceTimestamp}&limit=10`, {
             headers: { 'Authorization': `Bearer ${this.botToken}` }
-          });
+          }); // TODO-LINT: move to async function
 
           for (const message of messagesResponse.data.messages || []) {
             if (message.type === 'message' && !message.subtype) {
@@ -249,7 +249,7 @@ export class SlackConnector extends IConnector {
           }
 
           // Respect rate limits
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
         } catch (error) {
           console.warn(`Failed to get messages for channel ${channel.name}:`, error.message);
         }
@@ -272,22 +272,22 @@ export class SlackConnector extends IConnector {
 
       switch (actionType) {
         case 'send_message':
-          return await this.sendMessage(target, parameters);
+          return await this.sendMessage(target, parameters); // TODO-LINT: move to async function
         
         case 'create_channel':
-          return await this.createChannel(parameters);
+          return await this.createChannel(parameters); // TODO-LINT: move to async function
         
         case 'invite_to_channel':
-          return await this.inviteToChannel(target, parameters);
+          return await this.inviteToChannel(target, parameters); // TODO-LINT: move to async function
         
         case 'set_channel_topic':
-          return await this.setChannelTopic(target, parameters);
+          return await this.setChannelTopic(target, parameters); // TODO-LINT: move to async function
         
         case 'send_notification':
-          return await this.sendNotification(target, parameters);
+          return await this.sendNotification(target, parameters); // TODO-LINT: move to async function
         
         case 'update_status':
-          return await this.updateUserStatus(parameters);
+          return await this.updateUserStatus(parameters); // TODO-LINT: move to async function
         
         default:
           throw new Error(`Unsupported action: ${actionType}`);
@@ -420,7 +420,7 @@ export class SlackConnector extends IConnector {
     try {
       const response = await this.client.post('/auth.test', {}, {
         headers: { 'Authorization': `Bearer ${this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
       
       if (!response.data.ok) {
         throw new Error('Failed to authenticate with Slack API');
@@ -453,7 +453,7 @@ export class SlackConnector extends IConnector {
 
         const response = await this.client.get(`/users.list?${params}`, {
           headers: { 'Authorization': `Bearer ${this.botToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         if (!response.data.ok) {
           throw new Error(response.data.error || 'Failed to fetch users');
@@ -465,7 +465,7 @@ export class SlackConnector extends IConnector {
         // Process each user
         for (const user of users) {
           try {
-            await this.processUser(user);
+            await this.processUser(user); // TODO-LINT: move to async function
             successCount++;
           } catch (error) {
             errorCount++;
@@ -479,7 +479,7 @@ export class SlackConnector extends IConnector {
         cursor = response.data.response_metadata?.next_cursor || '';
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 1200)); // 50 requests per minute
+        await new Promise(resolve => setTimeout(resolve, 1200)); // TODO-LINT: move to async function // 50 requests per minute
 
       } while (cursor);
 
@@ -522,7 +522,7 @@ export class SlackConnector extends IConnector {
 
         const response = await this.client.get(`/conversations.list?${params}`, {
           headers: { 'Authorization': `Bearer ${this.botToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         if (!response.data.ok) {
           throw new Error(response.data.error || 'Failed to fetch channels');
@@ -534,7 +534,7 @@ export class SlackConnector extends IConnector {
         // Process each channel
         for (const channel of channels) {
           try {
-            await this.processChannel(channel);
+            await this.processChannel(channel); // TODO-LINT: move to async function
             successCount++;
           } catch (error) {
             errorCount++;
@@ -548,7 +548,7 @@ export class SlackConnector extends IConnector {
         cursor = response.data.response_metadata?.next_cursor || '';
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 1200));
+        await new Promise(resolve => setTimeout(resolve, 1200)); // TODO-LINT: move to async function
 
       } while (cursor);
 
@@ -583,21 +583,21 @@ export class SlackConnector extends IConnector {
       // Get channels first
       const channelsResponse = await this.client.get('/conversations.list?types=public_channel&limit=100', {
         headers: { 'Authorization': `Bearer ${this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       for (const channel of channelsResponse.data.channels || []) {
         try {
           const messagesResponse = await this.client.get(
             `/conversations.history?channel=${channel.id}&oldest=${sinceTimestamp}&limit=100`, {
             headers: { 'Authorization': `Bearer ${this.botToken}` }
-          });
+          }); // TODO-LINT: move to async function
 
           const messages = messagesResponse.data.messages || [];
           totalRecords += messages.length;
 
           for (const message of messages) {
             try {
-              await this.processMessage(message, channel);
+              await this.processMessage(message, channel); // TODO-LINT: move to async function
               successCount++;
             } catch (error) {
               errorCount++;
@@ -610,7 +610,7 @@ export class SlackConnector extends IConnector {
           }
 
           // Respect rate limits
-          await new Promise(resolve => setTimeout(resolve, 1200));
+          await new Promise(resolve => setTimeout(resolve, 1200)); // TODO-LINT: move to async function
         } catch (error) {
           console.warn(`Failed to sync messages for channel ${channel.name}:`, error.message);
         }
@@ -727,7 +727,7 @@ export class SlackConnector extends IConnector {
 
       const response = await this.client.post('/chat.postMessage', payload, {
         headers: { 'Authorization': `Bearer ${this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.data.ok) {
         throw new Error(response.data.error || 'Failed to send message');
@@ -758,7 +758,7 @@ export class SlackConnector extends IConnector {
 
       const response = await this.client.post(endpoint, payload, {
         headers: { 'Authorization': `Bearer ${this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.data.ok) {
         throw new Error(response.data.error || 'Failed to create channel');
@@ -773,7 +773,7 @@ export class SlackConnector extends IConnector {
           purpose
         }, {
           headers: { 'Authorization': `Bearer ${this.botToken}` }
-        });
+        }); // TODO-LINT: move to async function
       }
 
       if (topic) {
@@ -782,7 +782,7 @@ export class SlackConnector extends IConnector {
           topic
         }, {
           headers: { 'Authorization': `Bearer ${this.botToken}` }
-        });
+        }); // TODO-LINT: move to async function
       }
 
       return {
@@ -807,7 +807,7 @@ export class SlackConnector extends IConnector {
         users: users.join(',')
       }, {
         headers: { 'Authorization': `Bearer ${this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.data.ok) {
         throw new Error(response.data.error || 'Failed to invite users');
@@ -832,7 +832,7 @@ export class SlackConnector extends IConnector {
         topic
       }, {
         headers: { 'Authorization': `Bearer ${this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.data.ok) {
         throw new Error(response.data.error || 'Failed to set channel topic');
@@ -859,7 +859,7 @@ export class SlackConnector extends IConnector {
         as_user: false
       }, {
         headers: { 'Authorization': `Bearer ${this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.data.ok) {
         throw new Error(response.data.error || 'Failed to send notification');
@@ -892,7 +892,7 @@ export class SlackConnector extends IConnector {
         profile
       }, {
         headers: { 'Authorization': `Bearer ${this.userToken || this.botToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.data.ok) {
         throw new Error(response.data.error || 'Failed to update status');

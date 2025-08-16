@@ -26,7 +26,7 @@ export interface OptimisticUpdate<T> {
 }
 
 // WebSocket Hook for real-time updates
-export function useWebSocket<T = unknown>(config: WebSocketConfig) {
+export function _useWebSocket<T = unknown>(config: WebSocketConfig) {
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage<T> | null>(null);
   const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
@@ -167,7 +167,7 @@ export function useWebSocket<T = unknown>(config: WebSocketConfig) {
 }
 
 // Optimistic UI Updates Hook
-export function useOptimisticUpdates<T>() {
+export function _useOptimisticUpdates<T>() {
   const [pendingUpdates, setPendingUpdates] = useState<OptimisticUpdate<T>[]>([]);
 
   const addOptimisticUpdate = useCallback((update: Omit<OptimisticUpdate<T>, 'timestamp'>) => {
@@ -214,7 +214,7 @@ export function useOptimisticUpdates<T>() {
 }
 
 // Background Sync Hook
-export function useBackgroundSync<T = unknown>() {
+export function _useBackgroundSync<T = unknown>() {
   const [syncQueue, setSyncQueue] = useState<Array<{
     id: string;
     operation: string;
@@ -248,7 +248,7 @@ export function useBackgroundSync<T = unknown>() {
     for (const item of syncQueue) {
       try {
         // In a real app, you would make the actual API call here
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function // Simulate API call
         
         // Remove successful item from queue
         setSyncQueue(prev => prev.filter(i => i.id !== item.id));
@@ -302,7 +302,7 @@ export function useBackgroundSync<T = unknown>() {
 }
 
 // Push Notifications Hook
-export function usePushNotifications() {
+export function _usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
   const [isSupported, setIsSupported] = useState(false);
@@ -321,7 +321,7 @@ export function usePushNotifications() {
       throw new Error('Push notifications are not supported');
     }
 
-    const result = await Notification.requestPermission();
+    const result = await Notification.requestPermission(); // TODO-LINT: move to async function
     setPermission(result);
     return result;
   }, [isSupported]);
@@ -332,11 +332,11 @@ export function usePushNotifications() {
     }
 
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.ready; // TODO-LINT: move to async function
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: process.env.NEXT_PUBLIC_VAPID_KEY // You'd need to set this
-      });
+      }); // TODO-LINT: move to async function
 
       setSubscription(sub);
       return sub;
@@ -348,7 +348,7 @@ export function usePushNotifications() {
 
   const unsubscribeFromPush = useCallback(async () => {
     if (subscription) {
-      await subscription.unsubscribe();
+      await subscription.unsubscribe(); // TODO-LINT: move to async function
       setSubscription(null);
     }
   }, [subscription]);
@@ -412,4 +412,4 @@ class EventBus {
   }
 }
 
-export const eventBus = new EventBus();
+export const _eventBus = new EventBus();

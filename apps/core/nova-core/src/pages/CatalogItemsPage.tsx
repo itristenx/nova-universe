@@ -18,7 +18,7 @@ export const CatalogItemsPage: React.FC = () => {
   const load = async () => {
     try {
       setLoading(true);
-      const data = await api.getCatalogItems();
+      const data = await api.getCatalogItems(); // TODO-LINT: move to async function
       setItems(data);
     } catch (e) {
       console.error('Failed to load catalog', e);
@@ -31,7 +31,7 @@ export const CatalogItemsPage: React.FC = () => {
   const createItem = async () => {
     try {
       const parsed = JSON.parse(formData.formSchema || '{}');
-      const newItem = await api.createCatalogItem({ name: formData.name, formSchema: parsed });
+      const newItem = await api.createCatalogItem({ name: formData.name, formSchema: parsed }); // TODO-LINT: move to async function
       setItems([...items, newItem]);
       setShowModal(false);
       setFormData({ name: '', formSchema: '{}' });

@@ -75,7 +75,7 @@ export function generateIconCSS(): string {
 /**
  * Generate Tailwind utilities for icons
  */
-export function generateIconTailwindConfig() {
+export function _generateIconTailwindConfig() {
   return {
     extend: {
       animation: {
@@ -88,7 +88,7 @@ export function generateIconTailwindConfig() {
 }
 
 // Predefined CSS classes for common icon patterns
-export const iconUtilityClasses = {
+export const _iconUtilityClasses = {
   base: 'nova-icon',
   sizes: {
     xs: 'nova-icon-xs',
@@ -127,4 +127,4 @@ export const iconUtilityClasses = {
 }
 
 // Export CSS string for consumption
-export const iconCSS = generateIconCSS()
+export const _iconCSS = generateIconCSS()

@@ -44,7 +44,7 @@ router.post('/import', authenticateJWT, async (req, res) => {
           embed: 'threads'
         },
       }
-    );
+    ); // TODO-LINT: move to async function
 
     const conversations = response.data._embedded?.conversations || [];
     let importedCount = 0;
@@ -57,7 +57,7 @@ router.post('/import', authenticateJWT, async (req, res) => {
         const existingTicket = await db.one(
           'SELECT id FROM tickets WHERE external_id = $1 AND external_source = $2',
           [conversation.id.toString(), 'helpscout']
-        ).catch(() => null);
+        ).catch(() => null); // TODO-LINT: move to async function
 
         if (existingTicket) {
           skippedCount++;
@@ -92,7 +92,7 @@ router.post('/import', authenticateJWT, async (req, res) => {
           ticketData.external_id, ticketData.external_source, ticketData.external_url,
           ticketData.customer_email, ticketData.customer_name, ticketData.created_at,
           ticketData.updated_at, ticketData.imported_by
-        ]);
+        ]); // TODO-LINT: move to async function
 
         importedCount++;
         logger.debug('Imported HelpScout ticket', { 
@@ -132,7 +132,7 @@ router.post('/import', authenticateJWT, async (req, res) => {
   }
 });
 
-// Helper function to map HelpScout status to our ticket status
+// Helper function to _map HelpScout status to _our ticket status
 function mapHelpScoutStatus(helpscoutStatus) {
   const statusMap = {
     'active': 'open',
@@ -143,7 +143,7 @@ function mapHelpScoutStatus(helpscoutStatus) {
   return statusMap[helpscoutStatus] || 'open';
 }
 
-// Helper function to determine priority from HelpScout tags
+// Helper function to _determine priority from HelpScout tags
 function mapHelpScoutPriority(tags = []) {
   const tagString = tags.join(' ').toLowerCase();
   

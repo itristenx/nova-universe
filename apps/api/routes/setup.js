@@ -30,9 +30,9 @@ router.post('/test-slack', [
         'Authorization': `Bearer ${slackToken}`,
         'Content-Type': 'application/json',
       },
-    });
+    }); // TODO-LINT: move to async function
 
-    const data = await response.json();
+    const data = await response.json(); // TODO-LINT: move to async function
     
     if (!data.ok) {
       return res.status(400).json({ 
@@ -53,9 +53,9 @@ router.post('/test-slack', [
         text: 'Test message from Nova Universe setup wizard',
         username: 'Nova Setup',
       }),
-    });
+    }); // TODO-LINT: move to async function
 
-    const testData = await testResponse.json();
+    const testData = await testResponse.json(); // TODO-LINT: move to async function
     
     if (testData.ok) {
       logger.info('Slack connection test successful');
@@ -107,7 +107,7 @@ router.post('/test-teams', [
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-    });
+    }); // TODO-LINT: move to async function
 
     if (response.ok) {
       logger.info('Teams connection test successful');
@@ -143,10 +143,10 @@ router.post('/test-elasticsearch', [
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       timeout: 10000,
-    });
+    }); // TODO-LINT: move to async function
 
     if (response.ok) {
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       logger.info('Elasticsearch connection test successful');
       res.json({ 
         success: true, 
@@ -183,7 +183,7 @@ router.post('/test-s3', [
 
     // Import AWS SDK (if available)
     try {
-      const AWS = await import('@aws-sdk/client-s3');
+      const AWS = await import('@aws-sdk/client-s3'); // TODO-LINT: move to async function
       const { S3Client, HeadBucketCommand } = AWS;
 
       const s3Client = new S3Client({
@@ -195,7 +195,7 @@ router.post('/test-s3', [
       });
 
       // Test bucket access
-      await s3Client.send(new HeadBucketCommand({ Bucket: s3Bucket }));
+      await s3Client.send(new HeadBucketCommand({ Bucket: s3Bucket })); // TODO-LINT: move to async function
 
       logger.info('S3 connection test successful');
       res.json({ success: true, message: 'S3 connection successful' });
@@ -240,10 +240,10 @@ router.post('/test-sentinel', [
       method: 'GET',
       headers,
       timeout: 10000,
-    });
+    }); // TODO-LINT: move to async function
 
     if (response.ok) {
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       logger.info('Sentinel connection test successful');
       res.json({ 
         success: true, 
@@ -285,10 +285,10 @@ router.post('/test-goalert', [
         'User-Agent': 'Nova-Universe-Setup/1.0',
       },
       timeout: 10000,
-    });
+    }); // TODO-LINT: move to async function
 
     if (response.ok) {
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       logger.info('GoAlert connection test successful');
       res.json({ 
         success: true, 

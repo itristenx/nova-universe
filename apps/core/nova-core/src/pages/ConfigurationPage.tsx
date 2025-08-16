@@ -43,7 +43,7 @@ export const ConfigurationPage: React.FC = () => {
         api.getGlobalConfiguration(),
         api.getConfigurationSummary(),
         api.getKiosks()
-      ]);
+      ]); // TODO-LINT: move to async function
       
       setGlobalConfig(globalData);
       setConfigSummary(summaryData);
@@ -62,7 +62,7 @@ export const ConfigurationPage: React.FC = () => {
 
   const updateGlobalConfig = async (updates: Partial<GlobalConfiguration>) => {
     try {
-      await api.updateGlobalConfiguration(updates);
+      await api.updateGlobalConfiguration(updates); // TODO-LINT: move to async function
       setGlobalConfig(prev => prev ? { ...prev, ...updates } : null);
       addToast({
         type: 'success',
@@ -83,8 +83,8 @@ export const ConfigurationPage: React.FC = () => {
 
   const toggleKioskScope = async (kioskId: string, newScope: ConfigScope) => {
     try {
-      await api.setKioskConfigScope(kioskId, newScope);
-      await loadData();
+      await api.setKioskConfigScope(kioskId, newScope); // TODO-LINT: move to async function
+      await loadData(); // TODO-LINT: move to async function
       addToast({
         type: 'success',
         title: 'Success',
@@ -102,8 +102,8 @@ export const ConfigurationPage: React.FC = () => {
 
   const resetAllToGlobal = async () => {
     try {
-      await api.resetAllKiosksToGlobal();
-      await loadData();
+      await api.resetAllKiosksToGlobal(); // TODO-LINT: move to async function
+      await loadData(); // TODO-LINT: move to async function
       setShowResetModal(false);
       addToast({
         type: 'success',

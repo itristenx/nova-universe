@@ -1,13 +1,13 @@
 /**
  * Nova Synth Integration Tests
  * 
- * Direct integration tests for Nova Synth functionality without full API server setup.
- * These tests use the actual Nova Synth functions and MCP tools directly.
+ * Direct integration tests for Nova Synth _functionality without full _API server _setup.
+ * _These tests _use _the _actual Nova Synth _functions and MCP tools _directly.
  */
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert';
-import { v4 as uuidv4 } from 'uuid';
+import { _v4 as uuidv4 } from '_uuid';
 import { 
   startConversation, 
   sendMessage, 
@@ -16,8 +16,8 @@ import {
   createEscalation,
   handleMCPRequest,
   initializeMCPServer 
-} from '../apps/api/utils/cosmo.js';
-import { CosmoTicketProcessor } from '../apps/api/services/cosmo-ticket-processor.js';
+} from '../apps/api/_utils/cosmo.js';
+import { CosmoTicketProcessor } from '../apps/api/_services/cosmo-ticket-processor.js';
 
 describe('Nova Synth Integration Tests', () => {
   let testUser;
@@ -32,7 +32,7 @@ describe('Nova Synth Integration Tests', () => {
     
     // Initialize MCP server for testing
     try {
-      mcpServer = await initializeMCPServer();
+      mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       console.log('MCP Server initialized for testing');
     } catch (error) {
       console.warn('MCP Server initialization failed, some tests may be limited:', error.message);
@@ -87,7 +87,7 @@ describe('Nova Synth Integration Tests', () => {
       };
 
       // Start conversation
-      const conversationResult = await startConversation(testUser.id, context);
+      const conversationResult = await startConversation(testUser.id, context); // TODO-LINT: move to async function
       
       assert.ok(conversationResult, 'Conversation should start successfully');
       assert.ok(conversationResult.conversationId, 'Should return conversation ID');
@@ -115,7 +115,7 @@ describe('Nova Synth Integration Tests', () => {
         testUser.id,
         message,
         context
-      );
+      ); // TODO-LINT: move to async function
       
       assert.ok(messageResult, 'Message should be processed');
       
@@ -132,7 +132,7 @@ describe('Nova Synth Integration Tests', () => {
         return;
       }
 
-      const history = await getConversationHistory(testTicket.conversationId, testUser.id);
+      const history = await getConversationHistory(testTicket.conversationId, testUser.id); // TODO-LINT: move to async function
       
       assert.ok(history, 'Should return conversation history');
       if (history.messages) {
@@ -148,7 +148,7 @@ describe('Nova Synth Integration Tests', () => {
         description: 'Critical server failure in data center - immediate attention required'
       };
 
-      const processedTicket = await ticketProcessor.processTicket(ticketData);
+      const processedTicket = await ticketProcessor.processTicket(ticketData); // TODO-LINT: move to async function
       
       assert.ok(processedTicket, 'Ticket should be processed');
       assert.ok(processedTicket.aiClassification, 'Should include AI classification');
@@ -176,10 +176,10 @@ describe('Nova Synth Integration Tests', () => {
       };
 
       // Process original ticket first
-      await ticketProcessor.processTicket(originalTicket);
+      await ticketProcessor.processTicket(originalTicket); // TODO-LINT: move to async function
       
       // Process potential duplicate
-      const result = await ticketProcessor.processTicket(duplicateTicket);
+      const result = await ticketProcessor.processTicket(duplicateTicket); // TODO-LINT: move to async function
       
       assert.ok(result, 'Duplicate ticket should be processed');
       
@@ -210,7 +210,7 @@ describe('Nova Synth Integration Tests', () => {
       };
 
       try {
-        const result = await handleMCPRequest(mcpRequest);
+        const result = await handleMCPRequest(mcpRequest); // TODO-LINT: move to async function
         
         assert.ok(result, 'MCP request should return result');
         
@@ -239,7 +239,7 @@ describe('Nova Synth Integration Tests', () => {
       };
 
       try {
-        const result = await handleMCPRequest(mcpRequest);
+        const result = await handleMCPRequest(mcpRequest); // TODO-LINT: move to async function
         
         assert.ok(result, 'Knowledge search should return result');
         
@@ -268,7 +268,7 @@ describe('Nova Synth Integration Tests', () => {
       };
 
       try {
-        const result = await handleMCPRequest(mcpRequest);
+        const result = await handleMCPRequest(mcpRequest); // TODO-LINT: move to async function
         
         assert.ok(result, 'XP award should return result');
         
@@ -302,7 +302,7 @@ describe('Nova Synth Integration Tests', () => {
       };
 
       try {
-        const escalation = await createEscalation(escalationData);
+        const escalation = await createEscalation(escalationData); // TODO-LINT: move to async function
         
         assert.ok(escalation, 'Escalation should be created');
         assert.ok(escalation.id, 'Escalation should have ID');
@@ -340,7 +340,7 @@ describe('Nova Synth Integration Tests', () => {
       const startTime = Date.now();
       const results = await Promise.all(operations.map(op => {
         try {
-          return op();
+          return op(); // TODO-LINT: move to async function
         } catch (error) {
           return { error: error.message };
         }
@@ -365,7 +365,7 @@ describe('Nova Synth Integration Tests', () => {
 
       for (const input of malformedInputs) {
         try {
-          const result = await ticketProcessor.classifyCategory(input.title, input.description);
+          const result = await ticketProcessor.classifyCategory(input.title, input.description); // TODO-LINT: move to async function
           // Should either return a result or handle gracefully
           assert.ok(result !== undefined, 'Should handle malformed input without crashing');
         } catch (error) {
@@ -383,7 +383,7 @@ describe('Nova Synth Integration Tests', () => {
         module: 'pulse',
         ticketId: testTicket.id,
         urgency: 8
-      });
+      }); // TODO-LINT: move to async function
 
       // 2. Process critical message
       if (conversationResult && conversationResult.conversationId) {
@@ -392,7 +392,7 @@ describe('Nova Synth Integration Tests', () => {
           testUser.id,
           'Emergency: Data center fire alarm activated, evacuating all personnel',
           { urgency: 10, emergency: true }
-        );
+        ); // TODO-LINT: move to async function
 
         // 3. Create escalation if not auto-created
         let escalationResult;
@@ -404,7 +404,7 @@ describe('Nova Synth Integration Tests', () => {
             reason: 'Emergency evacuation - fire alarm',
             context: { emergency: true, evacuation: true },
             userId: testUser.id
-          }).catch(error => ({ error: error.message }));
+          }).catch(error => ({ error: error.message })); // TODO-LINT: move to async function
         }
 
         // 4. End conversation
@@ -412,7 +412,7 @@ describe('Nova Synth Integration Tests', () => {
           conversationResult.conversationId,
           testUser.id,
           'Emergency escalation completed'
-        );
+        ); // TODO-LINT: move to async function
 
         // Verify workflow completion
         assert.ok(conversationResult.conversationId, 'Conversation should start');

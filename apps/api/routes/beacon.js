@@ -15,11 +15,11 @@ import events from '../events.js';
 async function findInventoryAssetByHardwareId(hardwareId) {
   try {
     // If a proper inventory service is available, use that; otherwise fall back to DB lookup
-    const helix = (await import('../services/helixKioskIntegration.js')).default;
+    const helix = (await import('../services/helixKioskIntegration.js')).default; // TODO-LINT: move to async function
     if (helix?.db?.inventoryAsset?.findFirst) {
-      const asset = await helix.db.inventoryAsset.findFirst({ where: { hardware_id: hardwareId } }).catch(() => null);
+      const asset = await helix.db.inventoryAsset.findFirst({ where: { hardware_id: hardwareId } }).catch(() => null); // TODO-LINT: move to async function
       if (asset) return asset;
-      return await helix.db.inventoryAsset.findFirst({ where: { hardware_id: { equals: hardwareId, mode: 'insensitive' } } }).catch(() => null);
+      return await helix.db.inventoryAsset.findFirst({ where: { hardware_id: { equals: hardwareId, mode: 'insensitive' } } }).catch(() => null); // TODO-LINT: move to async function
     }
   } catch {}
   return null;
@@ -301,7 +301,7 @@ router.post('/ticket',
             ],
             function(err) {
               if (err) {
-                reject(err);
+                reject(err); // TODO-LINT: move to async function
               } else {
                 resolve(this.lastID);
               }
@@ -320,7 +320,7 @@ router.post('/ticket',
 
         // Trigger notifications/integrations for kiosk status change
         try {
-          const { notificationService } = await import('../lib/notifications.js');
+          const { notificationService } = await import('../lib/notifications.js'); // TODO-LINT: move to async function
           await notificationService.sendNotification({
             type: 'monitor_up',
             tenant_id: req.user?.tenant_id || 'default',
@@ -328,7 +328,7 @@ router.post('/ticket',
             title: `Kiosk ${kioskId} activated`,
             message: `Kiosk ${kioskId} was successfully activated and linked.`,
             data: { kioskId }
-          });
+          }); // TODO-LINT: move to async function
         } catch {}
 
         res.status(201).json({
@@ -591,9 +591,9 @@ router.post('/activate',
               try {
                 const hardwareId = deviceInfo?.deviceId || deviceInfo?.serialNumber || null;
                 if (hardwareId) {
-                  const asset = await findInventoryAssetByHardwareId(hardwareId);
+                  const asset = await findInventoryAssetByHardwareId(hardwareId); // TODO-LINT: move to async function
                   if (asset?.id && HelixKioskIntegration?.registerAssetWithKiosk) {
-                    await HelixKioskIntegration.registerAssetWithKiosk(asset.id, activation.kioskId, { userId: 'kiosk-activation' }).catch(()=>null);
+                    await HelixKioskIntegration.registerAssetWithKiosk(asset.id, activation.kioskId, { userId: 'kiosk-activation' }).catch(()=>null); // TODO-LINT: move to async function
                   }
                 }
                 // In a real system, deviceInfo/serial would be matched.
@@ -676,9 +676,9 @@ router.post('/check-in', validateKioskAuth, async (req, res) => {
       if (err) return res.status(500).json({ success: false, error: 'DB error' });
       // Trigger Helix sync for any pending assets linked to this kiosk
       try {
-        const helix = (await import('../services/helixKioskIntegration.js')).default;
+        const helix = (await import('../services/helixKioskIntegration.js')).default; // TODO-LINT: move to async function
         if (helix?.bulkSyncWithHelix) {
-          await helix.bulkSyncWithHelix({ limit: 50 });
+          await helix.bulkSyncWithHelix({ limit: 50 }); // TODO-LINT: move to async function
         }
       } catch (e) {
         logger.warn('Helix bulk sync trigger failed:', e.message);
@@ -698,30 +698,30 @@ router.post('/link-asset', authenticateJWT, async (req, res) => {
     if (!kioskId || (!assetTag && !serialNumber)) {
       return res.status(400).json({ success: false, error: 'kioskId and assetTag or serialNumber required' });
     }
-    const helix = (await import('../services/helixKioskIntegration.js')).default;
+    const helix = (await import('../services/helixKioskIntegration.js')).default; // TODO-LINT: move to async function
 
     // Lookup asset in inventory
     let asset = null;
     if (assetTag) {
-      asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: assetTag } });
+      asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: assetTag } }); // TODO-LINT: move to async function
       if (!asset) {
-        asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: { equals: assetTag, mode: 'insensitive' } } });
+        asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: { equals: assetTag, mode: 'insensitive' } } }); // TODO-LINT: move to async function
       }
     }
     if (!asset && serialNumber) {
       // Attempt plaintext field
-      asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: serialNumber } }).catch(() => null);
+      asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: serialNumber } }).catch(() => null); // TODO-LINT: move to async function
       // Fallback: case-insensitive partial match
       if (!asset) {
-        asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: { contains: serialNumber, mode: 'insensitive' } } }).catch(() => null);
+        asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: { contains: serialNumber, mode: 'insensitive' } } }).catch(() => null); // TODO-LINT: move to async function
       }
       // Fallback: decrypt compare across recent assets (bounded scan)
       if (!asset) {
-        const recent = await helix.db.inventoryAsset.findMany({ take: 200, orderBy: { updated_at: 'desc' } }).catch(() => []);
+        const recent = await helix.db.inventoryAsset.findMany({ take: 200, orderBy: { updated_at: 'desc' } }).catch(() => []); // TODO-LINT: move to async function
         for (const a of recent) {
           if (a.serial_number_enc) {
             try {
-              const { decrypt } = await import('../utils/encryption.js');
+              const { decrypt } = await import('../utils/encryption.js'); // TODO-LINT: move to async function
               const dec = decrypt(a.serial_number_enc);
               if (dec && dec.toLowerCase() === String(serialNumber).toLowerCase()) { asset = a; break; }
             } catch {}
@@ -733,10 +733,10 @@ router.post('/link-asset', authenticateJWT, async (req, res) => {
       return res.status(404).json({ success: false, error: 'Asset not found' });
     }
 
-    const result = await helix.registerAssetWithKiosk(asset.id, kioskId, { userId: req.user?.id || 'admin' });
+    const result = await helix.registerAssetWithKiosk(asset.id, kioskId, { userId: req.user?.id || 'admin' }); // TODO-LINT: move to async function
     // Trigger sync immediately for responsiveness, ignoring errors
     try {
-      await helix.syncWithHelix(kioskId, asset.id, asset, result.metadata || {});
+      await helix.syncWithHelix(kioskId, asset.id, asset, result.metadata || {}); // TODO-LINT: move to async function
     } catch (e) {
       logger.warn('Immediate Helix sync failed:', e.message);
     }

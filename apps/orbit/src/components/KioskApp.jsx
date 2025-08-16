@@ -535,7 +535,7 @@ const urgencyLevels = [
   }
 ];
 
-export default function KioskApp() {
+export default function _KioskApp() {
   const { colorMode } = useTheme();
   const [currentScreen, setCurrentScreen] = useState('welcome'); // welcome, ticket-form, success
   const [selectedService, setSelectedService] = useState('');
@@ -634,7 +634,7 @@ export default function KioskApp() {
     setIsSubmitting(true);
     
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2000)); // TODO-LINT: move to async function
     
     // Generate ticket number
     const ticketNumber = `NOV-${Date.now().toString().slice(-6)}`;

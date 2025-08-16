@@ -92,7 +92,7 @@ interface ProactiveSuggestion {
   category: string;
 }
 
-export default function EnhancedCosmoAI() {
+export default function _EnhancedCosmoAI() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -235,7 +235,7 @@ export default function EnhancedCosmoAI() {
     setInputText('');
 
     // Simulate AI processing with context awareness
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1500)); // TODO-LINT: move to async function
 
     // Generate contextual response
     const response = generateAIResponse(userInput, conversationContext);

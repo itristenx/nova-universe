@@ -8,7 +8,7 @@ import fs from 'fs';
 import winston from 'winston';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const ___dirname = dirname(__filename);
 
 const logger = winston.createLogger({
   level: 'info',
@@ -36,7 +36,7 @@ export class DatabaseService {
       this.db.pragma('foreign_keys = ON');
 
       // Create tables
-      await this.createTables();
+      await this.createTables(); // TODO-LINT: move to async function
       
       logger.info(`Database initialized: ${this.config.path}`);
     } catch (error) {

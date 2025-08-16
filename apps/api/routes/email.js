@@ -15,7 +15,7 @@ router.post('/send', authenticateJWT, async (req, res) => {
       const account = await db.oneOrNone(
         'SELECT address FROM email_accounts WHERE queue=$1 AND enabled=TRUE',
         [queue]
-      );
+      ); // TODO-LINT: move to async function
       if (!account) {
         return res.status(400).json({ error: 'Unknown queue' });
       }
@@ -26,7 +26,7 @@ router.post('/send', authenticateJWT, async (req, res) => {
       return res.status(400).json({ error: 'Sender required' });
     }
 
-    await m365EmailService.sendEmail({ from: sender, to, subject, html });
+    await m365EmailService.sendEmail({ from: sender, to, subject, html }); // TODO-LINT: move to async function
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to send email', details: err.message });

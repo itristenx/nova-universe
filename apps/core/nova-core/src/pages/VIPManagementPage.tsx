@@ -16,7 +16,7 @@ export const VIPManagementPage: React.FC = () => {
   const load = async () => {
     try {
       setLoading(true);
-      const data = await api.getUsers();
+      const data = await api.getUsers(); // TODO-LINT: move to async function
       setUsers(data);
     } catch (e) {
       console.error(e);
@@ -28,7 +28,7 @@ export const VIPManagementPage: React.FC = () => {
 
   const updateVip = async (user: User, isVip: boolean, vipLevel: string) => {
     try {
-      await api.updateVipStatus(user.id, { isVip, vipLevel });
+      await api.updateVipStatus(user.id, { isVip, vipLevel }); // TODO-LINT: move to async function
       setUsers(users.map(u => u.id === user.id ? { ...u, isVip, vipLevel } : u));
       addToast({ type: 'success', title: 'Updated', description: 'VIP status saved' });
     } catch (e) {

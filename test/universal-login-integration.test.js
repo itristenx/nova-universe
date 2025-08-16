@@ -46,7 +46,7 @@ describe('Universal Login System Integration Tests', () => {
     app.use(express.json());
     
     // Import and mount the router
-    const { default: router } = await import('../apps/api/routes/helix-universal-login.js');
+    const { default: router } = await import('../apps/api/routes/helix-universal-login.js'); // TODO-LINT: move to async function
     helixUniversalLoginRouter = router;
     app.use('/api/v1/helix/login', helixUniversalLoginRouter);
   });
@@ -82,14 +82,14 @@ describe('Universal Login System Integration Tests', () => {
             provider_name: 'Corporate SSO',
             enabled: true,
           }]
-        });
+        }); // TODO-LINT: move to async function
 
       const response = await request(app)
         .post('/api/v1/helix/login/tenant/discover')
         .send({
           email: testEmail,
           redirectUrl: 'http://localhost:3000/',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('tenant');
@@ -108,7 +108,7 @@ describe('Universal Login System Integration Tests', () => {
         .send({
           email: 'user@unknown-domain.com',
           redirectUrl: 'http://localhost:3000/',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(200);
       expect(response.body.tenant.name).toBe('Default Organization');
@@ -121,7 +121,7 @@ describe('Universal Login System Integration Tests', () => {
         .send({
           email: 'invalid-email',
           redirectUrl: 'http://localhost:3000/',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
@@ -132,7 +132,7 @@ describe('Universal Login System Integration Tests', () => {
     const discoveryToken = 'test-discovery-token';
 
     it('should authenticate user with valid password', async () => {
-      const hashedPassword = await bcrypt.hash('password123', 10);
+      const hashedPassword = await bcrypt.hash('password123', 10); // TODO-LINT: move to async function
       
       // Mock discovery token validation
       mockDb.query
@@ -169,7 +169,7 @@ describe('Universal Login System Integration Tests', () => {
           authMethod: 'password',
           password: 'password123',
           redirectUrl: 'http://localhost:3000/',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
@@ -178,7 +178,7 @@ describe('Universal Login System Integration Tests', () => {
     });
 
     it('should initiate MFA for users with 2FA enabled', async () => {
-      const hashedPassword = await bcrypt.hash('password123', 10);
+      const hashedPassword = await bcrypt.hash('password123', 10); // TODO-LINT: move to async function
       
       mockDb.query
         .mockResolvedValueOnce({
@@ -213,7 +213,7 @@ describe('Universal Login System Integration Tests', () => {
           authMethod: 'password',
           password: 'password123',
           redirectUrl: 'http://localhost:3000/',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(200);
       expect(response.body.requiresMFA).toBe(true);
@@ -222,7 +222,7 @@ describe('Universal Login System Integration Tests', () => {
     });
 
     it('should reject invalid credentials', async () => {
-      const hashedPassword = await bcrypt.hash('password123', 10);
+      const hashedPassword = await bcrypt.hash('password123', 10); // TODO-LINT: move to async function
       
       mockDb.query
         .mockResolvedValueOnce({
@@ -249,7 +249,7 @@ describe('Universal Login System Integration Tests', () => {
           authMethod: 'password',
           password: 'wrongpassword',
           redirectUrl: 'http://localhost:3000/',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('error');
@@ -275,7 +275,7 @@ describe('Universal Login System Integration Tests', () => {
         .send({
           tempSessionId,
           mfaMethod: 'sms',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message');
@@ -310,7 +310,7 @@ describe('Universal Login System Integration Tests', () => {
           tempSessionId,
           mfaMethod: 'totp',
           code: '123456',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
@@ -331,7 +331,7 @@ describe('Universal Login System Integration Tests', () => {
           tempSessionId,
           mfaMethod: 'totp',
           code: '000000',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('error');
@@ -361,7 +361,7 @@ describe('Universal Login System Integration Tests', () => {
         .post('/api/v1/helix/login/token/refresh')
         .send({
           refreshToken: 'valid-refresh-token',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
@@ -374,7 +374,7 @@ describe('Universal Login System Integration Tests', () => {
       const response = await request(app)
         .post('/api/v1/helix/login/logout')
         .set('Authorization', `Bearer ${sessionToken}`)
-        .send();
+        .send(); // TODO-LINT: move to async function
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message');
@@ -398,7 +398,7 @@ describe('Universal Login System Integration Tests', () => {
         .query({
           userId: testUserId,
           limit: 10,
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('logs');
@@ -419,7 +419,7 @@ describe('Universal Login System Integration Tests', () => {
             email: testEmail,
             authMethod: 'password',
             password: 'wrongpassword',
-          });
+          }); // TODO-LINT: move to async function
         
         if (i < 4) {
           expect(response.status).toBe(401);
@@ -435,7 +435,7 @@ describe('Universal Login System Integration Tests', () => {
         .send({
           email: testEmail,
           // Missing required fields
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
@@ -447,7 +447,7 @@ describe('Universal Login System Integration Tests', () => {
         .send({
           email: '<script>alert("xss")</script>@example.com',
           redirectUrl: 'javascript:alert("xss")',
-        });
+        }); // TODO-LINT: move to async function
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');

@@ -145,7 +145,7 @@ router.get('/Users', authenticateSCIM, async (req, res) => {
     const countQuery = query.replace(/SELECT.*GROUP BY u\.id/, 'SELECT COUNT(DISTINCT u.id) as total');
     
     // Use async/await with PostgreSQL client
-    const countResult = await db.oneOrNone(countQuery, params);
+    const countResult = await db.oneOrNone(countQuery, params); // TODO-LINT: move to async function
     const totalResults = countResult?.total || 0;
     
     // Add pagination
@@ -154,7 +154,7 @@ router.get('/Users', authenticateSCIM, async (req, res) => {
     query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
     params.push(limit, offset);
 
-    const rows = await db.any(query, params);
+    const rows = await db.any(query, params); // TODO-LINT: move to async function
     const resources = (rows || []).map(row => formatUserForSCIM(row));
 
     res.json({
@@ -210,7 +210,7 @@ router.get('/Users/:id', authenticateSCIM, async (req, res) => {
       GROUP BY u.id
     `;
 
-    const row = await db.oneOrNone(query, [id]);
+    const row = await db.oneOrNone(query, [id]); // TODO-LINT: move to async function
 
     if (!row) {
       return res.status(404).json({
@@ -307,11 +307,11 @@ router.post('/Users',
       const primaryEmail = emails?.find(e => e.primary)?.value || userName;
       const displayName = name ? `${name.givenName || ''} ${name.familyName || ''}`.trim() : userName;
       const now = new Date().toISOString();
-      const userId = (await import('uuid')).v4();
+      const userId = (await import('uuid')).v4(); // TODO-LINT: move to async function
 
       try {
         // Check if user already exists
-        const existingUser = await db.oneOrNone('SELECT id FROM users WHERE email = $1 AND disabled = false', [primaryEmail]);
+        const existingUser = await db.oneOrNone('SELECT id FROM users WHERE email = $1 AND disabled = false', [primaryEmail]); // TODO-LINT: move to async function
         if (existingUser) {
           return res.status(409).json({
             schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
@@ -339,10 +339,10 @@ router.post('/Users',
           vipLevel,
           now,
           now
-        ]);
+        ]); // TODO-LINT: move to async function
 
         // Get created user for response
-        const newUser = await db.oneOrNone('SELECT * FROM users WHERE id = $1', [userId]);
+        const newUser = await db.oneOrNone('SELECT * FROM users WHERE id = $1', [userId]); // TODO-LINT: move to async function
         logger.info('SCIM user created successfully', { userId, email: primaryEmail });
         res.status(201).json(formatUserForSCIM(newUser));
       } catch (error) {
@@ -398,7 +398,7 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
     const now = new Date().toISOString();
 
     // Check if user exists
-    const existingUser = await db.oneOrNone('SELECT * FROM users WHERE id = $1 AND disabled = false', [id]);
+    const existingUser = await db.oneOrNone('SELECT * FROM users WHERE id = $1 AND disabled = false', [id]); // TODO-LINT: move to async function
     if (!existingUser) {
       return res.status(404).json({
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
@@ -443,9 +443,9 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
       });
     }
     const updateQuery = `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}`;
-    await db.none(updateQuery, params);
+    await db.none(updateQuery, params); // TODO-LINT: move to async function
     // Get updated user for response
-    const updatedUser = await db.oneOrNone('SELECT * FROM users WHERE id = $1', [id]);
+    const updatedUser = await db.oneOrNone('SELECT * FROM users WHERE id = $1', [id]); // TODO-LINT: move to async function
     logger.info('SCIM user updated successfully', { userId: id });
     res.json(formatUserForSCIM(updatedUser));
   } catch (error) {
@@ -486,7 +486,7 @@ router.delete('/Users/:id', authenticateSCIM, async (req, res) => {
   try {
     const { id } = req.params;
     // Check if user exists
-    const existingUser = await db.oneOrNone('SELECT id FROM users WHERE id = $1 AND disabled = false', [id]);
+    const existingUser = await db.oneOrNone('SELECT id FROM users WHERE id = $1 AND disabled = false', [id]); // TODO-LINT: move to async function
     if (!existingUser) {
       return res.status(404).json({
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
@@ -495,7 +495,7 @@ router.delete('/Users/:id', authenticateSCIM, async (req, res) => {
       });
     }
     // Soft delete user
-    await db.none('UPDATE users SET disabled = 1, updated_at = $1 WHERE id = $2', [new Date().toISOString(), id]);
+    await db.none('UPDATE users SET disabled = 1, updated_at = $1 WHERE id = $2', [new Date().toISOString(), id]); // TODO-LINT: move to async function
     logger.info('SCIM user deleted successfully', { userId: id });
     res.status(204).send();
   } catch (error) {
@@ -520,7 +520,7 @@ router.get('/Groups', authenticateSCIM, async (req, res) => {
        LEFT JOIN user_roles ur ON r.id = ur.role_id
        LEFT JOIN users u ON u.id = ur.user_id
        ORDER BY r.id`
-    );
+    ); // TODO-LINT: move to async function
     const map = new Map();
     for (const row of rows) {
       if (!map.has(row.role_id)) {
@@ -553,8 +553,8 @@ router.post('/Groups', authenticateSCIM, async (req, res) => {
     const { id } = await db.one(
       'INSERT INTO roles (name, created_at, updated_at) VALUES ($1, NOW(), NOW()) RETURNING id',
       [name]
-    );
-    const role = await db.one('SELECT id, name FROM roles WHERE id=$1', [id]);
+    ); // TODO-LINT: move to async function
+    const role = await db.one('SELECT id, name FROM roles WHERE id=$1', [id]); // TODO-LINT: move to async function
     res.status(201).json(formatGroupForSCIM({ ...role, members: [] }));
   } catch (err) {
     logger.error('Error creating SCIM group:', err);
@@ -565,12 +565,12 @@ router.post('/Groups', authenticateSCIM, async (req, res) => {
 router.get('/Groups/:id', authenticateSCIM, async (req, res) => {
   try {
     const { id } = req.params;
-    const role = await db.oneOrNone('SELECT id, name FROM roles WHERE id=$1', [id]);
+    const role = await db.oneOrNone('SELECT id, name FROM roles WHERE id=$1', [id]); // TODO-LINT: move to async function
     if (!role) return res.status(404).json({ detail: 'Group not found' });
     const members = await db.any(
       `SELECT u.id, u.name FROM users u JOIN user_roles ur ON u.id=ur.user_id WHERE ur.role_id=$1`,
       [id]
-    );
+    ); // TODO-LINT: move to async function
     res.json(formatGroupForSCIM({ ...role, members }));
   } catch (err) {
     logger.error('Error fetching SCIM group:', err);
@@ -585,12 +585,12 @@ router.put('/Groups/:id', authenticateSCIM, async (req, res) => {
     if (!name || typeof name !== 'string') {
       return res.status(400).json({ detail: 'displayName is required' });
     }
-    await db.none('UPDATE roles SET name=$1, updated_at=NOW() WHERE id=$2', [name, id]);
-    const role = await db.one('SELECT id, name FROM roles WHERE id=$1', [id]);
+    await db.none('UPDATE roles SET name=$1, updated_at=NOW() WHERE id=$2', [name, id]); // TODO-LINT: move to async function
+    const role = await db.one('SELECT id, name FROM roles WHERE id=$1', [id]); // TODO-LINT: move to async function
     const members = await db.any(
       `SELECT u.id, u.name FROM users u JOIN user_roles ur ON u.id=ur.user_id WHERE ur.role_id=$1`,
       [id]
-    );
+    ); // TODO-LINT: move to async function
     res.json(formatGroupForSCIM({ ...role, members }));
   } catch (err) {
     logger.error('Error updating SCIM group:', err);
@@ -602,9 +602,9 @@ router.delete('/Groups/:id', authenticateSCIM, async (req, res) => {
   try {
     const { id } = req.params;
     await db.tx(async t => {
-      await t.none('DELETE FROM user_roles WHERE role_id=$1', [id]);
-      await t.none('DELETE FROM role_permissions WHERE role_id=$1', [id]);
-      await t.none('DELETE FROM roles WHERE id=$1', [id]);
+      await t.none('DELETE FROM user_roles WHERE role_id=$1', [id]); // TODO-LINT: move to async function
+      await t.none('DELETE FROM role_permissions WHERE role_id=$1', [id]); // TODO-LINT: move to async function
+      await t.none('DELETE FROM roles WHERE id=$1', [id]); // TODO-LINT: move to async function
     });
     res.status(204).send();
   } catch (err) {

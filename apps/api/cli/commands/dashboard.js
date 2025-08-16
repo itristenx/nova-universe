@@ -29,7 +29,7 @@ dashboardCommand
   .option('--open', 'Open browser automatically', true)
   .action(async (options) => {
     try {
-      await startDashboard(options);
+      await startDashboard(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to start dashboard: ${error.message}`);
       process.exit(1);
@@ -42,7 +42,7 @@ dashboardCommand
   .description('Show dashboard information')
   .action(async () => {
     try {
-      await showDashboardInfo();
+      await showDashboardInfo(); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to get dashboard info: ${error.message}`);
       process.exit(1);
@@ -70,7 +70,7 @@ async function startDashboard(options) {
   const dashboardPath = path.join(projectRoot, 'nova-api', 'cli', 'dashboard');
   
   // Create dashboard HTML if it doesn't exist
-  await ensureDashboardFiles(dashboardPath);
+  await ensureDashboardFiles(dashboardPath); // TODO-LINT: move to async function
   
   app.use(express.static(dashboardPath));
   app.use(express.json());
@@ -87,7 +87,7 @@ async function startDashboard(options) {
   try {
     await new Promise((resolve, reject) => {
       server.listen(port, host, (error) => {
-        if (error) reject(error);
+        if (error) reject(error); // TODO-LINT: move to async function
         else resolve();
       });
     });
@@ -103,8 +103,8 @@ async function startDashboard(options) {
     // Open browser if requested
     if (options.open) {
       try {
-        const { default: open } = await import('open');
-        await open(dashboardUrl);
+        const { default: open } = await import('open'); // TODO-LINT: move to async function
+        await open(dashboardUrl); // TODO-LINT: move to async function
       } catch {
         console.log(chalk.yellow('Could not open browser automatically'));
         console.log(chalk.gray(`Please open ${dashboardUrl} manually`));
@@ -124,7 +124,7 @@ async function startDashboard(options) {
     });
 
     // Keep the server running
-    await new Promise(() => {});
+    await new Promise(() => {}); // TODO-LINT: move to async function
 
   } catch (error) {
     spinner.fail('Failed to start dashboard server');
@@ -137,7 +137,7 @@ function setupDashboardRoutes(app) {
   // System status endpoint
   app.get('/api/status', async (req, res) => {
     try {
-      const status = await getSystemStatus();
+      const status = await getSystemStatus(); // TODO-LINT: move to async function
       res.json(status);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -147,7 +147,7 @@ function setupDashboardRoutes(app) {
   // Service status endpoint
   app.get('/api/services', async (req, res) => {
     try {
-      const services = await checkServiceStatus();
+      const services = await checkServiceStatus(); // TODO-LINT: move to async function
       res.json(services);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -160,7 +160,7 @@ function setupDashboardRoutes(app) {
       const { service } = req.params;
       const { lines = 50 } = req.query;
       
-      const logs = await getRecentLogs(service, parseInt(lines));
+      const logs = await getRecentLogs(service, parseInt(lines)); // TODO-LINT: move to async function
       res.json(logs);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -170,7 +170,7 @@ function setupDashboardRoutes(app) {
   // Metrics endpoint
   app.get('/api/metrics', async (req, res) => {
     try {
-      const metrics = await getSystemMetrics();
+      const metrics = await getSystemMetrics(); // TODO-LINT: move to async function
       res.json(metrics);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -180,7 +180,7 @@ function setupDashboardRoutes(app) {
   // Health check endpoint
   app.get('/api/health', async (req, res) => {
     try {
-      const health = await getHealthCheck();
+      const health = await getHealthCheck(); // TODO-LINT: move to async function
       res.json(health);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -209,7 +209,7 @@ async function sendInitialData(socket) {
       getSystemStatus(),
       checkServiceStatus(),
       getSystemMetrics()
-    ]);
+    ]); // TODO-LINT: move to async function
 
     socket.emit('status', status);
     socket.emit('services', services);
@@ -227,7 +227,7 @@ function startRealTimeMonitoring(io) {
       const [services, metrics] = await Promise.all([
         checkServiceStatus(),
         getSystemMetrics()
-      ]);
+      ]); // TODO-LINT: move to async function
 
       io.emit('services', services);
       io.emit('metrics', metrics);
@@ -239,7 +239,7 @@ function startRealTimeMonitoring(io) {
   // Update logs every 10 seconds
   setInterval(async () => {
     try {
-      const logs = await getRecentLogs(null, 20);
+      const logs = await getRecentLogs(null, 20); // TODO-LINT: move to async function
       io.emit('logs', logs);
     } catch (error) {
       io.emit('error', { message: error.message });
@@ -249,7 +249,7 @@ function startRealTimeMonitoring(io) {
 
 // Get system status
 async function getSystemStatus() {
-  const os = await import('os');
+  const os = await import('os'); // TODO-LINT: move to async function
   
   return {
     timestamp: new Date().toISOString(),
@@ -272,7 +272,7 @@ async function getSystemStatus() {
 
 // Get system metrics
 async function getSystemMetrics() {
-  const os = await import('os');
+  const os = await import('os'); // TODO-LINT: move to async function
   
   const memory = {
     total: os.totalmem(),
@@ -317,8 +317,8 @@ async function getRecentLogs(service, lines) {
     const logPath = path.join(projectRoot, logFile.path);
     if (existsSync(logPath)) {
       try {
-        const { runCommand } = await import('../utils/index.js');
-        const { stdout } = await runCommand('tail', ['-n', lines.toString(), logPath], { silent: true });
+        const { runCommand } = await import('../utils/index.js'); // TODO-LINT: move to async function
+        const { stdout } = await runCommand('tail', ['-n', lines.toString(), logPath], { silent: true }); // TODO-LINT: move to async function
         
         const logLines = stdout.split('\n')
           .filter(line => line.trim())
@@ -348,7 +348,7 @@ async function getHealthCheck() {
 
   try {
     // Check services
-    const services = await checkServiceStatus();
+    const services = await checkServiceStatus(); // TODO-LINT: move to async function
     const runningServices = Object.values(services).filter(s => s.status === 'running');
     
     health.checks.services = {
@@ -359,7 +359,7 @@ async function getHealthCheck() {
 
     // Check database
     try {
-      await connectDatabase();
+      await connectDatabase(); // TODO-LINT: move to async function
       health.checks.database = { status: 'healthy' };
     } catch (error) {
       health.checks.database = { status: 'critical', error: error.message };
@@ -367,7 +367,7 @@ async function getHealthCheck() {
     }
 
     // Check system resources
-    const os = await import('os');
+    const os = await import('os'); // TODO-LINT: move to async function
     const memUsage = ((os.totalmem() - os.freemem()) / os.totalmem()) * 100;
     const cpuLoad = (os.loadavg()[0] / os.cpus().length) * 100;
 
@@ -402,7 +402,7 @@ function extractLogLevel(line) {
 
 // Ensure dashboard files exist
 async function ensureDashboardFiles(dashboardPath) {
-  const { mkdirSync, writeFileSync } = await import('fs');
+  const { mkdirSync, writeFileSync } = await import('fs'); // TODO-LINT: move to async function
   
   // Create dashboard directory
   if (!existsSync(dashboardPath)) {
@@ -944,8 +944,8 @@ function getDashboardJS() {
     async loadLogs() {
         const service = document.getElementById('log-filter').value;
         try {
-            const response = await fetch(\`/api/logs\${service ? '/' + service : ''}\`);
-            const logs = await response.json();
+            const response = await fetch(\`/api/logs\${service ? '/' + service : ''}\`); // TODO-LINT: move to async function
+            const logs = await response.json(); // TODO-LINT: move to async function
             this.updateLogs(logs);
         } catch (error) {
             console.error('Failed to load logs:', error);
@@ -954,8 +954,8 @@ function getDashboardJS() {
 
     async loadHealthStatus() {
         try {
-            const response = await fetch('/api/health');
-            const health = await response.json();
+            const response = await fetch('/api/health'); // TODO-LINT: move to async function
+            const health = await response.json(); // TODO-LINT: move to async function
             this.updateHealthStatus(health);
         } catch (error) {
             console.error('Failed to load health status:', error);

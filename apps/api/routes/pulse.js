@@ -311,7 +311,7 @@ router.post('/tickets',
       const { title, description, priority, requestedById } = req.body;
       const now = new Date();
 
-      const vipRow = await db.oneOrNone('SELECT is_vip, vip_level, vip_sla_override FROM users WHERE id = $1', [requestedById]);
+      const vipRow = await db.oneOrNone('SELECT is_vip, vip_level, vip_sla_override FROM users WHERE id = $1', [requestedById]); // TODO-LINT: move to async function
 
       const dueDate = new Date(now);
       switch (priority) {
@@ -349,7 +349,7 @@ router.post('/tickets',
       await db.none(
         'INSERT INTO tickets (id, ticket_id, title, description, priority, status, requested_by_id, assigned_to_id, due_date, created_at, updated_at, vip_priority_score, vip_trigger_source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
         [newId, ticketId, title, description, priority, 'open', requestedById, req.user.id, dueDate.toISOString(), now.toISOString(), now.toISOString(), vipWeight, 'api']
-      );
+      ); // TODO-LINT: move to async function
 
       // Add audit logging for VIP ticket creation
       if (vipRow?.is_vip) {
@@ -369,12 +369,12 @@ router.post('/tickets',
             }),
             now.toISOString()
           ]
-        );
+        ); // TODO-LINT: move to async function
       }
 
       const failoverWindow = vipRow?.vip_sla_override?.failoverMinutes || 60;
       if (vipRow?.is_vip && dueDate.getTime() - now.getTime() < failoverWindow*60000) {
-        await notifyCosmoEscalation(ticketId, 'failover_escalation');
+        await notifyCosmoEscalation(ticketId, 'failover_escalation'); // TODO-LINT: move to async function
         
         // Add audit logging for Cosmo escalation
         await db.none(
@@ -391,7 +391,7 @@ router.post('/tickets',
             }),
             now.toISOString()
           ]
-        );
+        ); // TODO-LINT: move to async function
       }
 
       res.status(201).json({ success:true, ticketId, vipWeight });
@@ -752,11 +752,11 @@ router.put('/tickets/:ticketId/update',
                     }),
                     new Date().toISOString()
                   ]
-                );
+                ); // TODO-LINT: move to async function
 
                 // Check for VIP escalation conditions
                 if (status === 'on_hold' || (status === 'resolved' && ticket.vip_level === 'exec')) {
-                  await notifyCosmoEscalation(ticketId, status === 'on_hold' ? 'vip_hold_escalation' : 'vip_resolution_confirmation');
+                  await notifyCosmoEscalation(ticketId, status === 'on_hold' ? 'vip_hold_escalation' : 'vip_resolution_confirmation'); // TODO-LINT: move to async function
                   
                   await db.none(
                     'INSERT INTO audit_logs (id, action, user_id, ticket_id, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
@@ -772,7 +772,7 @@ router.put('/tickets/:ticketId/update',
                       }),
                       new Date().toISOString()
                     ]
-                  );
+                  ); // TODO-LINT: move to async function
                 }
               } catch (auditErr) {
                 logger.error('Error logging VIP audit activity:', auditErr);
@@ -979,7 +979,7 @@ router.get('/timesheet',
         AND t.actual_time_minutes > 0
         AND DATE(t.updated_at) BETWEEN $2 AND $3
         ORDER BY t.updated_at DESC
-      `, [userId, start, end]);
+      `, [userId, start, end]); // TODO-LINT: move to async function
 
       const timesheet = (rows || []).map(row => ({
         ticketId: row.ticket_id,
@@ -1021,7 +1021,7 @@ router.get('/alerts',
     }
     try {
       const sanitizedQueue = req.query.queue;
-      const alerts = await db.findDocuments('alerts', { queue: sanitizedQueue });
+      const alerts = await db.findDocuments('alerts', { queue: sanitizedQueue }); // TODO-LINT: move to async function
       res.json({ success: true, alerts });
     } catch (err) {
       logger.error('Error fetching alerts:', err);
@@ -1043,7 +1043,7 @@ router.get('/inventory',
       res.status(500).json({ success: false, error: 'Failed to fetch inventory', errorCode: 'INVENTORY_ERROR' })
     }
   }
-);
+); // TODO-LINT: move to async function
 
 // Ticket history
 router.get('/tickets/:ticketId/history',
@@ -1092,7 +1092,7 @@ router.get('/tickets/:ticketId/related',
   async (req, res) => {
     try {
       const { ticketId } = req.params;
-      const ticket = await db.getAsync('SELECT requested_by_id FROM tickets WHERE ticket_id = ?', [ticketId]);
+      const ticket = await db.getAsync('SELECT requested_by_id FROM tickets WHERE ticket_id = ?', [ticketId]); // TODO-LINT: move to async function
       if (!ticket) {
         return res.status(404).json({ success: false, error: 'Ticket not found', errorCode: 'TICKET_NOT_FOUND' });
       }
@@ -1111,7 +1111,7 @@ router.get('/tickets/:ticketId/related',
           WHERE assigned_to_user_id = ?
           LIMIT 5
         `, [ticket.requested_by_id])
-      ]);
+      ]); // TODO-LINT: move to async function
 
       res.json({ success: true, tickets: relatedTickets || [], assets: assets || [] });
     } catch (error) {
@@ -1166,7 +1166,7 @@ router.post('/xp',
       res.status(500).json({ success: false, error: 'Failed to record XP', errorCode: 'XP_ERROR' })
     }
   }
-);
+); // TODO-LINT: move to async function
 
 // Mount enhanced inventory routes
 router.use('/inventory', pulseInventoryRouter);
@@ -1183,15 +1183,15 @@ router.get('/queues/metrics',
         const result = await db.query(
           'SELECT * FROM queue_metrics WHERE queue_name = $1',
           [queue]
-        );
+        ); // TODO-LINT: move to async function
         
         if (!result.rows || result.rows.length === 0) {
           // Calculate and create metrics for the queue if not exists
-          await calculateAndUpdateQueueMetrics(queue);
+          await calculateAndUpdateQueueMetrics(queue); // TODO-LINT: move to async function
           const newResult = await db.query(
             'SELECT * FROM queue_metrics WHERE queue_name = $1',
             [queue]
-          );
+          ); // TODO-LINT: move to async function
           return res.json({ success: true, metrics: newResult.rows[0] || null });
         }
         
@@ -1201,7 +1201,7 @@ router.get('/queues/metrics',
       // Return all queue metrics
       const result = await db.query(
         'SELECT * FROM queue_metrics ORDER BY queue_name'
-      );
+      ); // TODO-LINT: move to async function
       
       res.json({ success: true, metrics: result.rows });
     } catch (error) {
@@ -1238,7 +1238,7 @@ router.get('/queues/:queueName/agents',
         WHERE aa.queue_name = $1
         GROUP BY aa.id, u.id
         ORDER BY aa.is_available DESC, aa.current_load ASC
-      `, [queueName]);
+      `, [queueName]); // TODO-LINT: move to async function
       
       res.json({ success: true, agents: result.rows });
     } catch (error) {
@@ -1272,10 +1272,10 @@ router.post('/queues/:queueName/agents/availability',
           status = EXCLUDED.status,
           max_capacity = EXCLUDED.max_capacity,
           last_updated = CURRENT_TIMESTAMP
-      `, [userId, queueName, isAvailable, status || 'active', maxCapacity || 10]);
+      `, [userId, queueName, isAvailable, status || 'active', maxCapacity || 10]); // TODO-LINT: move to async function
       
       // Update queue metrics
-      await calculateAndUpdateQueueMetrics(queueName);
+      await calculateAndUpdateQueueMetrics(queueName); // TODO-LINT: move to async function
       
       res.json({ success: true });
     } catch (error) {
@@ -1306,7 +1306,7 @@ router.get('/queues/alerts',
       
       query += ' ORDER BY alerted_at DESC';
       
-      const result = await db.query(query, params);
+      const result = await db.query(query, params); // TODO-LINT: move to async function
       res.json({ success: true, alerts: result.rows });
     } catch (error) {
       logger.error('Error fetching queue alerts:', error);
@@ -1319,7 +1319,7 @@ router.get('/queues/alerts',
   }
 );
 
-// Helper function to calculate and update queue metrics
+// Helper function to _calculate and update queue metrics
 async function calculateAndUpdateQueueMetrics(queueName) {
   try {
     // Get agent counts
@@ -1331,7 +1331,7 @@ async function calculateAndUpdateQueueMetrics(queueName) {
         SUM(CASE WHEN is_available = true THEN current_load ELSE 0 END) as total_load
       FROM agent_availability 
       WHERE queue_name = $1
-    `, [queueName]);
+    `, [queueName]); // TODO-LINT: move to async function
     
     const agentStats = agentResult.rows[0] || {};
     
@@ -1346,7 +1346,7 @@ async function calculateAndUpdateQueueMetrics(queueName) {
             ELSE NULL END) as avg_resolution_time_hours
       FROM tickets 
       WHERE category = $1 AND deleted_at IS NULL
-    `, [queueName]);
+    `, [queueName]); // TODO-LINT: move to async function
     
     const ticketStats = ticketResult.rows[0] || {};
     
@@ -1391,15 +1391,15 @@ async function calculateAndUpdateQueueMetrics(queueName) {
       capacityUtilization,
       thresholdWarning,
       thresholdCritical
-    ]);
+    ]); // TODO-LINT: move to async function
     
     // Create alerts if thresholds exceeded
     if (thresholdCritical) {
       await createQueueAlert(queueName, 'critical', 
-        `Queue ${queueName} has exceeded 90% capacity utilization (${capacityUtilization.toFixed(1)}%)`);
+        `Queue ${queueName} has exceeded 90% capacity utilization (${capacityUtilization.toFixed(1)}%)`); // TODO-LINT: move to async function
     } else if (thresholdWarning) {
       await createQueueAlert(queueName, 'warning', 
-        `Queue ${queueName} has exceeded 70% capacity utilization (${capacityUtilization.toFixed(1)}%)`);
+        `Queue ${queueName} has exceeded 70% capacity utilization (${capacityUtilization.toFixed(1)}%)`); // TODO-LINT: move to async function
     }
     
   } catch (error) {
@@ -1415,13 +1415,13 @@ async function createQueueAlert(queueName, alertType, message) {
     const existingResult = await db.query(`
       SELECT id FROM queue_alerts 
       WHERE queue_name = $1 AND alert_type = $2 AND is_active = true
-    `, [queueName, alertType]);
+    `, [queueName, alertType]); // TODO-LINT: move to async function
     
     if (!existingResult.rows || existingResult.rows.length === 0) {
       await db.query(`
         INSERT INTO queue_alerts (queue_name, alert_type, message, alerted_at)
         VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-      `, [queueName, alertType, message]);
+      `, [queueName, alertType, message]); // TODO-LINT: move to async function
       
       logger.info(`Queue alert created: ${alertType} for ${queueName}`);
     }

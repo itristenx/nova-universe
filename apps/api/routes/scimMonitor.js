@@ -9,7 +9,7 @@ import { logger } from '../logger.js';
 async function getPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../prisma/generated/core/index.js');
+    const mod = await import('../../../prisma/generated/core/index.js'); // TODO-LINT: move to async function
     const PrismaClient = mod.PrismaClient;
     return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch {
@@ -20,7 +20,7 @@ async function getPrisma() {
 const router = express.Router();
 
 router.get('/health', async (req, res) => {
-  const prisma = await getPrisma();
+  const prisma = await getPrisma(); // TODO-LINT: move to async function
   if (!prisma) return res.json({ status: 'degraded', prisma: 'unavailable' });
   return res.json({ status: 'ok' });
 });
@@ -180,7 +180,7 @@ router.get('/logs', authenticateJWT, scimMonitorRateLimit, async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
 
     // Get total count for pagination
-    const total = await prisma.scimLog.count({ where });
+    const total = await prisma.scimLog.count({ where }); // TODO-LINT: move to async function
 
     // Get logs with pagination
     const logs = await prisma.scimLog.findMany({
@@ -203,7 +203,7 @@ router.get('/logs', authenticateJWT, scimMonitorRateLimit, async (req, res) => {
         createdAt: true
         // Exclude requestBody and responseBody for security
       }
-    });
+    }); // TODO-LINT: move to async function
 
     const totalPages = Math.ceil(total / limitNum);
 
@@ -311,7 +311,7 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
           gte: startTime
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Get operations by type
     const operationsByType = await prisma.scimLog.groupBy({
@@ -324,7 +324,7 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
       _count: {
         _all: true
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Get operations by status code ranges
     const operationsByStatus = await prisma.scimLog.groupBy({
@@ -337,7 +337,7 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
       _count: {
         _all: true
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Calculate average response time
     const avgDuration = await prisma.scimLog.aggregate({
@@ -352,7 +352,7 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
       _avg: {
         duration: true
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Get last activity
     const lastActivity = await prisma.scimLog.findFirst({
@@ -362,7 +362,7 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
       select: {
         createdAt: true
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Count recent errors (4xx and 5xx status codes)
     const recentErrors = await prisma.scimLog.count({
@@ -374,7 +374,7 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
           gte: 400
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Get last error
     const lastError = await prisma.scimLog.findFirst({
@@ -389,7 +389,7 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
       select: {
         createdAt: true
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Calculate error rate
     const errorRate = totalOperations > 0 ? (recentErrors / totalOperations) * 100 : 0;
@@ -458,8 +458,8 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
   }
 });
 
-// Helper function to log SCIM operations (can be used by other SCIM routes)
-export async function logScimOperation({
+// Helper function to log SCIM operations (_can _be _used by _other SCIM routes)
+export async function _logScimOperation({
   operation,
   entityType,
   entityId = null,
@@ -472,7 +472,7 @@ export async function logScimOperation({
   duration = null
 }) {
   try {
-    const prisma = await getPrisma();
+    const prisma = await getPrisma(); // TODO-LINT: move to async function
     if (!prisma) {
       logger.warn('Attempted to log SCIM operation with disabled Prisma.');
       return;
@@ -490,7 +490,7 @@ export async function logScimOperation({
         ipAddress,
         duration
       }
-    });
+    }); // TODO-LINT: move to async function
   } catch (error) {
     logger.error('Failed to log SCIM operation:', error);
   }

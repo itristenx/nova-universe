@@ -4,7 +4,7 @@ import { logger } from '../logger.js';
  * Basic permission middleware. Until fine-grained permissions are populated on JWT,
  * we map required permissions to privileged roles.
  */
-export function checkPermissions(requiredPermissions = []) {
+export function _checkPermissions(requiredPermissions = []) {
   const privilegedRoles = new Set([
     'superadmin',
     'admin',

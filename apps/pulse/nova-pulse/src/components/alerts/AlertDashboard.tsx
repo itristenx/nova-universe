@@ -77,10 +77,10 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
 
       const response = await fetch(`/api/v2/alerts/stats?${params}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) throw new Error('Failed to fetch alert stats');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.stats;
     },
     refetchInterval: dashboardState.refreshInterval
@@ -102,10 +102,10 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
 
       const response = await fetch(`/api/v2/alerts/history?${params}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) throw new Error('Failed to fetch alerts');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.alerts;
     },
     refetchInterval: dashboardState.refreshInterval
@@ -117,10 +117,10 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
     queryFn: async (): Promise<Schedule[]> => {
       const response = await fetch('/api/v2/alerts/schedules?active=true', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) throw new Error('Failed to fetch schedules');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.schedules;
     },
     refetchInterval: dashboardState.refreshInterval
@@ -135,7 +135,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) throw new Error('Failed to acknowledge alert');
       return response.json();
@@ -155,7 +155,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) throw new Error('Failed to resolve alert');
       return response.json();
@@ -176,7 +176,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ reason })
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) throw new Error('Failed to escalate alert');
       return response.json();

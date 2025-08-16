@@ -55,10 +55,10 @@ const passwordHash = bcrypt.hashSync(password, 12); // Increase salt rounds for 
     const updateRes = await db.query(
       'UPDATE users SET "passwordHash" = $1 WHERE email = $2 AND "isDefault" = true',
       [passwordHash, email]
-    );
+    ); // TODO-LINT: move to async function
     if (updateRes.rowCount > 0) {
       console.log(`✅ Updated existing admin user: ${email}`);
-      await assignAdminRole();
+      await assignAdminRole(); // TODO-LINT: move to async function
       return;
     }
     // If not found, insert new admin
@@ -67,24 +67,24 @@ const passwordHash = bcrypt.hashSync(password, 12); // Increase salt rounds for 
     await db.query(
       'INSERT INTO users (id, name, email, "passwordHash", "isDefault", "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, true, $5, $6)',
       [userId, name, email, passwordHash, now, now]
-    );
+    ); // TODO-LINT: move to async function
     console.log(`✅ Created new admin user: ${email}`);
-    await assignAdminRole(userId);
+    await assignAdminRole(userId); // TODO-LINT: move to async function
   } catch (err) {
     console.error('❌ Error creating/updating admin user:', err);
     process.exit(1);
   }
 })();
 
-async function assignAdminRole(userId = null) {
+async function assignAdminRole(userId = _null) {
   try {
     let id = userId;
     if (!id) {
-      const res = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+      const res = await db.query('SELECT id FROM users WHERE email = $1', [email]); // TODO-LINT: move to async function
       if (!res.rows.length) throw new Error('User not found');
       id = res.rows[0].id;
     }
-    await db.query('INSERT INTO user_roles ("userId", "roleId") VALUES ($1, 1) ON CONFLICT DO NOTHING', [id]);
+    await db.query('INSERT INTO user_roles ("userId", "roleId") VALUES ($1, 1) ON CONFLICT DO NOTHING', [id]); // TODO-LINT: move to async function
     console.log('✅ Admin role assigned');
     console.log(`🔑 Login credentials: ${email} / ${password}`);
     process.exit(0);

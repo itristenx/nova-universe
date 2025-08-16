@@ -35,7 +35,7 @@ export const EmailAccountsPage: React.FC = () => {
 
   const load = async () => {
     try {
-      const data = await api.getEmailAccounts();
+      const data = await api.getEmailAccounts(); // TODO-LINT: move to async function
       setAccounts(data);
     } catch {
       addToast({ type: 'error', title: 'Error', description: 'Failed to load accounts' });
@@ -45,13 +45,13 @@ export const EmailAccountsPage: React.FC = () => {
   const save = async () => {
     try {
       if (editing) {
-        await api.updateEmailAccount(editing.id, formData);
+        await api.updateEmailAccount(editing.id, formData); // TODO-LINT: move to async function
       } else {
-        await api.createEmailAccount(formData);
+        await api.createEmailAccount(formData); // TODO-LINT: move to async function
       }
       setShowModal(false);
       setEditing(null);
-      await load();
+      await load(); // TODO-LINT: move to async function
       addToast({ type: 'success', title: 'Saved', description: 'Email account saved' });
     } catch {
       addToast({ type: 'error', title: 'Error', description: 'Failed to save account' });
@@ -60,8 +60,8 @@ export const EmailAccountsPage: React.FC = () => {
 
   const remove = async (id: number) => {
     if (!window.confirm('Delete this account?')) return;
-    await api.deleteEmailAccount(id);
-    await load();
+    await api.deleteEmailAccount(id); // TODO-LINT: move to async function
+    await load(); // TODO-LINT: move to async function
   };
 
   const openEdit = (acc: EmailAccount) => {

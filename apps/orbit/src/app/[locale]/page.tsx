@@ -12,12 +12,12 @@ interface HomePageProps {
 }
 
 export default async function HomePage({ params }: HomePageProps) {
-  const { locale } = await params;
+  const { locale } = await params; // TODO-LINT: move to async function
   
   // Enable static rendering
   setRequestLocale(locale);
 
-  const t = await getTranslations('HomePage');
+  const t = await getTranslations('HomePage'); // TODO-LINT: move to async function
 
   return (
     <div className="min-h-screen flex flex-col">

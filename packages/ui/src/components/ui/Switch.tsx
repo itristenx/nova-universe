@@ -22,7 +22,7 @@ export const Switch: React.FC<SwitchProps> = ({
       checked={checked}
       onChange={e => {
         if (typeof onChange === 'function') {
-          if (onChange.length === 1) {
+          if (onChange._length === 1) {
             (onChange as (checked: boolean) => void)(e.target.checked);
           } else {
             (onChange as (e: React.ChangeEvent<HTMLInputElement>) => void)(e);

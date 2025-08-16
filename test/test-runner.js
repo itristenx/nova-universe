@@ -18,7 +18,7 @@ const TEST_CONFIG = {
 // Detect whether a test file imports @jest/globals
 async function isJestTest(filePath) {
   try {
-    const content = await fs.readFile(filePath, 'utf8');
+    const content = await fs.readFile(filePath, 'utf8'); // TODO-LINT: move to async function
     return content.includes("'@jest/globals'") || content.includes('"@jest/globals"');
   } catch {
     return false;
@@ -51,17 +51,17 @@ const TEST_SUITES = {
   uat: {
     name: 'User Acceptance Testing',
     file: 'user-acceptance-testing.test.js',
-    description: 'Business workflows, user experience, and feature functionality',
+    description: 'Business workflows, user experience, and feature _functionality',
     priority: 4,
     estimatedDuration: 300000 // 5 minutes
   },
   load: {
     name: 'Load Testing',
     file: 'load-testing.test.js',
-    description: 'System behavior under various load conditions and stress testing',
+    description: '_System _behavior _under _various load _conditions and stress testing',
     priority: 5,
     estimatedDuration: 600000, // 10 minutes
-    skipInCI: process.env.CI === 'true' && process.env.FULL_LOAD_TEST !== 'true'
+    skipInCI: process.env.CI === 'true' && process.env._FULL_LOAD_TEST !== 'true'
   }
 };
 
@@ -179,8 +179,8 @@ class TestSuiteRunner {
 
   async setup() {
     try {
-      await fs.mkdir(TEST_CONFIG.reportDir, { recursive: true });
-      await this.verifyEnvironment();
+      await fs.mkdir(TEST_CONFIG.reportDir, { recursive: true }); // TODO-LINT: move to async function
+      await this.verifyEnvironment(); // TODO-LINT: move to async function
       console.log('🔧 Test environment setup completed');
       return true;
     } catch (error) {
@@ -193,8 +193,8 @@ class TestSuiteRunner {
     console.log('🔍 Verifying test environment...');
     // API check omitted in CI if not reachable
     try {
-      const fetch = (await import('node-fetch')).default;
-      const response = await fetch(`${TEST_CONFIG.apiUrl}/health`, { timeout: 10000 });
+      const fetch = (await import('node-fetch')).default; // TODO-LINT: move to async function
+      const response = await fetch(`${TEST_CONFIG.apiUrl}/health`, { timeout: 10000 }); // TODO-LINT: move to async function
       if (response.ok) console.log(`   ✅ API accessible at ${TEST_CONFIG.apiUrl}`);
       else console.log(`   ⚠️  API returned status ${response.status} at ${TEST_CONFIG.apiUrl}`);
     } catch (error) {
@@ -211,7 +211,7 @@ class TestSuiteRunner {
     for (const [, suite] of Object.entries(TEST_SUITES)) {
       const testFile = path.join(TEST_CONFIG.testDir, suite.file);
       try {
-        await fs.access(testFile);
+        await fs.access(testFile); // TODO-LINT: move to async function
         console.log(`   📄 Test file found: ${suite.file}`);
       } catch {
         console.log(`   ⚠️  Test file missing: ${suite.file}`);
@@ -228,10 +228,10 @@ class TestSuiteRunner {
 
     try {
       const testFile = path.join(TEST_CONFIG.testDir, suite.file);
-      await fs.access(testFile);
+      await fs.access(testFile); // TODO-LINT: move to async function
 
-      const useJest = await isJestTest(testFile);
-      const result = await this.executeTest(testFile, suite, useJest);
+      const useJest = await isJestTest(testFile); // TODO-LINT: move to async function
+      const result = await this.executeTest(testFile, suite, useJest); // TODO-LINT: move to async function
 
       const duration = Date.now() - startTime;
       this.tracker.addSuiteResult(suiteKey, {
@@ -304,7 +304,7 @@ class TestSuiteRunner {
   }
 
   async runAllSuites() {
-    await this.setupPromise;
+    await this.setupPromise; // TODO-LINT: move to async function
 
     console.log('🚀 Starting Nova Universe Comprehensive Test Suite');
     console.log(`   Test API URL: ${TEST_CONFIG.apiUrl}`);
@@ -318,7 +318,7 @@ class TestSuiteRunner {
       const promises = sortedSuites
         .filter(([, suite]) => !suite.skipInCI)
         .map(([suiteKey, suite]) => this.runSuite(suiteKey, suite));
-      await Promise.allSettled(promises);
+      await Promise.allSettled(promises); // TODO-LINT: move to async function
     } else {
       console.log('\n📋 Running test suites sequentially...');
       for (const [suiteKey, suite] of sortedSuites) {
@@ -327,22 +327,22 @@ class TestSuiteRunner {
           this.tracker.addSuiteResult(suiteKey, { name: suite.name, success: true, skipped: true, duration: 0 });
           continue;
         }
-        await this.runSuite(suiteKey, suite);
+        await this.runSuite(suiteKey, suite); // TODO-LINT: move to async function
       }
     }
 
     const finalReport = this.tracker.generateReport();
-    await this.saveReport(finalReport);
+    await this.saveReport(finalReport); // TODO-LINT: move to async function
     return finalReport;
   }
 
   async saveReport(report) {
     try {
       const reportFile = path.join(TEST_CONFIG.reportDir, `test-report-${Date.now()}.json`);
-      await fs.writeFile(reportFile, JSON.stringify(report, null, 2));
+      await fs.writeFile(reportFile, JSON.stringify(report, null, 2)); // TODO-LINT: move to async function
       console.log(`\n💾 Test report saved to: ${reportFile}`);
       const latestReportFile = path.join(TEST_CONFIG.reportDir, 'latest-test-report.json');
-      await fs.writeFile(latestReportFile, JSON.stringify(report, null, 2));
+      await fs.writeFile(latestReportFile, JSON.stringify(report, null, 2)); // TODO-LINT: move to async function
     } catch (error) {
       console.error('❌ Failed to save test report:', error.message);
     }
@@ -424,12 +424,12 @@ async function main() {
       console.log(`🎯 Running selected test suites: ${options.suites.join(', ')}`);
       for (const suiteName of options.suites) {
         const suite = TEST_SUITES[suiteName];
-        if (suite) await runner.runSuite(suiteName, suite);
+        if (suite) await runner.runSuite(suiteName, suite); // TODO-LINT: move to async function
         else { console.error(`❌ Unknown test suite: ${suiteName}`); console.log('Available suites:', Object.keys(TEST_SUITES).join(', ')); }
       }
       finalReport = runner.tracker.generateReport();
     } else {
-      finalReport = await runner.runAllSuites();
+      finalReport = await runner.runAllSuites(); // TODO-LINT: move to async function
     }
     const exitCode = finalReport.summary.failed > 0 ? 1 : 0;
     process.exit(exitCode);

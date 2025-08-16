@@ -238,11 +238,11 @@ export default function Button({
 }
 
 // Named exports for different button types
-export const PrimaryButton = (props) => <Button variant="primary" {...props} />;
-export const SecondaryButton = (props) => <Button variant="secondary" {...props} />;
-export const AccentButton = (props) => <Button variant="accent" {...props} />;
-export const OutlineButton = (props) => <Button variant="outline" {...props} />;
-export const GhostButton = (props) => <Button variant="ghost" {...props} />;
-export const SuccessButton = (props) => <Button variant="success" {...props} />;
-export const WarningButton = (props) => <Button variant="warning" {...props} />;
-export const ErrorButton = (props) => <Button variant="error" {...props} />;
+export const _PrimaryButton = (props) => <Button variant="primary" {...props} />;
+export const _SecondaryButton = (props) => <Button variant="secondary" {...props} />;
+export const _AccentButton = (props) => <Button variant="accent" {...props} />;
+export const _OutlineButton = (props) => <Button variant="outline" {...props} />;
+export const _GhostButton = (props) => <Button variant="ghost" {...props} />;
+export const _SuccessButton = (props) => <Button variant="success" {...props} />;
+export const _WarningButton = (props) => <Button variant="warning" {...props} />;
+export const _ErrorButton = (props) => <Button variant="error" {...props} />;

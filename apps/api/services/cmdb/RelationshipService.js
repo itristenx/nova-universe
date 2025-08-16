@@ -3,7 +3,7 @@ import { logger } from '../../logger.js';
 async function getCmdbPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../../prisma/generated/cmdb/index.js');
+    const mod = await import('../../../../prisma/generated/cmdb/index.js'); // TODO-LINT: move to async function
     return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch {
     return null;
@@ -22,14 +22,14 @@ export class RelationshipService {
    */
   async getCiRelationships(ciId, options = {}) {
     try {
-      const client = await this.clientPromise;
+      const client = await this.clientPromise; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       const where = this._isUUID(ciId) 
         ? { id: ciId }
         : { ciId: ciId };
 
       // First, find the CI
-      const ci = await client.configurationItem.findFirst({ where });
+      const ci = await client.configurationItem.findFirst({ where }); // TODO-LINT: move to async function
       if (!ci) {
         throw new Error('Configuration Item not found');
       }
@@ -45,7 +45,7 @@ export class RelationshipService {
         const outgoing = await client.ciRelationship.findMany({
           where: { sourceCiId: ci.id, ...relationshipWhere },
           include: { targetCi: { include: { ciType_rel: true } }, relationshipType: true }
-        });
+        }); // TODO-LINT: move to async function
 
         relationships = relationships.concat(
           outgoing.map(rel => ({ ...rel, direction: 'outgoing', relatedCi: rel.targetCi }))
@@ -56,7 +56,7 @@ export class RelationshipService {
         const incoming = await client.ciRelationship.findMany({
           where: { targetCiId: ci.id, ...relationshipWhere },
           include: { sourceCi: { include: { ciType_rel: true } }, relationshipType: true }
-        });
+        }); // TODO-LINT: move to async function
 
         relationships = relationships.concat(
           incoming.map(rel => ({ ...rel, direction: 'incoming', relatedCi: rel.sourceCi }))
@@ -75,7 +75,7 @@ export class RelationshipService {
    */
   async createRelationship(relationshipData) {
     try {
-      const client = await this.clientPromise;
+      const client = await this.clientPromise; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       // Validate source and target CIs exist
       const [sourceCi, targetCi] = await Promise.all([
@@ -85,7 +85,7 @@ export class RelationshipService {
         client.configurationItem.findFirst({
           where: this._isUUID(relationshipData.targetCiId) ? { id: relationshipData.targetCiId } : { ciId: relationshipData.targetCiId }
         })
-      ]);
+      ]); // TODO-LINT: move to async function
 
       if (!sourceCi) {
         throw new Error('Source Configuration Item not found');
@@ -95,7 +95,7 @@ export class RelationshipService {
       }
 
       // Validate relationship type exists
-      const relationshipType = await client.ciRelationshipType.findUnique({ where: { id: relationshipData.relationshipTypeId } });
+      const relationshipType = await client.ciRelationshipType.findUnique({ where: { id: relationshipData.relationshipTypeId } }); // TODO-LINT: move to async function
 
       if (!relationshipType) {
         throw new Error('Relationship type not found');
@@ -109,14 +109,14 @@ export class RelationshipService {
           relationshipTypeId: relationshipData.relationshipTypeId,
           isActive: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       if (existingRelationship) {
         throw new Error('Relationship already exists between these CIs');
       }
 
       // Validate relationship type constraints
-      await this._validateRelationshipConstraints(sourceCi, targetCi, relationshipType);
+      await this._validateRelationshipConstraints(sourceCi, targetCi, relationshipType); // TODO-LINT: move to async function
 
       // Create the relationship
       const relationship = await client.ciRelationship.create({
@@ -129,7 +129,7 @@ export class RelationshipService {
           createdBy: relationshipData.createdBy
         },
         include: { sourceCi: true, targetCi: true, relationshipType: true }
-      });
+      }); // TODO-LINT: move to async function
 
       logger.info(`Relationship created: ${sourceCi.ciId} -> ${targetCi.ciId} (${relationshipType.name})`);
       return relationship;
@@ -144,12 +144,12 @@ export class RelationshipService {
    */
   async deleteRelationship(relationshipId, deletedBy) {
     try {
-      const client = await this.clientPromise;
+      const client = await this.clientPromise; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       const relationship = await client.ciRelationship.findUnique({
         where: { id: relationshipId },
         include: { sourceCi: true, targetCi: true, relationshipType: true }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!relationship) {
         return false;
@@ -158,7 +158,7 @@ export class RelationshipService {
       await client.ciRelationship.update({
         where: { id: relationshipId },
         data: { isActive: false, updatedAt: new Date() }
-      });
+      }); // TODO-LINT: move to async function
 
       logger.info(`Relationship deleted: ${relationship.sourceCi.ciId} -> ${relationship.targetCi.ciId} (${relationship.relationshipType.name})`);
       return true;
@@ -173,12 +173,12 @@ export class RelationshipService {
    */
   async getRelationshipTypes() {
     try {
-      const client = await this.clientPromise;
+      const client = await this.clientPromise; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       return await client.ciRelationshipType.findMany({
         include: { sourceCiType: true, targetCiType: true },
         orderBy: { name: 'asc' }
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Error fetching relationship types:', error);
       throw new Error('Failed to fetch relationship types');
@@ -190,7 +190,7 @@ export class RelationshipService {
    */
   async createRelationshipType(typeData) {
     try {
-      const client = await this.clientPromise;
+      const client = await this.clientPromise; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       const relationshipType = await client.ciRelationshipType.create({
         data: typeData,
@@ -198,7 +198,7 @@ export class RelationshipService {
           sourceCiType: true,
           targetCiType: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       logger.info(`Relationship type created: ${relationshipType.name}`);
       return relationshipType;
@@ -213,10 +213,10 @@ export class RelationshipService {
    */
   async performImpactAnalysis(ciId, depth = 3) {
     try {
-      const client = await this.clientPromise;
+      const client = await this.clientPromise; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       const where = this._isUUID(ciId) ? { id: ciId } : { ciId: ciId };
-      const rootCi = await client.configurationItem.findFirst({ where, include: { ciType_rel: true } });
+      const rootCi = await client.configurationItem.findFirst({ where, include: { ciType_rel: true } }); // TODO-LINT: move to async function
 
       if (!rootCi) {
         throw new Error('Configuration Item not found');
@@ -225,7 +225,7 @@ export class RelationshipService {
       const impactMap = new Map();
       const visited = new Set();
       
-      await this._traverseRelationships(rootCi, 0, depth, impactMap, visited);
+      await this._traverseRelationships(rootCi, 0, depth, impactMap, visited); // TODO-LINT: move to async function
 
       // Convert map to array and categorize by impact level
       const impactLevels = {
@@ -245,7 +245,7 @@ export class RelationshipService {
       }
 
       // Calculate business service impact
-      const businessServiceImpact = await this._calculateBusinessServiceImpact(rootCi.id, impactMap);
+      const businessServiceImpact = await this._calculateBusinessServiceImpact(rootCi.id, impactMap); // TODO-LINT: move to async function
 
       return {
         rootCi,
@@ -266,16 +266,16 @@ export class RelationshipService {
    */
   async getDependencyTree(ciId, direction = 'both', depth = 3) {
     try {
-      const client = await this.clientPromise;
+      const client = await this.clientPromise; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       const where = this._isUUID(ciId) ? { id: ciId } : { ciId: ciId };
-      const rootCi = await client.configurationItem.findFirst({ where, include: { ciType_rel: true } });
+      const rootCi = await client.configurationItem.findFirst({ where, include: { ciType_rel: true } }); // TODO-LINT: move to async function
 
       if (!rootCi) {
         throw new Error('Configuration Item not found');
       }
 
-      const tree = await this._buildDependencyTree(rootCi, direction, depth, new Set());
+      const tree = await this._buildDependencyTree(rootCi, direction, depth, new Set()); // TODO-LINT: move to async function
 
       return tree;
     } catch (error) {
@@ -290,7 +290,7 @@ export class RelationshipService {
   async validateCircularDependencies(sourceCiId, targetCiId) {
     try {
       const visited = new Set();
-      const hasCircular = await this._checkCircularDependency(targetCiId, sourceCiId, visited);
+      const hasCircular = await this._checkCircularDependency(targetCiId, sourceCiId, visited); // TODO-LINT: move to async function
       
       return {
         hasCircularDependency: hasCircular,
@@ -329,7 +329,7 @@ export class RelationshipService {
 
     // Check multiple relationship constraint
     if (!relationshipType.allowMultiple) {
-      const client = await this.clientPromise;
+      const client = await this.clientPromise; // TODO-LINT: move to async function
       if (!client) return;
       const existingCount = await client.ciRelationship.count({
         where: {
@@ -337,7 +337,7 @@ export class RelationshipService {
           relationshipTypeId: relationshipType.id,
           isActive: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       if (existingCount > 0) {
         throw new Error(`Only one ${relationshipType.name} relationship is allowed from this CI`);
@@ -359,14 +359,14 @@ export class RelationshipService {
       impactMap.set(ci.id, { ci, depth: currentDepth, impactType: this._determineImpactType(ci, currentDepth) });
     }
 
-    const client = await this.clientPromise;
+    const client = await this.clientPromise; // TODO-LINT: move to async function
     if (!client) return;
 
     // Get all outgoing relationships (dependencies)
     const outgoingRelationships = await client.ciRelationship.findMany({
       where: { sourceCiId: ci.id, isActive: true },
       include: { targetCi: { include: { ciType_rel: true } }, relationshipType: true }
-    });
+    }); // TODO-LINT: move to async function
 
     // Recursively traverse dependencies
     for (const rel of outgoingRelationships) {
@@ -376,7 +376,7 @@ export class RelationshipService {
         maxDepth, 
         impactMap, 
         visited
-      );
+      ); // TODO-LINT: move to async function
     }
 
     visited.delete(ci.id);
@@ -387,7 +387,7 @@ export class RelationshipService {
    */
   async _calculateBusinessServiceImpact(ciId, impactMap) {
     try {
-      const client = await this.clientPromise;
+      const client = await this.clientPromise; // TODO-LINT: move to async function
       if (!client) return [];
       const allCiIds = [ciId, ...Array.from(impactMap.keys())];
       
@@ -399,7 +399,7 @@ export class RelationshipService {
           businessService: true,
           configurationItem: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       const serviceImpact = {};
       
@@ -440,7 +440,7 @@ export class RelationshipService {
 
     visited.add(ci.id);
 
-    const client = await this.clientPromise;
+    const client = await this.clientPromise; // TODO-LINT: move to async function
     if (!client) return { ci, children: [] };
 
     const children = [];
@@ -449,7 +449,7 @@ export class RelationshipService {
       const outgoingRels = await client.ciRelationship.findMany({
         where: { sourceCiId: ci.id, isActive: true },
         include: { targetCi: { include: { ciType_rel: true } }, relationshipType: true }
-      });
+      }); // TODO-LINT: move to async function
 
       for (const rel of outgoingRels) {
         const childTree = await this._buildDependencyTree(
@@ -457,7 +457,7 @@ export class RelationshipService {
           direction, 
           remainingDepth - 1, 
           visited
-        );
+        ); // TODO-LINT: move to async function
         children.push({
           ...childTree,
           relationship: rel,
@@ -470,7 +470,7 @@ export class RelationshipService {
       const incomingRels = await client.ciRelationship.findMany({
         where: { targetCiId: ci.id, isActive: true },
         include: { sourceCi: { include: { ciType_rel: true } }, relationshipType: true }
-      });
+      }); // TODO-LINT: move to async function
 
       for (const rel of incomingRels) {
         const childTree = await this._buildDependencyTree(
@@ -478,7 +478,7 @@ export class RelationshipService {
           direction, 
           remainingDepth - 1, 
           visited
-        );
+        ); // TODO-LINT: move to async function
         children.push({
           ...childTree,
           relationship: rel,
@@ -509,14 +509,14 @@ export class RelationshipService {
 
     visited.add(currentCiId);
 
-    const client = await this.clientPromise;
+    const client = await this.clientPromise; // TODO-LINT: move to async function
     if (!client) return false;
 
-    const relationships = await client.ciRelationship.findMany({ where: { sourceCiId: currentCiId, isActive: true } });
+    const relationships = await client.ciRelationship.findMany({ where: { sourceCiId: currentCiId, isActive: true } }); // TODO-LINT: move to async function
 
     for (const rel of relationships) {
       if (await this._checkCircularDependency(rel.targetCiId, targetCiId, visited)) {
-        return true;
+        return true; // TODO-LINT: move to async function
       }
     }
 

@@ -57,7 +57,7 @@ export class OktaConnector extends IConnector {
       }
 
       // Test the connection
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
       
       console.log('Okta connector initialized successfully');
     } catch (error) {
@@ -74,7 +74,7 @@ export class OktaConnector extends IConnector {
       const startTime = Date.now();
       
       // Test Okta Management API
-      const orgResponse = await this.client.get('/api/v1/org');
+      const orgResponse = await this.client.get('/api/v1/org'); // TODO-LINT: move to async function
       const apiLatency = Date.now() - startTime;
 
       // Test SCIM endpoint if available
@@ -84,7 +84,7 @@ export class OktaConnector extends IConnector {
       if (this.scimClient) {
         try {
           const scimStartTime = Date.now();
-          await this.scimClient.get('/Users?count=1');
+          await this.scimClient.get('/Users?count=1'); // TODO-LINT: move to async function
           scimLatency = Date.now() - scimStartTime;
           scimStatus = 'healthy';
         } catch (error) {
@@ -161,13 +161,13 @@ export class OktaConnector extends IConnector {
           }
 
           // Fetch users from Okta
-          const response = await this.client.get('/api/v1/users', { params });
+          const response = await this.client.get('/api/v1/users', { params }); // TODO-LINT: move to async function
           const users = response.data;
 
           // Process users
           for (const user of users) {
             try {
-              await this.processUser(user);
+              await this.processUser(user); // TODO-LINT: move to async function
               successCount++;
             } catch (error) {
               errorCount++;
@@ -236,7 +236,7 @@ export class OktaConnector extends IConnector {
         limit: 100
       };
 
-      const response = await this.client.get('/api/v1/logs', { params });
+      const response = await this.client.get('/api/v1/logs', { params }); // TODO-LINT: move to async function
       
       return response.data.map(event => ({
         id: event.uuid,
@@ -266,16 +266,16 @@ export class OktaConnector extends IConnector {
 
       switch (actionType) {
         case 'reset_mfa':
-          return await this.resetUserMFA(target);
+          return await this.resetUserMFA(target); // TODO-LINT: move to async function
         
         case 'suspend_user':
-          return await this.suspendUser(target);
+          return await this.suspendUser(target); // TODO-LINT: move to async function
         
         case 'activate_user':
-          return await this.activateUser(target);
+          return await this.activateUser(target); // TODO-LINT: move to async function
         
         case 'reset_password':
-          return await this.resetPassword(target, parameters);
+          return await this.resetPassword(target, parameters); // TODO-LINT: move to async function
         
         default:
           throw new Error(`Unsupported action: ${actionType}`);
@@ -388,7 +388,7 @@ export class OktaConnector extends IConnector {
 
   async testConnection() {
     try {
-      const response = await this.client.get('/api/v1/org');
+      const response = await this.client.get('/api/v1/org'); // TODO-LINT: move to async function
       if (response.status !== 200) {
         throw new Error('Failed to connect to Okta API');
       }
@@ -425,7 +425,7 @@ export class OktaConnector extends IConnector {
 
   async resetUserMFA(userId) {
     try {
-      await this.client.post(`/api/v1/users/${userId}/lifecycle/reset_factors`);
+      await this.client.post(`/api/v1/users/${userId}/lifecycle/reset_factors`); // TODO-LINT: move to async function
       return {
         success: true,
         message: 'MFA reset successfully',
@@ -438,7 +438,7 @@ export class OktaConnector extends IConnector {
 
   async suspendUser(userId) {
     try {
-      await this.client.post(`/api/v1/users/${userId}/lifecycle/suspend`);
+      await this.client.post(`/api/v1/users/${userId}/lifecycle/suspend`); // TODO-LINT: move to async function
       return {
         success: true,
         message: 'User suspended successfully',
@@ -451,7 +451,7 @@ export class OktaConnector extends IConnector {
 
   async activateUser(userId) {
     try {
-      await this.client.post(`/api/v1/users/${userId}/lifecycle/activate`);
+      await this.client.post(`/api/v1/users/${userId}/lifecycle/activate`); // TODO-LINT: move to async function
       return {
         success: true,
         message: 'User activated successfully',
@@ -466,7 +466,7 @@ export class OktaConnector extends IConnector {
     try {
       const response = await this.client.post(`/api/v1/users/${userId}/lifecycle/reset_password`, {
         sendEmail: parameters?.sendEmail !== false
-      });
+      }); // TODO-LINT: move to async function
       
       return {
         success: true,

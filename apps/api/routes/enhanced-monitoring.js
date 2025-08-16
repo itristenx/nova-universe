@@ -98,7 +98,7 @@ router.get('/monitors', async (req, res) => {
 
     query += ` GROUP BY m.id, ci.days_remaining, ci.is_expired, ci.issuer, mw.id, ms.uptime_24h, ms.avg_response_time_24h, ms.total_checks_24h, ms.failed_checks_24h, ms.last_check_time, ms.is_up ORDER BY m.name`;
 
-    const result = await database.query(query, params);
+    const result = await database.query(query, params); // TODO-LINT: move to async function
     
     res.json({
       success: true,
@@ -211,7 +211,7 @@ router.post('/monitors', async (req, res) => {
       monitorData.weight || 1000, req.user.id
     ];
 
-    const result = await database.query(query, values);
+    const result = await database.query(query, values); // TODO-LINT: move to async function
     const monitor = result.rows[0];
 
     // Add tags if provided
@@ -220,7 +220,7 @@ router.post('/monitors', async (req, res) => {
         await database.query(
           'INSERT INTO nova_monitor_tags (monitor_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
           [monitor.id, tagId]
-        );
+        ); // TODO-LINT: move to async function
       }
     }
 
@@ -230,7 +230,7 @@ router.post('/monitors', async (req, res) => {
       await database.query(
         'UPDATE nova_monitors SET push_token = $1 WHERE id = $2',
         [pushToken, monitor.id]
-      );
+      ); // TODO-LINT: move to async function
       monitor.push_token = pushToken;
       monitor.push_url = `${req.protocol}://${req.get('host')}/api/enhanced-monitoring/push/${pushToken}`;
     }
@@ -262,7 +262,7 @@ router.post('/monitors/:id/check', async (req, res) => {
     const monitorResult = await database.query(
       'SELECT * FROM nova_monitors WHERE id = $1 AND tenant_id = $2',
       [id, req.user.tenantId]
-    );
+    ); // TODO-LINT: move to async function
 
     if (monitorResult.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
@@ -271,7 +271,7 @@ router.post('/monitors/:id/check', async (req, res) => {
     const monitor = monitorResult.rows[0];
 
     // Check if monitor is in maintenance
-    const inMaintenance = await advancedFeaturesService.isMonitorInMaintenance(id);
+    const inMaintenance = await advancedFeaturesService.isMonitorInMaintenance(id); // TODO-LINT: move to async function
     if (inMaintenance) {
       return res.json({
         success: true,
@@ -315,10 +315,10 @@ router.post('/monitors/:id/check', async (req, res) => {
         timeout: monitor.timeout_seconds
       };
 
-      result = await extendedMonitorService.runMonitorCheck(check);
+      result = await extendedMonitorService.runMonitorCheck(check); // TODO-LINT: move to async function
     } else {
       // Use existing monitor service for basic types
-      result = await runBasicMonitorCheck(monitor);
+      result = await runBasicMonitorCheck(monitor); // TODO-LINT: move to async function
     }
 
     // Store result in partitioned table
@@ -326,7 +326,7 @@ router.post('/monitors/:id/check', async (req, res) => {
       INSERT INTO nova_monitor_results_${new Date().getFullYear()}_${String(new Date().getMonth() + 1).padStart(2, '0')} 
       (monitor_id, success, response_time, status_code, message, data)
       VALUES ($1, $2, $3, $4, $5, $6)
-    `, [id, result.success, result.responseTime, result.statusCode, result.message, JSON.stringify(result.data)]);
+    `, [id, result.success, result.responseTime, result.statusCode, result.message, JSON.stringify(result.data)]); // TODO-LINT: move to async function
 
     // Update certificate info for SSL monitors
     if (monitor.type === 'ssl' && result.data && result.data.certificate_info) {
@@ -354,11 +354,11 @@ router.post('/monitors/:id/check', async (req, res) => {
         certInfo.valid_from, certInfo.valid_to, certInfo.days_remaining,
         certInfo.fingerprint, certInfo.fingerprint256,
         certInfo.is_self_signed, certInfo.is_expired, certInfo.is_valid
-      ]);
+      ]); // TODO-LINT: move to async function
     }
 
     // Update monitor summary for performance
-    await updateMonitorSummary(id);
+    await updateMonitorSummary(id); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -379,7 +379,7 @@ router.post('/push/:token', async (req, res) => {
     const monitorResult = await database.query(
       'SELECT * FROM nova_monitors WHERE push_token = $1 AND type = $2',
       [token, 'push']
-    );
+    ); // TODO-LINT: move to async function
 
     if (monitorResult.rows.length === 0) {
       return res.status(404).json({ error: 'Invalid push token' });
@@ -398,7 +398,7 @@ router.post('/push/:token', async (req, res) => {
       JSON.stringify(req.body),
       status,
       message
-    ]);
+    ]); // TODO-LINT: move to async function
 
     // Store as monitor result
     await database.query(`
@@ -411,10 +411,10 @@ router.post('/push/:token', async (req, res) => {
       ping || 0,
       message || 'Push notification received',
       JSON.stringify({ push: true, status, ...data })
-    ]);
+    ]); // TODO-LINT: move to async function
 
     // Update monitor summary
-    await updateMonitorSummary(monitor.id);
+    await updateMonitorSummary(monitor.id); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -446,7 +446,7 @@ router.get('/notification-providers', async (req, res) => {
       LEFT JOIN nova_notification_channel_results ncr ON nc.id = ncr.channel_id
       WHERE nc.tenant_id = $1 
       ORDER BY nc.name
-    `, [req.user.tenantId]);
+    `, [req.user.tenantId]); // TODO-LINT: move to async function
 
     // Get supported provider types
     const supportedProviders = notificationProviderService.getSupportedProviders();
@@ -495,7 +495,7 @@ router.post('/notification-providers', async (req, res) => {
 
     const result = await database.query(query, [
       id, name, type, JSON.stringify(config), req.user.tenantId, is_active, is_default, req.user.id
-    ]);
+    ]); // TODO-LINT: move to async function
 
     res.status(201).json({
       success: true,
@@ -515,7 +515,7 @@ router.post('/notification-providers/:id/test', async (req, res) => {
     const providerResult = await database.query(
       'SELECT * FROM nova_notification_channels WHERE id = $1 AND tenant_id = $2',
       [id, req.user.tenantId]
-    );
+    ); // TODO-LINT: move to async function
 
     if (providerResult.rows.length === 0) {
       return res.status(404).json({ error: 'Provider not found' });
@@ -538,14 +538,14 @@ router.post('/notification-providers/:id/test', async (req, res) => {
         name: provider.name,
         type: provider.type,
         config: JSON.parse(provider.config)
-      }, testMessage);
+      }, testMessage); // TODO-LINT: move to async function
 
       // Update test success
       await database.query(`
         UPDATE nova_notification_channels 
         SET test_success = true, last_test_at = NOW() 
         WHERE id = $1
-      `, [id]);
+      `, [id]); // TODO-LINT: move to async function
 
       // Record successful test
       await database.query(`
@@ -555,7 +555,7 @@ router.post('/notification-providers/:id/test', async (req, res) => {
         ON CONFLICT (channel_id) DO UPDATE SET
           last_success_at = NOW(),
           total_sent = nova_notification_channel_results.total_sent + 1
-      `, [id]);
+      `, [id]); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -567,7 +567,7 @@ router.post('/notification-providers/:id/test', async (req, res) => {
         UPDATE nova_notification_channels 
         SET test_success = false, last_test_at = NOW(), failure_count = failure_count + 1 
         WHERE id = $1
-      `, [id]);
+      `, [id]); // TODO-LINT: move to async function
 
       // Record failed test
       await database.query(`
@@ -577,7 +577,7 @@ router.post('/notification-providers/:id/test', async (req, res) => {
         ON CONFLICT (channel_id) DO UPDATE SET
           last_failure_at = NOW(),
           failure_count = nova_notification_channel_results.failure_count + 1
-      `, [id, testError.message]);
+      `, [id, testError.message]); // TODO-LINT: move to async function
 
       res.status(400).json({
         success: false,
@@ -608,7 +608,7 @@ router.get('/tags', async (req, res) => {
       WHERE t.tenant_id = $1 OR t.tenant_id IS NULL 
       GROUP BY t.id
       ORDER BY t.name
-    `, [req.user.tenantId]);
+    `, [req.user.tenantId]); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -633,7 +633,7 @@ router.post('/tags', async (req, res) => {
       color: color || '#3B82F6',
       description,
       tenant_id: req.user.tenantId
-    });
+    }); // TODO-LINT: move to async function
 
     res.status(201).json({
       success: true,
@@ -688,7 +688,7 @@ router.get('/maintenance-windows', async (req, res) => {
 
     query += ` GROUP BY mw.id ORDER BY mw.start_time DESC`;
 
-    const result = await database.query(query, params);
+    const result = await database.query(query, params); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -706,7 +706,7 @@ router.post('/maintenance-windows', async (req, res) => {
       ...req.body,
       tenant_id: req.user.tenantId,
       created_by: req.user.id
-    });
+    }); // TODO-LINT: move to async function
 
     res.status(201).json({
       success: true,
@@ -738,7 +738,7 @@ router.get('/status-pages', async (req, res) => {
       WHERE sp.tenant_id = $1 
       GROUP BY sp.id
       ORDER BY sp.title
-    `, [req.user.tenantId]);
+    `, [req.user.tenantId]); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -756,7 +756,7 @@ router.post('/status-pages', async (req, res) => {
       ...req.body,
       tenant_id: req.user.tenantId,
       created_by: req.user.id
-    });
+    }); // TODO-LINT: move to async function
 
     res.status(201).json({
       success: true,
@@ -773,7 +773,7 @@ router.get('/status/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
     
-    const statusPage = await statusPageService.getStatusPage(slug);
+    const statusPage = await statusPageService.getStatusPage(slug); // TODO-LINT: move to async function
     
     if (!statusPage || !statusPage.published) {
       return res.status(404).json({ error: 'Status page not found' });
@@ -792,7 +792,7 @@ router.get('/status/:slug', async (req, res) => {
       LEFT JOIN nova_monitor_summary ms ON m.id = ms.id
       WHERE spm.status_page_id = $1
       ORDER BY spm.order_index, m.name
-    `, [statusPage.id]);
+    `, [statusPage.id]); // TODO-LINT: move to async function
 
     // Get recent incidents
     const incidentsResult = await database.query(`
@@ -800,13 +800,13 @@ router.get('/status/:slug', async (req, res) => {
       WHERE status_page_id = $1
       AND created_at >= NOW() - INTERVAL '${statusPage.incident_history_days} days'
       ORDER BY created_at DESC
-    `, [statusPage.id]);
+    `, [statusPage.id]); // TODO-LINT: move to async function
 
     const html = await statusPageService.generateStatusPageHTML(
       statusPage,
       monitorsResult.rows,
       incidentsResult.rows
-    );
+    ); // TODO-LINT: move to async function
 
     res.type('html').send(html);
   } catch (error) {
@@ -828,7 +828,7 @@ router.post('/status/:slug/subscribe', async (req, res) => {
     const statusPageResult = await database.query(
       'SELECT id FROM nova_status_pages WHERE slug = $1 AND published = true',
       [slug]
-    );
+    ); // TODO-LINT: move to async function
 
     if (statusPageResult.rows.length === 0) {
       return res.status(404).json({ error: 'Status page not found' });
@@ -843,7 +843,7 @@ router.post('/status/:slug/subscribe', async (req, res) => {
       ON CONFLICT (status_page_id, email) DO UPDATE SET
         verification_token = EXCLUDED.verification_token,
         verified = false
-    `, [statusPageId, email, verificationToken]);
+    `, [statusPageId, email, verificationToken]); // TODO-LINT: move to async function
 
     // Send verification email (non-blocking)
     try {
@@ -866,7 +866,7 @@ router.post('/status/:slug/subscribe', async (req, res) => {
         subject: 'Verify your Nova Status Page subscription',
         text: `Please verify your subscription by visiting: ${verifyUrl}`,
         html: `<p>Please verify your subscription by clicking the link below:</p><p><a href="${verifyUrl}">Verify Subscription</a></p>`
-      });
+      }); // TODO-LINT: move to async function
     } catch (mailErr) {
       logger.warn('Subscription verification email failed to send', { error: mailErr.message });
       // continue without failing the request
@@ -894,7 +894,7 @@ router.get('/badge/:statusPageId/:monitorId?', async (req, res) => {
       WHERE status_page_id = $1 AND (monitor_id = $2 OR monitor_id IS NULL)
       ORDER BY monitor_id DESC NULLS LAST
       LIMIT 1
-    `, [statusPageId, monitorId]);
+    `, [statusPageId, monitorId]); // TODO-LINT: move to async function
 
     let badge = { type: style, style: type };
     if (badgeResult.rows.length > 0) {
@@ -909,7 +909,7 @@ router.get('/badge/:statusPageId/:monitorId?', async (req, res) => {
       const monitorResult = await database.query(
         'SELECT * FROM nova_monitor_summary WHERE id = $1',
         [monitorId]
-      );
+      ); // TODO-LINT: move to async function
       
       if (monitorResult.rows.length > 0) {
         const monitor = monitorResult.rows[0];
@@ -918,7 +918,7 @@ router.get('/badge/:statusPageId/:monitorId?', async (req, res) => {
       }
     }
 
-    const svg = await statusPageService.generateStatusBadge(badge, monitorStatus, uptime);
+    const svg = await statusPageService.generateStatusBadge(badge, monitorStatus, uptime); // TODO-LINT: move to async function
 
     res.type('svg').send(svg);
   } catch (error) {
@@ -927,7 +927,7 @@ router.get('/badge/:statusPageId/:monitorId?', async (req, res) => {
   }
 });
 
-// Helper function for basic monitor checks (existing HTTP, TCP, Ping, DNS, SSL)
+// Helper function for basic monitor _checks (existing _HTTP, _TCP, _Ping, _DNS, SSL)
 async function runBasicMonitorCheck(monitor) {
   // This would contain your existing monitor check logic for basic types
   // Implementation depends on your current monitoring logic
@@ -968,7 +968,7 @@ async function updateMonitorSummary(monitorId) {
         is_up = EXCLUDED.is_up
     `;
     
-    await database.query(summaryQuery, [monitorId]);
+    await database.query(summaryQuery, [monitorId]); // TODO-LINT: move to async function
   } catch (error) {
     logger.error('Failed to update monitor summary:', error);
   }

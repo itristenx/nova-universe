@@ -82,7 +82,7 @@ router.post('/process', authenticateJWT, async (req, res) => {
       timestamp: new Date()
     };
 
-    const response = await aiFabric.processRequest(aiRequest);
+    const response = await aiFabric.processRequest(aiRequest); // TODO-LINT: move to async function
 
     // Record metrics
     await aiMonitoringSystem.recordMetric({
@@ -93,7 +93,7 @@ router.post('/process', authenticateJWT, async (req, res) => {
       unit: 'milliseconds',
       metadata: { userId: req.user.id },
       tags: ['api_request']
-    });
+    }); // TODO-LINT: move to async function
 
     res.json({
       requestId: response.requestId,
@@ -117,7 +117,7 @@ router.post('/process', authenticateJWT, async (req, res) => {
       },
       complianceFlags: [],
       riskScore: 0.5
-    });
+    }); // TODO-LINT: move to async function
 
     res.status(500).json({ error: 'AI processing failed' });
   }
@@ -158,7 +158,7 @@ router.post('/rag/query', authenticateJWT, async (req, res) => {
       metadata: {}
     };
 
-    const result = await ragEngine.query(ragQuery);
+    const result = await ragEngine.query(ragQuery); // TODO-LINT: move to async function
 
     res.json({
       queryId: result.queryId,
@@ -199,7 +199,7 @@ router.post('/rag/documents', authenticateJWT, async (req, res) => {
       }
     }
 
-    await ragEngine.addDocuments(documents);
+    await ragEngine.addDocuments(documents); // TODO-LINT: move to async function
 
     res.json({
       message: `Successfully added ${documents.length} documents`,
@@ -261,7 +261,7 @@ router.post('/monitoring/bias', authenticateJWT, async (req, res) => {
       model,
       testData,
       protectedAttribute
-    );
+    ); // TODO-LINT: move to async function
 
     res.json(biasMetric);
   } catch (error) {
@@ -289,7 +289,7 @@ router.get('/monitoring/compliance', authenticateJWT, async (req, res) => {
       end: endDate ? new Date(endDate) : new Date()
     };
 
-    const report = await aiMonitoringSystem.generateComplianceReport(reportType, period);
+    const report = await aiMonitoringSystem.generateComplianceReport(reportType, period); // TODO-LINT: move to async function
 
     res.json(report);
   } catch (error) {
@@ -323,7 +323,7 @@ router.post('/monitoring/explain', authenticateJWT, async (req, res) => {
       model,
       prediction,
       inputData || {}
-    );
+    ); // TODO-LINT: move to async function
 
     res.json(explanation);
   } catch (error) {
@@ -382,9 +382,9 @@ router.post('/providers/:providerId/health', authenticateJWT, async (req, res) =
     
     // Trigger a provider health check via AI Monitoring system if available
     try {
-      const { aiMonitoringSystem } = await import('../lib/ai-monitoring.js');
+      const { aiMonitoringSystem } = await import('../lib/ai-monitoring.js'); // TODO-LINT: move to async function
       if (aiMonitoringSystem?.checkProviderHealth) {
-        const result = await aiMonitoringSystem.checkProviderHealth(providerId);
+        const result = await aiMonitoringSystem.checkProviderHealth(providerId); // TODO-LINT: move to async function
         return res.json({ providerId, ...result, checkedAt: new Date().toISOString() });
       }
     } catch {}
@@ -434,7 +434,7 @@ router.post('/learning/feedback', authenticateJWT, async (req, res) => {
       quality: Math.max(0, Math.min(1, rating / 5)) // Normalize to 0-1
     };
 
-    await aiFabric.recordLearningEvent(learningEvent);
+    await aiFabric.recordLearningEvent(learningEvent); // TODO-LINT: move to async function
 
     res.json({
       message: 'Feedback recorded successfully',
@@ -475,7 +475,7 @@ router.post('/initialize', authenticateJWT, async (req, res) => {
 
     try {
       if (!aiFabric.getStatus().isInitialized) {
-        await aiFabric.initialize();
+        await aiFabric.initialize(); // TODO-LINT: move to async function
       }
       results.aiFabric = true;
     } catch (error) {
@@ -484,7 +484,7 @@ router.post('/initialize', authenticateJWT, async (req, res) => {
 
     try {
       if (!ragEngine.getStats().isInitialized) {
-        await ragEngine.initialize();
+        await ragEngine.initialize(); // TODO-LINT: move to async function
       }
       results.ragEngine = true;
     } catch (error) {
@@ -492,7 +492,7 @@ router.post('/initialize', authenticateJWT, async (req, res) => {
     }
 
     try {
-      await aiMonitoringSystem.initialize();
+      await aiMonitoringSystem.initialize(); // TODO-LINT: move to async function
       results.monitoring = true;
     } catch (error) {
       logger.error('Monitoring system initialization failed:', error);
@@ -500,7 +500,7 @@ router.post('/initialize', authenticateJWT, async (req, res) => {
 
     try {
       if (!novaMCPServer.isServerRunning) {
-        await novaMCPServer.start();
+        await novaMCPServer.start(); // TODO-LINT: move to async function
       }
       results.mcpServer = true;
     } catch (error) {
@@ -518,7 +518,7 @@ router.post('/initialize', authenticateJWT, async (req, res) => {
       },
       complianceFlags: [],
       riskScore: 0.2
-    });
+    }); // TODO-LINT: move to async function
 
     const successCount = Object.values(results).filter(Boolean).length;
     const totalCount = Object.keys(results).length;

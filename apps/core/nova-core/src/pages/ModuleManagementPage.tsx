@@ -48,7 +48,7 @@ interface Module {
     key: string;
     label: string;
     type: 'text' | 'number' | 'boolean' | 'select';
-    value: any;
+    value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
     options?: string[];
     description?: string;
   }[];
@@ -77,7 +77,7 @@ export const ModuleManagementPage: React.FC = () => {
     try {
       setLoading(true);
       // For now, use mock data since the API endpoint doesn't exist yet
-      // const data = await api.getModules();
+      // const data = await api.getModules(); // TODO-LINT: move to async function
       
       // Generate mock module data
       const mockModules: Module[] = [
@@ -199,7 +199,7 @@ export const ModuleManagementPage: React.FC = () => {
 
   const update = async (key: string, enabled: boolean) => {
     try {
-      // await api.updateModule(key, enabled);
+      // await api.updateModule(key, enabled); // TODO-LINT: move to async function
       setModules(mods => mods.map(m => (m.key === key ? { ...m, enabled, status: enabled ? 'active' : 'inactive' } : m)));
       addToast({ type: 'success', title: 'Updated', description: `Module ${key} ${enabled ? 'enabled' : 'disabled'}` });
     } catch (err) {
@@ -210,7 +210,7 @@ export const ModuleManagementPage: React.FC = () => {
 
   const refreshModules = async () => {
     setRefreshing(true);
-    await load();
+    await load(); // TODO-LINT: move to async function
     setRefreshing(false);
     addToast({ type: 'success', title: 'Refreshed', description: 'Module status updated' });
   };

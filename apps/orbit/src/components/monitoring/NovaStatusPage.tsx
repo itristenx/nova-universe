@@ -96,13 +96,13 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
 
   const fetchStatusPage = async () => {
     try {
-      const response = await fetch(`/api/v1/status-pages/public/${statusPageSlug}?format=json`);
+      const response = await fetch(`/api/v1/status-pages/public/${statusPageSlug}?format=json`); // TODO-LINT: move to async function
       
       if (!response.ok) {
         throw new Error('Status page not found');
       }
 
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       setStatusData(data.statusPage);
       setError(null);
     } catch (err) {
@@ -124,9 +124,9 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
           email: subscriptionEmail, 
           types: ['incidents', 'maintenance'] 
         })
-      });
+      }); // TODO-LINT: move to async function
 
-      const result = await response.json();
+      const result = await response.json(); // TODO-LINT: move to async function
       
       if (result.success) {
         setSubscriptionStatus('success');

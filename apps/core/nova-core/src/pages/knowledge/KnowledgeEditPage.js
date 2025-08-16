@@ -33,11 +33,11 @@ const KnowledgeEditPage = () => {
         setLoading(true);
         try {
             if (isEdit && article) {
-                await api.createKnowledgeVersion(article.id, { content });
+                await api.createKnowledgeVersion(article.id, { content }); // TODO-LINT: move to async function
                 navigate(`/knowledge/${slug}`);
             }
             else {
-                const newArticle = await api.createKnowledgeArticle({ title, content, tags: tags.split(',').map(t => t.trim()).filter(Boolean) });
+                const newArticle = await api.createKnowledgeArticle({ title, content, tags: tags.split(',').map(t => t.trim()).filter(Boolean) }); // TODO-LINT: move to async function
                 navigate(`/knowledge/${newArticle.slug}`);
             }
         }

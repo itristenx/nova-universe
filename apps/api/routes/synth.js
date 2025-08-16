@@ -146,7 +146,7 @@ router.post('/tickets/process',
       const { title, description, category, priority, requesterEmail, requesterName, location, useAI = true } = req.body;
 
       // Get MCP server and ticket processor
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       
       // Process ticket with AI if enabled
       if (useAI) {
@@ -160,7 +160,7 @@ router.post('/tickets/process',
             requesterEmail,
             requesterName,
             useAI: true
-          }, { userId: req.user.id });
+          }, { userId: req.user.id }); // TODO-LINT: move to async function
 
           res.json({
             success: true,
@@ -185,7 +185,7 @@ router.post('/tickets/process',
           priority: priority || 'medium',
           location,
           useAI: false
-        }, { userId: req.user.id });
+        }, { userId: req.user.id }); // TODO-LINT: move to async function
 
         res.json({
           success: true,
@@ -260,13 +260,13 @@ router.post('/tickets/analyze',
 
       const { title, description, requesterEmail, requesterName } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.ai.analyze_ticket', {
         title,
         description,
         requesterEmail,
         requesterName
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -339,12 +339,12 @@ router.post('/tickets/similar',
 
       const { title, description, limit = 5 } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.ai.find_similar_tickets', {
         title,
         description,
         limit
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -398,10 +398,10 @@ router.get('/tickets/trends',
         });
       }
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.ai.get_trends', {
         timeframe
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -491,7 +491,7 @@ router.post('/customers/add',
 
       const { name, domain, emails, contract = 'standard', priority = 'medium', location, department } = req.body;
 
-      const mcpServer = await initializeMCPServer();
+      const mcpServer = await initializeMCPServer(); // TODO-LINT: move to async function
       const result = await mcpServer.callTool('nova.ai.add_customer', {
         name,
         domain,
@@ -500,7 +500,7 @@ router.post('/customers/add',
         priority,
         location,
         department
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -611,7 +611,7 @@ router.post('/analyze/ticket/:ticketId',
         }
 
         // Simulate AI analysis (in production, this would call actual AI services)
-        const analysis = await performTicketAnalysis(ticket);
+        const analysis = await performTicketAnalysis(ticket); // TODO-LINT: move to async function
 
         // Store analysis results
         const analysisId = require('uuid').v4();
@@ -688,7 +688,7 @@ router.get('/insights',
       const { type, limit = 20 } = req.query;
 
       // Generate or retrieve AI insights
-      const insights = await generateAIInsights(type, parseInt(limit));
+      const insights = await generateAIInsights(type, parseInt(limit)); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -796,7 +796,7 @@ router.get('/predict/workload',
         }
 
         // Generate prediction based on historical data
-        const prediction = await generateWorkloadPrediction(historicalData, period, department);
+        const prediction = await generateWorkloadPrediction(historicalData, period, department); // TODO-LINT: move to async function
 
         res.json({
           success: true,
@@ -950,7 +950,7 @@ router.post('/optimize/assignment',
           }
 
           // Generate assignment recommendation
-          const recommendation = await optimizeAssignment(ticket, technicians);
+          const recommendation = await optimizeAssignment(ticket, technicians); // TODO-LINT: move to async function
 
           res.json({
             success: true,
@@ -1057,7 +1057,7 @@ router.get('/patterns',
         }
 
         // Analyze patterns
-        const patterns = await detectPatterns(tickets, timeframe);
+        const patterns = await detectPatterns(tickets, timeframe); // TODO-LINT: move to async function
 
         res.json({
           success: true,
@@ -1075,7 +1075,7 @@ router.get('/patterns',
   }
 );
 
-// Helper functions for AI processing (simulated)
+// Helper _functions for AI processing (_simulated)
 
 async function performTicketAnalysis(ticket) {
   // Simulate AI analysis
@@ -1372,7 +1372,7 @@ router.post('/conversation/start',
       const userId = req.user.id;
       const tenantId = req.user.tenant_id;
 
-      const conversation = await startConversation(conversationId, userId, tenantId, context, initialMessage);
+      const conversation = await startConversation(conversationId, userId, tenantId, context, initialMessage); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1445,7 +1445,7 @@ router.post('/conversation/:id/send',
       const { message, context } = req.body;
       const userId = req.user.id;
 
-      const response = await sendMessage(conversationId, userId, message, context);
+      const response = await sendMessage(conversationId, userId, message, context); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1504,7 +1504,7 @@ router.get('/conversation/:id',
       const { id: conversationId } = req.params;
       const userId = req.user.id;
 
-      const conversation = await getConversationHistory(conversationId, userId);
+      const conversation = await getConversationHistory(conversationId, userId); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1561,7 +1561,7 @@ router.delete('/conversation/:id',
       const { id: conversationId } = req.params;
       const userId = req.user.id;
 
-      await endConversation(conversationId, userId);
+      await endConversation(conversationId, userId); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1650,7 +1650,7 @@ router.post('/escalation/create',
         level,
         reason,
         context
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1722,8 +1722,8 @@ router.post('/chat',
         capabilities: ['basic_chat']
       };
 
-      await startConversation(conversationId, userId, tenantId, context);
-      const response = await sendMessage(conversationId, userId, message, { legacy: true });
+      await startConversation(conversationId, userId, tenantId, context); // TODO-LINT: move to async function
+      const response = await sendMessage(conversationId, userId, message, { legacy: true }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1772,7 +1772,7 @@ router.post('/mcp',
       const tenantId = req.user.tenant_id;
       const mcpRequest = req.body;
 
-      const response = await handleMCPRequest(userId, tenantId, mcpRequest);
+      const response = await handleMCPRequest(userId, tenantId, mcpRequest); // TODO-LINT: move to async function
 
       res.json(response);
     } catch (error) {

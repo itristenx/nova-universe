@@ -84,9 +84,9 @@ const GoAlertDashboard: React.FC = () => {
     queryFn: async (): Promise<GoAlertAlert[]> => {
       const response = await fetch(`/api/v2/goalert/alerts?status=${filterStatus}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch alerts');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.alerts || data; // proxy returns {alerts}
     },
     refetchInterval: 30000 // Refresh every 30 seconds
@@ -98,9 +98,9 @@ const GoAlertDashboard: React.FC = () => {
     queryFn: async (): Promise<GoAlertService[]> => {
       const response = await fetch('/api/v2/goalert/services', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch services');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.services;
     },
     refetchInterval: 60000 // Refresh every minute
@@ -112,9 +112,9 @@ const GoAlertDashboard: React.FC = () => {
     queryFn: async (): Promise<GoAlertSchedule[]> => {
       const response = await fetch('/api/v2/goalert/schedules', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch schedules');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.schedules;
     },
     refetchInterval: 60000
@@ -126,9 +126,9 @@ const GoAlertDashboard: React.FC = () => {
     queryFn: async (): Promise<GoAlertEscalationPolicy[]> => {
       const response = await fetch('/api/v2/goalert/escalation-policies', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch escalation policies');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.escalationPolicies;
     },
     refetchInterval: 300000 // Refresh every 5 minutes
@@ -140,7 +140,7 @@ const GoAlertDashboard: React.FC = () => {
       const response = await fetch(`/api/v2/goalert/alerts/${alertId}/acknowledge`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to acknowledge alert');
       return response.json();
     },
@@ -155,7 +155,7 @@ const GoAlertDashboard: React.FC = () => {
       const response = await fetch(`/api/v2/goalert/alerts/${alertId}/close`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to close alert');
       return response.json();
     },
@@ -175,7 +175,7 @@ const GoAlertDashboard: React.FC = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ favorite })
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to update favorite');
       return response.json();
     },

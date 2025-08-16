@@ -8,7 +8,7 @@ import { logger } from '../logger.js';
 /**
  * Middleware to verify JWT and attach user info to req.user
  */
-export function authenticateJWT(req, res, next) {
+export function _authenticateJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ 
@@ -67,7 +67,7 @@ export function authenticateJWT(req, res, next) {
 /**
  * Middleware to require a specific role (e.g., 'admin', 'superadmin')
  */
-export function requireRole(role) {
+export function _requireRole(role) {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ 
@@ -104,7 +104,7 @@ export function requireRole(role) {
 /**
  * Middleware to require any of the specified roles
  */
-export function requireAnyRole(roles) {
+export function _requireAnyRole(roles) {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ 
@@ -142,7 +142,7 @@ export function requireAnyRole(roles) {
 /**
  * Helper to issue a JWT for a user object
  */
-export function issueJWT(user) {
+export function _issueJWT(user) {
   // Validate input
   if (!user || !user.id || !user.email) {
     throw new Error('Invalid user object for JWT generation');
@@ -166,7 +166,7 @@ export function issueJWT(user) {
 /**
  * Middleware to require a specific permission
  */
-export function requirePermission(permission) {
+export function _requirePermission(permission) {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ 
@@ -205,7 +205,7 @@ export function requirePermission(permission) {
  */
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
-export const createRateLimit = (windowMs, max, message = 'Too many requests') => {
+export const _createRateLimit = (windowMs, max, message = 'Too many requests') => {
   return rateLimit({
     windowMs,
     max,

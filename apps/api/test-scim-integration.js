@@ -27,7 +27,7 @@ async function runIntegrationTests() {
       where: {
         entityId: { startsWith: 'test-' }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Create test data
     console.log('\n1. Creating test SCIM log data...');
@@ -64,7 +64,7 @@ async function runIntegrationTests() {
           duration: 50
         }
       ]
-    });
+    }); // TODO-LINT: move to async function
 
     console.log('✅ Test data created');
 
@@ -73,7 +73,7 @@ async function runIntegrationTests() {
     
     const logsResponse = await request(app)
       .get('/api/scim/monitor/logs')
-      .expect(200);
+      .expect(200); // TODO-LINT: move to async function
 
     console.log(`✅ Logs endpoint returned ${logsResponse.body.logs.length} logs`);
     console.log(`✅ Pagination: page ${logsResponse.body.pagination.page}, total ${logsResponse.body.pagination.total}`);
@@ -81,7 +81,7 @@ async function runIntegrationTests() {
     // Test filtering
     const filteredResponse = await request(app)
       .get('/api/scim/monitor/logs?operation=create&entityType=user')
-      .expect(200);
+      .expect(200); // TODO-LINT: move to async function
 
     console.log(`✅ Filtered logs: ${filteredResponse.body.logs.length} create operations`);
 
@@ -90,7 +90,7 @@ async function runIntegrationTests() {
     
     const statusResponse = await request(app)
       .get('/api/scim/monitor/status')
-      .expect(200);
+      .expect(200); // TODO-LINT: move to async function
 
     console.log(`✅ Status endpoint returned status: ${statusResponse.body.status}`);
     console.log(`✅ Total operations: ${statusResponse.body.statistics.totalOperations}`);
@@ -100,7 +100,7 @@ async function runIntegrationTests() {
     // Test with different timeframes
     const statusHourResponse = await request(app)
       .get('/api/scim/monitor/status?timeframe=1h')
-      .expect(200);
+      .expect(200); // TODO-LINT: move to async function
 
     console.log(`✅ 1-hour timeframe: ${statusHourResponse.body.statistics.totalOperations} operations`);
 
@@ -108,16 +108,16 @@ async function runIntegrationTests() {
     console.log('\n4. Testing error handling...');
     
     // Test with invalid timeframe
-    const invalidTimeframeResponse = await request(app)
+    const _invalidTimeframeResponse = await request(app)
       .get('/api/scim/monitor/status?timeframe=invalid')
-      .expect(200); // Should still work, defaults to 24h
+      .expect(200); // TODO-LINT: move to async function // Should still work, defaults to 24h
 
     console.log('✅ Invalid timeframe handled gracefully');
 
     // Test with invalid pagination
-    const invalidPaginationResponse = await request(app)
+    const _invalidPaginationResponse = await request(app)
       .get('/api/scim/monitor/logs?page=-1&limit=200')
-      .expect(200); // Should still work with corrected values
+      .expect(200); // TODO-LINT: move to async function // Should still work with corrected values
 
     console.log('✅ Invalid pagination handled gracefully');
 
@@ -132,8 +132,8 @@ async function runIntegrationTests() {
       where: {
         entityId: { startsWith: 'test-' }
       }
-    });
-    await prisma.$disconnect();
+    }); // TODO-LINT: move to async function
+    await prisma.$disconnect(); // TODO-LINT: move to async function
   }
 }
 

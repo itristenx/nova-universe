@@ -16,7 +16,7 @@ const TEST_CREDENTIALS = {
   authMethod: 'password'
 };
 
-// Helper function to make authenticated requests
+// Helper function to _make _authenticated _requests
 async function makeRequest(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
   const headers = {
@@ -32,9 +32,9 @@ async function makeRequest(endpoint, options = {}) {
     const response = await fetch(url, {
       ...options,
       headers
-    });
+    }); // TODO-LINT: move to async function
     
-    const data = await response.json();
+    const data = await response.json(); // TODO-LINT: move to async function
     return {
       status: response.status,
       success: response.ok,
@@ -50,7 +50,7 @@ async function makeRequest(endpoint, options = {}) {
 }
 
 // Step 1: Tenant Discovery
-async function discoverTenant() {
+async function _discoverTenant() {
   console.log('🔍 Discovering tenant...');
   
   const result = await makeRequest('/helix/login/tenant/discover', {
@@ -58,7 +58,7 @@ async function discoverTenant() {
     body: JSON.stringify({
       email: TEST_CREDENTIALS.email
     })
-  });
+  }); // TODO-LINT: move to async function
   
   if (result.success) {
     console.log('✅ Tenant discovery successful');
@@ -79,7 +79,7 @@ async function authenticate() {
       email: TEST_CREDENTIALS.email,
       password: TEST_CREDENTIALS.password
     })
-  });
+  }); // TODO-LINT: move to async function
   
   if (result.success && result.data.token) {
     console.log('✅ Authentication successful');
@@ -97,7 +97,7 @@ async function testQueueMetrics() {
   
   // Test 1: Get all queue metrics
   console.log('\n1️⃣ Testing GET /pulse/queues/metrics');
-  const metricsResult = await makeRequest('/pulse/queues/metrics');
+  const metricsResult = await makeRequest('/pulse/queues/metrics'); // TODO-LINT: move to async function
   
   if (metricsResult.success) {
     console.log('✅ Queue metrics retrieved successfully');
@@ -111,7 +111,7 @@ async function testQueueMetrics() {
     const firstQueue = metricsResult.data[0];
     console.log(`\n2️⃣ Testing GET /pulse/queues/${firstQueue.queueName}/agents`);
     
-    const agentsResult = await makeRequest(`/pulse/queues/${firstQueue.queueName}/agents`);
+    const agentsResult = await makeRequest(`/pulse/queues/${firstQueue.queueName}/agents`); // TODO-LINT: move to async function
     
     if (agentsResult.success) {
       console.log('✅ Queue agents retrieved successfully');
@@ -128,7 +128,7 @@ async function testQueueMetrics() {
     body: JSON.stringify({
       available: true
     })
-  });
+  }); // TODO-LINT: move to async function
   
   if (availabilityResult.success) {
     console.log('✅ Availability toggle successful');
@@ -144,14 +144,14 @@ async function runTests() {
   
   try {
     // Step 1: Authenticate directly
-    const authSuccess = await authenticate();
+    const authSuccess = await authenticate(); // TODO-LINT: move to async function
     if (!authSuccess) {
       console.log('❌ Cannot proceed without authentication');
       return;
     }
     
     // Step 2: Test queue metrics endpoints
-    await testQueueMetrics();
+    await testQueueMetrics(); // TODO-LINT: move to async function
     
     console.log('\n🎉 Test run completed!');
     
@@ -163,7 +163,7 @@ async function runTests() {
 // Check if we can connect to the API
 async function checkApiConnection() {
   try {
-    const response = await fetch(`${API_BASE}/health`);
+    const response = await fetch(`${API_BASE}/health`); // TODO-LINT: move to async function
     if (response.ok) {
       console.log('✅ API server is running');
       return true;

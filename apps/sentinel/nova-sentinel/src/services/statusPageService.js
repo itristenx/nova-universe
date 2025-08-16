@@ -20,7 +20,7 @@ export class StatusPageService {
   async initialize() {
     try {
       // Load status pages into cache
-      await this.loadStatusPages();
+      await this.loadStatusPages(); // TODO-LINT: move to async function
       
       this.isInitialized = true;
       logger.info('Status page service initialized');
@@ -34,7 +34,7 @@ export class StatusPageService {
     try {
       const statusPages = await this.database.db.prepare(`
         SELECT * FROM status_pages WHERE published = true
-      `).all();
+      `).all(); // TODO-LINT: move to async function
 
       for (const page of statusPages) {
         this.pageCache.set(page.slug, {
@@ -60,7 +60,7 @@ export class StatusPageService {
     }
 
     // Fallback to database
-    return await this.database.getStatusPageBySlug(slug);
+    return await this.database.getStatusPageBySlug(slug); // TODO-LINT: move to async function
   }
 
   async getPageStats(statusPageId) {
@@ -114,7 +114,7 @@ export class StatusPageService {
       // Get status page configuration
       const statusPage = await this.database.db.prepare(`
         SELECT config FROM status_pages WHERE uptime_kuma_id = ?
-      `).get(statusPageId);
+      `).get(statusPageId); // TODO-LINT: move to async function
 
       if (!statusPage) return [];
 
@@ -127,7 +127,7 @@ export class StatusPageService {
       const placeholders = monitorIds.map(() => '?').join(',');
       const monitors = await this.database.db.prepare(`
         SELECT * FROM monitors WHERE uptime_kuma_id IN (${placeholders})
-      `).all(...monitorIds);
+      `).all(...monitorIds); // TODO-LINT: move to async function
 
       return monitors.map(monitor => ({
         ...monitor,
@@ -146,7 +146,7 @@ export class StatusPageService {
         WHERE status_page_id = ? 
         AND resolved_at IS NULL 
         ORDER BY created_at DESC
-      `).all(statusPageId);
+      `).all(statusPageId); // TODO-LINT: move to async function
 
       return incidents;
     } catch (error) {
@@ -163,7 +163,7 @@ export class StatusPageService {
         WHERE json_extract(affected_status_pages, '$') LIKE '%' || ? || '%'
         AND (status = 'active' OR (status = 'scheduled' AND start_time > ?))
         ORDER BY start_time ASC
-      `).all(statusPageId, now);
+      `).all(statusPageId, now); // TODO-LINT: move to async function
 
       return maintenance.map(m => ({
         ...m,
@@ -632,21 +632,21 @@ export class StatusPageService {
   // ========================================================================
 
   async createSubscription(subscriptionData) {
-    return await this.database.createSubscription(subscriptionData);
+    return await this.database.createSubscription(subscriptionData); // TODO-LINT: move to async function
   }
 
   async confirmSubscription(token) {
-    return await this.database.confirmSubscription(token);
+    return await this.database.confirmSubscription(token); // TODO-LINT: move to async function
   }
 
   async getSubscribers(statusPageId, notificationType) {
-    return await this.database.getSubscribers(statusPageId, notificationType);
+    return await this.database.getSubscribers(statusPageId, notificationType); // TODO-LINT: move to async function
   }
 
   async updateAllStatusPages() {
     try {
       // Update cache from database
-      await this.loadStatusPages();
+      await this.loadStatusPages(); // TODO-LINT: move to async function
       
       // Emit update event for real-time updates
       logger.debug('Status pages cache updated');
@@ -660,7 +660,7 @@ export class StatusPageService {
   // ========================================================================
 
   async healthCheck() {
-    return this.isInitialized && this.database && await this.database.healthCheck();
+    return this.isInitialized && this.database && await this.database.healthCheck(); // TODO-LINT: move to async function
   }
 
   async close() {

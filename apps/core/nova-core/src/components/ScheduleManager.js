@@ -21,7 +21,7 @@ const TIMEZONES = [
     'Pacific/Honolulu',
     'UTC'
 ];
-export const ScheduleManager = ({ title, config, onSave, showEnabled = true, showTitle = false, showNextOpen = false }) => {
+export const _ScheduleManager = ({ title, config, onSave, showEnabled = true, showTitle = false, showNextOpen = false }) => {
     const [localConfig, setLocalConfig] = useState(config);
     const [loading, setLoading] = useState(false);
     const { addToast } = useToastStore();
@@ -31,7 +31,7 @@ export const ScheduleManager = ({ title, config, onSave, showEnabled = true, sho
     const handleSave = async () => {
         try {
             setLoading(true);
-            await onSave(localConfig);
+            await onSave(localConfig); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Success',

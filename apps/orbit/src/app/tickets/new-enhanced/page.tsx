@@ -120,7 +120,7 @@ interface FormStep {
   isOptional?: boolean;
 }
 
-export default function EnhancedTicketSubmissionForm() {
+export default function _EnhancedTicketSubmissionForm() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -454,7 +454,7 @@ export default function EnhancedTicketSubmissionForm() {
     const fieldsToValidate = currentStepData.fields;
     
     if (fieldsToValidate.length > 0) {
-      const isStepValid = await trigger(fieldsToValidate as (keyof TicketFormData)[]);
+      const isStepValid = await trigger(fieldsToValidate as (keyof TicketFormData)[]); // TODO-LINT: move to async function
       if (!isStepValid && !currentStepData.isOptional) {
         return;
       }
@@ -499,7 +499,7 @@ export default function EnhancedTicketSubmissionForm() {
       console.log('Submitting ticket:', formData);
       
       // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000)); // TODO-LINT: move to async function
       
       setSubmitProgress(100);
       

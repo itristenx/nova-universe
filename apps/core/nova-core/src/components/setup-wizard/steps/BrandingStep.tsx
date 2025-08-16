@@ -244,15 +244,15 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                   <div className="flex space-x-1 mb-2">
                     <div 
                       className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: theme.colors.primary }} // eslint-disable-line no-inline-styles
+                      style={{ backgroundColor: theme.colors.primary }}
                     />
                     <div 
                       className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: theme.colors.secondary }} // eslint-disable-line no-inline-styles
+                      style={{ backgroundColor: theme.colors.secondary }}
                     />
                     <div 
                       className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: theme.colors.accent }} // eslint-disable-line no-inline-styles
+                      style={{ backgroundColor: theme.colors.accent }}
                     />
                   </div>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{theme.name}</p>
@@ -483,7 +483,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             )}
             <h2 
               className="text-xl font-bold mb-2"
-              style={{ color: formData.primaryColor }} // eslint-disable-line no-inline-styles
+              style={{ color: formData.primaryColor }}
             >
               {formData.companyName || 'Your Company'}
             </h2>
@@ -492,7 +492,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             )}
             <div 
               className="inline-block px-4 py-2 rounded-lg text-white text-sm font-medium"
-              style={{ backgroundColor: formData.primaryColor }} // eslint-disable-line no-inline-styles
+              style={{ backgroundColor: formData.primaryColor }}
             >
               {formData.portalTitle}
             </div>

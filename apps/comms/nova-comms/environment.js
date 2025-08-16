@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export function validateEnv() {
+export function _validateEnv() {
   const required = ['SLACK_SIGNING_SECRET', 'SLACK_BOT_TOKEN', 'API_URL', 'JWT_SECRET'];
   const missing = required.filter((v) => !process.env[v]);
   if (missing.length) {

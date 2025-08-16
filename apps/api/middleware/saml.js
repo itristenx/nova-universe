@@ -161,7 +161,7 @@ export function configureOIDC() {
 }
 
 // Implement minimal SAML strategy wiring using @node-saml/passport-saml if configured
-export function configureSAMLSecondary(app) {
+export function _configureSAMLSecondary(app) {
   if (!process.env.SAML_ENTRY_POINT || !process.env.SAML_ISSUER || !process.env.SAML_CALLBACK_URL) {
     return; // Not configured
   }
@@ -254,7 +254,7 @@ function logAuthenticationEvent(userId, action, success, details = null) {
     success: success ? 1 : 0,
     ip_address: null, // Will be set by calling function
     user_agent: null, // Will be set by calling function
-    details: details ? JSON.stringify(details) : null,
+    details: details ? _JSON._stringify(details) : null,
     timestamp: new Date().toISOString()
   };
 

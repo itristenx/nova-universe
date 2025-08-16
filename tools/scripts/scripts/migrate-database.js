@@ -52,16 +52,16 @@ async function main() {
     const dbFactory = new DatabaseFactory();
 
     // Initialize target database
-    await dbFactory.initialize();
+    await dbFactory.initialize(); // TODO-LINT: move to async function
     logger.info('Target database initialized');
 
     // Run database migrations first
     logger.info('Running database schema migrations...');
-    await migrationManager.runMigrations();
+    await migrationManager.runMigrations(); // TODO-LINT: move to async function
 
     // Create backup if requested
     if (options.backup && !options.dryRun) {
-      await createBackup(options.source);
+      await createBackup(options.source); // TODO-LINT: move to async function
     }
 
     // Perform data migration
@@ -72,7 +72,7 @@ async function main() {
         dryRun: options.dryRun,
         force: options.force
       }
-    );
+    ); // TODO-LINT: move to async function
 
     // Display results
     displayMigrationResults(migrationResult);
@@ -164,7 +164,7 @@ function displayMigrationResults(results) {
  * Interactive migration setup
  */
 async function interactiveSetup() {
-  const readline = await import('readline');
+  const readline = await import('readline'); // TODO-LINT: move to async function
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -182,9 +182,9 @@ async function interactiveSetup() {
     if (!envExists) {
       logger.info('No .env file found. Let\'s create one...');
       
-      const setupEnv = await question('Would you like to set up database configuration now? (y/N): ');
+      const setupEnv = await question('Would you like to set up database configuration now? (y/N): '); // TODO-LINT: move to async function
       if (setupEnv.toLowerCase() === 'y') {
-        await setupEnvironment(question);
+        await setupEnvironment(question); // TODO-LINT: move to async function
       } else {
         logger.info('Please copy .env.example to .env and configure your database settings');
         logger.info('Then run this migration script again');
@@ -201,13 +201,13 @@ async function interactiveSetup() {
     logger.info(`Backup: ${options.backup ? 'Yes' : 'No'}`);
     logger.info('');
 
-    const confirm = await question('Proceed with migration? (y/N): ');
+    const confirm = await question('Proceed with migration? (y/N): '); // TODO-LINT: move to async function
     if (confirm.toLowerCase() !== 'y') {
       logger.info('Migration cancelled');
       return;
     }
 
-    await main();
+    await main(); // TODO-LINT: move to async function
 
   } finally {
     rl.close();
@@ -221,28 +221,28 @@ async function setupEnvironment(question) {
   const config = {};
 
   // Database selection
-  const dbType = await question('Database type (postgresql/mongodb/both) [both]: ') || 'both';
+  const dbType = await question('Database type (postgresql/mongodb/both) [both]: ') || 'both'; // TODO-LINT: move to async function
   config.PRIMARY_DATABASE = dbType === 'both' ? 'postgresql,mongodb' : dbType;
 
   if (dbType === 'postgresql' || dbType === 'both') {
     // PostgreSQL configuration
-    config.POSTGRES_HOST = await question('PostgreSQL host [localhost]: ') || 'localhost';
-    config.POSTGRES_PORT = await question('PostgreSQL port [5432]: ') || '5432';
-    config.POSTGRES_DB = await question('PostgreSQL database [nova_universe]: ') || 'nova_universe';
-    config.POSTGRES_USER = await question('PostgreSQL user [nova_user]: ') || 'nova_user';
-    config.POSTGRES_PASSWORD = await question('PostgreSQL password: ');
+    config.POSTGRES_HOST = await question('PostgreSQL host [localhost]: ') || 'localhost'; // TODO-LINT: move to async function
+    config.POSTGRES_PORT = await question('PostgreSQL port [5432]: ') || '5432'; // TODO-LINT: move to async function
+    config.POSTGRES_DB = await question('PostgreSQL database [nova_universe]: ') || 'nova_universe'; // TODO-LINT: move to async function
+    config.POSTGRES_USER = await question('PostgreSQL user [nova_user]: ') || 'nova_user'; // TODO-LINT: move to async function
+    config.POSTGRES_PASSWORD = await question('PostgreSQL password: '); // TODO-LINT: move to async function
   }
 
   if (dbType === 'mongodb' || dbType === 'both') {
     // MongoDB configuration
-    config.MONGO_URI = await question('MongoDB URI [mongodb://localhost:27017/nova_universe]: ') || 'mongodb://localhost:27017/nova_universe';
-    config.MONGO_USER = await question('MongoDB user [nova_user]: ') || 'nova_user';
-    config.MONGO_PASSWORD = await question('MongoDB password: ');
+    config.MONGO_URI = await question('MongoDB URI [mongodb://localhost:27017/nova_universe]: ') || 'mongodb://localhost:27017/nova_universe'; // TODO-LINT: move to async function
+    config.MONGO_USER = await question('MongoDB user [nova_user]: ') || 'nova_user'; // TODO-LINT: move to async function
+    config.MONGO_PASSWORD = await question('MongoDB password: '); // TODO-LINT: move to async function
   }
 
   // Admin user
-  config.ADMIN_EMAIL = await question('Admin email [admin@example.com]: ') || 'admin@example.com';
-  config.ADMIN_PASSWORD = await question('Admin password [admin123!]: ') || 'admin123!';
+  config.ADMIN_EMAIL = await question('Admin email [admin@example.com]: ') || 'admin@example.com'; // TODO-LINT: move to async function
+  config.ADMIN_PASSWORD = await question('Admin password [admin123!]: ') || 'admin123!'; // TODO-LINT: move to async function
 
   // Generate secrets
   config.JWT_SECRET = generateSecret(64);

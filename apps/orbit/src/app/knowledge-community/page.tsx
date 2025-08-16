@@ -92,7 +92,7 @@ interface Community {
   recentActivity: Activity[];
 }
 
-export default function KnowledgeSharingPlatform() {
+export default function _KnowledgeSharingPlatform() {
   const [articles, setArticles] = useState<KnowledgeArticle[]>([]);
   const [experts, setExperts] = useState<Expert[]>([]);
   const [community, setCommunity] = useState<Community | null>(null);

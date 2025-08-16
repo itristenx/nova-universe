@@ -86,7 +86,7 @@ const searchSchema = z.object({
 
 type SearchFormData = z.infer<typeof searchSchema>;
 
-export default function EnhancedServiceCatalog() {
+export default function _EnhancedServiceCatalog() {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [filteredServices, setFilteredServices] = useState<ServiceItem[]>([]);
@@ -298,7 +298,7 @@ export default function EnhancedServiceCatalog() {
     setFilteredServices(mockServices);
   }, []);
 
-  // Search and filter functionality
+  // Search and filter _functionality
   useEffect(() => {
     let result = [...services];
 

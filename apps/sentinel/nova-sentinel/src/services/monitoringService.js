@@ -27,7 +27,7 @@ export class MonitoringService extends EventEmitter {
       this.setupUptimeKumaEventHandlers();
       
       // Load initial monitor states
-      await this.loadInitialStates();
+      await this.loadInitialStates(); // TODO-LINT: move to async function
       
       this.isInitialized = true;
       logger.info('Monitoring service initialized');
@@ -55,11 +55,11 @@ export class MonitoringService extends EventEmitter {
   async loadInitialStates() {
     try {
       // Load monitors from database
-      const monitors = await this.database.getAllMonitors();
+      const monitors = await this.database.getAllMonitors(); // TODO-LINT: move to async function
       
       for (const monitor of monitors) {
         // Get latest heartbeat for each monitor
-        const heartbeat = await this.database.getLatestHeartbeat(monitor.uptime_kuma_id);
+        const heartbeat = await this.database.getLatestHeartbeat(monitor.uptime_kuma_id); // TODO-LINT: move to async function
         if (heartbeat) {
           this.heartbeatCache.set(monitor.uptime_kuma_id, heartbeat);
           this.monitorStatusCache.set(monitor.uptime_kuma_id, heartbeat.status);
@@ -79,7 +79,7 @@ export class MonitoringService extends EventEmitter {
   async handleHeartbeat(heartbeat) {
     try {
       const monitorId = heartbeat.monitorID;
-      const previousHeartbeat = this.heartbeatCache.get(monitorId);
+      const _previousHeartbeat = this.heartbeatCache.get(monitorId);
       const previousStatus = this.monitorStatusCache.get(monitorId);
       
       // Update caches
@@ -95,11 +95,11 @@ export class MonitoringService extends EventEmitter {
         msg: heartbeat.msg,
         important: heartbeat.important || false,
         duration: heartbeat.duration
-      });
+      }); // TODO-LINT: move to async function
 
       // Check for status changes
       if (previousStatus !== undefined && previousStatus !== heartbeat.status) {
-        await this.handleStatusChange(monitorId, previousStatus, heartbeat.status, heartbeat);
+        await this.handleStatusChange(monitorId, previousStatus, heartbeat.status, heartbeat); // TODO-LINT: move to async function
       }
 
       // Emit real-time update
@@ -118,7 +118,7 @@ export class MonitoringService extends EventEmitter {
           ping: heartbeat.ping,
           important: heartbeat.important
         }
-      });
+      }); // TODO-LINT: move to async function
 
     } catch (error) {
       logger.error('Error handling heartbeat:', error);
@@ -134,7 +134,7 @@ export class MonitoringService extends EventEmitter {
           await this.handleHeartbeat({
             ...latestHeartbeat,
             monitorID: monitorId
-          });
+          }); // TODO-LINT: move to async function
         }
       }
     } catch (error) {
@@ -146,13 +146,13 @@ export class MonitoringService extends EventEmitter {
     try {
       for (const [monitorId, monitor] of Object.entries(monitors)) {
         // Update monitor cache if it exists in our database
-        const dbMonitor = await this.database.getMonitor(monitorId);
+        const dbMonitor = await this.database.getMonitor(monitorId); // TODO-LINT: move to async function
         if (dbMonitor) {
           // Monitor exists, update configuration if needed
           await this.database.updateMonitor(monitorId, {
             config: monitor,
             updatedBy: 'system'
-          });
+          }); // TODO-LINT: move to async function
         }
       }
       
@@ -164,7 +164,7 @@ export class MonitoringService extends EventEmitter {
 
   async handleStatusChange(monitorId, previousStatus, newStatus, heartbeat) {
     try {
-      const monitor = await this.database.getMonitor(monitorId);
+      const monitor = await this.database.getMonitor(monitorId); // TODO-LINT: move to async function
       if (!monitor) return;
 
       const statusChangeEvent = {
@@ -182,7 +182,7 @@ export class MonitoringService extends EventEmitter {
       };
 
       // Log analytics event
-      await this.database.logEvent(statusChangeEvent);
+      await this.database.logEvent(statusChangeEvent); // TODO-LINT: move to async function
 
       // Emit status change event
       this.emit('statusChange', statusChangeEvent);
@@ -219,7 +219,7 @@ export class MonitoringService extends EventEmitter {
     try {
       // This would typically trigger Uptime Kuma to run checks
       // For now, we rely on Uptime Kuma's internal scheduling
-      const stats = await this.getSystemStats();
+      const stats = await this.getSystemStats(); // TODO-LINT: move to async function
       
       this.emit('monitorChecksCycle', {
         timestamp: new Date().toISOString(),
@@ -227,7 +227,7 @@ export class MonitoringService extends EventEmitter {
       });
 
       // Clean up old heartbeats periodically
-      await this.cleanupOldHeartbeats();
+      await this.cleanupOldHeartbeats(); // TODO-LINT: move to async function
 
     } catch (error) {
       logger.error('Error running monitor checks:', error);
@@ -350,7 +350,7 @@ export class MonitoringService extends EventEmitter {
     const stats = {};
 
     for (const period of periods) {
-      stats[period] = await this.getUptimeStats(monitorId, period);
+      stats[period] = await this.getUptimeStats(monitorId, period); // TODO-LINT: move to async function
     }
 
     return stats;
@@ -362,7 +362,7 @@ export class MonitoringService extends EventEmitter {
 
   async getSystemStats() {
     try {
-      const dbStats = await this.database.getStats();
+      const dbStats = await this.database.getStats(); // TODO-LINT: move to async function
       
       // Count monitors by status
       let upMonitors = 0;
@@ -426,7 +426,7 @@ export class MonitoringService extends EventEmitter {
       if (monitorEvent.type === 'monitor_down') {
         // Check if this monitor should trigger a GoAlert alert
         const monitor = monitorEvent.monitor;
-        const shouldCreateAlert = await this.shouldCreateGoAlert(monitor);
+        const shouldCreateAlert = await this.shouldCreateGoAlert(monitor); // TODO-LINT: move to async function
 
         if (shouldCreateAlert) {
           this.emit('createGoAlert', {
@@ -463,7 +463,7 @@ export class MonitoringService extends EventEmitter {
       if (config.priority === 'critical') return true;
       
       // Check if it's been down for a certain duration
-      const downtime = await this.getMonitorDowntime(monitor.uptime_kuma_id);
+      const downtime = await this.getMonitorDowntime(monitor.uptime_kuma_id); // TODO-LINT: move to async function
       if (downtime > 300) return true; // 5 minutes
       
       // Check business hours if configured
@@ -541,7 +541,7 @@ export class MonitoringService extends EventEmitter {
              this.database && 
              await this.database.healthCheck() &&
              this.uptimeKuma &&
-             await this.uptimeKuma.healthCheck();
+             await this.uptimeKuma.healthCheck(); // TODO-LINT: move to async function
     } catch (error) {
       return false;
     }

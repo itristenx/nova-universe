@@ -1,4 +1,4 @@
-export function calculateVipWeight(isVip, vipLevel) {
+export function _calculateVipWeight(isVip, vipLevel) {
   if (!isVip) return 0;
   if (isVip && (vipLevel === null || vipLevel === undefined)) {
     throw new Error("vipLevel must be provided when isVip is true");

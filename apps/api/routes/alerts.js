@@ -47,10 +47,10 @@ async function makeGoAlertRequest(endpoint, options = {}) {
     ...options,
     headers,
     timeout: 30000
-  });
+  }); // TODO-LINT: move to async function
 
   if (!response.ok) {
-    const error = await response.text();
+    const error = await response.text(); // TODO-LINT: move to async function
     logger.error(`GoAlert API Error: ${response.status} - ${error}`);
     throw new Error(`GoAlert API request failed: ${response.status} ${response.statusText}`);
   }
@@ -78,7 +78,7 @@ async function logAlertOperation(userId, operation, alertData, metadata = {}) {
       INSERT INTO alert_audit_log 
       (user_id, operation, alert_id, schedule_id, source_ticket_id, delivery_status, metadata, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, Object.values(logEntry));
+    `, Object.values(logEntry)); // TODO-LINT: move to async function
 
     logger.info('Alert operation logged:', logEntry);
   } catch (error) {
@@ -176,7 +176,7 @@ router.post('/create',
       const goAlertResponse = await makeGoAlertRequest(`/api/v2/generic/incoming?token=${serviceId}`, {
         method: 'POST',
         body: JSON.stringify(alertPayload)
-      });
+      }); // TODO-LINT: move to async function
 
       // Log the alert creation
       await logAlertOperation(req.user.id, 'create', {
@@ -189,7 +189,7 @@ router.post('/create',
         summary,
         userRole: req.user.role,
         ...metadata
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -253,7 +253,7 @@ router.post('/escalate/:ticketId',
       const { reason, priority = 'high', serviceId } = req.body;
 
       // Get ticket details for context
-      const ticketQuery = await db.get('SELECT * FROM tickets WHERE id = ?', [ticketId]);
+      const ticketQuery = await db.get('SELECT * FROM tickets WHERE id = ?', [ticketId]); // TODO-LINT: move to async function
       if (!ticketQuery) {
         return res.status(404).json({
           success: false,
@@ -276,14 +276,14 @@ router.post('/escalate/:ticketId',
       const goAlertResponse = await makeGoAlertRequest(`/api/v2/generic/incoming?token=${serviceId}`, {
         method: 'POST',
         body: JSON.stringify(escalationPayload)
-      });
+      }); // TODO-LINT: move to async function
 
       // Update ticket with escalation info
       await db.run(`
         UPDATE tickets 
         SET escalated = 1, escalated_at = datetime('now'), escalation_reason = ?
         WHERE id = ?
-      `, [reason, ticketId]);
+      `, [reason, ticketId]); // TODO-LINT: move to async function
 
       // Log escalation
       await logAlertOperation(req.user.id, 'escalate', {
@@ -295,7 +295,7 @@ router.post('/escalate/:ticketId',
         priority,
         originalPriority: ticketQuery.priority,
         userRole: req.user.role
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -340,7 +340,7 @@ router.get('/status/:alertId',
       const { alertId } = req.params;
 
       // Get alert from GoAlert
-      const goAlertData = await makeGoAlertRequest(`/api/v2/alerts/${alertId}`);
+      const goAlertData = await makeGoAlertRequest(`/api/v2/alerts/${alertId}`); // TODO-LINT: move to async function
 
       // Get Nova audit data
       const auditData = await db.get(`
@@ -348,7 +348,7 @@ router.get('/status/:alertId',
         WHERE alert_id = ? 
         ORDER BY created_at DESC 
         LIMIT 1
-      `, [alertId]);
+      `, [alertId]); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -401,7 +401,7 @@ router.get('/schedules',
       if (team) params.append('search', team);
       if (params.toString()) endpoint += `?${params.toString()}`;
 
-      const schedulesData = await makeGoAlertRequest(endpoint);
+      const schedulesData = await makeGoAlertRequest(endpoint); // TODO-LINT: move to async function
 
       // Filter based on user permissions and role
       let filteredSchedules = schedulesData.schedules || schedulesData;
@@ -468,7 +468,7 @@ router.get('/schedules/:scheduleId',
         makeGoAlertRequest(`/api/v2/schedules/${scheduleId}`),
         makeGoAlertRequest(`/api/v2/schedules/${scheduleId}/rules`),
         makeGoAlertRequest(`/api/v2/schedules/${scheduleId}/overrides`)
-      ]);
+      ]); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -523,7 +523,7 @@ router.post('/rotate/:scheduleId',
       const rotationResponse = await makeGoAlertRequest(`/api/v2/schedules/${scheduleId}/overrides`, {
         method: 'POST',
         body: JSON.stringify(overridePayload)
-      });
+      }); // TODO-LINT: move to async function
 
       // Log the rotation
       await logAlertOperation(req.user.id, 'rotate', {
@@ -531,7 +531,7 @@ router.post('/rotate/:scheduleId',
       }, {
         reason,
         userRole: req.user.role
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -572,7 +572,7 @@ router.get('/services',
   checkPermissions(['alerts:read']),
   async (req, res) => {
     try {
-      const servicesData = await makeGoAlertRequest('/api/v2/services');
+      const servicesData = await makeGoAlertRequest('/api/v2/services'); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -611,7 +611,7 @@ router.get('/escalation-policies',
   checkPermissions(['alerts:read']),
   async (req, res) => {
     try {
-      const policiesData = await makeGoAlertRequest('/api/v2/escalation-policies');
+      const policiesData = await makeGoAlertRequest('/api/v2/escalation-policies'); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -673,7 +673,7 @@ router.get('/history',
       if (serviceId) params.append('service_id', serviceId);
       params.append('limit', limit.toString());
 
-      const alertsData = await makeGoAlertRequest(`/api/v2/alerts?${params.toString()}`);
+      const alertsData = await makeGoAlertRequest(`/api/v2/alerts?${params.toString()}`); // TODO-LINT: move to async function
 
       // Get Nova audit data for these alerts
       const alertIds = (alertsData.alerts || alertsData).map(alert => alert.id);
@@ -683,7 +683,7 @@ router.get('/history',
           FROM alert_audit_log 
           WHERE alert_id IN (${alertIds.map(() => '?').join(',')})
           ORDER BY created_at DESC
-        `, alertIds);
+        `, alertIds); // TODO-LINT: move to async function
 
         // Merge Nova metadata with GoAlert data
         const enrichedAlerts = (alertsData.alerts || alertsData).map(alert => {
@@ -741,7 +741,7 @@ router.get('/health',
   checkPermissions(['alerts:read']),
   async (req, res) => {
     try {
-      const healthData = await makeGoAlertRequest('/api/v2/system/limits');
+      const healthData = await makeGoAlertRequest('/api/v2/system/limits'); // TODO-LINT: move to async function
       
       res.json({
         success: true,

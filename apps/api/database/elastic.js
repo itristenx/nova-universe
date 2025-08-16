@@ -40,11 +40,11 @@ class ElasticsearchManager {
       this.client = new Client(config);
       
       // Test connection
-      await this.client.ping();
+      await this.client.ping(); // TODO-LINT: move to async function
       this.isConnected = true;
       
       logger.info('✅ Elasticsearch connected successfully');
-      await this.ensureIndicesExist();
+      await this.ensureIndicesExist(); // TODO-LINT: move to async function
       
     } catch (error) {
       this.isConnected = false;
@@ -82,7 +82,7 @@ class ElasticsearchManager {
             content_vector: { type: 'dense_vector', dims: 384 }
           }
         }
-      });
+      }); // TODO-LINT: move to async function
 
       // Knowledge base index
       await this.createIndexIfNotExists(this.indices.knowledge, {
@@ -100,7 +100,7 @@ class ElasticsearchManager {
             content_vector: { type: 'dense_vector', dims: 384 }
           }
         }
-      });
+      }); // TODO-LINT: move to async function
 
       // Assets index
       await this.createIndexIfNotExists(this.indices.assets, {
@@ -117,7 +117,7 @@ class ElasticsearchManager {
             updated_at: { type: 'date' }
           }
         }
-      });
+      }); // TODO-LINT: move to async function
 
       // Logs index
       await this.createIndexIfNotExists(this.indices.logs, {
@@ -133,7 +133,7 @@ class ElasticsearchManager {
             metadata: { type: 'object' }
           }
         }
-      });
+      }); // TODO-LINT: move to async function
 
       logger.info('📝 Elasticsearch indices verified/created successfully');
     } catch (error) {
@@ -143,12 +143,12 @@ class ElasticsearchManager {
 
   async createIndexIfNotExists(indexName, settings) {
     try {
-      const exists = await this.client.indices.exists({ index: indexName });
+      const exists = await this.client.indices.exists({ index: indexName }); // TODO-LINT: move to async function
       if (!exists) {
         await this.client.indices.create({
           index: indexName,
           body: settings
-        });
+        }); // TODO-LINT: move to async function
         logger.info(`Created index: ${indexName}`);
       }
     } catch (error) {
@@ -217,7 +217,7 @@ class ElasticsearchManager {
       const response = await this.client.search({
         index: this.indices.tickets,
         body: searchBody
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         tickets: response.body.hits.hits.map(hit => ({
@@ -281,7 +281,7 @@ class ElasticsearchManager {
             }
           }
         }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         articles: response.body.hits.hits.map(hit => ({
@@ -335,7 +335,7 @@ class ElasticsearchManager {
       const response = await this.client.search({
         index: [this.indices.tickets, this.indices.knowledge, this.indices.assets],
         body: searchBody
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         results: response.body.hits.hits.map(hit => ({
@@ -381,7 +381,7 @@ class ElasticsearchManager {
           },
           size: 0
         }
-      });
+      }); // TODO-LINT: move to async function
 
       const suggestions = response.body.suggest?.suggestions?.[0]?.options || [];
       return {
@@ -451,7 +451,7 @@ class ElasticsearchManager {
           size,
           sort: [{ timestamp: { order: 'desc' } }]
         }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         logs: response.body.hits.hits.map(hit => hit._source),
@@ -477,10 +477,10 @@ class ElasticsearchManager {
       // Get index stats
       const stats = await this.client.indices.stats({
         index: Object.values(this.indices)
-      });
+      }); // TODO-LINT: move to async function
 
       // Get cluster health
-      const health = await this.client.cluster.health();
+      const health = await this.client.cluster.health(); // TODO-LINT: move to async function
 
       return {
         analytics: {
@@ -516,7 +516,7 @@ class ElasticsearchManager {
           ...document,
           indexed_at: new Date().toISOString()
         }
-      });
+      }); // TODO-LINT: move to async function
       return true;
     } catch (error) {
       logger.error(`Failed to index document ${id}:`, error.message);
@@ -531,7 +531,7 @@ class ElasticsearchManager {
     if (!this.isConnected) return false;
 
     try {
-      await this.client.delete({ index, id });
+      await this.client.delete({ index, id }); // TODO-LINT: move to async function
       return true;
     } catch (error) {
       logger.error(`Failed to delete document ${id}:`, error.message);
@@ -572,7 +572,7 @@ class ElasticsearchManager {
     }
 
     try {
-      const health = await this.client.cluster.health();
+      const health = await this.client.cluster.health(); // TODO-LINT: move to async function
       return {
         status: health.body.status,
         cluster_name: health.body.cluster_name,
