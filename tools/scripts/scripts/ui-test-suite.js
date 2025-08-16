@@ -6,7 +6,7 @@ console.log('🧪 Starting comprehensive UI test suite...');
 // Test data
 const testCredentials = {
   email: 'admin@example.com',
-  password: 'admin'
+  password: 'admin',
 };
 
 // Utility functions
@@ -28,17 +28,17 @@ function waitFor(selector, timeout = 5000) {
 }
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Test suite
 async function runUITests() {
   try {
     console.log('📋 Test Suite: Nova Universe Portal UI Functionality');
-    
+
     // Clear any existing auth
     localStorage.clear();
-    
+
     // Test 1: Login Form Presence
     console.log('\n1️⃣ Testing Login Form Presence...');
     await waitFor('form', 3000);
@@ -46,7 +46,7 @@ async function runUITests() {
     const emailInput = document.querySelector('input[type="email"]');
     const passwordInput = document.querySelector('input[type="password"]');
     const submitButton = document.querySelector('button[type="submit"]');
-    
+
     if (!loginForm || !emailInput || !passwordInput || !submitButton) {
       throw new Error('Login form elements not found');
     }
@@ -56,10 +56,10 @@ async function runUITests() {
     console.log('\n2️⃣ Testing Form Input...');
     emailInput.value = testCredentials.email;
     emailInput.dispatchEvent(new Event('input', { bubbles: true }));
-    
+
     passwordInput.value = testCredentials.password;
     passwordInput.dispatchEvent(new Event('input', { bubbles: true }));
-    
+
     console.log('✅ Login form filled successfully');
 
     // Test 3: API Connectivity Test
@@ -78,22 +78,21 @@ async function runUITests() {
       const loginResponse = await fetch('/api/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(testCredentials)
+        body: JSON.stringify(testCredentials),
       });
-      
+
       if (!loginResponse.ok) {
         const error = await loginResponse.json();
         throw new Error(`Login API failed: ${JSON.stringify(error)}`);
       }
-      
+
       const loginResult = await loginResponse.json();
       console.log('✅ Login API successful');
-      
+
       // Store token for subsequent tests
       localStorage.setItem('auth_token', loginResult.token);
-      
     } catch (error) {
       throw new Error(`Login API test failed: ${error.message}`);
     }
@@ -103,14 +102,13 @@ async function runUITests() {
     try {
       // Trigger form submission
       submitButton.click();
-      
+
       // Wait for potential navigation or state change
       await sleep(2000);
-      
+
       // Check if we're still on login page or redirected
       const currentUrl = window.location.pathname;
       console.log('✅ Form submitted, current path:', currentUrl);
-      
     } catch (error) {
       console.warn('⚠️ Form submission test had issues:', error.message);
     }
@@ -120,15 +118,15 @@ async function runUITests() {
     const authToken = localStorage.getItem('auth_token');
     if (authToken) {
       console.log('✅ Auth token stored in localStorage');
-      
+
       // Test profile endpoint
       try {
         const profileResponse = await fetch('/api/me', {
           headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
+            Authorization: `Bearer ${authToken}`,
+          },
         });
-        
+
         if (profileResponse.ok) {
           const profile = await profileResponse.json();
           console.log('✅ Profile API working:', profile);
@@ -145,11 +143,13 @@ async function runUITests() {
     // Test 7: Check for UI Elements After Login
     console.log('\n7️⃣ Testing Post-Login UI Elements...');
     await sleep(1000);
-    
+
     // Look for navigation or dashboard elements
     const navElements = document.querySelectorAll('nav, [role="navigation"]');
-    const dashboardElements = document.querySelectorAll('.dashboard, .admin, [data-testid*="dashboard"]');
-    
+    const dashboardElements = document.querySelectorAll(
+      '.dashboard, .admin, [data-testid*="dashboard"]',
+    );
+
     if (navElements.length > 0 || dashboardElements.length > 0) {
       console.log('✅ Post-login UI elements detected');
     } else {
@@ -169,13 +169,12 @@ async function runUITests() {
     console.log('- Login API: ✅');
     console.log('- Form submission: Attempted');
     console.log('- Authentication: Token stored');
-    
+
     console.log('\n💡 Next Steps:');
     console.log('1. Try logging in manually with the form');
     console.log('2. Check browser Network tab for failed requests');
     console.log('3. Look for JavaScript errors in Console');
     console.log('4. Verify the page redirects after successful login');
-
   } catch (error) {
     console.error('❌ UI Test Failed:', error.message);
     console.log('\n🔍 Debugging Info:');
@@ -184,7 +183,7 @@ async function runUITests() {
       form: !!document.querySelector('form'),
       email: !!document.querySelector('input[type="email"]'),
       password: !!document.querySelector('input[type="password"]'),
-      submit: !!document.querySelector('button[type="submit"]')
+      submit: !!document.querySelector('button[type="submit"]'),
     });
     console.log('- Local storage:', Object.keys(localStorage));
   }

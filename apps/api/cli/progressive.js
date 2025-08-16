@@ -12,20 +12,21 @@ import figlet from 'figlet';
 const program = new Command();
 
 // ASCII Art Banner
-console.log(chalk.cyan(figlet.textSync('Nova CLI', {
-  font: 'Standard',
-  horizontalLayout: 'default',
-  verticalLayout: 'default'
-})));
+console.log(
+  chalk.cyan(
+    figlet.textSync('Nova CLI', {
+      font: 'Standard',
+      horizontalLayout: 'default',
+      verticalLayout: 'default',
+    }),
+  ),
+);
 
 console.log(chalk.gray('Nova Universe Command Line Interface'));
 console.log(chalk.gray('Progressive test version\n'));
 
 // Configure main program
-program
-  .name('nova')
-  .description('Nova Universe CLI - Progressive test')
-  .version('2.0.0');
+program.name('nova').description('Nova Universe CLI - Progressive test').version('2.0.0');
 
 // Test with just one command first
 try {

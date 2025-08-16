@@ -1,15 +1,21 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@nova-universe/ui': fileURLToPath(new URL('../../../packages/ui/dist/index.js', import.meta.url)),
-      '@nova-universe/theme': fileURLToPath(new URL('../../../packages/theme/theme.ts', import.meta.url)),
-      '@nova-universe/cosmo-sdk': fileURLToPath(new URL('../../../packages/cosmo-sdk/dist/index.js', import.meta.url)),
+      '@nova-universe/ui': fileURLToPath(
+        new URL('../../../packages/ui/dist/index.js', import.meta.url),
+      ),
+      '@nova-universe/theme': fileURLToPath(
+        new URL('../../../packages/theme/theme.ts', import.meta.url),
+      ),
+      '@nova-universe/cosmo-sdk': fileURLToPath(
+        new URL('../../../packages/cosmo-sdk/dist/index.js', import.meta.url),
+      ),
     },
   },
   server: {
@@ -38,4 +44,4 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000,
   },
-})
+});

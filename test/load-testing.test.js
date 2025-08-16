@@ -18,15 +18,15 @@ const LOAD_CONFIG = {
     peak: { users: 500, duration: 600000, rampUp: 60000 },
     stress: { users: 1000, duration: 300000, rampUp: 30000 },
     spike: { users: 2000, duration: 60000, rampUp: 5000 },
-    endurance: { users: 200, duration: 1800000, rampUp: 60000 } // 30 minutes
+    endurance: { users: 200, duration: 1800000, rampUp: 60000 }, // 30 minutes
   },
   thresholds: {
     avgResponseTime: 2000, // 2 seconds
     p95ResponseTime: 5000, // 5 seconds
     p99ResponseTime: 10000, // 10 seconds
     errorRate: 0.05, // 5%
-    throughput: 50 // requests per second minimum
-  }
+    throughput: 50, // requests per second minimum
+  },
 };
 
 // Load Testing Engine
@@ -44,17 +44,19 @@ class LoadTestEngine extends EventEmitter {
         endTime: 0,
         responseTimes: [],
         throughput: 0,
-        concurrentUsers: 0
-      }
+        concurrentUsers: 0,
+      },
     };
   }
 
   async runLoadTest(scenario, testName) {
     console.log(`🚀 Starting load test: ${testName}`);
-    console.log(`   Users: ${scenario.users}, Duration: ${scenario.duration}ms, Ramp-up: ${scenario.rampUp}ms`);
+    console.log(
+      `   Users: ${scenario.users}, Duration: ${scenario.duration}ms, Ramp-up: ${scenario.rampUp}ms`,
+    );
 
     this.results.metrics.startTime = performance.now();
-    
+
     const workers = [];
     const workerCount = Math.min(scenario.users, 50); // Max 50 workers
     const usersPerWorker = Math.ceil(scenario.users / workerCount);
@@ -64,11 +66,12 @@ class LoadTestEngine extends EventEmitter {
       const worker = new Worker(__filename, {
         workerData: {
           workerId: i,
-          usersPerWorker: i < workerCount - 1 ? usersPerWorker : scenario.users - (i * usersPerWorker),
+          usersPerWorker:
+            i < workerCount - 1 ? usersPerWorker : scenario.users - i * usersPerWorker,
           duration: scenario.duration,
           rampUp: scenario.rampUp,
-          apiUrl: LOAD_CONFIG.apiUrl
-        }
+          apiUrl: LOAD_CONFIG.apiUrl,
+        },
       });
 
       worker.on('message', (data) => {
@@ -86,10 +89,13 @@ class LoadTestEngine extends EventEmitter {
 
     // Wait for test completion
     return new Promise((resolve) => {
-      setTimeout(() => {
-        this.stopLoadTest();
-        resolve(this.generateReport(testName));
-      }, scenario.duration + scenario.rampUp + 5000); // Extra buffer
+      setTimeout(
+        () => {
+          this.stopLoadTest();
+          resolve(this.generateReport(testName));
+        },
+        scenario.duration + scenario.rampUp + 5000,
+      ); // Extra buffer
     });
   }
 
@@ -113,19 +119,19 @@ class LoadTestEngine extends EventEmitter {
 
   stopLoadTest() {
     this.results.metrics.endTime = performance.now();
-    
+
     // Terminate all workers
-    this.workers.forEach(worker => {
+    this.workers.forEach((worker) => {
       worker.terminate();
     });
-    
+
     this.workers = [];
   }
 
   generateReport(testName) {
     const duration = (this.results.metrics.endTime - this.results.metrics.startTime) / 1000;
     const responseTimes = this.results.metrics.responseTimes.sort((a, b) => a - b);
-    
+
     const report = {
       testName,
       summary: {
@@ -133,7 +139,7 @@ class LoadTestEngine extends EventEmitter {
         totalErrors: this.results.metrics.totalErrors,
         duration: duration,
         throughput: this.results.metrics.totalRequests / duration,
-        errorRate: this.results.metrics.totalErrors / this.results.metrics.totalRequests || 0
+        errorRate: this.results.metrics.totalErrors / this.results.metrics.totalRequests || 0,
       },
       responseTime: {
         min: Math.min(...responseTimes) || 0,
@@ -141,10 +147,10 @@ class LoadTestEngine extends EventEmitter {
         avg: responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length || 0,
         p50: this.calculatePercentile(responseTimes, 50),
         p95: this.calculatePercentile(responseTimes, 95),
-        p99: this.calculatePercentile(responseTimes, 99)
+        p99: this.calculatePercentile(responseTimes, 99),
       },
       errors: this.results.errors,
-      passed: this.evaluateThresholds()
+      passed: this.evaluateThresholds(),
     };
 
     return report;
@@ -159,8 +165,14 @@ class LoadTestEngine extends EventEmitter {
   evaluateThresholds() {
     const responseTimes = this.results.metrics.responseTimes;
     const avgResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length || 0;
-    const p95ResponseTime = this.calculatePercentile(responseTimes.sort((a, b) => a - b), 95);
-    const p99ResponseTime = this.calculatePercentile(responseTimes.sort((a, b) => a - b), 99);
+    const p95ResponseTime = this.calculatePercentile(
+      responseTimes.sort((a, b) => a - b),
+      95,
+    );
+    const p99ResponseTime = this.calculatePercentile(
+      responseTimes.sort((a, b) => a - b),
+      99,
+    );
     const errorRate = this.results.metrics.totalErrors / this.results.metrics.totalRequests || 0;
     const duration = (this.results.metrics.endTime - this.results.metrics.startTime) / 1000;
     const throughput = this.results.metrics.totalRequests / duration;
@@ -170,7 +182,7 @@ class LoadTestEngine extends EventEmitter {
       p95ResponseTime: p95ResponseTime <= LOAD_CONFIG.thresholds.p95ResponseTime,
       p99ResponseTime: p99ResponseTime <= LOAD_CONFIG.thresholds.p99ResponseTime,
       errorRate: errorRate <= LOAD_CONFIG.thresholds.errorRate,
-      throughput: throughput >= LOAD_CONFIG.thresholds.throughput
+      throughput: throughput >= LOAD_CONFIG.thresholds.throughput,
     };
   }
 }
@@ -191,7 +203,7 @@ if (!isMainThread) {
     async start() {
       this.isRunning = true;
       const userDelayMs = this.rampUp / this.usersPerWorker;
-      
+
       // Start users gradually during ramp-up period
       for (let i = 0; i < this.usersPerWorker && this.isRunning; i++) {
         setTimeout(() => {
@@ -210,21 +222,21 @@ if (!isMainThread) {
     async simulateUser() {
       this.activeUsers++;
       const endTime = Date.now() + this.duration;
-      
+
       const endpoints = [
         { path: '/health', weight: 10 },
         { path: '/api/monitoring/health', weight: 15 },
         { path: '/api/tickets', weight: 30 },
         { path: '/api/analytics/dashboard', weight: 20 },
         { path: '/api/analytics/realtime', weight: 15 },
-        { path: '/api/monitoring/performance', weight: 10 }
+        { path: '/api/monitoring/performance', weight: 10 },
       ];
 
       while (Date.now() < endTime && this.isRunning) {
         try {
           const endpoint = this.selectEndpoint(endpoints);
           await this.makeRequest(endpoint);
-          
+
           // Simulate user think time
           await this.sleep(Math.random() * 2000 + 500); // 500-2500ms think time
         } catch (error) {
@@ -233,42 +245,42 @@ if (!isMainThread) {
             payload: {
               workerId: this.workerId,
               error: error.message,
-              timestamp: Date.now()
-            }
+              timestamp: Date.now(),
+            },
           });
         }
       }
-      
+
       this.activeUsers--;
     }
 
     selectEndpoint(endpoints) {
       const totalWeight = endpoints.reduce((sum, ep) => sum + ep.weight, 0);
       let random = Math.random() * totalWeight;
-      
+
       for (const endpoint of endpoints) {
         random -= endpoint.weight;
         if (random <= 0) {
           return endpoint.path;
         }
       }
-      
+
       return endpoints[0].path; // Fallback
     }
 
     async makeRequest(endpoint) {
       const start = performance.now();
-      
+
       try {
         const response = await fetch(`${this.apiUrl}${endpoint}`, {
           timeout: 30000,
           headers: {
-            'User-Agent': `LoadTest-Worker-${this.workerId}`
-          }
+            'User-Agent': `LoadTest-Worker-${this.workerId}`,
+          },
         });
 
         const duration = performance.now() - start;
-        
+
         parentPort.postMessage({
           type: 'request',
           payload: {
@@ -276,17 +288,16 @@ if (!isMainThread) {
             endpoint,
             status: response.status,
             duration,
-            timestamp: Date.now()
-          }
+            timestamp: Date.now(),
+          },
         });
 
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
-
       } catch (error) {
         const duration = performance.now() - start;
-        
+
         parentPort.postMessage({
           type: 'error',
           payload: {
@@ -294,14 +305,14 @@ if (!isMainThread) {
             endpoint,
             error: error.message,
             duration,
-            timestamp: Date.now()
-          }
+            timestamp: Date.now(),
+          },
         });
       }
     }
 
     sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+      return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
     stop() {
@@ -321,12 +332,14 @@ test('Load Testing Suite', async (t) => {
 
   await t.test('Smoke Test - Basic Functionality', async () => {
     console.log('💨 Running smoke test to verify basic functionality...');
-    
+
     const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.smoke, 'Smoke Test');
-    
+
     console.log('📊 Smoke Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
-    console.log(`   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`);
+    console.log(
+      `   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`,
+    );
     console.log(`   Avg Response Time: ${report.responseTime.avg.toFixed(2)}ms`);
     console.log(`   Throughput: ${report.summary.throughput.toFixed(2)} req/s`);
 
@@ -340,35 +353,45 @@ test('Load Testing Suite', async (t) => {
 
   await t.test('Light Load Test - Normal Usage', async () => {
     console.log('🌤️ Running light load test for normal usage patterns...');
-    
+
     const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.light, 'Light Load Test');
-    
+
     console.log('📊 Light Load Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
-    console.log(`   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`);
+    console.log(
+      `   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`,
+    );
     console.log(`   Avg Response Time: ${report.responseTime.avg.toFixed(2)}ms`);
     console.log(`   95th Percentile: ${report.responseTime.p95.toFixed(2)}ms`);
     console.log(`   Throughput: ${report.summary.throughput.toFixed(2)} req/s`);
 
     // Light load assertions
-    assert.ok(report.summary.errorRate < LOAD_CONFIG.thresholds.errorRate, 
-      `Error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds threshold`);
-    assert.ok(report.responseTime.avg < LOAD_CONFIG.thresholds.avgResponseTime, 
-      `Average response time ${report.responseTime.avg.toFixed(2)}ms exceeds threshold`);
-    assert.ok(report.summary.throughput > LOAD_CONFIG.thresholds.throughput / 2, 
-      `Throughput ${report.summary.throughput.toFixed(2)} req/s below minimum`);
+    assert.ok(
+      report.summary.errorRate < LOAD_CONFIG.thresholds.errorRate,
+      `Error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds threshold`,
+    );
+    assert.ok(
+      report.responseTime.avg < LOAD_CONFIG.thresholds.avgResponseTime,
+      `Average response time ${report.responseTime.avg.toFixed(2)}ms exceeds threshold`,
+    );
+    assert.ok(
+      report.summary.throughput > LOAD_CONFIG.thresholds.throughput / 2,
+      `Throughput ${report.summary.throughput.toFixed(2)} req/s below minimum`,
+    );
 
     console.log('  ✅ Light load test passed - system handles normal usage well');
   });
 
   await t.test('Normal Load Test - Expected Production Load', async () => {
     console.log('☀️ Running normal load test for expected production load...');
-    
+
     const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.normal, 'Normal Load Test');
-    
+
     console.log('📊 Normal Load Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
-    console.log(`   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`);
+    console.log(
+      `   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`,
+    );
     console.log(`   Response Times:`);
     console.log(`     Min: ${report.responseTime.min.toFixed(2)}ms`);
     console.log(`     Avg: ${report.responseTime.avg.toFixed(2)}ms`);
@@ -386,44 +409,56 @@ test('Load Testing Suite', async (t) => {
     console.log(`   Error Rate: ${thresholds.errorRate ? '✅' : '❌'}`);
     console.log(`   Throughput: ${thresholds.throughput ? '✅' : '❌'}`);
 
-    assert.ok(report.summary.errorRate < LOAD_CONFIG.thresholds.errorRate, 
-      `Error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds threshold`);
-    assert.ok(report.responseTime.p95 < LOAD_CONFIG.thresholds.p95ResponseTime, 
-      `95th percentile ${report.responseTime.p95.toFixed(2)}ms exceeds threshold`);
+    assert.ok(
+      report.summary.errorRate < LOAD_CONFIG.thresholds.errorRate,
+      `Error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds threshold`,
+    );
+    assert.ok(
+      report.responseTime.p95 < LOAD_CONFIG.thresholds.p95ResponseTime,
+      `95th percentile ${report.responseTime.p95.toFixed(2)}ms exceeds threshold`,
+    );
 
     console.log('  ✅ Normal load test passed - system meets production requirements');
   });
 
   await t.test('Peak Load Test - High Traffic Periods', async () => {
     console.log('🔥 Running peak load test for high traffic periods...');
-    
+
     const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.peak, 'Peak Load Test');
-    
+
     console.log('📊 Peak Load Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
-    console.log(`   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`);
+    console.log(
+      `   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`,
+    );
     console.log(`   Avg Response Time: ${report.responseTime.avg.toFixed(2)}ms`);
     console.log(`   95th Percentile: ${report.responseTime.p95.toFixed(2)}ms`);
     console.log(`   99th Percentile: ${report.responseTime.p99.toFixed(2)}ms`);
     console.log(`   Throughput: ${report.summary.throughput.toFixed(2)} req/s`);
 
     // Peak load allows for higher error rates and response times
-    assert.ok(report.summary.errorRate < 0.15, 
-      `Peak load error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds 15% limit`);
-    assert.ok(report.responseTime.p99 < 20000, 
-      `99th percentile ${report.responseTime.p99.toFixed(2)}ms exceeds 20s limit`);
+    assert.ok(
+      report.summary.errorRate < 0.15,
+      `Peak load error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds 15% limit`,
+    );
+    assert.ok(
+      report.responseTime.p99 < 20000,
+      `99th percentile ${report.responseTime.p99.toFixed(2)}ms exceeds 20s limit`,
+    );
 
     console.log('  ✅ Peak load test completed - system behavior under high load assessed');
   });
 
   await t.test('Stress Test - Breaking Point Analysis', async () => {
     console.log('⚡ Running stress test to find system breaking point...');
-    
+
     const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.stress, 'Stress Test');
-    
+
     console.log('📊 Stress Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
-    console.log(`   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`);
+    console.log(
+      `   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`,
+    );
     console.log(`   Avg Response Time: ${report.responseTime.avg.toFixed(2)}ms`);
     console.log(`   95th Percentile: ${report.responseTime.p95.toFixed(2)}ms`);
     console.log(`   99th Percentile: ${report.responseTime.p99.toFixed(2)}ms`);
@@ -433,7 +468,7 @@ test('Load Testing Suite', async (t) => {
     if (report.summary.errorRate > 0.3) {
       console.log('  ⚠️  System reached breaking point - high error rate detected');
     }
-    
+
     if (report.responseTime.p95 > 15000) {
       console.log('  ⚠️  System showing stress - high response times detected');
     }
@@ -447,20 +482,24 @@ test('Load Testing Suite', async (t) => {
 
   await t.test('Spike Test - Sudden Load Increase', async () => {
     console.log('📈 Running spike test for sudden load increases...');
-    
+
     const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.spike, 'Spike Test');
-    
+
     console.log('📊 Spike Test Results:');
     console.log(`   Requests: ${report.summary.totalRequests}`);
-    console.log(`   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`);
+    console.log(
+      `   Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`,
+    );
     console.log(`   Avg Response Time: ${report.responseTime.avg.toFixed(2)}ms`);
     console.log(`   Max Response Time: ${report.responseTime.max.toFixed(2)}ms`);
     console.log(`   Throughput: ${report.summary.throughput.toFixed(2)} req/s`);
 
     // Spike test allows for temporary degradation
-    assert.ok(report.summary.errorRate < 0.3, 
-      `Spike test error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds 30% limit`);
-    
+    assert.ok(
+      report.summary.errorRate < 0.3,
+      `Spike test error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds 30% limit`,
+    );
+
     // System should recover (this would be better measured with time-series data)
     if (report.summary.errorRate < 0.1) {
       console.log('  ✅ System handled spike well with minimal errors');
@@ -476,21 +515,30 @@ test('Load Testing Suite', async (t) => {
     await t.test('Endurance Test - Long Duration Stability', async () => {
       console.log('🏃 Running endurance test for long-term stability...');
       console.log('⏰ This test runs for 30 minutes...');
-      
-      const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.endurance, 'Endurance Test');
-      
+
+      const report = await loadTester.runLoadTest(
+        LOAD_CONFIG.scenarios.endurance,
+        'Endurance Test',
+      );
+
       console.log('📊 Endurance Test Results:');
       console.log(`   Duration: ${(report.summary.duration / 60).toFixed(2)} minutes`);
       console.log(`   Total Requests: ${report.summary.totalRequests}`);
-      console.log(`   Total Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`);
+      console.log(
+        `   Total Errors: ${report.summary.totalErrors} (${(report.summary.errorRate * 100).toFixed(2)}%)`,
+      );
       console.log(`   Avg Response Time: ${report.responseTime.avg.toFixed(2)}ms`);
       console.log(`   Throughput: ${report.summary.throughput.toFixed(2)} req/s`);
 
       // Endurance test should maintain stable performance
-      assert.ok(report.summary.errorRate < 0.1, 
-        `Endurance test error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds 10% limit`);
-      assert.ok(report.responseTime.avg < LOAD_CONFIG.thresholds.avgResponseTime * 2, 
-        `Average response time degraded too much during endurance test`);
+      assert.ok(
+        report.summary.errorRate < 0.1,
+        `Endurance test error rate ${(report.summary.errorRate * 100).toFixed(2)}% exceeds 10% limit`,
+      );
+      assert.ok(
+        report.responseTime.avg < LOAD_CONFIG.thresholds.avgResponseTime * 2,
+        `Average response time degraded too much during endurance test`,
+      );
 
       console.log('  ✅ Endurance test completed - long-term stability verified');
     });
@@ -503,31 +551,36 @@ test('Load Testing Suite', async (t) => {
 test('Capacity Planning Analysis', async (t) => {
   await t.test('Scalability Analysis', async () => {
     console.log('📊 Running scalability analysis...');
-    
+
     const loadTester = new LoadTestEngine();
     const userLevels = [10, 25, 50, 100, 200, 300];
     const results = [];
 
     for (const userCount of userLevels) {
       console.log(`  Testing ${userCount} concurrent users...`);
-      
+
       const scenario = {
         users: userCount,
         duration: 60000, // 1 minute tests
-        rampUp: 10000   // 10 second ramp-up
+        rampUp: 10000, // 10 second ramp-up
       };
 
-      const report = await loadTester.runLoadTest(scenario, `Scalability Test - ${userCount} users`);
-      
+      const report = await loadTester.runLoadTest(
+        scenario,
+        `Scalability Test - ${userCount} users`,
+      );
+
       results.push({
         users: userCount,
         throughput: report.summary.throughput,
         avgResponseTime: report.responseTime.avg,
         errorRate: report.summary.errorRate,
-        p95ResponseTime: report.responseTime.p95
+        p95ResponseTime: report.responseTime.p95,
       });
 
-      console.log(`    Throughput: ${report.summary.throughput.toFixed(2)} req/s, Avg RT: ${report.responseTime.avg.toFixed(2)}ms`);
+      console.log(
+        `    Throughput: ${report.summary.throughput.toFixed(2)} req/s, Avg RT: ${report.responseTime.avg.toFixed(2)}ms`,
+      );
 
       // Stop if system becomes unstable
       if (report.summary.errorRate > 0.2) {
@@ -537,13 +590,15 @@ test('Capacity Planning Analysis', async (t) => {
     }
 
     // Analyze scalability patterns
-    const maxThroughput = Math.max(...results.map(r => r.throughput));
-    const optimalPoint = results.filter(r => r.errorRate < 0.05).pop();
+    const maxThroughput = Math.max(...results.map((r) => r.throughput));
+    const optimalPoint = results.filter((r) => r.errorRate < 0.05).pop();
 
     console.log('📈 Scalability Analysis Results:');
     console.log(`   Maximum Throughput: ${maxThroughput.toFixed(2)} req/s`);
     if (optimalPoint) {
-      console.log(`   Optimal Load: ${optimalPoint.users} users (${optimalPoint.throughput.toFixed(2)} req/s)`);
+      console.log(
+        `   Optimal Load: ${optimalPoint.users} users (${optimalPoint.throughput.toFixed(2)} req/s)`,
+      );
     }
 
     assert.ok(results.length > 0, 'Should complete scalability analysis');
@@ -554,7 +609,7 @@ test('Capacity Planning Analysis', async (t) => {
 
   await t.test('Resource Utilization Monitoring', async () => {
     console.log('📈 Monitoring resource utilization during load...');
-    
+
     const loadTester = new LoadTestEngine();
     const baselineMemory = process.memoryUsage().heapUsed;
     const memoryReadings = [];
@@ -565,16 +620,19 @@ test('Capacity Planning Analysis', async (t) => {
       memoryReadings.push({
         timestamp: Date.now(),
         memory: currentMemory,
-        diff: currentMemory - baselineMemory
+        diff: currentMemory - baselineMemory,
       });
     }, 5000);
 
     // Run moderate load test
-    const report = await loadTester.runLoadTest(LOAD_CONFIG.scenarios.normal, 'Resource Monitoring Test');
-    
+    const report = await loadTester.runLoadTest(
+      LOAD_CONFIG.scenarios.normal,
+      'Resource Monitoring Test',
+    );
+
     clearInterval(memoryMonitor);
 
-    const peakMemory = Math.max(...memoryReadings.map(r => r.memory));
+    const peakMemory = Math.max(...memoryReadings.map((r) => r.memory));
     const memoryIncrease = peakMemory - baselineMemory;
 
     console.log('💾 Resource Utilization Results:');
@@ -584,7 +642,10 @@ test('Capacity Planning Analysis', async (t) => {
     console.log(`   Memory Growth: ${((memoryIncrease / baselineMemory) * 100).toFixed(2)}%`);
 
     // Memory growth should be reasonable
-    assert.ok(memoryIncrease / baselineMemory < 5, 'Memory growth should be under 500% of baseline');
+    assert.ok(
+      memoryIncrease / baselineMemory < 5,
+      'Memory growth should be under 500% of baseline',
+    );
 
     console.log('  ✅ Resource utilization monitoring completed');
   });

@@ -18,21 +18,29 @@ const KnowledgeEditPage: React.FC = () => {
       setIsEdit(true);
       setLoading(true);
       getKnowledgeArticle(token, slug)
-        .then(res => {
+        .then((res) => {
           setTitle(res.article.title);
           setContent(res.article.content);
           setTags(res.article.tags || []);
         })
-        .catch(err => setError(err.message || 'Failed to load article'))
+        .catch((err) => setError(err.message || 'Failed to load article'))
         .finally(() => setLoading(false));
     }
   }, [slug, token]);
 
   // RBAC check for admin/editor roles
-  const userRoles = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('roles') || '[]') : [];
-  const isEditor = userRoles.includes('admin') || userRoles.includes('superadmin') || userRoles.includes('kb_editor');
+  const userRoles =
+    typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('roles') || '[]') : [];
+  const isEditor =
+    userRoles.includes('admin') ||
+    userRoles.includes('superadmin') ||
+    userRoles.includes('kb_editor');
   if (!isEditor) {
-    return <div className="p-8 text-center text-destructive">You do not have permission to edit or create articles.</div>;
+    return (
+      <div className="text-destructive p-8 text-center">
+        You do not have permission to edit or create articles.
+      </div>
+    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -58,37 +66,37 @@ const KnowledgeEditPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-4">{isEdit ? 'Edit Article' : 'Create Article'}</h1>
-      {error && <div className="mb-4 text-destructive">{error}</div>}
+    <div className="mx-auto max-w-2xl p-8">
+      <h1 className="mb-4 text-2xl font-bold">{isEdit ? 'Edit Article' : 'Create Article'}</h1>
+      {error && <div className="text-destructive mb-4">{error}</div>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block font-semibold mb-1">Title</label>
+          <label className="mb-1 block font-semibold">Title</label>
           <input
-            className="w-full border rounded px-3 py-2"
+            className="w-full rounded border px-3 py-2"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             required
             maxLength={255}
             placeholder="Article title"
           />
         </div>
         <div>
-          <label className="block font-semibold mb-1">Content</label>
+          <label className="mb-1 block font-semibold">Content</label>
           <textarea
-            className="w-full border rounded px-3 py-2 min-h-[200px]"
+            className="min-h-[200px] w-full rounded border px-3 py-2"
             value={content}
-            onChange={e => setContent(e.target.value)}
+            onChange={(e) => setContent(e.target.value)}
             required
             placeholder="Article content"
           />
         </div>
         <div>
-          <label className="block font-semibold mb-1">Tags (comma separated)</label>
+          <label className="mb-1 block font-semibold">Tags (comma separated)</label>
           <input
-            className="w-full border rounded px-3 py-2"
+            className="w-full rounded border px-3 py-2"
             value={tags.join(', ')}
-            onChange={e => setTags(e.target.value.split(',').map(t => t.trim()))}
+            onChange={(e) => setTags(e.target.value.split(',').map((t) => t.trim()))}
           />
         </div>
         <button type="submit" className="btn btn-primary" disabled={loading}>

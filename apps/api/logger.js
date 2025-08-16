@@ -6,11 +6,13 @@ const errorLogPath = path.join(process.cwd(), 'apps/api/error.log');
 
 const log = (level, ...args) => {
   const timestamp = new Date().toISOString();
-  const msg = `[${timestamp}] ${level.toUpperCase()} ${args.map(a => (typeof a === 'object' ? JSON.stringify(a) : a)).join(' ')}\n`;
+  const msg = `[${timestamp}] ${level.toUpperCase()} ${args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : a)).join(' ')}\n`;
   switch (level) {
     case 'error':
       console.error(`[${timestamp}] ❌`, ...args);
-      try { fs.appendFileSync(errorLogPath, msg); } catch (e) {}
+      try {
+        fs.appendFileSync(errorLogPath, msg);
+      } catch (e) {}
       break;
     case 'warn':
       console.warn(`[${timestamp}] ⚠️`, ...args);
@@ -31,5 +33,5 @@ export const logger = {
   warn: (...args) => log('warn', ...args),
   info: (...args) => log('info', ...args),
   log: (...args) => log('log', ...args),
-  debug: (...args) => log('debug', ...args)
+  debug: (...args) => log('debug', ...args),
 };

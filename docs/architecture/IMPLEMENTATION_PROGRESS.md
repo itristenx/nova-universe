@@ -3,6 +3,7 @@
 _Last updated: July 27, 2025_
 
 ## Overview
+
 This document tracks the progress of the Nova Universe monorepo cleanup, configuration standardization, and documentation update. All major steps are logged here for transparency and future reference.
 
 ---
@@ -32,6 +33,6 @@ This document tracks the progress of the Nova Universe monorepo cleanup, configu
 ---
 
 ## Notes
+
 - All removals and config changes are tracked in version control for traceability.
 - This log will be updated as each major step is completed.
-

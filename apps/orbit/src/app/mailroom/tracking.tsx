@@ -19,21 +19,21 @@ const TrackingPage = () => {
   useEffect(() => {
     setLoading(true);
     fetch(`/api/mailroom/packages?status=${status}`)
-      .then(res => res.json())
-      .then(data => setPackages(data.packages || []))
+      .then((res) => res.json())
+      .then((data) => setPackages(data.packages || []))
       .catch(() => setError('Failed to load packages'))
       .finally(() => setLoading(false));
   }, [status]);
 
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-4">Mailroom Delivery Tracking</h1>
+    <div className="mx-auto max-w-3xl p-8">
+      <h1 className="mb-4 text-2xl font-bold">Mailroom Delivery Tracking</h1>
       <div className="mb-4">
         <label className="mr-2 font-semibold">Status:</label>
         <select
           value={status}
-          onChange={e => setStatus(e.target.value)}
-          className="border rounded px-2 py-1"
+          onChange={(e) => setStatus(e.target.value)}
+          className="rounded border px-2 py-1"
           title="Filter by status"
         >
           <option value="all">All</option>
@@ -48,23 +48,23 @@ const TrackingPage = () => {
       <table className="w-full border">
         <thead>
           <tr className="bg-gray-100">
-            <th className="p-2 border">Tracking #</th>
-            <th className="p-2 border">Carrier</th>
-            <th className="p-2 border">Recipient</th>
-            <th className="p-2 border">Status</th>
-            <th className="p-2 border">Location</th>
-            <th className="p-2 border">Created</th>
+            <th className="border p-2">Tracking #</th>
+            <th className="border p-2">Carrier</th>
+            <th className="border p-2">Recipient</th>
+            <th className="border p-2">Status</th>
+            <th className="border p-2">Location</th>
+            <th className="border p-2">Created</th>
           </tr>
         </thead>
         <tbody>
-          {packages.map(pkg => (
+          {packages.map((pkg) => (
             <tr key={pkg.id}>
-              <td className="p-2 border">{pkg.trackingNumber}</td>
-              <td className="p-2 border">{pkg.carrier}</td>
-              <td className="p-2 border">{pkg.recipientId}</td>
-              <td className="p-2 border">{pkg.status}</td>
-              <td className="p-2 border">{pkg.assignedLocation || '-'}</td>
-              <td className="p-2 border">{new Date(pkg.createdAt).toLocaleString()}</td>
+              <td className="border p-2">{pkg.trackingNumber}</td>
+              <td className="border p-2">{pkg.carrier}</td>
+              <td className="border p-2">{pkg.recipientId}</td>
+              <td className="border p-2">{pkg.status}</td>
+              <td className="border p-2">{pkg.assignedLocation || '-'}</td>
+              <td className="border p-2">{new Date(pkg.createdAt).toLocaleString()}</td>
             </tr>
           ))}
         </tbody>

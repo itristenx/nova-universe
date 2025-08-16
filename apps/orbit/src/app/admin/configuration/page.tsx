@@ -3,8 +3,8 @@ import ConfigurationManagement from '../../../components/admin/ConfigurationMana
 
 export default function AdminConfigurationPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8 px-4">
+    <div className="bg-background min-h-screen">
+      <div className="container mx-auto px-4 py-8">
         <ConfigurationManagement />
       </div>
     </div>

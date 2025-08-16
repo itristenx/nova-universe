@@ -11,7 +11,9 @@ async function getPrisma() {
   try {
     const mod = await import('../../../prisma/generated/core/index.js');
     const PrismaClient = mod.PrismaClient;
-    return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+    return new PrismaClient({
+      datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+    });
   } catch {
     return null;
   }
@@ -146,24 +148,24 @@ router.get('/logs', authenticateJWT, scimMonitorRateLimit, async (req, res) => {
       startDate,
       endDate,
       page = 1,
-      limit = 50
+      limit = 50,
     } = req.query;
 
     // Build where clause for filtering
     const where = {};
-    
+
     if (operation) {
       where.operation = operation;
     }
-    
+
     if (entityType) {
       where.entityType = entityType;
     }
-    
+
     if (statusCode) {
       where.statusCode = parseInt(statusCode);
     }
-    
+
     if (startDate || endDate) {
       where.createdAt = {};
       if (startDate) {
@@ -186,7 +188,7 @@ router.get('/logs', authenticateJWT, scimMonitorRateLimit, async (req, res) => {
     const logs = await prisma.scimLog.findMany({
       where,
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
       skip,
       take: limitNum,
@@ -200,9 +202,9 @@ router.get('/logs', authenticateJWT, scimMonitorRateLimit, async (req, res) => {
         userAgent: true,
         ipAddress: true,
         duration: true,
-        createdAt: true
+        createdAt: true,
         // Exclude requestBody and responseBody for security
-      }
+      },
     });
 
     const totalPages = Math.ceil(total / limitNum);
@@ -215,15 +217,14 @@ router.get('/logs', authenticateJWT, scimMonitorRateLimit, async (req, res) => {
         page: pageNum,
         limit: limitNum,
         total,
-        totalPages
-      }
+        totalPages,
+      },
     });
-
   } catch (error) {
     logger.error('Error retrieving SCIM logs:', error);
     res.status(500).json({
       error: 'Failed to retrieve SCIM logs',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -298,7 +299,7 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
       '1h': 1,
       '24h': 24,
       '7d': 24 * 7,
-      '30d': 24 * 30
+      '30d': 24 * 30,
     };
 
     const hours = timeframeHours[timeframe] || 24;
@@ -308,9 +309,9 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
     const totalOperations = await prisma.scimLog.count({
       where: {
         createdAt: {
-          gte: startTime
-        }
-      }
+          gte: startTime,
+        },
+      },
     });
 
     // Get operations by type
@@ -318,12 +319,12 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
       by: ['operation'],
       where: {
         createdAt: {
-          gte: startTime
-        }
+          gte: startTime,
+        },
       },
       _count: {
-        _all: true
-      }
+        _all: true,
+      },
     });
 
     // Get operations by status code ranges
@@ -331,64 +332,64 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
       by: ['statusCode'],
       where: {
         createdAt: {
-          gte: startTime
-        }
+          gte: startTime,
+        },
       },
       _count: {
-        _all: true
-      }
+        _all: true,
+      },
     });
 
     // Calculate average response time
     const avgDuration = await prisma.scimLog.aggregate({
       where: {
         createdAt: {
-          gte: startTime
+          gte: startTime,
         },
         duration: {
-          not: null
-        }
+          not: null,
+        },
       },
       _avg: {
-        duration: true
-      }
+        duration: true,
+      },
     });
 
     // Get last activity
     const lastActivity = await prisma.scimLog.findFirst({
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
       select: {
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
 
     // Count recent errors (4xx and 5xx status codes)
     const recentErrors = await prisma.scimLog.count({
       where: {
         createdAt: {
-          gte: startTime
+          gte: startTime,
         },
         statusCode: {
-          gte: 400
-        }
-      }
+          gte: 400,
+        },
+      },
     });
 
     // Get last error
     const lastError = await prisma.scimLog.findFirst({
       where: {
         statusCode: {
-          gte: 400
-        }
+          gte: 400,
+        },
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
       select: {
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
 
     // Calculate error rate
@@ -404,7 +405,7 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
 
     // Format operations by type
     const operationTypeStats = {};
-    operationsByType.forEach(op => {
+    operationsByType.forEach((op) => {
       operationTypeStats[op.operation] = op._count._all;
     });
 
@@ -412,13 +413,13 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
     const statusStats = {
       success: 0,
       clientError: 0,
-      serverError: 0
+      serverError: 0,
     };
 
-    operationsByStatus.forEach(op => {
+    operationsByStatus.forEach((op) => {
       const statusCode = op.statusCode;
       const count = op._count._all;
-      
+
       if (statusCode >= 200 && statusCode < 300) {
         statusStats.success += count;
       } else if (statusCode >= 400 && statusCode < 500) {
@@ -436,24 +437,23 @@ router.get('/status', authenticateJWT, scimMonitorRateLimit, async (req, res) =>
         operationsByType: operationTypeStats,
         operationsByStatus: statusStats,
         averageResponseTime: avgDuration._avg || 0,
-        errorRate: Math.round(errorRate * 100) / 100
+        errorRate: Math.round(errorRate * 100) / 100,
       },
       healthMetrics: {
         uptime: process.uptime(),
         lastErrorTime: lastError?.createdAt || null,
-        recentErrors
-      }
+        recentErrors,
+      },
     };
 
     logger.info(`SCIM monitor status retrieved for user ${req.user.id}`);
 
     res.json(response);
-
   } catch (error) {
     logger.error('Error retrieving SCIM status:', error);
     res.status(500).json({
       error: 'Failed to retrieve SCIM status',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -469,7 +469,7 @@ export async function logScimOperation({
   responseBody = null,
   userAgent = null,
   ipAddress = null,
-  duration = null
+  duration = null,
 }) {
   try {
     const prisma = await getPrisma();
@@ -488,8 +488,8 @@ export async function logScimOperation({
         responseBody,
         userAgent,
         ipAddress,
-        duration
-      }
+        duration,
+      },
     });
   } catch (error) {
     logger.error('Failed to log SCIM operation:', error);

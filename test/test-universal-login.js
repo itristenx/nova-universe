@@ -16,13 +16,22 @@ console.log('🧪 Testing Universal Login Implementation...\n');
 // Test 1: Check if migration files exist
 console.log('1. Testing Migration Files...');
 try {
-  const migrationPath = join(__dirname, 'apps/api/migrations/postgresql/20250805_universal_login_schema.sql');
+  const migrationPath = join(
+    __dirname,
+    'apps/api/migrations/postgresql/20250805_universal_login_schema.sql',
+  );
   const migrationContent = await readFile(migrationPath, 'utf8');
   console.log('✅ Universal login migration file exists');
   console.log(`   - File size: ${migrationContent.length} characters`);
-  console.log(`   - Contains tenant tables: ${migrationContent.includes('CREATE TABLE IF NOT EXISTS tenants')}`);
-  console.log(`   - Contains auth_sessions: ${migrationContent.includes('CREATE TABLE IF NOT EXISTS auth_sessions')}`);
-  console.log(`   - Contains mfa_methods: ${migrationContent.includes('CREATE TABLE IF NOT EXISTS mfa_methods')}`);
+  console.log(
+    `   - Contains tenant tables: ${migrationContent.includes('CREATE TABLE IF NOT EXISTS tenants')}`,
+  );
+  console.log(
+    `   - Contains auth_sessions: ${migrationContent.includes('CREATE TABLE IF NOT EXISTS auth_sessions')}`,
+  );
+  console.log(
+    `   - Contains mfa_methods: ${migrationContent.includes('CREATE TABLE IF NOT EXISTS mfa_methods')}`,
+  );
 } catch (error) {
   console.log('❌ Migration file test failed:', error.message);
 }
@@ -44,7 +53,10 @@ try {
 // Test 3: Check if frontend component exists
 console.log('\n3. Testing Frontend Component...');
 try {
-  const componentPath = join(__dirname, 'apps/core/nova-core/src/pages/auth/UniversalLoginPage.tsx');
+  const componentPath = join(
+    __dirname,
+    'apps/core/nova-core/src/pages/auth/UniversalLoginPage.tsx',
+  );
   const componentContent = await readFile(componentPath, 'utf8');
   console.log('✅ Universal login component exists');
   console.log(`   - File size: ${componentContent.length} characters`);
@@ -72,9 +84,9 @@ try {
 console.log('\n5. Testing Database Connection...');
 try {
   const { spawn } = await import('child_process');
-  
+
   const testConnection = spawn('pg_isready', ['-h', 'localhost', '-p', '5432'], { stdio: 'pipe' });
-  
+
   testConnection.on('close', (code) => {
     if (code === 0) {
       console.log('✅ PostgreSQL is running and accepting connections');
@@ -82,7 +94,7 @@ try {
       console.log('❌ PostgreSQL connection failed');
     }
   });
-  
+
   testConnection.on('error', () => {
     console.log('❌ PostgreSQL connectivity test failed');
   });

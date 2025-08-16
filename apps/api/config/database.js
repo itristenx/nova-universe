@@ -24,15 +24,18 @@ export const databaseConfig = {
       }
       return password;
     })(),
-    
+
     // SSL/TLS configuration
-    ssl: process.env.NODE_ENV === 'production' ? {
-      rejectUnauthorized: process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false',
-      ca: process.env.POSTGRES_SSL_CA,
-      cert: process.env.POSTGRES_SSL_CERT,
-      key: process.env.POSTGRES_SSL_KEY,
-    } : false,
-    
+    ssl:
+      process.env.NODE_ENV === 'production'
+        ? {
+            rejectUnauthorized: process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false',
+            ca: process.env.POSTGRES_SSL_CA,
+            cert: process.env.POSTGRES_SSL_CERT,
+            key: process.env.POSTGRES_SSL_KEY,
+          }
+        : false,
+
     // Connection pool settings for scalability
     pool: {
       min: parseInt(process.env.POSTGRES_POOL_MIN || '2'),
@@ -44,7 +47,7 @@ export const databaseConfig = {
       reapIntervalMillis: parseInt(process.env.POSTGRES_POOL_REAP_INTERVAL || '1000'),
       createRetryIntervalMillis: parseInt(process.env.POSTGRES_POOL_CREATE_RETRY_INTERVAL || '200'),
     },
-    
+
     // Query configuration
     statement_timeout: parseInt(process.env.POSTGRES_STATEMENT_TIMEOUT || '30000'),
     query_timeout: parseInt(process.env.POSTGRES_QUERY_TIMEOUT || '30000'),
@@ -64,12 +67,15 @@ export const databaseConfig = {
       }
       return password;
     })(),
-    ssl: process.env.NODE_ENV === 'production' ? {
-      rejectUnauthorized: process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false',
-      ca: process.env.POSTGRES_SSL_CA,
-      cert: process.env.POSTGRES_SSL_CERT,
-      key: process.env.POSTGRES_SSL_KEY,
-    } : false,
+    ssl:
+      process.env.NODE_ENV === 'production'
+        ? {
+            rejectUnauthorized: process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false',
+            ca: process.env.POSTGRES_SSL_CA,
+            cert: process.env.POSTGRES_SSL_CERT,
+            key: process.env.POSTGRES_SSL_KEY,
+          }
+        : false,
     pool: {
       min: parseInt(process.env.POSTGRES_POOL_MIN || '2'),
       max: parseInt(process.env.POSTGRES_POOL_MAX || '20'),
@@ -90,14 +96,14 @@ export const databaseConfig = {
     uri: process.env.AUDIT_DATABASE_URL || 'mongodb://localhost:27017/nova_audit',
     username: process.env.AUDIT_DB_USER || 'nova_admin',
     password: process.env.AUDIT_DB_PASSWORD || generateSecurePassword(),
-    
+
     // Build connection URI with SSL options for production
     get connectionUri() {
       const baseUri = process.env.AUDIT_DATABASE_URL || 'mongodb://localhost:27017/nova_audit';
       const sslOptions = process.env.NODE_ENV === 'production' ? '&ssl=true' : '';
       return `${baseUri}${sslOptions}`;
     },
-    
+
     // MongoDB client options
     options: {
       maxPoolSize: parseInt(process.env.MONGO_MAX_POOL_SIZE || '10'),
@@ -110,20 +116,20 @@ export const databaseConfig = {
       retryWrites: true,
       retryReads: true,
       compressors: ['snappy', 'zlib'],
-      
+
       // Security options
       authSource: process.env.MONGO_AUTH_SOURCE || 'admin',
       authMechanism: process.env.MONGO_AUTH_MECHANISM || 'SCRAM-SHA-256',
-    }
+    },
   },
-  
+
   // SQLite fallback for development/testing
   sqlite: {
     filename: process.env.SQLITE_DB || 'log.sqlite',
     options: {
-      verbose: process.env.NODE_ENV === 'development'
-    }
-  }
+      verbose: process.env.NODE_ENV === 'development',
+    },
+  },
 };
 
 /**
@@ -134,7 +140,7 @@ function generateSecurePassword() {
   if (process.env.NODE_ENV === 'development') {
     return 'dev_password_123!';
   }
-  
+
   // In production, this should be provided via environment variables
   // This is just a fallback that generates a random password
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
@@ -142,11 +148,13 @@ function generateSecurePassword() {
   for (let i = 0; i < 32; i++) {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  
+
   if (!process.env.CLI_MODE) {
-    logger.warn('⚠️  Database password generated automatically. Please set proper credentials in environment variables.');
+    logger.warn(
+      '⚠️  Database password generated automatically. Please set proper credentials in environment variables.',
+    );
   }
-  
+
   return password;
 }
 
@@ -167,7 +175,7 @@ export function validateDatabaseConfig() {
   if (!databaseConfig.auth_db.password) errors.push('AUTH_DB_PASSWORD is required');
 
   if (!databaseConfig.audit_db.uri) errors.push('AUDIT_DATABASE_URL is required');
-  
+
   // Production security checks
   if (process.env.NODE_ENV === 'production') {
     if (databaseConfig.core_db.password === 'dev_password_123!') {
@@ -183,11 +191,11 @@ export function validateDatabaseConfig() {
       logger.warn('⚠️  PostgreSQL SSL is disabled in production');
     }
   }
-  
+
   if (errors.length > 0) {
     throw new Error(`Database configuration errors:\n${errors.join('\n')}`);
   }
-  
+
   return true;
 }
 

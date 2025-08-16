@@ -13,39 +13,37 @@ router.post('/import', authenticateJWT, async (req, res) => {
   try {
     // Use environment configuration first, then fallback to request body
     const helpscoutConfig = getHelpScoutConfig();
-    
+
     if (!helpscoutConfig) {
       const { apiKey, mailboxId } = req.body;
-      
+
       if (!apiKey || !mailboxId) {
-        return res.status(400).json({ 
-          error: 'HelpScout not configured. Provide API key and Mailbox ID in request body or set environment variables.' 
+        return res.status(400).json({
+          error:
+            'HelpScout not configured. Provide API key and Mailbox ID in request body or set environment variables.',
         });
       }
-      
+
       helpscoutConfig = { apiKey, mailboxId };
     }
 
-    logger.info('Starting HelpScout ticket import', { 
+    logger.info('Starting HelpScout ticket import', {
       mailboxId: helpscoutConfig.mailboxId,
-      userId: req.user?.id 
+      userId: req.user?.id,
     });
 
     // Get conversations from HelpScout
-    const response = await axios.get(
-      `https://api.helpscout.net/v2/conversations`,
-      {
-        headers: { 
-          Authorization: `Bearer ${helpscoutConfig.apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        params: { 
-          mailbox: helpscoutConfig.mailboxId,
-          status: 'active,pending',
-          embed: 'threads'
-        },
-      }
-    );
+    const response = await axios.get(`https://api.helpscout.net/v2/conversations`, {
+      headers: {
+        Authorization: `Bearer ${helpscoutConfig.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      params: {
+        mailbox: helpscoutConfig.mailboxId,
+        status: 'active,pending',
+        embed: 'threads',
+      },
+    });
 
     const conversations = response.data._embedded?.conversations || [];
     let importedCount = 0;
@@ -55,10 +53,12 @@ router.post('/import', authenticateJWT, async (req, res) => {
     for (const conversation of conversations) {
       try {
         // Check if ticket already exists
-        const existingTicket = await db.one(
-          'SELECT id FROM tickets WHERE external_id = $1 AND external_source = $2',
-          [conversation.id.toString(), 'helpscout']
-        ).catch(() => null);
+        const existingTicket = await db
+          .one('SELECT id FROM tickets WHERE external_id = $1 AND external_source = $2', [
+            conversation.id.toString(),
+            'helpscout',
+          ])
+          .catch(() => null);
 
         if (existingTicket) {
           skippedCount++;
@@ -78,61 +78,70 @@ router.post('/import', authenticateJWT, async (req, res) => {
           customer_name: conversation.customer?.name || null,
           created_at: new Date(conversation.createdAt),
           updated_at: new Date(conversation.modifiedAt || conversation.createdAt),
-          imported_by: req.user?.id || null
+          imported_by: req.user?.id || null,
         };
 
         const ticketId = await generateTypedTicketId('INC');
         const internalId = (await import('uuid')).v4();
-        await db.none(`
+        await db.none(
+          `
           INSERT INTO tickets (
             id, ticket_id, type_code, title, description, status, priority, external_id, external_source, 
             external_url, customer_email, customer_name, created_at, updated_at, imported_by
           ) VALUES (
             $1, $2, 'INC', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
           )
-        `, [
-          internalId,
-          ticketId,
-          ticketData.title, ticketData.description, ticketData.status, ticketData.priority,
-          ticketData.external_id, ticketData.external_source, ticketData.external_url,
-          ticketData.customer_email, ticketData.customer_name, ticketData.created_at,
-          ticketData.updated_at, req.user?.id || null
-        ]);
+        `,
+          [
+            internalId,
+            ticketId,
+            ticketData.title,
+            ticketData.description,
+            ticketData.status,
+            ticketData.priority,
+            ticketData.external_id,
+            ticketData.external_source,
+            ticketData.external_url,
+            ticketData.customer_email,
+            ticketData.customer_name,
+            ticketData.created_at,
+            ticketData.updated_at,
+            req.user?.id || null,
+          ],
+        );
 
         importedCount++;
-        logger.debug('Imported HelpScout ticket', { 
-          conversationId: conversation.id, 
-          ticketTitle: ticketData.title 
+        logger.debug('Imported HelpScout ticket', {
+          conversationId: conversation.id,
+          ticketTitle: ticketData.title,
         });
-
       } catch (ticketError) {
-        logger.error('Failed to import individual ticket', { 
-          conversationId: conversation.id, 
-          error: ticketError.message 
+        logger.error('Failed to import individual ticket', {
+          conversationId: conversation.id,
+          error: ticketError.message,
         });
       }
     }
 
-    logger.info('HelpScout import completed', { 
-      total: conversations.length, 
-      imported: importedCount, 
-      skipped: skippedCount 
+    logger.info('HelpScout import completed', {
+      total: conversations.length,
+      imported: importedCount,
+      skipped: skippedCount,
     });
 
-    res.status(200).json({ 
+    res.status(200).json({
       message: 'HelpScout tickets imported successfully',
       summary: {
         total: conversations.length,
         imported: importedCount,
-        skipped: skippedCount
-      }
+        skipped: skippedCount,
+      },
     });
-
   } catch (error) {
     logger.error('HelpScout import failed', { error: error.message });
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to import tickets from HelpScout',
-      details: error.message 
+      details: error.message,
     });
   }
 });
@@ -140,10 +149,10 @@ router.post('/import', authenticateJWT, async (req, res) => {
 // Helper function to map HelpScout status to our ticket status
 function mapHelpScoutStatus(helpscoutStatus) {
   const statusMap = {
-    'active': 'open',
-    'pending': 'pending',
-    'closed': 'closed',
-    'spam': 'closed'
+    active: 'open',
+    pending: 'pending',
+    closed: 'closed',
+    spam: 'closed',
   };
   return statusMap[helpscoutStatus] || 'open';
 }
@@ -151,13 +160,17 @@ function mapHelpScoutStatus(helpscoutStatus) {
 // Helper function to determine priority from HelpScout tags
 function mapHelpScoutPriority(tags = []) {
   const tagString = tags.join(' ').toLowerCase();
-  
-  if (tagString.includes('urgent') || tagString.includes('high') || tagString.includes('critical')) {
+
+  if (
+    tagString.includes('urgent') ||
+    tagString.includes('high') ||
+    tagString.includes('critical')
+  ) {
     return 'high';
   } else if (tagString.includes('low')) {
     return 'low';
   }
-  
+
   return 'medium';
 }
 

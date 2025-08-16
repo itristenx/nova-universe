@@ -5,9 +5,9 @@ export const extendedMonitorService = {
       responseTime: 123,
       statusCode: 200,
       message: 'Extended monitor check simulated',
-      data: { type: check?.type, simulated: true }
+      data: { type: check?.type, simulated: true },
     };
-  }
+  },
 };
 
 export default extendedMonitorService;

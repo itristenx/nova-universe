@@ -8,13 +8,13 @@ dotenv.config();
 import { logger } from './logger.js';
 import { DatabaseFactory } from './database/factory.js';
 import bcrypt from 'bcryptjs';
-import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 // import { PrismaClient } from '../../prisma/generated/core/index.js';
 
+// Keep filename for potential future use
+ 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Initialize database factory
 const dbFactory = new DatabaseFactory();
@@ -359,11 +359,16 @@ async function setupInitialData() {
     await setupDefaultSlaPolicies();
     // Ensure minimum admin role/user linkage
     try {
-      await db.query(`INSERT INTO user_roles (user_id, role_id, created_at)
+      await db.query(
+        `INSERT INTO user_roles (user_id, role_id, created_at)
                       SELECT u.id, 1, CURRENT_TIMESTAMP FROM users u
                       LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role_id = 1
-                      WHERE u.email = $1 AND ur.user_id IS NULL`, ['admin@novauniverse.com']);
-    } catch (e) {}
+                      WHERE u.email = $1 AND ur.user_id IS NULL`,
+        ['admin@novauniverse.com'],
+      );
+    } catch {
+      // Ignore if admin user already exists
+    }
     logger.info('Initial data setup completed');
   } catch (error) {
     logger.error('Error setting up initial data:', error);
@@ -399,13 +404,13 @@ async function setupRolesAndPermissions() {
     const roles = [
       { id: 1, name: 'superadmin', description: 'Super Administrator - Full System Access' },
       { id: 2, name: 'admin', description: 'Administrator - User Management Access' },
-      { id: 3, name: 'user', description: 'Regular User - No Admin Access' }
+      { id: 3, name: 'user', description: 'Regular User - No Admin Access' },
     ];
 
     for (const role of roles) {
       await db.query(
         'INSERT INTO roles (id, name, description, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT (id) DO NOTHING',
-        [role.id, role.name, role.description]
+        [role.id, role.name, role.description],
       );
     }
 
@@ -415,13 +420,13 @@ async function setupRolesAndPermissions() {
       { id: 3, name: 'manage_permissions' },
       { id: 4, name: 'view_admin_panel' },
       { id: 5, name: 'manage_integrations' },
-      { id: 6, name: 'view_audit_logs' }
+      { id: 6, name: 'view_audit_logs' },
     ];
 
     for (const permission of permissions) {
       await db.query(
         'INSERT INTO permissions (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING',
-        [permission.id, permission.name]
+        [permission.id, permission.name],
       );
     }
 
@@ -441,7 +446,7 @@ async function setupRolesAndPermissions() {
     for (const rp of rolePermissions) {
       await db.query(
         'INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-        [rp.roleId, rp.permissionId]
+        [rp.roleId, rp.permissionId],
       );
     }
 
@@ -458,17 +463,17 @@ async function setupRolesAndPermissions() {
 async function setupDefaultSlaPolicies() {
   try {
     const combinations = [];
-    const types = ['INC','REQ'];
-    const urgencies = ['low','medium','high','critical'];
-    const impacts = ['low','medium','high'];
+    const types = ['INC', 'REQ'];
+    const urgencies = ['low', 'medium', 'high', 'critical'];
+    const impacts = ['low', 'medium', 'high'];
     for (const t of types) {
       for (const u of urgencies) {
         for (const i of impacts) {
           // Simple baseline: response/resolution scale with urgency+impact
           const uScore = { low: 1, medium: 2, high: 3, critical: 4 }[u];
           const iScore = { low: 1, medium: 2, high: 3 }[i];
-          const response = Math.max(5, 60 - (uScore * 10) - (iScore * 5)); // minutes
-          const resolution = Math.max(30, 8 * 60 - (uScore * 60) - (iScore * 30)); // minutes
+          const response = Math.max(5, 60 - uScore * 10 - iScore * 5); // minutes
+          const resolution = Math.max(30, 8 * 60 - uScore * 60 - iScore * 30); // minutes
           combinations.push({ type: t, urgency: u, impact: i, response, resolution });
         }
       }
@@ -478,7 +483,7 @@ async function setupDefaultSlaPolicies() {
         `INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
          VALUES ($1,$2,$3,$4,$5)
          ON CONFLICT (type_code, urgency, impact) DO NOTHING`,
-        [c.type, c.urgency, c.impact, c.response, c.resolution]
+        [c.type, c.urgency, c.impact, c.response, c.resolution],
       );
     }
     logger.info('Default SLA policies seeded');
@@ -518,20 +523,20 @@ async function setupDefaultConfig() {
       smtpPort: process.env.SMTP_PORT || '587',
       emailFrom: process.env.EMAIL_FROM || 'noreply@novauniverse.com',
       themePrimary: process.env.THEME_PRIMARY || '#3b82f6',
-      themeSecondary: process.env.THEME_SECONDARY || '#64748b'
+      themeSecondary: process.env.THEME_SECONDARY || '#64748b',
     };
 
     for (const [key, value] of Object.entries(defaults)) {
       await db.query(
         'INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT (key) DO NOTHING',
-        [key, value, 'string', 'general']
+        [key, value, 'string', 'general'],
       );
     }
 
     // Add default directory integration
     await db.query(
       'INSERT INTO directory_integrations (provider, enabled, settings, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT DO NOTHING',
-      ['mock', true, '{}']
+      ['mock', true, '{}'],
     );
 
     logger.info('Default configuration setup completed');
@@ -548,15 +553,14 @@ async function setupDefaultAdmin() {
   try {
     // Use a single transaction to avoid race conditions
     const client = await db.coreDb.pool.connect();
-    
+
     try {
       await client.query('BEGIN');
-      
+
       // Check if admin user already exists
-      const existingAdmin = await client.query(
-        'SELECT id FROM users WHERE email = $1',
-        ['admin@novauniverse.com']
-      );
+      const existingAdmin = await client.query('SELECT id FROM users WHERE email = $1', [
+        'admin@novauniverse.com',
+      ]);
 
       if (existingAdmin.rows && existingAdmin.rows.length > 0) {
         logger.info('Default admin user already exists');
@@ -570,7 +574,7 @@ async function setupDefaultAdmin() {
 
       const result = await client.query(
         'INSERT INTO users (uuid, name, email, password_hash, disabled, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id',
-        [adminUuid, 'System Administrator', 'admin@novauniverse.com', hashedPassword, false]
+        [adminUuid, 'System Administrator', 'admin@novauniverse.com', hashedPassword, false],
       );
 
       const adminId = result.rows[0].id;
@@ -578,7 +582,7 @@ async function setupDefaultAdmin() {
       // Assign superadmin role
       await client.query(
         'INSERT INTO user_roles (user_id, role_id, created_at) VALUES ($1, $2, CURRENT_TIMESTAMP)',
-        [adminId, 1] // superadmin role
+        [adminId, 1], // superadmin role
       );
 
       await client.query('COMMIT');
@@ -618,8 +622,12 @@ class DatabaseWrapper {
       // Allow degraded mode if configured
       if (process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development') {
         return {
-          query: async () => { throw new Error('DB unavailable'); },
-          transaction: async () => { throw new Error('DB unavailable'); }
+          query: async () => {
+            throw new Error('DB unavailable');
+          },
+          transaction: async () => {
+            throw new Error('DB unavailable');
+          },
         };
       }
       throw e;
@@ -656,7 +664,7 @@ class DatabaseWrapper {
         details,
         timestamp: new Date(),
         ip: details.ip || 'unknown',
-        userAgent: details.userAgent || 'unknown'
+        userAgent: details.userAgent || 'unknown',
       });
     } catch (error) {
       logger.error('Failed to create audit log:', error);
@@ -668,27 +676,26 @@ class DatabaseWrapper {
       const database = await this.ensureReady();
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
-      
+
       // Check if system_logs table exists first
       const tableExists = await database.query(
         `SELECT EXISTS (
           SELECT FROM information_schema.tables 
           WHERE table_schema = 'public' 
           AND table_name = 'system_logs'
-        )`
+        )`,
       );
-      
+
       if (!tableExists.rows[0].exists) {
         logger.info('system_logs table does not exist, skipping log purge');
         if (cb) cb(null, { rowCount: 0 });
         return { rowCount: 0 };
       }
-      
-      const result = await database.query(
-        'DELETE FROM system_logs WHERE created_at < $1',
-        [cutoffDate]
-      );
-      
+
+      const result = await database.query('DELETE FROM system_logs WHERE created_at < $1', [
+        cutoffDate,
+      ]);
+
       if (cb) cb(null, result);
       return result;
     } catch (error) {
@@ -708,11 +715,11 @@ class DatabaseWrapper {
     // If callback is provided, use callback style
     if (typeof cb === 'function') {
       this.query(sql, params)
-        .then(result => cb(null, result.rows?.[0] || null))
+        .then((result) => cb(null, result.rows?.[0] || null))
         .catch(cb);
     } else {
       // Otherwise, return a promise
-      return this.query(sql, params).then(result => result.rows?.[0] || null);
+      return this.query(sql, params).then((result) => result.rows?.[0] || null);
     }
   }
 
@@ -726,11 +733,11 @@ class DatabaseWrapper {
     // If callback is provided, use callback style
     if (typeof cb === 'function') {
       this.query(sql, params)
-        .then(result => cb(null, result.rows || []))
+        .then((result) => cb(null, result.rows || []))
         .catch(cb);
     } else {
       // Otherwise, return a promise
-      return this.query(sql, params).then(result => result.rows || []);
+      return this.query(sql, params).then((result) => result.rows || []);
     }
   }
 
@@ -744,10 +751,15 @@ class DatabaseWrapper {
     // If callback is provided, use callback style
     if (typeof cb === 'function') {
       this.query(sql, params)
-        .then(result => {
+        .then((result) => {
           const context = {
-            lastID: (result && result.rows && result.rows[0] && (result.rows[0].id || result.rows[0].uuid)) || undefined,
-            changes: typeof result?.rowCount === 'number' ? result.rowCount : 0
+            lastID:
+              (result &&
+                result.rows &&
+                result.rows[0] &&
+                (result.rows[0].id || result.rows[0].uuid)) ||
+              undefined,
+            changes: typeof result?.rowCount === 'number' ? result.rowCount : 0,
           };
           cb.call(context, null, result);
         })

@@ -7,7 +7,7 @@ export const advancedFeaturesService = {
   },
   async createMaintenanceWindow(win) {
     return { id: `mw_${Date.now()}`, status: 'scheduled', ...win };
-  }
+  },
 };
 
 export default advancedFeaturesService;

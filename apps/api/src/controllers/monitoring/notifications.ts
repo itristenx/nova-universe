@@ -1,5 +1,7 @@
 import { PrismaClient } from '../../../../prisma/generated/core/index.js';
-const prisma = new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+const prisma = new PrismaClient({
+  datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+});
 
 export interface NotificationProviderData {
   name: string;
@@ -24,11 +26,11 @@ export const createNotificationProvider = async (data: NotificationProviderData)
         ${data.user_id}, true, NOW(), NOW()
       ) RETURNING id
     `;
-    
+
     const provider = await prisma.$queryRaw`
       SELECT * FROM nova_notification_channels WHERE id = ${(result as any)[0].id}
     `;
-    
+
     return (provider as any)[0];
   } catch (error) {
     console.error('Database error creating notification provider:', error);
@@ -51,32 +53,45 @@ export const getNotificationProviders = async (userId: string) => {
   }
 };
 
-export const updateNotificationProvider = async (id: string, data: UpdateNotificationProviderData, userId: string) => {
+export const updateNotificationProvider = async (
+  id: string,
+  data: UpdateNotificationProviderData,
+  userId: string,
+) => {
   try {
     const fields: string[] = [];
     const values: any[] = [];
-    
-    if (data.name !== undefined) { fields.push('name = $' + (fields.length + 1)); values.push(data.name); }
-    if (data.type !== undefined) { fields.push('type = $' + (fields.length + 1)); values.push(data.type); }
-    if (data.is_default !== undefined) { fields.push('is_default = $' + (fields.length + 1)); values.push(data.is_default); }
-    if (data.config !== undefined) { 
-      fields.push('provider_config = $' + (fields.length + 1)); 
-      values.push(JSON.stringify(data.config)); 
+
+    if (data.name !== undefined) {
+      fields.push('name = $' + (fields.length + 1));
+      values.push(data.name);
     }
-    
+    if (data.type !== undefined) {
+      fields.push('type = $' + (fields.length + 1));
+      values.push(data.type);
+    }
+    if (data.is_default !== undefined) {
+      fields.push('is_default = $' + (fields.length + 1));
+      values.push(data.is_default);
+    }
+    if (data.config !== undefined) {
+      fields.push('provider_config = $' + (fields.length + 1));
+      values.push(JSON.stringify(data.config));
+    }
+
     if (fields.length === 0) {
       return await getNotificationProviderById(id, userId);
     }
-    
+
     fields.push('updated_at = NOW()');
     values.push(id, userId);
-    
+
     const query = `
       UPDATE nova_notification_channels 
       SET ${fields.join(', ')}
       WHERE id = $${values.length - 1} AND tenant_id = $${values.length}
     `;
-    
+
     await prisma.$executeRawUnsafe(query, ...values);
     return await getNotificationProviderById(id, userId);
   } catch (error) {
@@ -126,7 +141,10 @@ export const testNotificationProvider = async (id: string, userId: string) => {
     // Minimal smoke tests by provider type
     switch (type) {
       case 'email': {
-        const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env as Record<string, string>;
+        const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env as Record<
+          string,
+          string
+        >;
         if (!SMTP_HOST || !SMTP_PORT) {
           throw new Error('SMTP not configured');
         }
@@ -136,7 +154,7 @@ export const testNotificationProvider = async (id: string, userId: string) => {
           host: SMTP_HOST,
           port: parseInt(SMTP_PORT, 10),
           secure: process.env.SMTP_SECURE === 'true',
-          auth: SMTP_USER && SMTP_PASS ? { user: SMTP_USER, pass: SMTP_PASS } : undefined
+          auth: SMTP_USER && SMTP_PASS ? { user: SMTP_USER, pass: SMTP_PASS } : undefined,
         });
         await transport.verify();
         break;
@@ -148,7 +166,7 @@ export const testNotificationProvider = async (id: string, userId: string) => {
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: 'Nova notification test (dry run)', nova_test: true })
+          body: JSON.stringify({ text: 'Nova notification test (dry run)', nova_test: true }),
         });
         if (!res.ok) throw new Error(`Slack webhook responded ${res.status}`);
         break;

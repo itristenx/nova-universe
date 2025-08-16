@@ -33,7 +33,12 @@ router.post('/query', kioskOrAuth, async (req, res) => {
       timestamp: new Date(),
     });
 
-    res.json({ success: true, result: response.result, metadata: response.metadata, provider: response.provider });
+    res.json({
+      success: true,
+      result: response.result,
+      metadata: response.metadata,
+      provider: response.provider,
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: 'AI query failed' });
   }

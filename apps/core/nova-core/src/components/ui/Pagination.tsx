@@ -8,7 +8,12 @@ interface PaginationProps {
   className?: string;
 }
 
-export const Pagination: React.FC<PaginationProps> = ({ page, pageCount, onPageChange, className = '' }) => {
+export const Pagination: React.FC<PaginationProps> = ({
+  page,
+  pageCount,
+  onPageChange,
+  className = '',
+}) => {
   const pages = Array.from({ length: pageCount }, (_, i) => i + 1);
   return (
     <nav className={`pagination ${className}`} aria-label="Pagination">
@@ -20,10 +25,10 @@ export const Pagination: React.FC<PaginationProps> = ({ page, pageCount, onPageC
       >
         &lt;
       </button>
-      {pages.map(p => (
+      {pages.map((p) => (
         <button
           key={p}
-          className={`pagination-btn${p === page ? ' pagination-btn--active' : ''}`}
+          className={`pagination-btn${p === page ? 'pagination-btn--active' : ''}`}
           onClick={() => onPageChange(p)}
           aria-current={p === page ? 'page' : undefined}
         >

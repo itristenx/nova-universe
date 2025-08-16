@@ -5,7 +5,15 @@ export interface BoxProps extends React.HTMLAttributes<HTMLDivElement> {
   alignItems?: React.CSSProperties['alignItems'];
   gap?: React.CSSProperties['gap'];
 }
-export const Box: React.FC<BoxProps> = ({ sx = {}, style, display, alignItems, gap, children, ...props }) => (
+export const Box: React.FC<BoxProps> = ({
+  sx = {},
+  style,
+  display,
+  alignItems,
+  gap,
+  children,
+  ...props
+}) => (
   <div
     {...props}
     style={{

@@ -14,16 +14,16 @@ if (process.env.NODE_ENV === 'production') {
   prismaInstance = new PrismaClient({
     log: ['error', 'warn'],
     datasources: {
-      core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL }
-    }
+      core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL },
+    },
   });
 } else {
   if (!global.__prisma) {
     global.__prisma = new PrismaClient({
       log: ['query', 'info', 'warn', 'error'],
       datasources: {
-        core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL }
-      }
+        core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL },
+      },
     });
   }
   prismaInstance = global.__prisma;
@@ -44,11 +44,11 @@ class EnhancedPrismaClient {
       const before = Date.now();
       const result = await next(params);
       const after = Date.now();
-      
+
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Prisma Query ${params.model}.${params.action} took ${after - before}ms`);
       }
-      
+
       return result;
     });
 
@@ -57,11 +57,14 @@ class EnhancedPrismaClient {
       try {
         return await next(params);
       } catch (error: any) {
-        logger.error('Prisma operation failed: ' + JSON.stringify({
-          model: params.model,
-          action: params.action,
-          error: error instanceof Error ? error.message : String(error)
-        }));
+        logger.error(
+          'Prisma operation failed: ' +
+            JSON.stringify({
+              model: params.model,
+              action: params.action,
+              error: error instanceof Error ? error.message : String(error),
+            }),
+        );
         throw error;
       }
     });
@@ -70,16 +73,21 @@ class EnhancedPrismaClient {
     this.client.$use(async (params, next) => {
       const sensitiveModels = ['User', 'Role', 'Permission', 'UserRole', 'RolePermission'];
       const sensitiveActions = ['create', 'update', 'delete', 'upsert'];
-      
-      if (sensitiveModels.includes(params.model || '') && 
-          sensitiveActions.includes(params.action)) {
-        logger.info('Sensitive operation: ' + JSON.stringify({
-          model: params.model,
-          action: params.action,
-          args: JSON.stringify(params.args, null, 2)
-        }));
+
+      if (
+        sensitiveModels.includes(params.model || '') &&
+        sensitiveActions.includes(params.action)
+      ) {
+        logger.info(
+          'Sensitive operation: ' +
+            JSON.stringify({
+              model: params.model,
+              action: params.action,
+              args: JSON.stringify(params.args, null, 2),
+            }),
+        );
       }
-      
+
       return await next(params);
     });
   }
@@ -87,16 +95,16 @@ class EnhancedPrismaClient {
   // Health check method
   async healthCheck() {
     const start = Date.now();
-    
+
     try {
       await this.client.$queryRaw`SELECT 1`;
       const responseTime = Date.now() - start;
-      
+
       return {
         healthy: true,
         responseTime,
         database: 'postgresql',
-        orm: 'prisma'
+        orm: 'prisma',
       };
     } catch (error: any) {
       return {
@@ -104,17 +112,26 @@ class EnhancedPrismaClient {
         error: error.message,
         responseTime: Date.now() - start,
         database: 'postgresql',
-        orm: 'prisma'
+        orm: 'prisma',
       };
     }
   }
 
   // Transaction wrapper with enhanced error handling
-  async transaction<T>(fn: (tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => Promise<T>): Promise<T> {
+  async transaction<T>(
+    fn: (
+      tx: Omit<
+        PrismaClient,
+        '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+      >,
+    ) => Promise<T>,
+  ): Promise<T> {
     try {
       return await this.client.$transaction(fn);
     } catch (error: any) {
-      logger.error('Prisma transaction failed: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Prisma transaction failed: ' + (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }

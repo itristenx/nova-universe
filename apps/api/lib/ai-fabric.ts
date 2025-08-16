@@ -1,13 +1,13 @@
 /**
  * Nova AI Fabric - Comprehensive AI Orchestration Engine
- * 
+ *
  * This is the central AI fabric that orchestrates multiple AI capabilities:
  * - 3rd party AI services (OpenAI, Anthropic, etc.)
  * - Internal Nova AI/ML models
  * - MCP (Model Context Protocol) integrations
  * - RAG (Retrieval-Augmented Generation)
  * - Custom Nova models
- * 
+ *
  * Features:
  * - Learning from user/agent interactions
  * - Advanced monitoring and compliance
@@ -17,7 +17,6 @@
 
 import { EventEmitter } from 'events';
 import { logger } from '../logger.js';
-import { z } from 'zod';
 import crypto from 'crypto';
 
 // Core AI Fabric Types
@@ -144,7 +143,7 @@ export class NovaAIFabric extends EventEmitter {
         this.customModels.initialize(),
         this.monitoringSystem.initialize(),
         this.complianceEngine.initialize(),
-        this.learningEngine.initialize()
+        this.learningEngine.initialize(),
       ]);
 
       // Register default providers
@@ -175,53 +174,53 @@ export class NovaAIFabric extends EventEmitter {
     }
 
     const startTime = Date.now();
-    
+
     try {
       // Generate request ID
       request.id = crypto.randomUUID();
-      
+
       // Log request
       this.requestHistory.set(request.id, request);
-      
+
       // Audit the request
       await this.auditRequest(request);
-      
+
       // Route to appropriate provider
       const provider = await this.selectOptimalProvider(request);
-      
+
       // Process the request
       const response = await this.executeRequest(request, provider);
-      
+
       // Log response
       this.responseHistory.set(response.id, response);
-      
+
       // Learn from the interaction
       await this.recordLearningEvent({
         type: 'system_outcome',
         data: { request, response },
         context: request.context,
         timestamp: new Date(),
-        quality: this.calculateQualityScore(request, response)
+        quality: this.calculateQualityScore(request, response),
       });
-      
+
       // Monitor and alert if needed
       await this.monitoringSystem.recordMetrics(request, response);
-      
+
       this.emit('requestProcessed', { request, response });
-      
+
       return response;
     } catch (error) {
       logger.error('Error processing AI request:', error);
-      
+
       // Record error event
       await this.recordLearningEvent({
         type: 'system_outcome',
         data: { request, error: error.message },
         context: request.context,
         timestamp: new Date(),
-        quality: 0
+        quality: 0,
       });
-      
+
       throw error;
     }
   }
@@ -233,10 +232,10 @@ export class NovaAIFabric extends EventEmitter {
     try {
       // Validate provider
       await this.validateProvider(provider);
-      
+
       // Add to registry
       this.providers.set(provider.id, provider);
-      
+
       // Initialize provider
       switch (provider.type) {
         case 'external':
@@ -252,7 +251,7 @@ export class NovaAIFabric extends EventEmitter {
           await this.customModels.registerProvider(provider);
           break;
       }
-      
+
       logger.info(`Registered AI provider: ${provider.id}`);
       this.emit('providerRegistered', provider);
     } catch (error) {
@@ -267,7 +266,7 @@ export class NovaAIFabric extends EventEmitter {
   async recordLearningEvent(event: LearningEvent): Promise<void> {
     this.learningEvents.push(event);
     await this.learningEngine.processEvent(event);
-    
+
     // Trigger learning updates if needed
     if (this.learningEvents.length % 100 === 0) {
       await this.learningEngine.updateModels();
@@ -285,9 +284,9 @@ export class NovaAIFabric extends EventEmitter {
         totalRequests: this.requestHistory.size,
         totalResponses: this.responseHistory.size,
         learningEvents: this.learningEvents.length,
-        auditEntries: this.auditLog.length
+        auditEntries: this.auditLog.length,
       },
-      health: this.getOverallHealth()
+      health: this.getOverallHealth(),
     };
   }
 
@@ -302,11 +301,11 @@ export class NovaAIFabric extends EventEmitter {
         config: {
           apiKey: process.env.OPENAI_API_KEY,
           model: 'gpt-4-turbo',
-          endpoint: 'https://api.openai.com/v1/chat/completions'
+          endpoint: 'https://api.openai.com/v1/chat/completions',
         },
         isActive: !!process.env.OPENAI_API_KEY,
         healthStatus: 'healthy',
-        lastHealthCheck: new Date()
+        lastHealthCheck: new Date(),
       },
       {
         id: 'nova-local-classifier',
@@ -315,11 +314,11 @@ export class NovaAIFabric extends EventEmitter {
         capabilities: ['classification', 'intent_detection'],
         config: {
           modelPath: '/models/nova-classifier',
-          threshold: 0.7
+          threshold: 0.7,
         },
         isActive: true,
         healthStatus: 'healthy',
-        lastHealthCheck: new Date()
+        lastHealthCheck: new Date(),
       },
       {
         id: 'nova-mcp-server',
@@ -327,11 +326,11 @@ export class NovaAIFabric extends EventEmitter {
         type: 'mcp',
         capabilities: ['ticket_analysis', 'knowledge_retrieval'],
         config: {
-          endpoint: process.env.MCP_SERVER_ENDPOINT || 'http://localhost:3001/mcp'
+          endpoint: process.env.MCP_SERVER_ENDPOINT || 'http://localhost:3001/mcp',
         },
         isActive: true,
         healthStatus: 'healthy',
-        lastHealthCheck: new Date()
+        lastHealthCheck: new Date(),
       },
       {
         id: 'nova-rag-engine',
@@ -340,12 +339,12 @@ export class NovaAIFabric extends EventEmitter {
         capabilities: ['knowledge_retrieval', 'context_augmentation'],
         config: {
           vectorStore: 'chromadb',
-          embeddingModel: 'text-embedding-ada-002'
+          embeddingModel: 'text-embedding-ada-002',
         },
         isActive: true,
         healthStatus: 'healthy',
-        lastHealthCheck: new Date()
-      }
+        lastHealthCheck: new Date(),
+      },
     ];
 
     for (const provider of defaultProviders) {
@@ -362,13 +361,10 @@ export class NovaAIFabric extends EventEmitter {
     // - Current load and performance
     // - User preferences
     // - Cost optimization
-    
-    const candidates = Array.from(this.providers.values())
-      .filter(p => 
-        p.isActive && 
-        p.healthStatus !== 'unhealthy' &&
-        p.capabilities.includes(request.type)
-      );
+
+    const candidates = Array.from(this.providers.values()).filter(
+      (p) => p.isActive && p.healthStatus !== 'unhealthy' && p.capabilities.includes(request.type),
+    );
 
     if (candidates.length === 0) {
       throw new Error(`No available providers for request type: ${request.type}`);
@@ -376,8 +372,8 @@ export class NovaAIFabric extends EventEmitter {
 
     // If preferences specified, try those first
     if (request.preferences.preferredProviders?.length) {
-      const preferred = candidates.find(p => 
-        request.preferences.preferredProviders!.includes(p.id)
+      const preferred = candidates.find((p) =>
+        request.preferences.preferredProviders!.includes(p.id),
       );
       if (preferred) return preferred.id;
     }
@@ -388,23 +384,23 @@ export class NovaAIFabric extends EventEmitter {
 
   private smartProviderSelection(request: AIRequest, candidates: AIProvider[]): string {
     // Score each provider based on multiple factors
-    const scores = candidates.map(provider => {
+    const scores = candidates.map((provider) => {
       let score = 0;
-      
+
       // Health score (0-100)
       if (provider.healthStatus === 'healthy') score += 40;
       else if (provider.healthStatus === 'degraded') score += 20;
-      
+
       // Capability match (0-30)
       const matchRatio = request.type === 'classification' ? 30 : 20;
       score += matchRatio;
-      
+
       // Performance history (0-30)
       score += this.getProviderPerformanceScore(provider.id);
-      
+
       return { provider: provider.id, score };
     });
-    
+
     // Return the highest scoring provider
     scores.sort((a, b) => b.score - a.score);
     return scores[0].provider;
@@ -415,7 +411,7 @@ export class NovaAIFabric extends EventEmitter {
     // Note: In a full implementation, we'd read from persisted metrics
     try {
       const recent = Array.from(this.responseHistory.values())
-        .filter(r => r.provider === providerId)
+        .filter((r) => r.provider === providerId)
         .slice(-50);
       if (recent.length === 0) return 10;
       const avgMs = recent.reduce((s, r) => s + (r.processingTime || 0), 0) / recent.length;
@@ -468,9 +464,9 @@ export class NovaAIFabric extends EventEmitter {
         processingTime,
         metadata: {
           providerType: provider.type,
-          model: provider.config.model || provider.name
+          model: provider.config.model || provider.name,
         },
-        auditTrail: []
+        auditTrail: [],
       };
     } catch (error) {
       logger.error(`Provider ${providerId} execution failed:`, error);
@@ -488,10 +484,10 @@ export class NovaAIFabric extends EventEmitter {
       metadata: {
         requestType: request.type,
         module: request.context.module,
-        tenantId: request.context.tenantId
+        tenantId: request.context.tenantId,
       },
       complianceFlags: await this.complianceEngine.checkCompliance(request),
-      riskScore: await this.complianceEngine.calculateRiskScore(request)
+      riskScore: await this.complianceEngine.calculateRiskScore(request),
     };
 
     this.auditLog.push(auditEntry);
@@ -502,9 +498,10 @@ export class NovaAIFabric extends EventEmitter {
     // Remove or mask sensitive data for audit logs
     if (typeof input === 'string') {
       // Basic PII detection and masking
-      return input.replace(/\b[\w._%+-]+@[\w.-]+\.[A-Z]{2,}\b/gi, '[EMAIL]')
-                  .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]')
-                  .replace(/\b\d{16}\b/g, '[CARD]');
+      return input
+        .replace(/\b[\w._%+-]+@[\w.-]+\.[A-Z]{2,}\b/gi, '[EMAIL]')
+        .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]')
+        .replace(/\b\d{16}\b/g, '[CARD]');
     }
     return input;
   }
@@ -515,7 +512,7 @@ export class NovaAIFabric extends EventEmitter {
     // - Confidence level
     // - Provider reliability
     // - User feedback (if available)
-    
+
     let score = 0.5; // Base score
 
     // Response time factor
@@ -596,7 +593,7 @@ export class NovaAIFabric extends EventEmitter {
 
   private getOverallHealth(): string {
     const providers = Array.from(this.providers.values());
-    const healthyCount = providers.filter(p => p.healthStatus === 'healthy').length;
+    const healthyCount = providers.filter((p) => p.healthStatus === 'healthy').length;
     const totalCount = providers.length;
 
     if (totalCount === 0) return 'unknown';
@@ -621,7 +618,7 @@ export class NovaAIFabric extends EventEmitter {
 
   async shutdown(): Promise<void> {
     logger.info('Shutting down AI Fabric...');
-    
+
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
     }
@@ -632,7 +629,7 @@ export class NovaAIFabric extends EventEmitter {
       this.mcpProviders.shutdown(),
       this.ragEngine.shutdown(),
       this.customModels.shutdown(),
-      this.monitoringSystem.shutdown()
+      this.monitoringSystem.shutdown(),
     ]);
 
     this.isInitialized = false;
@@ -644,58 +641,88 @@ export class NovaAIFabric extends EventEmitter {
 class ExternalAIProviders {
   async initialize() {}
   async registerProvider(provider: AIProvider) {}
-  async execute(providerId: string, request: AIRequest) { return { ok: true, providerId, echo: request.input }; }
-  async healthCheck(providerId: string): Promise<boolean> { return true; }
+  async execute(providerId: string, request: AIRequest) {
+    return { ok: true, providerId, echo: request.input };
+  }
+  async healthCheck(providerId: string): Promise<boolean> {
+    return true;
+  }
   async shutdown() {}
 }
 
 class InternalAIProviders {
   async initialize() {}
   async registerProvider(provider: AIProvider) {}
-  async execute(providerId: string, request: AIRequest) { return { ok: true, internal: true }; }
-  async healthCheck(providerId: string): Promise<boolean> { return true; }
+  async execute(providerId: string, request: AIRequest) {
+    return { ok: true, internal: true };
+  }
+  async healthCheck(providerId: string): Promise<boolean> {
+    return true;
+  }
   async shutdown() {}
 }
 
 class MCPProviders {
   async initialize() {}
   async registerProvider(provider: AIProvider) {}
-  async execute(providerId: string, request: AIRequest) { return { ok: true, mcp: true }; }
-  async healthCheck(providerId: string): Promise<boolean> { return true; }
+  async execute(providerId: string, request: AIRequest) {
+    return { ok: true, mcp: true };
+  }
+  async healthCheck(providerId: string): Promise<boolean> {
+    return true;
+  }
   async shutdown() {}
 }
 
 class RAGEngine {
   async initialize() {}
-  async execute(providerId: string, request: AIRequest) { return { ok: true, rag: true }; }
-  async healthCheck(providerId: string): Promise<boolean> { return true; }
+  async execute(providerId: string, request: AIRequest) {
+    return { ok: true, rag: true };
+  }
+  async healthCheck(providerId: string): Promise<boolean> {
+    return true;
+  }
   async shutdown() {}
 }
 
 class CustomModelManager {
   async initialize() {}
   async registerProvider(provider: AIProvider) {}
-  async execute(providerId: string, request: AIRequest) { return { ok: true, custom: true }; }
+  async execute(providerId: string, request: AIRequest) {
+    return { ok: true, custom: true };
+  }
   async shutdown() {}
 }
 
 class AIMonitoringSystem {
   async initialize() {}
-  async recordMetrics(request: AIRequest, response: AIResponse) { return; }
-  async recordAuditEvent(event: AIAuditEntry) { return; }
+  async recordMetrics(request: AIRequest, response: AIResponse) {
+    return;
+  }
+  async recordAuditEvent(event: AIAuditEntry) {
+    return;
+  }
   async shutdown() {}
 }
 
 class AIComplianceEngine {
   async initialize() {}
-  async checkCompliance(request: AIRequest): Promise<string[]> { return []; }
-  async calculateRiskScore(request: AIRequest): Promise<number> { return 0.1; }
+  async checkCompliance(request: AIRequest): Promise<string[]> {
+    return [];
+  }
+  async calculateRiskScore(request: AIRequest): Promise<number> {
+    return 0.1;
+  }
 }
 
 class AILearningEngine {
   async initialize() {}
-  async processEvent(event: LearningEvent) { return; }
-  async updateModels() { return; }
+  async processEvent(event: LearningEvent) {
+    return;
+  }
+  async updateModels() {
+    return;
+  }
 }
 
 // Export singleton instance

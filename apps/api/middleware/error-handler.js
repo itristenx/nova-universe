@@ -12,7 +12,7 @@ const ErrorTypes = {
   DATABASE: 'database',
   EXTERNAL_SERVICE: 'external_service',
   RATE_LIMIT: 'rate_limit',
-  INTERNAL: 'internal'
+  INTERNAL: 'internal',
 };
 
 // Error severity levels
@@ -20,20 +20,26 @@ const ErrorSeverity = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
-  CRITICAL: 'critical'
+  CRITICAL: 'critical',
 };
 
 class AppError extends Error {
-  constructor(message, statusCode = 500, type = ErrorTypes.INTERNAL, severity = ErrorSeverity.MEDIUM, isOperational = true) {
+  constructor(
+    message,
+    statusCode = 500,
+    type = ErrorTypes.INTERNAL,
+    severity = ErrorSeverity.MEDIUM,
+    isOperational = true,
+  ) {
     super(message);
-    
+
     this.name = this.constructor.name;
     this.statusCode = statusCode;
     this.type = type;
     this.severity = severity;
     this.isOperational = isOperational;
     this.timestamp = new Date().toISOString();
-    
+
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -91,7 +97,7 @@ const collectErrorContext = (req, error) => {
     headers: {
       'user-agent': req.headers['user-agent'],
       'x-forwarded-for': req.headers['x-forwarded-for'],
-      'x-real-ip': req.headers['x-real-ip']
+      'x-real-ip': req.headers['x-real-ip'],
     },
     ip: req.ip || req.connection.remoteAddress,
     userId: req.user?.id || null,
@@ -99,7 +105,7 @@ const collectErrorContext = (req, error) => {
     timestamp: new Date().toISOString(),
     errorId: generateErrorId(),
     body: req.method !== 'GET' ? sanitizeBody(req.body) : undefined,
-    query: Object.keys(req.query).length > 0 ? req.query : undefined
+    query: Object.keys(req.query).length > 0 ? req.query : undefined,
   };
 };
 
@@ -111,16 +117,16 @@ const generateErrorId = () => {
 // Sanitize request body to remove sensitive data
 const sanitizeBody = (body) => {
   if (!body || typeof body !== 'object') return body;
-  
+
   const sanitized = { ...body };
   const sensitiveFields = ['password', 'token', 'secret', 'key', 'authorization'];
-  
+
   for (const field of sensitiveFields) {
     if (sanitized[field]) {
       sanitized[field] = '[REDACTED]';
     }
   }
-  
+
   return sanitized;
 };
 
@@ -133,9 +139,9 @@ const logError = (error, context) => {
       type: error.type || ErrorTypes.INTERNAL,
       severity: error.severity || ErrorSeverity.MEDIUM,
       statusCode: error.statusCode || 500,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     },
-    context
+    context,
   };
 
   switch (error.severity) {
@@ -160,14 +166,14 @@ const logError = (error, context) => {
 // Send error response to client
 const sendErrorResponse = (res, error, context) => {
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   // Base response structure
   const response = {
     error: true,
     message: error.message,
     type: error.type || ErrorTypes.INTERNAL,
     timestamp: error.timestamp || new Date().toISOString(),
-    errorId: context.errorId
+    errorId: context.errorId,
   };
 
   // Add field-specific validation errors
@@ -189,7 +195,7 @@ const sendErrorResponse = (res, error, context) => {
   // For production, sanitize sensitive error messages
   if (isProduction && error.statusCode >= 500) {
     response.message = 'An internal server error occurred';
-    
+
     // But provide more specific messages for known operational errors
     if (error.isOperational) {
       response.message = error.message;
@@ -211,7 +217,7 @@ const handleDatabaseError = (error) => {
   if (error.code === 'P2003') {
     return new ValidationError('Referenced record does not exist');
   }
-  
+
   return new DatabaseError('Database operation failed');
 };
 
@@ -270,7 +276,7 @@ const errorHandler = (error, req, res, next) => {
         500,
         ErrorTypes.INTERNAL,
         ErrorSeverity.HIGH,
-        false
+        false,
       );
     }
   }
@@ -301,7 +307,7 @@ const notFoundHandler = (req, res, next) => {
 // Graceful shutdown handler
 const gracefulShutdown = (signal) => {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
-  
+
   // Give ongoing requests time to complete
   setTimeout(() => {
     logger.info('Graceful shutdown completed');
@@ -319,10 +325,10 @@ process.on('uncaughtException', (error) => {
     error: {
       name: error.name,
       message: error.message,
-      stack: error.stack
-    }
+      stack: error.stack,
+    },
   });
-  
+
   // In production, exit the process after logging
   if (process.env.NODE_ENV === 'production') {
     process.exit(1);
@@ -331,14 +337,17 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Promise Rejection', {
-    reason: reason instanceof Error ? {
-      name: reason.name,
-      message: reason.message,
-      stack: reason.stack
-    } : reason,
-    promise: promise
+    reason:
+      reason instanceof Error
+        ? {
+            name: reason.name,
+            message: reason.message,
+            stack: reason.stack,
+          }
+        : reason,
+    promise: promise,
   });
-  
+
   // In production, exit the process after logging
   if (process.env.NODE_ENV === 'production') {
     process.exit(1);
@@ -358,5 +367,5 @@ export {
   ExternalServiceError,
   RateLimitError,
   ErrorTypes,
-  ErrorSeverity
+  ErrorSeverity,
 };

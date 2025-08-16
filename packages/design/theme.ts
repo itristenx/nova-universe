@@ -10,18 +10,18 @@ export const colors = {
   muted: '#888',
   green: '#22c55e',
   red: '#ef4444',
-  yellow: '#facc15'
+  yellow: '#facc15',
 };
 
 export const fonts = {
-  sans: ['Inter', 'system-ui', 'sans-serif']
+  sans: ['Inter', 'system-ui', 'sans-serif'],
 };
 
 export const spacing = {
   xs: '0.25rem',
   sm: '0.5rem',
   md: '1rem',
-  lg: '2rem'
+  lg: '2rem',
 };
 
 export default { colors, fonts, spacing };

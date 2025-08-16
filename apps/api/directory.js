@@ -3,14 +3,11 @@ import db from './db.js';
 
 export async function getConfig() {
   return new Promise((resolve, reject) => {
-    db.all(
-      "SELECT key, value FROM config WHERE key LIKE 'directory%'",
-      (err, rows) => {
-        if (err) return reject(err);
-        const cfg = Object.fromEntries(rows.map((r) => [r.key, r.value]));
-        resolve(cfg);
-      }
-    );
+    db.all("SELECT key, value FROM config WHERE key LIKE 'directory%'", (err, rows) => {
+      if (err) return reject(err);
+      const cfg = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+      resolve(cfg);
+    });
   });
 }
 
@@ -43,11 +40,10 @@ export async function searchDirectory(q) {
         resolve(
           arr.filter(
             (u) =>
-              u.name.toLowerCase().includes(ql) ||
-              (u.email && u.email.toLowerCase().includes(ql))
-          )
+              u.name.toLowerCase().includes(ql) || (u.email && u.email.toLowerCase().includes(ql)),
+          ),
         );
-      }
+      },
     );
   });
 }
@@ -56,13 +52,9 @@ export async function createUser(name, email) {
   // NOTE: This creates a user in the LOCAL Nova Universe database, NOT in the external directory
   // Directory integration is strictly read-only - we never modify external directory data
   return new Promise((resolve, reject) => {
-    db.run(
-      'INSERT INTO users (name, email) VALUES (?, ?)',
-      [name, email],
-      function (err) {
-        if (err) return reject(err);
-        resolve(this.lastID);
-      }
-    );
+    db.run('INSERT INTO users (name, email) VALUES (?, ?)', [name, email], function (err) {
+      if (err) return reject(err);
+      resolve(this.lastID);
+    });
   });
 }

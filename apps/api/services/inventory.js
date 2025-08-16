@@ -13,7 +13,9 @@ async function getPrisma() {
   try {
     const mod = await import('../../../prisma/generated/core/index.js');
     const PrismaClient = mod.PrismaClient;
-    return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+    return new PrismaClient({
+      datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+    });
   } catch (e) {
     logger.warn('Prisma unavailable in InventoryService', { error: e?.message });
     return null;
@@ -37,45 +39,40 @@ const VALIDATION_RULES = {
     minLength: 1,
     maxLength: 50,
     pattern: /^[A-Z0-9\-_]+$/i,
-    unique: true
+    unique: true,
   },
   serial_number: {
     required: false,
     minLength: 3,
     maxLength: 100,
-    encrypted: true
+    encrypted: true,
   },
   model: {
     required: false,
-    maxLength: 100
+    maxLength: 100,
   },
   department: {
     required: false,
-    maxLength: 100
+    maxLength: 100,
   },
   status: {
     required: true,
-    allowedValues: ['active', 'inactive', 'maintenance', 'disposed', 'missing', 'retired']
+    allowedValues: ['active', 'inactive', 'maintenance', 'disposed', 'missing', 'retired'],
   },
   warranty_expiry: {
     required: false,
     type: 'date',
-    futureOnly: false
+    futureOnly: false,
   },
   purchase_date: {
     required: false,
     type: 'date',
-    pastOnly: true
-  }
+    pastOnly: true,
+  },
 };
 
 // Encrypted fields that need special handling
-const ENCRYPTED_FIELDS = [
-  'serial_number',
-  'warranty_info',
-  'purchase_info',
-  'maintenance_notes'
-];
+const ENCRYPTED_FIELDS = ['serial_number', 'warranty_info', 'purchase_info', 'maintenance_notes'];
 
 export class InventoryService {
   constructor() {
@@ -88,19 +85,19 @@ export class InventoryService {
   async importAssets(csvData, filename, importedBy, options = {}) {
     const batchId = uuidv4();
     let importBatch = null;
-    
+
     try {
       logger.info(`Starting asset import: ${filename} by ${importedBy}`);
-      
+
       // Parse CSV data
       const records = this.parseCsvData(csvData);
-      
+
       // Create import batch record
       importBatch = await this.createImportBatch(batchId, filename, importedBy, records.length);
-      
+
       // Validate all records
       const validationResults = await this.validateRecords(records, batchId);
-      
+
       // Check if validation passed
       if (validationResults.hasErrors) {
         await this.updateBatchStatus(batchId, 'invalid', validationResults.errorSummary);
@@ -111,18 +108,30 @@ export class InventoryService {
           warnings: validationResults.warnings,
           totalRecords: records.length,
           validRecords: 0,
-          invalidRecords: validationResults.errorCount
+          invalidRecords: validationResults.errorCount,
         };
       }
-      
+
       // Import valid records
-      const importResults = await this.importValidatedRecords(records, batchId, validationResults.validatedData);
-      
+      const importResults = await this.importValidatedRecords(
+        records,
+        batchId,
+        validationResults.validatedData,
+      );
+
       // Update batch status
-      await this.updateBatchStatus(batchId, 'valid', null, importResults.successCount, importResults.failureCount);
-      
-      logger.info(`Asset import completed: ${importResults.successCount} successful, ${importResults.failureCount} failed`);
-      
+      await this.updateBatchStatus(
+        batchId,
+        'valid',
+        null,
+        importResults.successCount,
+        importResults.failureCount,
+      );
+
+      logger.info(
+        `Asset import completed: ${importResults.successCount} successful, ${importResults.failureCount} failed`,
+      );
+
       return {
         success: true,
         batchId,
@@ -130,16 +139,15 @@ export class InventoryService {
         validRecords: importResults.successCount,
         invalidRecords: importResults.failureCount,
         warnings: validationResults.warnings,
-        importedAssets: importResults.importedAssets
+        importedAssets: importResults.importedAssets,
       };
-      
     } catch (error) {
       logger.error('Asset import failed:', error);
-      
+
       if (importBatch) {
         await this.updateBatchStatus(batchId, 'failed', error.message);
       }
-      
+
       throw new Error(`Import failed: ${error.message}`);
     }
   }
@@ -153,9 +161,9 @@ export class InventoryService {
         columns: true,
         skip_empty_lines: true,
         trim: true,
-        bom: true
+        bom: true,
       });
-      
+
       return records;
     } catch (error) {
       throw new Error(`CSV parsing failed: ${error.message}`);
@@ -212,7 +220,7 @@ export class InventoryService {
         const fieldErrors = this.validateField(fieldName, value, rules, {
           existingAssetTags,
           newAssetTags,
-          rowNumber
+          rowNumber,
         });
 
         if (fieldErrors.length > 0) {
@@ -231,7 +239,7 @@ export class InventoryService {
             row: rowNumber,
             field: 'asset_tag',
             level: 'error',
-            message: `Duplicate asset tag within import: ${record.asset_tag}`
+            message: `Duplicate asset tag within import: ${record.asset_tag}`,
           });
         } else {
           newAssetTags.add(record.asset_tag.toUpperCase());
@@ -240,7 +248,15 @@ export class InventoryService {
 
       // Log validation issues
       for (const error of rowErrors) {
-        await this.logValidationIssue(batchId, null, rowNumber, error.level, error.field, error.message, record);
+        await this.logValidationIssue(
+          batchId,
+          null,
+          rowNumber,
+          error.level,
+          error.field,
+          error.message,
+          record,
+        );
         if (error.level === 'error') {
           errorCount++;
           hasErrors = true;
@@ -248,14 +264,22 @@ export class InventoryService {
       }
 
       for (const warning of rowWarnings) {
-        await this.logValidationIssue(batchId, null, rowNumber, 'warning', warning.field, warning.message, record);
+        await this.logValidationIssue(
+          batchId,
+          null,
+          rowNumber,
+          'warning',
+          warning.field,
+          warning.message,
+          record,
+        );
       }
 
       errors.push(...rowErrors);
       warnings.push(...rowWarnings);
 
       // Prepare validated data for import (only if no errors)
-      if (rowErrors.filter(e => e.level === 'error').length === 0) {
+      if (rowErrors.filter((e) => e.level === 'error').length === 0) {
         validatedData.push(this.prepareRecordForImport(record, rowNumber));
       }
     }
@@ -266,7 +290,7 @@ export class InventoryService {
       errors,
       warnings,
       validatedData,
-      errorSummary: hasErrors ? `${errorCount} validation errors found` : null
+      errorSummary: hasErrors ? `${errorCount} validation errors found` : null,
     };
   }
 
@@ -281,7 +305,7 @@ export class InventoryService {
       errors.push({
         field: fieldName,
         level: 'error',
-        message: `${fieldName} is required`
+        message: `${fieldName} is required`,
       });
       return errors; // Skip other validations if required field is missing
     }
@@ -298,7 +322,7 @@ export class InventoryService {
       errors.push({
         field: fieldName,
         level: 'error',
-        message: `${fieldName} must be at least ${rules.minLength} characters`
+        message: `${fieldName} must be at least ${rules.minLength} characters`,
       });
     }
 
@@ -306,7 +330,7 @@ export class InventoryService {
       errors.push({
         field: fieldName,
         level: 'error',
-        message: `${fieldName} must not exceed ${rules.maxLength} characters`
+        message: `${fieldName} must not exceed ${rules.maxLength} characters`,
       });
     }
 
@@ -315,7 +339,7 @@ export class InventoryService {
       errors.push({
         field: fieldName,
         level: 'error',
-        message: `${fieldName} format is invalid`
+        message: `${fieldName} format is invalid`,
       });
     }
 
@@ -324,7 +348,7 @@ export class InventoryService {
       errors.push({
         field: fieldName,
         level: 'error',
-        message: `${fieldName} must be one of: ${rules.allowedValues.join(', ')}`
+        message: `${fieldName} must be one of: ${rules.allowedValues.join(', ')}`,
       });
     }
 
@@ -335,7 +359,7 @@ export class InventoryService {
         errors.push({
           field: fieldName,
           level: 'error',
-          message: `${fieldName} must be a valid date`
+          message: `${fieldName} must be a valid date`,
         });
       } else {
         const today = new Date();
@@ -343,14 +367,14 @@ export class InventoryService {
           errors.push({
             field: fieldName,
             level: 'error',
-            message: `${fieldName} must be a future date`
+            message: `${fieldName} must be a future date`,
           });
         }
         if (rules.pastOnly && date > today) {
           errors.push({
             field: fieldName,
             level: 'error',
-            message: `${fieldName} must be a past or current date`
+            message: `${fieldName} must be a past or current date`,
           });
         }
       }
@@ -363,7 +387,7 @@ export class InventoryService {
         errors.push({
           field: fieldName,
           level: 'error',
-          message: `Asset tag ${stringValue} already exists in database`
+          message: `Asset tag ${stringValue} already exists in database`,
         });
       }
     }
@@ -381,13 +405,13 @@ export class InventoryService {
     if (record.purchase_date && record.warranty_expiry) {
       const purchaseDate = new Date(record.purchase_date);
       const warrantyDate = new Date(record.warranty_expiry);
-      
+
       if (!isNaN(purchaseDate.getTime()) && !isNaN(warrantyDate.getTime())) {
         if (warrantyDate <= purchaseDate) {
           errors.push({
             field: 'warranty_expiry',
             level: 'error',
-            message: 'Warranty expiry date must be after purchase date'
+            message: 'Warranty expiry date must be after purchase date',
           });
         }
       }
@@ -399,7 +423,7 @@ export class InventoryService {
         errors.push({
           field: 'status',
           level: 'warning',
-          message: 'Asset marked as disposed/retired but still assigned to user'
+          message: 'Asset marked as disposed/retired but still assigned to user',
         });
       }
     }
@@ -414,8 +438,8 @@ export class InventoryService {
     const assets = await this.db.$queryRaw`
       SELECT UPPER(asset_tag) as asset_tag FROM inventory_assets
     `;
-    
-    return new Set(assets.map(a => a.asset_tag));
+
+    return new Set(assets.map((a) => a.asset_tag));
   }
 
   /**
@@ -438,7 +462,7 @@ export class InventoryService {
     }
 
     // Convert date strings to Date objects
-    ['purchase_date', 'warranty_expiry'].forEach(field => {
+    ['purchase_date', 'warranty_expiry'].forEach((field) => {
       if (prepared[field]) {
         prepared[field] = new Date(prepared[field]);
       }
@@ -469,18 +493,17 @@ export class InventoryService {
 
         // Insert asset
         const asset = await this.db.inventoryAsset.create({
-          data: record
+          data: record,
         });
 
         importedAssets.push(asset);
         successCount++;
 
         logger.debug(`Imported asset: ${record.asset_tag}`);
-
       } catch (error) {
         failureCount++;
         logger.error(`Failed to import asset ${record.asset_tag}:`, error);
-        
+
         // Log the specific import error
         await this.logValidationIssue(
           batchId,
@@ -489,7 +512,7 @@ export class InventoryService {
           'error',
           'import',
           `Import failed: ${error.message}`,
-          record
+          record,
         );
       }
     }
@@ -547,10 +570,10 @@ export class InventoryService {
           await tx.$executeRaw`DELETE FROM asset_assignments WHERE asset_id = ${asset.id}`;
           await tx.$executeRaw`DELETE FROM asset_status_logs WHERE asset_id = ${asset.id}`;
           await tx.$executeRaw`DELETE FROM kiosk_asset_registry WHERE asset_id = ${asset.id}`;
-          
+
           // Delete the asset
           await tx.$executeRaw`DELETE FROM inventory_assets WHERE id = ${asset.id}`;
-          
+
           deletedAssets.push(asset.asset_tag);
         }
 
@@ -569,9 +592,8 @@ export class InventoryService {
       return {
         success: true,
         deletedAssets: deletedAssets,
-        deletedCount: deletedAssets.length
+        deletedCount: deletedAssets.length,
       };
-
     } catch (error) {
       logger.error('Rollback failed:', error);
       throw new Error(`Rollback failed: ${error.message}`);
@@ -606,7 +628,7 @@ export class InventoryService {
     return {
       batch: batch[0],
       validationLogs,
-      importedAssets
+      importedAssets,
     };
   }
 
@@ -666,7 +688,7 @@ export class InventoryService {
   async syncAssetWithKiosk(assetId, kioskId, metadata = {}) {
     try {
       const asset = await this.db.inventoryAsset.findUnique({
-        where: { id: assetId }
+        where: { id: assetId },
       });
 
       if (!asset) {
@@ -690,19 +712,21 @@ export class InventoryService {
       // Integrate with Helix APIs for identity sync
       let helixSyncResult = null;
       let finalSyncStatus = 'failed';
-      
+
       try {
         // Use the Helix Kiosk Integration Service to sync asset and kiosk identities
         helixSyncResult = await HelixKioskIntegrationService.syncWithHelix(
-          kioskId, 
-          assetId, 
-          asset, 
-          metadata
+          kioskId,
+          assetId,
+          asset,
+          metadata,
         );
-        
+
         if (helixSyncResult.status === 'synced') {
           finalSyncStatus = 'synced';
-          logger.info(`Asset ${asset.asset_tag} successfully synced with Helix for kiosk ${kioskId}`);
+          logger.info(
+            `Asset ${asset.asset_tag} successfully synced with Helix for kiosk ${kioskId}`,
+          );
         } else if (helixSyncResult.status === 'skipped') {
           finalSyncStatus = 'skipped';
           logger.warn(`Helix sync skipped for asset ${asset.asset_tag}: ${helixSyncResult.reason}`);
@@ -711,7 +735,7 @@ export class InventoryService {
         }
       } catch (helixError) {
         logger.error(`Helix sync failed for asset ${asset.asset_tag}:`, helixError);
-        
+
         // Update registry with failed status and error details
         await this.db.$executeRaw`
           UPDATE kiosk_asset_registry 
@@ -720,13 +744,13 @@ export class InventoryService {
               helix_last_sync = CURRENT_TIMESTAMP
           WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
         `;
-        
+
         // Log the failure for retry processing
         await this.logHelixSyncFailure(kioskId, assetId, helixError.message, {
           asset_tag: asset.asset_tag,
-          retry_count: 0
+          retry_count: 0,
         });
-        
+
         // Don't throw error here - asset registration should succeed even if Helix sync fails
         finalSyncStatus = 'failed';
       }
@@ -758,12 +782,11 @@ export class InventoryService {
         kioskId,
         syncStatus: finalSyncStatus,
         helixSync: helixSyncResult,
-        metadata: metadata
+        metadata: metadata,
       };
-
     } catch (error) {
       logger.error('Failed to sync asset with kiosk:', error);
-      
+
       // Update registry with error
       if (kioskId && assetId) {
         await this.db.$executeRaw`
@@ -803,8 +826,8 @@ export class InventoryService {
       const alertsCreated = [];
 
       for (const asset of assetsNeedingAlerts) {
-        const alertType = asset.days_remaining <= 7 ? 'critical' : 
-                         asset.days_remaining <= 14 ? 'warning' : 'info';
+        const alertType =
+          asset.days_remaining <= 7 ? 'critical' : asset.days_remaining <= 14 ? 'warning' : 'info';
 
         // Create warranty alert
         await this.db.$executeRaw`
@@ -823,13 +846,12 @@ export class InventoryService {
         alertsCreated.push({
           assetTag: asset.asset_tag,
           alertType,
-          daysRemaining: asset.days_remaining
+          daysRemaining: asset.days_remaining,
         });
       }
 
       logger.info(`Generated ${alertsCreated.length} warranty alerts`);
       return alertsCreated;
-
     } catch (error) {
       logger.error('Failed to generate warranty alerts:', error);
       throw error;
@@ -844,28 +866,28 @@ export class InventoryService {
   async encryptSensitiveFields(assetData) {
     try {
       const encryptedData = { ...assetData };
-      
+
       // Encrypt sensitive fields if they exist
       if (assetData.serial_number) {
         encryptedData.serialNumberEnc = encrypt(assetData.serial_number);
         delete encryptedData.serial_number; // Remove plaintext
       }
-      
+
       if (assetData.warranty_info) {
         encryptedData.warrantyInfoEnc = encrypt(JSON.stringify(assetData.warranty_info));
         delete encryptedData.warranty_info;
       }
-      
+
       if (assetData.purchase_info) {
         encryptedData.purchaseInfoEnc = encrypt(JSON.stringify(assetData.purchase_info));
         delete encryptedData.purchase_info;
       }
-      
+
       if (assetData.maintenance_notes) {
         encryptedData.maintenanceNotesEnc = encrypt(assetData.maintenance_notes);
         delete encryptedData.maintenance_notes;
       }
-      
+
       return encryptedData;
     } catch (error) {
       logger.error('Error encrypting sensitive fields:', error);
@@ -909,7 +931,7 @@ export class InventoryService {
    */
   async retryFailedHelixSyncs(options = {}) {
     const maxRetries = options.maxRetries || 50;
-    
+
     try {
       logger.info('Starting retry of failed Helix synchronizations');
 
@@ -933,13 +955,13 @@ export class InventoryService {
         total: failedSyncs.length,
         successful: 0,
         failed: 0,
-        errors: []
+        errors: [],
       };
 
       for (const failedSync of failedSyncs) {
         try {
           const asset = await this.db.inventoryAsset.findUnique({
-            where: { id: failedSync.asset_id }
+            where: { id: failedSync.asset_id },
           });
 
           if (!asset) {
@@ -951,9 +973,10 @@ export class InventoryService {
           // Decrypt metadata if needed
           let metadata = {};
           if (failedSync.metadata) {
-            metadata = typeof failedSync.metadata === 'string' 
-              ? JSON.parse(failedSync.metadata) 
-              : failedSync.metadata;
+            metadata =
+              typeof failedSync.metadata === 'string'
+                ? JSON.parse(failedSync.metadata)
+                : failedSync.metadata;
           }
 
           // Attempt sync with Helix
@@ -961,7 +984,7 @@ export class InventoryService {
             failedSync.kiosk_id,
             failedSync.asset_id,
             asset,
-            metadata
+            metadata,
           );
 
           if (syncResult.status === 'synced') {
@@ -976,21 +999,22 @@ export class InventoryService {
 
             await this.removeFromRetryQueue(failedSync.kiosk_id, failedSync.asset_id);
             results.successful++;
-            
-            logger.info(`Retry successful for asset ${asset.asset_tag} on kiosk ${failedSync.kiosk_id}`);
+
+            logger.info(
+              `Retry successful for asset ${asset.asset_tag} on kiosk ${failedSync.kiosk_id}`,
+            );
           } else {
             throw new Error(syncResult.error || 'Unknown sync error');
           }
-
         } catch (retryError) {
           logger.error(`Retry failed for asset ${failedSync.asset_id}:`, retryError);
-          
+
           // Update retry count and next retry time
           await this.logHelixSyncFailure(
-            failedSync.kiosk_id, 
-            failedSync.asset_id, 
+            failedSync.kiosk_id,
+            failedSync.asset_id,
             retryError.message,
-            failedSync.metadata
+            failedSync.metadata,
           );
 
           results.failed++;
@@ -998,14 +1022,15 @@ export class InventoryService {
             assetId: failedSync.asset_id,
             assetTag: failedSync.asset_tag,
             kioskId: failedSync.kiosk_id,
-            error: retryError.message
+            error: retryError.message,
           });
         }
       }
 
-      logger.info(`Helix sync retry completed: ${results.successful} successful, ${results.failed} failed`);
+      logger.info(
+        `Helix sync retry completed: ${results.successful} successful, ${results.failed} failed`,
+      );
       return results;
-
     } catch (error) {
       logger.error('Failed to process Helix sync retries:', error);
       throw error;
@@ -1035,7 +1060,7 @@ export class InventoryService {
 
       // Validate kiosk exists
       const kiosk = await this.db.kiosk.findUnique({
-        where: { id: kioskId }
+        where: { id: kioskId },
       });
 
       if (!kiosk) {
@@ -1086,8 +1111,8 @@ export class InventoryService {
           where: { id: kioskId },
           data: {
             // Add any kiosk-specific organization fields here if they exist in the schema
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
       }
 
@@ -1097,9 +1122,8 @@ export class InventoryService {
         success: true,
         kioskId,
         assignment: validatedOrgData,
-        assignedBy
+        assignedBy,
       };
-
     } catch (error) {
       logger.error('Failed to assign kiosk to organization:', error);
       throw error;
@@ -1170,10 +1194,10 @@ export class InventoryService {
         include: {
           assetRegistry: {
             include: {
-              asset: true
-            }
-          }
-        }
+              asset: true,
+            },
+          },
+        },
       });
 
       if (!kiosk) {
@@ -1194,7 +1218,7 @@ export class InventoryService {
           status: kiosk.currentStatus,
           uptime: this.calculateKioskUptime(kiosk),
           schedule: kiosk.schedule,
-          collectedAt: new Date().toISOString()
+          collectedAt: new Date().toISOString(),
         };
       }
 
@@ -1202,18 +1226,19 @@ export class InventoryService {
       if (metadataType === 'all' || metadataType === 'assets') {
         collectedMetadata.assets = {
           totalRegistered: kiosk.assetRegistry.length,
-          activeAssets: kiosk.assetRegistry.filter(reg => reg.status === 'active').length,
-          recentCheckIns: kiosk.assetRegistry
-            .filter(reg => reg.lastCheckIn && reg.lastCheckIn > new Date(Date.now() - 24 * 60 * 60 * 1000))
-            .length,
-          assetSummary: kiosk.assetRegistry.map(reg => ({
+          activeAssets: kiosk.assetRegistry.filter((reg) => reg.status === 'active').length,
+          recentCheckIns: kiosk.assetRegistry.filter(
+            (reg) =>
+              reg.lastCheckIn && reg.lastCheckIn > new Date(Date.now() - 24 * 60 * 60 * 1000),
+          ).length,
+          assetSummary: kiosk.assetRegistry.map((reg) => ({
             assetId: reg.assetId,
             assetTag: reg.asset.assetTag,
             model: reg.asset.model,
             status: reg.status,
             lastCheckIn: reg.lastCheckIn,
-            helixSyncStatus: reg.helixSyncStatus
-          }))
+            helixSyncStatus: reg.helixSyncStatus,
+          })),
         };
       }
 
@@ -1224,7 +1249,7 @@ export class InventoryService {
 
       // Encrypt and store metadata
       const encryptedMetadata = this.encryptAssetField(JSON.stringify(collectedMetadata));
-      
+
       await this.db.$executeRaw`
         INSERT INTO kiosk_metadata_logs (kiosk_id, metadata_type, encrypted_metadata, collection_timestamp)
         VALUES (${kioskId}, ${metadataType}, ${encryptedMetadata}, CURRENT_TIMESTAMP)
@@ -1237,9 +1262,8 @@ export class InventoryService {
         kioskId,
         metadataType,
         collectedMetadata: metadataType === 'system' ? collectedMetadata.system : collectedMetadata,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       logger.error(`Failed to collect metadata from kiosk ${kioskId}:`, error);
       throw error;
@@ -1262,13 +1286,13 @@ export class InventoryService {
     if (timeDiffMs > 60 * 60 * 1000) {
       return {
         status: 'offline',
-        lastSeenMinutesAgo: Math.floor(timeDiffMs / (60 * 1000))
+        lastSeenMinutesAgo: Math.floor(timeDiffMs / (60 * 1000)),
       };
     }
 
     return {
       status: 'online',
-      lastSeenMinutesAgo: Math.floor(timeDiffMs / (60 * 1000))
+      lastSeenMinutesAgo: Math.floor(timeDiffMs / (60 * 1000)),
     };
   }
 
@@ -1302,14 +1326,13 @@ export class InventoryService {
       return {
         interactions: recentMetrics[0] || {},
         syncPerformance: syncMetrics,
-        collectedAt: new Date().toISOString()
+        collectedAt: new Date().toISOString(),
       };
-
     } catch (error) {
       logger.error('Failed to collect performance metadata:', error);
       return {
         error: error.message,
-        collectedAt: new Date().toISOString()
+        collectedAt: new Date().toISOString(),
       };
     }
   }

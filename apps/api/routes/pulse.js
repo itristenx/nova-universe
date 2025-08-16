@@ -141,7 +141,8 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/dashboard',
+router.get(
+  '/dashboard',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100), // 100 requests per 15 minutes
   async (req, res) => {
@@ -150,7 +151,8 @@ router.get('/dashboard',
       const today = new Date().toISOString().split('T')[0];
 
       // Get my tickets summary
-      db.get(`
+      db.get(
+        `
         SELECT 
           COUNT(*) as total,
           SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open,
@@ -158,18 +160,21 @@ router.get('/dashboard',
           SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved
         FROM tickets 
         WHERE assigned_to_id = $1 AND deleted_at IS NULL
-      `, [userId], (err, ticketStats) => {
-        if (err) {
-          logger.error('Error fetching ticket stats:', err);
-          return res.status(500).json({
-            success: false,
-            error: 'Failed to fetch dashboard data',
-            errorCode: 'DASHBOARD_ERROR'
-          });
-        }
+      `,
+        [userId],
+        (err, ticketStats) => {
+          if (err) {
+            logger.error('Error fetching ticket stats:', err);
+            return res.status(500).json({
+              success: false,
+              error: 'Failed to fetch dashboard data',
+              errorCode: 'DASHBOARD_ERROR',
+            });
+          }
 
-        // Get today's stats
-        db.get(`
+          // Get today's stats
+          db.get(
+            `
           SELECT 
             COUNT(*) as tickets_resolved,
             AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)) / 60) as avg_resolution_time,
@@ -178,18 +183,21 @@ router.get('/dashboard',
           WHERE assigned_to_id = $1 
           AND status = 'resolved' 
           AND DATE(resolved_at) = $2
-        `, [userId, today], (todayErr, todayStats) => {
-          if (todayErr) {
-            logger.error('Error fetching today stats:', todayErr);
-            return res.status(500).json({
-              success: false,
-              error: 'Failed to fetch dashboard data',
-              errorCode: 'DASHBOARD_ERROR'
-            });
-          }
+        `,
+            [userId, today],
+            (todayErr, todayStats) => {
+              if (todayErr) {
+                logger.error('Error fetching today stats:', todayErr);
+                return res.status(500).json({
+                  success: false,
+                  error: 'Failed to fetch dashboard data',
+                  errorCode: 'DASHBOARD_ERROR',
+                });
+              }
 
-          // Get upcoming tasks (high priority or due soon)
-          db.all(`
+              // Get upcoming tasks (high priority or due soon)
+              db.all(
+                `
             SELECT t.*, u.name as requester_name, u.email as requester_email
             FROM tickets t
             LEFT JOIN users u ON t.requested_by_id = u.id
@@ -206,125 +214,160 @@ router.get('/dashboard',
               END,
               t.due_date ASC
             LIMIT 5
-          `, [userId], (upcomingErr, upcomingTasks) => {
-            if (upcomingErr) {
-              logger.error('Error fetching upcoming tasks:', upcomingErr);
-              return res.status(500).json({
-                success: false,
-                error: 'Failed to fetch dashboard data',
-                errorCode: 'DASHBOARD_ERROR'
-              });
-            }
+          `,
+                [userId],
+                (upcomingErr, upcomingTasks) => {
+                  if (upcomingErr) {
+                    logger.error('Error fetching upcoming tasks:', upcomingErr);
+                    return res.status(500).json({
+                      success: false,
+                      error: 'Failed to fetch dashboard data',
+                      errorCode: 'DASHBOARD_ERROR',
+                    });
+                  }
 
-            // Get recent activity
-            db.all(`
+                  // Get recent activity
+                  db.all(
+                    `
               SELECT ticket_id, action, timestamp
               FROM ticket_logs 
               WHERE user_id = $1
               ORDER BY timestamp DESC
               LIMIT 10
-            `, [userId], (activityErr, recentActivity) => {
-              if (activityErr) {
-                logger.error('Error fetching recent activity:', activityErr);
-                return res.status(500).json({
-                  success: false,
-                  error: 'Failed to fetch dashboard data',
-                  errorCode: 'DASHBOARD_ERROR'
-                });
-              }
+            `,
+                    [userId],
+                    (activityErr, recentActivity) => {
+                      if (activityErr) {
+                        logger.error('Error fetching recent activity:', activityErr);
+                        return res.status(500).json({
+                          success: false,
+                          error: 'Failed to fetch dashboard data',
+                          errorCode: 'DASHBOARD_ERROR',
+                        });
+                      }
 
-              const dashboard = {
-                myTickets: {
-                  total: ticketStats?.total || 0,
-                  open: ticketStats?.open || 0,
-                  inProgress: ticketStats?.in_progress || 0,
-                  resolved: ticketStats?.resolved || 0
-                },
-                todayStats: {
-                  ticketsResolved: todayStats?.tickets_resolved || 0,
-                  avgResolutionTime: Math.round(todayStats?.avg_resolution_time || 0),
-                  totalTimeLogged: todayStats?.total_time_logged || 0
-                },
-                upcomingTasks: (upcomingTasks || []).map(task => ({
-                  id: task.id,
-                  ticketId: task.ticket_id,
-                  title: task.title,
-                  description: task.description,
-                  priority: task.priority,
-                  status: task.status,
-                  category: task.category,
-                  subcategory: task.subcategory,
-                  location: task.location,
-                  estimatedTime: task.estimated_time_minutes,
-                  actualTime: task.actual_time_minutes,
-                  requestedBy: {
-                    id: task.requested_by_id,
-                    name: task.requester_name,
-                    email: task.requester_email
-                  },
-                  createdAt: task.created_at,
-                  updatedAt: task.updated_at,
-                  dueDate: task.due_date
-                })),
-                recentActivity: (recentActivity || []).map(activity => ({
-                  ticketId: activity.ticket_id,
-                  action: activity.action,
-                  timestamp: activity.timestamp
-                }))
-              };
+                      const dashboard = {
+                        myTickets: {
+                          total: ticketStats?.total || 0,
+                          open: ticketStats?.open || 0,
+                          inProgress: ticketStats?.in_progress || 0,
+                          resolved: ticketStats?.resolved || 0,
+                        },
+                        todayStats: {
+                          ticketsResolved: todayStats?.tickets_resolved || 0,
+                          avgResolutionTime: Math.round(todayStats?.avg_resolution_time || 0),
+                          totalTimeLogged: todayStats?.total_time_logged || 0,
+                        },
+                        upcomingTasks: (upcomingTasks || []).map((task) => ({
+                          id: task.id,
+                          ticketId: task.ticket_id,
+                          title: task.title,
+                          description: task.description,
+                          priority: task.priority,
+                          status: task.status,
+                          category: task.category,
+                          subcategory: task.subcategory,
+                          location: task.location,
+                          estimatedTime: task.estimated_time_minutes,
+                          actualTime: task.actual_time_minutes,
+                          requestedBy: {
+                            id: task.requested_by_id,
+                            name: task.requester_name,
+                            email: task.requester_email,
+                          },
+                          createdAt: task.created_at,
+                          updatedAt: task.updated_at,
+                          dueDate: task.due_date,
+                        })),
+                        recentActivity: (recentActivity || []).map((activity) => ({
+                          ticketId: activity.ticket_id,
+                          action: activity.action,
+                          timestamp: activity.timestamp,
+                        })),
+                      };
 
-              res.json({
-                success: true,
-                dashboard
-              });
-            });
-          });
-        });
-      });
+                      res.json({
+                        success: true,
+                        dashboard,
+                      });
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
     } catch (error) {
       logger.error('Error in dashboard endpoint:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch dashboard data',
-        errorCode: 'DASHBOARD_ERROR'
+        errorCode: 'DASHBOARD_ERROR',
       });
     }
-  }
+  },
 );
 
 // Create a ticket on behalf of a user
-router.post('/tickets',
+router.post(
+  '/tickets',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20),
   [
     body('title').isLength({ min: 1, max: 255 }).withMessage('Title required'),
     body('description').isLength({ min: 1 }).withMessage('Description required'),
-    body('priority').isIn(['low','medium','high','critical']).withMessage('Invalid priority'),
+    body('priority').isIn(['low', 'medium', 'high', 'critical']).withMessage('Invalid priority'),
     body('requestedById').isString().withMessage('requestedById required'),
-    body('type').optional().isString().isIn(['INC','REQ','PRB','CHG','TASK','HR','OPS','ISAC','FB']).withMessage('Invalid type code'),
+    body('type')
+      .optional()
+      .isString()
+      .isIn(['INC', 'REQ', 'PRB', 'CHG', 'TASK', 'HR', 'OPS', 'ISAC', 'FB'])
+      .withMessage('Invalid type code'),
     body('urgency').optional().isString(),
-    body('impact').optional().isString()
+    body('impact').optional().isString(),
   ],
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ success:false, error:'Invalid input', details: errors.array(), errorCode:'VALIDATION_ERROR' });
+        return res
+          .status(400)
+          .json({
+            success: false,
+            error: 'Invalid input',
+            details: errors.array(),
+            errorCode: 'VALIDATION_ERROR',
+          });
       }
 
-      const { title, description, priority, requestedById, type: requestedType, urgency, impact } = req.body;
+      const {
+        title,
+        description,
+        priority,
+        requestedById,
+        type: requestedType,
+        urgency,
+        impact,
+      } = req.body;
       const now = new Date();
 
-      const vipRow = await db.oneOrNone('SELECT is_vip, vip_level, vip_sla_override FROM users WHERE id = $1', [requestedById]);
+      const vipRow = await db.oneOrNone(
+        'SELECT is_vip, vip_level, vip_sla_override FROM users WHERE id = $1',
+        [requestedById],
+      );
 
       const dueDate = new Date(now);
       switch (priority) {
         case 'critical':
-          dueDate.setHours(now.getHours() + 4); break;
+          dueDate.setHours(now.getHours() + 4);
+          break;
         case 'high':
-          dueDate.setDate(now.getDate() + 1); break;
+          dueDate.setDate(now.getDate() + 1);
+          break;
         case 'medium':
-          dueDate.setDate(now.getDate() + 3); break;
+          dueDate.setDate(now.getDate() + 3);
+          break;
         default:
           dueDate.setDate(now.getDate() + 7);
       }
@@ -336,9 +379,11 @@ router.post('/tickets',
         } else {
           switch (vipRow.vip_level) {
             case 'exec':
-              dueDate.setHours(now.getHours() + 2); break;
+              dueDate.setHours(now.getHours() + 2);
+              break;
             case 'gold':
-              dueDate.setHours(now.getHours() + 4); break;
+              dueDate.setHours(now.getHours() + 4);
+              break;
             default:
               dueDate.setHours(now.getHours() + 8);
           }
@@ -355,7 +400,24 @@ router.post('/tickets',
 
       await db.none(
         'INSERT INTO tickets (id, ticket_id, type_code, title, description, priority, urgency, impact, status, requested_by_id, assigned_to_id, due_date, created_at, updated_at, vip_priority_score, vip_trigger_source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)',
-        [newId, ticketId, typeCode, title, description, priority, (urgency || null), (impact || null), 'open', requestedById, req.user.id, computedDue.toISOString(), now.toISOString(), now.toISOString(), vipWeight, 'api']
+        [
+          newId,
+          ticketId,
+          typeCode,
+          title,
+          description,
+          priority,
+          urgency || null,
+          impact || null,
+          'open',
+          requestedById,
+          req.user.id,
+          computedDue.toISOString(),
+          now.toISOString(),
+          now.toISOString(),
+          vipWeight,
+          'api',
+        ],
       );
 
       // Add audit logging for VIP ticket creation
@@ -372,17 +434,17 @@ router.post('/tickets',
               vip_priority_score: vipWeight,
               sla_override: vipRow.vip_sla_override,
               original_due_date: dueDate.toISOString(),
-              trigger_source: 'api'
+              trigger_source: 'api',
             }),
-            now.toISOString()
-          ]
+            now.toISOString(),
+          ],
         );
       }
 
       const failoverWindow = vipRow?.vip_sla_override?.failoverMinutes || 60;
-      if (vipRow?.is_vip && computedDue.getTime() - now.getTime() < failoverWindow*60000) {
+      if (vipRow?.is_vip && computedDue.getTime() - now.getTime() < failoverWindow * 60000) {
         await notifyCosmoEscalation(ticketId, 'failover_escalation');
-        
+
         // Add audit logging for Cosmo escalation
         await db.none(
           'INSERT INTO audit_logs (id, action, user_id, ticket_id, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
@@ -394,10 +456,10 @@ router.post('/tickets',
             JSON.stringify({
               reason: 'failover_escalation',
               failover_window_minutes: failoverWindow,
-              time_to_due: Math.round((computedDue.getTime() - now.getTime()) / 60000)
+              time_to_due: Math.round((computedDue.getTime() - now.getTime()) / 60000),
             }),
-            now.toISOString()
-          ]
+            now.toISOString(),
+          ],
         );
       }
 
@@ -412,16 +474,22 @@ router.post('/tickets',
           priority,
           category: null,
           created_at: now.toISOString(),
-          updated_at: now.toISOString()
+          updated_at: now.toISOString(),
         });
       } catch {}
 
-      res.status(201).json({ success:true, ticketId, type: typeCode, vipWeight });
+      res.status(201).json({ success: true, ticketId, type: typeCode, vipWeight });
     } catch (error) {
       logger.error('Error creating ticket:', error);
-      res.status(500).json({ success:false, error:'Failed to create ticket', errorCode:'TICKET_CREATE_ERROR' });
+      res
+        .status(500)
+        .json({
+          success: false,
+          error: 'Failed to create ticket',
+          errorCode: 'TICKET_CREATE_ERROR',
+        });
     }
-  }
+  },
 );
 
 /**
@@ -484,25 +552,20 @@ router.post('/tickets',
  *       401:
  *         description: Unauthorized
  */
-router.get('/tickets',
+router.get(
+  '/tickets',
   authenticateJWT,
-  checkQueueAccess(req => req.query.queue),
+  checkQueueAccess((req) => req.query.queue),
   createRateLimit(15 * 60 * 1000, 100), // 100 requests per 15 minutes
   async (req, res) => {
     try {
       const userId = req.user.id;
-      const {
-        status,
-        priority,
-        category,
-        limit = 50,
-        offset = 0
-      } = req.query;
+      const { status, priority, category, limit = 50, offset = 0 } = req.query;
 
       // RBAC type scoping
       const roles = Array.isArray(req.user.roles) ? req.user.roles : [];
       const isAdmin = roles.includes('admin') || roles.includes('superadmin');
-      const allowedTypes = new Set(['INC','REQ','PRB','CHG','TASK','OPS','FB']);
+      const allowedTypes = new Set(['INC', 'REQ', 'PRB', 'CHG', 'TASK', 'OPS', 'FB']);
       if (roles.includes('hr_tech') || roles.includes('hr_lead')) allowedTypes.add('HR');
       if (roles.includes('cyber_tech') || roles.includes('cyber_lead')) allowedTypes.add('ISAC');
 
@@ -557,11 +620,11 @@ router.get('/tickets',
           return res.status(500).json({
             success: false,
             error: 'Failed to fetch tickets',
-            errorCode: 'TICKETS_FETCH_ERROR'
+            errorCode: 'TICKETS_FETCH_ERROR',
           });
         }
 
-        let tickets = (rows || []).map(row => ({
+        let tickets = (rows || []).map((row) => ({
           id: row.id,
           ticketId: row.ticket_id,
           title: row.title,
@@ -575,19 +638,20 @@ router.get('/tickets',
           actualTime: row.actual_time_minutes,
           assignedTo: {
             id: row.assigned_to_id,
-            name: row.assignee_name
+            name: row.assignee_name,
           },
           requestedBy: {
             id: row.requested_by_id,
             name: row.requester_name,
-            email: row.requester_email
+            email: row.requester_email,
           },
           createdAt: row.created_at,
           updatedAt: row.updated_at,
           dueDate: row.due_date,
-          slaRemaining: row.due_date ?
-            Math.round((new Date(row.due_date) - Date.now()) / 60000) : null,
-          vipWeight: calculateVipWeight(row.is_vip, row.vip_level)
+          slaRemaining: row.due_date
+            ? Math.round((new Date(row.due_date) - Date.now()) / 60000)
+            : null,
+          vipWeight: calculateVipWeight(row.is_vip, row.vip_level),
         }));
 
         tickets = tickets.sort((a, b) => b.vipWeight - a.vipWeight);
@@ -599,7 +663,7 @@ router.get('/tickets',
           success: true,
           tickets,
           total,
-          hasMore
+          hasMore,
         });
       });
     } catch (error) {
@@ -607,10 +671,10 @@ router.get('/tickets',
       res.status(500).json({
         success: false,
         error: 'Failed to fetch tickets',
-        errorCode: 'TICKETS_ERROR'
+        errorCode: 'TICKETS_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -656,14 +720,29 @@ router.get('/tickets',
  *       401:
  *         description: Unauthorized
  */
-router.put('/tickets/:ticketId/update',
+router.put(
+  '/tickets/:ticketId/update',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100), // 100 updates per 15 minutes
   [
-    body('status').optional().isIn(['open', 'in_progress', 'resolved', 'closed', 'on_hold']).withMessage('Invalid status'),
-    body('workNote').optional().isString().isLength({ max: 5000 }).withMessage('Work note must be less than 5000 characters'),
-    body('timeSpent').optional().isInt({ min: 0 }).withMessage('Time spent must be a positive integer'),
-    body('resolution').optional().isString().isLength({ max: 5000 }).withMessage('Resolution must be less than 5000 characters')
+    body('status')
+      .optional()
+      .isIn(['open', 'in_progress', 'resolved', 'closed', 'on_hold'])
+      .withMessage('Invalid status'),
+    body('workNote')
+      .optional()
+      .isString()
+      .isLength({ max: 5000 })
+      .withMessage('Work note must be less than 5000 characters'),
+    body('timeSpent')
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage('Time spent must be a positive integer'),
+    body('resolution')
+      .optional()
+      .isString()
+      .isLength({ max: 5000 })
+      .withMessage('Resolution must be less than 5000 characters'),
   ],
   async (req, res) => {
     try {
@@ -673,7 +752,7 @@ router.put('/tickets/:ticketId/update',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -682,171 +761,203 @@ router.put('/tickets/:ticketId/update',
       const userId = req.user.id;
 
       // Check if ticket exists and is assigned to this user
-      db.get('SELECT t.*, u.is_vip, u.vip_level FROM tickets t LEFT JOIN users u ON t.requested_by_id = u.id WHERE t.ticket_id = $1 AND t.assigned_to_id = $2 AND t.deleted_at IS NULL', 
-        [ticketId, userId], async (err, ticket) => {
-        if (err) {
-          logger.error('Error checking ticket:', err);
-          return res.status(500).json({
-            success: false,
-            error: 'Failed to update ticket',
-            errorCode: 'TICKET_CHECK_ERROR'
-          });
-        }
+      db.get(
+        'SELECT t.*, u.is_vip, u.vip_level FROM tickets t LEFT JOIN users u ON t.requested_by_id = u.id WHERE t.ticket_id = $1 AND t.assigned_to_id = $2 AND t.deleted_at IS NULL',
+        [ticketId, userId],
+        async (err, ticket) => {
+          if (err) {
+            logger.error('Error checking ticket:', err);
+            return res.status(500).json({
+              success: false,
+              error: 'Failed to update ticket',
+              errorCode: 'TICKET_CHECK_ERROR',
+            });
+          }
 
-        if (!ticket) {
-          return res.status(404).json({
-            success: false,
-            error: 'Ticket not found or not assigned to you',
-            errorCode: 'TICKET_NOT_FOUND'
-          });
-        }
+          if (!ticket) {
+            return res.status(404).json({
+              success: false,
+              error: 'Ticket not found or not assigned to you',
+              errorCode: 'TICKET_NOT_FOUND',
+            });
+          }
 
-        const updates = [];
-        const params = [];
+          const updates = [];
+          const params = [];
 
-        if (status) {
-          updates.push('status = $1');
-          params.push(status);
+          if (status) {
+            updates.push('status = $1');
+            params.push(status);
 
-          if (status === 'resolved') {
-            updates.push('resolved_at = $2');
-            params.push(new Date().toISOString());
-            
-            if (resolution) {
-              updates.push('resolution = $3');
-              params.push(resolution);
+            if (status === 'resolved') {
+              updates.push('resolved_at = $2');
+              params.push(new Date().toISOString());
+
+              if (resolution) {
+                updates.push('resolution = $3');
+                params.push(resolution);
+              }
+            }
+
+            if (status === 'in_progress' && ticket.status === 'open') {
+              updates.push('started_at = $4');
+              params.push(new Date().toISOString());
             }
           }
 
-          if (status === 'in_progress' && ticket.status === 'open') {
-            updates.push('started_at = $4');
-            params.push(new Date().toISOString());
+          if (timeSpent) {
+            updates.push('actual_time_minutes = COALESCE(actual_time_minutes, 0) + $5');
+            params.push(timeSpent);
           }
-        }
 
-        if (timeSpent) {
-          updates.push('actual_time_minutes = COALESCE(actual_time_minutes, 0) + $5');
-          params.push(timeSpent);
-        }
+          updates.push('updated_at = $6');
+          params.push(new Date().toISOString());
 
-        updates.push('updated_at = $6');
-        params.push(new Date().toISOString());
+          if (updates.length > 0) {
+            params.push(ticket.id);
+            const updateQuery = `UPDATE tickets SET ${updates.join(', ')} WHERE id = $7`;
 
-        if (updates.length > 0) {
-          params.push(ticket.id);
-          const updateQuery = `UPDATE tickets SET ${updates.join(', ')} WHERE id = $7`;
-
-          db.run(updateQuery, params, async (updateErr) => {
-            if (updateErr) {
-              logger.error('Error updating ticket:', updateErr);
-              return res.status(500).json({
-                success: false,
-                error: 'Failed to update ticket',
-                errorCode: 'TICKET_UPDATE_ERROR'
-              });
-            }
-
-            // Log the activity
-            const logEntry = {
-              id: require('uuid').v4(),
-              ticket_id: ticketId,
-              user_id: userId,
-              action: status ? `Status changed to ${status}` : 'Ticket updated',
-              details: workNote || null,
-              timestamp: new Date().toISOString()
-            };
-
-            db.run(
-              'INSERT INTO ticket_logs (id, ticket_id, user_id, action, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
-              [logEntry.id, logEntry.ticket_id, logEntry.user_id, logEntry.action, logEntry.details, logEntry.timestamp],
-              (logErr) => {
-                if (logErr) {
-                  logger.error('Error logging ticket activity:', logErr);
-                }
+            db.run(updateQuery, params, async (updateErr) => {
+              if (updateErr) {
+                logger.error('Error updating ticket:', updateErr);
+                return res.status(500).json({
+                  success: false,
+                  error: 'Failed to update ticket',
+                  errorCode: 'TICKET_UPDATE_ERROR',
+                });
               }
-            );
 
-            // Simple SLA breach check: if due_date has passed and not resolved
-            try {
-              const refreshed = await db.get('SELECT due_date, status FROM tickets WHERE id = $1', [ticket.id]);
-              if (refreshed?.due_date && new Date(refreshed.due_date).getTime() < Date.now() && refreshed.status !== 'resolved' && refreshed.status !== 'closed') {
-                await db.run(
-                  'INSERT INTO sla_breaches (id, ticket_id, breach_type, breach_time) VALUES ($1, $2, $3, $4)',
-                  [require('uuid').v4(), ticket.id, 'resolution_breach', new Date().toISOString()]
-                );
-              }
-            } catch (slaErr) {
-              logger.warn('SLA breach check failed', { error: slaErr.message });
-            }
+              // Log the activity
+              const logEntry = {
+                id: require('uuid').v4(),
+                ticket_id: ticketId,
+                user_id: userId,
+                action: status ? `Status changed to ${status}` : 'Ticket updated',
+                details: workNote || null,
+                timestamp: new Date().toISOString(),
+              };
 
-            // Add VIP-specific audit logging
-            if (ticket.is_vip) {
+              db.run(
+                'INSERT INTO ticket_logs (id, ticket_id, user_id, action, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+                [
+                  logEntry.id,
+                  logEntry.ticket_id,
+                  logEntry.user_id,
+                  logEntry.action,
+                  logEntry.details,
+                  logEntry.timestamp,
+                ],
+                (logErr) => {
+                  if (logErr) {
+                    logger.error('Error logging ticket activity:', logErr);
+                  }
+                },
+              );
+
+              // Simple SLA breach check: if due_date has passed and not resolved
               try {
-                await db.none(
-                  'INSERT INTO audit_logs (id, action, user_id, ticket_id, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
-                  [
-                    require('uuid').v4(),
-                    'vip_ticket_updated',
-                    userId,
-                    ticket.id,
-                    JSON.stringify({
-                      vip_level: ticket.vip_level,
-                      status_change: status,
-                      work_note: workNote,
-                      time_spent: timeSpent,
-                      resolution: resolution,
-                      previous_status: ticket.status
-                    }),
-                    new Date().toISOString()
-                  ]
+                const refreshed = await db.get(
+                  'SELECT due_date, status FROM tickets WHERE id = $1',
+                  [ticket.id],
                 );
+                if (
+                  refreshed?.due_date &&
+                  new Date(refreshed.due_date).getTime() < Date.now() &&
+                  refreshed.status !== 'resolved' &&
+                  refreshed.status !== 'closed'
+                ) {
+                  await db.run(
+                    'INSERT INTO sla_breaches (id, ticket_id, breach_type, breach_time) VALUES ($1, $2, $3, $4)',
+                    [
+                      require('uuid').v4(),
+                      ticket.id,
+                      'resolution_breach',
+                      new Date().toISOString(),
+                    ],
+                  );
+                }
+              } catch (slaErr) {
+                logger.warn('SLA breach check failed', { error: slaErr.message });
+              }
 
-                // Check for VIP escalation conditions
-                if (status === 'on_hold' || (status === 'resolved' && ticket.vip_level === 'exec')) {
-                  await notifyCosmoEscalation(ticketId, status === 'on_hold' ? 'vip_hold_escalation' : 'vip_resolution_confirmation');
-                  
+              // Add VIP-specific audit logging
+              if (ticket.is_vip) {
+                try {
                   await db.none(
                     'INSERT INTO audit_logs (id, action, user_id, ticket_id, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
                     [
                       require('uuid').v4(),
-                      'vip_cosmo_escalation',
+                      'vip_ticket_updated',
                       userId,
                       ticket.id,
                       JSON.stringify({
-                        reason: status === 'on_hold' ? 'vip_hold_escalation' : 'vip_resolution_confirmation',
                         vip_level: ticket.vip_level,
-                        status: status
+                        status_change: status,
+                        work_note: workNote,
+                        time_spent: timeSpent,
+                        resolution: resolution,
+                        previous_status: ticket.status,
                       }),
-                      new Date().toISOString()
-                    ]
+                      new Date().toISOString(),
+                    ],
                   );
-                }
-              } catch (auditErr) {
-                logger.error('Error logging VIP audit activity:', auditErr);
-              }
-            }
 
+                  // Check for VIP escalation conditions
+                  if (
+                    status === 'on_hold' ||
+                    (status === 'resolved' && ticket.vip_level === 'exec')
+                  ) {
+                    await notifyCosmoEscalation(
+                      ticketId,
+                      status === 'on_hold' ? 'vip_hold_escalation' : 'vip_resolution_confirmation',
+                    );
+
+                    await db.none(
+                      'INSERT INTO audit_logs (id, action, user_id, ticket_id, details, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+                      [
+                        require('uuid').v4(),
+                        'vip_cosmo_escalation',
+                        userId,
+                        ticket.id,
+                        JSON.stringify({
+                          reason:
+                            status === 'on_hold'
+                              ? 'vip_hold_escalation'
+                              : 'vip_resolution_confirmation',
+                          vip_level: ticket.vip_level,
+                          status: status,
+                        }),
+                        new Date().toISOString(),
+                      ],
+                    );
+                  }
+                } catch (auditErr) {
+                  logger.error('Error logging VIP audit activity:', auditErr);
+                }
+              }
+
+              res.json({
+                success: true,
+                message: 'Ticket updated successfully',
+              });
+            });
+          } else {
             res.json({
               success: true,
-              message: 'Ticket updated successfully'
+              message: 'No changes made',
             });
-          });
-        } else {
-          res.json({
-            success: true,
-            message: 'No changes made'
-          });
-        }
-      });
+          }
+        },
+      );
     } catch (error) {
       logger.error('Error updating ticket:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to update ticket',
-        errorCode: 'TICKET_UPDATE_ERROR'
+        errorCode: 'TICKET_UPDATE_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -875,7 +986,8 @@ router.put('/tickets/:ticketId/update',
  *       401:
  *         description: Unauthorized
  */
-router.post('/tickets/:ticketId/claim',
+router.post(
+  '/tickets/:ticketId/claim',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 50), // 50 claims per 15 minutes
   async (req, res) => {
@@ -884,73 +996,83 @@ router.post('/tickets/:ticketId/claim',
       const userId = req.user.id;
 
       // Check if ticket exists and is unassigned
-      db.get('SELECT * FROM tickets WHERE ticket_id = $1 AND deleted_at IS NULL', [ticketId], (err, ticket) => {
-        if (err) {
-          logger.error('Error checking ticket:', err);
-          return res.status(500).json({
-            success: false,
-            error: 'Failed to claim ticket',
-            errorCode: 'TICKET_CHECK_ERROR'
-          });
-        }
-
-        if (!ticket) {
-          return res.status(404).json({
-            success: false,
-            error: 'Ticket not found',
-            errorCode: 'TICKET_NOT_FOUND'
-          });
-        }
-
-        if (ticket.assigned_to_id) {
-          return res.status(400).json({
-            success: false,
-            error: 'Ticket is already assigned',
-            errorCode: 'TICKET_ALREADY_ASSIGNED'
-          });
-        }
-
-        // Assign ticket to user
-        db.run(
-          'UPDATE tickets SET assigned_to_id = $1, status = $2, updated_at = $3 WHERE id = $4',
-          [userId, 'in_progress', new Date().toISOString(), ticket.id],
-          (updateErr) => {
-            if (updateErr) {
-              logger.error('Error claiming ticket:', updateErr);
-              return res.status(500).json({
-                success: false,
-                error: 'Failed to claim ticket',
-                errorCode: 'TICKET_CLAIM_ERROR'
-              });
-            }
-
-            // Log the activity
-            db.run(
-              'INSERT INTO ticket_logs (id, ticket_id, user_id, action, timestamp) VALUES ($1, $2, $3, $4, $5)',
-              [require('uuid').v4(), ticketId, userId, 'Ticket claimed', new Date().toISOString()],
-              (logErr) => {
-                if (logErr) {
-                  logger.error('Error logging ticket claim:', logErr);
-                }
-              }
-            );
-
-            res.json({
-              success: true,
-              message: 'Ticket claimed successfully'
+      db.get(
+        'SELECT * FROM tickets WHERE ticket_id = $1 AND deleted_at IS NULL',
+        [ticketId],
+        (err, ticket) => {
+          if (err) {
+            logger.error('Error checking ticket:', err);
+            return res.status(500).json({
+              success: false,
+              error: 'Failed to claim ticket',
+              errorCode: 'TICKET_CHECK_ERROR',
             });
           }
-        );
-      });
+
+          if (!ticket) {
+            return res.status(404).json({
+              success: false,
+              error: 'Ticket not found',
+              errorCode: 'TICKET_NOT_FOUND',
+            });
+          }
+
+          if (ticket.assigned_to_id) {
+            return res.status(400).json({
+              success: false,
+              error: 'Ticket is already assigned',
+              errorCode: 'TICKET_ALREADY_ASSIGNED',
+            });
+          }
+
+          // Assign ticket to user
+          db.run(
+            'UPDATE tickets SET assigned_to_id = $1, status = $2, updated_at = $3 WHERE id = $4',
+            [userId, 'in_progress', new Date().toISOString(), ticket.id],
+            (updateErr) => {
+              if (updateErr) {
+                logger.error('Error claiming ticket:', updateErr);
+                return res.status(500).json({
+                  success: false,
+                  error: 'Failed to claim ticket',
+                  errorCode: 'TICKET_CLAIM_ERROR',
+                });
+              }
+
+              // Log the activity
+              db.run(
+                'INSERT INTO ticket_logs (id, ticket_id, user_id, action, timestamp) VALUES ($1, $2, $3, $4, $5)',
+                [
+                  require('uuid').v4(),
+                  ticketId,
+                  userId,
+                  'Ticket claimed',
+                  new Date().toISOString(),
+                ],
+                (logErr) => {
+                  if (logErr) {
+                    logger.error('Error logging ticket claim:', logErr);
+                  }
+                },
+              );
+
+              res.json({
+                success: true,
+                message: 'Ticket claimed successfully',
+              });
+            },
+          );
+        },
+      );
     } catch (error) {
       logger.error('Error claiming ticket:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to claim ticket',
-        errorCode: 'TICKET_CLAIM_ERROR'
+        errorCode: 'TICKET_CLAIM_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -1009,58 +1131,66 @@ router.post('/tickets/:ticketId/claim',
  *       401:
  *         description: Unauthorized
  */
-router.get('/timesheet',
+router.get(
+  '/timesheet',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100), // 100 requests per 15 minutes
   async (req, res) => {
     try {
       const userId = req.user.id;
       const { startDate, endDate } = req.query;
-      const start = startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const start =
+        startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const end = endDate || new Date().toISOString().split('T')[0];
 
-      const rows = await db.any(`
+      const rows = await db.any(
+        `
         SELECT t.ticket_id, t.title, t.actual_time_minutes, DATE(t.updated_at) as work_date
         FROM tickets t
         WHERE t.assigned_to_id = $1 
         AND t.actual_time_minutes > 0
         AND DATE(t.updated_at) BETWEEN $2 AND $3
         ORDER BY t.updated_at DESC
-      `, [userId, start, end]);
+      `,
+        [userId, start, end],
+      );
 
-      const timesheet = (rows || []).map(row => ({
+      const timesheet = (rows || []).map((row) => ({
         ticketId: row.ticket_id,
         title: row.title,
         timeSpent: row.actual_time_minutes,
-        date: row.work_date
+        date: row.work_date,
       }));
 
       res.json({
         success: true,
-        timesheet
+        timesheet,
       });
     } catch (error) {
       logger.error('Error fetching timesheet:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch timesheet',
-        errorCode: 'TIMESHEET_ERROR'
+        errorCode: 'TIMESHEET_ERROR',
       });
     }
-  }
+  },
 );
 
 // Alerts feed - proxies Nova Core alerts
-router.get('/alerts',
+router.get(
+  '/alerts',
   authenticateJWT,
   [
     check('queue')
-      .isString().withMessage('Queue must be a string')
+      .isString()
+      .withMessage('Queue must be a string')
       .trim()
       .escape()
-      .notEmpty().withMessage('Queue parameter is required'),
+      .notEmpty()
+      .withMessage('Queue parameter is required'),
   ],
-  checkQueueAccess(req => req.query.queue),
+  checkQueueAccess((req) => req.query.queue),
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -1072,33 +1202,43 @@ router.get('/alerts',
       res.json({ success: true, alerts });
     } catch (err) {
       logger.error('Error fetching alerts:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch alerts', errorCode: 'ALERTS_ERROR' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to fetch alerts', errorCode: 'ALERTS_ERROR' });
     }
-  }
+  },
 );
 
 // Inventory lookup
-router.get('/inventory',
+router.get(
+  '/inventory',
   authenticateJWT,
-  checkQueueAccess(req => req.query.queue),
+  checkQueueAccess((req) => req.query.queue),
   async (req, res) => {
     try {
-      const { rows } = await db.query('SELECT id, asset_tag, model, status, name, type FROM inventory_assets ORDER BY id')
-      res.json({ success: true, assets: rows })
+      const { rows } = await db.query(
+        'SELECT id, asset_tag, model, status, name, type FROM inventory_assets ORDER BY id',
+      );
+      res.json({ success: true, assets: rows });
     } catch (err) {
-      logger.error('Error fetching inventory:', err)
-      res.status(500).json({ success: false, error: 'Failed to fetch inventory', errorCode: 'INVENTORY_ERROR' })
+      logger.error('Error fetching inventory:', err);
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to fetch inventory', errorCode: 'INVENTORY_ERROR' });
     }
-  }
+  },
 );
 
 // Ticket history
-router.get('/tickets/:ticketId/history',
+router.get(
+  '/tickets/:ticketId/history',
   authenticateJWT,
   [
     body('ticketId')
-      .isNumeric().withMessage('Ticket ID must be a numeric value')
-      .notEmpty().withMessage('Ticket ID is required'),
+      .isNumeric()
+      .withMessage('Ticket ID must be a numeric value')
+      .notEmpty()
+      .withMessage('Ticket ID is required'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -1107,170 +1247,192 @@ router.get('/tickets/:ticketId/history',
     }
     try {
       const { ticketId } = req.params;
-      db.all(`
+      db.all(
+        `
         SELECT tl.action, tl.details, tl.timestamp, u.name as user_name
         FROM ticket_logs tl
         LEFT JOIN users u ON tl.user_id = u.id
         WHERE tl.ticket_id = $1
         ORDER BY tl.timestamp ASC
-      `, [ticketId], (err, rows) => {
-        if (err) {
-          logger.error('Error fetching ticket history:', err);
-          return res.status(500).json({ success: false, error: 'Failed to fetch ticket history', errorCode: 'HISTORY_ERROR' });
-        }
-        const history = (rows || []).map(r => ({
-          action: r.action,
-          details: r.details,
-          timestamp: r.timestamp,
-          user: r.user_name
-        }));
-        res.json({ success: true, history });
-      });
+      `,
+        [ticketId],
+        (err, rows) => {
+          if (err) {
+            logger.error('Error fetching ticket history:', err);
+            return res
+              .status(500)
+              .json({
+                success: false,
+                error: 'Failed to fetch ticket history',
+                errorCode: 'HISTORY_ERROR',
+              });
+          }
+          const history = (rows || []).map((r) => ({
+            action: r.action,
+            details: r.details,
+            timestamp: r.timestamp,
+            user: r.user_name,
+          }));
+          res.json({ success: true, history });
+        },
+      );
     } catch (error) {
       logger.error('Error fetching ticket history:', error);
-      res.status(500).json({ success: false, error: 'Failed to fetch ticket history', errorCode: 'HISTORY_ERROR' });
+      res
+        .status(500)
+        .json({
+          success: false,
+          error: 'Failed to fetch ticket history',
+          errorCode: 'HISTORY_ERROR',
+        });
     }
-  }
+  },
 );
 
 // Related items for a ticket
-router.get('/tickets/:ticketId/related',
-  authenticateJWT,
-  async (req, res) => {
-    try {
-      const { ticketId } = req.params;
-      const ticket = await db.getAsync('SELECT requested_by_id FROM tickets WHERE ticket_id = ?', [ticketId]);
-      if (!ticket) {
-        return res.status(404).json({ success: false, error: 'Ticket not found', errorCode: 'TICKET_NOT_FOUND' });
-      }
+router.get('/tickets/:ticketId/related', authenticateJWT, async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    const ticket = await db.getAsync('SELECT requested_by_id FROM tickets WHERE ticket_id = ?', [
+      ticketId,
+    ]);
+    if (!ticket) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Ticket not found', errorCode: 'TICKET_NOT_FOUND' });
+    }
 
-      const [relatedTickets, assets] = await Promise.all([
-        db.allAsync(`
+    const [relatedTickets, assets] = await Promise.all([
+      db.allAsync(
+        `
           SELECT ticket_id, title, status, priority
           FROM tickets
           WHERE requested_by_id = ? AND ticket_id != ? AND deleted_at IS NULL
           ORDER BY created_at DESC
           LIMIT 5
-        `, [ticket.requested_by_id, ticketId]),
-        db.allAsync(`
+        `,
+        [ticket.requested_by_id, ticketId],
+      ),
+      db.allAsync(
+        `
           SELECT id, name, asset_tag
           FROM inventory_assets
           WHERE assigned_to_user_id = ?
           LIMIT 5
-        `, [ticket.requested_by_id])
-      ]);
+        `,
+        [ticket.requested_by_id],
+      ),
+    ]);
 
-      res.json({ success: true, tickets: relatedTickets || [], assets: assets || [] });
-    } catch (error) {
-      logger.error('Error fetching related items:', error);
-      res.status(500).json({ success: false, error: 'Failed to fetch related items', errorCode: 'RELATED_ERROR' });
-    }
+    res.json({ success: true, tickets: relatedTickets || [], assets: assets || [] });
+  } catch (error) {
+    logger.error('Error fetching related items:', error);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to fetch related items', errorCode: 'RELATED_ERROR' });
   }
-);
+});
 
 // Get XP leaderboard and user totals
-router.get('/xp',
-  authenticateJWT,
-  async (req, res) => {
-    try {
-      const { rows } = await db.query(
-        'SELECT u.id AS userId, u.name, u.department, l.xp_total FROM leaderboard l JOIN users u ON u.id = l.user_id ORDER BY l.xp_total DESC LIMIT 20'
-      )
-      const { rows: teamRows } = await db.query(
-        'SELECT u.department AS team, SUM(l.xp_total) AS xp_total FROM leaderboard l JOIN users u ON l.user_id = u.id GROUP BY u.department ORDER BY SUM(l.xp_total) DESC'
-      )
-      const myRes = await db.query('SELECT xp_total FROM leaderboard WHERE user_id = $1', [req.user.id])
-      const myXp = myRes.rows[0] ? parseInt(myRes.rows[0].xp_total, 10) : 0
-      res.json({ success: true, leaderboard: rows, teams: teamRows, me: { xp: myXp } })
-    } catch (err) {
-      logger.error('Error fetching leaderboard:', err)
-      res.status(500).json({ success: false, error: 'Failed to fetch leaderboard', errorCode: 'LEADERBOARD_ERROR' })
-    }
+router.get('/xp', authenticateJWT, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'SELECT u.id AS userId, u.name, u.department, l.xp_total FROM leaderboard l JOIN users u ON u.id = l.user_id ORDER BY l.xp_total DESC LIMIT 20',
+    );
+    const { rows: teamRows } = await db.query(
+      'SELECT u.department AS team, SUM(l.xp_total) AS xp_total FROM leaderboard l JOIN users u ON l.user_id = u.id GROUP BY u.department ORDER BY SUM(l.xp_total) DESC',
+    );
+    const myRes = await db.query('SELECT xp_total FROM leaderboard WHERE user_id = $1', [
+      req.user.id,
+    ]);
+    const myXp = myRes.rows[0] ? parseInt(myRes.rows[0].xp_total, 10) : 0;
+    res.json({ success: true, leaderboard: rows, teams: teamRows, me: { xp: myXp } });
+  } catch (err) {
+    logger.error('Error fetching leaderboard:', err);
+    res
+      .status(500)
+      .json({
+        success: false,
+        error: 'Failed to fetch leaderboard',
+        errorCode: 'LEADERBOARD_ERROR',
+      });
   }
-)
+});
 
 // XP event logging
-router.post('/xp',
-  authenticateJWT,
-  async (req, res) => {
-    try {
-      const { amount = 0, reason } = req.body
-      const parsedAmount = Number(amount)
-      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || parsedAmount > MAX_XP_AMOUNT) {
-        return res.status(400).json({ success: false, error: 'Invalid amount', errorCode: 'INVALID_AMOUNT' })
-      }
-      await db.run(
-        'INSERT INTO xp_events (user_id, amount, reason, created_at) VALUES ($1, $2, $3, $4)',
-        [req.user.id, parsedAmount, reason || null, new Date().toISOString()]
-      )
-      await db.run(
-        'INSERT INTO leaderboard (user_id, xp_total) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET xp_total = leaderboard.xp_total + EXCLUDED.xp_total',
-        [req.user.id, parsedAmount]
-      )
-      res.json({ success: true })
-    } catch (err) {
-      logger.error('Error logging XP event:', err)
-      res.status(500).json({ success: false, error: 'Failed to record XP', errorCode: 'XP_ERROR' })
+router.post('/xp', authenticateJWT, async (req, res) => {
+  try {
+    const { amount = 0, reason } = req.body;
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || parsedAmount > MAX_XP_AMOUNT) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'Invalid amount', errorCode: 'INVALID_AMOUNT' });
     }
+    await db.run(
+      'INSERT INTO xp_events (user_id, amount, reason, created_at) VALUES ($1, $2, $3, $4)',
+      [req.user.id, parsedAmount, reason || null, new Date().toISOString()],
+    );
+    await db.run(
+      'INSERT INTO leaderboard (user_id, xp_total) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET xp_total = leaderboard.xp_total + EXCLUDED.xp_total',
+      [req.user.id, parsedAmount],
+    );
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('Error logging XP event:', err);
+    res.status(500).json({ success: false, error: 'Failed to record XP', errorCode: 'XP_ERROR' });
   }
-);
+});
 
 // Mount enhanced inventory routes
 router.use('/inventory', pulseInventoryRouter);
 
 // Queue metrics and agent availability endpoints
-router.get('/queues/metrics',
-  authenticateJWT,
-  async (req, res) => {
-    try {
-      const { queue } = req.query;
-      
-      // If specific queue requested, return metrics for that queue
-      if (queue) {
-        const result = await db.query(
-          'SELECT * FROM queue_metrics WHERE queue_name = $1',
-          [queue]
-        );
-        
-        if (!result.rows || result.rows.length === 0) {
-          // Calculate and create metrics for the queue if not exists
-          await calculateAndUpdateQueueMetrics(queue);
-          const newResult = await db.query(
-            'SELECT * FROM queue_metrics WHERE queue_name = $1',
-            [queue]
-          );
-          return res.json({ success: true, metrics: newResult.rows[0] || null });
-        }
-        
-        return res.json({ success: true, metrics: result.rows[0] });
+router.get('/queues/metrics', authenticateJWT, async (req, res) => {
+  try {
+    const { queue } = req.query;
+
+    // If specific queue requested, return metrics for that queue
+    if (queue) {
+      const result = await db.query('SELECT * FROM queue_metrics WHERE queue_name = $1', [queue]);
+
+      if (!result.rows || result.rows.length === 0) {
+        // Calculate and create metrics for the queue if not exists
+        await calculateAndUpdateQueueMetrics(queue);
+        const newResult = await db.query('SELECT * FROM queue_metrics WHERE queue_name = $1', [
+          queue,
+        ]);
+        return res.json({ success: true, metrics: newResult.rows[0] || null });
       }
-      
-      // Return all queue metrics
-      const result = await db.query(
-        'SELECT * FROM queue_metrics ORDER BY queue_name'
-      );
-      
-      res.json({ success: true, metrics: result.rows });
-    } catch (error) {
-      logger.error('Error fetching queue metrics:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to fetch queue metrics',
-        errorCode: 'QUEUE_METRICS_ERROR'
-      });
+
+      return res.json({ success: true, metrics: result.rows[0] });
     }
+
+    // Return all queue metrics
+    const result = await db.query('SELECT * FROM queue_metrics ORDER BY queue_name');
+
+    res.json({ success: true, metrics: result.rows });
+  } catch (error) {
+    logger.error('Error fetching queue metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch queue metrics',
+      errorCode: 'QUEUE_METRICS_ERROR',
+    });
   }
-);
+});
 
 // Get agent availability for specific queue
-router.get('/queues/:queueName/agents',
+router.get(
+  '/queues/:queueName/agents',
   authenticateJWT,
   checkQueueAccess((req) => req.params.queueName),
   async (req, res) => {
     try {
       const { queueName } = req.params;
-      
-      const result = await db.query(`
+
+      const result = await db.query(
+        `
         SELECT 
           aa.*,
           u.name,
@@ -1285,22 +1447,25 @@ router.get('/queues/:queueName/agents',
         WHERE aa.queue_name = $1
         GROUP BY aa.id, u.id
         ORDER BY aa.is_available DESC, aa.current_load ASC
-      `, [queueName]);
-      
+      `,
+        [queueName],
+      );
+
       res.json({ success: true, agents: result.rows });
     } catch (error) {
       logger.error('Error fetching queue agents:', error);
-      res.status(500).json({ 
-        success: false, 
+      res.status(500).json({
+        success: false,
         error: 'Failed to fetch queue agents',
-        errorCode: 'QUEUE_AGENTS_ERROR'
+        errorCode: 'QUEUE_AGENTS_ERROR',
       });
     }
-  }
+  },
 );
 
 // Toggle agent availability
-router.post('/queues/:queueName/agents/availability',
+router.post(
+  '/queues/:queueName/agents/availability',
   authenticateJWT,
   checkQueueAccess((req) => req.params.queueName),
   async (req, res) => {
@@ -1308,9 +1473,10 @@ router.post('/queues/:queueName/agents/availability',
       const { queueName } = req.params;
       const { isAvailable, status, maxCapacity } = req.body;
       const userId = req.user.id;
-      
+
       // Upsert agent availability
-      await db.query(`
+      await db.query(
+        `
         INSERT INTO agent_availability (user_id, queue_name, is_available, status, max_capacity, last_updated)
         VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
         ON CONFLICT (user_id, queue_name) 
@@ -1319,58 +1485,58 @@ router.post('/queues/:queueName/agents/availability',
           status = EXCLUDED.status,
           max_capacity = EXCLUDED.max_capacity,
           last_updated = CURRENT_TIMESTAMP
-      `, [userId, queueName, isAvailable, status || 'active', maxCapacity || 10]);
-      
+      `,
+        [userId, queueName, isAvailable, status || 'active', maxCapacity || 10],
+      );
+
       // Update queue metrics
       await calculateAndUpdateQueueMetrics(queueName);
-      
+
       res.json({ success: true });
     } catch (error) {
       logger.error('Error updating agent availability:', error);
-      res.status(500).json({ 
-        success: false, 
+      res.status(500).json({
+        success: false,
         error: 'Failed to update availability',
-        errorCode: 'AVAILABILITY_UPDATE_ERROR'
+        errorCode: 'AVAILABILITY_UPDATE_ERROR',
       });
     }
-  }
+  },
 );
 
 // Get queue alerts
-router.get('/queues/alerts',
-  authenticateJWT,
-  async (req, res) => {
-    try {
-      const { active = true } = req.query;
-      
-      let query = 'SELECT * FROM queue_alerts';
-      const params = [];
-      
-      if (active === 'true') {
-        query += ' WHERE is_active = $1';
-        params.push(true);
-      }
-      
-      query += ' ORDER BY alerted_at DESC';
-      
-      const result = await db.query(query, params);
-      res.json({ success: true, alerts: result.rows });
-    } catch (error) {
-      logger.error('Error fetching queue alerts:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to fetch alerts',
-        errorCode: 'QUEUE_ALERTS_ERROR'
-      });
+router.get('/queues/alerts', authenticateJWT, async (req, res) => {
+  try {
+    const { active = true } = req.query;
+
+    let query = 'SELECT * FROM queue_alerts';
+    const params = [];
+
+    if (active === 'true') {
+      query += ' WHERE is_active = $1';
+      params.push(true);
     }
+
+    query += ' ORDER BY alerted_at DESC';
+
+    const result = await db.query(query, params);
+    res.json({ success: true, alerts: result.rows });
+  } catch (error) {
+    logger.error('Error fetching queue alerts:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch alerts',
+      errorCode: 'QUEUE_ALERTS_ERROR',
+    });
   }
-);
+});
 
 // Helper function to calculate and update queue metrics
 async function calculateAndUpdateQueueMetrics(queueName) {
   try {
     // Get agent counts
-    const agentResult = await db.query(`
+    const agentResult = await db.query(
+      `
       SELECT 
         COUNT(*) as total_agents,
         SUM(CASE WHEN is_available = true THEN 1 ELSE 0 END) as available_agents,
@@ -1378,12 +1544,15 @@ async function calculateAndUpdateQueueMetrics(queueName) {
         SUM(CASE WHEN is_available = true THEN current_load ELSE 0 END) as total_load
       FROM agent_availability 
       WHERE queue_name = $1
-    `, [queueName]);
-    
+    `,
+      [queueName],
+    );
+
     const agentStats = agentResult.rows[0] || {};
-    
+
     // Get ticket counts (mapping queue to team for now)
-    const ticketResult = await db.query(`
+    const ticketResult = await db.query(
+      `
       SELECT 
         COUNT(*) as total_tickets,
         SUM(CASE WHEN status IN ('open', 'in_progress') THEN 1 ELSE 0 END) as open_tickets,
@@ -1393,22 +1562,24 @@ async function calculateAndUpdateQueueMetrics(queueName) {
             ELSE NULL END) as avg_resolution_time_hours
       FROM tickets 
       WHERE category = $1 AND deleted_at IS NULL
-    `, [queueName]);
-    
+    `,
+      [queueName],
+    );
+
     const ticketStats = ticketResult.rows[0] || {};
-    
+
     // Calculate capacity utilization
     const totalCapacity = (parseInt(agentStats.total_agents) || 0) * 10; // Default capacity per agent
-    const capacityUtilization = totalCapacity > 0 
-      ? ((parseInt(agentStats.total_load) || 0) / totalCapacity) * 100 
-      : 0;
-    
+    const capacityUtilization =
+      totalCapacity > 0 ? ((parseInt(agentStats.total_load) || 0) / totalCapacity) * 100 : 0;
+
     // Check thresholds
     const thresholdWarning = capacityUtilization > 70;
     const thresholdCritical = capacityUtilization > 90;
-    
+
     // Upsert queue metrics
-    await db.query(`
+    await db.query(
+      `
       INSERT INTO queue_metrics (
         queue_name, total_agents, available_agents, total_tickets, open_tickets,
         avg_resolution_time, high_priority_tickets, capacity_utilization,
@@ -1427,28 +1598,35 @@ async function calculateAndUpdateQueueMetrics(queueName) {
         threshold_warning = EXCLUDED.threshold_warning,
         threshold_critical = EXCLUDED.threshold_critical,
         last_calculated = CURRENT_TIMESTAMP
-    `, [
-      queueName,
-      parseInt(agentStats.total_agents) || 0,
-      parseInt(agentStats.available_agents) || 0,
-      parseInt(ticketStats.total_tickets) || 0,
-      parseInt(ticketStats.open_tickets) || 0,
-      parseFloat(ticketStats.avg_resolution_time_hours) || 0,
-      parseInt(ticketStats.high_priority_tickets) || 0,
-      capacityUtilization,
-      thresholdWarning,
-      thresholdCritical
-    ]);
-    
+    `,
+      [
+        queueName,
+        parseInt(agentStats.total_agents) || 0,
+        parseInt(agentStats.available_agents) || 0,
+        parseInt(ticketStats.total_tickets) || 0,
+        parseInt(ticketStats.open_tickets) || 0,
+        parseFloat(ticketStats.avg_resolution_time_hours) || 0,
+        parseInt(ticketStats.high_priority_tickets) || 0,
+        capacityUtilization,
+        thresholdWarning,
+        thresholdCritical,
+      ],
+    );
+
     // Create alerts if thresholds exceeded
     if (thresholdCritical) {
-      await createQueueAlert(queueName, 'critical', 
-        `Queue ${queueName} has exceeded 90% capacity utilization (${capacityUtilization.toFixed(1)}%)`);
+      await createQueueAlert(
+        queueName,
+        'critical',
+        `Queue ${queueName} has exceeded 90% capacity utilization (${capacityUtilization.toFixed(1)}%)`,
+      );
     } else if (thresholdWarning) {
-      await createQueueAlert(queueName, 'warning', 
-        `Queue ${queueName} has exceeded 70% capacity utilization (${capacityUtilization.toFixed(1)}%)`);
+      await createQueueAlert(
+        queueName,
+        'warning',
+        `Queue ${queueName} has exceeded 70% capacity utilization (${capacityUtilization.toFixed(1)}%)`,
+      );
     }
-    
   } catch (error) {
     logger.error('Error calculating queue metrics:', error);
     throw error;
@@ -1459,17 +1637,23 @@ async function calculateAndUpdateQueueMetrics(queueName) {
 async function createQueueAlert(queueName, alertType, message) {
   try {
     // Check if similar alert already exists and is active
-    const existingResult = await db.query(`
+    const existingResult = await db.query(
+      `
       SELECT id FROM queue_alerts 
       WHERE queue_name = $1 AND alert_type = $2 AND is_active = true
-    `, [queueName, alertType]);
-    
+    `,
+      [queueName, alertType],
+    );
+
     if (!existingResult.rows || existingResult.rows.length === 0) {
-      await db.query(`
+      await db.query(
+        `
         INSERT INTO queue_alerts (queue_name, alert_type, message, alerted_at)
         VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-      `, [queueName, alertType, message]);
-      
+      `,
+        [queueName, alertType, message],
+      );
+
       logger.info(`Queue alert created: ${alertType} for ${queueName}`);
     }
   } catch (error) {

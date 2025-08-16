@@ -7,7 +7,12 @@ export interface TabProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
 }
 
 export const Tab: React.FC<TabProps> = ({ label, selected = false, icon, ...props }) => (
-  <button {...props} className={[props.className || 'tab', selected ? 'tab--selected' : ''].filter(Boolean).join(' ')}>
+  <button
+    {...props}
+    className={[props.className || 'tab', selected ? 'tab--selected' : '']
+      .filter(Boolean)
+      .join(' ')}
+  >
     {icon && <span className="tab-icon">{icon}</span>}
     {label}
   </button>

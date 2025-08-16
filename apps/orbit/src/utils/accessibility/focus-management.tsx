@@ -23,9 +23,9 @@ export class FocusManager {
 
   static trapFocus(container: HTMLElement) {
     const focusableElements = container.querySelectorAll(
-      'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select, [tabindex]:not([tabindex="-1"])'
+      'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select, [tabindex]:not([tabindex="-1"])',
     );
-    
+
     const firstElement = focusableElements[0] as HTMLElement;
     const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
@@ -46,7 +46,7 @@ export class FocusManager {
     };
 
     container.addEventListener('keydown', handleTabKey);
-    
+
     // Focus the first element
     if (firstElement) {
       firstElement.focus();
@@ -67,7 +67,7 @@ export class FocusManager {
       'input[type="checkbox"]:not([disabled])',
       'select:not([disabled])',
       '[tabindex]:not([tabindex="-1"]):not([disabled])',
-      '[contenteditable="true"]'
+      '[contenteditable="true"]',
     ].join(', ');
 
     return Array.from(container.querySelectorAll(selector)) as HTMLElement[];
@@ -83,7 +83,7 @@ export function useAutoFocus(enabled: boolean = true) {
       const timer = setTimeout(() => {
         ref.current?.focus();
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
   }, [enabled]);
@@ -149,36 +149,39 @@ export function useKeyboardNavigation(
   onArrowLeft?: () => void,
   onArrowRight?: () => void,
   onEnter?: () => void,
-  onEscape?: () => void
+  onEscape?: () => void,
 ) {
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    switch (event.key) {
-      case 'ArrowUp':
-        event.preventDefault();
-        onArrowUp?.();
-        break;
-      case 'ArrowDown':
-        event.preventDefault();
-        onArrowDown?.();
-        break;
-      case 'ArrowLeft':
-        event.preventDefault();
-        onArrowLeft?.();
-        break;
-      case 'ArrowRight':
-        event.preventDefault();
-        onArrowRight?.();
-        break;
-      case 'Enter':
-        event.preventDefault();
-        onEnter?.();
-        break;
-      case 'Escape':
-        event.preventDefault();
-        onEscape?.();
-        break;
-    }
-  }, [onArrowUp, onArrowDown, onArrowLeft, onArrowRight, onEnter, onEscape]);
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      switch (event.key) {
+        case 'ArrowUp':
+          event.preventDefault();
+          onArrowUp?.();
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          onArrowDown?.();
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          onArrowLeft?.();
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          onArrowRight?.();
+          break;
+        case 'Enter':
+          event.preventDefault();
+          onEnter?.();
+          break;
+        case 'Escape':
+          event.preventDefault();
+          onEscape?.();
+          break;
+      }
+    },
+    [onArrowUp, onArrowDown, onArrowLeft, onArrowRight, onEnter, onEscape],
+  );
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -209,7 +212,7 @@ export class AccessibleErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Accessibility Error:', error, errorInfo);
-    
+
     // Announce error to screen readers
     const announcement = document.createElement('div');
     announcement.setAttribute('aria-live', 'assertive');
@@ -217,7 +220,7 @@ export class AccessibleErrorBoundary extends React.Component<
     announcement.textContent = 'An error occurred. Please try refreshing the page.';
     announcement.className = 'sr-only';
     document.body.appendChild(announcement);
-    
+
     setTimeout(() => {
       document.body.removeChild(announcement);
     }, 5000);
@@ -230,9 +233,9 @@ export class AccessibleErrorBoundary extends React.Component<
           <div role="alert" className="error-message">
             <h2>Something went wrong</h2>
             <p>An error occurred while loading this content. Please try refreshing the page.</p>
-            <button 
+            <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded"
+              className="bg-primary text-primary-foreground mt-4 rounded px-4 py-2"
             >
               Refresh Page
             </button>

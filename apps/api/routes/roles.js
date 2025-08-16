@@ -12,7 +12,6 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-
 /**
  * @swagger
  * /api/v1/roles:
@@ -45,7 +44,6 @@ router.get('/', authenticateJWT, requireAdmin, (req, res) => {
     res.json(rows);
   });
 });
-
 
 /**
  * @swagger
@@ -104,11 +102,14 @@ router.get('/', authenticateJWT, requireAdmin, (req, res) => {
  */
 router.post('/', authenticateJWT, requireAdmin, (req, res) => {
   const { name, description } = req.body;
-  if (!name) return res.status(400).json({ error: 'Role name is required', errorCode: 'ROLE_NAME_REQUIRED' });
+  if (!name)
+    return res
+      .status(400)
+      .json({ error: 'Role name is required', errorCode: 'ROLE_NAME_REQUIRED' });
   db.run(
     'INSERT INTO roles (name, description, created_at, updated_at) VALUES ($1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
     [name, description || ''],
-    function(err) {
+    function (err) {
       if (err) {
         if (err.message.includes('duplicate key value')) {
           return res.status(400).json({ error: 'Role already exists', errorCode: 'ROLE_EXISTS' });
@@ -116,10 +117,9 @@ router.post('/', authenticateJWT, requireAdmin, (req, res) => {
         return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       }
       res.json({ id: this.lastID, name, description });
-    }
+    },
   );
 });
-
 
 /**
  * @swagger
@@ -175,7 +175,7 @@ router.put('/:id', authenticateJWT, requireAdmin, (req, res) => {
     (err) => {
       if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       res.json({ message: 'Role updated' });
-    }
+    },
   );
 });
 
@@ -227,7 +227,9 @@ router.put('/:id', authenticateJWT, requireAdmin, (req, res) => {
 router.delete('/:id', authenticateJWT, requireAdmin, (req, res) => {
   const { id } = req.params;
   if (id === '1') {
-    return res.status(400).json({ error: 'Cannot delete admin role', errorCode: 'CANNOT_DELETE_ADMIN_ROLE' });
+    return res
+      .status(400)
+      .json({ error: 'Cannot delete admin role', errorCode: 'CANNOT_DELETE_ADMIN_ROLE' });
   }
   db.run('DELETE FROM user_roles WHERE roleId=$1', [id]);
   db.run('DELETE FROM role_permissions WHERE roleId=$1', [id]);
@@ -236,7 +238,6 @@ router.delete('/:id', authenticateJWT, requireAdmin, (req, res) => {
     res.json({ message: 'Role deleted' });
   });
 });
-
 
 /**
  * @swagger
@@ -270,7 +271,6 @@ router.get('/permissions', authenticateJWT, requireAdmin, (req, res) => {
     res.json(rows);
   });
 });
-
 
 /**
  * @swagger
@@ -315,10 +315,9 @@ router.get('/:id/permissions', authenticateJWT, requireAdmin, (req, res) => {
     (err, rows) => {
       if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
       res.json(rows);
-    }
+    },
   );
 });
-
 
 /**
  * @swagger
@@ -382,16 +381,22 @@ router.put('/:id/permissions', authenticateJWT, requireAdmin, (req, res) => {
   const { id } = req.params;
   const { permissionIds } = req.body;
   if (!Array.isArray(permissionIds)) {
-    return res.status(400).json({ error: 'Permission IDs must be an array', errorCode: 'PERMISSION_IDS_NOT_ARRAY' });
+    return res
+      .status(400)
+      .json({ error: 'Permission IDs must be an array', errorCode: 'PERMISSION_IDS_NOT_ARRAY' });
   }
   db.run('DELETE FROM role_permissions WHERE "roleId"=$1', [id]);
   if (permissionIds.length > 0) {
     const values = permissionIds.map((pid, i) => `($1, $${i + 2})`).join(', ');
     const params = [id, ...permissionIds];
-    db.run(`INSERT INTO role_permissions ("roleId", "permissionId") VALUES ${values}`, params, (err) => {
-      if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-      res.json({ message: 'Role permissions updated' });
-    });
+    db.run(
+      `INSERT INTO role_permissions ("roleId", "permissionId") VALUES ${values}`,
+      params,
+      (err) => {
+        if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+        res.json({ message: 'Role permissions updated' });
+      },
+    );
   } else {
     res.json({ message: 'Role permissions updated' });
   }

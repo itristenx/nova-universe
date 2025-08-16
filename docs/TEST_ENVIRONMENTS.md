@@ -13,7 +13,7 @@ Nova Universe provides comprehensive test environment management with isolated c
 # Create integration test environment
 ./setup-test-env.sh integration
 
-# Create E2E test environment  
+# Create E2E test environment
 ./setup-test-env.sh e2e
 
 # Create custom test environment
@@ -23,24 +23,28 @@ Nova Universe provides comprehensive test environment management with isolated c
 ## Available Test Environments
 
 ### Default Test Environment
+
 - **Name**: `test`
 - **Ports**: 4001-4004 (Core, API, Beacon, Comms)
 - **Database**: Port 4032
 - **Use Case**: General development testing
 
 ### Integration Test Environment
+
 - **Name**: `integration`
 - **Ports**: 4101-4104
 - **Database**: Port 4132
 - **Use Case**: Integration testing between services
 
 ### End-to-End Test Environment
+
 - **Name**: `e2e`
 - **Ports**: 4201-4204
 - **Database**: Port 4232
 - **Use Case**: Full end-to-end testing scenarios
 
 ### Custom Environments
+
 - **Name**: Any custom name
 - **Ports**: Auto-assigned based on name hash
 - **Use Case**: Feature development, parallel testing
@@ -50,6 +54,7 @@ Nova Universe provides comprehensive test environment management with isolated c
 Each test environment includes:
 
 ### Services
+
 - **Core UI** - React frontend with hot reload
 - **API Server** - Node.js backend with auto-restart
 - **Beacon Service** - Real-time notification service
@@ -59,6 +64,7 @@ Each test environment includes:
 - **Sentinel** - Uptime monitoring (simplified)
 
 ### Test Data
+
 - Pre-configured users (admin, user, agent)
 - Sample tickets and data
 - Environment-specific fixtures
@@ -120,12 +126,12 @@ npm run test:env:clean
 
 ## Port Assignments
 
-| Environment | Core | API  | Beacon | Comms | DB   | Redis | Sentinel |
-|-------------|------|------|--------|-------|------|-------|----------|
-| test        | 4001 | 4002 | 4003   | 4004  | 4032 | 4079  | 4081     |
-| integration | 4101 | 4102 | 4103   | 4104  | 4132 | 4179  | 4181     |
-| e2e         | 4201 | 4202 | 4203   | 4204  | 4232 | 4279  | 4281     |
-| custom      | Auto-assigned based on environment name hash        |
+| Environment | Core                                         | API  | Beacon | Comms | DB   | Redis | Sentinel |
+| ----------- | -------------------------------------------- | ---- | ------ | ----- | ---- | ----- | -------- |
+| test        | 4001                                         | 4002 | 4003   | 4004  | 4032 | 4079  | 4081     |
+| integration | 4101                                         | 4102 | 4103   | 4104  | 4132 | 4179  | 4181     |
+| e2e         | 4201                                         | 4202 | 4203   | 4204  | 4232 | 4279  | 4281     |
+| custom      | Auto-assigned based on environment name hash |
 
 ## Test Credentials
 
@@ -139,7 +145,7 @@ Each environment has isolated test users:
     "role": "admin"
   },
   "user": {
-    "email": "user@test-[env].nova", 
+    "email": "user@test-[env].nova",
     "password": "TestUser123!",
     "role": "user"
   },
@@ -173,7 +179,7 @@ Each environment has isolated test users:
 # Integration tests
 ./test-integration.sh test
 
-# E2E tests  
+# E2E tests
 ./test-e2e.sh e2e
 ```
 
@@ -223,7 +229,7 @@ jobs:
     strategy:
       matrix:
         test-env: [integration, e2e]
-    
+
     steps:
       - uses: actions/checkout@v3
       - name: Setup Test Environment
@@ -238,7 +244,9 @@ jobs:
 ## Troubleshooting
 
 ### Port Conflicts
+
 If ports are in use, the setup will detect conflicts and suggest alternatives:
+
 ```bash
 # Check port usage
 netstat -tuln | grep :4001
@@ -248,6 +256,7 @@ netstat -tuln | grep :4001
 ```
 
 ### Service Issues
+
 ```bash
 # Check service health
 ./test-[env].sh status
@@ -260,6 +269,7 @@ docker-compose -f docker-compose.test-[env].yml restart [service]
 ```
 
 ### Database Issues
+
 ```bash
 # Reset test database
 ./test-[env].sh clean
@@ -272,21 +282,25 @@ docker exec -it nova-test-[env]-postgres psql -U nova_test -d nova_test
 ## Best Practices
 
 ### 1. Environment Isolation
+
 - Use separate environments for different test types
 - Never share test environments between features
 - Clean up environments when done
 
 ### 2. Test Data Management
+
 - Use environment-specific test data
 - Reset test data between test runs
 - Don't rely on specific database state
 
 ### 3. Resource Management
+
 - Stop environments when not in use
 - Use `--clean-all` periodically to free resources
 - Monitor Docker resource usage
 
 ### 4. Parallel Testing
+
 - Use different environments for parallel test execution
 - Assign unique environment names for CI pipelines
 - Coordinate port assignments in team settings
@@ -329,14 +343,14 @@ vim docker-compose.test-my-env.yml
 
 ## Production vs Test Environments
 
-| Aspect | Production | Test |
-|--------|------------|------|
-| Data | Persistent | Ephemeral |
-| Ports | Standard (3000-3003) | Isolated (4000+) |
-| SSL | Required | Optional |
-| Monitoring | Full stack | Simplified |
-| Scaling | Multi-instance | Single instance |
-| Backup | Automated | None |
+| Aspect     | Production           | Test             |
+| ---------- | -------------------- | ---------------- |
+| Data       | Persistent           | Ephemeral        |
+| Ports      | Standard (3000-3003) | Isolated (4000+) |
+| SSL        | Required             | Optional         |
+| Monitoring | Full stack           | Simplified       |
+| Scaling    | Multi-instance       | Single instance  |
+| Backup     | Automated            | None             |
 
 ---
 

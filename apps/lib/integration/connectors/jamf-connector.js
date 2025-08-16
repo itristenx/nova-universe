@@ -1,7 +1,7 @@
 /**
  * Jamf Pro Device Management Connector
  * Implements Jamf Pro API for macOS/iOS device integration
- * 
+ *
  * @author Nova Team
  * @version 1.0.0
  */
@@ -29,26 +29,26 @@ export class JamfConnector extends IConnector {
   async initialize(config) {
     try {
       this.config = config;
-      
+
       // Validate Jamf-specific configuration
       this.validateJamfConfig(config);
-      
+
       // Initialize Jamf Pro API client
       this.client = axios.create({
         baseURL: config.endpoints.jamfUrl,
         timeout: config.timeout || 30000,
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
       });
 
       // Authenticate and get bearer token
       await this.authenticate();
-      
+
       // Test the connection
       await this.testConnection();
-      
+
       console.log('Jamf connector initialized successfully');
     } catch (error) {
       console.error('Failed to initialize Jamf connector:', error);
@@ -62,34 +62,35 @@ export class JamfConnector extends IConnector {
   async health() {
     try {
       const startTime = Date.now();
-      
+
       // Ensure we have a valid token
       await this.ensureValidToken();
-      
+
       // Test Jamf Pro API endpoints
       const activationCodeResponse = await this.client.get('/JSSResource/activationcode', {
-        headers: { 'Authorization': `Bearer ${this.authToken}` }
+        headers: { Authorization: `Bearer ${this.authToken}` },
       });
-      
+
       const apiLatency = Date.now() - startTime;
 
       // Test computer inventory access
       let inventoryStatus = 'healthy';
       let inventoryLatency = 0;
-      
+
       try {
         const inventoryStartTime = Date.now();
         await this.client.get('/JSSResource/computers/subset/basic', {
-          headers: { 'Authorization': `Bearer ${this.authToken}` }
+          headers: { Authorization: `Bearer ${this.authToken}` },
         });
         inventoryLatency = Date.now() - inventoryStartTime;
       } catch (error) {
         inventoryStatus = 'degraded';
       }
 
-      const overallStatus = activationCodeResponse.status === 200 && inventoryStatus === 'healthy'
-        ? HealthStatus.HEALTHY 
-        : HealthStatus.DEGRADED;
+      const overallStatus =
+        activationCodeResponse.status === 200 && inventoryStatus === 'healthy'
+          ? HealthStatus.HEALTHY
+          : HealthStatus.DEGRADED;
 
       return {
         status: overallStatus,
@@ -98,27 +99,27 @@ export class JamfConnector extends IConnector {
           {
             name: 'api_latency',
             value: apiLatency,
-            unit: 'ms'
+            unit: 'ms',
           },
           {
             name: 'inventory_latency',
             value: inventoryLatency,
-            unit: 'ms'
+            unit: 'ms',
           },
           {
             name: 'auth_status',
             value: this.authToken ? 1 : 0,
-            unit: 'boolean'
-          }
+            unit: 'boolean',
+          },
         ],
-        issues: overallStatus !== HealthStatus.HEALTHY ? ['Inventory access issues detected'] : []
+        issues: overallStatus !== HealthStatus.HEALTHY ? ['Inventory access issues detected'] : [],
       };
     } catch (error) {
       return {
         status: HealthStatus.UNHEALTHY,
         lastCheck: new Date(),
         metrics: [],
-        issues: [error.message]
+        issues: [error.message],
       };
     }
   }
@@ -153,8 +154,7 @@ export class JamfConnector extends IConnector {
       errorCount += mobileResult.errorCount;
       errors.push(...mobileResult.errors);
 
-      const status = errorCount === 0 ? 'success' : 
-        successCount > 0 ? 'partial' : 'failed';
+      const status = errorCount === 0 ? 'success' : successCount > 0 ? 'partial' : 'failed';
 
       return {
         jobId: crypto.randomUUID(),
@@ -162,12 +162,11 @@ export class JamfConnector extends IConnector {
         metrics: {
           totalRecords: totalDevices,
           successCount,
-          errorCount
+          errorCount,
         },
         errors: errors.slice(0, 10), // Limit error details
-        data: null
+        data: null,
       };
-
     } catch (error) {
       return {
         jobId: crypto.randomUUID(),
@@ -175,11 +174,13 @@ export class JamfConnector extends IConnector {
         metrics: {
           totalRecords: 0,
           successCount: 0,
-          errorCount: 1
+          errorCount: 1,
         },
-        errors: [{
-          message: error.message
-        }]
+        errors: [
+          {
+            message: error.message,
+          },
+        ],
       };
     }
   }
@@ -192,16 +193,16 @@ export class JamfConnector extends IConnector {
       // Jamf Pro doesn't have real-time events like Okta
       // We can poll for recently updated devices instead
       const since = new Date(Date.now() - 5 * 60 * 1000); // Last 5 minutes
-      
+
       await this.ensureValidToken();
-      
+
       // Get recently updated computers
       const computersResponse = await this.client.get('/JSSResource/computers/subset/basic', {
-        headers: { 'Authorization': `Bearer ${this.authToken}` }
+        headers: { Authorization: `Bearer ${this.authToken}` },
       });
 
       const events = [];
-      
+
       // Filter for recent updates (simplified - in reality you'd need to track last poll time)
       for (const computer of computersResponse.data.computers || []) {
         // Simulate event based on device status
@@ -214,14 +215,13 @@ export class JamfConnector extends IConnector {
             deviceName: computer.name,
             serialNumber: computer.serial_number,
             platform: 'macOS',
-            action: 'inventory_update'
+            action: 'inventory_update',
           },
-          source: 'jamf'
+          source: 'jamf',
         });
       }
 
       return events.slice(0, 50); // Limit to 50 events
-
     } catch (error) {
       console.error('Failed to poll Jamf events:', error);
       return [];
@@ -240,25 +240,24 @@ export class JamfConnector extends IConnector {
       switch (actionType) {
         case 'remote_lock':
           return await this.remoteLockDevice(target, parameters);
-        
+
         case 'remote_wipe':
           return await this.remoteWipeDevice(target, parameters);
-        
+
         case 'inventory_update':
           return await this.updateInventory(target);
-        
+
         case 'install_app':
           return await this.installApplication(target, parameters);
-        
+
         default:
           throw new Error(`Unsupported action: ${actionType}`);
       }
-
     } catch (error) {
       return {
         success: false,
         message: error.message,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -279,7 +278,7 @@ export class JamfConnector extends IConnector {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -292,20 +291,9 @@ export class JamfConnector extends IConnector {
       supportsPush: true,
       supportsPoll: true,
       rateLimit: 300, // Conservative rate limit for Jamf
-      dataTypes: [
-        'computers',
-        'mobile_devices',
-        'users',
-        'policies',
-        'configuration_profiles'
-      ],
-      actions: [
-        'remote_lock',
-        'remote_wipe',
-        'inventory_update',
-        'install_app'
-      ],
-      platforms: ['macOS', 'iOS', 'iPadOS']
+      dataTypes: ['computers', 'mobile_devices', 'users', 'policies', 'configuration_profiles'],
+      actions: ['remote_lock', 'remote_wipe', 'inventory_update', 'install_app'],
+      platforms: ['macOS', 'iOS', 'iPadOS'],
     };
   }
 
@@ -321,7 +309,7 @@ export class JamfConnector extends IConnector {
           serial_number: 'string',
           udid: 'string',
           mac_address: 'string',
-          platform: 'string'
+          platform: 'string',
         },
         mobile_device: {
           id: 'number',
@@ -329,8 +317,8 @@ export class JamfConnector extends IConnector {
           device_name: 'string',
           serial_number: 'string',
           udid: 'string',
-          platform: 'string'
-        }
+          platform: 'string',
+        },
       },
       output: {
         nova_device: {
@@ -340,9 +328,9 @@ export class JamfConnector extends IConnector {
           platform: 'string',
           assignedUser: 'object',
           status: 'string',
-          lastSync: 'date'
-        }
-      }
+          lastSync: 'date',
+        },
+      },
     };
   }
 
@@ -358,8 +346,10 @@ export class JamfConnector extends IConnector {
   // Private helper methods
 
   validateJamfConfig(config) {
-    if (!config.endpoints?.jamfUrl?.includes('jamfcloud.com') && 
-        !config.endpoints?.jamfUrl?.match(/^https?:\/\/.+/)) {
+    if (
+      !config.endpoints?.jamfUrl?.includes('jamfcloud.com') &&
+      !config.endpoints?.jamfUrl?.match(/^https?:\/\/.+/)
+    ) {
       throw new Error('Invalid Jamf Pro URL format');
     }
   }
@@ -367,18 +357,22 @@ export class JamfConnector extends IConnector {
   async authenticate() {
     try {
       const credentials = Buffer.from(
-        `${this.config.credentials.username}:${this.config.credentials.password}`
+        `${this.config.credentials.username}:${this.config.credentials.password}`,
       ).toString('base64');
 
-      const response = await this.client.post('/api/v1/auth/token', {}, {
-        headers: {
-          'Authorization': `Basic ${credentials}`
-        }
-      });
+      const response = await this.client.post(
+        '/api/v1/auth/token',
+        {},
+        {
+          headers: {
+            Authorization: `Basic ${credentials}`,
+          },
+        },
+      );
 
       this.authToken = response.data.token;
-      this.tokenExpiry = new Date(Date.now() + (response.data.expires_in * 1000));
-      
+      this.tokenExpiry = new Date(Date.now() + response.data.expires_in * 1000);
+
       console.log('Jamf authentication successful');
     } catch (error) {
       throw new Error(`Jamf authentication failed: ${error.message}`);
@@ -394,9 +388,9 @@ export class JamfConnector extends IConnector {
   async testConnection() {
     try {
       const response = await this.client.get('/api/v1/jamf-pro-server-url', {
-        headers: { 'Authorization': `Bearer ${this.authToken}` }
+        headers: { Authorization: `Bearer ${this.authToken}` },
       });
-      
+
       if (response.status !== 200) {
         throw new Error('Failed to connect to Jamf Pro API');
       }
@@ -413,7 +407,7 @@ export class JamfConnector extends IConnector {
     try {
       // Get basic computer list
       const response = await this.client.get('/JSSResource/computers/subset/basic', {
-        headers: { 'Authorization': `Bearer ${this.authToken}` }
+        headers: { Authorization: `Bearer ${this.authToken}` },
       });
 
       const computers = response.data.computers || [];
@@ -427,7 +421,7 @@ export class JamfConnector extends IConnector {
           errorCount++;
           errors.push({
             deviceId: computer.id,
-            message: error.message
+            message: error.message,
           });
         }
       }
@@ -436,15 +430,14 @@ export class JamfConnector extends IConnector {
         totalRecords: computers.length,
         successCount,
         errorCount,
-        errors
+        errors,
       };
-
     } catch (error) {
       return {
         totalRecords: 0,
         successCount: 0,
         errorCount: 1,
-        errors: [{ message: error.message }]
+        errors: [{ message: error.message }],
       };
     }
   }
@@ -457,7 +450,7 @@ export class JamfConnector extends IConnector {
     try {
       // Get basic mobile device list
       const response = await this.client.get('/JSSResource/mobiledevices/subset/basic', {
-        headers: { 'Authorization': `Bearer ${this.authToken}` }
+        headers: { Authorization: `Bearer ${this.authToken}` },
       });
 
       const devices = response.data.mobile_devices || [];
@@ -471,7 +464,7 @@ export class JamfConnector extends IConnector {
           errorCount++;
           errors.push({
             deviceId: device.id,
-            message: error.message
+            message: error.message,
           });
         }
       }
@@ -480,15 +473,14 @@ export class JamfConnector extends IConnector {
         totalRecords: devices.length,
         successCount,
         errorCount,
-        errors
+        errors,
       };
-
     } catch (error) {
       return {
         totalRecords: 0,
         successCount: 0,
         errorCount: 1,
-        errors: [{ message: error.message }]
+        errors: [{ message: error.message }],
       };
     }
   }
@@ -496,11 +488,11 @@ export class JamfConnector extends IConnector {
   async processComputer(computer) {
     // Get detailed computer information
     const detailResponse = await this.client.get(`/JSSResource/computers/id/${computer.id}`, {
-      headers: { 'Authorization': `Bearer ${this.authToken}` }
+      headers: { Authorization: `Bearer ${this.authToken}` },
     });
 
     const detail = detailResponse.data.computer;
-    
+
     // Transform to Nova format
     const novaDevice = {
       deviceId: `jamf-computer-${detail.general.id}`,
@@ -510,30 +502,30 @@ export class JamfConnector extends IConnector {
       osVersion: `${detail.general.platform} ${detail.general.os_version}`,
       assignedUser: {
         email: detail.location?.email_address,
-        name: detail.location?.real_name
+        name: detail.location?.real_name,
       },
       status: detail.general.last_contact_time ? 'managed' : 'offline',
       lastCheckIn: new Date(detail.general.last_contact_time_epoch * 1000),
       source: 'jamf',
       jamfId: detail.general.id,
       udid: detail.general.udid,
-      macAddress: detail.general.mac_address
+      macAddress: detail.general.mac_address,
     };
 
     // Here you would save to Nova database or send to message queue
     console.log(`Processed computer: ${novaDevice.hostname}`);
-    
+
     return novaDevice;
   }
 
   async processMobileDevice(device) {
     // Get detailed mobile device information
     const detailResponse = await this.client.get(`/JSSResource/mobiledevices/id/${device.id}`, {
-      headers: { 'Authorization': `Bearer ${this.authToken}` }
+      headers: { Authorization: `Bearer ${this.authToken}` },
     });
 
     const detail = detailResponse.data.mobile_device;
-    
+
     // Transform to Nova format
     const novaDevice = {
       deviceId: `jamf-mobile-${detail.general.id}`,
@@ -543,42 +535,47 @@ export class JamfConnector extends IConnector {
       osVersion: `${detail.general.os_type} ${detail.general.os_version}`,
       assignedUser: {
         email: detail.location?.email_address,
-        name: detail.location?.real_name
+        name: detail.location?.real_name,
       },
       status: detail.general.last_inventory_update ? 'managed' : 'offline',
       lastCheckIn: new Date(detail.general.last_inventory_update_epoch * 1000),
       source: 'jamf',
       jamfId: detail.general.id,
       udid: detail.general.udid,
-      wifiMacAddress: detail.general.wifi_mac_address
+      wifiMacAddress: detail.general.wifi_mac_address,
     };
 
     // Here you would save to Nova database or send to message queue
     console.log(`Processed mobile device: ${novaDevice.hostname}`);
-    
+
     return novaDevice;
   }
 
   async remoteLockDevice(deviceId, parameters) {
     try {
       const deviceType = parameters?.deviceType || 'computer';
-      const endpoint = deviceType === 'mobile' 
-        ? `/JSSResource/mobiledevicecommands/command/DeviceLock/id/${deviceId}`
-        : `/JSSResource/computercommands/command/DeviceLock/id/${deviceId}`;
+      const endpoint =
+        deviceType === 'mobile'
+          ? `/JSSResource/mobiledevicecommands/command/DeviceLock/id/${deviceId}`
+          : `/JSSResource/computercommands/command/DeviceLock/id/${deviceId}`;
 
-      await this.client.post(endpoint, {
-        command: {
-          name: 'DeviceLock',
-          passcode: parameters?.passcode || '000000'
-        }
-      }, {
-        headers: { 'Authorization': `Bearer ${this.authToken}` }
-      });
+      await this.client.post(
+        endpoint,
+        {
+          command: {
+            name: 'DeviceLock',
+            passcode: parameters?.passcode || '000000',
+          },
+        },
+        {
+          headers: { Authorization: `Bearer ${this.authToken}` },
+        },
+      );
 
       return {
         success: true,
         message: 'Device lock command sent successfully',
-        data: { deviceId, action: 'remote_lock' }
+        data: { deviceId, action: 'remote_lock' },
       };
     } catch (error) {
       throw new Error(`Failed to lock device: ${error.message}`);
@@ -588,18 +585,23 @@ export class JamfConnector extends IConnector {
   async remoteWipeDevice(deviceId, parameters) {
     try {
       const deviceType = parameters?.deviceType || 'computer';
-      const endpoint = deviceType === 'mobile' 
-        ? `/JSSResource/mobiledevicecommands/command/EraseDevice/id/${deviceId}`
-        : `/JSSResource/computercommands/command/EraseDevice/id/${deviceId}`;
+      const endpoint =
+        deviceType === 'mobile'
+          ? `/JSSResource/mobiledevicecommands/command/EraseDevice/id/${deviceId}`
+          : `/JSSResource/computercommands/command/EraseDevice/id/${deviceId}`;
 
-      await this.client.post(endpoint, {}, {
-        headers: { 'Authorization': `Bearer ${this.authToken}` }
-      });
+      await this.client.post(
+        endpoint,
+        {},
+        {
+          headers: { Authorization: `Bearer ${this.authToken}` },
+        },
+      );
 
       return {
         success: true,
         message: 'Device wipe command sent successfully',
-        data: { deviceId, action: 'remote_wipe' }
+        data: { deviceId, action: 'remote_wipe' },
       };
     } catch (error) {
       throw new Error(`Failed to wipe device: ${error.message}`);
@@ -608,14 +610,18 @@ export class JamfConnector extends IConnector {
 
   async updateInventory(deviceId) {
     try {
-      await this.client.post(`/JSSResource/computercommands/command/UpdateInventory/id/${deviceId}`, {}, {
-        headers: { 'Authorization': `Bearer ${this.authToken}` }
-      });
+      await this.client.post(
+        `/JSSResource/computercommands/command/UpdateInventory/id/${deviceId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${this.authToken}` },
+        },
+      );
 
       return {
         success: true,
         message: 'Inventory update command sent successfully',
-        data: { deviceId, action: 'inventory_update' }
+        data: { deviceId, action: 'inventory_update' },
       };
     } catch (error) {
       throw new Error(`Failed to update inventory: ${error.message}`);
@@ -625,28 +631,33 @@ export class JamfConnector extends IConnector {
   async installApplication(deviceId, parameters) {
     try {
       const { appId, deviceType = 'computer' } = parameters;
-      
+
       if (!appId) {
         throw new Error('Application ID is required');
       }
 
-      const endpoint = deviceType === 'mobile'
-        ? `/JSSResource/mobiledevicecommands/command/InstallApplication/id/${deviceId}`
-        : `/JSSResource/computercommands/command/InstallApplication/id/${deviceId}`;
+      const endpoint =
+        deviceType === 'mobile'
+          ? `/JSSResource/mobiledevicecommands/command/InstallApplication/id/${deviceId}`
+          : `/JSSResource/computercommands/command/InstallApplication/id/${deviceId}`;
 
-      await this.client.post(endpoint, {
-        command: {
-          name: 'InstallApplication',
-          application_id: appId
-        }
-      }, {
-        headers: { 'Authorization': `Bearer ${this.authToken}` }
-      });
+      await this.client.post(
+        endpoint,
+        {
+          command: {
+            name: 'InstallApplication',
+            application_id: appId,
+          },
+        },
+        {
+          headers: { Authorization: `Bearer ${this.authToken}` },
+        },
+      );
 
       return {
         success: true,
         message: 'Application install command sent successfully',
-        data: { deviceId, action: 'install_app', appId }
+        data: { deviceId, action: 'install_app', appId },
       };
     } catch (error) {
       throw new Error(`Failed to install application: ${error.message}`);

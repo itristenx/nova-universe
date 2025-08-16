@@ -22,7 +22,7 @@ const GOALERT_CONFIG = {
   baseUrl: process.env.GOALERT_API_BASE || 'http://localhost:8081',
   apiKey: process.env.GOALERT_API_KEY,
   enabled: process.env.GOALERT_PROXY_ENABLED === 'true',
-  source: process.env.GOALERT_ALERT_SOURCE || 'nova'
+  source: process.env.GOALERT_ALERT_SOURCE || 'nova',
 };
 
 /**
@@ -35,10 +35,10 @@ async function makeGoAlertRequest(endpoint, options = {}) {
 
   const url = `${GOALERT_CONFIG.baseUrl}${endpoint}`;
   const headers = {
-    'Authorization': `Bearer ${GOALERT_CONFIG.apiKey}`,
+    Authorization: `Bearer ${GOALERT_CONFIG.apiKey}`,
     'Content-Type': 'application/json',
     'User-Agent': 'Nova-Universe/1.0',
-    ...options.headers
+    ...options.headers,
   };
 
   logger.debug(`GoAlert API Request: ${options.method || 'GET'} ${url}`);
@@ -46,7 +46,7 @@ async function makeGoAlertRequest(endpoint, options = {}) {
   const response = await fetch(url, {
     ...options,
     headers,
-    timeout: 30000
+    timeout: 30000,
   });
 
   if (!response.ok) {
@@ -71,14 +71,17 @@ async function logAlertOperation(userId, operation, alertData, metadata = {}) {
       source_ticket_id: alertData.sourceTicketId,
       delivery_status: alertData.deliveryStatus || 'pending',
       metadata: JSON.stringify(metadata),
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
 
-    await db.run(`
+    await db.run(
+      `
       INSERT INTO alert_audit_log 
       (user_id, operation, alert_id, schedule_id, source_ticket_id, delivery_status, metadata, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, Object.values(logEntry));
+    `,
+      Object.values(logEntry),
+    );
 
     logger.info('Alert operation logged:', logEntry);
   } catch (error) {
@@ -134,18 +137,22 @@ async function logAlertOperation(userId, operation, alertData, metadata = {}) {
  *                 type: object
  *                 description: Additional alert metadata
  */
-router.post('/create',
+router.post(
+  '/create',
   authenticateJWT,
   checkPermissions(['alerts:create']),
   createRateLimit(60 * 1000, 10), // 10 alerts per minute
   [
-    body('summary').isString().isLength({ min: 1, max: 200 }).withMessage('Summary required (1-200 chars)'),
+    body('summary')
+      .isString()
+      .isLength({ min: 1, max: 200 })
+      .withMessage('Summary required (1-200 chars)'),
     body('description').optional().isString().isLength({ max: 2000 }),
     body('source').isString().isIn(['workflow', 'manual', 'ticket', 'cosmo']),
     body('serviceId').isString().withMessage('Service ID required'),
     body('priority').optional().isIn(['low', 'medium', 'high', 'critical']),
     body('ticketId').optional().isString(),
-    body('metadata').optional().isObject()
+    body('metadata').optional().isObject(),
   ],
   audit('alert.create'),
   async (req, res) => {
@@ -155,11 +162,19 @@ router.post('/create',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
-      const { summary, description, source, serviceId, priority = 'medium', ticketId, metadata = {} } = req.body;
+      const {
+        summary,
+        description,
+        source,
+        serviceId,
+        priority = 'medium',
+        ticketId,
+        metadata = {},
+      } = req.body;
 
       // Create alert in GoAlert
       const alertPayload = {
@@ -167,29 +182,37 @@ router.post('/create',
         details: description || '',
         source: {
           type: 'generic',
-          value: GOALERT_CONFIG.source
+          value: GOALERT_CONFIG.source,
         },
         dedup: ticketId ? `nova-${ticketId}` : `nova-${Date.now()}`,
-        action: 'trigger'
+        action: 'trigger',
       };
 
-      const goAlertResponse = await makeGoAlertRequest(`/api/v2/generic/incoming?token=${serviceId}`, {
-        method: 'POST',
-        body: JSON.stringify(alertPayload)
-      });
+      const goAlertResponse = await makeGoAlertRequest(
+        `/api/v2/generic/incoming?token=${serviceId}`,
+        {
+          method: 'POST',
+          body: JSON.stringify(alertPayload),
+        },
+      );
 
       // Log the alert creation
-      await logAlertOperation(req.user.id, 'create', {
-        id: goAlertResponse.id || goAlertResponse.alertId,
-        sourceTicketId: ticketId,
-        scheduleId: serviceId
-      }, {
-        source,
-        priority,
-        summary,
-        userRole: req.user.role,
-        ...metadata
-      });
+      await logAlertOperation(
+        req.user.id,
+        'create',
+        {
+          id: goAlertResponse.id || goAlertResponse.alertId,
+          sourceTicketId: ticketId,
+          scheduleId: serviceId,
+        },
+        {
+          source,
+          priority,
+          summary,
+          userRole: req.user.role,
+          ...metadata,
+        },
+      );
 
       res.json({
         success: true,
@@ -202,149 +225,189 @@ router.post('/create',
           ticketId,
           status: 'triggered',
           createdAt: new Date().toISOString(),
-          createdBy: req.user.id
+          createdBy: req.user.id,
         },
         goAlertResponse,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Alert creation failed:', error);
       res.status(500).json({
         success: false,
         error: 'Alert creation failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
  * Acknowledge an alert by ID
  * Aligns with Pulse UI calling `/api/v2/alerts/:alertId/acknowledge`
  */
-router.post('/:alertId/acknowledge',
+router.post(
+  '/:alertId/acknowledge',
   authenticateJWT,
   checkPermissions(['alerts:acknowledge']),
-  [
-    param('alertId').isString().withMessage('Alert ID required')
-  ],
+  [param('alertId').isString().withMessage('Alert ID required')],
   audit('alert.acknowledge'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
+        return res
+          .status(400)
+          .json({ success: false, error: 'Validation failed', details: errors.array() });
       }
       const { alertId } = req.params;
-      const response = await makeGoAlertRequest(`/api/v2/alerts/${alertId}/acknowledge`, { method: 'POST' });
-      await logAlertOperation(req.user.id, 'acknowledge', { id: alertId }, { userRole: req.user.role });
+      const response = await makeGoAlertRequest(`/api/v2/alerts/${alertId}/acknowledge`, {
+        method: 'POST',
+      });
+      await logAlertOperation(
+        req.user.id,
+        'acknowledge',
+        { id: alertId },
+        { userRole: req.user.role },
+      );
       res.json({ success: true, result: response, timestamp: new Date().toISOString() });
     } catch (error) {
       logger.error('Alert acknowledge failed:', error);
-      res.status(500).json({ success: false, error: 'Alert acknowledge failed', details: error.message });
+      res
+        .status(500)
+        .json({ success: false, error: 'Alert acknowledge failed', details: error.message });
     }
-  }
+  },
 );
 
 /**
  * Resolve/close an alert by ID
  * Aligns with Pulse UI calling `/api/v2/alerts/:alertId/resolve`
  */
-router.post('/:alertId/resolve',
+router.post(
+  '/:alertId/resolve',
   authenticateJWT,
   checkPermissions(['alerts:resolve']),
-  [
-    param('alertId').isString().withMessage('Alert ID required')
-  ],
+  [param('alertId').isString().withMessage('Alert ID required')],
   audit('alert.resolve'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
+        return res
+          .status(400)
+          .json({ success: false, error: 'Validation failed', details: errors.array() });
       }
       const { alertId } = req.params;
-      const response = await makeGoAlertRequest(`/api/v2/alerts/${alertId}/close`, { method: 'POST' });
+      const response = await makeGoAlertRequest(`/api/v2/alerts/${alertId}/close`, {
+        method: 'POST',
+      });
       await logAlertOperation(req.user.id, 'resolve', { id: alertId }, { userRole: req.user.role });
       res.json({ success: true, result: response, timestamp: new Date().toISOString() });
     } catch (error) {
       logger.error('Alert resolve failed:', error);
-      res.status(500).json({ success: false, error: 'Alert resolve failed', details: error.message });
+      res
+        .status(500)
+        .json({ success: false, error: 'Alert resolve failed', details: error.message });
     }
-  }
+  },
 );
 
 /**
  * Escalate an alert by ID (best-effort)
  * Creates an escalation action via GoAlert if supported, else triggers a follow-up alert via generic incoming
  */
-router.post('/:alertId/escalate',
+router.post(
+  '/:alertId/escalate',
   authenticateJWT,
   checkPermissions(['alerts:escalate']),
   [
     param('alertId').isString().withMessage('Alert ID required'),
-    body('reason').optional().isString().isLength({ max: 2000 })
+    body('reason').optional().isString().isLength({ max: 2000 }),
   ],
   audit('alert.escalate'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
+        return res
+          .status(400)
+          .json({ success: false, error: 'Validation failed', details: errors.array() });
       }
       const { alertId } = req.params;
       const { reason = 'Manual escalation from Nova' } = req.body;
 
       // Attempt native GoAlert escalate endpoint if available
-      let escalated = false;
       try {
         // Not all GoAlert versions support a dedicated escalate endpoint
-        const resp = await makeGoAlertRequest(`/api/v2/alerts/${alertId}/escalate`, { method: 'POST' });
-        escalated = true;
-        await logAlertOperation(req.user.id, 'escalate', { id: alertId }, { reason, userRole: req.user.role, mode: 'native' });
+        const resp = await makeGoAlertRequest(`/api/v2/alerts/${alertId}/escalate`, {
+          method: 'POST',
+        });
+        await logAlertOperation(
+          req.user.id,
+          'escalate',
+          { id: alertId },
+          { reason, userRole: req.user.role, mode: 'native' },
+        );
         return res.json({ success: true, result: resp, timestamp: new Date().toISOString() });
-      } catch (_) {
-        // Fallback path below
+      } catch {
+        // Fallback path below - native escalation not available
       }
 
       // Fallback: fetch alert details and trigger a follow-up escalation via integration key if available
       const alertData = await makeGoAlertRequest(`/api/v2/alerts/${alertId}`);
-      const serviceToken = alertData?.service?.integration_keys?.[0]?.key || alertData?.service?.integration_keys?.[0]?.token;
+      const serviceToken =
+        alertData?.service?.integration_keys?.[0]?.key ||
+        alertData?.service?.integration_keys?.[0]?.token;
       if (!serviceToken) {
-        return res.status(501).json({ success: false, error: 'Escalation not supported without service integration key' });
+        return res
+          .status(501)
+          .json({
+            success: false,
+            error: 'Escalation not supported without service integration key',
+          });
       }
       const payload = {
         summary: `🚨 ESCALATION: ${alertData.summary || 'Alert ' + alertId}`,
         details: `${reason}\nOriginal Alert: ${alertId}`,
         source: { type: 'generic', value: `${GOALERT_CONFIG.source}-escalation` },
         dedup: `nova-escalation-${alertId}`,
-        action: 'trigger'
+        action: 'trigger',
       };
-      const goAlertResponse = await makeGoAlertRequest(`/api/v2/generic/incoming?token=${serviceToken}`, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      await logAlertOperation(req.user.id, 'escalate', { id: goAlertResponse.id || goAlertResponse.alertId }, { reason, userRole: req.user.role, mode: 'followup' });
+      const goAlertResponse = await makeGoAlertRequest(
+        `/api/v2/generic/incoming?token=${serviceToken}`,
+        {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        },
+      );
+      await logAlertOperation(
+        req.user.id,
+        'escalate',
+        { id: goAlertResponse.id || goAlertResponse.alertId },
+        { reason, userRole: req.user.role, mode: 'followup' },
+      );
       res.json({ success: true, result: goAlertResponse, timestamp: new Date().toISOString() });
     } catch (error) {
       logger.error('Alert escalation failed:', error);
-      res.status(500).json({ success: false, error: 'Alert escalation failed', details: error.message });
+      res
+        .status(500)
+        .json({ success: false, error: 'Alert escalation failed', details: error.message });
     }
-  }
+  },
 );
 
 /**
  * Alert statistics for dashboard
  * Exposes `/api/v2/alerts/stats` expected by Pulse UI
  */
-router.get('/stats',
+router.get(
+  '/stats',
   authenticateJWT,
   checkPermissions(['alerts:read']),
   [
     query('startDate').optional().isISO8601(),
     query('endDate').optional().isISO8601(),
-    query('serviceIds').optional().isString()
+    query('serviceIds').optional().isString(),
   ],
   async (req, res) => {
     try {
@@ -360,23 +423,36 @@ router.get('/stats',
 
       const stats = {
         totalAlerts: alerts.length,
-        alertsByStatus: alerts.reduce((acc, a) => { acc[a.status] = (acc[a.status] || 0) + 1; return acc; }, {}),
-        alertsByPriority: alerts.reduce((acc, a) => { acc[a.severity || a.priority || 'unknown'] = (acc[a.severity || a.priority || 'unknown'] || 0) + 1; return acc; }, {}),
-        alertsByService: alerts.reduce((acc, a) => { const sid = a.service_id || a.serviceId || 'unknown'; acc[sid] = (acc[sid] || 0) + 1; return acc; }, {}),
+        alertsByStatus: alerts.reduce((acc, a) => {
+          acc[a.status] = (acc[a.status] || 0) + 1;
+          return acc;
+        }, {}),
+        alertsByPriority: alerts.reduce((acc, a) => {
+          acc[a.severity || a.priority || 'unknown'] =
+            (acc[a.severity || a.priority || 'unknown'] || 0) + 1;
+          return acc;
+        }, {}),
+        alertsByService: alerts.reduce((acc, a) => {
+          const sid = a.service_id || a.serviceId || 'unknown';
+          acc[sid] = (acc[sid] || 0) + 1;
+          return acc;
+        }, {}),
         averageResponseTime: 0,
         averageResolutionTime: 0,
         escalationRate: 0,
         period: {
           start: startDate || null,
-          end: endDate || null
-        }
+          end: endDate || null,
+        },
       };
       res.json({ success: true, stats, timestamp: new Date().toISOString() });
     } catch (error) {
       logger.error('Alert stats fetch failed:', error);
-      res.status(500).json({ success: false, error: 'Alert stats fetch failed', details: error.message });
+      res
+        .status(500)
+        .json({ success: false, error: 'Alert stats fetch failed', details: error.message });
     }
-  }
+  },
 );
 /**
  * @swagger
@@ -386,7 +462,8 @@ router.get('/stats',
  *     summary: Escalate an active incident to on-call team
  *     description: Create escalation alert for existing ticket
  */
-router.post('/escalate/:ticketId',
+router.post(
+  '/escalate/:ticketId',
   authenticateJWT,
   checkPermissions(['alerts:escalate']),
   createRateLimit(60 * 1000, 5), // 5 escalations per minute
@@ -394,7 +471,7 @@ router.post('/escalate/:ticketId',
     param('ticketId').isString().withMessage('Ticket ID required'),
     body('reason').isString().withMessage('Escalation reason required'),
     body('priority').optional().isIn(['medium', 'high', 'critical']),
-    body('serviceId').isString().withMessage('Service ID required')
+    body('serviceId').isString().withMessage('Service ID required'),
   ],
   audit('alert.escalate'),
   async (req, res) => {
@@ -404,7 +481,7 @@ router.post('/escalate/:ticketId',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -416,7 +493,7 @@ router.post('/escalate/:ticketId',
       if (!ticketQuery) {
         return res.status(404).json({
           success: false,
-          error: 'Ticket not found'
+          error: 'Ticket not found',
         });
       }
 
@@ -426,35 +503,46 @@ router.post('/escalate/:ticketId',
         details: `Ticket #${ticketId} has been escalated.\n\nReason: ${reason}\n\nOriginal Description: ${ticketQuery.description}\n\nCustomer: ${ticketQuery.requester_name || 'Unknown'}\nPriority: ${priority}`,
         source: {
           type: 'generic',
-          value: `${GOALERT_CONFIG.source}-escalation`
+          value: `${GOALERT_CONFIG.source}-escalation`,
         },
         dedup: `nova-escalation-${ticketId}`,
-        action: 'trigger'
+        action: 'trigger',
       };
 
-      const goAlertResponse = await makeGoAlertRequest(`/api/v2/generic/incoming?token=${serviceId}`, {
-        method: 'POST',
-        body: JSON.stringify(escalationPayload)
-      });
+      const goAlertResponse = await makeGoAlertRequest(
+        `/api/v2/generic/incoming?token=${serviceId}`,
+        {
+          method: 'POST',
+          body: JSON.stringify(escalationPayload),
+        },
+      );
 
       // Update ticket with escalation info
-      await db.run(`
+      await db.run(
+        `
         UPDATE tickets 
         SET escalated = 1, escalated_at = datetime('now'), escalation_reason = ?
         WHERE id = ?
-      `, [reason, ticketId]);
+      `,
+        [reason, ticketId],
+      );
 
       // Log escalation
-      await logAlertOperation(req.user.id, 'escalate', {
-        id: goAlertResponse.id || goAlertResponse.alertId,
-        sourceTicketId: ticketId,
-        scheduleId: serviceId
-      }, {
-        reason,
-        priority,
-        originalPriority: ticketQuery.priority,
-        userRole: req.user.role
-      });
+      await logAlertOperation(
+        req.user.id,
+        'escalate',
+        {
+          id: goAlertResponse.id || goAlertResponse.alertId,
+          sourceTicketId: ticketId,
+          scheduleId: serviceId,
+        },
+        {
+          reason,
+          priority,
+          originalPriority: ticketQuery.priority,
+          userRole: req.user.role,
+        },
+      );
 
       res.json({
         success: true,
@@ -465,20 +553,19 @@ router.post('/escalate/:ticketId',
           priority,
           serviceId,
           escalatedAt: new Date().toISOString(),
-          escalatedBy: req.user.id
+          escalatedBy: req.user.id,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Alert escalation failed:', error);
       res.status(500).json({
         success: false,
         error: 'Alert escalation failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -488,12 +575,11 @@ router.post('/escalate/:ticketId',
  *     tags: [Alerts]
  *     summary: Get current alert status and details
  */
-router.get('/status/:alertId',
+router.get(
+  '/status/:alertId',
   authenticateJWT,
   checkPermissions(['alerts:read']),
-  [
-    param('alertId').isString().withMessage('Alert ID required')
-  ],
+  [param('alertId').isString().withMessage('Alert ID required')],
   async (req, res) => {
     try {
       const { alertId } = req.params;
@@ -502,12 +588,15 @@ router.get('/status/:alertId',
       const goAlertData = await makeGoAlertRequest(`/api/v2/alerts/${alertId}`);
 
       // Get Nova audit data
-      const auditData = await db.get(`
+      const auditData = await db.get(
+        `
         SELECT * FROM alert_audit_log 
         WHERE alert_id = ? 
         ORDER BY created_at DESC 
         LIMIT 1
-      `, [alertId]);
+      `,
+        [alertId],
+      );
 
       res.json({
         success: true,
@@ -515,20 +604,19 @@ router.get('/status/:alertId',
           ...goAlertData,
           novaMetadata: auditData ? JSON.parse(auditData.metadata || '{}') : {},
           sourceTicketId: auditData?.source_ticket_id,
-          createdBy: auditData?.user_id
+          createdBy: auditData?.user_id,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Alert status fetch failed:', error);
       res.status(500).json({
         success: false,
         error: 'Alert status fetch failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -543,13 +631,11 @@ router.get('/status/:alertId',
  *     summary: List viewable on-call schedules
  *     description: Get schedules based on user role and permissions
  */
-router.get('/schedules',
+router.get(
+  '/schedules',
   authenticateJWT,
   checkPermissions(['alerts:read']),
-  [
-    query('team').optional().isString(),
-    query('active').optional().isBoolean()
-  ],
+  [query('team').optional().isString(), query('active').optional().isBoolean()],
   async (req, res) => {
     try {
       const { team, active } = req.query;
@@ -568,21 +654,22 @@ router.get('/schedules',
       // Apply role-based filtering
       if (req.user.role === 'technician') {
         // Technicians can only see schedules they're assigned to
-        filteredSchedules = filteredSchedules.filter(schedule => 
-          schedule.users?.some(user => user.id === req.user.id) ||
-          schedule.participants?.some(participant => participant.user_id === req.user.id)
+        filteredSchedules = filteredSchedules.filter(
+          (schedule) =>
+            schedule.users?.some((user) => user.id === req.user.id) ||
+            schedule.participants?.some((participant) => participant.user_id === req.user.id),
         );
       }
 
       if (active !== undefined) {
-        filteredSchedules = filteredSchedules.filter(schedule => 
-          active ? schedule.enabled : !schedule.enabled
+        filteredSchedules = filteredSchedules.filter((schedule) =>
+          active ? schedule.enabled : !schedule.enabled,
         );
       }
 
       res.json({
         success: true,
-        schedules: filteredSchedules.map(schedule => ({
+        schedules: filteredSchedules.map((schedule) => ({
           id: schedule.id,
           name: schedule.name,
           description: schedule.description,
@@ -590,20 +677,19 @@ router.get('/schedules',
           enabled: schedule.enabled,
           currentOnCall: schedule.current_on_call || [],
           nextOnCall: schedule.next_on_call || [],
-          userCanEdit: req.user.role === 'pulse_lead' || req.user.role === 'core_admin'
+          userCanEdit: req.user.role === 'pulse_lead' || req.user.role === 'core_admin',
         })),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Schedules fetch failed:', error);
       res.status(500).json({
         success: false,
         error: 'Schedules fetch failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -613,12 +699,11 @@ router.get('/schedules',
  *     tags: [Alerts - Schedules]
  *     summary: Get detailed schedule information
  */
-router.get('/schedules/:scheduleId',
+router.get(
+  '/schedules/:scheduleId',
   authenticateJWT,
   checkPermissions(['alerts:read']),
-  [
-    param('scheduleId').isString().withMessage('Schedule ID required')
-  ],
+  [param('scheduleId').isString().withMessage('Schedule ID required')],
   async (req, res) => {
     try {
       const { scheduleId } = req.params;
@@ -626,7 +711,7 @@ router.get('/schedules/:scheduleId',
       const [scheduleData, rulesData, overridesData] = await Promise.all([
         makeGoAlertRequest(`/api/v2/schedules/${scheduleId}`),
         makeGoAlertRequest(`/api/v2/schedules/${scheduleId}/rules`),
-        makeGoAlertRequest(`/api/v2/schedules/${scheduleId}/overrides`)
+        makeGoAlertRequest(`/api/v2/schedules/${scheduleId}/overrides`),
       ]);
 
       res.json({
@@ -635,20 +720,19 @@ router.get('/schedules/:scheduleId',
           ...scheduleData,
           rules: rulesData.rules || rulesData,
           overrides: overridesData.overrides || overridesData,
-          userCanEdit: req.user.role === 'pulse_lead' || req.user.role === 'core_admin'
+          userCanEdit: req.user.role === 'pulse_lead' || req.user.role === 'core_admin',
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Schedule details fetch failed:', error);
       res.status(500).json({
         success: false,
         error: 'Schedule details fetch failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -658,12 +742,13 @@ router.get('/schedules/:scheduleId',
  *     tags: [Alerts - Schedules]
  *     summary: Trigger manual rotation for schedule
  */
-router.post('/rotate/:scheduleId',
+router.post(
+  '/rotate/:scheduleId',
   authenticateJWT,
   checkPermissions(['alerts:manage']),
   [
     param('scheduleId').isString().withMessage('Schedule ID required'),
-    body('reason').optional().isString()
+    body('reason').optional().isString(),
   ],
   audit('alert.rotate'),
   async (req, res) => {
@@ -676,21 +761,29 @@ router.post('/rotate/:scheduleId',
         start: new Date().toISOString(),
         end: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
         user_id: req.user.goalert_user_id || process.env.GOALERT_DEFAULT_USER_ID || undefined,
-        reason: reason || 'Manual rotation triggered from Nova'
+        reason: reason || 'Manual rotation triggered from Nova',
       };
 
-      const rotationResponse = await makeGoAlertRequest(`/api/v2/schedules/${scheduleId}/overrides`, {
-        method: 'POST',
-        body: JSON.stringify(overridePayload)
-      });
+      const rotationResponse = await makeGoAlertRequest(
+        `/api/v2/schedules/${scheduleId}/overrides`,
+        {
+          method: 'POST',
+          body: JSON.stringify(overridePayload),
+        },
+      );
 
       // Log the rotation
-      await logAlertOperation(req.user.id, 'rotate', {
-        scheduleId
-      }, {
-        reason,
-        userRole: req.user.role
-      });
+      await logAlertOperation(
+        req.user.id,
+        'rotate',
+        {
+          scheduleId,
+        },
+        {
+          reason,
+          userRole: req.user.role,
+        },
+      );
 
       res.json({
         success: true,
@@ -699,20 +792,19 @@ router.post('/rotate/:scheduleId',
           overrideId: rotationResponse.id,
           reason,
           rotatedAt: new Date().toISOString(),
-          rotatedBy: req.user.id
+          rotatedBy: req.user.id,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Schedule rotation failed:', error);
       res.status(500).json({
         success: false,
         error: 'Schedule rotation failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -726,37 +818,32 @@ router.post('/rotate/:scheduleId',
  *     tags: [Alerts - Services]
  *     summary: List available alert services
  */
-router.get('/services',
-  authenticateJWT,
-  checkPermissions(['alerts:read']),
-  async (req, res) => {
-    try {
-      const servicesData = await makeGoAlertRequest('/api/v2/services');
+router.get('/services', authenticateJWT, checkPermissions(['alerts:read']), async (req, res) => {
+  try {
+    const servicesData = await makeGoAlertRequest('/api/v2/services');
 
-      res.json({
-        success: true,
-        services: (servicesData.services || servicesData).map(service => ({
-          id: service.id,
-          name: service.name,
-          description: service.description,
-          escalationPolicyId: service.escalation_policy_id,
-          escalationPolicy: service.escalation_policy,
-          integrationCount: service.integration_keys?.length || 0,
-          userCanEdit: req.user.role === 'pulse_lead' || req.user.role === 'core_admin'
-        })),
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      logger.error('Services fetch failed:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Services fetch failed',
-        details: error.message
-      });
-    }
+    res.json({
+      success: true,
+      services: (servicesData.services || servicesData).map((service) => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        escalationPolicyId: service.escalation_policy_id,
+        escalationPolicy: service.escalation_policy,
+        integrationCount: service.integration_keys?.length || 0,
+        userCanEdit: req.user.role === 'pulse_lead' || req.user.role === 'core_admin',
+      })),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Services fetch failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Services fetch failed',
+      details: error.message,
+    });
   }
-);
+});
 
 /**
  * @swagger
@@ -765,7 +852,8 @@ router.get('/services',
  *     tags: [Alerts - Escalation]
  *     summary: List escalation policies
  */
-router.get('/escalation-policies',
+router.get(
+  '/escalation-policies',
   authenticateJWT,
   checkPermissions(['alerts:read']),
   async (req, res) => {
@@ -774,80 +862,83 @@ router.get('/escalation-policies',
 
       res.json({
         success: true,
-        escalationPolicies: (policiesData.escalation_policies || policiesData).map(policy => ({
+        escalationPolicies: (policiesData.escalation_policies || policiesData).map((policy) => ({
           id: policy.id,
           name: policy.name,
           description: policy.description,
           stepCount: policy.steps?.length || 0,
-          steps: policy.steps?.map(step => ({
-            id: step.id,
-            stepNumber: step.step_number,
-            delayMinutes: step.delay_minutes,
-            targets: step.targets || []
-          })) || [],
-          userCanEdit: req.user.role === 'pulse_lead' || req.user.role === 'core_admin'
+          steps:
+            policy.steps?.map((step) => ({
+              id: step.id,
+              stepNumber: step.step_number,
+              delayMinutes: step.delay_minutes,
+              targets: step.targets || [],
+            })) || [],
+          userCanEdit: req.user.role === 'pulse_lead' || req.user.role === 'core_admin',
         })),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Escalation policies fetch failed:', error);
       res.status(500).json({
         success: false,
         error: 'Escalation policies fetch failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // Create/update/delete escalation policies for Core UI parity
-router.post('/escalation-policies',
+router.post(
+  '/escalation-policies',
   authenticateJWT,
   checkPermissions(['alerts:manage']),
   [
     body('name').isString().isLength({ min: 1, max: 255 }),
     body('description').optional().isString(),
     body('repeat').optional().isInt({ min: 0 }),
-    body('steps').optional().isArray()
+    body('steps').optional().isArray(),
   ],
   async (req, res) => {
     try {
       const policy = await makeGoAlertRequest('/api/v2/escalation-policies', {
         method: 'POST',
-        body: JSON.stringify(req.body)
+        body: JSON.stringify(req.body),
       });
       res.status(201).json({ success: true, policy, timestamp: new Date().toISOString() });
     } catch (error) {
       logger.error('Escalation policy create failed:', error);
       res.status(500).json({ success: false, error: 'Create failed', details: error.message });
     }
-  }
+  },
 );
 
-router.put('/escalation-policies/:id',
+router.put(
+  '/escalation-policies/:id',
   authenticateJWT,
   checkPermissions(['alerts:manage']),
-  [ param('id').isString() ],
+  [param('id').isString()],
   async (req, res) => {
     try {
       const { id } = req.params;
       const policy = await makeGoAlertRequest(`/api/v2/escalation-policies/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(req.body)
+        body: JSON.stringify(req.body),
       });
       res.json({ success: true, policy, timestamp: new Date().toISOString() });
     } catch (error) {
       logger.error('Escalation policy update failed:', error);
       res.status(500).json({ success: false, error: 'Update failed', details: error.message });
     }
-  }
+  },
 );
 
-router.delete('/escalation-policies/:id',
+router.delete(
+  '/escalation-policies/:id',
   authenticateJWT,
   checkPermissions(['alerts:manage']),
-  [ param('id').isString() ],
+  [param('id').isString()],
   async (req, res) => {
     try {
       const { id } = req.params;
@@ -857,7 +948,7 @@ router.delete('/escalation-policies/:id',
       logger.error('Escalation policy delete failed:', error);
       res.status(500).json({ success: false, error: 'Delete failed', details: error.message });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -871,14 +962,15 @@ router.delete('/escalation-policies/:id',
  *     tags: [Alerts - Analytics]
  *     summary: Get alert history and analytics
  */
-router.get('/history',
+router.get(
+  '/history',
   authenticateJWT,
   checkPermissions(['alerts:read']),
   [
     query('startDate').optional().isISO8601(),
     query('endDate').optional().isISO8601(),
     query('serviceId').optional().isString(),
-    query('limit').optional().isInt({ min: 1, max: 100 })
+    query('limit').optional().isInt({ min: 1, max: 100 }),
   ],
   async (req, res) => {
     try {
@@ -894,26 +986,31 @@ router.get('/history',
       const alertsData = await makeGoAlertRequest(`/api/v2/alerts?${params.toString()}`);
 
       // Get Nova audit data for these alerts
-      const alertIds = (alertsData.alerts || alertsData).map(alert => alert.id);
+      const alertIds = (alertsData.alerts || alertsData).map((alert) => alert.id);
       if (alertIds.length > 0) {
-        const auditData = await db.all(`
+        const auditData = await db.all(
+          `
           SELECT alert_id, user_id, operation, source_ticket_id, created_at, metadata
           FROM alert_audit_log 
           WHERE alert_id IN (${alertIds.map(() => '?').join(',')})
           ORDER BY created_at DESC
-        `, alertIds);
+        `,
+          alertIds,
+        );
 
         // Merge Nova metadata with GoAlert data
-        const enrichedAlerts = (alertsData.alerts || alertsData).map(alert => {
-          const novaData = auditData.find(audit => audit.alert_id === alert.id);
+        const enrichedAlerts = (alertsData.alerts || alertsData).map((alert) => {
+          const novaData = auditData.find((audit) => audit.alert_id === alert.id);
           return {
             ...alert,
-            novaMetadata: novaData ? {
-              sourceTicketId: novaData.source_ticket_id,
-              createdBy: novaData.user_id,
-              operation: novaData.operation,
-              metadata: JSON.parse(novaData.metadata || '{}')
-            } : null
+            novaMetadata: novaData
+              ? {
+                  sourceTicketId: novaData.source_ticket_id,
+                  createdBy: novaData.user_id,
+                  operation: novaData.operation,
+                  metadata: JSON.parse(novaData.metadata || '{}'),
+                }
+              : null,
           };
         });
 
@@ -921,26 +1018,25 @@ router.get('/history',
           success: true,
           alerts: enrichedAlerts,
           total: alertsData.total || enrichedAlerts.length,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       } else {
         res.json({
           success: true,
           alerts: [],
           total: 0,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
-
     } catch (error) {
       logger.error('Alert history fetch failed:', error);
       res.status(500).json({
         success: false,
         error: 'Alert history fetch failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -954,45 +1050,40 @@ router.get('/history',
  *     tags: [Alerts - System]
  *     summary: Check GoAlert integration health
  */
-router.get('/health',
-  authenticateJWT,
-  checkPermissions(['alerts:read']),
-  async (req, res) => {
-    try {
-      const healthData = await makeGoAlertRequest('/api/v2/system/limits');
-      
-      res.json({
-        success: true,
-        status: 'healthy',
-        goalert: {
-          connected: true,
-          version: healthData.version || 'unknown',
-          limits: healthData
-        },
-        proxy: {
-          enabled: GOALERT_CONFIG.enabled,
-          source: GOALERT_CONFIG.source
-        },
-        timestamp: new Date().toISOString()
-      });
+router.get('/health', authenticateJWT, checkPermissions(['alerts:read']), async (req, res) => {
+  try {
+    const healthData = await makeGoAlertRequest('/api/v2/system/limits');
 
-    } catch (error) {
-      logger.error('GoAlert health check failed:', error);
-      res.json({
-        success: false,
-        status: 'unhealthy',
-        goalert: {
-          connected: false,
-          error: error.message
-        },
-        proxy: {
-          enabled: GOALERT_CONFIG.enabled,
-          source: GOALERT_CONFIG.source
-        },
-        timestamp: new Date().toISOString()
-      });
-    }
+    res.json({
+      success: true,
+      status: 'healthy',
+      goalert: {
+        connected: true,
+        version: healthData.version || 'unknown',
+        limits: healthData,
+      },
+      proxy: {
+        enabled: GOALERT_CONFIG.enabled,
+        source: GOALERT_CONFIG.source,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('GoAlert health check failed:', error);
+    res.json({
+      success: false,
+      status: 'unhealthy',
+      goalert: {
+        connected: false,
+        error: error.message,
+      },
+      proxy: {
+        enabled: GOALERT_CONFIG.enabled,
+        source: GOALERT_CONFIG.source,
+      },
+      timestamp: new Date().toISOString(),
+    });
   }
-);
+});
 
 export default router;

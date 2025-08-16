@@ -77,47 +77,47 @@ export interface SetupData {
     slackEnabled?: boolean;
     slackToken?: string;
     slackChannel?: string;
-    
+
     // Teams Integration
     teamsEnabled?: boolean;
     teamsWebhook?: string;
-    
+
     // Webhooks
     webhooksEnabled?: boolean;
     webhookUrl?: string;
     webhookSecret?: string;
-    
+
     // Search and Analytics
     elasticsearchEnabled?: boolean;
     elasticsearchUrl?: string;
     elasticsearchIndex?: string;
-    
+
     analyticsEnabled?: boolean;
     analyticsProvider?: string;
     googleAnalyticsId?: string;
-    
+
     // Monitoring
     sentryEnabled?: boolean;
     sentryDsn?: string;
-    
+
     // File Storage
     storageProvider?: 'local' | 's3';
     s3Bucket?: string;
     s3Region?: string;
     s3AccessKey?: string;
     s3SecretKey?: string;
-    
+
     // Knowledge Base and AI
     knowledgeBaseEnabled?: boolean;
     aiAssistEnabled?: boolean;
     openaiApiKey?: string;
-    
+
     // Nova Sentinel Monitoring
     sentinelEnabled?: boolean;
     sentinelUrl?: string;
     sentinelApiKey?: string;
     sentinelWebhookSecret?: string;
-    
+
     // GoAlert Alerting
     goalertEnabled?: boolean;
     goalertUrl?: string;
@@ -132,27 +132,27 @@ export interface SetupData {
     companyLogo?: File | null;
     companyName?: string;
     tagline?: string;
-    
+
     // Colors
     primaryColor?: string;
     secondaryColor?: string;
     accentColor?: string;
-    
+
     // Theme Options
     darkModeEnabled?: boolean;
     customThemeEnabled?: boolean;
     customCss?: string;
-    
+
     // Portal Customization
     portalTitle?: string;
     portalSubtitle?: string;
     welcomeMessage?: string;
-    
+
     // Footer and Links
     companyWebsite?: string;
     privacyPolicyUrl?: string;
     termsOfServiceUrl?: string;
-    
+
     // Advanced
     customFavicon?: File | null;
     customFonts?: boolean;
@@ -192,7 +192,7 @@ function setupReducer(state: SetupState, action: SetupAction): SetupState {
   switch (action.type) {
     case 'SET_CURRENT_STEP':
       return { ...state, currentStep: action.payload };
-    
+
     case 'UPDATE_SETUP_DATA':
       return {
         ...state,
@@ -201,13 +201,13 @@ function setupReducer(state: SetupState, action: SetupAction): SetupState {
           ...action.payload,
         },
       };
-    
+
     case 'COMPLETE_STEP':
       return {
         ...state,
         completedSteps: new Set([...state.completedSteps, action.payload]),
       };
-    
+
     case 'SET_ERROR':
       return {
         ...state,
@@ -216,21 +216,21 @@ function setupReducer(state: SetupState, action: SetupAction): SetupState {
           [action.payload.key]: action.payload.message,
         },
       };
-    
+
     case 'CLEAR_ERROR':
       const newErrors = { ...state.errors };
       delete newErrors[action.payload];
       return { ...state, errors: newErrors };
-    
+
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
-    
+
     case 'SET_TEST_MODE':
       return { ...state, isTestMode: action.payload };
-    
+
     case 'RESET_SETUP':
       return initialState;
-    
+
     default:
       return state;
   }
@@ -288,9 +288,12 @@ export const SetupProvider: React.FC<SetupProviderProps> = ({ children }) => {
     dispatch({ type: 'COMPLETE_STEP', payload: stepId });
   }, []);
 
-  const isStepCompleted = useCallback((stepId: string) => {
-    return state.completedSteps.has(stepId);
-  }, [state.completedSteps]);
+  const isStepCompleted = useCallback(
+    (stepId: string) => {
+      return state.completedSteps.has(stepId);
+    },
+    [state.completedSteps],
+  );
 
   const setError = useCallback((key: string, message: string) => {
     dispatch({ type: 'SET_ERROR', payload: { key, message } });
@@ -312,103 +315,111 @@ export const SetupProvider: React.FC<SetupProviderProps> = ({ children }) => {
     dispatch({ type: 'RESET_SETUP' });
   }, []);
 
-  const validateStep = useCallback(async (stepId: string): Promise<boolean> => {
-    // Step-specific validation logic
-    switch (stepId) {
-      case 'organization':
-        return !!(state.setupData.organization?.name && state.setupData.organization?.domain);
-      
-      case 'admin':
-        return !!(
-          state.setupData.admin?.email && 
-          state.setupData.admin?.password && 
-          state.setupData.admin?.firstName && 
-          state.setupData.admin?.lastName
-        );
-      
-      case 'database':
-        if (state.setupData.database?.type === 'sqlite') {
-          return !!(state.setupData.database?.path);
-        }
-        return !!(
-          state.setupData.database?.host && 
-          state.setupData.database?.database && 
-          state.setupData.database?.username
-        );
-      
-      case 'authentication':
-        // Optional step - always valid
-        return true;
-      
-      case 'email':
-        if (state.setupData.email?.provider === 'console') return true;
-        
-        // For other providers, require from email and name
-        if (!state.setupData.email?.fromEmail || !state.setupData.email?.fromName) {
-          return false;
-        }
-        
-        // Provider-specific validation
-        if (state.setupData.email?.provider === 'smtp') {
-          return !!(state.setupData.email?.host && state.setupData.email?.port);
-        }
-        
-        if (state.setupData.email?.provider === 'sendgrid' || state.setupData.email?.provider === 'ses') {
-          return !!(state.setupData.email?.apiKey);
-        }
-        
-        return true;
-      
-      case 'services':
-        // Validate S3 configuration if selected
-        if (state.setupData.services?.storageProvider === 's3') {
+  const validateStep = useCallback(
+    async (stepId: string): Promise<boolean> => {
+      // Step-specific validation logic
+      switch (stepId) {
+        case 'organization':
+          return !!(state.setupData.organization?.name && state.setupData.organization?.domain);
+
+        case 'admin':
           return !!(
-            state.setupData.services?.s3Bucket &&
-            state.setupData.services?.s3AccessKey &&
-            state.setupData.services?.s3SecretKey
+            state.setupData.admin?.email &&
+            state.setupData.admin?.password &&
+            state.setupData.admin?.firstName &&
+            state.setupData.admin?.lastName
           );
-        }
-        
-        // Validate Slack if enabled
-        if (state.setupData.services?.slackEnabled) {
-          return !!(state.setupData.services?.slackToken);
-        }
-        
-        // Validate Teams if enabled
-        if (state.setupData.services?.teamsEnabled) {
-          return !!(state.setupData.services?.teamsWebhook);
-        }
-        
-        // Validate Elasticsearch if enabled
-        if (state.setupData.services?.elasticsearchEnabled) {
-          return !!(state.setupData.services?.elasticsearchUrl);
-        }
-        
-        // Validate AI assist if enabled
-        if (state.setupData.services?.aiAssistEnabled) {
-          return !!(state.setupData.services?.openaiApiKey);
-        }
-        
-        // Validate Sentinel if enabled
-        if (state.setupData.services?.sentinelEnabled) {
-          return !!(state.setupData.services?.sentinelUrl);
-        }
-        
-        // Validate GoAlert if enabled
-        if (state.setupData.services?.goalertEnabled) {
-          return !!(state.setupData.services?.goalertUrl && state.setupData.services?.goalertApiKey);
-        }
-        
-        return true;
-      
-      case 'branding':
-        // Company name is required
-        return !!(state.setupData.branding?.companyName?.trim());
-      
-      default:
-        return true;
-    }
-  }, [state.setupData]);
+
+        case 'database':
+          if (state.setupData.database?.type === 'sqlite') {
+            return !!state.setupData.database?.path;
+          }
+          return !!(
+            state.setupData.database?.host &&
+            state.setupData.database?.database &&
+            state.setupData.database?.username
+          );
+
+        case 'authentication':
+          // Optional step - always valid
+          return true;
+
+        case 'email':
+          if (state.setupData.email?.provider === 'console') return true;
+
+          // For other providers, require from email and name
+          if (!state.setupData.email?.fromEmail || !state.setupData.email?.fromName) {
+            return false;
+          }
+
+          // Provider-specific validation
+          if (state.setupData.email?.provider === 'smtp') {
+            return !!(state.setupData.email?.host && state.setupData.email?.port);
+          }
+
+          if (
+            state.setupData.email?.provider === 'sendgrid' ||
+            state.setupData.email?.provider === 'ses'
+          ) {
+            return !!state.setupData.email?.apiKey;
+          }
+
+          return true;
+
+        case 'services':
+          // Validate S3 configuration if selected
+          if (state.setupData.services?.storageProvider === 's3') {
+            return !!(
+              state.setupData.services?.s3Bucket &&
+              state.setupData.services?.s3AccessKey &&
+              state.setupData.services?.s3SecretKey
+            );
+          }
+
+          // Validate Slack if enabled
+          if (state.setupData.services?.slackEnabled) {
+            return !!state.setupData.services?.slackToken;
+          }
+
+          // Validate Teams if enabled
+          if (state.setupData.services?.teamsEnabled) {
+            return !!state.setupData.services?.teamsWebhook;
+          }
+
+          // Validate Elasticsearch if enabled
+          if (state.setupData.services?.elasticsearchEnabled) {
+            return !!state.setupData.services?.elasticsearchUrl;
+          }
+
+          // Validate AI assist if enabled
+          if (state.setupData.services?.aiAssistEnabled) {
+            return !!state.setupData.services?.openaiApiKey;
+          }
+
+          // Validate Sentinel if enabled
+          if (state.setupData.services?.sentinelEnabled) {
+            return !!state.setupData.services?.sentinelUrl;
+          }
+
+          // Validate GoAlert if enabled
+          if (state.setupData.services?.goalertEnabled) {
+            return !!(
+              state.setupData.services?.goalertUrl && state.setupData.services?.goalertApiKey
+            );
+          }
+
+          return true;
+
+        case 'branding':
+          // Company name is required
+          return !!state.setupData.branding?.companyName?.trim();
+
+        default:
+          return true;
+      }
+    },
+    [state.setupData],
+  );
 
   const saveProgress = useCallback(async () => {
     try {
@@ -429,14 +440,14 @@ export const SetupProvider: React.FC<SetupProviderProps> = ({ children }) => {
       const savedProgress = localStorage.getItem('nova-setup-progress');
       if (savedProgress) {
         const progressData = JSON.parse(savedProgress);
-        
+
         // Check if progress is recent (within 24 hours)
         const isRecent = Date.now() - progressData.timestamp < 24 * 60 * 60 * 1000;
-        
+
         if (isRecent) {
           dispatch({ type: 'SET_CURRENT_STEP', payload: progressData.currentStep });
           dispatch({ type: 'UPDATE_SETUP_DATA', payload: progressData.setupData });
-          
+
           progressData.completedSteps.forEach((stepId: string) => {
             dispatch({ type: 'COMPLETE_STEP', payload: stepId });
           });
@@ -473,9 +484,5 @@ export const SetupProvider: React.FC<SetupProviderProps> = ({ children }) => {
     loadProgress,
   };
 
-  return (
-    <SetupContext.Provider value={contextValue}>
-      {children}
-    </SetupContext.Provider>
-  );
+  return <SetupContext.Provider value={contextValue}>{children}</SetupContext.Provider>;
 };

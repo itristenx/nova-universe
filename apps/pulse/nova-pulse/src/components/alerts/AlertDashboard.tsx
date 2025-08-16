@@ -12,7 +12,7 @@ import {
   ArrowPathIcon,
   PlusIcon,
   AdjustmentsHorizontalIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { Alert, Schedule, AlertStats, AlertFilters, AlertDashboardState } from '../../types/alerts';
 import AlertCard from './AlertCard';
@@ -39,15 +39,15 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
       escalationRate: 0,
       period: {
         start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        end: new Date().toISOString()
-      }
+        end: new Date().toISOString(),
+      },
     },
     recentAlerts: [],
     activeSchedules: [],
     loading: false,
     error: undefined,
     refreshInterval: 30000,
-    lastRefresh: new Date().toISOString()
+    lastRefresh: new Date().toISOString(),
   });
 
   const [filters, setFilters] = useState<AlertFilters>({
@@ -57,7 +57,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
     assignedTo: [],
     createdAfter: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
     tags: [],
-    source: []
+    source: [],
   });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -72,18 +72,18 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
       const params = new URLSearchParams({
         startDate: filters.createdAfter || dashboardState.stats.period.start,
         endDate: filters.createdBefore || dashboardState.stats.period.end,
-        ...(filters.serviceId?.length && { serviceIds: filters.serviceId.join(',') })
+        ...(filters.serviceId?.length && { serviceIds: filters.serviceId.join(',') }),
       });
 
       const response = await fetch(`/api/v2/alerts/stats?${params}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
       if (!response.ok) throw new Error('Failed to fetch alert stats');
       const data = await response.json();
       return data.stats;
     },
-    refetchInterval: dashboardState.refreshInterval
+    refetchInterval: dashboardState.refreshInterval,
   });
 
   // Fetch recent alerts
@@ -97,18 +97,18 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
         ...(filters.serviceId?.length && { serviceId: filters.serviceId.join(',') }),
         ...(filters.createdAfter && { startDate: filters.createdAfter }),
         ...(filters.createdBefore && { endDate: filters.createdBefore }),
-        ...(searchQuery && { search: searchQuery })
+        ...(searchQuery && { search: searchQuery }),
       });
 
       const response = await fetch(`/api/v2/alerts/history?${params}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
       if (!response.ok) throw new Error('Failed to fetch alerts');
       const data = await response.json();
       return data.alerts;
     },
-    refetchInterval: dashboardState.refreshInterval
+    refetchInterval: dashboardState.refreshInterval,
   });
 
   // Fetch active schedules
@@ -116,14 +116,14 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
     queryKey: ['active-schedules'],
     queryFn: async (): Promise<Schedule[]> => {
       const response = await fetch('/api/v2/alerts/schedules?active=true', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
       if (!response.ok) throw new Error('Failed to fetch schedules');
       const data = await response.json();
       return data.schedules;
     },
-    refetchInterval: dashboardState.refreshInterval
+    refetchInterval: dashboardState.refreshInterval,
   });
 
   // Acknowledge alert mutation
@@ -132,9 +132,9 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
       const response = await fetch(`/api/v2/alerts/${alertId}/acknowledge`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) throw new Error('Failed to acknowledge alert');
@@ -143,7 +143,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recent-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['alert-stats'] });
-    }
+    },
   });
 
   // Resolve alert mutation
@@ -152,9 +152,9 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
       const response = await fetch(`/api/v2/alerts/${alertId}/resolve`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) throw new Error('Failed to resolve alert');
@@ -163,7 +163,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recent-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['alert-stats'] });
-    }
+    },
   });
 
   // Escalate alert mutation
@@ -172,10 +172,10 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
       const response = await fetch(`/api/v2/alerts/${alertId}/escalate`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reason })
+        body: JSON.stringify({ reason }),
       });
 
       if (!response.ok) throw new Error('Failed to escalate alert');
@@ -184,7 +184,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recent-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['alert-stats'] });
-    }
+    },
   });
 
   // Handle alert actions
@@ -204,10 +204,8 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
   };
 
   const handleSelectAlert = (alertId: string, selected: boolean) => {
-    setSelectedAlerts(prev => 
-      selected 
-        ? [...prev, alertId]
-        : prev.filter(id => id !== alertId)
+    setSelectedAlerts((prev) =>
+      selected ? [...prev, alertId] : prev.filter((id) => id !== alertId),
     );
   };
 
@@ -221,14 +219,14 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
     queryClient.invalidateQueries({ queryKey: ['alert-stats'] });
     queryClient.invalidateQueries({ queryKey: ['recent-alerts'] });
     queryClient.invalidateQueries({ queryKey: ['active-schedules'] });
-    setDashboardState(prev => ({ ...prev, lastRefresh: new Date().toISOString() }));
+    setDashboardState((prev) => ({ ...prev, lastRefresh: new Date().toISOString() }));
   };
 
   useEffect(() => {
-    const handler = () => refreshData()
-    window.addEventListener('alerts:refresh', handler)
-    return () => window.removeEventListener('alerts:refresh', handler)
-  }, [])
+    const handler = () => refreshData();
+    window.addEventListener('alerts:refresh', handler);
+    return () => window.removeEventListener('alerts:refresh', handler);
+  }, []);
 
   const isLoading = statsLoading || alertsLoading || schedulesLoading;
 
@@ -238,43 +236,41 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Alert Dashboard</h1>
-          <p className="text-gray-600 mt-1">
-            Monitor and manage alerts across your infrastructure
-          </p>
+          <p className="mt-1 text-gray-600">Monitor and manage alerts across your infrastructure</p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={refreshData}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="rounded-lg p-2 text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700"
             title="Refresh data"
           >
-            <ArrowPathIcon className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+            <ArrowPathIcon className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
           </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-lg transition-colors duration-200 ${
-              showFilters 
-                ? 'text-blue-600 bg-blue-100' 
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            className={`rounded-lg p-2 transition-colors duration-200 ${
+              showFilters
+                ? 'bg-blue-100 text-blue-600'
+                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
             }`}
             title="Filter alerts"
           >
-            <AdjustmentsHorizontalIcon className="w-5 h-5" />
+            <AdjustmentsHorizontalIcon className="h-5 w-5" />
           </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="flex items-center space-x-2 rounded-lg bg-blue-500 px-4 py-2 font-medium text-white transition-colors duration-200 hover:bg-blue-600"
           >
-            <PlusIcon className="w-5 h-5" />
+            <PlusIcon className="h-5 w-5" />
             <span>Create Alert</span>
           </motion.button>
         </div>
@@ -282,13 +278,13 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
 
       {/* Search Bar */}
       <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <MagnifyingGlassIcon className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
         <input
           type="text"
           placeholder="Search alerts..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className="w-full rounded-xl border border-gray-200/50 bg-white/80 py-3 pr-4 pl-10 backdrop-blur-xl transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -305,7 +301,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
 
       {/* Stats Overview */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           <AlertStatsWidget
             title="Total Alerts"
             value={stats.totalAlerts}
@@ -338,22 +334,20 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
       )}
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Recent Alerts */}
         <div className="lg:col-span-2">
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="rounded-2xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
+            <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">Recent Alerts</h2>
               {selectedAlerts.length > 0 && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">
-                    {selectedAlerts.length} selected
-                  </span>
+                  <span className="text-sm text-gray-600">{selectedAlerts.length} selected</span>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleBulkAction('acknowledge')}
-                    className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white text-sm rounded-lg"
+                    className="rounded-lg bg-orange-500 px-3 py-1 text-sm text-white hover:bg-orange-600"
                   >
                     Acknowledge All
                   </motion.button>
@@ -361,7 +355,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleBulkAction('resolve')}
-                    className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg"
+                    className="rounded-lg bg-green-500 px-3 py-1 text-sm text-white hover:bg-green-600"
                   >
                     Resolve All
                   </motion.button>
@@ -386,8 +380,8 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
               </AnimatePresence>
 
               {alerts?.length === 0 && !isLoading && (
-                <div className="text-center py-12">
-                  <BellIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <div className="py-12 text-center">
+                  <BellIcon className="mx-auto mb-4 h-12 w-12 text-gray-300" />
                   <p className="text-gray-500">No alerts match your current filters</p>
                 </div>
               )}
@@ -396,7 +390,7 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
                 <div className="space-y-4">
                   {[...Array(3)].map((_, i) => (
                     <div key={i} className="animate-pulse">
-                      <div className="bg-gray-200 h-24 rounded-xl" />
+                      <div className="h-24 rounded-xl bg-gray-200" />
                     </div>
                   ))}
                 </div>
@@ -408,10 +402,10 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
         {/* Right Sidebar */}
         <div className="space-y-6">
           {/* On-Call Schedules */}
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="rounded-2xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
+            <div className="mb-6 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">On-Call Today</h3>
-              <UsersIcon className="w-5 h-5 text-gray-400" />
+              <UsersIcon className="h-5 w-5 text-gray-400" />
             </div>
 
             <div className="space-y-4">
@@ -427,18 +421,18 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            
+          <div className="rounded-2xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
+            <h3 className="mb-4 text-lg font-semibold text-gray-900">Quick Actions</h3>
+
             <div className="space-y-3">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowCreateModal(true)}
-                className="w-full p-3 text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors duration-200"
+                className="w-full rounded-lg border border-blue-200 bg-blue-50 p-3 text-left transition-colors duration-200 hover:bg-blue-100"
               >
                 <div className="flex items-center space-x-3">
-                  <PlusIcon className="w-5 h-5 text-blue-600" />
+                  <PlusIcon className="h-5 w-5 text-blue-600" />
                   <span className="font-medium text-blue-900">Create New Alert</span>
                 </div>
               </motion.button>
@@ -446,10 +440,10 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full p-3 text-left bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition-colors duration-200"
+                className="w-full rounded-lg border border-purple-200 bg-purple-50 p-3 text-left transition-colors duration-200 hover:bg-purple-100"
               >
                 <div className="flex items-center space-x-3">
-                  <ChartBarIcon className="w-5 h-5 text-purple-600" />
+                  <ChartBarIcon className="h-5 w-5 text-purple-600" />
                   <span className="font-medium text-purple-900">View Analytics</span>
                 </div>
               </motion.button>
@@ -457,10 +451,10 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full p-3 text-left bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg transition-colors duration-200"
+                className="w-full rounded-lg border border-orange-200 bg-orange-50 p-3 text-left transition-colors duration-200 hover:bg-orange-100"
               >
                 <div className="flex items-center space-x-3">
-                  <Cog6ToothIcon className="w-5 h-5 text-orange-600" />
+                  <Cog6ToothIcon className="h-5 w-5 text-orange-600" />
                   <span className="font-medium text-orange-900">Manage Schedules</span>
                 </div>
               </motion.button>

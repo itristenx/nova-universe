@@ -65,7 +65,7 @@ router.get('/stats', (req, res) => {
  */
 router.post('/broadcast', (req, res) => {
   const { type, data, room } = req.body;
-  
+
   if (!type || !data) {
     return res.status(400).json({ error: 'Type and data are required' });
   }
@@ -74,7 +74,7 @@ router.post('/broadcast', (req, res) => {
     const message = {
       type,
       data,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     if (room) {
@@ -123,7 +123,7 @@ router.post('/broadcast', (req, res) => {
  */
 router.post('/notify', (req, res) => {
   const { userId, title, message, level = 'info' } = req.body;
-  
+
   if (!userId || !title || !message) {
     return res.status(400).json({ error: 'userId, title, and message are required' });
   }
@@ -135,8 +135,8 @@ router.post('/notify', (req, res) => {
         title,
         message,
         level,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
 
     res.json({ success: true, message: 'Notification sent' });
@@ -173,7 +173,7 @@ router.post('/notify', (req, res) => {
  */
 router.post('/system-status', (req, res) => {
   const { status, message, services } = req.body;
-  
+
   if (!status) {
     return res.status(400).json({ error: 'Status is required' });
   }
@@ -183,7 +183,7 @@ router.post('/system-status', (req, res) => {
       status,
       message,
       services,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     res.json({ success: true, message: 'System status broadcasted' });

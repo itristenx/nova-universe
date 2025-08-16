@@ -15,21 +15,21 @@ export const defaultConfig: BuildConfig = {
     enabled: true,
     options: {
       skipLibCheck: true,
-      allowSyntheticDefaultImports: true
-    }
+      allowSyntheticDefaultImports: true,
+    },
   },
   eslint: {
     enabled: true,
     options: {
-      extends: ['@typescript-eslint/recommended']
-    }
+      extends: ['@typescript-eslint/recommended'],
+    },
   },
   babel: {
     enabled: true,
     options: {
-      presets: ['@babel/preset-env', '@babel/preset-typescript']
-    }
-  }
+      presets: ['@babel/preset-env', '@babel/preset-typescript'],
+    },
+  },
 };
 
 export default defaultConfig;

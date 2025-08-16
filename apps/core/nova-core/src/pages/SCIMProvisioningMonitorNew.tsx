@@ -1,17 +1,31 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
-import { Card, Button, Table, TableHead as TableHeader, TableBody, TableCell, TableRow, Chip, Modal, Input, Select, Switch, Textarea } from '@/components/ui';
-import { 
-  UserIcon, 
-  UserGroupIcon, 
-  ClockIcon, 
-  CheckCircleIcon, 
-  ExclamationTriangleIcon, 
+import {
+  Card,
+  Button,
+  Table,
+  TableHead as TableHeader,
+  TableBody,
+  TableCell,
+  TableRow,
+  Chip,
+  Modal,
+  Input,
+  Select,
+  Switch,
+  Textarea,
+} from '@/components/ui';
+import {
+  UserIcon,
+  UserGroupIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
   InformationCircleIcon,
   ArrowPathIcon,
   KeyIcon,
   WifiIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { useToastStore } from '@/stores/toast';
 import { Tabs as LocalTabs } from '@/components/ui/Tabs';
@@ -40,7 +54,16 @@ interface SCIMGroup {
 interface ProvisioningEvent {
   id: string;
   timestamp: string;
-  eventType: 'user_created' | 'user_updated' | 'user_deleted' | 'group_created' | 'group_updated' | 'group_deleted' | 'sync_started' | 'sync_completed' | 'sync_failed';
+  eventType:
+    | 'user_created'
+    | 'user_updated'
+    | 'user_deleted'
+    | 'group_created'
+    | 'group_updated'
+    | 'group_deleted'
+    | 'sync_started'
+    | 'sync_completed'
+    | 'sync_failed';
   resourceId?: string;
   resourceType: 'user' | 'group' | 'system';
   status: 'success' | 'warning' | 'error' | 'info';
@@ -89,7 +112,7 @@ export default function SCIMProvisioningMonitor() {
   const [isOpen, setIsOpen] = useState(false);
   const onOpen = () => setIsOpen(true);
   const onClose = () => setIsOpen(false);
-  
+
   // SCIM Data State
   const [scimConfig, setSCIMConfig] = useState<SCIMConfig>({
     enabled: false,
@@ -101,7 +124,7 @@ export default function SCIMProvisioningMonitor() {
     syncInterval: 3600,
     syncStatus: 'idle',
   });
-  
+
   const [scimUsers, setSCIMUsers] = useState<SCIMUser[]>([]);
   const [scimGroups, setSCIMGroups] = useState<SCIMGroup[]>([]);
   const [provisioningEvents, setProvisioningEvents] = useState<ProvisioningEvent[]>([]);
@@ -137,14 +160,14 @@ export default function SCIMProvisioningMonitor() {
         loadSCIMUsers(),
         loadSCIMGroups(),
         loadProvisioningEvents(),
-        loadSyncMetrics()
+        loadSyncMetrics(),
       ]);
     } catch (err) {
       console.error('Failed to load SCIM data:', err);
       addToast({
         type: 'error',
         title: 'Error',
-        description: 'Failed to load SCIM provisioning data'
+        description: 'Failed to load SCIM provisioning data',
       });
     } finally {
       setIsLoading(false);
@@ -163,7 +186,7 @@ export default function SCIMProvisioningMonitor() {
         allowNonProvisionedUsers: false,
         syncInterval: 3600,
         lastSync: new Date(Date.now() - 1800000).toISOString(),
-        syncStatus: 'success'
+        syncStatus: 'success',
       };
       setSCIMConfig(mockConfig);
     } catch (err) {
@@ -184,7 +207,7 @@ export default function SCIMProvisioningMonitor() {
           externalId: 'ext_john_123',
           lastModified: new Date(Date.now() - 86400000).toISOString(),
           created: new Date(Date.now() - 2592000000).toISOString(),
-          groups: ['Administrators', 'IT Staff']
+          groups: ['Administrators', 'IT Staff'],
         },
         {
           id: '2',
@@ -195,8 +218,8 @@ export default function SCIMProvisioningMonitor() {
           externalId: 'ext_jane_456',
           lastModified: new Date(Date.now() - 43200000).toISOString(),
           created: new Date(Date.now() - 1296000000).toISOString(),
-          groups: ['Users', 'Marketing']
-        }
+          groups: ['Users', 'Marketing'],
+        },
       ];
       setSCIMUsers(mockUsers);
     } catch (err) {
@@ -211,23 +234,19 @@ export default function SCIMProvisioningMonitor() {
         {
           id: '1',
           displayName: 'Administrators',
-          members: [
-            { value: '1', display: 'John Doe' }
-          ],
+          members: [{ value: '1', display: 'John Doe' }],
           externalId: 'ext_admin_group',
           lastModified: new Date(Date.now() - 86400000).toISOString(),
-          created: new Date(Date.now() - 5184000000).toISOString()
+          created: new Date(Date.now() - 5184000000).toISOString(),
         },
         {
           id: '2',
           displayName: 'IT Staff',
-          members: [
-            { value: '1', display: 'John Doe' }
-          ],
+          members: [{ value: '1', display: 'John Doe' }],
           externalId: 'ext_it_group',
           lastModified: new Date(Date.now() - 172800000).toISOString(),
-          created: new Date(Date.now() - 5184000000).toISOString()
-        }
+          created: new Date(Date.now() - 5184000000).toISOString(),
+        },
       ];
       setSCIMGroups(mockGroups);
     } catch (err) {
@@ -246,7 +265,7 @@ export default function SCIMProvisioningMonitor() {
           resourceType: 'system',
           status: 'success',
           message: 'SCIM sync completed successfully',
-          details: { duration: 45, usersProcessed: 125, groupsProcessed: 8 }
+          details: { duration: 45, usersProcessed: 125, groupsProcessed: 8 },
         },
         {
           id: '2',
@@ -255,7 +274,7 @@ export default function SCIMProvisioningMonitor() {
           resourceId: '1',
           resourceType: 'user',
           status: 'success',
-          message: 'User john.doe updated successfully'
+          message: 'User john.doe updated successfully',
         },
         {
           id: '3',
@@ -263,8 +282,8 @@ export default function SCIMProvisioningMonitor() {
           eventType: 'sync_started',
           resourceType: 'system',
           status: 'info',
-          message: 'SCIM sync started'
-        }
+          message: 'SCIM sync started',
+        },
       ];
       setProvisioningEvents(mockEvents);
     } catch (err) {
@@ -291,7 +310,7 @@ export default function SCIMProvisioningMonitor() {
         userDeletions24h: 1,
         groupCreations24h: 0,
         groupUpdates24h: 1,
-        groupDeletions24h: 0
+        groupDeletions24h: 0,
       };
       setSyncMetrics(mockMetrics);
     } catch (err) {
@@ -306,7 +325,7 @@ export default function SCIMProvisioningMonitor() {
     addToast({
       type: 'success',
       title: 'Refreshed',
-      description: 'SCIM provisioning data has been refreshed'
+      description: 'SCIM provisioning data has been refreshed',
     });
   };
 
@@ -316,13 +335,13 @@ export default function SCIMProvisioningMonitor() {
       addToast({
         type: 'success',
         title: 'Configuration Saved',
-        description: 'SCIM configuration has been updated successfully'
+        description: 'SCIM configuration has been updated successfully',
       });
     } catch (err) {
       addToast({
         type: 'error',
         title: 'Error',
-        description: 'Failed to save SCIM configuration'
+        description: 'Failed to save SCIM configuration',
       });
     }
   };
@@ -357,8 +376,8 @@ export default function SCIMProvisioningMonitor() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="border-primary-600 h-8 w-8 animate-spin rounded-full border-b-2" />
         <span className="ml-4 text-lg">Loading SCIM provisioning data...</span>
       </div>
     );
@@ -367,7 +386,7 @@ export default function SCIMProvisioningMonitor() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">SCIM Provisioning Monitor</h1>
           <p className="mt-1 text-sm text-gray-600">
@@ -380,7 +399,9 @@ export default function SCIMProvisioningMonitor() {
             size="sm"
             onClick={handleRefresh}
             disabled={refreshing}
-            startContent={<ArrowPathIcon className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />}
+            startContent={
+              <ArrowPathIcon className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            }
           >
             {refreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
@@ -396,20 +417,16 @@ export default function SCIMProvisioningMonitor() {
       </div>
 
       {/* Status Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card className="p-4">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="rounded-lg bg-blue-100 p-2">
               <WifiIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Sync Status</p>
-              <div className="flex items-center mt-1">
-                <Chip
-                  color={getSyncStatusColor(scimConfig.syncStatus)}
-                  size="sm"
-                  variant="flat"
-                >
+              <div className="mt-1 flex items-center">
+                <Chip color={getSyncStatusColor(scimConfig.syncStatus)} size="sm" variant="flat">
                   {scimConfig.syncStatus.charAt(0).toUpperCase() + scimConfig.syncStatus.slice(1)}
                 </Chip>
               </div>
@@ -419,7 +436,7 @@ export default function SCIMProvisioningMonitor() {
 
         <Card className="p-4">
           <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
+            <div className="rounded-lg bg-green-100 p-2">
               <UserIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
@@ -431,7 +448,7 @@ export default function SCIMProvisioningMonitor() {
 
         <Card className="p-4">
           <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="rounded-lg bg-purple-100 p-2">
               <UserGroupIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
@@ -443,7 +460,7 @@ export default function SCIMProvisioningMonitor() {
 
         <Card className="p-4">
           <div className="flex items-center">
-            <div className="p-2 bg-orange-100 rounded-lg">
+            <div className="rounded-lg bg-orange-100 p-2">
               <ClockIcon className="h-6 w-6 text-orange-600" />
             </div>
             <div className="ml-4">
@@ -477,16 +494,12 @@ export default function SCIMProvisioningMonitor() {
                       <TableCell>{`${user.name.givenName} ${user.name.familyName}`}</TableCell>
                       <TableCell>{user.emails[0]?.value}</TableCell>
                       <TableCell>
-                        <Chip
-                          color={user.active ? 'success' : 'danger'}
-                          size="sm"
-                          variant="flat"
-                        >
+                        <Chip color={user.active ? 'success' : 'danger'} size="sm" variant="flat">
                           {user.active ? 'Active' : 'Inactive'}
                         </Chip>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1 flex-wrap">
+                        <div className="flex flex-wrap gap-1">
                           {user.groups.map((group, idx) => (
                             <Chip key={idx} size="sm" variant="bordered">
                               {group}
@@ -494,9 +507,7 @@ export default function SCIMProvisioningMonitor() {
                           ))}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        {new Date(user.lastModified).toLocaleDateString()}
-                      </TableCell>
+                      <TableCell>{new Date(user.lastModified).toLocaleDateString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -520,17 +531,13 @@ export default function SCIMProvisioningMonitor() {
                       <TableCell>{group.displayName}</TableCell>
                       <TableCell>
                         <div className="flex items-center">
-                          <UserGroupIcon className="h-4 w-4 mr-1" />
+                          <UserGroupIcon className="mr-1 h-4 w-4" />
                           {group.members.length}
                         </div>
                       </TableCell>
                       <TableCell>{group.externalId || '-'}</TableCell>
-                      <TableCell>
-                        {new Date(group.created).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(group.lastModified).toLocaleDateString()}
-                      </TableCell>
+                      <TableCell>{new Date(group.created).toLocaleDateString()}</TableCell>
+                      <TableCell>{new Date(group.lastModified).toLocaleDateString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -541,7 +548,7 @@ export default function SCIMProvisioningMonitor() {
           <div key="activity" title="Activity Log">
             <div className="mt-4 space-y-4">
               {provisioningEvents.map((event) => (
-                <div key={event.id} className="flex items-start space-x-3 p-4 border rounded-lg">
+                <div key={event.id} className="flex items-start space-x-3 rounded-lg border p-4">
                   {getStatusIcon(event.status)}
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
@@ -569,9 +576,9 @@ export default function SCIMProvisioningMonitor() {
 
           <div key="analytics" title="Analytics">
             <div className="mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <Card className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Sync Performance</h3>
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">Sync Performance</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Last Duration</span>
@@ -579,48 +586,70 @@ export default function SCIMProvisioningMonitor() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Average Duration</span>
-                      <span className="text-sm font-medium">{syncMetrics.averageSyncDuration}s</span>
+                      <span className="text-sm font-medium">
+                        {syncMetrics.averageSyncDuration}s
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Success Rate</span>
                       <span className="text-sm font-medium">
-                        {Math.round((syncMetrics.successfulSyncs / (syncMetrics.successfulSyncs + syncMetrics.failedSyncs)) * 100)}%
+                        {Math.round(
+                          (syncMetrics.successfulSyncs /
+                            (syncMetrics.successfulSyncs + syncMetrics.failedSyncs)) *
+                            100,
+                        )}
+                        %
                       </span>
                     </div>
                   </div>
                 </Card>
 
                 <Card className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">24h Activity</h3>
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">24h Activity</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">User Creations</span>
-                      <span className="text-sm font-medium text-green-600">+{syncMetrics.userCreations24h}</span>
+                      <span className="text-sm font-medium text-green-600">
+                        +{syncMetrics.userCreations24h}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">User Updates</span>
-                      <span className="text-sm font-medium text-blue-600">{syncMetrics.userUpdates24h}</span>
+                      <span className="text-sm font-medium text-blue-600">
+                        {syncMetrics.userUpdates24h}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">User Deletions</span>
-                      <span className="text-sm font-medium text-red-600">-{syncMetrics.userDeletions24h}</span>
+                      <span className="text-sm font-medium text-red-600">
+                        -{syncMetrics.userDeletions24h}
+                      </span>
                     </div>
                   </div>
                 </Card>
 
                 <Card className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">User Status</h3>
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">User Status</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Active Users</span>
-                      <span className="text-sm font-medium text-green-600">{syncMetrics.activeUsers}</span>
+                      <span className="text-sm font-medium text-green-600">
+                        {syncMetrics.activeUsers}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Inactive Users</span>
-                      <span className="text-sm font-medium text-red-600">{syncMetrics.inactiveUsers}</span>
+                      <span className="text-sm font-medium text-red-600">
+                        {syncMetrics.inactiveUsers}
+                      </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div className="bg-green-600 h-2 rounded-full" style={{ width: `${(syncMetrics.activeUsers / Math.max(syncMetrics.totalUsers, 1)) * 100}%` }} />
+                    <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
+                      <div
+                        className="h-2 rounded-full bg-green-600"
+                        style={{
+                          width: `${(syncMetrics.activeUsers / Math.max(syncMetrics.totalUsers, 1)) * 100}%`,
+                        }}
+                      />
                     </div>
                   </div>
                 </Card>
@@ -634,70 +663,76 @@ export default function SCIMProvisioningMonitor() {
       <Modal isOpen={isOpen} onClose={onClose} size="xl" title="SCIM Configuration">
         <div className="p-2">
           <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Enable SCIM Provisioning</p>
+                <p className="text-sm text-gray-600">Allow automatic user and group provisioning</p>
+              </div>
+              <Switch
+                checked={scimConfig.enabled}
+                onChange={(enabled) => setSCIMConfig((prev) => ({ ...prev, enabled }))}
+              />
+            </div>
+
+            <Input
+              label="SCIM Endpoint"
+              value={scimConfig.endpoint}
+              onChange={(e) => setSCIMConfig((prev) => ({ ...prev, endpoint: e.target.value }))}
+              placeholder="/scim/v2"
+            />
+
+            <Input
+              label="Bearer Token"
+              type="password"
+              value={scimConfig.token}
+              onChange={(e) => setSCIMConfig((prev) => ({ ...prev, token: e.target.value }))}
+              placeholder="Enter SCIM bearer token"
+            />
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Enable SCIM Provisioning</p>
-                  <p className="text-sm text-gray-600">Allow automatic user and group provisioning</p>
+                  <p className="font-medium">User Sync</p>
+                  <p className="text-sm text-gray-600">Sync user accounts</p>
                 </div>
                 <Switch
-                  checked={scimConfig.enabled}
-                  onChange={(enabled) => setSCIMConfig(prev => ({ ...prev, enabled }))}
+                  checked={scimConfig.userSyncEnabled}
+                  onChange={(userSyncEnabled) =>
+                    setSCIMConfig((prev) => ({ ...prev, userSyncEnabled }))
+                  }
                 />
               </div>
 
-              <Input
-                label="SCIM Endpoint"
-                value={scimConfig.endpoint}
-                onChange={(e) => setSCIMConfig(prev => ({ ...prev, endpoint: e.target.value }))}
-                placeholder="/scim/v2"
-              />
-
-              <Input
-                label="Bearer Token"
-                type="password"
-                value={scimConfig.token}
-                onChange={(e) => setSCIMConfig(prev => ({ ...prev, token: e.target.value }))}
-                placeholder="Enter SCIM bearer token"
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">User Sync</p>
-                    <p className="text-sm text-gray-600">Sync user accounts</p>
-                  </div>
-                  <Switch
-                    checked={scimConfig.userSyncEnabled}
-                    onChange={(userSyncEnabled) => setSCIMConfig(prev => ({ ...prev, userSyncEnabled }))}
-                  />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Group Sync</p>
+                  <p className="text-sm text-gray-600">Sync group memberships</p>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Group Sync</p>
-                    <p className="text-sm text-gray-600">Sync group memberships</p>
-                  </div>
-                  <Switch
-                    checked={scimConfig.groupSyncEnabled}
-                    onChange={(groupSyncEnabled: boolean) => setSCIMConfig(prev => ({ ...prev, groupSyncEnabled }))}
-                  />
-                </div>
+                <Switch
+                  checked={scimConfig.groupSyncEnabled}
+                  onChange={(groupSyncEnabled: boolean) =>
+                    setSCIMConfig((prev) => ({ ...prev, groupSyncEnabled }))
+                  }
+                />
               </div>
+            </div>
 
-              <Select
-                label="Sync Interval"
-                value={scimConfig.syncInterval.toString()}
-                onChange={(value: string) => setSCIMConfig(prev => ({ ...prev, syncInterval: parseInt(value) }))}
-                options={[
-                  { value: '300', label: '5 minutes' },
-                  { value: '900', label: '15 minutes' },
-                  { value: '1800', label: '30 minutes' },
-                  { value: '3600', label: '1 hour' },
-                  { value: '21600', label: '6 hours' },
-                  { value: '43200', label: '12 hours' },
-                  { value: '86400', label: '24 hours' },
-                ]}
-              />
+            <Select
+              label="Sync Interval"
+              value={scimConfig.syncInterval.toString()}
+              onChange={(value: string) =>
+                setSCIMConfig((prev) => ({ ...prev, syncInterval: parseInt(value) }))
+              }
+              options={[
+                { value: '300', label: '5 minutes' },
+                { value: '900', label: '15 minutes' },
+                { value: '1800', label: '30 minutes' },
+                { value: '3600', label: '1 hour' },
+                { value: '21600', label: '6 hours' },
+                { value: '43200', label: '12 hours' },
+                { value: '86400', label: '24 hours' },
+              ]}
+            />
           </div>
           <div className="mt-6 flex justify-end gap-2">
             <Button variant="light" onPress={onClose}>

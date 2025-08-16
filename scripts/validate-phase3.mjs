@@ -21,7 +21,7 @@ const colors = {
   green: '\x1b[32m',
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
-  cyan: '\x1b[36m'
+  cyan: '\x1b[36m',
 };
 
 // Logging utilities
@@ -30,14 +30,14 @@ const log = {
   error: (msg) => console.log(`${colors.red}✗${colors.reset} ${msg}`),
   warning: (msg) => console.log(`${colors.yellow}⚠${colors.reset} ${msg}`),
   info: (msg) => console.log(`${colors.blue}ℹ${colors.reset} ${msg}`),
-  section: (msg) => console.log(`\n${colors.cyan}${colors.bright}${msg}${colors.reset}`)
+  section: (msg) => console.log(`\n${colors.cyan}${colors.bright}${msg}${colors.reset}`),
 };
 
 // Test results tracking
 let testResults = {
   passed: 0,
   failed: 0,
-  warnings: 0
+  warnings: 0,
 };
 
 /**
@@ -114,7 +114,10 @@ test('CSS variables file exists', fileExists('packages/design-system/css-variabl
 test('Tokens include color palette', fileContains('packages/design-system/tokens.js', 'colors'));
 test('Tokens include typography', fileContains('packages/design-system/tokens.js', 'typography'));
 test('Tokens include spacing', fileContains('packages/design-system/tokens.js', 'spacing'));
-test('CSS variables are exported', fileContains('packages/design-system/css-variables.css', '--color-'));
+test(
+  'CSS variables are exported',
+  fileContains('packages/design-system/css-variables.css', '--color-'),
+);
 
 // Task 2: Component Library
 log.section('Task 2: Component Library');
@@ -129,41 +132,84 @@ test('Loading component exists', fileExists('packages/design-system/Loading.js')
 // Task 3: Theme System
 log.section('Task 3: Theme System');
 test('Theme provider exists', fileExists('packages/design-system/ThemeProvider.js'));
-test('Theme context exists', fileContains('packages/design-system/ThemeProvider.js', 'createContext'));
+test(
+  'Theme context exists',
+  fileContains('packages/design-system/ThemeProvider.js', 'createContext'),
+);
 test('Theme supports light mode', fileContains('packages/design-system/ThemeProvider.js', 'light'));
 test('Theme supports dark mode', fileContains('packages/design-system/ThemeProvider.js', 'dark'));
-test('Theme supports high contrast', fileContains('packages/design-system/ThemeProvider.js', 'high-contrast'));
+test(
+  'Theme supports high contrast',
+  fileContains('packages/design-system/ThemeProvider.js', 'high-contrast'),
+);
 
 // Task 4: Accessibility Framework
 log.section('Task 4: Accessibility Framework');
 test('Accessibility utilities exist', fileExists('packages/design-system/accessibility.js'));
-test('Accessibility provider exists', fileContains('packages/design-system/accessibility.js', 'AccessibilityProvider'));
-test('Screen reader support included', fileContains('packages/design-system/accessibility.js', 'screenReader'));
-test('Keyboard navigation support', fileContains('packages/design-system/accessibility.js', 'keyboard'));
+test(
+  'Accessibility provider exists',
+  fileContains('packages/design-system/accessibility.js', 'AccessibilityProvider'),
+);
+test(
+  'Screen reader support included',
+  fileContains('packages/design-system/accessibility.js', 'screenReader'),
+);
+test(
+  'Keyboard navigation support',
+  fileContains('packages/design-system/accessibility.js', 'keyboard'),
+);
 test('ARIA utilities included', fileContains('packages/design-system/accessibility.js', 'aria'));
 
 // Task 5: Admin Interface Implementation
 log.section('Task 5: Admin Interface Implementation');
-test('Admin dashboard exists', fileExists('apps/core/nova-core/src/components/admin/AdminDashboard.jsx'));
-test('Ticket management exists', fileExists('apps/core/nova-core/src/components/admin/TicketManagement.jsx'));
-test('User management exists', fileExists('apps/core/nova-core/src/components/admin/UserManagement.jsx'));
-test('Kiosk management exists', fileExists('apps/core/nova-core/src/components/admin/KioskManagement.jsx'));
-testWarning('Admin components use design system', 
-  fileContains('apps/core/nova-core/src/components/admin/AdminDashboard.jsx', 'design-system'));
+test(
+  'Admin dashboard exists',
+  fileExists('apps/core/nova-core/src/components/admin/AdminDashboard.jsx'),
+);
+test(
+  'Ticket management exists',
+  fileExists('apps/core/nova-core/src/components/admin/TicketManagement.jsx'),
+);
+test(
+  'User management exists',
+  fileExists('apps/core/nova-core/src/components/admin/UserManagement.jsx'),
+);
+test(
+  'Kiosk management exists',
+  fileExists('apps/core/nova-core/src/components/admin/KioskManagement.jsx'),
+);
+testWarning(
+  'Admin components use design system',
+  fileContains('apps/core/nova-core/src/components/admin/AdminDashboard.jsx', 'design-system'),
+);
 
 // Task 6: Kiosk Interface Implementation
 log.section('Task 6: Kiosk Interface Implementation');
 test('Kiosk app exists', fileExists('apps/orbit/src/components/KioskApp.jsx'));
 test('Kiosk status display exists', fileExists('apps/orbit/src/components/KioskStatusDisplay.jsx'));
-test('Kiosk interface is touch-optimized', fileContains('apps/orbit/src/components/KioskApp.jsx', 'touch'));
-testWarning('Kiosk uses design system', 
-  fileContains('apps/orbit/src/components/KioskApp.jsx', 'design-system'));
+test(
+  'Kiosk interface is touch-optimized',
+  fileContains('apps/orbit/src/components/KioskApp.jsx', 'touch'),
+);
+testWarning(
+  'Kiosk uses design system',
+  fileContains('apps/orbit/src/components/KioskApp.jsx', 'design-system'),
+);
 
 // Bonus: Demo and Documentation
 log.section('Bonus Implementation');
-test('Design system demo exists', fileExists('apps/core/nova-core/src/components/DesignSystemDemo.jsx'));
-test('Demo showcases components', fileContains('apps/core/nova-core/src/components/DesignSystemDemo.jsx', 'Button'));
-test('Demo includes theme switching', fileContains('apps/core/nova-core/src/components/DesignSystemDemo.jsx', 'ThemeProvider'));
+test(
+  'Design system demo exists',
+  fileExists('apps/core/nova-core/src/components/DesignSystemDemo.jsx'),
+);
+test(
+  'Demo showcases components',
+  fileContains('apps/core/nova-core/src/components/DesignSystemDemo.jsx', 'Button'),
+);
+test(
+  'Demo includes theme switching',
+  fileContains('apps/core/nova-core/src/components/DesignSystemDemo.jsx', 'ThemeProvider'),
+);
 
 // Package Structure Validation
 log.section('Package Structure Validation');
@@ -173,23 +219,46 @@ test('Design system exports components', fileContains('packages/design-system/in
 // Code Quality Checks
 log.section('Code Quality Validation');
 const buttonContent = getFileContent('packages/design-system/Button.js');
-test('Button has variant support', buttonContent.includes('variant') || buttonContent.includes('variants'));
+test(
+  'Button has variant support',
+  buttonContent.includes('variant') || buttonContent.includes('variants'),
+);
 test('Button has size support', buttonContent.includes('size'));
 test('Button is accessible', buttonContent.includes('aria-') || buttonContent.includes('role'));
 
 const modalContent = getFileContent('packages/design-system/Modal.js');
-test('Modal has proper accessibility', modalContent.includes('aria-') && modalContent.includes('role'));
-test('Modal supports escape key', modalContent.includes('Escape') || modalContent.includes('keydown'));
+test(
+  'Modal has proper accessibility',
+  modalContent.includes('aria-') && modalContent.includes('role'),
+);
+test(
+  'Modal supports escape key',
+  modalContent.includes('Escape') || modalContent.includes('keydown'),
+);
 
 // Integration Tests
 log.section('Integration Validation');
-const adminDashContent = getFileContent('apps/core/nova-core/src/components/admin/AdminDashboard.jsx');
-test('Admin dashboard has real functionality', adminDashContent.includes('useState') || adminDashContent.includes('useEffect'));
-test('Admin dashboard is responsive', adminDashContent.includes('responsive') || adminDashContent.includes('mobile'));
+const adminDashContent = getFileContent(
+  'apps/core/nova-core/src/components/admin/AdminDashboard.jsx',
+);
+test(
+  'Admin dashboard has real functionality',
+  adminDashContent.includes('useState') || adminDashContent.includes('useEffect'),
+);
+test(
+  'Admin dashboard is responsive',
+  adminDashContent.includes('responsive') || adminDashContent.includes('mobile'),
+);
 
 const kioskContent = getFileContent('apps/orbit/src/components/KioskApp.jsx');
-test('Kiosk has session management', kioskContent.includes('session') || kioskContent.includes('timeout'));
-test('Kiosk has accessibility features', kioskContent.includes('aria-') || kioskContent.includes('screen reader'));
+test(
+  'Kiosk has session management',
+  kioskContent.includes('session') || kioskContent.includes('timeout'),
+);
+test(
+  'Kiosk has accessibility features',
+  kioskContent.includes('aria-') || kioskContent.includes('screen reader'),
+);
 
 // Final Report
 log.section('Phase 3 Validation Summary');
@@ -225,12 +294,15 @@ const report = {
     themeSystem: fileExists('packages/design-system/src/providers/ThemeProvider.js'),
     accessibility: fileExists('packages/design-system/src/utils/accessibility.js'),
     adminInterface: fileExists('apps/core/nova-core/src/components/admin/AdminDashboard.jsx'),
-    kioskInterface: fileExists('apps/orbit/src/components/KioskApp.jsx')
-  }
+    kioskInterface: fileExists('apps/orbit/src/components/KioskApp.jsx'),
+  },
 };
 
 try {
-  fs.writeFileSync(path.join(projectRoot, 'phase3-validation-report.json'), JSON.stringify(report, null, 2));
+  fs.writeFileSync(
+    path.join(projectRoot, 'phase3-validation-report.json'),
+    JSON.stringify(report, null, 2),
+  );
   log.info('\n📄 Detailed report saved to: phase3-validation-report.json');
 } catch (error) {
   log.warning('\n⚠️  Could not save detailed report');

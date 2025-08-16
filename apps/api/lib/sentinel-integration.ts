@@ -1,10 +1,10 @@
 /**
  * Nova Sentinel Integration for AI Fabric
- * 
+ *
  * Integrates Nova AI Fabric with the existing Nova Sentinel monitoring system.
  * Provides AI components access to monitoring data and ability to create alerts,
  * while feeding AI metrics and errors into the existing monitoring infrastructure.
- * 
+ *
  * Features:
  * - AI tool access to Nova Sentinel monitoring data
  * - Automated monitor creation for AI components
@@ -72,7 +72,12 @@ export interface SentinelIncident {
 
 export interface SentinelAlert {
   id: string;
-  type: 'ai_failure' | 'performance_degradation' | 'provider_outage' | 'quota_exceeded' | 'security_incident';
+  type:
+    | 'ai_failure'
+    | 'performance_degradation'
+    | 'provider_outage'
+    | 'quota_exceeded'
+    | 'security_incident';
   severity: 'low' | 'medium' | 'high' | 'critical';
   component: string;
   message: string;
@@ -84,19 +89,19 @@ export interface SentinelAlert {
 
 /**
  * Nova Sentinel Integration System
- * 
+ *
  * Integrates with the existing Nova Sentinel service to provide AI monitoring tools
  */
 export class NovaSentinelIntegration extends EventEmitter {
   private monitors: Map<string, SentinelMonitor> = new Map();
   private incidents: Map<string, SentinelIncident> = new Map();
   private alerts: Map<string, SentinelAlert> = new Map();
-  
+
   private isInitialized = false;
   private sentinelApiUrl = process.env.NOVA_SENTINEL_API_URL || 'http://localhost:3001/api';
   private novaCoreApiUrl = process.env.NOVA_API_BASE_URL || 'http://localhost:3000/api';
   private apiKey = process.env.NOVA_SENTINEL_API_KEY || '';
-  
+
   // Integration configuration
   private config = {
     enableAIMonitoring: true,
@@ -105,24 +110,24 @@ export class NovaSentinelIntegration extends EventEmitter {
     escalationThresholds: {
       aiResponseTime: 15000, // 15 seconds
       aiErrorRate: 0.1, // 10%
-      aiAvailability: 0.95 // 95%
+      aiAvailability: 0.95, // 95%
     },
     mcpToolConfig: {
       toolPrefix: 'nova.sentinel',
       enabledTools: [
         'get_monitors',
-        'get_incidents', 
+        'get_incidents',
         'create_monitor',
         'create_incident',
         'get_status_page',
-        'search_logs'
-      ]
-    }
+        'search_logs',
+      ],
+    },
   };
 
   constructor() {
     super();
-    
+
     // Listen to AI Fabric events
     if (aiFabric) {
       aiFabric.on('providerHealthChanged', this.handleProviderHealthChange.bind(this));
@@ -177,12 +182,14 @@ export class NovaSentinelIntegration extends EventEmitter {
   /**
    * Register a new AI component for monitoring
    */
-  async registerAIMonitor(monitor: Omit<SentinelMonitor, 'id' | 'lastCheck' | 'status'>): Promise<string> {
+  async registerAIMonitor(
+    monitor: Omit<SentinelMonitor, 'id' | 'lastCheck' | 'status'>,
+  ): Promise<string> {
     const monitorId = crypto.randomUUID();
     const fullMonitor: SentinelMonitor = {
       ...monitor,
       id: monitorId,
-      status: 'unknown'
+      status: 'unknown',
     };
 
     this.monitors.set(monitorId, fullMonitor);
@@ -190,10 +197,10 @@ export class NovaSentinelIntegration extends EventEmitter {
     // Create corresponding monitor in Sentinel
     await this.createSentinelMonitor(fullMonitor);
 
-    logger.info('AI monitor registered', { 
-      monitorId, 
-      component: monitor.component, 
-      type: monitor.type 
+    logger.info('AI monitor registered', {
+      monitorId,
+      component: monitor.component,
+      type: monitor.type,
     });
 
     this.emit('monitorRegistered', fullMonitor);
@@ -203,7 +210,11 @@ export class NovaSentinelIntegration extends EventEmitter {
   /**
    * Update monitor status
    */
-  async updateMonitorStatus(monitorId: string, status: SentinelMonitor['status'], metrics?: Record<string, any>): Promise<void> {
+  async updateMonitorStatus(
+    monitorId: string,
+    status: SentinelMonitor['status'],
+    metrics?: Record<string, any>,
+  ): Promise<void> {
     const monitor = this.monitors.get(monitorId);
     if (!monitor) {
       logger.warn('Attempt to update unknown monitor', { monitorId });
@@ -239,7 +250,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     const incidentId = crypto.randomUUID();
     const fullIncident: SentinelIncident = {
       ...incident,
-      id: incidentId
+      id: incidentId,
     };
 
     this.incidents.set(incidentId, fullIncident);
@@ -250,7 +261,10 @@ export class NovaSentinelIntegration extends EventEmitter {
         const analysis = await this.generateAIAnalysis(fullIncident);
         fullIncident.aiAnalysis = analysis;
       } catch (error) {
-        logger.warn('Failed to generate AI analysis for incident', { incidentId, error: error.message });
+        logger.warn('Failed to generate AI analysis for incident', {
+          incidentId,
+          error: error.message,
+        });
       }
     }
 
@@ -277,10 +291,10 @@ export class NovaSentinelIntegration extends EventEmitter {
       }
     }
 
-    logger.info('Incident created', { 
-      incidentId, 
-      component: incident.component, 
-      severity: incident.severity 
+    logger.info('Incident created', {
+      incidentId,
+      component: incident.component,
+      severity: incident.severity,
     });
 
     this.emit('incidentCreated', fullIncident);
@@ -325,19 +339,19 @@ export class NovaSentinelIntegration extends EventEmitter {
     const incidents = Array.from(this.incidents.values());
     const alerts = Array.from(this.alerts.values());
 
-    const activeIncidents = incidents.filter(i => i.status !== 'resolved');
-    const recentAlerts = alerts.filter(a => 
-      a.timestamp >= new Date(Date.now() - 24 * 60 * 60 * 1000) && !a.resolved
+    const activeIncidents = incidents.filter((i) => i.status !== 'resolved');
+    const recentAlerts = alerts.filter(
+      (a) => a.timestamp >= new Date(Date.now() - 24 * 60 * 60 * 1000) && !a.resolved,
     );
 
     return {
       overview: {
         totalMonitors: monitors.length,
-        healthyMonitors: monitors.filter(m => m.status === 'up').length,
+        healthyMonitors: monitors.filter((m) => m.status === 'up').length,
         activeIncidents: activeIncidents.length,
-        recentAlerts: recentAlerts.length
+        recentAlerts: recentAlerts.length,
       },
-      monitors: monitors.map(m => ({
+      monitors: monitors.map((m) => ({
         id: m.id,
         name: m.name,
         type: m.type,
@@ -345,9 +359,9 @@ export class NovaSentinelIntegration extends EventEmitter {
         status: m.status,
         uptime24h: m.uptime24h,
         avgResponseTime: m.avgResponseTime,
-        lastCheck: m.lastCheck
+        lastCheck: m.lastCheck,
       })),
-      incidents: activeIncidents.map(i => ({
+      incidents: activeIncidents.map((i) => ({
         id: i.id,
         component: i.component,
         severity: i.severity,
@@ -355,19 +369,19 @@ export class NovaSentinelIntegration extends EventEmitter {
         summary: i.summary,
         startedAt: i.startedAt,
         ticketId: i.ticketId,
-        escalatedToGoAlert: i.escalatedToGoAlert
+        escalatedToGoAlert: i.escalatedToGoAlert,
       })),
-      alerts: recentAlerts.map(a => ({
+      alerts: recentAlerts.map((a) => ({
         id: a.id,
         type: a.type,
         severity: a.severity,
         component: a.component,
         message: a.message,
         timestamp: a.timestamp,
-        escalated: a.escalated
+        escalated: a.escalated,
       })),
       healthByComponent: this.getHealthByComponent(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -377,7 +391,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       // Test connection to existing Nova Sentinel service
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
-        timeout: 10000
+        timeout: 10000,
       });
 
       if (response.status !== 200) {
@@ -387,7 +401,9 @@ export class NovaSentinelIntegration extends EventEmitter {
       logger.info('Nova Sentinel connectivity verified - found existing monitoring service');
     } catch (error) {
       logger.error('Failed to connect to Nova Sentinel:', error);
-      throw new Error('Nova Sentinel connectivity test failed - ensure Nova Sentinel service is running');
+      throw new Error(
+        'Nova Sentinel connectivity test failed - ensure Nova Sentinel service is running',
+      );
     }
   }
 
@@ -403,16 +419,16 @@ export class NovaSentinelIntegration extends EventEmitter {
         tags: ['ai-fabric', 'core'],
         interval_seconds: 60,
         timeout_seconds: 30,
-        tenant_id: 'ai-platform'
+        tenant_id: 'ai-platform',
       },
       {
         name: 'RAG Engine',
-        type: 'http', 
+        type: 'http',
         url: `${this.novaCoreApiUrl}/ai-fabric/rag/status`,
         tags: ['ai-fabric', 'rag'],
         interval_seconds: 120,
         timeout_seconds: 45,
-        tenant_id: 'ai-platform'
+        tenant_id: 'ai-platform',
       },
       {
         name: 'MCP Server',
@@ -421,7 +437,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         tags: ['ai-fabric', 'mcp'],
         interval_seconds: 60,
         timeout_seconds: 30,
-        tenant_id: 'ai-platform'
+        tenant_id: 'ai-platform',
       },
       {
         name: 'AI Monitoring System',
@@ -430,8 +446,8 @@ export class NovaSentinelIntegration extends EventEmitter {
         tags: ['ai-fabric', 'monitoring'],
         interval_seconds: 300,
         timeout_seconds: 60,
-        tenant_id: 'ai-platform'
-      }
+        tenant_id: 'ai-platform',
+      },
     ];
 
     for (const component of aiComponents) {
@@ -459,7 +475,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     try {
       // Import MCP server dynamically to avoid circular dependencies
       const { novaMCPServer } = await import('./mcp-server.js');
-      
+
       if (!novaMCPServer) {
         logger.warn('MCP Server not available - skipping tool registration');
         return;
@@ -474,10 +490,10 @@ export class NovaSentinelIntegration extends EventEmitter {
           properties: {
             status: { type: 'string', enum: ['up', 'down', 'unknown'] },
             tenant_id: { type: 'string' },
-            tags: { type: 'array', items: { type: 'string' } }
-          }
+            tags: { type: 'array', items: { type: 'string' } },
+          },
         },
-        handler: this.handleGetMonitors.bind(this)
+        handler: this.handleGetMonitors.bind(this),
       });
 
       await novaMCPServer.registerTool({
@@ -488,10 +504,10 @@ export class NovaSentinelIntegration extends EventEmitter {
           properties: {
             severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
             status: { type: 'string', enum: ['open', 'acknowledged', 'investigating', 'resolved'] },
-            tenant_id: { type: 'string' }
-          }
+            tenant_id: { type: 'string' },
+          },
         },
-        handler: this.handleGetIncidents.bind(this)
+        handler: this.handleGetIncidents.bind(this),
       });
 
       await novaMCPServer.registerTool({
@@ -503,11 +519,11 @@ export class NovaSentinelIntegration extends EventEmitter {
             monitor_id: { type: 'string', description: 'Monitor ID' },
             summary: { type: 'string', description: 'Incident summary' },
             description: { type: 'string', description: 'Detailed description' },
-            severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] }
+            severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
           },
-          required: ['monitor_id', 'summary', 'severity']
+          required: ['monitor_id', 'summary', 'severity'],
         },
-        handler: this.handleCreateIncident.bind(this)
+        handler: this.handleCreateIncident.bind(this),
       });
 
       await novaMCPServer.registerTool({
@@ -516,11 +532,11 @@ export class NovaSentinelIntegration extends EventEmitter {
         inputSchema: {
           type: 'object',
           properties: {
-            tenant_id: { type: 'string', description: 'Tenant ID' }
+            tenant_id: { type: 'string', description: 'Tenant ID' },
           },
-          required: ['tenant_id']
+          required: ['tenant_id'],
         },
-        handler: this.handleGetStatusPage.bind(this)
+        handler: this.handleGetStatusPage.bind(this),
       });
 
       await novaMCPServer.registerTool({
@@ -532,14 +548,16 @@ export class NovaSentinelIntegration extends EventEmitter {
             component: { type: 'string', description: 'AI component name' },
             error_message: { type: 'string', description: 'Error message' },
             severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
-            metadata: { type: 'object', description: 'Additional error metadata' }
+            metadata: { type: 'object', description: 'Additional error metadata' },
           },
-          required: ['component', 'error_message', 'severity']
+          required: ['component', 'error_message', 'severity'],
         },
-        handler: this.handleReportAIError.bind(this)
+        handler: this.handleReportAIError.bind(this),
       });
 
-      logger.info(`Registered ${this.config.mcpToolConfig.enabledTools.length} Nova Sentinel MCP tools`);
+      logger.info(
+        `Registered ${this.config.mcpToolConfig.enabledTools.length} Nova Sentinel MCP tools`,
+      );
     } catch (error) {
       logger.warn('Failed to register MCP tools:', error.message);
     }
@@ -609,7 +627,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       // Get existing monitors from Nova Sentinel
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
-        params: { tags: 'ai-fabric' }
+        params: { tags: 'ai-fabric' },
       });
 
       if (response.data && response.data.monitors) {
@@ -629,14 +647,14 @@ export class NovaSentinelIntegration extends EventEmitter {
               alertThresholds: {
                 responseTime: this.config.escalationThresholds.aiResponseTime,
                 errorRate: this.config.escalationThresholds.aiErrorRate,
-                availability: this.config.escalationThresholds.aiAvailability
-              }
+                availability: this.config.escalationThresholds.aiAvailability,
+              },
             },
             tenant_id: monitor.tenant_id,
             isActive: monitor.status !== 'disabled',
             status: this.mapSentinelStatus(monitor.status),
             uptime24h: monitor.uptime_24h,
-            avgResponseTime: monitor.avg_response_time
+            avgResponseTime: monitor.avg_response_time,
           };
 
           this.monitors.set(monitor.id, sentinelMonitor);
@@ -663,10 +681,10 @@ export class NovaSentinelIntegration extends EventEmitter {
           alertThresholds: {
             responseTime: 5000,
             errorRate: 0.05,
-            availability: 0.99
-          }
+            availability: 0.99,
+          },
         },
-        isActive: true
+        isActive: true,
       },
       {
         name: 'RAG Engine',
@@ -680,10 +698,10 @@ export class NovaSentinelIntegration extends EventEmitter {
           alertThresholds: {
             responseTime: 10000,
             errorRate: 0.1,
-            availability: 0.95
-          }
+            availability: 0.95,
+          },
         },
-        isActive: true
+        isActive: true,
       },
       {
         name: 'MCP Server',
@@ -697,10 +715,10 @@ export class NovaSentinelIntegration extends EventEmitter {
           alertThresholds: {
             responseTime: 3000,
             errorRate: 0.05,
-            availability: 0.99
-          }
+            availability: 0.99,
+          },
         },
-        isActive: true
+        isActive: true,
       },
       {
         name: 'Nova Local AI',
@@ -714,20 +732,20 @@ export class NovaSentinelIntegration extends EventEmitter {
           alertThresholds: {
             responseTime: 15000,
             errorRate: 0.1,
-            availability: 0.95
-          }
+            availability: 0.95,
+          },
         },
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     for (const monitor of defaultMonitors) {
       try {
         await this.registerAIMonitor(monitor);
       } catch (error) {
-        logger.warn('Failed to register default monitor', { 
-          monitor: monitor.name, 
-          error: error.message 
+        logger.warn('Failed to register default monitor', {
+          monitor: monitor.name,
+          error: error.message,
         });
       }
     }
@@ -742,16 +760,16 @@ export class NovaSentinelIntegration extends EventEmitter {
   }
 
   private async performHealthChecks(): Promise<void> {
-    const monitors = Array.from(this.monitors.values()).filter(m => m.isActive);
-    
+    const monitors = Array.from(this.monitors.values()).filter((m) => m.isActive);
+
     for (const monitor of monitors) {
       try {
         await this.checkMonitorHealth(monitor);
       } catch (error) {
-        logger.warn('Health check failed for monitor', { 
-          monitorId: monitor.id, 
+        logger.warn('Health check failed for monitor', {
+          monitorId: monitor.id,
           component: monitor.component,
-          error: error.message 
+          error: error.message,
         });
       }
     }
@@ -766,14 +784,14 @@ export class NovaSentinelIntegration extends EventEmitter {
       if (monitor.config.healthEndpoint) {
         const baseUrl = monitor.url || process.env.NOVA_API_BASE_URL || 'http://localhost:3000';
         const healthUrl = `${baseUrl}${monitor.config.healthEndpoint}`;
-        
+
         const response = await axios.get(healthUrl, {
           timeout: monitor.timeout,
-          headers: this.getAuthHeaders()
+          headers: this.getAuthHeaders(),
         });
 
         responseTime = Date.now() - startTime;
-        
+
         if (response.status === 200) {
           status = 'up';
         } else {
@@ -787,11 +805,11 @@ export class NovaSentinelIntegration extends EventEmitter {
     } catch (error) {
       status = 'down';
       responseTime = Date.now() - startTime;
-      
+
       logger.warn('Monitor health check failed', {
         monitorId: monitor.id,
         component: monitor.component,
-        error: error.message
+        error: error.message,
       });
     }
 
@@ -803,34 +821,43 @@ export class NovaSentinelIntegration extends EventEmitter {
       switch (component) {
         case 'ai-fabric-core':
           return aiFabric?.isInitialized ? 'up' : 'down';
-        
+
         case 'rag-engine':
           // Check if RAG engine is responsive via health endpoint
           try {
-            const res = await axios.get(`${process.env.RAG_ENGINE_URL || 'http://localhost:4005'}/health`, { timeout: 3000 });
+            const res = await axios.get(
+              `${process.env.RAG_ENGINE_URL || 'http://localhost:4005'}/health`,
+              { timeout: 3000 },
+            );
             return res.status === 200 ? 'up' : 'down';
           } catch {
             return 'down';
           }
-        
+
         case 'mcp-server':
           // Check MCP server health by pinging server info route
           try {
-            const res = await axios.get(`${process.env.MCP_SERVER_URL || 'http://localhost:4010'}/api/mcp/info`, { timeout: 3000 });
+            const res = await axios.get(
+              `${process.env.MCP_SERVER_URL || 'http://localhost:4010'}/api/mcp/info`,
+              { timeout: 3000 },
+            );
             return res.status === 200 ? 'up' : 'down';
           } catch {
             return 'down';
           }
-        
+
         case 'nova-local-ai':
           // Check Nova Local AI health endpoint
           try {
-            const res = await axios.get(`${process.env.NOVA_LOCAL_AI_URL || 'http://localhost:4015'}/health`, { timeout: 3000 });
+            const res = await axios.get(
+              `${process.env.NOVA_LOCAL_AI_URL || 'http://localhost:4015'}/health`,
+              { timeout: 3000 },
+            );
             return res.status === 200 ? 'up' : 'down';
           } catch {
             return 'down';
           }
-        
+
         default:
           return 'unknown';
       }
@@ -841,14 +868,14 @@ export class NovaSentinelIntegration extends EventEmitter {
   }
 
   private async handleStatusChange(
-    monitor: SentinelMonitor, 
-    previousStatus: SentinelMonitor['status'], 
-    newStatus: SentinelMonitor['status']
+    monitor: SentinelMonitor,
+    previousStatus: SentinelMonitor['status'],
+    newStatus: SentinelMonitor['status'],
   ): Promise<void> {
     if (previousStatus === 'up' && newStatus === 'down') {
       // Service went down - create incident
       const severity = this.determineSeverity(monitor);
-      
+
       await this.createIncident({
         monitorId: monitor.id,
         component: monitor.component,
@@ -856,7 +883,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         status: 'open',
         summary: `${monitor.name} is experiencing issues`,
         description: `Monitor ${monitor.name} (${monitor.component}) has gone down`,
-        startedAt: new Date()
+        startedAt: new Date(),
       });
     } else if (previousStatus === 'down' && newStatus === 'up') {
       // Service recovered - resolve incidents
@@ -880,15 +907,18 @@ export class NovaSentinelIntegration extends EventEmitter {
   }
 
   private async resolveComponentIncidents(component: string, resolution: string): Promise<void> {
-    const componentIncidents = Array.from(this.incidents.values())
-      .filter(i => i.component === component && i.status !== 'resolved');
+    const componentIncidents = Array.from(this.incidents.values()).filter(
+      (i) => i.component === component && i.status !== 'resolved',
+    );
 
     for (const incident of componentIncidents) {
       await this.resolveIncident(incident.id, resolution);
     }
   }
 
-  private async generateAIAnalysis(incident: SentinelIncident): Promise<SentinelIncident['aiAnalysis']> {
+  private async generateAIAnalysis(
+    incident: SentinelIncident,
+  ): Promise<SentinelIncident['aiAnalysis']> {
     if (!aiFabric) {
       return { confidence: 0 };
     }
@@ -899,23 +929,23 @@ export class NovaSentinelIntegration extends EventEmitter {
           component: incident.component,
           severity: incident.severity,
           summary: incident.summary,
-          description: incident.description
+          description: incident.description,
         },
         requestType: 'analysis',
         context: {
           type: 'incident_analysis',
-          timestamp: incident.startedAt.toISOString()
-        }
+          timestamp: incident.startedAt.toISOString(),
+        },
       };
 
       const response = await aiFabric.processRequest(analysisRequest);
-      
+
       if (response.success && response.output) {
         return {
           rootCause: response.output.rootCause,
           impact: response.output.impact,
           recommendations: response.output.recommendations || [],
-          confidence: response.output.confidence || 0.7
+          confidence: response.output.confidence || 0.7,
         };
       }
     } catch (error) {
@@ -927,7 +957,7 @@ export class NovaSentinelIntegration extends EventEmitter {
 
   private getHealthByComponent(): Record<string, any> {
     const components: Record<string, any> = {};
-    
+
     for (const monitor of this.monitors.values()) {
       if (!components[monitor.component]) {
         components[monitor.component] = {
@@ -935,25 +965,25 @@ export class NovaSentinelIntegration extends EventEmitter {
           monitors: 0,
           upMonitors: 0,
           avgResponseTime: 0,
-          uptime24h: 0
+          uptime24h: 0,
         };
       }
-      
+
       const comp = components[monitor.component];
       comp.monitors++;
-      
+
       if (monitor.status === 'up') {
         comp.upMonitors++;
       }
-      
+
       if (monitor.avgResponseTime) {
         comp.avgResponseTime = (comp.avgResponseTime + monitor.avgResponseTime) / 2;
       }
-      
+
       if (monitor.uptime24h) {
         comp.uptime24h = (comp.uptime24h + monitor.uptime24h) / 2;
       }
-      
+
       // Determine overall component status
       if (comp.upMonitors === comp.monitors) {
         comp.status = 'healthy';
@@ -963,14 +993,15 @@ export class NovaSentinelIntegration extends EventEmitter {
         comp.status = 'down';
       }
     }
-    
+
     return components;
   }
 
   private async handleProviderHealthChange(event: any): Promise<void> {
     const monitorId = `provider-${event.providerId}`;
-    const monitor = Array.from(this.monitors.values())
-      .find(m => m.providerId === event.providerId);
+    const monitor = Array.from(this.monitors.values()).find(
+      (m) => m.providerId === event.providerId,
+    );
 
     if (monitor) {
       await this.updateMonitorStatus(monitor.id, event.healthy ? 'up' : 'down');
@@ -987,7 +1018,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       metrics: event.metrics,
       timestamp: new Date(),
       escalated: false,
-      resolved: false
+      resolved: false,
     };
 
     this.alerts.set(alert.id, alert);
@@ -1004,7 +1035,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       metrics: event.metrics,
       timestamp: new Date(),
       escalated: false,
-      resolved: false
+      resolved: false,
     };
 
     this.alerts.set(alert.id, alert);
@@ -1021,18 +1052,21 @@ export class NovaSentinelIntegration extends EventEmitter {
       metrics: event.indicators,
       timestamp: new Date(),
       escalated: false,
-      resolved: false
+      resolved: false,
     };
 
     this.alerts.set(alert.id, alert);
-    
+
     // Auto-escalate security incidents
     if (event.severity === 'critical') {
       try {
         await this.escalateSecurityAlert(alert);
         alert.escalated = true;
       } catch (error) {
-        logger.warn('Failed to escalate security alert', { alertId: alert.id, error: error.message });
+        logger.warn('Failed to escalate security alert', {
+          alertId: alert.id,
+          error: error.message,
+        });
       }
     }
 
@@ -1041,7 +1075,8 @@ export class NovaSentinelIntegration extends EventEmitter {
 
   private async handleMetricRecorded(event: any): Promise<void> {
     // Check for threshold violations that require alerts
-    if (event.metricType === 'performance' && event.value > 10000) { // 10s response time
+    if (event.metricType === 'performance' && event.value > 10000) {
+      // 10s response time
       const alert: SentinelAlert = {
         id: crypto.randomUUID(),
         type: 'performance_degradation',
@@ -1051,7 +1086,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         metrics: { responseTime: event.value },
         timestamp: new Date(),
         escalated: false,
-        resolved: false
+        resolved: false,
       };
 
       this.alerts.set(alert.id, alert);
@@ -1070,7 +1105,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         metrics: event.metadata,
         timestamp: new Date(),
         escalated: false,
-        resolved: false
+        resolved: false,
       };
 
       this.alerts.set(alert.id, alert);
@@ -1083,7 +1118,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     try {
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
-        params: args
+        params: args,
       });
 
       return {
@@ -1091,13 +1126,13 @@ export class NovaSentinelIntegration extends EventEmitter {
         data: {
           monitors: response.data.monitors || [],
           total: response.data.monitors?.length || 0,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
     } catch (error) {
       return {
         success: false,
-        error: `Failed to get monitors: ${error.message}`
+        error: `Failed to get monitors: ${error.message}`,
       };
     }
   }
@@ -1106,7 +1141,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     try {
       const response = await axios.get(`${this.sentinelApiUrl}/incidents`, {
         headers: this.getAuthHeaders(),
-        params: args
+        params: args,
       });
 
       return {
@@ -1114,41 +1149,45 @@ export class NovaSentinelIntegration extends EventEmitter {
         data: {
           incidents: response.data.incidents || [],
           total: response.data.incidents?.length || 0,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
     } catch (error) {
       return {
         success: false,
-        error: `Failed to get incidents: ${error.message}`
+        error: `Failed to get incidents: ${error.message}`,
       };
     }
   }
 
   private async handleCreateIncident(args: any): Promise<any> {
     try {
-      const response = await axios.post(`${this.sentinelApiUrl}/incidents`, {
-        monitor_id: args.monitor_id,
-        summary: args.summary,
-        description: args.description,
-        severity: args.severity,
-        status: 'open',
-        started_at: new Date().toISOString()
-      }, {
-        headers: this.getAuthHeaders()
-      });
+      const response = await axios.post(
+        `${this.sentinelApiUrl}/incidents`,
+        {
+          monitor_id: args.monitor_id,
+          summary: args.summary,
+          description: args.description,
+          severity: args.severity,
+          status: 'open',
+          started_at: new Date().toISOString(),
+        },
+        {
+          headers: this.getAuthHeaders(),
+        },
+      );
 
       return {
         success: true,
         data: {
           incident_id: response.data.id,
-          message: 'Incident created successfully'
-        }
+          message: 'Incident created successfully',
+        },
       };
     } catch (error) {
       return {
         success: false,
-        error: `Failed to create incident: ${error.message}`
+        error: `Failed to create incident: ${error.message}`,
       };
     }
   }
@@ -1156,17 +1195,17 @@ export class NovaSentinelIntegration extends EventEmitter {
   private async handleGetStatusPage(args: any): Promise<any> {
     try {
       const response = await axios.get(`${this.sentinelApiUrl}/status/${args.tenant_id}`, {
-        headers: this.getAuthHeaders()
+        headers: this.getAuthHeaders(),
       });
 
       return {
         success: true,
-        data: response.data
+        data: response.data,
       };
     } catch (error) {
       return {
         success: false,
-        error: `Failed to get status page: ${error.message}`
+        error: `Failed to get status page: ${error.message}`,
       };
     }
   }
@@ -1181,20 +1220,20 @@ export class NovaSentinelIntegration extends EventEmitter {
         status: 'open',
         summary: `AI Error: ${args.component}`,
         description: `${args.error_message}\n\nMetadata: ${JSON.stringify(args.metadata || {})}`,
-        startedAt: new Date()
+        startedAt: new Date(),
       });
 
       return {
         success: true,
         data: {
           incident_id: incident,
-          message: 'AI error reported to Nova Sentinel'
-        }
+          message: 'AI error reported to Nova Sentinel',
+        },
       };
     } catch (error) {
       return {
         success: false,
-        error: `Failed to report AI error: ${error.message}`
+        error: `Failed to report AI error: ${error.message}`,
       };
     }
   }
@@ -1203,12 +1242,12 @@ export class NovaSentinelIntegration extends EventEmitter {
   private async createSentinelMonitor(monitor: any): Promise<void> {
     try {
       await axios.post(`${this.sentinelApiUrl}/monitors`, monitor, {
-        headers: this.getAuthHeaders()
+        headers: this.getAuthHeaders(),
       });
     } catch (error) {
-      logger.warn('Failed to create Nova Sentinel monitor', { 
-        monitor: monitor.name, 
-        error: error.message 
+      logger.warn('Failed to create Nova Sentinel monitor', {
+        monitor: monitor.name,
+        error: error.message,
       });
     }
   }
@@ -1217,7 +1256,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     try {
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
-        params: { name }
+        params: { name },
       });
 
       return response.data.monitors && response.data.monitors.length > 0;
@@ -1232,15 +1271,17 @@ export class NovaSentinelIntegration extends EventEmitter {
       // Send AI metrics as heartbeat data to Sentinel
       if (metric.metricType === 'performance') {
         const monitorId = `ai-${metric.providerId}`;
-        
+
         // Find the monitor and update its status
-        const monitor = Array.from(this.monitors.values())
-          .find(m => m.component === metric.providerId);
+        const monitor = Array.from(this.monitors.values()).find(
+          (m) => m.component === metric.providerId,
+        );
 
         if (monitor) {
-          await this.updateMonitorStatus(monitor.id, 
+          await this.updateMonitorStatus(
+            monitor.id,
             metric.value > this.config.escalationThresholds.aiResponseTime ? 'down' : 'up',
-            { responseTime: metric.value }
+            { responseTime: metric.value },
           );
         }
       }
@@ -1258,7 +1299,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         status: 'open',
         summary: `Security Alert: ${alert.alertType}`,
         description: alert.description,
-        startedAt: alert.timestamp
+        startedAt: alert.timestamp,
       });
     } catch (error) {
       logger.warn('Failed to create Sentinel incident from alert:', error.message);
@@ -1267,13 +1308,12 @@ export class NovaSentinelIntegration extends EventEmitter {
 
   private async updateMonitorStatusFromEvent(event: any): Promise<void> {
     try {
-      const monitor = Array.from(this.monitors.values())
-        .find(m => m.component === 'ai-security');
+      const monitor = Array.from(this.monitors.values()).find((m) => m.component === 'ai-security');
 
       if (monitor) {
-        await this.updateMonitorStatus(monitor.id, 'down', { 
+        await this.updateMonitorStatus(monitor.id, 'down', {
           lastError: event.eventType,
-          severity: event.severity 
+          severity: event.severity,
         });
       }
     } catch (error) {
@@ -1283,14 +1323,14 @@ export class NovaSentinelIntegration extends EventEmitter {
 
   private async updateProviderMonitorStatus(event: any): Promise<void> {
     try {
-      const monitor = Array.from(this.monitors.values())
-        .find(m => m.component === event.providerId);
+      const monitor = Array.from(this.monitors.values()).find(
+        (m) => m.component === event.providerId,
+      );
 
       if (monitor) {
-        await this.updateMonitorStatus(monitor.id, 
-          event.healthy ? 'up' : 'down',
-          { healthReason: event.reason }
-        );
+        await this.updateMonitorStatus(monitor.id, event.healthy ? 'up' : 'down', {
+          healthReason: event.reason,
+        });
       }
     } catch (error) {
       logger.warn('Failed to update provider monitor status:', error.message);
@@ -1306,7 +1346,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         status: 'open',
         summary: `AI Failure: ${event.component}`,
         description: `AI request failed: ${event.error}\n\nMetadata: ${JSON.stringify(event.metadata || {})}`,
-        startedAt: new Date()
+        startedAt: new Date(),
       });
     } catch (error) {
       logger.warn('Failed to report AI failure to Sentinel:', error.message);
@@ -1315,28 +1355,38 @@ export class NovaSentinelIntegration extends EventEmitter {
 
   // Helper methods
   private extractComponentFromTags(tags: string[]): string {
-    const aiTag = tags.find(tag => tag.startsWith('ai-') || tag === 'core' || tag === 'rag' || tag === 'mcp');
+    const aiTag = tags.find(
+      (tag) => tag.startsWith('ai-') || tag === 'core' || tag === 'rag' || tag === 'mcp',
+    );
     return aiTag || 'unknown';
   }
 
   private mapSentinelStatus(status: string): SentinelMonitor['status'] {
     switch (status) {
-      case 'active': return 'up';
-      case 'paused': return 'unknown';
-      case 'maintenance': return 'unknown';
-      default: return 'down';
+      case 'active':
+        return 'up';
+      case 'paused':
+        return 'unknown';
+      case 'maintenance':
+        return 'unknown';
+      default:
+        return 'down';
     }
   }
 
   private async updateSentinelMonitor(monitor: SentinelMonitor): Promise<void> {
     try {
-      await axios.patch(`${this.sentinelApiUrl}/monitors/${monitor.id}`, {
-        name: monitor.name,
-        component: monitor.component,
-        status: monitor.status,
-        avg_response_time: monitor.avgResponseTime,
-        uptime_24h: monitor.uptime24h
-      }, { headers: this.getAuthHeaders() });
+      await axios.patch(
+        `${this.sentinelApiUrl}/monitors/${monitor.id}`,
+        {
+          name: monitor.name,
+          component: monitor.component,
+          status: monitor.status,
+          avg_response_time: monitor.avgResponseTime,
+          uptime_24h: monitor.uptime24h,
+        },
+        { headers: this.getAuthHeaders() },
+      );
     } catch (error) {
       logger.warn('Failed to update Sentinel monitor', { id: monitor.id, error: error.message });
     }
@@ -1344,14 +1394,18 @@ export class NovaSentinelIntegration extends EventEmitter {
 
   private async createSentinelIncident(incident: SentinelIncident): Promise<void> {
     try {
-      await axios.post(`${this.sentinelApiUrl}/incidents`, {
-        monitor_id: incident.monitorId,
-        severity: incident.severity,
-        status: incident.status,
-        summary: incident.summary,
-        description: incident.description,
-        started_at: incident.startedAt
-      }, { headers: this.getAuthHeaders() });
+      await axios.post(
+        `${this.sentinelApiUrl}/incidents`,
+        {
+          monitor_id: incident.monitorId,
+          severity: incident.severity,
+          status: incident.status,
+          summary: incident.summary,
+          description: incident.description,
+          started_at: incident.startedAt,
+        },
+        { headers: this.getAuthHeaders() },
+      );
     } catch (error) {
       logger.warn('Failed to create Sentinel incident', { error: error.message });
     }
@@ -1359,10 +1413,14 @@ export class NovaSentinelIntegration extends EventEmitter {
 
   private async updateSentinelIncident(incident: SentinelIncident): Promise<void> {
     try {
-      await axios.patch(`${this.sentinelApiUrl}/incidents/${incident.id}`, {
-        status: incident.status,
-        resolved_at: incident.resolvedAt || undefined
-      }, { headers: this.getAuthHeaders() });
+      await axios.patch(
+        `${this.sentinelApiUrl}/incidents/${incident.id}`,
+        {
+          status: incident.status,
+          resolved_at: incident.resolvedAt || undefined,
+        },
+        { headers: this.getAuthHeaders() },
+      );
     } catch (error) {
       logger.warn('Failed to update Sentinel incident', { id: incident.id, error: error.message });
     }
@@ -1372,7 +1430,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     try {
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
-        params: { tags: 'ai-fabric' }
+        params: { tags: 'ai-fabric' },
       });
 
       logger.info('Synced monitors from Sentinel', { count: response.data.monitors?.length || 0 });
@@ -1401,11 +1459,13 @@ export class NovaSentinelIntegration extends EventEmitter {
       const description = `${incident.description}\n\nComponent: ${incident.component}\nSeverity: ${incident.severity}`;
       await db.query?.(
         'INSERT INTO tickets (id, ticket_id, title, description, priority, status, requested_by_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
-        [id, `INC-${Date.now()}`, title, description, incident.severity, 'open', null, now, now]
+        [id, `INC-${Date.now()}`, title, description, incident.severity, 'open', null, now, now],
       );
       return id;
     } catch (error) {
-      logger.warn('Ticket creation fallback (db unavailable)', { error: (error as Error)?.message });
+      logger.warn('Ticket creation fallback (db unavailable)', {
+        error: (error as Error)?.message,
+      });
       return crypto.randomUUID();
     }
   }
@@ -1415,22 +1475,25 @@ export class NovaSentinelIntegration extends EventEmitter {
       const { default: db } = await import('../db.js');
       await db.query?.(
         'UPDATE tickets SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-        ['resolved', ticketId]
+        ['resolved', ticketId],
       );
       if (resolution) {
         await db.query?.(
           'INSERT INTO ticket_comments (id, ticket_id, content, type, created_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)',
-          [crypto.randomUUID(), ticketId, `Resolution: ${resolution}`, 'internal']
+          [crypto.randomUUID(), ticketId, `Resolution: ${resolution}`, 'internal'],
         );
       }
     } catch (error) {
-      logger.warn('Ticket resolution fallback (db unavailable)', { error: (error as Error)?.message, ticketId });
+      logger.warn('Ticket resolution fallback (db unavailable)', {
+        error: (error as Error)?.message,
+        ticketId,
+      });
     }
   }
 
   private getAuthHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
 
     if (this.apiKey) {
@@ -1442,7 +1505,7 @@ export class NovaSentinelIntegration extends EventEmitter {
 
   async shutdown(): Promise<void> {
     logger.info('Shutting down Nova Sentinel Integration...');
-    
+
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
     }

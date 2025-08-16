@@ -20,8 +20,8 @@ export const Card: React.FC<CardProps> = ({
     <div className={`card ${className}`} style={style}>
       {(title || description) && (
         <div className="mb-4">
-          {title && <h3 className="text-lg font-semibold card-title">{title}</h3>}
-          {description && <p className="text-sm mt-1 card-desc">{description}</p>}
+          {title && <h3 className="card-title text-lg font-semibold">{title}</h3>}
+          {description && <p className="card-desc mt-1 text-sm">{description}</p>}
         </div>
       )}
       {children}

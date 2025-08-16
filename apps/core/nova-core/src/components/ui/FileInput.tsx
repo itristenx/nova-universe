@@ -34,23 +34,14 @@ export const FileInput: React.FC<FileInputProps> = ({
 
   return (
     <div className={`space-y-1 ${className}`}>
-      {label && (
-        <label className="block text-sm font-medium text-gray-700">
-          {label}
-        </label>
-      )}
-      
+      {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
+
       <div className="flex items-center space-x-3">
-        <Button
-          variant="secondary"
-          onClick={handleButtonClick}
-          disabled={disabled}
-          type="button"
-        >
-          <CloudArrowUpIcon className="h-4 w-4 mr-2" />
+        <Button variant="secondary" onClick={handleButtonClick} disabled={disabled} type="button">
+          <CloudArrowUpIcon className="mr-2 h-4 w-4" />
           Choose File
         </Button>
-        
+
         <input
           ref={fileInputRef}
           type="file"
@@ -61,7 +52,7 @@ export const FileInput: React.FC<FileInputProps> = ({
           aria-label={label}
         />
       </div>
-      
+
       {error && <p className="text-sm text-red-600">{error}</p>}
       {helperText && !error && <p className="text-sm text-gray-500">{helperText}</p>}
     </div>

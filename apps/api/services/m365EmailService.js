@@ -12,8 +12,9 @@ class M365EmailService {
     this.running = false;
     this.token = null;
     this.tokenExpires = 0;
-    this.scopes = (process.env.M365_GRAPH_SCOPES ||
-      'https://graph.microsoft.com/.default').split(' ');
+    this.scopes = (process.env.M365_GRAPH_SCOPES || 'https://graph.microsoft.com/.default').split(
+      ' ',
+    );
     this.client = new ConfidentialClientApplication({
       auth: {
         clientId: process.env.M365_CLIENT_ID || '',
@@ -49,7 +50,7 @@ class M365EmailService {
         },
         saveToSentItems: true,
       },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
   }
 
@@ -61,12 +62,14 @@ class M365EmailService {
       } catch (err) {
         logger.error('M365 Polling error', err);
       }
-      await new Promise(res => setTimeout(res, this.pollIntervalMs));
+      await new Promise((res) => setTimeout(res, this.pollIntervalMs));
     }
   }
 
   async pollAllAccounts() {
-    const accounts = await db.any('SELECT * FROM email_accounts WHERE enabled = TRUE AND webhook_mode = FALSE');
+    const accounts = await db.any(
+      'SELECT * FROM email_accounts WHERE enabled = TRUE AND webhook_mode = FALSE',
+    );
     for (const account of accounts) {
       await this.pollAccount(account);
     }
@@ -98,13 +101,15 @@ class M365EmailService {
     await axios.patch(
       `${GRAPH_BASE}/users/${account.address}/messages/${message.id}`,
       { isRead: true },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
   }
 
   async subscribeWebhooks() {
     const token = await this.getToken();
-    const accounts = await db.any('SELECT * FROM email_accounts WHERE enabled = TRUE AND webhook_mode = TRUE');
+    const accounts = await db.any(
+      'SELECT * FROM email_accounts WHERE enabled = TRUE AND webhook_mode = TRUE',
+    );
     if (!process.env.PUBLIC_URL) {
       logger.error('PUBLIC_URL must be set when webhook_mode is enabled.');
       throw new Error('PUBLIC_URL is required for webhook configuration.');
@@ -130,16 +135,17 @@ class M365EmailService {
   async handleWebhookNotification(notification) {
     if (notification.clientState !== process.env.M365_WEBHOOK_SECRET) return;
     const token = await this.getToken();
-    const { data } = await axios.get(
-      `${GRAPH_BASE}/${notification.resource}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const { data } = await axios.get(`${GRAPH_BASE}/${notification.resource}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     const recipient = data.toRecipients?.[0]?.emailAddress?.address;
     if (!recipient) {
       logger.warn('Webhook notification missing recipient information');
       return;
     }
-    const account = await db.oneOrNone('SELECT * FROM email_accounts WHERE address=$1', [recipient]);
+    const account = await db.oneOrNone('SELECT * FROM email_accounts WHERE address=$1', [
+      recipient,
+    ]);
     if (account) {
       await this.handleNewMessage(data, account);
     }

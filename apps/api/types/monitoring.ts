@@ -14,7 +14,20 @@ export interface Monitor {
   id: string;
   kuma_id?: string;
   name: string;
-  type: 'http' | 'tcp' | 'ping' | 'dns' | 'push' | 'ssl' | 'keyword' | 'json-query' | 'docker' | 'steam' | 'grpc' | 'mqtt' | 'radius';
+  type:
+    | 'http'
+    | 'tcp'
+    | 'ping'
+    | 'dns'
+    | 'push'
+    | 'ssl'
+    | 'keyword'
+    | 'json-query'
+    | 'docker'
+    | 'steam'
+    | 'grpc'
+    | 'mqtt'
+    | 'radius';
   url?: string;
   hostname?: string;
   port?: number;
@@ -205,7 +218,55 @@ export interface IncidentStats {
 export interface NotificationChannel {
   id: string;
   name: string;
-  type: 'email' | 'sms' | 'slack' | 'discord' | 'webhook' | 'telegram' | 'pushover' | 'gotify' | 'teams' | 'matrix' | 'signal' | 'pushbullet' | 'line' | 'mattermost' | 'pushj' | 'apprise' | 'lunasea' | 'feishu' | 'aliyunsms' | 'dingtalk' | 'bark' | 'serwersms' | 'stackfield' | 'smseagle' | 'pagerduty' | 'pagertree' | 'twilio' | 'signl4' | 'dingding' | 'rocket_chat' | 'pushsafer' | 'octopush' | 'promosms' | 'clicksendsms' | 'lunasea' | 'notica' | 'pushme' | 'gorush' | 'opsgenie' | 'alerta' | 'smsc' | 'wecom' | 'highsms' | 'splunk' | 'homeassistant' | 'ntfy' | 'pduinfo' | 'telegram_bot';
+  type:
+    | 'email'
+    | 'sms'
+    | 'slack'
+    | 'discord'
+    | 'webhook'
+    | 'telegram'
+    | 'pushover'
+    | 'gotify'
+    | 'teams'
+    | 'matrix'
+    | 'signal'
+    | 'pushbullet'
+    | 'line'
+    | 'mattermost'
+    | 'pushj'
+    | 'apprise'
+    | 'lunasea'
+    | 'feishu'
+    | 'aliyunsms'
+    | 'dingtalk'
+    | 'bark'
+    | 'serwersms'
+    | 'stackfield'
+    | 'smseagle'
+    | 'pagerduty'
+    | 'pagertree'
+    | 'twilio'
+    | 'signl4'
+    | 'dingding'
+    | 'rocket_chat'
+    | 'pushsafer'
+    | 'octopush'
+    | 'promosms'
+    | 'clicksendsms'
+    | 'lunasea'
+    | 'notica'
+    | 'pushme'
+    | 'gorush'
+    | 'opsgenie'
+    | 'alerta'
+    | 'smsc'
+    | 'wecom'
+    | 'highsms'
+    | 'splunk'
+    | 'homeassistant'
+    | 'ntfy'
+    | 'pduinfo'
+    | 'telegram_bot';
   tenant_id?: string;
   config: Record<string, any>;
   created_by?: string;
@@ -229,7 +290,13 @@ export interface NotificationSubscription {
 }
 
 export interface NotificationEvent {
-  type: 'incident_created' | 'incident_updated' | 'incident_resolved' | 'monitor_down' | 'monitor_up' | 'maintenance_scheduled';
+  type:
+    | 'incident_created'
+    | 'incident_updated'
+    | 'incident_resolved'
+    | 'monitor_down'
+    | 'monitor_up'
+    | 'maintenance_scheduled';
   monitor_id?: string;
   incident_id?: string;
   tenant_id: string;

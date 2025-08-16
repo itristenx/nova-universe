@@ -13,7 +13,7 @@ const __dirname = dirname(__filename);
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.simple(),
-  transports: [new winston.transports.Console()]
+  transports: [new winston.transports.Console()],
 });
 
 export class DatabaseService {
@@ -37,7 +37,7 @@ export class DatabaseService {
 
       // Create tables
       await this.createTables();
-      
+
       logger.info(`Database initialized: ${this.config.path}`);
     } catch (error) {
       logger.error('Database initialization failed:', error);
@@ -371,7 +371,7 @@ export class DatabaseService {
       INSERT INTO monitors (id, uptime_kuma_id, tenant_id, created_by, name, type, config)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     const id = crypto.randomUUID();
     stmt.run(
       id,
@@ -380,9 +380,9 @@ export class DatabaseService {
       monitorData.createdBy,
       monitorData.name,
       monitorData.type,
-      JSON.stringify(monitorData.config)
+      JSON.stringify(monitorData.config),
     );
-    
+
     return { id, ...monitorData };
   }
 
@@ -392,12 +392,8 @@ export class DatabaseService {
       SET config = ?, updated_by = ?
       WHERE uptime_kuma_id = ?
     `);
-    
-    stmt.run(
-      JSON.stringify(updateData.config),
-      updateData.updatedBy,
-      uptimeKumaId
-    );
+
+    stmt.run(JSON.stringify(updateData.config), updateData.updatedBy, uptimeKumaId);
   }
 
   async deleteMonitor(uptimeKumaId) {
@@ -410,31 +406,31 @@ export class DatabaseService {
       SELECT * FROM monitors WHERE uptime_kuma_id = ?
     `);
     const monitor = stmt.get(uptimeKumaId);
-    
+
     if (monitor && monitor.config) {
       monitor.config = JSON.parse(monitor.config);
     }
-    
+
     return monitor;
   }
 
   async getAllMonitors(tenantId = null) {
     let query = 'SELECT * FROM monitors';
     let params = [];
-    
+
     if (tenantId) {
       query += ' WHERE tenant_id = ?';
       params.push(tenantId);
     }
-    
+
     query += ' ORDER BY created_at DESC';
-    
+
     const stmt = this.db.prepare(query);
     const monitors = stmt.all(...params);
-    
-    return monitors.map(monitor => ({
+
+    return monitors.map((monitor) => ({
       ...monitor,
-      config: monitor.config ? JSON.parse(monitor.config) : {}
+      config: monitor.config ? JSON.parse(monitor.config) : {},
     }));
   }
 
@@ -447,7 +443,7 @@ export class DatabaseService {
       INSERT OR REPLACE INTO heartbeats (id, monitor_id, status, time, ping, msg, important, duration)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     const id = crypto.randomUUID();
     stmt.run(
       id,
@@ -457,9 +453,9 @@ export class DatabaseService {
       heartbeatData.ping,
       heartbeatData.msg,
       heartbeatData.important || false,
-      heartbeatData.duration
+      heartbeatData.duration,
     );
-    
+
     return { id, ...heartbeatData };
   }
 
@@ -470,7 +466,7 @@ export class DatabaseService {
       ORDER BY time DESC 
       LIMIT ?
     `);
-    
+
     return stmt.all(monitorId, limit);
   }
 
@@ -481,7 +477,7 @@ export class DatabaseService {
       ORDER BY time DESC 
       LIMIT 1
     `);
-    
+
     return stmt.get(monitorId);
   }
 
@@ -494,7 +490,7 @@ export class DatabaseService {
       INSERT INTO status_pages (id, uptime_kuma_id, tenant_id, created_by, title, slug, config, published)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     const id = crypto.randomUUID();
     stmt.run(
       id,
@@ -504,9 +500,9 @@ export class DatabaseService {
       statusPageData.title,
       statusPageData.slug,
       JSON.stringify(statusPageData.config),
-      statusPageData.published || false
+      statusPageData.published || false,
     );
-    
+
     return { id, ...statusPageData };
   }
 
@@ -515,11 +511,11 @@ export class DatabaseService {
       SELECT * FROM status_pages WHERE slug = ? AND published = true
     `);
     const page = stmt.get(slug);
-    
+
     if (page && page.config) {
       page.config = JSON.parse(page.config);
     }
-    
+
     return page;
   }
 
@@ -529,12 +525,8 @@ export class DatabaseService {
       SET config = ?, updated_by = ?
       WHERE uptime_kuma_id = ?
     `);
-    
-    stmt.run(
-      JSON.stringify(updateData.config),
-      updateData.updatedBy,
-      uptimeKumaId
-    );
+
+    stmt.run(JSON.stringify(updateData.config), updateData.updatedBy, uptimeKumaId);
   }
 
   async deleteStatusPage(uptimeKumaId) {
@@ -552,18 +544,18 @@ export class DatabaseService {
       (id, status_page_id, email, notification_types, confirmation_token)
       VALUES (?, ?, ?, ?, ?)
     `);
-    
+
     const id = crypto.randomUUID();
     const token = crypto.randomBytes(32).toString('hex');
-    
+
     stmt.run(
       id,
       subscriptionData.statusPageId,
       subscriptionData.email,
       JSON.stringify(subscriptionData.types),
-      token
+      token,
     );
-    
+
     return { id, confirmationToken: token, ...subscriptionData };
   }
 
@@ -573,7 +565,7 @@ export class DatabaseService {
       SET confirmed = true, confirmed_at = CURRENT_TIMESTAMP
       WHERE confirmation_token = ?
     `);
-    
+
     const result = stmt.run(token);
     return result.changes > 0;
   }
@@ -586,7 +578,7 @@ export class DatabaseService {
       AND unsubscribed_at IS NULL
       AND json_extract(notification_types, '$') LIKE ?
     `);
-    
+
     return stmt.all(statusPageId, `%${notificationType}%`);
   }
 
@@ -599,7 +591,7 @@ export class DatabaseService {
       INSERT INTO analytics_events (id, event_type, monitor_id, status_page_id, metadata, tenant_id)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
-    
+
     const id = crypto.randomUUID();
     stmt.run(
       id,
@@ -607,50 +599,50 @@ export class DatabaseService {
       eventData.monitorId || null,
       eventData.statusPageId || null,
       JSON.stringify(eventData.metadata || {}),
-      eventData.tenantId || null
+      eventData.tenantId || null,
     );
-    
+
     return { id, ...eventData };
   }
 
   async getAnalytics(query) {
     const { type, startDate, endDate, monitorId, statusPageId, tenantId } = query;
-    
+
     let sql = 'SELECT * FROM analytics_events WHERE 1=1';
     const params = [];
-    
+
     if (type) {
       sql += ' AND event_type = ?';
       params.push(type);
     }
-    
+
     if (startDate) {
       sql += ' AND timestamp >= ?';
       params.push(startDate);
     }
-    
+
     if (endDate) {
       sql += ' AND timestamp <= ?';
       params.push(endDate);
     }
-    
+
     if (monitorId) {
       sql += ' AND monitor_id = ?';
       params.push(monitorId);
     }
-    
+
     if (statusPageId) {
       sql += ' AND status_page_id = ?';
       params.push(statusPageId);
     }
-    
+
     if (tenantId) {
       sql += ' AND tenant_id = ?';
       params.push(tenantId);
     }
-    
+
     sql += ' ORDER BY timestamp DESC LIMIT 1000';
-    
+
     const stmt = this.db.prepare(sql);
     return stmt.all(...params);
   }
@@ -677,7 +669,7 @@ export class DatabaseService {
         (SELECT COUNT(*) FROM heartbeats WHERE time > datetime('now', '-1 hour')) as recent_heartbeats,
         (SELECT COUNT(*) FROM status_page_subscriptions WHERE confirmed = true) as subscribers
     `);
-    
+
     return stmt.get();
   }
 

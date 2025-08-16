@@ -45,13 +45,16 @@ class NovaDatabaseManager {
       await Promise.all([
         Promise.resolve(), // Prisma client is already initialized
         enhancedMongo.getDb(),
-        elasticManager.initialize()
+        elasticManager.initialize(),
       ]);
 
       this.initialized = true;
       logger.info('Nova Database Manager initialized successfully');
     } catch (error) {
-      logger.error('Failed to initialize Nova Database Manager: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Failed to initialize Nova Database Manager: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -61,19 +64,22 @@ class NovaDatabaseManager {
     const [postgresHealth, mongoHealth, elasticHealth] = await Promise.allSettled([
       enhancedPrisma.healthCheck(),
       enhancedMongo.healthCheck(),
-      elasticManager.healthCheck()
+      elasticManager.healthCheck(),
     ]);
 
     const healthStatus = {
-      postgres: postgresHealth.status === 'fulfilled' 
-        ? postgresHealth.value 
-        : { healthy: false, error: postgresHealth.reason?.message },
-      mongo: mongoHealth.status === 'fulfilled'
-        ? mongoHealth.value
-        : { healthy: false, error: mongoHealth.reason?.message },
-      elasticsearch: elasticHealth.status === 'fulfilled'
-        ? elasticHealth.value
-        : { healthy: false, error: elasticHealth.reason?.message }
+      postgres:
+        postgresHealth.status === 'fulfilled'
+          ? postgresHealth.value
+          : { healthy: false, error: postgresHealth.reason?.message },
+      mongo:
+        mongoHealth.status === 'fulfilled'
+          ? mongoHealth.value
+          : { healthy: false, error: mongoHealth.reason?.message },
+      elasticsearch:
+        elasticHealth.status === 'fulfilled'
+          ? elasticHealth.value
+          : { healthy: false, error: elasticHealth.reason?.message },
     };
 
     logger.info('Health status: ' + JSON.stringify(healthStatus));
@@ -90,19 +96,13 @@ class NovaDatabaseManager {
       const user = await enhancedPrisma.prisma.user.create({ data: userData });
 
       // Log user creation to MongoDB
-      await enhancedMongo.logUserActivity(
-        user.id,
-        'user_created',
-        { userId: user.id, email: user.email }
-      );
+      await enhancedMongo.logUserActivity(user.id, 'user_created', {
+        userId: user.id,
+        email: user.email,
+      });
 
       // Also log as audit entry
-      await enhancedMongo.logAudit(
-        user.id,
-        'user_created',
-        { email: user.email },
-        userData.ip
-      );
+      await enhancedMongo.logAudit(user.id, 'user_created', { email: user.email }, userData.ip);
 
       logger.info(`User created: ${user.id}`);
       return user;
@@ -112,7 +112,7 @@ class NovaDatabaseManager {
         'Failed to create user',
         'database_manager',
         error as Error,
-        { userData }
+        { userData },
       );
       throw error;
     }
@@ -125,23 +125,14 @@ class NovaDatabaseManager {
       // Update user in PostgreSQL
       const user = await enhancedPrisma.prisma.user.update({
         where: { id: userId },
-        data: updateData
+        data: updateData,
       });
 
       // Log update to MongoDB
-      await enhancedMongo.logUserActivity(
-        userId,
-        'user_updated',
-        { changes: updateData }
-      );
+      await enhancedMongo.logUserActivity(userId, 'user_updated', { changes: updateData });
 
       // Audit log
-      await enhancedMongo.logAudit(
-        userId,
-        'user_updated',
-        { changes: updateData },
-        auditInfo.ip
-      );
+      await enhancedMongo.logAudit(userId, 'user_updated', { changes: updateData }, auditInfo.ip);
 
       return user;
     } catch (error) {
@@ -150,7 +141,7 @@ class NovaDatabaseManager {
         'Failed to update user',
         'database_manager',
         error as Error,
-        { userId, updateData }
+        { userId, updateData },
       );
       throw error;
     }
@@ -164,12 +155,12 @@ class NovaDatabaseManager {
       // Create ticket in PostgreSQL (first check if supportTicket model exists)
       let ticket;
       try {
-        ticket = await enhancedPrisma.prisma.support_tickets.create({ 
+        ticket = await enhancedPrisma.prisma.support_tickets.create({
           data: ticketData,
           include: {
             users_support_tickets_userIdTousers: true,
-            users_support_tickets_assigneeIdTousers: true
-          }
+            users_support_tickets_assigneeIdTousers: true,
+          },
         });
       } catch (error: any) {
         // If supportTicket model doesn't exist, create a generic ticket record
@@ -180,15 +171,15 @@ class NovaDatabaseManager {
             'info',
             'Ticket created (no PostgreSQL model)',
             'database_manager',
-            ticketData
+            ticketData,
           );
-          
+
           // Create a mock ticket for indexing
           ticket = {
             id: `ticket_${Date.now()}`,
             ...ticketData,
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
           };
         } else {
           throw error;
@@ -207,15 +198,14 @@ class NovaDatabaseManager {
         assigneeId: ticket.assigneeId,
         tags: ticket.tags,
         createdAt: ticket.createdAt,
-        updatedAt: ticket.updatedAt
+        updatedAt: ticket.updatedAt,
       });
 
       // Log ticket creation
-      await enhancedMongo.logUserActivity(
-        ticket.userId,
-        'ticket_created',
-        { ticketId: ticket.id, title: ticket.title }
-      );
+      await enhancedMongo.logUserActivity(ticket.userId, 'ticket_created', {
+        ticketId: ticket.id,
+        title: ticket.title,
+      });
 
       logger.info(`Ticket created: ${ticket.id}`);
       return ticket;
@@ -225,7 +215,7 @@ class NovaDatabaseManager {
         'Failed to create ticket',
         'database_manager',
         error as Error,
-        { ticketData }
+        { ticketData },
       );
       throw error;
     }
@@ -243,8 +233,8 @@ class NovaDatabaseManager {
           data: updateData,
           include: {
             users_support_tickets_userIdTousers: true,
-            users_support_tickets_assigneeIdTousers: true
-          }
+            users_support_tickets_assigneeIdTousers: true,
+          },
         });
       } catch (error: any) {
         if (error.message.includes('Unknown model')) {
@@ -253,14 +243,14 @@ class NovaDatabaseManager {
             'info',
             'Ticket updated (no PostgreSQL model)',
             'database_manager',
-            { ticketId, updateData }
+            { ticketId, updateData },
           );
-          
+
           // Create mock updated ticket
           ticket = {
             id: ticketId,
             ...updateData,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           };
         } else {
           throw error;
@@ -279,15 +269,14 @@ class NovaDatabaseManager {
         assigneeId: ticket.assigneeId,
         tags: ticket.tags,
         createdAt: ticket.createdAt,
-        updatedAt: ticket.updatedAt
+        updatedAt: ticket.updatedAt,
       });
 
       // Log ticket update
-      await enhancedMongo.logUserActivity(
-        userId,
-        'ticket_updated',
-        { ticketId, changes: updateData }
-      );
+      await enhancedMongo.logUserActivity(userId, 'ticket_updated', {
+        ticketId,
+        changes: updateData,
+      });
 
       return ticket;
     } catch (error) {
@@ -296,7 +285,7 @@ class NovaDatabaseManager {
         'Failed to update ticket',
         'database_manager',
         error as Error,
-        { ticketId, updateData }
+        { ticketId, updateData },
       );
       throw error;
     }
@@ -312,32 +301,24 @@ class NovaDatabaseManager {
       const responseTime = Date.now() - startTime;
 
       // Log search activity
-      await enhancedMongo.logSearch(
-        query,
-        filters.userId,
-        results.hits.length,
-        responseTime,
-        { filters, options }
-      );
+      await enhancedMongo.logSearch(query, filters.userId, results.hits.length, responseTime, {
+        filters,
+        options,
+      });
 
       // Also log as API usage
-      await enhancedMongo.logApiUsage(
-        '/api/tickets/search',
-        'GET',
-        filters.userId,
-        responseTime,
-        { query, filters, resultsCount: results.hits.length }
-      );
+      await enhancedMongo.logApiUsage('/api/tickets/search', 'GET', filters.userId, responseTime, {
+        query,
+        filters,
+        resultsCount: results.hits.length,
+      });
 
       return results;
     } catch (error) {
-      await enhancedMongo.logError(
-        'error',
-        'Failed to search tickets',
-        'search',
-        error as Error,
-        { query, filters }
-      );
+      await enhancedMongo.logError('error', 'Failed to search tickets', 'search', error as Error, {
+        query,
+        filters,
+      });
       throw error;
     }
   }
@@ -350,8 +331,8 @@ class NovaDatabaseManager {
       // Create article in PostgreSQL
       let article;
       try {
-        article = await enhancedPrisma.prisma.knowledge_base_articles.create({ 
-          data: articleData
+        article = await enhancedPrisma.prisma.knowledge_base_articles.create({
+          data: articleData,
         });
       } catch (error: any) {
         if (error.message.includes('Unknown model')) {
@@ -360,14 +341,14 @@ class NovaDatabaseManager {
             'info',
             'KB article created (no PostgreSQL model)',
             'database_manager',
-            articleData
+            articleData,
           );
-          
+
           article = {
             id: `kb_${Date.now()}`,
             ...articleData,
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
           };
         } else {
           throw error;
@@ -389,15 +370,14 @@ class NovaDatabaseManager {
         createdAt: article.createdAt,
         updatedAt: article.updatedAt,
         viewCount: article.viewCount,
-        rating: article.rating
+        rating: article.rating,
       });
 
       // Log creation
-      await enhancedMongo.logUserActivity(
-        article.authorId,
-        'kb_article_created',
-        { articleId: article.id, title: article.title }
-      );
+      await enhancedMongo.logUserActivity(article.authorId, 'kb_article_created', {
+        articleId: article.id,
+        title: article.title,
+      });
 
       return article;
     } catch (error) {
@@ -406,7 +386,7 @@ class NovaDatabaseManager {
         'Failed to create KB article',
         'database_manager',
         error as Error,
-        { articleData }
+        { articleData },
       );
       throw error;
     }
@@ -422,22 +402,18 @@ class NovaDatabaseManager {
       const responseTime = Date.now() - startTime;
 
       // Log search activity
-      await enhancedMongo.logSearch(
-        query,
-        filters.userId,
-        results.hits.length,
-        responseTime,
-        { type: 'knowledge_base', filters, options }
-      );
+      await enhancedMongo.logSearch(query, filters.userId, results.hits.length, responseTime, {
+        type: 'knowledge_base',
+        filters,
+        options,
+      });
 
       // API usage log
-      await enhancedMongo.logApiUsage(
-        '/api/kb/search',
-        'GET',
-        filters.userId,
-        responseTime,
-        { query, filters, resultsCount: results.hits.length }
-      );
+      await enhancedMongo.logApiUsage('/api/kb/search', 'GET', filters.userId, responseTime, {
+        query,
+        filters,
+        resultsCount: results.hits.length,
+      });
 
       return results;
     } catch (error) {
@@ -446,7 +422,7 @@ class NovaDatabaseManager {
         'Failed to search knowledge base',
         'search',
         error as Error,
-        { query, filters }
+        { query, filters },
       );
       throw error;
     }
@@ -457,21 +433,20 @@ class NovaDatabaseManager {
     try {
       await this.ensureInitialized();
 
-      const [
-        dbHealth,
-        searchAnalytics
-      ] = await Promise.allSettled([
+      const [dbHealth, searchAnalytics] = await Promise.allSettled([
         this.getHealthStatus(),
-        elasticManager.getSearchAnalytics(timeRange)
+        elasticManager.getSearchAnalytics(timeRange),
       ]);
 
       return {
         health: dbHealth.status === 'fulfilled' ? dbHealth.value : null,
         search: searchAnalytics.status === 'fulfilled' ? searchAnalytics.value : null,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     } catch (error) {
-      logger.error('Error getting system metrics: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error getting system metrics: ' + (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -483,7 +458,7 @@ class NovaDatabaseManager {
         eventData.level || 'info',
         eventData.message,
         eventData.source || 'nova-universe',
-        eventData.details || {}
+        eventData.details || {},
       );
 
       // Also index important events in Elasticsearch for search
@@ -491,19 +466,23 @@ class NovaDatabaseManager {
         await elasticManager.indexLog(eventData);
       }
     } catch (error) {
-      logger.error('Error logging event: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error logging event: ' + (error instanceof Error ? error.message : String(error)),
+      );
       // Don't throw for logging errors
     }
   }
 
   // Data export for backup/analysis
-  async exportData(options: { 
-    includeUsers?: boolean;
-    includeTickets?: boolean;
-    includeKb?: boolean;
-    includeLogs?: boolean;
-    timeRange?: string;
-  } = {}) {
+  async exportData(
+    options: {
+      includeUsers?: boolean;
+      includeTickets?: boolean;
+      includeKb?: boolean;
+      includeLogs?: boolean;
+      timeRange?: string;
+    } = {},
+  ) {
     try {
       await this.ensureInitialized();
 
@@ -511,8 +490,8 @@ class NovaDatabaseManager {
         exportedAt: new Date(),
         metadata: {
           version: '1.0',
-          options
-        }
+          options,
+        },
       };
 
       if (options.includeUsers) {
@@ -522,8 +501,8 @@ class NovaDatabaseManager {
               id: true,
               email: true,
               createdAt: true,
-              updatedAt: true
-            }
+              updatedAt: true,
+            },
           });
         } catch (error: any) {
           if (error.message.includes('Unknown model')) {
@@ -540,8 +519,8 @@ class NovaDatabaseManager {
           exportData.tickets = await enhancedPrisma.prisma.support_tickets.findMany({
             include: {
               users_support_tickets_userIdTousers: { select: { id: true, email: true } },
-              users_support_tickets_assigneeIdTousers: { select: { id: true, email: true } }
-            }
+              users_support_tickets_assigneeIdTousers: { select: { id: true, email: true } },
+            },
           });
         } catch (error: any) {
           if (error.message.includes('Unknown model')) {
@@ -571,7 +550,7 @@ class NovaDatabaseManager {
         level: 'info',
         message: 'Data export completed',
         source: 'database_manager',
-        details: { options, recordCounts: Object.keys(exportData).length }
+        details: { options, recordCounts: Object.keys(exportData).length },
       });
 
       return exportData;
@@ -580,7 +559,7 @@ class NovaDatabaseManager {
         level: 'error',
         message: 'Data export failed',
         source: 'database_manager',
-        error: error as Error
+        error: error as Error,
       });
       throw error;
     }
@@ -600,13 +579,16 @@ class NovaDatabaseManager {
       await Promise.all([
         enhancedPrisma.disconnect(),
         enhancedMongo.close(),
-        elasticManager.close()
+        elasticManager.close(),
       ]);
 
       logger.info('Nova Database Manager shutdown completed');
       process.exit(0);
     } catch (error) {
-      logger.error('Error during database shutdown: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error during database shutdown: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       process.exit(1);
     }
   }
@@ -633,7 +615,7 @@ export const {
   searchKnowledgeBase,
   getSystemMetrics,
   logEvent,
-  exportData
+  exportData,
 } = novaDb;
 
 export default novaDb;

@@ -7,10 +7,18 @@ import React, { useState } from 'react';
 import {
   AccessibilityProvider,
   ThemeProvider,
-  Button, PrimaryButton, OutlineButton, GhostButton,
-  Input, Card, Modal, Toast, Progress, Spinner,
+  Button,
+  PrimaryButton,
+  OutlineButton,
+  GhostButton,
+  Input,
+  Card,
+  Modal,
+  Toast,
+  Progress,
+  Spinner,
   useTheme,
-  announceToScreenReader
+  announceToScreenReader,
 } from '../../packages/design-system';
 
 const demoStyles = `
@@ -178,15 +186,15 @@ if (typeof document !== 'undefined') {
 
 function ThemeControls() {
   const { colorMode, setColorMode } = useTheme();
-  
+
   return (
     <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
       <OutlineButton
         size="sm"
         onClick={() => setColorMode('light')}
-        style={{ 
+        style={{
           backgroundColor: colorMode === 'light' ? 'var(--color-primary)' : undefined,
-          color: colorMode === 'light' ? 'white' : undefined
+          color: colorMode === 'light' ? 'white' : undefined,
         }}
       >
         ☀️ Light
@@ -194,9 +202,9 @@ function ThemeControls() {
       <OutlineButton
         size="sm"
         onClick={() => setColorMode('dark')}
-        style={{ 
+        style={{
           backgroundColor: colorMode === 'dark' ? 'var(--color-primary)' : undefined,
-          color: colorMode === 'dark' ? 'white' : undefined
+          color: colorMode === 'dark' ? 'white' : undefined,
         }}
       >
         🌙 Dark
@@ -204,9 +212,9 @@ function ThemeControls() {
       <OutlineButton
         size="sm"
         onClick={() => setColorMode('high-contrast')}
-        style={{ 
+        style={{
           backgroundColor: colorMode === 'high-contrast' ? 'var(--color-primary)' : undefined,
-          color: colorMode === 'high-contrast' ? 'white' : undefined
+          color: colorMode === 'high-contrast' ? 'white' : undefined,
         }}
       >
         🔆 High Contrast
@@ -222,12 +230,15 @@ function ComponentShowcase() {
   const [loading, setLoading] = useState(false);
 
   const handleAccessibilityTest = () => {
-    announceToScreenReader('Accessibility test activated. All components are WCAG 2.1 AA compliant.', 'assertive');
+    announceToScreenReader(
+      'Accessibility test activated. All components are WCAG 2.1 AA compliant.',
+      'assertive',
+    );
   };
 
   const handleLoadingTest = async () => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     setLoading(false);
     announceToScreenReader('Loading test completed successfully.');
   };
@@ -278,16 +289,8 @@ function ComponentShowcase() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
               />
-              <Input
-                label="Email Input"
-                type="email"
-                placeholder="user@example.com"
-              />
-              <Input
-                label="Password Input"
-                type="password"
-                placeholder="••••••••"
-              />
+              <Input label="Email Input" type="email" placeholder="user@example.com" />
+              <Input label="Password Input" type="password" placeholder="••••••••" />
               <Input
                 label="Input with Error"
                 error="This field is required"
@@ -300,7 +303,13 @@ function ComponentShowcase() {
             <h3>Textarea & Select</h3>
             <div className="input-showcase">
               <div>
-                <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 'var(--font-medium)' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: 'var(--space-1)',
+                    fontWeight: 'var(--font-medium)',
+                  }}
+                >
                   Textarea
                 </label>
                 <textarea
@@ -312,13 +321,19 @@ function ComponentShowcase() {
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--color-background)',
                     color: 'var(--color-content)',
-                    resize: 'vertical'
+                    resize: 'vertical',
                   }}
                   placeholder="Enter your message..."
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 'var(--font-medium)' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: 'var(--space-1)',
+                    fontWeight: 'var(--font-medium)',
+                  }}
+                >
                   Select
                 </label>
                 <select
@@ -328,7 +343,7 @@ function ComponentShowcase() {
                     border: '1px solid var(--color-muted)40',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--color-background)',
-                    color: 'var(--color-content)'
+                    color: 'var(--color-content)',
                   }}
                 >
                   <option>Choose an option</option>
@@ -393,9 +408,7 @@ function ComponentShowcase() {
               <Card variant="error">
                 <div style={{ padding: 'var(--space-4)' }}>
                   <h4 style={{ margin: '0 0 var(--space-2) 0' }}>❌ Error</h4>
-                  <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>
-                    Something went wrong.
-                  </p>
+                  <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Something went wrong.</p>
                 </div>
               </Card>
             </div>
@@ -443,7 +456,14 @@ function ComponentShowcase() {
 
           <div className="component-demo">
             <h3>Loading States</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-4)',
+                alignItems: 'center',
+              }}
+            >
               <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center' }}>
                 <Spinner size="sm" />
                 <Spinner size="md" />
@@ -463,9 +483,7 @@ function ComponentShowcase() {
         <h2 className="section-title">Modals & Interactions</h2>
         <div className="component-demo">
           <div style={{ textAlign: 'center' }}>
-            <PrimaryButton onClick={() => setShowModal(true)}>
-              Open Modal Demo
-            </PrimaryButton>
+            <PrimaryButton onClick={() => setShowModal(true)}>Open Modal Demo</PrimaryButton>
           </div>
         </div>
       </div>
@@ -538,12 +556,8 @@ function ComponentShowcase() {
             <li>Responsive sizing</li>
           </ul>
           <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-            <OutlineButton onClick={() => setShowModal(false)}>
-              Cancel
-            </OutlineButton>
-            <PrimaryButton onClick={() => setShowModal(false)}>
-              Confirm
-            </PrimaryButton>
+            <OutlineButton onClick={() => setShowModal(false)}>Cancel</OutlineButton>
+            <PrimaryButton onClick={() => setShowModal(false)}>Confirm</PrimaryButton>
           </div>
         </div>
       </Modal>

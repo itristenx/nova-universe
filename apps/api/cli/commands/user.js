@@ -7,17 +7,16 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import bcrypt from 'bcryptjs';
 import Table from 'cli-table3';
-import { 
-  logger, 
-  createSpinner, 
+import {
+  logger,
+  createSpinner,
   connectDatabase,
   validateEmail,
   formatDate,
-  sleep
+  sleep,
 } from '../utils/index.js';
 
-export const userCommand = new Command('user')
-  .description('Manage Nova Universe users');
+export const userCommand = new Command('user').description('Manage Nova Universe users');
 
 // User create command
 userCommand
@@ -40,7 +39,7 @@ userCommand
           email: options.email,
           password: options.password,
           role: options.role,
-          name: options.name
+          name: options.name,
         };
       }
 
@@ -63,7 +62,7 @@ userCommand
   .action(async (options) => {
     try {
       const users = await listUsers(options);
-      
+
       if (options.json) {
         console.log(JSON.stringify(users, null, 2));
       } else {
@@ -107,8 +106,8 @@ userCommand
             type: 'confirm',
             name: 'confirm',
             message: `Are you sure you want to delete user ${chalk.yellow(email)}?`,
-            default: false
-          }
+            default: false,
+          },
         ]);
 
         if (!confirm) {
@@ -132,7 +131,7 @@ userCommand
   .action(async (query, options) => {
     try {
       const users = await searchUsers(query);
-      
+
       if (options.json) {
         console.log(JSON.stringify(users, null, 2));
       } else {
@@ -172,7 +171,7 @@ userCommand
   .action(async (email, options) => {
     try {
       const user = await getUserInfo(email);
-      
+
       if (options.json) {
         console.log(JSON.stringify(user, null, 2));
       } else {
@@ -197,7 +196,7 @@ async function promptUserData(options = {}) {
         if (!input) return 'Email is required';
         if (!validateEmail(input)) return 'Please enter a valid email address';
         return true;
-      }
+      },
     });
   }
 
@@ -210,7 +209,7 @@ async function promptUserData(options = {}) {
         if (!input) return 'Password is required';
         if (input.length < 8) return 'Password must be at least 8 characters';
         return true;
-      }
+      },
     });
 
     questions.push({
@@ -220,7 +219,7 @@ async function promptUserData(options = {}) {
       validate: (input, answers) => {
         if (input !== answers.password) return 'Passwords do not match';
         return true;
-      }
+      },
     });
   }
 
@@ -228,7 +227,7 @@ async function promptUserData(options = {}) {
     questions.push({
       type: 'input',
       name: 'name',
-      message: 'Full name (optional):'
+      message: 'Full name (optional):',
     });
   }
 
@@ -239,9 +238,9 @@ async function promptUserData(options = {}) {
       message: 'User role:',
       choices: [
         { name: 'User', value: 'user' },
-        { name: 'Admin', value: 'admin' }
+        { name: 'Admin', value: 'admin' },
       ],
-      default: 'user'
+      default: 'user',
     });
   }
 
@@ -251,7 +250,7 @@ async function promptUserData(options = {}) {
     email: options.email || answers.email,
     password: options.password || answers.password,
     name: options.name || answers.name,
-    role: options.role || answers.role
+    role: options.role || answers.role,
   };
 }
 
@@ -262,7 +261,7 @@ async function createUser(userData) {
 
   try {
     const db = await connectDatabase();
-    
+
     // Check if user already exists
     const existingUser = await db.collection('users').findOne({ email: userData.email });
     if (existingUser) {
@@ -281,19 +280,18 @@ async function createUser(userData) {
       role: userData.role || 'user',
       active: true,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     await db.collection('users').insertOne(user);
 
     spinner.succeed('User created successfully');
-    
+
     console.log(chalk.green('\n✅ User Details:'));
     console.log(`   Email: ${userData.email}`);
     console.log(`   Name: ${userData.name || 'Not provided'}`);
     console.log(`   Role: ${userData.role}`);
     console.log(`   Status: Active\n`);
-
   } catch (error) {
     spinner.fail('Failed to create user');
     throw error;
@@ -307,27 +305,28 @@ async function listUsers(options = {}) {
 
   try {
     const db = await connectDatabase();
-    
+
     let query = {};
-    
+
     // Apply filters
     if (options.role) {
       query.role = options.role;
     }
-    
+
     if (options.active) {
       query.active = true;
     } else if (options.inactive) {
       query.active = false;
     }
 
-    const users = await db.collection('users')
+    const users = await db
+      .collection('users')
       .find(query, { projection: { password: 0 } })
       .sort({ createdAt: -1 })
       .toArray();
 
     spinner.succeed(`Found ${users.length} user(s)`);
-    
+
     return users;
   } catch (error) {
     spinner.fail('Failed to fetch users');
@@ -344,20 +343,20 @@ function displayUsersTable(users) {
 
   const table = new Table({
     head: ['Email', 'Name', 'Role', 'Status', 'Created'],
-    colWidths: [30, 20, 10, 10, 12]
+    colWidths: [30, 20, 10, 10, 12],
   });
 
   for (const user of users) {
     const statusColor = user.active ? chalk.green : chalk.red;
     const statusIcon = user.active ? '🟢' : '🔴';
     const roleColor = user.role === 'admin' ? chalk.yellow : chalk.blue;
-    
+
     table.push([
       user.email,
       user.name || chalk.gray('N/A'),
       roleColor(user.role),
       statusColor(`${statusIcon} ${user.active ? 'Active' : 'Inactive'}`),
-      formatDate(user.createdAt)
+      formatDate(user.createdAt),
     ]);
   }
 
@@ -373,7 +372,7 @@ async function updateUser(email, options) {
 
   try {
     const db = await connectDatabase();
-    
+
     const user = await db.collection('users').findOne({ email });
     if (!user) {
       spinner.fail('User not found');
@@ -400,22 +399,17 @@ async function updateUser(email, options) {
       updates.active = false;
     }
 
-    await db.collection('users').updateOne(
-      { email },
-      { $set: updates }
-    );
+    await db.collection('users').updateOne({ email }, { $set: updates });
 
     spinner.succeed('User updated successfully');
-    
+
     // Show updated user info
-    const updatedUser = await db.collection('users').findOne(
-      { email },
-      { projection: { password: 0 } }
-    );
-    
+    const updatedUser = await db
+      .collection('users')
+      .findOne({ email }, { projection: { password: 0 } });
+
     console.log(chalk.green('\n✅ Updated User:'));
     displayUserInfo(updatedUser);
-
   } catch (error) {
     spinner.fail('Failed to update user');
     throw error;
@@ -429,9 +423,9 @@ async function deleteUser(email) {
 
   try {
     const db = await connectDatabase();
-    
+
     const result = await db.collection('users').deleteOne({ email });
-    
+
     if (result.deletedCount === 0) {
       spinner.fail('User not found');
       return;
@@ -439,7 +433,6 @@ async function deleteUser(email) {
 
     spinner.succeed('User deleted successfully');
     logger.success(`User ${email} has been removed from the system`);
-
   } catch (error) {
     spinner.fail('Failed to delete user');
     throw error;
@@ -453,21 +446,22 @@ async function searchUsers(query) {
 
   try {
     const db = await connectDatabase();
-    
+
     const searchQuery = {
       $or: [
         { email: { $regex: query, $options: 'i' } },
-        { name: { $regex: query, $options: 'i' } }
-      ]
+        { name: { $regex: query, $options: 'i' } },
+      ],
     };
 
-    const users = await db.collection('users')
+    const users = await db
+      .collection('users')
       .find(searchQuery, { projection: { password: 0 } })
       .sort({ createdAt: -1 })
       .toArray();
 
     spinner.succeed(`Found ${users.length} user(s) matching "${query}"`);
-    
+
     return users;
   } catch (error) {
     spinner.fail('Search failed');
@@ -482,7 +476,7 @@ async function resetUserPassword(email, options) {
 
   try {
     const db = await connectDatabase();
-    
+
     const user = await db.collection('users').findOne({ email });
     if (!user) {
       spinner.fail('User not found');
@@ -505,8 +499,8 @@ async function resetUserPassword(email, options) {
             if (!input) return 'Password is required';
             if (input.length < 8) return 'Password must be at least 8 characters';
             return true;
-          }
-        }
+          },
+        },
       ]);
       newPassword = password;
     }
@@ -515,16 +509,16 @@ async function resetUserPassword(email, options) {
 
     await db.collection('users').updateOne(
       { email },
-      { 
-        $set: { 
+      {
+        $set: {
           password: hashedPassword,
-          updatedAt: new Date()
-        }
-      }
+          updatedAt: new Date(),
+        },
+      },
     );
 
     spinner.succeed('Password reset successfully');
-    
+
     console.log(chalk.green('\n✅ Password Reset Complete:'));
     console.log(`   User: ${email}`);
     if (options.generate) {
@@ -532,7 +526,6 @@ async function resetUserPassword(email, options) {
       console.log(chalk.gray('   Please share this password securely with the user'));
     }
     console.log();
-
   } catch (error) {
     spinner.fail('Failed to reset password');
     throw error;
@@ -546,19 +539,16 @@ async function getUserInfo(email) {
 
   try {
     const db = await connectDatabase();
-    
-    const user = await db.collection('users').findOne(
-      { email },
-      { projection: { password: 0 } }
-    );
-    
+
+    const user = await db.collection('users').findOne({ email }, { projection: { password: 0 } });
+
     if (!user) {
       spinner.fail('User not found');
       throw new Error('User not found');
     }
 
     spinner.succeed('User information retrieved');
-    
+
     return user;
   } catch (error) {
     spinner.fail('Failed to get user info');
@@ -569,12 +559,24 @@ async function getUserInfo(email) {
 // Display user information
 function displayUserInfo(user) {
   console.log(chalk.cyan('\n👤 User Information\n'));
-  
+
   const table = new Table({
-    chars: { 'top': '' , 'top-mid': '' , 'top-left': '' , 'top-right': ''
-            , 'bottom': '' , 'bottom-mid': '' , 'bottom-left': '' , 'bottom-right': ''
-            , 'left': '' , 'left-mid': '' , 'mid': '' , 'mid-mid': ''
-            , 'right': '' , 'right-mid': '' }
+    chars: {
+      top: '',
+      'top-mid': '',
+      'top-left': '',
+      'top-right': '',
+      bottom: '',
+      'bottom-mid': '',
+      'bottom-left': '',
+      'bottom-right': '',
+      left: '',
+      'left-mid': '',
+      mid: '',
+      'mid-mid': '',
+      right: '',
+      'right-mid': '',
+    },
   });
 
   const statusColor = user.active ? chalk.green : chalk.red;
@@ -587,7 +589,7 @@ function displayUserInfo(user) {
     ['Role:', roleColor(user.role)],
     ['Status:', statusColor(`${statusIcon} ${user.active ? 'Active' : 'Inactive'}`)],
     ['Created:', formatDate(user.createdAt)],
-    ['Updated:', formatDate(user.updatedAt)]
+    ['Updated:', formatDate(user.updatedAt)],
   );
 
   console.log(table.toString());

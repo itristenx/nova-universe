@@ -7,7 +7,7 @@ import winston from 'winston';
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.simple(),
-  transports: [new winston.transports.Console()]
+  transports: [new winston.transports.Console()],
 });
 
 export class StatusPageService {
@@ -21,7 +21,7 @@ export class StatusPageService {
     try {
       // Load status pages into cache
       await this.loadStatusPages();
-      
+
       this.isInitialized = true;
       logger.info('Status page service initialized');
     } catch (error) {
@@ -32,14 +32,18 @@ export class StatusPageService {
 
   async loadStatusPages() {
     try {
-      const statusPages = await this.database.db.prepare(`
+      const statusPages = await this.database.db
+        .prepare(
+          `
         SELECT * FROM status_pages WHERE published = true
-      `).all();
+      `,
+        )
+        .all();
 
       for (const page of statusPages) {
         this.pageCache.set(page.slug, {
           ...page,
-          config: JSON.parse(page.config)
+          config: JSON.parse(page.config),
         });
       }
 
@@ -86,15 +90,15 @@ export class StatusPageService {
       `);
 
       const stats = stmt.get(statusPageId, statusPageId);
-      
+
       return {
         totalMonitors: stats.total_monitors || 0,
         upMonitors: stats.up_monitors || 0,
         downMonitors: stats.down_monitors || 0,
         avgResponseTime: Math.round(stats.avg_response_time || 0),
         subscribers: stats.subscribers || 0,
-        overallUptime: stats.total_monitors > 0 ? 
-          (stats.up_monitors / stats.total_monitors) * 100 : 100
+        overallUptime:
+          stats.total_monitors > 0 ? (stats.up_monitors / stats.total_monitors) * 100 : 100,
       };
     } catch (error) {
       logger.error('Error getting page stats:', error);
@@ -104,7 +108,7 @@ export class StatusPageService {
         downMonitors: 0,
         avgResponseTime: 0,
         subscribers: 0,
-        overallUptime: 100
+        overallUptime: 100,
       };
     }
   }
@@ -112,9 +116,13 @@ export class StatusPageService {
   async getPageMonitors(statusPageId) {
     try {
       // Get status page configuration
-      const statusPage = await this.database.db.prepare(`
+      const statusPage = await this.database.db
+        .prepare(
+          `
         SELECT config FROM status_pages WHERE uptime_kuma_id = ?
-      `).get(statusPageId);
+      `,
+        )
+        .get(statusPageId);
 
       if (!statusPage) return [];
 
@@ -125,13 +133,17 @@ export class StatusPageService {
 
       // Get monitors
       const placeholders = monitorIds.map(() => '?').join(',');
-      const monitors = await this.database.db.prepare(`
+      const monitors = await this.database.db
+        .prepare(
+          `
         SELECT * FROM monitors WHERE uptime_kuma_id IN (${placeholders})
-      `).all(...monitorIds);
+      `,
+        )
+        .all(...monitorIds);
 
-      return monitors.map(monitor => ({
+      return monitors.map((monitor) => ({
         ...monitor,
-        config: JSON.parse(monitor.config)
+        config: JSON.parse(monitor.config),
       }));
     } catch (error) {
       logger.error('Error getting page monitors:', error);
@@ -141,12 +153,16 @@ export class StatusPageService {
 
   async getPageIncidents(statusPageId) {
     try {
-      const incidents = await this.database.db.prepare(`
+      const incidents = await this.database.db
+        .prepare(
+          `
         SELECT * FROM incidents 
         WHERE status_page_id = ? 
         AND resolved_at IS NULL 
         ORDER BY created_at DESC
-      `).all(statusPageId);
+      `,
+        )
+        .all(statusPageId);
 
       return incidents;
     } catch (error) {
@@ -158,17 +174,21 @@ export class StatusPageService {
   async getPageMaintenance(statusPageId) {
     try {
       const now = new Date().toISOString();
-      const maintenance = await this.database.db.prepare(`
+      const maintenance = await this.database.db
+        .prepare(
+          `
         SELECT * FROM maintenance 
         WHERE json_extract(affected_status_pages, '$') LIKE '%' || ? || '%'
         AND (status = 'active' OR (status = 'scheduled' AND start_time > ?))
         ORDER BY start_time ASC
-      `).all(statusPageId, now);
+      `,
+        )
+        .all(statusPageId, now);
 
-      return maintenance.map(m => ({
+      return maintenance.map((m) => ({
         ...m,
         affectedMonitors: JSON.parse(m.affected_monitors || '[]'),
-        affectedStatusPages: JSON.parse(m.affected_status_pages || '[]')
+        affectedStatusPages: JSON.parse(m.affected_status_pages || '[]'),
       }));
     } catch (error) {
       logger.error('Error getting page maintenance:', error);
@@ -179,8 +199,8 @@ export class StatusPageService {
   calculateOverallStatus(monitors) {
     if (monitors.length === 0) return 'operational';
 
-    const downMonitors = monitors.filter(m => m.status === 'down').length;
-    const upMonitors = monitors.filter(m => m.status === 'up').length;
+    const downMonitors = monitors.filter((m) => m.status === 'down').length;
+    const upMonitors = monitors.filter((m) => m.status === 'up').length;
 
     if (downMonitors === 0) return 'operational';
     if (downMonitors === monitors.length) return 'major_outage';
@@ -194,19 +214,19 @@ export class StatusPageService {
 
   async generateHTML(statusPage, data) {
     const { monitors, incidents, maintenance, overallStatus } = data;
-    
+
     const statusColors = {
       operational: '#10b981',
       degraded_performance: '#f59e0b',
       partial_outage: '#ef4444',
-      major_outage: '#dc2626'
+      major_outage: '#dc2626',
     };
 
     const statusMessages = {
       operational: 'All Systems Operational',
       degraded_performance: 'Degraded Performance',
       partial_outage: 'Partial System Outage',
-      major_outage: 'Major System Outage'
+      major_outage: 'Major System Outage',
     };
 
     const theme = statusPage.theme || 'light';
@@ -441,37 +461,55 @@ export class StatusPageService {
     </div>
 
     <!-- Active Incidents -->
-    ${incidents.length > 0 ? `
+    ${
+      incidents.length > 0
+        ? `
     <div class="section">
       <div class="section-header">🚨 Active Incidents</div>
-      ${incidents.map(incident => `
+      ${incidents
+        .map(
+          (incident) => `
         <div class="incident">
           <div class="incident-title">${incident.title}</div>
           <div class="incident-time">${new Date(incident.created_at).toLocaleString()}</div>
           <div>${incident.content}</div>
         </div>
-      `).join('')}
+      `,
+        )
+        .join('')}
     </div>
-    ` : ''}
+    `
+        : ''
+    }
 
     <!-- Scheduled Maintenance -->
-    ${maintenance.length > 0 ? `
+    ${
+      maintenance.length > 0
+        ? `
     <div class="section">
       <div class="section-header">🔧 Scheduled Maintenance</div>
-      ${maintenance.map(m => `
+      ${maintenance
+        .map(
+          (m) => `
         <div class="maintenance">
           <div class="maintenance-title">${m.title}</div>
           <div class="incident-time">${new Date(m.start_time).toLocaleString()} - ${new Date(m.end_time).toLocaleString()}</div>
           <div>${m.description || 'Scheduled maintenance window'}</div>
         </div>
-      `).join('')}
+      `,
+        )
+        .join('')}
     </div>
-    ` : ''}
+    `
+        : ''
+    }
 
     <!-- Services Status -->
     <div class="section">
       <div class="section-header">📊 Services Status</div>
-      ${monitors.map(monitor => `
+      ${monitors
+        .map(
+          (monitor) => `
         <div class="monitor-item">
           <div class="monitor-name">${monitor.name}</div>
           <div class="monitor-status">
@@ -480,7 +518,9 @@ export class StatusPageService {
             ${monitor.responseTime ? `<span>(${monitor.responseTime}ms)</span>` : ''}
           </div>
         </div>
-      `).join('')}
+      `,
+        )
+        .join('')}
     </div>
 
     <!-- Subscription Form -->
@@ -535,19 +575,19 @@ export class StatusPageService {
 
   async generateEmbedHTML(statusPage, data) {
     const { monitors, overallStatus, theme = 'light', compact = false } = data;
-    
+
     const statusColors = {
       operational: '#10b981',
       degraded_performance: '#f59e0b',
       partial_outage: '#ef4444',
-      major_outage: '#dc2626'
+      major_outage: '#dc2626',
     };
 
     const statusMessages = {
       operational: 'All Systems Operational',
       degraded_performance: 'Degraded Performance',
       partial_outage: 'Partial System Outage',
-      major_outage: 'Major System Outage'
+      major_outage: 'Major System Outage',
     };
 
     const isDark = theme === 'dark';
@@ -607,7 +647,10 @@ export class StatusPageService {
       ${statusMessages[overallStatus]}
     </div>
     <div class="embed-content">
-      ${monitors.slice(0, compact ? 3 : 10).map(monitor => `
+      ${monitors
+        .slice(0, compact ? 3 : 10)
+        .map(
+          (monitor) => `
         <div class="monitor-item">
           <span>${monitor.name}</span>
           <span>
@@ -615,12 +658,18 @@ export class StatusPageService {
             ${monitor.status === 'up' ? 'Up' : 'Down'}
           </span>
         </div>
-      `).join('')}
-      ${monitors.length > (compact ? 3 : 10) ? `
+      `,
+        )
+        .join('')}
+      ${
+        monitors.length > (compact ? 3 : 10)
+          ? `
         <div class="monitor-item" style="text-align: center; color: ${isDark ? '#94a3b8' : '#64748b'};">
           +${monitors.length - (compact ? 3 : 10)} more services
         </div>
-      ` : ''}
+      `
+          : ''
+      }
     </div>
   </div>
 </body>
@@ -647,7 +696,7 @@ export class StatusPageService {
     try {
       // Update cache from database
       await this.loadStatusPages();
-      
+
       // Emit update event for real-time updates
       logger.debug('Status pages cache updated');
     } catch (error) {
@@ -660,7 +709,7 @@ export class StatusPageService {
   // ========================================================================
 
   async healthCheck() {
-    return this.isInitialized && this.database && await this.database.healthCheck();
+    return this.isInitialized && this.database && (await this.database.healthCheck());
   }
 
   async close() {

@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import React, { useState, useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Card,
   CardHeader,
@@ -27,8 +27,8 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
-  ButtonGroup
-} from '@heroui/react'
+  ButtonGroup,
+} from '@heroui/react';
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -38,98 +38,123 @@ import {
   ClockIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  BookmarkIcon
-} from '@heroicons/react/24/outline'
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
-import type { Ticket } from '../../types'
+  BookmarkIcon,
+} from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import type { Ticket } from '../../types';
 
 // Mock API function - replace with actual API call
 const getTickets = async (): Promise<Ticket[]> => {
-  return []
-}
+  return [];
+};
 
 interface Props {
-  tickets?: Ticket[]
-  onSelect?: (ticket: Ticket) => void
-  onBulkUpdate?: (ticketIds: string[], updates: Partial<Ticket>) => void
-  view?: 'list' | 'card' | 'kanban'
+  tickets?: Ticket[];
+  onSelect?: (ticket: Ticket) => void;
+  onBulkUpdate?: (ticketIds: string[], updates: Partial<Ticket>) => void;
+  view?: 'list' | 'card' | 'kanban';
 }
 
-type ViewMode = 'card' | 'list' | 'kanban'
-type SortField = 'priority' | 'status' | 'created' | 'updated' | 'assignee'
-type SortDirection = 'asc' | 'desc'
+type ViewMode = 'card' | 'list' | 'kanban';
+type SortField = 'priority' | 'status' | 'created' | 'updated' | 'assignee';
+type SortDirection = 'asc' | 'desc';
 
 interface FilterState {
-  search: string
-  status: string[]
-  priority: string[]
-  assignee: string[]
-  queue: string[]
-  slaStatus: string[]
+  search: string;
+  status: string[];
+  priority: string[];
+  assignee: string[];
+  queue: string[];
+  slaStatus: string[];
 }
 
 interface SavedFilter {
-  id: string
-  name: string
-  filters: FilterState
-  isDefault?: boolean
+  id: string;
+  name: string;
+  filters: FilterState;
+  isDefault?: boolean;
 }
 
 interface EnhancedTicket extends Omit<Ticket, 'slaRemaining'> {
-  slaRemaining?: number
-  slaStatus: 'safe' | 'warning' | 'breach' | 'no_sla'
-  slaHours?: number
+  slaRemaining?: number;
+  slaStatus: 'safe' | 'warning' | 'breach' | 'no_sla';
+  slaHours?: number;
 }
 
 export const EnhancedTicketGrid: React.FC<Props> = ({
   tickets: propTickets,
   onSelect,
   onBulkUpdate,
-  view: propView = 'card'
+  view: propView = 'card',
 }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>(propView)
-  const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set())
-  const [sortField, setSortField] = useState<SortField>('priority')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const [showFilters, setShowFilters] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>(propView);
+  const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set());
+  const [sortField, setSortField] = useState<SortField>('priority');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     status: [],
     priority: [],
     assignee: [],
     queue: [],
-    slaStatus: []
-  })
-  
+    slaStatus: [],
+  });
+
   const savedFilters: SavedFilter[] = [
     {
       id: 'default',
       name: 'My Open Tickets',
-      filters: { search: '', status: ['open', 'in-progress'], priority: [], assignee: [], queue: [], slaStatus: [] },
-      isDefault: true
+      filters: {
+        search: '',
+        status: ['open', 'in-progress'],
+        priority: [],
+        assignee: [],
+        queue: [],
+        slaStatus: [],
+      },
+      isDefault: true,
     },
     {
       id: 'high-priority',
       name: 'High Priority',
-      filters: { search: '', status: [], priority: ['high', 'critical'], assignee: [], queue: [], slaStatus: [] }
+      filters: {
+        search: '',
+        status: [],
+        priority: ['high', 'critical'],
+        assignee: [],
+        queue: [],
+        slaStatus: [],
+      },
     },
     {
       id: 'sla-risk',
       name: 'SLA Risk',
-      filters: { search: '', status: [], priority: [], assignee: [], queue: [], slaStatus: ['warning', 'breach'] }
-    }
-  ]
+      filters: {
+        search: '',
+        status: [],
+        priority: [],
+        assignee: [],
+        queue: [],
+        slaStatus: ['warning', 'breach'],
+      },
+    },
+  ];
 
-  const { isOpen: isBulkModalOpen, onOpen: onBulkModalOpen, onClose: onBulkModalClose } = useDisclosure()
+  const {
+    isOpen: isBulkModalOpen,
+    onOpen: onBulkModalOpen,
+    onClose: onBulkModalClose,
+  } = useDisclosure();
 
   // Use prop tickets or fetch from API
   const { data: apiTickets = [] } = useQuery({
     queryKey: ['tickets'],
     queryFn: getTickets,
-    enabled: !propTickets
-  })
+    enabled: !propTickets,
+  });
 
-  const tickets = propTickets || apiTickets
+  const tickets = propTickets || apiTickets;
 
   // Mock data for filtering options
   const filterOptions = {
@@ -137,232 +162,273 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
     priority: ['low', 'medium', 'high', 'critical'],
     assignee: ['john.doe', 'jane.smith', 'mike.wilson', 'unassigned'],
     queue: ['support', 'technical', 'billing', 'sales'],
-    slaStatus: ['safe', 'warning', 'breach', 'no_sla']
-  }
+    slaStatus: ['safe', 'warning', 'breach', 'no_sla'],
+  };
 
   // Calculate SLA status for each ticket
   const ticketsWithSLA = useMemo((): EnhancedTicket[] => {
-    return tickets.map(ticket => {
-      const now = new Date()
-      const dueDate = ticket.dueDate ? new Date(ticket.dueDate) : null
-      const slaRemaining = dueDate ? Math.max(0, dueDate.getTime() - now.getTime()) : ticket.slaRemaining || 0
-      const slaStatus: EnhancedTicket['slaStatus'] = dueDate === null ? 'no_sla' :
-                       slaRemaining <= 0 ? 'breach' :
-                       slaRemaining <= 2 * 60 * 60 * 1000 ? 'warning' : 'safe' // 2 hours warning
+    return tickets.map((ticket) => {
+      const now = new Date();
+      const dueDate = ticket.dueDate ? new Date(ticket.dueDate) : null;
+      const slaRemaining = dueDate
+        ? Math.max(0, dueDate.getTime() - now.getTime())
+        : ticket.slaRemaining || 0;
+      const slaStatus: EnhancedTicket['slaStatus'] =
+        dueDate === null
+          ? 'no_sla'
+          : slaRemaining <= 0
+            ? 'breach'
+            : slaRemaining <= 2 * 60 * 60 * 1000
+              ? 'warning'
+              : 'safe'; // 2 hours warning
 
       return {
         ...ticket,
         slaRemaining,
         slaStatus,
-        slaHours: slaRemaining ? Math.floor(slaRemaining / (1000 * 60 * 60)) : undefined
-      }
-    })
-  }, [tickets])
+        slaHours: slaRemaining ? Math.floor(slaRemaining / (1000 * 60 * 60)) : undefined,
+      };
+    });
+  }, [tickets]);
 
   // Enhanced ticket filtering and sorting
   const filteredAndSortedTickets = useMemo(() => {
-    const filtered = ticketsWithSLA.filter(ticket => {
+    const filtered = ticketsWithSLA.filter((ticket) => {
       // Search filter
       if (filters.search) {
-        const searchTerm = filters.search.toLowerCase()
+        const searchTerm = filters.search.toLowerCase();
         if (
           !ticket.title.toLowerCase().includes(searchTerm) &&
           !ticket.ticketId.toLowerCase().includes(searchTerm)
         ) {
-          return false
+          return false;
         }
       }
 
       // Status filter
       if (filters.status.length > 0 && !filters.status.includes(ticket.status)) {
-        return false
+        return false;
       }
 
       // Priority filter
       if (filters.priority.length > 0 && !filters.priority.includes(ticket.priority)) {
-        return false
+        return false;
       }
 
       // Assignee filter
       if (filters.assignee.length > 0) {
-        const assigneeName = typeof ticket.assignedTo === 'object' ? ticket.assignedTo?.name : ticket.assignedTo
+        const assigneeName =
+          typeof ticket.assignedTo === 'object' ? ticket.assignedTo?.name : ticket.assignedTo;
         if (!filters.assignee.includes(assigneeName || 'unassigned')) {
-          return false
+          return false;
         }
       }
 
       // SLA Status filter
       if (filters.slaStatus.length > 0 && !filters.slaStatus.includes(ticket.slaStatus)) {
-        return false
+        return false;
       }
 
-      return true
-    })
+      return true;
+    });
 
     // Sort tickets
     filtered.sort((a, b) => {
-      let aValue: any, bValue: any
+      let aValue: any, bValue: any;
 
       switch (sortField) {
         case 'priority': {
-          const priorityOrder = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 }
-          aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0
-          bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0
-          break
+          const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+          aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+          bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+          break;
         }
         case 'status': {
-          aValue = a.status
-          bValue = b.status
-          break
+          aValue = a.status;
+          bValue = b.status;
+          break;
         }
         case 'created': {
-          aValue = new Date(a.createdAt || 0).getTime()
-          bValue = new Date(b.createdAt || 0).getTime()
-          break
+          aValue = new Date(a.createdAt || 0).getTime();
+          bValue = new Date(b.createdAt || 0).getTime();
+          break;
         }
         case 'updated': {
-          aValue = new Date(a.updatedAt || 0).getTime()
-          bValue = new Date(b.updatedAt || 0).getTime()
-          break
+          aValue = new Date(a.updatedAt || 0).getTime();
+          bValue = new Date(b.updatedAt || 0).getTime();
+          break;
         }
         case 'assignee': {
-          const aAssignee = typeof a.assignedTo === 'object' ? a.assignedTo?.name : a.assignedTo
-          const bAssignee = typeof b.assignedTo === 'object' ? b.assignedTo?.name : b.assignedTo
-          aValue = aAssignee || 'zzz'
-          bValue = bAssignee || 'zzz'
-          break
+          const aAssignee = typeof a.assignedTo === 'object' ? a.assignedTo?.name : a.assignedTo;
+          const bAssignee = typeof b.assignedTo === 'object' ? b.assignedTo?.name : b.assignedTo;
+          aValue = aAssignee || 'zzz';
+          bValue = bAssignee || 'zzz';
+          break;
         }
         default:
-          return 0
+          return 0;
       }
 
       if (sortDirection === 'asc') {
-        return aValue > bValue ? 1 : -1
+        return aValue > bValue ? 1 : -1;
       } else {
-        return aValue < bValue ? 1 : -1
+        return aValue < bValue ? 1 : -1;
       }
-    })
+    });
 
-    return filtered
-  }, [ticketsWithSLA, filters, sortField, sortDirection])
+    return filtered;
+  }, [ticketsWithSLA, filters, sortField, sortDirection]);
 
   // Helper functions
-  const getSLAColor = (status: string): "success" | "warning" | "danger" => {
+  const getSLAColor = (status: string): 'success' | 'warning' | 'danger' => {
     switch (status) {
-      case 'safe': return 'success'
-      case 'warning': return 'warning'
-      case 'breach': return 'danger'
-      default: return 'success'
+      case 'safe':
+        return 'success';
+      case 'warning':
+        return 'warning';
+      case 'breach':
+        return 'danger';
+      default:
+        return 'success';
     }
-  }
+  };
 
-  const getPriorityColor = (priority: string): "default" | "primary" | "warning" | "danger" => {
+  const getPriorityColor = (priority: string): 'default' | 'primary' | 'warning' | 'danger' => {
     switch (priority) {
-      case 'low': return 'default'
-      case 'medium': return 'primary'
-      case 'high': return 'warning'
-      case 'critical': return 'danger'
-      default: return 'default'
+      case 'low':
+        return 'default';
+      case 'medium':
+        return 'primary';
+      case 'high':
+        return 'warning';
+      case 'critical':
+        return 'danger';
+      default:
+        return 'default';
     }
-  }
+  };
 
-  const getStatusColor = (status: string): "default" | "primary" | "secondary" | "success" | "warning" | "danger" => {
+  const getStatusColor = (
+    status: string,
+  ): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' => {
     switch (status) {
-      case 'open': return 'primary'
-      case 'in-progress': return 'warning'
-      case 'pending': return 'secondary'
-      case 'resolved': return 'success'
-      case 'closed': return 'default'
-      default: return 'default'
+      case 'open':
+        return 'primary';
+      case 'in-progress':
+        return 'warning';
+      case 'pending':
+        return 'secondary';
+      case 'resolved':
+        return 'success';
+      case 'closed':
+        return 'default';
+      default:
+        return 'default';
     }
-  }
+  };
 
   // Event handlers
-  const handleTicketSelect = useCallback((ticket: Ticket) => {
-    onSelect?.(ticket)
-  }, [onSelect])
+  const handleTicketSelect = useCallback(
+    (ticket: Ticket) => {
+      onSelect?.(ticket);
+    },
+    [onSelect],
+  );
 
-  const handleBulkSelect = useCallback((ticketId: string, selected: boolean) => {
-    const newSelected = new Set(selectedTickets)
-    if (selected) {
-      newSelected.add(ticketId)
-    } else {
-      newSelected.delete(ticketId)
-    }
-    setSelectedTickets(newSelected)
-  }, [selectedTickets])
+  const handleBulkSelect = useCallback(
+    (ticketId: string, selected: boolean) => {
+      const newSelected = new Set(selectedTickets);
+      if (selected) {
+        newSelected.add(ticketId);
+      } else {
+        newSelected.delete(ticketId);
+      }
+      setSelectedTickets(newSelected);
+    },
+    [selectedTickets],
+  );
 
-  const handleSelectAll = useCallback((selected: boolean) => {
-    if (selected) {
-      setSelectedTickets(new Set(filteredAndSortedTickets.map(t => t.ticketId)))
-    } else {
-      setSelectedTickets(new Set())
-    }
-  }, [filteredAndSortedTickets])
+  const handleSelectAll = useCallback(
+    (selected: boolean) => {
+      if (selected) {
+        setSelectedTickets(new Set(filteredAndSortedTickets.map((t) => t.ticketId)));
+      } else {
+        setSelectedTickets(new Set());
+      }
+    },
+    [filteredAndSortedTickets],
+  );
 
-  const handleSort = useCallback((field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDirection('desc')
-    }
-  }, [sortField, sortDirection])
+  const handleSort = useCallback(
+    (field: SortField) => {
+      if (sortField === field) {
+        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      } else {
+        setSortField(field);
+        setSortDirection('desc');
+      }
+    },
+    [sortField, sortDirection],
+  );
 
   const handleFilterChange = useCallback((key: keyof FilterState, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
-  }, [])
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
   const handleSavedFilterApply = useCallback((filter: SavedFilter) => {
-    setFilters(filter.filters)
-  }, [])
+    setFilters(filter.filters);
+  }, []);
 
-  const handleBulkUpdate = useCallback((updates: Partial<Ticket>) => {
-    if (selectedTickets.size > 0) {
-      onBulkUpdate?.(Array.from(selectedTickets), updates)
-      setSelectedTickets(new Set())
-      onBulkModalClose()
-    }
-  }, [selectedTickets, onBulkUpdate, onBulkModalClose])
+  const handleBulkUpdate = useCallback(
+    (updates: Partial<Ticket>) => {
+      if (selectedTickets.size > 0) {
+        onBulkUpdate?.(Array.from(selectedTickets), updates);
+        setSelectedTickets(new Set());
+        onBulkModalClose();
+      }
+    },
+    [selectedTickets, onBulkUpdate, onBulkModalClose],
+  );
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return null
-    return sortDirection === 'asc' ?
-      <ArrowUpIcon className="w-3 h-3 ml-1" /> :
-      <ArrowDownIcon className="w-3 h-3 ml-1" />
-  }
+    if (sortField !== field) return null;
+    return sortDirection === 'asc' ? (
+      <ArrowUpIcon className="ml-1 h-3 w-3" />
+    ) : (
+      <ArrowDownIcon className="ml-1 h-3 w-3" />
+    );
+  };
 
   const SLAIndicator: React.FC<{ ticket: EnhancedTicket }> = ({ ticket }) => {
-    if (ticket.slaStatus === 'no_sla') return null
+    if (ticket.slaStatus === 'no_sla') return null;
 
     return (
       <div className="flex items-center gap-1">
-        <Chip
-          size="sm"
-          color={getSLAColor(ticket.slaStatus)}
-          variant="dot"
-        >
-          <ClockIcon className="w-3 h-3 mr-1" />
-          {ticket.slaStatus === 'breach' ? 'BREACHED' :
-           ticket.slaStatus === 'warning' ? `${ticket.slaHours}h` :
-           `${ticket.slaHours}h`}
+        <Chip size="sm" color={getSLAColor(ticket.slaStatus)} variant="dot">
+          <ClockIcon className="mr-1 h-3 w-3" />
+          {ticket.slaStatus === 'breach'
+            ? 'BREACHED'
+            : ticket.slaStatus === 'warning'
+              ? `${ticket.slaHours}h`
+              : `${ticket.slaHours}h`}
         </Chip>
       </div>
-    )
-  }
+    );
+  };
 
   // Render components
   const renderTicketCard = (ticket: EnhancedTicket) => {
-    const assigneeName = typeof ticket.assignedTo === 'object' ? ticket.assignedTo?.name : ticket.assignedTo
+    const assigneeName =
+      typeof ticket.assignedTo === 'object' ? ticket.assignedTo?.name : ticket.assignedTo;
 
     return (
       <Card
         key={ticket.ticketId}
-        className="mb-4 hover:shadow-md transition-shadow cursor-pointer"
+        className="mb-4 cursor-pointer transition-shadow hover:shadow-md"
         isPressable
         onPress={() => handleTicketSelect(ticket as Ticket)}
       >
-        <CardHeader className="flex justify-between items-start pb-2">
+        <CardHeader className="flex items-start justify-between pb-2">
           <div className="flex items-center gap-2">
             <Checkbox
               isSelected={selectedTickets.has(ticket.ticketId)}
@@ -370,9 +436,9 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
               onClick={(e) => e.stopPropagation()}
             />
             <div>
-              <h4 className="font-semibold text-sm flex items-center gap-1">
-                {ticket.vipWeight && <StarIconSolid className="w-4 h-4 text-yellow-500" />}
-                #{ticket.ticketId}
+              <h4 className="flex items-center gap-1 text-sm font-semibold">
+                {ticket.vipWeight && <StarIconSolid className="h-4 w-4 text-yellow-500" />}#
+                {ticket.ticketId}
               </h4>
               <p className="text-xs text-gray-500">
                 {new Date(ticket.createdAt || 0).toLocaleDateString()}
@@ -380,39 +446,28 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
             </div>
           </div>
           <div className="flex gap-1">
-            <Chip
-              size="sm"
-              color={getPriorityColor(ticket.priority)}
-              variant="flat"
-            >
+            <Chip size="sm" color={getPriorityColor(ticket.priority)} variant="flat">
               {ticket.priority}
             </Chip>
             <SLAIndicator ticket={ticket} />
           </div>
         </CardHeader>
         <CardBody className="pt-0">
-          <h3 className="font-medium text-sm mb-2 line-clamp-2">
-            {ticket.title}
-          </h3>
-          <div className="flex justify-between items-center">
-            <Chip
-              size="sm"
-              color={getStatusColor(ticket.status)}
-              variant="flat"
-            >
+          <h3 className="mb-2 line-clamp-2 text-sm font-medium">{ticket.title}</h3>
+          <div className="flex items-center justify-between">
+            <Chip size="sm" color={getStatusColor(ticket.status)} variant="flat">
               {ticket.status}
             </Chip>
-            <span className="text-xs text-gray-500">
-              {assigneeName || 'Unassigned'}
-            </span>
+            <span className="text-xs text-gray-500">{assigneeName || 'Unassigned'}</span>
           </div>
         </CardBody>
       </Card>
-    )
-  }
+    );
+  };
 
   const renderTicketRow = (ticket: EnhancedTicket) => {
-    const assigneeName = typeof ticket.assignedTo === 'object' ? ticket.assignedTo?.name : ticket.assignedTo
+    const assigneeName =
+      typeof ticket.assignedTo === 'object' ? ticket.assignedTo?.name : ticket.assignedTo;
 
     return (
       <TableRow
@@ -429,33 +484,23 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
-            {ticket.vipWeight && <StarIconSolid className="w-4 h-4 text-yellow-500" />}
+            {ticket.vipWeight && <StarIconSolid className="h-4 w-4 text-yellow-500" />}
             <span className="font-medium">#{ticket.ticketId}</span>
           </div>
         </TableCell>
         <TableCell>
           <div>
-            <p className="font-medium line-clamp-1">{ticket.title}</p>
-            <p className="text-xs text-gray-500 line-clamp-1">
-              {ticket.category || 'No category'}
-            </p>
+            <p className="line-clamp-1 font-medium">{ticket.title}</p>
+            <p className="line-clamp-1 text-xs text-gray-500">{ticket.category || 'No category'}</p>
           </div>
         </TableCell>
         <TableCell>
-          <Chip
-            size="sm"
-            color={getPriorityColor(ticket.priority)}
-            variant="flat"
-          >
+          <Chip size="sm" color={getPriorityColor(ticket.priority)} variant="flat">
             {ticket.priority}
           </Chip>
         </TableCell>
         <TableCell>
-          <Chip
-            size="sm"
-            color={getStatusColor(ticket.status)}
-            variant="flat"
-          >
+          <Chip size="sm" color={getStatusColor(ticket.status)} variant="flat">
             {ticket.status}
           </Chip>
         </TableCell>
@@ -471,20 +516,16 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
           </span>
         </TableCell>
       </TableRow>
-    )
-  }
+    );
+  };
 
   return (
     <div className="space-y-4">
       {/* Header with controls */}
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4">
-          <h2 className="text-xl font-semibold">
-            Tickets ({filteredAndSortedTickets.length})
-          </h2>
-          {selectedTickets.size > 0 && (
-            <Badge color="primary">{selectedTickets.size}</Badge>
-          )}
+          <h2 className="text-xl font-semibold">Tickets ({filteredAndSortedTickets.length})</h2>
+          {selectedTickets.size > 0 && <Badge color="primary">{selectedTickets.size}</Badge>}
         </div>
 
         <div className="flex items-center gap-2">
@@ -493,7 +534,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
             placeholder="Search tickets..."
             value={filters.search}
             onChange={(e) => handleFilterChange('search', e.target.value)}
-            startContent={<MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />}
+            startContent={<MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />}
             className="w-64"
             size="sm"
           />
@@ -501,11 +542,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
           {/* Saved Filters */}
           <Dropdown>
             <DropdownTrigger>
-              <Button
-                variant="flat"
-                size="sm"
-                startContent={<BookmarkIcon className="w-4 h-4" />}
-              >
+              <Button variant="flat" size="sm" startContent={<BookmarkIcon className="h-4 w-4" />}>
                 Saved Filters
               </Button>
             </DropdownTrigger>
@@ -524,9 +561,9 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
 
           {/* Filters */}
           <Button
-            variant={showFilters ? "solid" : "flat"}
+            variant={showFilters ? 'solid' : 'flat'}
             size="sm"
-            startContent={<FunnelIcon className="w-4 h-4" />}
+            startContent={<FunnelIcon className="h-4 w-4" />}
             onPress={() => setShowFilters(!showFilters)}
           >
             Filters
@@ -539,32 +576,27 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
               isIconOnly
               onPress={() => setViewMode('card')}
             >
-              <Squares2X2Icon className="w-4 h-4" />
+              <Squares2X2Icon className="h-4 w-4" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'solid' : 'flat'}
               isIconOnly
               onPress={() => setViewMode('list')}
             >
-              <ListBulletIcon className="w-4 h-4" />
+              <ListBulletIcon className="h-4 w-4" />
             </Button>
             <Button
               variant={viewMode === 'kanban' ? 'solid' : 'flat'}
               isIconOnly
               onPress={() => setViewMode('kanban')}
             >
-              <ViewColumnsIcon className="w-4 h-4" />
+              <ViewColumnsIcon className="h-4 w-4" />
             </Button>
           </ButtonGroup>
 
           {/* Bulk Actions */}
           {selectedTickets.size > 0 && (
-            <Button
-              size="sm"
-              color="primary"
-              variant="flat"
-              onPress={onBulkModalOpen}
-            >
+            <Button size="sm" color="primary" variant="flat" onPress={onBulkModalOpen}>
               Bulk Actions ({selectedTickets.size})
             </Button>
           )}
@@ -575,7 +607,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
       {showFilters && (
         <Card>
           <CardBody>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5">
               <Select
                 label="Status"
                 selectionMode="multiple"
@@ -584,9 +616,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                 size="sm"
               >
                 {filterOptions.status.map((status) => (
-                  <SelectItem key={status}>
-                    {status}
-                  </SelectItem>
+                  <SelectItem key={status}>{status}</SelectItem>
                 ))}
               </Select>
 
@@ -598,9 +628,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                 size="sm"
               >
                 {filterOptions.priority.map((priority) => (
-                  <SelectItem key={priority}>
-                    {priority}
-                  </SelectItem>
+                  <SelectItem key={priority}>{priority}</SelectItem>
                 ))}
               </Select>
 
@@ -612,9 +640,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                 size="sm"
               >
                 {filterOptions.assignee.map((assignee) => (
-                  <SelectItem key={assignee}>
-                    {assignee}
-                  </SelectItem>
+                  <SelectItem key={assignee}>{assignee}</SelectItem>
                 ))}
               </Select>
 
@@ -626,9 +652,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                 size="sm"
               >
                 {filterOptions.queue.map((queue) => (
-                  <SelectItem key={queue}>
-                    {queue}
-                  </SelectItem>
+                  <SelectItem key={queue}>{queue}</SelectItem>
                 ))}
               </Select>
 
@@ -640,32 +664,28 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                 size="sm"
               >
                 {filterOptions.slaStatus.map((status) => (
-                  <SelectItem key={status}>
-                    {status}
-                  </SelectItem>
+                  <SelectItem key={status}>{status}</SelectItem>
                 ))}
               </Select>
             </div>
-            <div className="flex justify-end mt-4 gap-2">
+            <div className="mt-4 flex justify-end gap-2">
               <Button
                 size="sm"
                 variant="flat"
-                onPress={() => setFilters({
-                  search: '',
-                  status: [],
-                  priority: [],
-                  assignee: [],
-                  queue: [],
-                  slaStatus: []
-                })}
+                onPress={() =>
+                  setFilters({
+                    search: '',
+                    status: [],
+                    priority: [],
+                    assignee: [],
+                    queue: [],
+                    slaStatus: [],
+                  })
+                }
               >
                 Clear All
               </Button>
-              <Button
-                size="sm"
-                color="primary"
-                onPress={() => setShowFilters(false)}
-              >
+              <Button size="sm" color="primary" onPress={() => setShowFilters(false)}>
                 Apply Filters
               </Button>
             </div>
@@ -675,7 +695,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
 
       {/* Tickets Display */}
       {viewMode === 'card' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredAndSortedTickets.map(renderTicketCard)}
         </div>
       )}
@@ -683,78 +703,63 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
       {viewMode === 'list' && (
         <Card>
           <CardBody className="p-0">
-            <Table
-              removeWrapper
-              selectionMode="none"
-              className="min-h-[400px]"
-            >
+            <Table removeWrapper selectionMode="none" className="min-h-[400px]">
               <TableHeader>
                 <TableColumn width={50}>
                   <Checkbox
-                    isSelected={selectedTickets.size === filteredAndSortedTickets.length && filteredAndSortedTickets.length > 0}
-                    isIndeterminate={selectedTickets.size > 0 && selectedTickets.size < filteredAndSortedTickets.length}
+                    isSelected={
+                      selectedTickets.size === filteredAndSortedTickets.length &&
+                      filteredAndSortedTickets.length > 0
+                    }
+                    isIndeterminate={
+                      selectedTickets.size > 0 &&
+                      selectedTickets.size < filteredAndSortedTickets.length
+                    }
                     onValueChange={handleSelectAll}
                   />
                 </TableColumn>
-                <TableColumn
-                  className="cursor-pointer"
-                  onClick={() => handleSort('priority')}
-                >
+                <TableColumn className="cursor-pointer" onClick={() => handleSort('priority')}>
                   <div className="flex items-center">
                     ID <SortIcon field="priority" />
                   </div>
                 </TableColumn>
                 <TableColumn>Title</TableColumn>
-                <TableColumn
-                  className="cursor-pointer"
-                  onClick={() => handleSort('priority')}
-                >
+                <TableColumn className="cursor-pointer" onClick={() => handleSort('priority')}>
                   <div className="flex items-center">
                     Priority <SortIcon field="priority" />
                   </div>
                 </TableColumn>
-                <TableColumn
-                  className="cursor-pointer"
-                  onClick={() => handleSort('status')}
-                >
+                <TableColumn className="cursor-pointer" onClick={() => handleSort('status')}>
                   <div className="flex items-center">
                     Status <SortIcon field="status" />
                   </div>
                 </TableColumn>
-                <TableColumn
-                  className="cursor-pointer"
-                  onClick={() => handleSort('assignee')}
-                >
+                <TableColumn className="cursor-pointer" onClick={() => handleSort('assignee')}>
                   <div className="flex items-center">
                     Assignee <SortIcon field="assignee" />
                   </div>
                 </TableColumn>
                 <TableColumn>SLA</TableColumn>
-                <TableColumn
-                  className="cursor-pointer"
-                  onClick={() => handleSort('updated')}
-                >
+                <TableColumn className="cursor-pointer" onClick={() => handleSort('updated')}>
                   <div className="flex items-center">
                     Updated <SortIcon field="updated" />
                   </div>
                 </TableColumn>
               </TableHeader>
-              <TableBody>
-                {filteredAndSortedTickets.map(renderTicketRow)}
-              </TableBody>
+              <TableBody>{filteredAndSortedTickets.map(renderTicketRow)}</TableBody>
             </Table>
           </CardBody>
         </Card>
       )}
 
       {viewMode === 'kanban' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {filterOptions.status.map((status) => {
-            const statusTickets = filteredAndSortedTickets.filter(t => t.status === status)
+            const statusTickets = filteredAndSortedTickets.filter((t) => t.status === status);
             return (
               <Card key={status} className="min-h-[500px]">
                 <CardHeader>
-                  <div className="flex justify-between items-center w-full">
+                  <div className="flex w-full items-center justify-between">
                     <h3 className="font-medium capitalize">{status}</h3>
                     <Badge color="primary">{statusTickets.length}</Badge>
                   </div>
@@ -763,22 +768,20 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                   {statusTickets.map((ticket) => (
                     <Card
                       key={ticket.ticketId}
-                      className="p-3 cursor-pointer hover:shadow-md transition-shadow"
+                      className="cursor-pointer p-3 transition-shadow hover:shadow-md"
                       isPressable
                       onPress={() => handleTicketSelect(ticket as Ticket)}
                     >
                       <div className="space-y-2">
-                        <div className="flex justify-between items-start">
+                        <div className="flex items-start justify-between">
                           <span className="text-sm font-medium">#{ticket.ticketId}</span>
-                          {ticket.vipWeight && <StarIconSolid className="w-4 h-4 text-yellow-500" />}
+                          {ticket.vipWeight && (
+                            <StarIconSolid className="h-4 w-4 text-yellow-500" />
+                          )}
                         </div>
-                        <p className="text-xs line-clamp-2">{ticket.title}</p>
-                        <div className="flex justify-between items-center">
-                          <Chip
-                            size="sm"
-                            color={getPriorityColor(ticket.priority)}
-                            variant="flat"
-                          >
+                        <p className="line-clamp-2 text-xs">{ticket.title}</p>
+                        <div className="flex items-center justify-between">
+                          <Chip size="sm" color={getPriorityColor(ticket.priority)} variant="flat">
                             {ticket.priority}
                           </Chip>
                           <SLAIndicator ticket={ticket} />
@@ -788,7 +791,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                   ))}
                 </CardBody>
               </Card>
-            )
+            );
           })}
         </div>
       )}
@@ -796,28 +799,28 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
       {/* Empty State */}
       {filteredAndSortedTickets.length === 0 && (
         <Card>
-          <CardBody className="text-center py-12">
+          <CardBody className="py-12 text-center">
             <div className="space-y-4">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
-                <ListBulletIcon className="w-8 h-8 text-gray-400" />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                <ListBulletIcon className="h-8 w-8 text-gray-400" />
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">No tickets found</h3>
-                <p className="text-gray-500 text-sm">
-                  Try adjusting your filters or search terms
-                </p>
+                <p className="text-sm text-gray-500">Try adjusting your filters or search terms</p>
               </div>
               <Button
                 color="primary"
                 variant="flat"
-                onPress={() => setFilters({
-                  search: '',
-                  status: [],
-                  priority: [],
-                  assignee: [],
-                  queue: [],
-                  slaStatus: []
-                })}
+                onPress={() =>
+                  setFilters({
+                    search: '',
+                    status: [],
+                    priority: [],
+                    assignee: [],
+                    queue: [],
+                    slaStatus: [],
+                  })
+                }
               >
                 Clear Filters
               </Button>
@@ -829,14 +832,12 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
       {/* Bulk Actions Modal */}
       <Modal isOpen={isBulkModalOpen} onClose={onBulkModalClose}>
         <ModalContent>
-          <ModalHeader>
-            Bulk Actions ({selectedTickets.size} tickets)
-          </ModalHeader>
+          <ModalHeader>Bulk Actions ({selectedTickets.size} tickets)</ModalHeader>
           <ModalBody>
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium mb-2">Change Status</h4>
-                <div className="flex gap-2 flex-wrap">
+                <h4 className="mb-2 font-medium">Change Status</h4>
+                <div className="flex flex-wrap gap-2">
                   {filterOptions.status.map((status) => (
                     <Button
                       key={status}
@@ -851,8 +852,8 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                 </div>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Change Priority</h4>
-                <div className="flex gap-2 flex-wrap">
+                <h4 className="mb-2 font-medium">Change Priority</h4>
+                <div className="flex flex-wrap gap-2">
                   {filterOptions.priority.map((priority) => (
                     <Button
                       key={priority}
@@ -867,18 +868,20 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                 </div>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Assign To</h4>
-                <div className="flex gap-2 flex-wrap">
-                  {filterOptions.assignee.filter(a => a !== 'unassigned').map((assignee) => (
-                    <Button
-                      key={assignee}
-                      size="sm"
-                      variant="flat"
-                      onPress={() => handleBulkUpdate({ assignedTo: { id: 0, name: assignee } })}
-                    >
-                      {assignee}
-                    </Button>
-                  ))}
+                <h4 className="mb-2 font-medium">Assign To</h4>
+                <div className="flex flex-wrap gap-2">
+                  {filterOptions.assignee
+                    .filter((a) => a !== 'unassigned')
+                    .map((assignee) => (
+                      <Button
+                        key={assignee}
+                        size="sm"
+                        variant="flat"
+                        onPress={() => handleBulkUpdate({ assignedTo: { id: 0, name: assignee } })}
+                      >
+                        {assignee}
+                      </Button>
+                    ))}
                 </div>
               </div>
             </div>
@@ -891,5 +894,5 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
         </ModalContent>
       </Modal>
     </div>
-  )
-}
+  );
+};

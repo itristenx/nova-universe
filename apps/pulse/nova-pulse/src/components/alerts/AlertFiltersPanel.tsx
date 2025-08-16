@@ -12,7 +12,7 @@ interface AlertFiltersPanelProps {
 const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
   filters,
   onFiltersChange,
-  onClose
+  onClose,
 }) => {
   const updateFilter = (key: keyof AlertFilters, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -21,7 +21,7 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
   const toggleArrayFilter = (key: keyof AlertFilters, value: string) => {
     const currentArray = (filters[key] as string[]) || [];
     const updatedArray = currentArray.includes(value)
-      ? currentArray.filter(item => item !== value)
+      ? currentArray.filter((item) => item !== value)
       : [...currentArray, value];
     updateFilter(key, updatedArray);
   };
@@ -33,7 +33,7 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
       serviceId: [],
       assignedTo: [],
       tags: [],
-      source: []
+      source: [],
     });
   };
 
@@ -54,19 +54,17 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white/95 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg"
+      className="rounded-2xl border border-gray-200/50 bg-white/95 p-6 shadow-lg backdrop-blur-xl"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 rounded-xl">
-            <FunnelIcon className="w-5 h-5 text-blue-600" />
+          <div className="rounded-xl bg-blue-100 p-2">
+            <FunnelIcon className="h-5 w-5 text-blue-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Filter Alerts</h3>
-            <p className="text-sm text-gray-600">
-              {getActiveFilterCount()} filters active
-            </p>
+            <p className="text-sm text-gray-600">{getActiveFilterCount()} filters active</p>
           </div>
         </div>
 
@@ -75,46 +73,44 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={clearAllFilters}
-            className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 font-medium"
+            className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800"
           >
             Clear All
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="rounded-lg p-2 text-gray-400 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-600"
           >
-            <XMarkIcon className="w-5 h-5" />
+            <XMarkIcon className="h-5 w-5" />
           </motion.button>
         </div>
       </div>
 
       {/* Filter Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {/* Status Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Status
-          </label>
+          <label className="mb-3 block text-sm font-medium text-gray-700">Status</label>
           <div className="space-y-2">
             {[
               { value: 'triggered', label: 'Triggered', color: 'red' },
               { value: 'acknowledged', label: 'Acknowledged', color: 'orange' },
               { value: 'resolved', label: 'Resolved', color: 'green' },
-              { value: 'closed', label: 'Closed', color: 'gray' }
+              { value: 'closed', label: 'Closed', color: 'gray' },
             ].map((status) => (
               <motion.label
                 key={status.value}
                 whileHover={{ scale: 1.02 }}
-                className="flex items-center space-x-3 cursor-pointer"
+                className="flex cursor-pointer items-center space-x-3"
               >
                 <input
                   type="checkbox"
                   checked={filters.status?.includes(status.value) || false}
                   onChange={() => toggleArrayFilter('status', status.value)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-700">{status.label}</span>
               </motion.label>
@@ -124,26 +120,24 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
 
         {/* Priority Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Priority
-          </label>
+          <label className="mb-3 block text-sm font-medium text-gray-700">Priority</label>
           <div className="space-y-2">
             {[
               { value: 'critical', label: 'Critical', color: 'red' },
               { value: 'high', label: 'High', color: 'orange' },
               { value: 'medium', label: 'Medium', color: 'yellow' },
-              { value: 'low', label: 'Low', color: 'blue' }
+              { value: 'low', label: 'Low', color: 'blue' },
             ].map((priority) => (
               <motion.label
                 key={priority.value}
                 whileHover={{ scale: 1.02 }}
-                className="flex items-center space-x-3 cursor-pointer"
+                className="flex cursor-pointer items-center space-x-3"
               >
                 <input
                   type="checkbox"
                   checked={filters.priority?.includes(priority.value) || false}
                   onChange={() => toggleArrayFilter('priority', priority.value)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-700">{priority.label}</span>
               </motion.label>
@@ -153,27 +147,25 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
 
         {/* Source Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Source
-          </label>
+          <label className="mb-3 block text-sm font-medium text-gray-700">Source</label>
           <div className="space-y-2">
             {[
               { value: 'workflow', label: 'Workflow' },
               { value: 'manual', label: 'Manual' },
               { value: 'ticket', label: 'Ticket' },
               { value: 'cosmo', label: 'Cosmo AI' },
-              { value: 'integration', label: 'Integration' }
+              { value: 'integration', label: 'Integration' },
             ].map((source) => (
               <motion.label
                 key={source.value}
                 whileHover={{ scale: 1.02 }}
-                className="flex items-center space-x-3 cursor-pointer"
+                className="flex cursor-pointer items-center space-x-3"
               >
                 <input
                   type="checkbox"
                   checked={filters.source?.includes(source.value) || false}
                   onChange={() => toggleArrayFilter('source', source.value)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-700">{source.label}</span>
               </motion.label>
@@ -183,27 +175,43 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
 
         {/* Date Range Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Date Range
-          </label>
+          <label className="mb-3 block text-sm font-medium text-gray-700">Date Range</label>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">From</label>
+              <label className="mb-1 block text-xs text-gray-600">From</label>
               <input
                 type="datetime-local"
-                value={filters.createdAfter ? new Date(filters.createdAfter).toISOString().slice(0, 16) : ''}
-                onChange={(e) => updateFilter('createdAfter', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={
+                  filters.createdAfter
+                    ? new Date(filters.createdAfter).toISOString().slice(0, 16)
+                    : ''
+                }
+                onChange={(e) =>
+                  updateFilter(
+                    'createdAfter',
+                    e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                  )
+                }
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             <div>
-              <label className="block text-xs text-gray-600 mb-1">To</label>
+              <label className="mb-1 block text-xs text-gray-600">To</label>
               <input
                 type="datetime-local"
-                value={filters.createdBefore ? new Date(filters.createdBefore).toISOString().slice(0, 16) : ''}
-                onChange={(e) => updateFilter('createdBefore', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={
+                  filters.createdBefore
+                    ? new Date(filters.createdBefore).toISOString().slice(0, 16)
+                    : ''
+                }
+                onChange={(e) =>
+                  updateFilter(
+                    'createdBefore',
+                    e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                  )
+                }
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -211,10 +219,8 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
       </div>
 
       {/* Quick Filters */}
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <label className="block text-sm font-medium text-gray-700 mb-3">
-          Quick Filters
-        </label>
+      <div className="mt-6 border-t border-gray-200 pt-6">
+        <label className="mb-3 block text-sm font-medium text-gray-700">Quick Filters</label>
         <div className="flex flex-wrap gap-2">
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -223,42 +229,48 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
               updateFilter('status', ['triggered']);
               updateFilter('priority', ['critical', 'high']);
             }}
-            className="px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors duration-200"
+            className="rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-700 transition-colors duration-200 hover:bg-red-200"
           >
             High Priority Active
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               updateFilter('status', ['triggered', 'acknowledged']);
-              updateFilter('createdAfter', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+              updateFilter(
+                'createdAfter',
+                new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+              );
             }}
-            className="px-3 py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-200 transition-colors duration-200"
+            className="rounded-lg bg-orange-100 px-3 py-2 text-sm font-medium text-orange-700 transition-colors duration-200 hover:bg-orange-200"
           >
             Last 24 Hours
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               updateFilter('source', ['cosmo']);
             }}
-            className="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors duration-200"
+            className="rounded-lg bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors duration-200 hover:bg-purple-200"
           >
             Cosmo Generated
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               updateFilter('status', ['resolved', 'closed']);
-              updateFilter('createdAfter', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+              updateFilter(
+                'createdAfter',
+                new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+              );
             }}
-            className="px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors duration-200"
+            className="rounded-lg bg-green-100 px-3 py-2 text-sm font-medium text-green-700 transition-colors duration-200 hover:bg-green-200"
           >
             Resolved This Week
           </motion.button>

@@ -6,8 +6,8 @@ jest.mock('../logger.js', () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),
-    warn: jest.fn()
-  }
+    warn: jest.fn(),
+  },
 }));
 
 describe('VIP Priority Features', () => {
@@ -32,25 +32,25 @@ describe('VIP Priority Features', () => {
   describe('VIP SLA Logic Tests', () => {
     test('should calculate VIP SLA correctly', () => {
       const now = new Date('2025-01-01T10:00:00Z');
-      
+
       // Test executive VIP SLA (2 hours)
       const execDueDate = new Date(now);
       execDueDate.setHours(now.getHours() + 2);
-      
+
       const expectedExecTime = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
       expect(execDueDate.getTime() - now.getTime()).toBe(expectedExecTime);
 
       // Test gold VIP SLA (4 hours)
       const goldDueDate = new Date(now);
       goldDueDate.setHours(now.getHours() + 4);
-      
+
       const expectedGoldTime = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
       expect(goldDueDate.getTime() - now.getTime()).toBe(expectedGoldTime);
 
       // Test silver VIP SLA (8 hours)
       const silverDueDate = new Date(now);
       silverDueDate.setHours(now.getHours() + 8);
-      
+
       const expectedSilverTime = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
       expect(silverDueDate.getTime() - now.getTime()).toBe(expectedSilverTime);
     });
@@ -58,10 +58,10 @@ describe('VIP Priority Features', () => {
     test('should handle custom SLA overrides', () => {
       const now = new Date('2025-01-01T10:00:00Z');
       const customSLA = { responseMinutes: 30 };
-      
+
       const dueDate = new Date(now);
       dueDate.setMinutes(now.getMinutes() + parseInt(customSLA.responseMinutes));
-      
+
       const expectedTime = 30 * 60 * 1000; // 30 minutes in milliseconds
       expect(dueDate.getTime() - now.getTime()).toBe(expectedTime);
     });
@@ -69,18 +69,18 @@ describe('VIP Priority Features', () => {
     test('should detect escalation conditions', () => {
       const now = new Date('2025-01-01T10:00:00Z');
       const failoverWindow = 60; // 60 minutes
-      
+
       // Case 1: Due date within failover window - should escalate
       const urgentDueDate = new Date(now);
       urgentDueDate.setMinutes(now.getMinutes() + 30); // 30 minutes
-      
+
       const shouldEscalate1 = urgentDueDate.getTime() - now.getTime() < failoverWindow * 60000;
       expect(shouldEscalate1).toBe(true);
 
       // Case 2: Due date outside failover window - should not escalate
       const normalDueDate = new Date(now);
       normalDueDate.setMinutes(now.getMinutes() + 120); // 120 minutes
-      
+
       const shouldEscalate2 = normalDueDate.getTime() - now.getTime() < failoverWindow * 60000;
       expect(shouldEscalate2).toBe(false);
     });
@@ -89,30 +89,30 @@ describe('VIP Priority Features', () => {
   describe('VIP Ticket Sorting Logic', () => {
     test('should properly sort tickets by VIP priority then regular priority', () => {
       const tickets = [
-        { 
-          id: '1', 
-          priority: 'high', 
-          vip_priority_score: 0, 
-          created_at: '2025-01-01T10:00:00Z' 
+        {
+          id: '1',
+          priority: 'high',
+          vip_priority_score: 0,
+          created_at: '2025-01-01T10:00:00Z',
         },
-        { 
-          id: '2', 
-          priority: 'medium', 
-          vip_priority_score: 2, 
-          created_at: '2025-01-01T09:00:00Z' 
+        {
+          id: '2',
+          priority: 'medium',
+          vip_priority_score: 2,
+          created_at: '2025-01-01T09:00:00Z',
         },
-        { 
-          id: '3', 
-          priority: 'low', 
-          vip_priority_score: 3, 
-          created_at: '2025-01-01T11:00:00Z' 
+        {
+          id: '3',
+          priority: 'low',
+          vip_priority_score: 3,
+          created_at: '2025-01-01T11:00:00Z',
         },
-        { 
-          id: '4', 
-          priority: 'critical', 
-          vip_priority_score: 0, 
-          created_at: '2025-01-01T08:00:00Z' 
-        }
+        {
+          id: '4',
+          priority: 'critical',
+          vip_priority_score: 0,
+          created_at: '2025-01-01T08:00:00Z',
+        },
       ];
 
       // Simulate the SQL ORDER BY logic
@@ -120,7 +120,7 @@ describe('VIP Priority Features', () => {
         // First by VIP priority score (DESC)
         const vipScoreA = a.vip_priority_score || 0;
         const vipScoreB = b.vip_priority_score || 0;
-        
+
         if (vipScoreA !== vipScoreB) {
           return vipScoreB - vipScoreA;
         }
@@ -129,7 +129,7 @@ describe('VIP Priority Features', () => {
         const priorityValues = { critical: 1, high: 2, medium: 3, low: 4 };
         const priorityA = priorityValues[a.priority];
         const priorityB = priorityValues[b.priority];
-        
+
         if (priorityA !== priorityB) {
           return priorityA - priorityB;
         }
@@ -140,10 +140,10 @@ describe('VIP Priority Features', () => {
 
       // Expected order:
       // 1. VIP exec low priority (score 3)
-      // 2. VIP gold medium priority (score 2) 
+      // 2. VIP gold medium priority (score 2)
       // 3. Regular critical priority (score 0, highest regular priority)
       // 4. Regular high priority (score 0, newer)
-      
+
       expect(sorted[0].id).toBe('3'); // VIP exec low
       expect(sorted[1].id).toBe('2'); // VIP gold medium
       expect(sorted[2].id).toBe('4'); // Regular critical
@@ -153,7 +153,7 @@ describe('VIP Priority Features', () => {
     test('should handle null vip_priority_score values', () => {
       const tickets = [
         { id: '1', priority: 'high', vip_priority_score: null },
-        { id: '2', priority: 'medium', vip_priority_score: 2 }
+        { id: '2', priority: 'medium', vip_priority_score: 2 },
       ];
 
       const sorted = tickets.sort((a, b) => {
@@ -178,8 +178,8 @@ describe('VIP Priority Features', () => {
           vip_priority_score: 2,
           sla_override: { responseMinutes: 30 },
           original_due_date: '2025-01-01T14:00:00Z',
-          trigger_source: 'api'
-        }
+          trigger_source: 'api',
+        },
       };
 
       expect(vipTicketAuditData.action).toBe('vip_ticket_created');
@@ -196,8 +196,8 @@ describe('VIP Priority Features', () => {
         details: {
           reason: 'failover_escalation',
           failover_window_minutes: 60,
-          time_to_due: 30
-        }
+          time_to_due: 30,
+        },
       };
 
       expect(escalationAuditData.action).toBe('vip_cosmo_escalation');
@@ -214,8 +214,8 @@ describe('VIP Priority Features', () => {
           work_note: 'Issue resolved successfully',
           time_spent: 45,
           resolution: 'Applied software update',
-          previous_status: 'in_progress'
-        }
+          previous_status: 'in_progress',
+        },
       };
 
       expect(updateAuditData.action).toBe('vip_ticket_updated');
@@ -231,9 +231,9 @@ describe('VIP Priority Features', () => {
         isVip: true,
         status: 'on_hold',
         shouldEscalate: true,
-        reason: 'vip_hold_escalation'
+        reason: 'vip_hold_escalation',
       };
-      
+
       expect(holdEscalation.shouldEscalate).toBe(true);
       expect(holdEscalation.reason).toBe('vip_hold_escalation');
 
@@ -243,9 +243,9 @@ describe('VIP Priority Features', () => {
         vipLevel: 'exec',
         status: 'resolved',
         shouldEscalate: true,
-        reason: 'vip_resolution_confirmation'
+        reason: 'vip_resolution_confirmation',
       };
-      
+
       expect(execResolution.shouldEscalate).toBe(true);
       expect(execResolution.reason).toBe('vip_resolution_confirmation');
 
@@ -254,18 +254,18 @@ describe('VIP Priority Features', () => {
         isVip: true,
         vipLevel: 'gold',
         status: 'resolved',
-        shouldEscalate: false
+        shouldEscalate: false,
       };
-      
+
       expect(regularVipResolution.shouldEscalate).toBe(false);
 
       // Test 4: Non-VIP ticket should not escalate
       const regularTicket = {
         isVip: false,
         status: 'on_hold',
-        shouldEscalate: false
+        shouldEscalate: false,
       };
-      
+
       expect(regularTicket.shouldEscalate).toBe(false);
     });
   });

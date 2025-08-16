@@ -25,7 +25,9 @@ export const validateInput = {
     if (kioskId) {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(kioskId)) {
-        return res.status(400).json({ error: 'Invalid kiosk ID format', errorCode: 'INVALID_KIOSK_ID' });
+        return res
+          .status(400)
+          .json({ error: 'Invalid kiosk ID format', errorCode: 'INVALID_KIOSK_ID' });
       }
     }
     next();
@@ -38,7 +40,9 @@ export const validateInput = {
     if (activationCode) {
       const codeRegex = /^[A-HJ-NP-Z2-9]{8}$/i;
       if (!codeRegex.test(activationCode)) {
-        return res.status(400).json({ error: 'Invalid activation code format', errorCode: 'INVALID_ACTIVATION_CODE' });
+        return res
+          .status(400)
+          .json({ error: 'Invalid activation code format', errorCode: 'INVALID_ACTIVATION_CODE' });
       }
       req.body.activationCode = activationCode.toUpperCase();
     }
@@ -70,7 +74,7 @@ export const validateInput = {
     if (req.body) {
       req.body = sanitizeObject(req.body);
     }
-    
+
     next();
   },
 
@@ -80,44 +84,53 @@ export const validateInput = {
     if (password) {
       // Add type check first
       if (typeof password !== 'string') {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Password must be a string',
-          errorCode: 'INVALID_PASSWORD_TYPE'
+          errorCode: 'INVALID_PASSWORD_TYPE',
         });
       }
       if (password.length < 8) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Password must be at least 8 characters long',
-          errorCode: 'PASSWORD_TOO_SHORT'
+          errorCode: 'PASSWORD_TOO_SHORT',
         });
       }
       if (password.length > 128) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Password must be less than 128 characters long',
-          errorCode: 'PASSWORD_TOO_LONG'
+          errorCode: 'PASSWORD_TOO_LONG',
         });
       }
       if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-        return res.status(400).json({ 
-          error: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
-          errorCode: 'PASSWORD_COMPLEXITY_INSUFFICIENT'
+        return res.status(400).json({
+          error:
+            'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+          errorCode: 'PASSWORD_COMPLEXITY_INSUFFICIENT',
         });
       }
-      
+
       // Check for common weak passwords
       const commonPasswords = [
-        'password', 'password123', '123456', 'admin', 'qwerty', 
-        'letmein', 'welcome', 'monkey', 'dragon', 'password1'
+        'password',
+        'password123',
+        '123456',
+        'admin',
+        'qwerty',
+        'letmein',
+        'welcome',
+        'monkey',
+        'dragon',
+        'password1',
       ];
       if (commonPasswords.includes(password.toLowerCase())) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Password is too common. Please choose a more secure password.',
-          errorCode: 'PASSWORD_TOO_COMMON'
+          errorCode: 'PASSWORD_TOO_COMMON',
         });
       }
     }
     next();
-  }
+  },
 };
 
 // Alternative validation functions
@@ -143,7 +156,7 @@ export const validateActivationCode = (code) => {
 
 export const sanitizeInput = (input, maxLength = 255) => {
   if (typeof input !== 'string') return '';
-  
+
   // Remove potentially dangerous characters and limit length
   return input
     .replace(/[<>'"&]/g, '') // Remove HTML/JS injection chars
@@ -171,28 +184,28 @@ export const validateKioskRegistration = (req, res, next) => {
 
 export const validateTicketSubmission = (req, res, next) => {
   const { name, email, title, system, urgency } = req.body;
-  
+
   if (!name || !email || !title) {
     return res.status(400).json({ error: 'Missing required fields: name, email, title' });
   }
-  
+
   if (!validateEmail(email)) {
     return res.status(400).json({ error: 'Invalid email format' });
   }
-  
+
   // Sanitize inputs
   req.body.name = sanitizeInput(name, 100);
   req.body.email = sanitizeInput(email, 100);
   req.body.title = sanitizeInput(title, 200);
   req.body.system = sanitizeInput(system, 50);
   req.body.urgency = sanitizeInput(urgency, 20);
-  
+
   // Validate urgency level
   const validUrgencies = ['low', 'medium', 'high', 'urgent'];
   if (req.body.urgency && !validUrgencies.includes(req.body.urgency.toLowerCase())) {
     req.body.urgency = 'medium'; // Default to medium if invalid
   }
-  
+
   next();
 };
 
@@ -202,26 +215,26 @@ export const validateTicketSubmission = (req, res, next) => {
 export const validateKioskAuth = (req, res, next) => {
   // Kiosk authentication logic
   const kioskToken = req.headers['x-kiosk-token'] || req.query.kioskToken;
-  
+
   if (!kioskToken) {
-    return res.status(401).json({ 
-      error: 'Kiosk authentication required', 
-      errorCode: 'MISSING_KIOSK_TOKEN' 
+    return res.status(401).json({
+      error: 'Kiosk authentication required',
+      errorCode: 'MISSING_KIOSK_TOKEN',
     });
   }
 
   // Basic token validation (extend as needed)
   if (kioskToken.length < 10) {
-    return res.status(401).json({ 
-      error: 'Invalid kiosk token', 
-      errorCode: 'INVALID_KIOSK_TOKEN' 
+    return res.status(401).json({
+      error: 'Invalid kiosk token',
+      errorCode: 'INVALID_KIOSK_TOKEN',
     });
   }
 
   // Add kiosk info to request
   req.kiosk = {
     token: kioskToken,
-    authenticated: true
+    authenticated: true,
   };
 
   next();
@@ -240,10 +253,10 @@ export const validateRequest = (req, res, next) => {
   }
 
   if (errors.length > 0) {
-    return res.status(400).json({ 
-      error: 'Validation failed', 
+    return res.status(400).json({
+      error: 'Validation failed',
       details: errors,
-      errorCode: 'VALIDATION_FAILED' 
+      errorCode: 'VALIDATION_FAILED',
     });
   }
 

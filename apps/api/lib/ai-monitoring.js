@@ -46,7 +46,7 @@ class AIMonitoringSystem {
     const metric = {
       operation,
       data,
-      timestamp
+      timestamp,
     };
 
     this.metrics.set(`${operation}_${timestamp}`, metric);
@@ -58,7 +58,7 @@ class AIMonitoringSystem {
    */
   getMetrics(operation = null) {
     if (operation) {
-      return Array.from(this.metrics.values()).filter(m => m.operation === operation);
+      return Array.from(this.metrics.values()).filter((m) => m.operation === operation);
     }
     return Array.from(this.metrics.values());
   }
@@ -71,7 +71,7 @@ class AIMonitoringSystem {
       totalMetrics: this.metrics.size,
       alerts: this.alerts.length,
       uptime: this.initialized,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -81,9 +81,9 @@ class AIMonitoringSystem {
   addAlert(alert) {
     this.alerts.push({
       ...alert,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
+
     logger.warn('AI monitoring alert', alert);
   }
 
@@ -91,14 +91,14 @@ class AIMonitoringSystem {
    * Clear old metrics (cleanup)
    */
   cleanup(olderThanHours = 24) {
-    const cutoff = new Date(Date.now() - (olderThanHours * 60 * 60 * 1000));
-    
+    const cutoff = new Date(Date.now() - olderThanHours * 60 * 60 * 1000);
+
     for (const [key, metric] of this.metrics.entries()) {
       if (new Date(metric.timestamp) < cutoff) {
         this.metrics.delete(key);
       }
     }
-    
+
     logger.info('AI monitoring cleanup completed', { cutoff });
   }
 }
@@ -108,7 +108,7 @@ export const aiMonitoringSystem = new AIMonitoringSystem();
 
 // Initialize on module load
 if (process.env.NODE_ENV !== 'test') {
-  aiMonitoringSystem.initialize().catch(err => {
+  aiMonitoringSystem.initialize().catch((err) => {
     logger.error('AI Monitoring System initialization failed', { error: err.message });
   });
 }

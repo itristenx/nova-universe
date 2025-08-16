@@ -12,7 +12,10 @@ const KnowledgeListPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const userRoles = user?.roles || [];
-  const isEditor = userRoles.includes('admin') || userRoles.includes('superadmin') || userRoles.includes('kb_editor');
+  const isEditor =
+    userRoles.includes('admin') ||
+    userRoles.includes('superadmin') ||
+    userRoles.includes('kb_editor');
 
   useEffect(() => {
     loadArticles();
@@ -30,7 +33,7 @@ const KnowledgeListPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
         {isEditor && (
           <Button variant="primary" onClick={() => navigate('/knowledge/new')}>
@@ -38,7 +41,7 @@ const KnowledgeListPage: React.FC = () => {
           </Button>
         )}
       </div>
-      <Card className="p-4 space-y-4">
+      <Card className="space-y-4 p-4">
         <Input
           placeholder="Search articles..."
           value={search}
@@ -50,12 +53,16 @@ const KnowledgeListPage: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated</th>
+                <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Title
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Updated
+                </th>
                 <th className="px-4 py-2" />
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 bg-white">
               {articles.map((a) => (
                 <tr key={a.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 whitespace-nowrap">
@@ -63,17 +70,21 @@ const KnowledgeListPage: React.FC = () => {
                       {a.title}
                     </Link>
                     {a.verifiedSolution && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                      <span className="ml-2 inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
                         Verified
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-2 text-sm whitespace-nowrap text-gray-500">
                     {new Date(a.updatedAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-2 text-right whitespace-nowrap">
                     {isEditor && (
-                      <Button size="sm" variant="secondary" onClick={() => navigate(`/knowledge/${a.slug}/edit`)}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => navigate(`/knowledge/${a.slug}/edit`)}
+                      >
                         Edit
                       </Button>
                     )}

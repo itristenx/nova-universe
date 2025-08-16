@@ -25,59 +25,64 @@ class PostgreSQLManager {
   async initialize() {
     try {
       validateDatabaseConfig();
-      
+
       const config = {
         ...this.config,
         // Connection string for easier deployment
         connectionString: this.buildConnectionString(),
-        
+
         // Security settings
         ssl: this.config.ssl,
-        
+
         // Performance settings
         max: this.config.pool.max,
         min: this.config.pool.min,
         acquireTimeoutMillis: this.config.pool.acquireTimeoutMillis,
         idleTimeoutMillis: this.config.pool.idleTimeoutMillis,
         connectionTimeoutMillis: this.config.connectionTimeoutMillis,
-        
+
         // Query settings
         statement_timeout: this.config.statement_timeout,
         query_timeout: this.config.query_timeout,
-        
+
         // Application name for monitoring
         application_name: 'nova-universe-api',
-        
+
         // Enable keep-alive
         keepAlive: true,
         keepAliveInitialDelayMillis: 10000,
       };
 
       this.pool = new Pool(config);
-      
+
       // Handle pool events for monitoring and error handling
       this.setupPoolEventHandlers();
-      
+
       // Test the connection
       await this.testConnection();
-      
+
       this.isConnected = true;
       this.connectionAttempts = 0;
-      
+
       if (!process.env.CLI_MODE) {
         logger.info('✅ PostgreSQL connection pool initialized successfully');
         logger.info(`📊 Pool configuration: min=${config.min}, max=${config.max}`);
       }
-      
+
       return true;
     } catch (error) {
       this.connectionAttempts++;
-      logger.error(`❌ PostgreSQL initialization failed (attempt ${this.connectionAttempts}):`, error.message);
-      
+      logger.error(
+        `❌ PostgreSQL initialization failed (attempt ${this.connectionAttempts}):`,
+        error.message,
+      );
+
       if (this.connectionAttempts < this.maxConnectionAttempts) {
-        logger.info(`🔄 Retrying PostgreSQL connection in ${this.reconnectDelay / 1000} seconds...`);
+        logger.info(
+          `🔄 Retrying PostgreSQL connection in ${this.reconnectDelay / 1000} seconds...`,
+        );
         // Use a non-recursive approach for retries
-        await new Promise(resolve => setTimeout(resolve, this.reconnectDelay));
+        await new Promise((resolve) => setTimeout(resolve, this.reconnectDelay));
         return this.initialize();
       } else {
         logger.error('💀 PostgreSQL connection failed after maximum attempts');
@@ -126,7 +131,7 @@ class PostgreSQLManager {
     this.pool.on('error', (error, client) => {
       logger.error('💥 PostgreSQL pool error:', error.message);
       this.isConnected = false;
-      
+
       // Don't automatically reinitialize on error to prevent stack overflow
       // Let the application handle reconnection logic externally
       logger.warn('� PostgreSQL connection lost. Manual reconnection required.');
@@ -139,10 +144,12 @@ class PostgreSQLManager {
   async testConnection() {
     const client = await this.pool.connect();
     try {
-      const result = await client.query('SELECT NOW() as current_time, version() as postgres_version');
+      const result = await client.query(
+        'SELECT NOW() as current_time, version() as postgres_version',
+      );
       logger.debug('🏥 PostgreSQL health check passed:', {
         current_time: result.rows[0].current_time,
-        version: result.rows[0].postgres_version.split(' ')[0]
+        version: result.rows[0].postgres_version.split(' ')[0],
       });
     } finally {
       client.release();
@@ -186,7 +193,7 @@ class PostgreSQLManager {
         error: error.message,
         query: text.substring(0, 100),
         duration: `${duration}ms`,
-        params: params?.length ? '[PARAMS_REDACTED]' : 'none'
+        params: params?.length ? '[PARAMS_REDACTED]' : 'none',
       });
       throw error;
     } finally {
@@ -206,12 +213,12 @@ class PostgreSQLManager {
     }
 
     const client = await this.pool.connect();
-    
+
     try {
       await client.query('BEGIN');
-      
+
       const result = await callback(client);
-      
+
       await client.query('COMMIT');
       return result;
     } catch (error) {
@@ -235,7 +242,7 @@ class PostgreSQLManager {
       totalCount: this.pool.totalCount,
       idleCount: this.pool.idleCount,
       waitingCount: this.pool.waitingCount,
-      connected: this.isConnected
+      connected: this.isConnected,
     };
   }
 
@@ -246,19 +253,19 @@ class PostgreSQLManager {
     try {
       await this.testConnection();
       const stats = this.getPoolStats();
-      
+
       return {
         status: 'healthy',
         connected: this.isConnected,
         pool: stats,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       return {
         status: 'unhealthy',
         error: error.message,
         connected: false,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }

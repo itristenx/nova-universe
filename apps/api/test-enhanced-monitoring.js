@@ -28,17 +28,15 @@ async function testEnhancedMonitoring() {
 
     // Test 3: Test extended monitor types
     console.log('\n📋 Test 3: Testing Extended Monitor Types...');
-    const testMonitorTypes = [
-      'keyword', 'json-query', 'docker', 'steam', 'grpc', 'mqtt', 'radius'
-    ];
-    
+    const testMonitorTypes = ['keyword', 'json-query', 'docker', 'steam', 'grpc', 'mqtt', 'radius'];
+
     for (const type of testMonitorTypes) {
       try {
         const testCheck = {
           id: 'test',
           type,
           config: { hostname: 'localhost', port: 80 },
-          timeout: 5
+          timeout: 5,
         };
         // This would normally fail but we're just testing the service exists
         await extendedMonitorService.runMonitorCheck(testCheck).catch(() => {});
@@ -50,13 +48,13 @@ async function testEnhancedMonitoring() {
 
     // Test 4: Test advanced features
     console.log('\n📋 Test 4: Testing Advanced Features...');
-    
+
     // Test tag creation
     try {
       const testTag = await advancedFeaturesService.createTag({
         name: 'test-tag-' + Date.now(),
         color: '#FF0000',
-        description: 'Test tag for verification'
+        description: 'Test tag for verification',
       });
       console.log('   ✅ Tag system working');
     } catch (error) {
@@ -78,7 +76,7 @@ async function testEnhancedMonitoring() {
     console.log('   ✅ System Health:', {
       initialized: health.initialized,
       activeMonitors: health.activeMonitors,
-      supportedProviders: health.supportedProviders
+      supportedProviders: health.supportedProviders,
     });
 
     // Summary
@@ -87,14 +85,15 @@ async function testEnhancedMonitoring() {
     console.log('✅ Nova Sentinel now has COMPLETE Uptime Kuma parity!');
     console.log('');
     console.log('📊 Feature Summary:');
-    console.log(`   • ${testMonitorTypes.length + 6} monitor types (HTTP, TCP, Ping, DNS, SSL + extended)`);
+    console.log(
+      `   • ${testMonitorTypes.length + 6} monitor types (HTTP, TCP, Ping, DNS, SSL + extended)`,
+    );
     console.log(`   • ${supportedProviders.length}+ notification providers`);
     console.log('   • Advanced status pages with Apple design');
     console.log('   • Tags, maintenance windows, 2FA, certificates');
     console.log('   • Enterprise features: proxy, multi-tenant, APIs');
     console.log('');
     console.log('🚀 Ready for production deployment!');
-
   } catch (error) {
     console.error('❌ Enhanced Monitoring Test Failed:', error.message);
     console.log('\n🔧 Setup Required:');
@@ -102,7 +101,7 @@ async function testEnhancedMonitoring() {
     console.log('   2. Install dependencies: npm install axios speakeasy qrcode');
     console.log('   3. Configure environment variables');
     console.log('   4. Restart the application');
-    
+
     process.exit(1);
   }
 }

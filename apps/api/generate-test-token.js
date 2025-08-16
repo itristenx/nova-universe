@@ -4,10 +4,14 @@
 
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => {
-  console.error('WARNING: JWT_SECRET not set in environment. Using insecure fallback for testing only.');
-  return 'dev_jwt_secret_change_in_production_INSECURE_FOR_TESTING_ONLY';
-})();
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  (() => {
+    console.error(
+      'WARNING: JWT_SECRET not set in environment. Using insecure fallback for testing only.',
+    );
+    return 'dev_jwt_secret_change_in_production_INSECURE_FOR_TESTING_ONLY';
+  })();
 
 // Create a test token for our admin user
 const payload = {
@@ -16,7 +20,7 @@ const payload = {
   email: 'admin@nova.local',
   roles: ['admin'],
   iat: Math.floor(Date.now() / 1000),
-  exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour expiration
+  exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour expiration
 };
 
 const token = jwt.sign(payload, JWT_SECRET);

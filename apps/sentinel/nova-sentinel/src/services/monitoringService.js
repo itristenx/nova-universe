@@ -8,7 +8,7 @@ import crypto from 'crypto';
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.simple(),
-  transports: [new winston.transports.Console()]
+  transports: [new winston.transports.Console()],
 });
 
 export class MonitoringService extends EventEmitter {
@@ -25,10 +25,10 @@ export class MonitoringService extends EventEmitter {
     try {
       // Set up event listeners for Uptime Kuma events
       this.setupUptimeKumaEventHandlers();
-      
+
       // Load initial monitor states
       await this.loadInitialStates();
-      
+
       this.isInitialized = true;
       logger.info('Monitoring service initialized');
     } catch (error) {
@@ -56,7 +56,7 @@ export class MonitoringService extends EventEmitter {
     try {
       // Load monitors from database
       const monitors = await this.database.getAllMonitors();
-      
+
       for (const monitor of monitors) {
         // Get latest heartbeat for each monitor
         const heartbeat = await this.database.getLatestHeartbeat(monitor.uptime_kuma_id);
@@ -65,7 +65,7 @@ export class MonitoringService extends EventEmitter {
           this.monitorStatusCache.set(monitor.uptime_kuma_id, heartbeat.status);
         }
       }
-      
+
       logger.info(`Loaded ${monitors.length} monitors into cache`);
     } catch (error) {
       logger.error('Failed to load initial states:', error);
@@ -81,11 +81,11 @@ export class MonitoringService extends EventEmitter {
       const monitorId = heartbeat.monitorID;
       const previousHeartbeat = this.heartbeatCache.get(monitorId);
       const previousStatus = this.monitorStatusCache.get(monitorId);
-      
+
       // Update caches
       this.heartbeatCache.set(monitorId, heartbeat);
       this.monitorStatusCache.set(monitorId, heartbeat.status);
-      
+
       // Save to database
       await this.database.saveHeartbeat({
         monitorId: monitorId,
@@ -94,7 +94,7 @@ export class MonitoringService extends EventEmitter {
         ping: heartbeat.ping,
         msg: heartbeat.msg,
         important: heartbeat.important || false,
-        duration: heartbeat.duration
+        duration: heartbeat.duration,
       });
 
       // Check for status changes
@@ -106,7 +106,7 @@ export class MonitoringService extends EventEmitter {
       this.emit('heartbeat', {
         monitorId,
         heartbeat,
-        statusChanged: previousStatus !== heartbeat.status
+        statusChanged: previousStatus !== heartbeat.status,
       });
 
       // Log analytics event
@@ -116,10 +116,9 @@ export class MonitoringService extends EventEmitter {
         metadata: {
           status: heartbeat.status,
           ping: heartbeat.ping,
-          important: heartbeat.important
-        }
+          important: heartbeat.important,
+        },
       });
-
     } catch (error) {
       logger.error('Error handling heartbeat:', error);
     }
@@ -133,7 +132,7 @@ export class MonitoringService extends EventEmitter {
           const latestHeartbeat = heartbeatList[heartbeatList.length - 1];
           await this.handleHeartbeat({
             ...latestHeartbeat,
-            monitorID: monitorId
+            monitorID: monitorId,
           });
         }
       }
@@ -151,11 +150,11 @@ export class MonitoringService extends EventEmitter {
           // Monitor exists, update configuration if needed
           await this.database.updateMonitor(monitorId, {
             config: monitor,
-            updatedBy: 'system'
+            updatedBy: 'system',
           });
         }
       }
-      
+
       this.emit('monitorsUpdated', monitors);
     } catch (error) {
       logger.error('Error handling monitor list:', error);
@@ -176,9 +175,9 @@ export class MonitoringService extends EventEmitter {
           monitorName: monitor.name,
           responseTime: heartbeat.ping,
           message: heartbeat.msg,
-          timestamp: heartbeat.time
+          timestamp: heartbeat.time,
         },
-        tenantId: monitor.tenant_id
+        tenantId: monitor.tenant_id,
       };
 
       // Log analytics event
@@ -192,18 +191,17 @@ export class MonitoringService extends EventEmitter {
         this.emit('monitorDown', {
           monitor,
           heartbeat,
-          previousStatus
+          previousStatus,
         });
       } else if (newStatus === 1 && previousStatus === 0) {
         this.emit('monitorUp', {
           monitor,
           heartbeat,
-          previousStatus
+          previousStatus,
         });
       }
 
       logger.info(`Monitor ${monitor.name} status changed: ${previousStatus} -> ${newStatus}`);
-
     } catch (error) {
       logger.error('Error handling status change:', error);
     }
@@ -220,15 +218,14 @@ export class MonitoringService extends EventEmitter {
       // This would typically trigger Uptime Kuma to run checks
       // For now, we rely on Uptime Kuma's internal scheduling
       const stats = await this.getSystemStats();
-      
+
       this.emit('monitorChecksCycle', {
         timestamp: new Date().toISOString(),
-        stats
+        stats,
       });
 
       // Clean up old heartbeats periodically
       await this.cleanupOldHeartbeats();
-
     } catch (error) {
       logger.error('Error running monitor checks:', error);
     }
@@ -245,9 +242,9 @@ export class MonitoringService extends EventEmitter {
         WHERE time < ? 
         AND important = false
       `);
-      
+
       const result = stmt.run(cutoffDate.toISOString());
-      
+
       if (result.changes > 0) {
         logger.info(`Cleaned up ${result.changes} old heartbeats`);
       }
@@ -313,7 +310,7 @@ export class MonitoringService extends EventEmitter {
           downChecks: 0,
           avgResponseTime: 0,
           periodStart: startTime.toISOString(),
-          periodEnd: now.toISOString()
+          periodEnd: now.toISOString(),
         };
       }
 
@@ -327,9 +324,8 @@ export class MonitoringService extends EventEmitter {
         downChecks: stats.down_checks,
         avgResponseTime: Math.round(stats.avg_response_time * 100) / 100,
         periodStart: stats.period_start,
-        periodEnd: stats.period_end
+        periodEnd: stats.period_end,
       };
-
     } catch (error) {
       logger.error('Error calculating uptime stats:', error);
       return {
@@ -340,7 +336,7 @@ export class MonitoringService extends EventEmitter {
         downChecks: 0,
         avgResponseTime: 0,
         periodStart: new Date().toISOString(),
-        periodEnd: new Date().toISOString()
+        periodEnd: new Date().toISOString(),
       };
     }
   }
@@ -363,7 +359,7 @@ export class MonitoringService extends EventEmitter {
   async getSystemStats() {
     try {
       const dbStats = await this.database.getStats();
-      
+
       // Count monitors by status
       let upMonitors = 0;
       let downMonitors = 0;
@@ -390,7 +386,7 @@ export class MonitoringService extends EventEmitter {
           total: dbStats.monitors,
           up: upMonitors,
           down: downMonitors,
-          unknown: unknownMonitors
+          unknown: unknownMonitors,
         },
         statusPages: dbStats.status_pages,
         recentHeartbeats: dbStats.recent_heartbeats,
@@ -398,11 +394,10 @@ export class MonitoringService extends EventEmitter {
         recentEvents: recentEvents.count,
         cacheSize: {
           heartbeats: this.heartbeatCache.size,
-          statuses: this.monitorStatusCache.size
+          statuses: this.monitorStatusCache.size,
         },
-        timestamp: now.toISOString()
+        timestamp: now.toISOString(),
       };
-
     } catch (error) {
       logger.error('Error getting system stats:', error);
       return {
@@ -412,7 +407,7 @@ export class MonitoringService extends EventEmitter {
         subscribers: 0,
         recentEvents: 0,
         cacheSize: { heartbeats: 0, statuses: 0 },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -434,14 +429,14 @@ export class MonitoringService extends EventEmitter {
             summary: `${monitor.name} is down`,
             details: `Monitor ${monitor.name} (${monitor.type}) has failed.\n\nResponse: ${monitorEvent.heartbeat.msg}\nURL: ${monitor.config.url || 'N/A'}`,
             source: 'nova-sentinel',
-            monitorId: monitor.uptime_kuma_id
+            monitorId: monitor.uptime_kuma_id,
           });
         }
       } else if (monitorEvent.type === 'monitor_up') {
         // Auto-close related alerts when monitor comes back up
         this.emit('closeGoAlert', {
           monitorId: monitor.uptime_kuma_id,
-          reason: 'Monitor recovered'
+          reason: 'Monitor recovered',
         });
       }
     } catch (error) {
@@ -452,26 +447,26 @@ export class MonitoringService extends EventEmitter {
   async shouldCreateGoAlert(monitor) {
     // Logic to determine if a monitor failure should create a GoAlert
     // This could be based on monitor configuration, severity, business hours, etc.
-    
+
     try {
       const config = monitor.config || {};
-      
+
       // Check if GoAlert integration is enabled for this monitor
       if (!config.goalert_enabled) return false;
-      
+
       // Check if it's a critical monitor
       if (config.priority === 'critical') return true;
-      
+
       // Check if it's been down for a certain duration
       const downtime = await this.getMonitorDowntime(monitor.uptime_kuma_id);
       if (downtime > 300) return true; // 5 minutes
-      
+
       // Check business hours if configured
       if (config.business_hours_only) {
         const isBusinessHours = this.isBusinessHours();
         return isBusinessHours;
       }
-      
+
       return false;
     } catch (error) {
       logger.error('Error determining GoAlert creation:', error);
@@ -486,13 +481,13 @@ export class MonitoringService extends EventEmitter {
         WHERE monitor_id = ? AND status = 0 
         ORDER BY time DESC LIMIT 1
       `);
-      
+
       const lastDownHeartbeat = stmt.get(monitorId);
       if (!lastDownHeartbeat) return 0;
-      
+
       const downTime = new Date(lastDownHeartbeat.time);
       const now = new Date();
-      
+
       return (now.getTime() - downTime.getTime()) / 1000; // seconds
     } catch (error) {
       logger.error('Error getting monitor downtime:', error);
@@ -504,7 +499,7 @@ export class MonitoringService extends EventEmitter {
     const now = new Date();
     const hour = now.getHours();
     const day = now.getDay(); // 0 = Sunday, 6 = Saturday
-    
+
     // Monday to Friday, 9 AM to 5 PM
     return day >= 1 && day <= 5 && hour >= 9 && hour < 17;
   }
@@ -537,11 +532,13 @@ export class MonitoringService extends EventEmitter {
 
   async healthCheck() {
     try {
-      return this.isInitialized && 
-             this.database && 
-             await this.database.healthCheck() &&
-             this.uptimeKuma &&
-             await this.uptimeKuma.healthCheck();
+      return (
+        this.isInitialized &&
+        this.database &&
+        (await this.database.healthCheck()) &&
+        this.uptimeKuma &&
+        (await this.uptimeKuma.healthCheck())
+      );
     } catch (error) {
       return false;
     }

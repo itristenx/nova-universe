@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import styles from '../components/TicketGrid.module.css';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
@@ -36,7 +31,19 @@ import {
 } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
 import { toast } from 'sonner';
-import { PlusIcon as Plus, MagnifyingGlassIcon as Search, PencilSquareIcon as Edit, TrashIcon as Trash2, UsersIcon as Users, Cog6ToothIcon as Settings, ExclamationCircleIcon as AlertCircle, CheckCircleIcon as CheckCircle, ClockIcon as Clock, EnvelopeIcon as Mail, PhoneIcon as Phone } from '@heroicons/react/24/outline';
+import {
+  PlusIcon as Plus,
+  MagnifyingGlassIcon as Search,
+  PencilSquareIcon as Edit,
+  TrashIcon as Trash2,
+  UsersIcon as Users,
+  Cog6ToothIcon as Settings,
+  ExclamationCircleIcon as AlertCircle,
+  CheckCircleIcon as CheckCircle,
+  ClockIcon as Clock,
+  EnvelopeIcon as Mail,
+  PhoneIcon as Phone,
+} from '@heroicons/react/24/outline';
 
 // API functions
 const api = {
@@ -45,10 +52,10 @@ const api = {
       Object.entries(filters).reduce<Record<string, string>>((acc, [k, v]) => {
         if (v !== undefined && v !== null) acc[k] = String(v);
         return acc;
-      }, {})
+      }, {}),
     );
     const response = await fetch(`/api/v1/cmdb/support-groups?${params}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
     if (!response.ok) throw new Error('Failed to fetch support groups');
     return response.json();
@@ -59,9 +66,9 @@ const api = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create support group');
     return response.json();
@@ -72,9 +79,9 @@ const api = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update support group');
     return response.json();
@@ -83,7 +90,7 @@ const api = {
   deleteSupportGroup: async (id: string) => {
     const response = await fetch(`/api/v1/cmdb/support-groups/${id}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
     if (!response.ok) throw new Error('Failed to delete support group');
     return response.json();
@@ -91,18 +98,22 @@ const api = {
 
   getUsers: async (): Promise<Array<{ id: string; name: string; email: string }>> => {
     const response = await fetch('/api/v1/users', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
     if (!response.ok) throw new Error('Failed to fetch users');
     return response.json();
-  }
+  },
 };
 
 // Support Group Form Component
-const SupportGroupForm = ({ group, onSave, onCancel }: { 
-  group?: any; 
-  onSave: (data: any) => void; 
-  onCancel: () => void; 
+const SupportGroupForm = ({
+  group,
+  onSave,
+  onCancel,
+}: {
+  group?: any;
+  onSave: (data: any) => void;
+  onCancel: () => void;
 }) => {
   const [formData, setFormData] = useState({
     name: group?.name || '',
@@ -114,24 +125,24 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
     escalationGroup: group?.escalationGroup || '',
     businessHours: group?.businessHours || null,
     slaTarget: group?.slaTarget || '',
-    ...group
+    ...group,
   });
 
   const { data: users } = useQuery({
     queryKey: ['users'],
-    queryFn: api.getUsers
+    queryFn: api.getUsers,
   });
 
   const { data: supportGroups } = useQuery({
     queryKey: ['supportGroups'],
-    queryFn: () => api.getSupportGroups({ limit: 100 })
+    queryFn: () => api.getSupportGroups({ limit: 100 }),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const submitData = {
       ...formData,
-      slaTarget: formData.slaTarget ? parseInt(formData.slaTarget) : null
+      slaTarget: formData.slaTarget ? parseInt(formData.slaTarget) : null,
     };
     onSave(submitData);
   };
@@ -140,7 +151,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Name *</label>
+          <label className="mb-1 block text-sm font-medium">Name *</label>
           <Input
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -149,7 +160,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Type</label>
+          <label className="mb-1 block text-sm font-medium">Type</label>
           <Select
             value={formData.type}
             onValueChange={(value) => setFormData({ ...formData, type: value })}
@@ -168,7 +179,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Description</label>
+        <label className="mb-1 block text-sm font-medium">Description</label>
         <Textarea
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -179,7 +190,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
+          <label className="mb-1 block text-sm font-medium">Email</label>
           <Input
             type="email"
             value={formData.email}
@@ -188,7 +199,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Phone</label>
+          <label className="mb-1 block text-sm font-medium">Phone</label>
           <Input
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -199,7 +210,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Manager</label>
+          <label className="mb-1 block text-sm font-medium">Manager</label>
           <Select
             value={formData.manager}
             onValueChange={(value) => setFormData({ ...formData, manager: value })}
@@ -217,7 +228,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
           </Select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">SLA Target (minutes)</label>
+          <label className="mb-1 block text-sm font-medium">SLA Target (minutes)</label>
           <Input
             type="number"
             value={formData.slaTarget}
@@ -228,7 +239,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Escalation Group</label>
+        <label className="mb-1 block text-sm font-medium">Escalation Group</label>
         <Select
           value={formData.escalationGroup}
           onValueChange={(value) => setFormData({ ...formData, escalationGroup: value })}
@@ -237,11 +248,13 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
             <SelectValue placeholder="Select escalation group" />
           </SelectTrigger>
           <SelectContent>
-             {supportGroups?.supportGroups?.filter((sg: any) => sg.id !== group?.id).map((sg: any) => (
-              <SelectItem key={sg.id} value={sg.id}>
-                {sg.name}
-              </SelectItem>
-            ))}
+            {supportGroups?.supportGroups
+              ?.filter((sg: any) => sg.id !== group?.id)
+              .map((sg: any) => (
+                <SelectItem key={sg.id} value={sg.id}>
+                  {sg.name}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
       </div>
@@ -250,9 +263,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">
-          {group ? 'Update' : 'Create'} Support Group
-        </Button>
+        <Button type="submit">{group ? 'Update' : 'Create'} Support Group</Button>
       </div>
     </form>
   );
@@ -264,21 +275,22 @@ const SupportGroupsPage = () => {
   const [typeFilter, setTypeFilter] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
-  
+
   const queryClient = useQueryClient();
 
   // Fetch support groups
   const {
     data: supportGroupsData,
     isLoading,
-    error
+    error,
   } = useQuery({
     queryKey: ['supportGroups', { search: searchTerm, type: typeFilter }],
-    queryFn: () => api.getSupportGroups({
-      search: searchTerm || undefined,
-      type: typeFilter || undefined
-    }),
-    refetchInterval: 30000
+    queryFn: () =>
+      api.getSupportGroups({
+        search: searchTerm || undefined,
+        type: typeFilter || undefined,
+      }),
+    refetchInterval: 30000,
   });
 
   // Mutations
@@ -292,7 +304,7 @@ const SupportGroupsPage = () => {
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
       toast.error(`Failed to create support group: ${message}`);
-    }
+    },
   });
 
   const updateMutation = useMutation({
@@ -305,7 +317,7 @@ const SupportGroupsPage = () => {
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
       toast.error(`Failed to update support group: ${message}`);
-    }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -317,7 +329,7 @@ const SupportGroupsPage = () => {
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
       toast.error(`Failed to delete support group: ${message}`);
-    }
+    },
   });
 
   const handleCreate = (data: Record<string, unknown>) => {
@@ -340,7 +352,7 @@ const SupportGroupsPage = () => {
       technical: 'bg-blue-100 text-blue-800',
       business: 'bg-green-100 text-green-800',
       application: 'bg-purple-100 text-purple-800',
-      infrastructure: 'bg-orange-100 text-orange-800'
+      infrastructure: 'bg-orange-100 text-orange-800',
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
   };
@@ -349,10 +361,12 @@ const SupportGroupsPage = () => {
     return (
       <div className="p-6">
         <Card>
-          <CardContent className="flex items-center justify-center h-32">
+          <CardContent className="flex h-32 items-center justify-center">
             <div className="text-center">
-              <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-              <p className="text-red-600">Error loading support groups: {(error as Error).message}</p>
+              <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+              <p className="text-red-600">
+                Error loading support groups: {(error as Error).message}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -361,15 +375,19 @@ const SupportGroupsPage = () => {
   }
 
   React.useEffect(() => {
-    const handler = () => queryClient.invalidateQueries({ queryKey: ['supportGroups'] })
-    window.addEventListener('pulse:pull_to_refresh', handler)
-    return () => window.removeEventListener('pulse:pull_to_refresh', handler)
-  }, [queryClient])
+    const handler = () => queryClient.invalidateQueries({ queryKey: ['supportGroups'] });
+    window.addEventListener('pulse:pull_to_refresh', handler);
+    return () => window.removeEventListener('pulse:pull_to_refresh', handler);
+  }, [queryClient]);
 
   return (
-    <motion.div className={`p-6 space-y-6 ${styles.pullContainer}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div
+      className={`space-y-6 p-6 ${styles.pullContainer}`}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Support Groups</h1>
           <p className="text-muted-foreground">
@@ -390,10 +408,7 @@ const SupportGroupsPage = () => {
                 Create a new support group for CMDB ownership and permissions management.
               </DialogDescription>
             </DialogHeader>
-            <SupportGroupForm
-              onSave={handleCreate}
-              onCancel={() => setShowCreateDialog(false)}
-            />
+            <SupportGroupForm onSave={handleCreate} onCancel={() => setShowCreateDialog(false)} />
           </DialogContent>
         </Dialog>
       </div>
@@ -404,7 +419,7 @@ const SupportGroupsPage = () => {
           <div className="flex gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
                 <Input
                   placeholder="Search support groups..."
                   value={searchTerm}
@@ -445,7 +460,7 @@ const SupportGroupsPage = () => {
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
             </div>
           ) : supportGroupsData?.supportGroups?.length > 0 ? (
             <Table>
@@ -467,16 +482,12 @@ const SupportGroupsPage = () => {
                       <div>
                         <div className="font-medium">{group.name}</div>
                         {group.description && (
-                          <div className="text-sm text-muted-foreground">
-                            {group.description}
-                          </div>
+                          <div className="text-muted-foreground text-sm">{group.description}</div>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getTypeColor(group.type)}>
-                        {group.type}
-                      </Badge>
+                      <Badge className={getTypeColor(group.type)}>{group.type}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
@@ -523,11 +534,7 @@ const SupportGroupsPage = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingGroup(group)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => setEditingGroup(group)}>
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -545,9 +552,9 @@ const SupportGroupsPage = () => {
               </TableBody>
             </Table>
           ) : (
-            <div className="text-center py-8">
-              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No support groups found</h3>
+            <div className="py-8 text-center">
+              <Users className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+              <h3 className="mb-2 text-lg font-medium">No support groups found</h3>
               <p className="text-muted-foreground mb-4">
                 Create your first support group to get started.
               </p>
@@ -565,9 +572,7 @@ const SupportGroupsPage = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Support Group</DialogTitle>
-            <DialogDescription>
-              Update support group details and settings.
-            </DialogDescription>
+            <DialogDescription>Update support group details and settings.</DialogDescription>
           </DialogHeader>
           {editingGroup && (
             <SupportGroupForm

@@ -23,7 +23,8 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   // Map 'contained' to 'primary' for compatibility
   const mappedVariant = variant === 'contained' ? 'primary' : variant;
-  const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
+  const baseClasses =
+    'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
   return (
     <button
       className={`${baseClasses} button--${mappedVariant} button-size--${size} ${className}`}

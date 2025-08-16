@@ -3,6 +3,7 @@
 Nova Universe is an internal help desk application for submitting and tracking IT tickets.
 
 ## Table of Contents
+
 - [Quick Start Guide](#quick-start-guide)
 - [Project Overview](#project-overview)
 - [Installation & Setup](#installation--setup)
@@ -12,6 +13,7 @@ Nova Universe is an internal help desk application for submitting and tracking I
 - [Troubleshooting](#troubleshooting)
 
 ## Quick Links
+
 - [🚀 Quick Start Guide](quickstart.md) - Get up and running fast
 - [🔧 Development Guide](development.md) - For developers and contributors
 - [🔒 Security Guide](security.md) - Security features and deployment
@@ -21,11 +23,13 @@ Nova Universe is an internal help desk application for submitting and tracking I
 ## Quick Start Guide
 
 ### Prerequisites
+
 - Node.js 18+ and npm
 - PostgreSQL
 - For iOS kiosk: Xcode 15+ and iOS 16+
 
 ### Installation
+
 ```bash
 # Clone and setup
 git clone <repository-url>
@@ -37,6 +41,7 @@ cd nova-universe
 ```
 
 ### Default Access
+
 - **Admin UI**: http://localhost:5173
 - **API**: http://localhost:3000
 - **Default Login**: admin@example.com / admin
@@ -46,6 +51,7 @@ cd nova-universe
 Nova Universe is a comprehensive IT help desk system with multiple components:
 
 ### Core Components
+
 - **nova-api** - Backend API server (Node.js/Express/PostgreSQL)
 - **nova-admin** - Web admin interface (React/TypeScript/Vite)
 - **nova-kiosk** - iOS kiosk application (Swift/SwiftUI)
@@ -53,6 +59,7 @@ Nova Universe is a comprehensive IT help desk system with multiple components:
 - **nova-macos-swift** - macOS launcher application
 
 ### Key Features
+
 - Ticket submission and management
 - Kiosk activation system with QR codes
 - Role-based access control (RBAC)
@@ -63,9 +70,11 @@ Nova Universe is a comprehensive IT help desk system with multiple components:
 ## Components
 
 ### nova-api
+
 Express.js backend with PostgreSQL database. Handles ticket submission, user management, kiosk activation, and integrations.
 
 **Key Features:**
+
 - REST API for all operations
 - PostgreSQL database with automatic migrations
 - Comprehensive security middleware
@@ -73,9 +82,11 @@ Express.js backend with PostgreSQL database. Handles ticket submission, user man
 - Integration with HelpScout and Slack (ServiceNow integration removed)
 
 ### nova-admin
+
 React admin interface for managing the help desk system.
 
 **Key Features:**
+
 - Ticket and user management
 - Kiosk activation and monitoring
 - System configuration
@@ -83,18 +94,22 @@ React admin interface for managing the help desk system.
 - Responsive design
 
 ### nova-kiosk
+
 SwiftUI iPad application for end-user ticket submission.
 
 **Key Features:**
+
 - QR code and manual activation
 - Offline capability with caching
 - Directory integration for user lookup
 - Touch-friendly interface
 
 ### nova-slack
+
 Slack integration for ticket submission via slash commands.
 
 ### nova-macos-swift
+
 Native macOS launcher application.
 
 ## Architecture
@@ -116,11 +131,13 @@ Native macOS launcher application.
 ## Installation & Setup
 
 ### Automated Setup
+
 ```bash
 ./scripts/setup.sh
 ```
 
 ### Manual Setup
+
 ```bash
 # Install dependencies for each component
 cd nova-api && npm ci
@@ -137,9 +154,11 @@ cd apps/comms/nova-comms && npm start &
 ```
 
 ### Environment Configuration
+
 Edit the `.env` files in each component directory:
 
 #### apps/api/.env
+
 ```
 API_PORT=3000
 SESSION_SECRET=your-secure-secret
@@ -152,6 +171,7 @@ DATABASE_URL=postgres://user:password@localhost:5432/nova_universe
 ```
 
 #### apps/core/nova-core/.env
+
 ```
 VITE_API_URL=http://localhost:3000
 VITE_ADMIN_URL=http://localhost:5173
@@ -160,17 +180,20 @@ VITE_ADMIN_URL=http://localhost:5173
 ## Getting Started
 
 1. **Install Dependencies**
+
    ```bash
    ./scripts/setup.sh
    ```
 
 2. **Configure Environment**
+
    ```bash
    cp .env.local.example .env.local
    ./scripts/init-env.sh
    ```
 
 3. **Start Services**
+
    ```bash
    ./scripts/start-all.sh
    ```
@@ -185,6 +208,7 @@ VITE_ADMIN_URL=http://localhost:5173
 See [SECURITY_FIXES.md](SECURITY_FIXES.md) for detailed security implementation.
 
 ### Key Security Features
+
 - Strong password hashing (bcrypt with 12 salt rounds)
 - Rate limiting and brute force protection
 - Input validation and SQL injection prevention
@@ -193,6 +217,7 @@ See [SECURITY_FIXES.md](SECURITY_FIXES.md) for detailed security implementation.
 - Secure kiosk activation with time-limited codes
 
 ### Production Security Checklist
+
 - [ ] Set strong `SESSION_SECRET`
 - [ ] Change default admin password
 - [ ] Configure `KIOSK_TOKEN` for secure registration
@@ -204,12 +229,14 @@ See [SECURITY_FIXES.md](SECURITY_FIXES.md) for detailed security implementation.
 ## Development
 
 ### Code Style Guidelines
+
 - Use modern JavaScript with ES modules
 - Indent files with two spaces
 - Keep components and functions short and clearly named
 - Share design tokens from `design/theme.js`
 
 ### Testing
+
 ```bash
 # Run tests for each component from the repository root
 pnpm --filter nova-universe-api test
@@ -218,6 +245,7 @@ pnpm --filter nova-comms test
 ```
 
 ### Development Scripts
+
 ```bash
 # Start development environment
 ./scripts/start-all.sh
@@ -229,7 +257,9 @@ cd apps/beacon/nova-beacon && ./clean-build.sh
 ## Deployment
 
 ### Production Deployment
+
 1. Build all components:
+
    ```bash
    cd apps/core/nova-core && npm run build
    cd apps/api && npm run build # if applicable
@@ -242,6 +272,7 @@ cd apps/beacon/nova-beacon && ./clean-build.sh
 6. Configure log rotation
 
 ### Platform-Specific Installers
+
 - **Windows**: `tools/scripts/scripts/make-windows-installer.ps1`
 - **macOS**: `tools/scripts/scripts/make-installer.sh`
 - **Linux**: `tools/scripts/scripts/make-linux-installer.sh`
@@ -251,26 +282,31 @@ cd apps/beacon/nova-beacon && ./clean-build.sh
 ### Common Issues
 
 #### API Connection Issues
+
 1. Check if API is running: `curl http://localhost:3000/api/health` (see also `/api/version` for version info)
 2. Verify environment variables are set
 3. Check database connection and migrations
 
 #### iOS Kiosk Build Issues
+
 1. Clean build: `cd apps/beacon/nova-beacon && ./clean-build.sh`
 2. Check Xcode version compatibility
 3. Verify iOS simulator connectivity to localhost
 
 #### Authentication Problems
+
 1. Check session secret is set
 2. Verify admin user exists: `cd apps/api && node cli.js list`
 3. Reset admin password: `cd apps/api && node cli.js update-password`
 
 ### Log Locations
+
 - API logs: Check console output or configured log file
 - Admin UI: Browser developer console
 - iOS Kiosk: Xcode console when debugging
 
 ### Getting Help
+
 1. Check existing documentation in `docs/` folder
 2. Review component-specific README files
 3. Check test files for usage examples
@@ -278,11 +314,12 @@ cd apps/beacon/nova-beacon && ./clean-build.sh
 
 ## Support
 
-- Check the [troubleshooting section](quickstart.md#troubleshooting) 
+- Check the [troubleshooting section](quickstart.md#troubleshooting)
 - Review [security guidelines](security.md) for production deployment
 - See [development guide](development.md) for contributing
 
 ## Component Documentation
+
 - [API Documentation](../apps/api/README.md)
 - [Admin UI Documentation](../apps/core/nova-core/README.md)
 - [iOS Kiosk Documentation](../apps/beacon/nova-beacon/README.md)

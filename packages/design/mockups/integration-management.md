@@ -1,6 +1,7 @@
 # High-Fidelity Mockup: Integration Management
 
 ## Overview
+
 This mockup provides a detailed visual representation of the Integration Management workflow, adhering to the Nova Universe branding and style guide.
 
 ---
@@ -29,6 +30,7 @@ This mockup provides a detailed visual representation of the Integration Managem
 ---
 
 ## Notes
+
 - Use the primary color (#3F57FF) for action buttons.
 - Status badges should use the success, warning, and error colors as defined in the style guide.
 - Ensure the design is accessible and responsive.

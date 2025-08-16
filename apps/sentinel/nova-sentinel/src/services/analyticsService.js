@@ -6,7 +6,7 @@ import winston from 'winston';
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.simple(),
-  transports: [new winston.transports.Console()]
+  transports: [new winston.transports.Console()],
 });
 
 export class AnalyticsService {
@@ -20,7 +20,7 @@ export class AnalyticsService {
     try {
       // Initialize analytics collections
       await this.setupMetricsCollection();
-      
+
       this.isInitialized = true;
       logger.info('Analytics service initialized');
     } catch (error) {
@@ -50,7 +50,7 @@ export class AnalyticsService {
         this.collectSystemMetrics(),
         this.calculateUptimeMetrics(),
         this.calculateResponseTimeMetrics(),
-        this.collectUsageMetrics()
+        this.collectUsageMetrics(),
       ]);
     } catch (error) {
       logger.error('Error collecting metrics:', error);
@@ -60,9 +60,11 @@ export class AnalyticsService {
   async collectSystemMetrics() {
     try {
       const timestamp = new Date().toISOString();
-      
+
       // Get monitor counts by status
-      const monitorStats = await this.database.db.prepare(`
+      const monitorStats = await this.database.db
+        .prepare(
+          `
         SELECT 
           COUNT(*) as total,
           SUM(CASE WHEN h.status = 1 THEN 1 ELSE 0 END) as up,
@@ -75,17 +77,23 @@ export class AnalyticsService {
             SELECT MAX(h2.time) FROM heartbeats h2 WHERE h2.monitor_id = h1.monitor_id
           )
         ) h ON m.uptime_kuma_id = h.monitor_id
-      `).get();
+      `,
+        )
+        .get();
 
       // Get heartbeat counts
-      const heartbeatStats = await this.database.db.prepare(`
+      const heartbeatStats = await this.database.db
+        .prepare(
+          `
         SELECT 
           COUNT(*) as total_heartbeats,
           COUNT(CASE WHEN time > datetime('now', '-1 hour') THEN 1 END) as recent_heartbeats,
           AVG(ping) as avg_response_time
         FROM heartbeats
         WHERE time > datetime('now', '-24 hours')
-      `).get();
+      `,
+        )
+        .get();
 
       // Store system metrics
       await this.database.logEvent({
@@ -95,16 +103,15 @@ export class AnalyticsService {
           monitors: monitorStats,
           heartbeats: heartbeatStats,
           memory_usage: process.memoryUsage(),
-          uptime: process.uptime()
-        }
+          uptime: process.uptime(),
+        },
       });
 
       this.metricsCache.set('system', {
         ...monitorStats,
         ...heartbeatStats,
-        timestamp
+        timestamp,
       });
-
     } catch (error) {
       logger.error('Error collecting system metrics:', error);
     }
@@ -114,10 +121,10 @@ export class AnalyticsService {
     try {
       const monitors = await this.database.getAllMonitors();
       const periods = ['1h', '24h', '7d', '30d'];
-      
+
       for (const monitor of monitors) {
         const uptimeStats = {};
-        
+
         for (const period of periods) {
           const stats = await this.calculateMonitorUptime(monitor.uptime_kuma_id, period);
           uptimeStats[period] = stats;
@@ -127,7 +134,7 @@ export class AnalyticsService {
         this.metricsCache.set(`uptime_${monitor.uptime_kuma_id}`, {
           monitorId: monitor.uptime_kuma_id,
           stats: uptimeStats,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
     } catch (error) {
@@ -167,7 +174,7 @@ export class AnalyticsService {
       `);
 
       const result = stmt.get(monitorId, startTime.toISOString());
-      
+
       if (!result || result.total_checks === 0) {
         return {
           uptime: 100,
@@ -176,7 +183,7 @@ export class AnalyticsService {
           downChecks: 0,
           avgResponseTime: 0,
           maxResponseTime: 0,
-          minResponseTime: 0
+          minResponseTime: 0,
         };
       }
 
@@ -187,7 +194,7 @@ export class AnalyticsService {
         downChecks: result.total_checks - result.up_checks,
         avgResponseTime: Math.round(result.avg_response_time || 0),
         maxResponseTime: result.max_response_time || 0,
-        minResponseTime: result.min_response_time || 0
+        minResponseTime: result.min_response_time || 0,
       };
     } catch (error) {
       logger.error('Error calculating monitor uptime:', error);
@@ -198,7 +205,7 @@ export class AnalyticsService {
         downChecks: 0,
         avgResponseTime: 0,
         maxResponseTime: 0,
-        minResponseTime: 0
+        minResponseTime: 0,
       };
     }
   }
@@ -215,7 +222,7 @@ export class AnalyticsService {
 
       this.metricsCache.set('response_times', {
         stats: responseTimeStats,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Error calculating response time metrics:', error);
@@ -253,12 +260,12 @@ export class AnalyticsService {
       `);
 
       const result = stmt.get(startTime.toISOString());
-      
+
       return {
         avgResponseTime: Math.round(result.avg_response_time || 0),
         maxResponseTime: result.max_response_time || 0,
         minResponseTime: result.min_response_time || 0,
-        totalMeasurements: result.total_measurements || 0
+        totalMeasurements: result.total_measurements || 0,
       };
     } catch (error) {
       logger.error('Error getting response time stats:', error);
@@ -266,7 +273,7 @@ export class AnalyticsService {
         avgResponseTime: 0,
         maxResponseTime: 0,
         minResponseTime: 0,
-        totalMeasurements: 0
+        totalMeasurements: 0,
       };
     }
   }
@@ -274,25 +281,29 @@ export class AnalyticsService {
   async collectUsageMetrics() {
     try {
       const timestamp = new Date().toISOString();
-      
+
       // Collect usage statistics
-      const usageStats = await this.database.db.prepare(`
+      const usageStats = await this.database.db
+        .prepare(
+          `
         SELECT 
           event_type,
           COUNT(*) as count
         FROM analytics_events
         WHERE timestamp > datetime('now', '-24 hours')
         GROUP BY event_type
-      `).all();
+      `,
+        )
+        .all();
 
       const formattedStats = {};
-      usageStats.forEach(stat => {
+      usageStats.forEach((stat) => {
         formattedStats[stat.event_type] = stat.count;
       });
 
       this.metricsCache.set('usage', {
         stats: formattedStats,
-        timestamp
+        timestamp,
       });
     } catch (error) {
       logger.error('Error collecting usage metrics:', error);
@@ -304,15 +315,17 @@ export class AnalyticsService {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       yesterday.setHours(0, 0, 0, 0);
-      
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       // Calculate daily uptime for all monitors
       const monitors = await this.database.getAllMonitors();
-      
+
       for (const monitor of monitors) {
-        const dailyStats = await this.database.db.prepare(`
+        const dailyStats = await this.database.db
+          .prepare(
+            `
           SELECT 
             COUNT(*) as total_checks,
             SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as up_checks,
@@ -321,7 +334,9 @@ export class AnalyticsService {
           WHERE monitor_id = ? 
           AND time >= ? 
           AND time < ?
-        `).get(monitor.uptime_kuma_id, yesterday.toISOString(), today.toISOString());
+        `,
+          )
+          .get(monitor.uptime_kuma_id, yesterday.toISOString(), today.toISOString());
 
         if (dailyStats.total_checks > 0) {
           await this.database.logEvent({
@@ -333,8 +348,8 @@ export class AnalyticsService {
               totalChecks: dailyStats.total_checks,
               upChecks: dailyStats.up_checks,
               downChecks: dailyStats.total_checks - dailyStats.up_checks,
-              avgResponseTime: dailyStats.avg_response_time
-            }
+              avgResponseTime: dailyStats.avg_response_time,
+            },
           });
         }
       }
@@ -359,7 +374,7 @@ export class AnalyticsService {
         uptime: uptimeStats,
         responseTimes: responseTimeStats,
         incidents: incidentStats,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       logger.error('Error getting monitor analytics:', error);
@@ -400,14 +415,14 @@ export class AnalyticsService {
       `);
 
       const data = stmt.all(monitorId, startTime.toISOString());
-      
+
       return {
-        data: data.map(row => ({
+        data: data.map((row) => ({
           timestamp: row.time,
           responseTime: row.response_time,
-          status: row.status
+          status: row.status,
         })),
-        count: data.length
+        count: data.length,
       };
     } catch (error) {
       logger.error('Error getting monitor response times:', error);
@@ -447,13 +462,13 @@ export class AnalyticsService {
       `);
 
       const incidents = stmt.all(monitorId, startTime.toISOString());
-      
+
       return {
-        incidents: incidents.map(incident => ({
+        incidents: incidents.map((incident) => ({
           timestamp: incident.timestamp,
-          metadata: JSON.parse(incident.metadata)
+          metadata: JSON.parse(incident.metadata),
         })),
-        count: incidents.length
+        count: incidents.length,
       };
     } catch (error) {
       logger.error('Error getting monitor incidents:', error);
@@ -469,10 +484,10 @@ export class AnalyticsService {
 
       // Get top performing monitors
       const topMonitors = await this.getTopPerformingMonitors(period, 10);
-      
+
       // Get slowest monitors
       const slowestMonitors = await this.getSlowestMonitors(period, 10);
-      
+
       // Get recent incidents
       const recentIncidents = await this.getRecentIncidents(period);
 
@@ -484,7 +499,7 @@ export class AnalyticsService {
         topMonitors,
         slowestMonitors,
         recentIncidents,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       logger.error('Error getting system analytics:', error);
@@ -530,13 +545,13 @@ export class AnalyticsService {
       `);
 
       const monitors = stmt.all(startTime.toISOString(), limit);
-      
-      return monitors.map(monitor => ({
+
+      return monitors.map((monitor) => ({
         name: monitor.name,
         monitorId: monitor.uptime_kuma_id,
         uptime: Math.round(monitor.uptime_percentage * 100) / 100,
         avgResponseTime: Math.round(monitor.avg_response_time || 0),
-        totalChecks: monitor.total_checks
+        totalChecks: monitor.total_checks,
       }));
     } catch (error) {
       logger.error('Error getting top performing monitors:', error);
@@ -581,13 +596,13 @@ export class AnalyticsService {
       `);
 
       const monitors = stmt.all(startTime.toISOString(), limit);
-      
-      return monitors.map(monitor => ({
+
+      return monitors.map((monitor) => ({
         name: monitor.name,
         monitorId: monitor.uptime_kuma_id,
         avgResponseTime: Math.round(monitor.avg_response_time),
         maxResponseTime: Math.round(monitor.max_response_time),
-        totalChecks: monitor.total_checks
+        totalChecks: monitor.total_checks,
       }));
     } catch (error) {
       logger.error('Error getting slowest monitors:', error);
@@ -630,12 +645,12 @@ export class AnalyticsService {
       `);
 
       const incidents = stmt.all(startTime.toISOString());
-      
-      return incidents.map(incident => ({
+
+      return incidents.map((incident) => ({
         timestamp: incident.timestamp,
         monitorId: incident.monitor_id,
         monitorName: incident.monitor_name,
-        metadata: JSON.parse(incident.metadata)
+        metadata: JSON.parse(incident.metadata),
       }));
     } catch (error) {
       logger.error('Error getting recent incidents:', error);
@@ -652,7 +667,7 @@ export class AnalyticsService {
   }
 
   async healthCheck() {
-    return this.isInitialized && this.database && await this.database.healthCheck();
+    return this.isInitialized && this.database && (await this.database.healthCheck());
   }
 
   async close() {

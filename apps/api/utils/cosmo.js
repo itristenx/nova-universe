@@ -34,14 +34,17 @@ export async function initializeMCPServer() {
     // Provide a minimal no-op server to satisfy callers
     mcpServer = {
       registerTool: () => {},
-      callTool: async () => ({ content: [{ type: 'text', text: 'MCP not available' }], isError: true })
+      callTool: async () => ({
+        content: [{ type: 'text', text: 'MCP not available' }],
+        isError: true,
+      }),
     };
     return mcpServer;
   }
 
   mcpServer = new McpServerCtor({
     name: 'nova-cosmo-server',
-    version: '1.0.0'
+    version: '1.0.0',
   });
 
   // Initialize AI ticket processor
@@ -51,7 +54,7 @@ export async function initializeMCPServer() {
     enableDuplicateDetection: true,
     duplicateThreshold: 0.8,
     autoClassifyPriority: true,
-    autoMatchCustomers: true
+    autoMatchCustomers: true,
   });
 
   // Set up event listeners for ticket processor
@@ -59,7 +62,7 @@ export async function initializeMCPServer() {
     logger.info(`AI processed ticket: ${ticket.id}`, {
       category: ticket.aiClassification?.category,
       priority: ticket.aiClassification?.priority,
-      duplicates: ticket.duplicateAnalysis?.isDuplicate
+      duplicates: ticket.duplicateAnalysis?.isDuplicate,
     });
   });
 
@@ -69,7 +72,7 @@ export async function initializeMCPServer() {
 
   // Register Nova-specific MCP tools
   await registerNovaTools(mcpServer);
-  
+
   logger.info('MCP Server initialized with Nova tools and AI ticket processor');
   return mcpServer;
 }
@@ -94,10 +97,23 @@ async function registerNovaTools(server) {
         assignedTo: z.string().optional(),
         requesterEmail: z.string().email().optional(),
         requesterName: z.string().optional(),
-        useAI: z.boolean().default(true)
-      }
+        useAI: z.boolean().default(true),
+      },
     },
-    async ({ title, description, category, priority, location, assignedTo, requesterEmail, requesterName, useAI = true }, context) => {
+    async (
+      {
+        title,
+        description,
+        category,
+        priority,
+        location,
+        assignedTo,
+        requesterEmail,
+        requesterName,
+        useAI = true,
+      },
+      context,
+    ) => {
       try {
         // Prepare ticket data for AI processing
         const ticketData = {
@@ -112,7 +128,7 @@ async function registerNovaTools(server) {
           requesterName,
           createdAt: Date.now(),
           status: 'open',
-          userId: context.userId
+          userId: context.userId,
         };
 
         let processedTicket = ticketData;
@@ -130,11 +146,11 @@ async function registerNovaTools(server) {
 
         if (useAI && processedTicket.aiClassification) {
           responseText += '\n\n🤖 **AI Analysis:**';
-          
+
           if (processedTicket.aiClassification.category && !category) {
             responseText += `\n• Suggested Category: ${processedTicket.aiClassification.category} (${Math.round(processedTicket.aiClassification.categoryConfidence * 100)}% confidence)`;
           }
-          
+
           if (processedTicket.aiClassification.priority && !priority) {
             responseText += `\n• Suggested Priority: ${processedTicket.aiClassification.priority}`;
           }
@@ -158,21 +174,25 @@ async function registerNovaTools(server) {
         }
 
         return {
-          content: [{
-            type: 'text',
-            text: responseText
-          }]
+          content: [
+            {
+              type: 'text',
+              text: responseText,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Failed to create ticket: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Failed to create ticket: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Knowledge base search tool
@@ -184,42 +204,51 @@ async function registerNovaTools(server) {
       inputSchema: {
         query: z.string().min(3).max(200),
         category: z.string().optional(),
-        limit: z.number().min(1).max(10).default(5)
-      }
+        limit: z.number().min(1).max(10).default(5),
+      },
     },
     async ({ query, category, limit = 5 }) => {
       try {
         const articles = await searchKnowledgeBase(query, category, limit);
-        
+
         if (articles.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: `No knowledge base articles found for: "${query}"`
-            }]
+            content: [
+              {
+                type: 'text',
+                text: `No knowledge base articles found for: "${query}"`,
+              },
+            ],
           };
         }
 
-        const formattedResults = articles.map(article => 
-          `📄 **${article.title}**\n${article.summary}\n[View Article](${article.url})`
-        ).join('\n\n');
+        const formattedResults = articles
+          .map(
+            (article) =>
+              `📄 **${article.title}**\n${article.summary}\n[View Article](${article.url})`,
+          )
+          .join('\n\n');
 
         return {
-          content: [{
-            type: 'text',
-            text: `🔍 Found ${articles.length} knowledge base articles:\n\n${formattedResults}`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `🔍 Found ${articles.length} knowledge base articles:\n\n${formattedResults}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Knowledge base search failed: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Knowledge base search failed: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // AI Ticket Analysis tools
@@ -227,13 +256,14 @@ async function registerNovaTools(server) {
     'nova.ai.analyze_ticket',
     {
       title: 'Analyze Ticket with AI',
-      description: 'Get AI analysis of ticket content including classification, similarity, and suggestions',
+      description:
+        'Get AI analysis of ticket content including classification, similarity, and suggestions',
       inputSchema: {
         title: z.string(),
         description: z.string(),
         requesterEmail: z.string().email().optional(),
-        requesterName: z.string().optional()
-      }
+        requesterName: z.string().optional(),
+      },
     },
     async ({ title, description, requesterEmail, requesterName }) => {
       try {
@@ -247,13 +277,13 @@ async function registerNovaTools(server) {
           description,
           requesterEmail,
           requesterName,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         const analysis = await ticketProcessor.enrichTicketData(analysisData);
-        
+
         let responseText = `🤖 **AI Ticket Analysis**\n\n`;
-        
+
         if (analysis.aiClassification) {
           responseText += `**Classification:**\n`;
           responseText += `• Category: ${analysis.aiClassification.category} (${Math.round(analysis.aiClassification.categoryConfidence * 100)}% confidence)\n`;
@@ -279,7 +309,7 @@ async function registerNovaTools(server) {
           } else {
             responseText += `• No duplicates found\n`;
           }
-          
+
           if (analysis.duplicateAnalysis.similarTickets.length > 0) {
             responseText += `• Found ${analysis.duplicateAnalysis.similarTickets.length} similar tickets\n`;
           }
@@ -293,21 +323,25 @@ async function registerNovaTools(server) {
         }
 
         return {
-          content: [{
-            type: 'text',
-            text: responseText
-          }]
+          content: [
+            {
+              type: 'text',
+              text: responseText,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ AI analysis failed: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ AI analysis failed: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   server.registerTool(
@@ -318,8 +352,8 @@ async function registerNovaTools(server) {
       inputSchema: {
         title: z.string(),
         description: z.string(),
-        limit: z.number().min(1).max(20).optional().default(5)
-      }
+        limit: z.number().min(1).max(20).optional().default(5),
+      },
     },
     async ({ title, description, limit = 5 }) => {
       try {
@@ -327,19 +361,25 @@ async function registerNovaTools(server) {
           throw new Error('AI ticket processor not initialized');
         }
 
-        const similarTickets = await ticketProcessor.searchSimilarTickets(title, description, limit);
-        
+        const similarTickets = await ticketProcessor.searchSimilarTickets(
+          title,
+          description,
+          limit,
+        );
+
         if (similarTickets.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: `No similar tickets found for: "${title}"`
-            }]
+            content: [
+              {
+                type: 'text',
+                text: `No similar tickets found for: "${title}"`,
+              },
+            ],
           };
         }
 
         let responseText = `🔍 **Found ${similarTickets.length} Similar Tickets:**\n\n`;
-        
+
         similarTickets.forEach((ticket, index) => {
           responseText += `**${index + 1}. ${ticket.ticket.title}**\n`;
           responseText += `   Similarity: ${Math.round(ticket.similarity * 100)}%\n`;
@@ -348,21 +388,25 @@ async function registerNovaTools(server) {
         });
 
         return {
-          content: [{
-            type: 'text',
-            text: responseText
-          }]
+          content: [
+            {
+              type: 'text',
+              text: responseText,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Similar ticket search failed: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Similar ticket search failed: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   server.registerTool(
@@ -371,8 +415,8 @@ async function registerNovaTools(server) {
       title: 'Get Ticket Trends',
       description: 'Get AI-powered ticket trends and patterns analysis',
       inputSchema: {
-        timeframe: z.enum(['daily', 'weekly', 'monthly']).optional().default('daily')
-      }
+        timeframe: z.enum(['daily', 'weekly', 'monthly']).optional().default('daily'),
+      },
     },
     async ({ timeframe = 'daily' }) => {
       try {
@@ -382,16 +426,16 @@ async function registerNovaTools(server) {
 
         const trends = ticketProcessor.getTrends();
         const stats = ticketProcessor.getStats();
-        
+
         let responseText = `📊 **Ticket Trends Analysis (${timeframe})**\n\n`;
-        
+
         if (trends.current.has(timeframe)) {
           const data = trends.current.get(timeframe);
           responseText += `**Current Stats:**\n`;
           responseText += `• Total tickets: ${data.totalTickets}\n`;
-          responseText += `• Most common category: ${Object.keys(data.categories).reduce((a, b) => data.categories[a] > data.categories[b] ? a : b)}\n`;
-          responseText += `• Most common priority: ${Object.keys(data.priorities).reduce((a, b) => data.priorities[a] > data.priorities[b] ? a : b)}\n`;
-          
+          responseText += `• Most common category: ${Object.keys(data.categories).reduce((a, b) => (data.categories[a] > data.categories[b] ? a : b))}\n`;
+          responseText += `• Most common priority: ${Object.keys(data.priorities).reduce((a, b) => (data.priorities[a] > data.priorities[b] ? a : b))}\n`;
+
           if (data.averageResolutionTime) {
             const hours = Math.round(data.averageResolutionTime / (1000 * 60 * 60));
             responseText += `• Average resolution time: ${hours} hours\n`;
@@ -418,21 +462,25 @@ async function registerNovaTools(server) {
         responseText += `• Customers in database: ${stats.customers}\n`;
 
         return {
-          content: [{
-            type: 'text',
-            text: responseText
-          }]
+          content: [
+            {
+              type: 'text',
+              text: responseText,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Trends analysis failed: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Trends analysis failed: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   server.registerTool(
@@ -447,10 +495,18 @@ async function registerNovaTools(server) {
         contract: z.enum(['standard', 'premium', 'enterprise']).optional().default('standard'),
         priority: z.enum(['low', 'medium', 'high']).optional().default('medium'),
         location: z.string().optional(),
-        department: z.string().optional()
-      }
+        department: z.string().optional(),
+      },
     },
-    async ({ name, domain, emails, contract = 'standard', priority = 'medium', location, department }) => {
+    async ({
+      name,
+      domain,
+      emails,
+      contract = 'standard',
+      priority = 'medium',
+      location,
+      department,
+    }) => {
       try {
         if (!ticketProcessor) {
           throw new Error('AI ticket processor not initialized');
@@ -463,25 +519,29 @@ async function registerNovaTools(server) {
           contract,
           priority,
           location,
-          department
+          department,
         });
 
         return {
-          content: [{
-            type: 'text',
-            text: `✅ Customer added to AI database:\n\n**${customer.name}** (${customer.id})\n• Domain: ${customer.domain}\n• Contract: ${customer.contract}\n• Priority: ${customer.priority}\n• Emails: ${customer.emails.join(', ')}`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `✅ Customer added to AI database:\n\n**${customer.name}** (${customer.id})\n• Domain: ${customer.domain}\n• Contract: ${customer.contract}\n• Priority: ${customer.priority}\n• Emails: ${customer.emails.join(', ')}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Failed to add customer: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Failed to add customer: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // XP and gamification tools
@@ -494,29 +554,38 @@ async function registerNovaTools(server) {
         userId: z.string(),
         amount: z.number().min(1).max(100),
         reason: z.string(),
-        category: z.enum(['ticket_resolved', 'knowledge_shared', 'help_provided', 'system_improvement'])
-      }
+        category: z.enum([
+          'ticket_resolved',
+          'knowledge_shared',
+          'help_provided',
+          'system_improvement',
+        ]),
+      },
     },
     async ({ userId, amount, reason, category }) => {
       try {
         await awardUserXP(userId, amount, reason, category);
-        
+
         return {
-          content: [{
-            type: 'text',
-            text: `🌟 Awarded ${amount} XP to user for: ${reason}`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `🌟 Awarded ${amount} XP to user for: ${reason}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Failed to award XP: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Failed to award XP: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // System status tool
@@ -526,33 +595,42 @@ async function registerNovaTools(server) {
       title: 'Check System Status',
       description: 'Get current system status and health metrics',
       inputSchema: {
-        component: z.enum(['all', 'api', 'database', 'redis', 'websocket']).optional().default('all')
-      }
+        component: z
+          .enum(['all', 'api', 'database', 'redis', 'websocket'])
+          .optional()
+          .default('all'),
+      },
     },
     async ({ component = 'all' }) => {
       try {
         const status = await getSystemStatus(component);
-        
+
         const statusText = Object.entries(status)
-          .map(([comp, info]) => `${comp}: ${info.status} ${info.status === 'healthy' ? '✅' : '❌'}`)
+          .map(
+            ([comp, info]) => `${comp}: ${info.status} ${info.status === 'healthy' ? '✅' : '❌'}`,
+          )
           .join('\n');
 
         return {
-          content: [{
-            type: 'text',
-            text: `🖥️ System Status:\n\n${statusText}`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `🖥️ System Status:\n\n${statusText}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Failed to check system status: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Failed to check system status: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Workflow automation tool
@@ -563,29 +641,33 @@ async function registerNovaTools(server) {
       description: 'Execute predefined workflows',
       inputSchema: {
         workflowId: z.string(),
-        parameters: z.record(z.any()).optional()
-      }
+        parameters: z.record(z.any()).optional(),
+      },
     },
     async ({ workflowId, parameters = {} }, context) => {
       try {
         const result = await executeWorkflow(workflowId, parameters, context);
-        
+
         return {
-          content: [{
-            type: 'text',
-            text: `🔄 Workflow "${workflowId}" executed successfully:\n${result.summary}`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `🔄 Workflow "${workflowId}" executed successfully:\n${result.summary}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Workflow execution failed: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Workflow execution failed: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // ========================================================================
@@ -600,12 +682,14 @@ async function registerNovaTools(server) {
       description: 'Classify user input into intent categories (ticket, command, query)',
       inputSchema: {
         input: z.string().min(1).max(2000),
-        context: z.object({
-          userId: z.string().optional(),
-          userRole: z.string().optional(),
-          module: z.string().optional()
-        }).optional()
-      }
+        context: z
+          .object({
+            userId: z.string().optional(),
+            userRole: z.string().optional(),
+            module: z.string().optional(),
+          })
+          .optional(),
+      },
     },
     async ({ input, context = {} }) => {
       try {
@@ -619,14 +703,22 @@ async function registerNovaTools(server) {
         const suggestedActions = [];
 
         // Intent detection
-        if (text.includes('create ticket') || text.includes('report issue') || text.includes('problem with')) {
+        if (
+          text.includes('create ticket') ||
+          text.includes('report issue') ||
+          text.includes('problem with')
+        ) {
           intent = 'ticket';
           confidence = 0.9;
           suggestedActions.push('create_ticket');
         } else if (text.includes('help') || text.includes('how to') || text.includes('search')) {
           intent = 'query';
           suggestedActions.push('search_knowledge_base');
-        } else if (text.includes('escalate') || text.includes('urgent') || text.includes('emergency')) {
+        } else if (
+          text.includes('escalate') ||
+          text.includes('urgent') ||
+          text.includes('emergency')
+        ) {
           intent = 'escalation';
           priority = 'high';
           confidence = 0.8;
@@ -641,15 +733,24 @@ async function registerNovaTools(server) {
           category = 'access';
         } else if (text.includes('network') || text.includes('wifi') || text.includes('internet')) {
           category = 'network';
-        } else if (text.includes('computer') || text.includes('laptop') || text.includes('hardware')) {
+        } else if (
+          text.includes('computer') ||
+          text.includes('laptop') ||
+          text.includes('hardware')
+        ) {
           category = 'hardware';
-        } else if (text.includes('software') || text.includes('application') || text.includes('app')) {
+        } else if (
+          text.includes('software') ||
+          text.includes('application') ||
+          text.includes('app')
+        ) {
           category = 'software';
         }
 
         // Extract entities (simple keyword extraction)
-        const keywords = text.match(/\b(password|network|computer|laptop|software|printer|email|phone)\b/g) || [];
-        entities.push(...keywords.map(keyword => ({ type: 'keyword', value: keyword })));
+        const keywords =
+          text.match(/\b(password|network|computer|laptop|software|printer|email|phone)\b/g) || [];
+        entities.push(...keywords.map((keyword) => ({ type: 'keyword', value: keyword })));
 
         const result = {
           intent,
@@ -657,25 +758,29 @@ async function registerNovaTools(server) {
           category,
           priority,
           entities,
-          suggestedActions
+          suggestedActions,
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message, intent: 'unknown', confidence: 0 })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message, intent: 'unknown', confidence: 0 }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Auto Ticket Creation Tool
@@ -686,26 +791,30 @@ async function registerNovaTools(server) {
       description: 'Automatically create a ticket from classified intent',
       inputSchema: {
         input: z.string().min(5).max(2000),
-        classification: z.object({
-          intent: z.string(),
-          category: z.string(),
-          priority: z.string(),
-          confidence: z.number()
-        }).optional(),
-        requesterInfo: z.object({
-          userId: z.string().optional(),
-          userName: z.string().optional(),
-          userEmail: z.string().optional()
-        }).optional(),
-        useAI: z.boolean().default(true)
-      }
+        classification: z
+          .object({
+            intent: z.string(),
+            category: z.string(),
+            priority: z.string(),
+            confidence: z.number(),
+          })
+          .optional(),
+        requesterInfo: z
+          .object({
+            userId: z.string().optional(),
+            userName: z.string().optional(),
+            userEmail: z.string().optional(),
+          })
+          .optional(),
+        useAI: z.boolean().default(true),
+      },
     },
     async ({ input, classification = {}, requesterInfo = {}, useAI = true }) => {
       try {
         // Extract title from input (first sentence or up to 100 chars)
         const sentences = input.split(/[.!?]+/);
         const title = sentences[0].trim().substring(0, 100) || 'Auto-generated ticket';
-        
+
         const ticket = {
           id: `INC${Date.now().toString().slice(-6)}`,
           title,
@@ -716,7 +825,7 @@ async function registerNovaTools(server) {
           requester: requesterInfo.userName || 'Unknown',
           requesterEmail: requesterInfo.userEmail,
           createdAt: new Date().toISOString(),
-          source: 'ai_auto_creation'
+          source: 'ai_auto_creation',
         };
 
         if (useAI && ticketProcessor) {
@@ -726,7 +835,7 @@ async function registerNovaTools(server) {
             classification: processed.aiClassification,
             customerMatch: processed.customerMatch,
             suggestions: processed.suggestions,
-            duplicateAnalysis: processed.duplicateAnalysis
+            duplicateAnalysis: processed.duplicateAnalysis,
           };
         }
 
@@ -739,21 +848,25 @@ async function registerNovaTools(server) {
         ticket.estimatedResolution = `${estimatedResolution} hours`;
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(ticket)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(ticket),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Semantic Knowledge Base Search Tool
@@ -764,19 +877,21 @@ async function registerNovaTools(server) {
       description: 'AI-powered semantic search of Nova Lore knowledge base',
       inputSchema: {
         query: z.string().min(3).max(500),
-        context: z.object({
-          userId: z.string().optional(),
-          userRole: z.string().optional(),
-          tenantId: z.string().optional()
-        }).optional(),
+        context: z
+          .object({
+            userId: z.string().optional(),
+            userRole: z.string().optional(),
+            tenantId: z.string().optional(),
+          })
+          .optional(),
         limit: z.number().min(1).max(20).default(10),
-        includeAttachments: z.boolean().default(false)
-      }
+        includeAttachments: z.boolean().default(false),
+      },
     },
     async ({ query, context = {}, limit = 10, includeAttachments = false }) => {
       try {
         const startTime = Date.now();
-        
+
         // Simulate semantic search (in production, this would use actual semantic search)
         const mockArticles = [
           {
@@ -786,16 +901,16 @@ async function registerNovaTools(server) {
             relevance: 0.95,
             category: 'access',
             author: 'IT Admin',
-            lastUpdated: '2024-08-01T10:00:00Z'
+            lastUpdated: '2024-08-01T10:00:00Z',
           },
           {
-            id: 'KB-002', 
+            id: 'KB-002',
             title: 'Network Troubleshooting Guide',
             content: 'Step-by-step network connectivity troubleshooting',
             relevance: 0.87,
             category: 'network',
             author: 'Network Team',
-            lastUpdated: '2024-07-15T14:30:00Z'
+            lastUpdated: '2024-07-15T14:30:00Z',
           },
           {
             id: 'KB-003',
@@ -804,16 +919,16 @@ async function registerNovaTools(server) {
             relevance: 0.76,
             category: 'network',
             author: 'IT Security',
-            lastUpdated: '2024-07-20T09:15:00Z'
-          }
+            lastUpdated: '2024-07-20T09:15:00Z',
+          },
         ];
 
         // Filter by query relevance (simple keyword matching)
         const queryWords = query.toLowerCase().split(' ');
         const results = mockArticles
-          .filter(article => {
+          .filter((article) => {
             const articleText = `${article.title} ${article.content}`.toLowerCase();
-            return queryWords.some(word => articleText.includes(word));
+            return queryWords.some((word) => articleText.includes(word));
           })
           .sort((a, b) => b.relevance - a.relevance)
           .slice(0, limit);
@@ -824,25 +939,32 @@ async function registerNovaTools(server) {
           articles: results,
           totalResults: results.length,
           searchTime,
-          suggestions: results.length === 0 ? ['Try different keywords', 'Check spelling', 'Use more general terms'] : []
+          suggestions:
+            results.length === 0
+              ? ['Try different keywords', 'Check spelling', 'Use more general terms']
+              : [],
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message, articles: [], totalResults: 0 })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message, articles: [], totalResults: 0 }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Knowledge Base Feedback Tool
@@ -858,8 +980,8 @@ async function registerNovaTools(server) {
         feedback: z.string().optional(),
         helpful: z.boolean(),
         userId: z.string(),
-        timestamp: z.string()
-      }
+        timestamp: z.string(),
+      },
     },
     async ({ queryId, resultId, rating, feedback, helpful, userId, timestamp }) => {
       try {
@@ -873,27 +995,31 @@ async function registerNovaTools(server) {
           helpful,
           userId,
           timestamp,
-          processed: false
+          processed: false,
         };
 
         logger.info('Knowledge feedback submitted:', feedbackEntry);
 
         return {
-          content: [{
-            type: 'text',
-            text: `✅ Feedback submitted successfully for ${resultId}`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `✅ Feedback submitted successfully for ${resultId}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Failed to submit feedback: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Failed to submit feedback: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Workflow Execution Tool (Enhanced)
@@ -907,8 +1033,8 @@ async function registerNovaTools(server) {
         parameters: z.object({}).optional(),
         dryRun: z.boolean().default(false),
         executedBy: z.string().optional(),
-        timestamp: z.string().optional()
-      }
+        timestamp: z.string().optional(),
+      },
     },
     async ({ workflowId, parameters = {}, dryRun = false, executedBy, timestamp }) => {
       try {
@@ -918,32 +1044,40 @@ async function registerNovaTools(server) {
           status: dryRun ? 'dry_run_complete' : 'completed',
           steps: [
             { step: 'validate_parameters', status: 'completed', duration: 50 },
-            { step: 'execute_actions', status: dryRun ? 'skipped' : 'completed', duration: dryRun ? 0 : 200 },
-            { step: 'finalize', status: 'completed', duration: 30 }
+            {
+              step: 'execute_actions',
+              status: dryRun ? 'skipped' : 'completed',
+              duration: dryRun ? 0 : 200,
+            },
+            { step: 'finalize', status: 'completed', duration: 30 },
           ],
           duration: dryRun ? 80 : 280,
           output: {
             message: dryRun ? 'Workflow validated successfully' : 'Workflow executed successfully',
-            results: parameters
-          }
+            results: parameters,
+          },
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(execution)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(execution),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Custom Workflow Execution Tool
@@ -954,16 +1088,18 @@ async function registerNovaTools(server) {
       description: 'Execute a custom ad-hoc workflow',
       inputSchema: {
         name: z.string(),
-        steps: z.array(z.object({
-          name: z.string(),
-          action: z.string(),
-          parameters: z.object({}).optional()
-        })),
+        steps: z.array(
+          z.object({
+            name: z.string(),
+            action: z.string(),
+            parameters: z.object({}).optional(),
+          }),
+        ),
         parameters: z.object({}).optional(),
         dryRun: z.boolean().default(false),
         createdBy: z.string().optional(),
-        timestamp: z.string().optional()
-      }
+        timestamp: z.string().optional(),
+      },
     },
     async ({ name, steps, parameters = {}, dryRun = false, createdBy, timestamp }) => {
       try {
@@ -975,32 +1111,36 @@ async function registerNovaTools(server) {
             ...step,
             status: dryRun ? 'validated' : 'completed',
             duration: Math.random() * 100 + 50,
-            order: index + 1
+            order: index + 1,
           })),
           duration: steps.length * 75,
           output: {
             message: dryRun ? 'Custom workflow validated' : 'Custom workflow executed',
             stepsExecuted: steps.length,
-            results: parameters
-          }
+            results: parameters,
+          },
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(execution)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(execution),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Enhanced Gamification Tool
@@ -1013,18 +1153,26 @@ async function registerNovaTools(server) {
         userId: z.string(),
         amount: z.number().min(-1000).max(1000),
         reason: z.string().optional(),
-        category: z.enum(['ticket_resolved', 'knowledge_shared', 'feedback_given', 'milestone_reached', 'penalty']).optional(),
+        category: z
+          .enum([
+            'ticket_resolved',
+            'knowledge_shared',
+            'feedback_given',
+            'milestone_reached',
+            'penalty',
+          ])
+          .optional(),
         metadata: z.object({}).optional(),
         grantedBy: z.string().optional(),
-        timestamp: z.string().optional()
-      }
+        timestamp: z.string().optional(),
+      },
     },
     async ({ userId, amount, reason, category, metadata = {}, grantedBy, timestamp }) => {
       try {
         // Simulate XP calculation
         const currentXP = Math.floor(Math.random() * 1000) + 500; // Mock current XP
         const newTotal = Math.max(0, currentXP + amount);
-        
+
         // Level calculation (100 XP per level)
         const currentLevel = Math.floor(currentXP / 100);
         const newLevel = Math.floor(newTotal / 100);
@@ -1045,25 +1193,29 @@ async function registerNovaTools(server) {
           levelUp,
           newLevel,
           badgesEarned,
-          reason: reason || 'No reason provided'
+          reason: reason || 'No reason provided',
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Gamification Profile Tool
@@ -1075,8 +1227,8 @@ async function registerNovaTools(server) {
       inputSchema: {
         userId: z.string(),
         includeLeaderboard: z.boolean().default(true),
-        includeHistory: z.boolean().default(false)
-      }
+        includeHistory: z.boolean().default(false),
+      },
     },
     async ({ userId, includeLeaderboard = true, includeHistory = false }) => {
       try {
@@ -1089,41 +1241,45 @@ async function registerNovaTools(server) {
             'First Ticket Resolved',
             'Knowledge Contributor',
             'Helpful User',
-            'Quick Responder'
+            'Quick Responder',
           ],
           achievements: [
             { name: 'Ticket Master', description: 'Resolved 50 tickets', earnedAt: '2024-07-15' },
-            { name: 'Team Player', description: 'Helped 20 colleagues', earnedAt: '2024-07-20' }
+            { name: 'Team Player', description: 'Helped 20 colleagues', earnedAt: '2024-07-20' },
           ],
           leaderboardRank: includeLeaderboard ? Math.floor(Math.random() * 50) + 1 : null,
           streaks: {
             daily: 5,
             weekly: 2,
-            monthlyTickets: 12
+            monthlyTickets: 12,
           },
           stats: {
             ticketsResolved: Math.floor(Math.random() * 100) + 10,
             knowledgeShared: Math.floor(Math.random() * 20) + 3,
-            feedbackGiven: Math.floor(Math.random() * 15) + 5
-          }
+            feedbackGiven: Math.floor(Math.random() * 15) + 5,
+          },
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(profile)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(profile),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Integration Hook Registration Tool
@@ -1140,10 +1296,19 @@ async function registerNovaTools(server) {
         headers: z.object({}).optional(),
         active: z.boolean().default(true),
         registeredBy: z.string(),
-        tenantId: z.string().optional()
-      }
+        tenantId: z.string().optional(),
+      },
     },
-    async ({ name, event, endpoint, method = 'POST', headers = {}, active = true, registeredBy, tenantId }) => {
+    async ({
+      name,
+      event,
+      endpoint,
+      method = 'POST',
+      headers = {},
+      active = true,
+      registeredBy,
+      tenantId,
+    }) => {
       try {
         const hook = {
           id: `HOOK-${Date.now()}`,
@@ -1157,27 +1322,31 @@ async function registerNovaTools(server) {
           tenantId,
           createdAt: new Date().toISOString(),
           lastTriggered: null,
-          triggerCount: 0
+          triggerCount: 0,
         };
 
         logger.info('Integration hook registered:', hook);
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(hook)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(hook),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Alert Analysis Tool
@@ -1199,47 +1368,51 @@ async function registerNovaTools(server) {
           serviceCategory: z.string().optional(),
           keywords: z.array(z.string()).optional(),
           tenantId: z.string().optional(),
-          timestamp: z.string().optional()
+          timestamp: z.string().optional(),
         }),
-        message: z.string()
-      }
+        message: z.string(),
+      },
     },
     async ({ userId, module, userRole, context, message }) => {
       try {
         // Analyze the situation using Nova's alert intelligence
         const analysis = await analyzeAlertSituation(context, message, userRole);
-        
+
         // Log the analysis request
         logger.info('Alert analysis performed:', {
           userId,
           module,
           context,
           action: analysis.action,
-          confidence: analysis.confidence
+          confidence: analysis.confidence,
         });
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(analysis)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(analysis),
+            },
+          ],
         };
       } catch (error) {
         logger.error('Alert analysis failed:', error);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              action: 'no_action',
-              reasoning: `Analysis failed: ${error.message}`,
-              confidence: 0.1,
-              error: true
-            })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                action: 'no_action',
+                reasoning: `Analysis failed: ${error.message}`,
+                confidence: 0.1,
+                error: true,
+              }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // Hook Trigger Tool
@@ -1253,40 +1426,44 @@ async function registerNovaTools(server) {
         testData: z.object({}).optional(),
         triggeredBy: z.string().optional(),
         timestamp: z.string().optional(),
-        manual: z.boolean().default(false)
-      }
+        manual: z.boolean().default(false),
+      },
     },
     async ({ hookId, testData = {}, triggeredBy, timestamp, manual = false }) => {
       try {
         // Simulate hook trigger
         const responseTime = Math.random() * 200 + 50;
         const success = Math.random() > 0.1; // 90% success rate
-        
+
         const result = {
           hookId,
           status: success ? 'success' : 'failed',
           responseCode: success ? 200 : 500,
           responseTime: Math.round(responseTime),
           error: success ? null : 'Connection timeout',
-          triggeredAt: timestamp || new Date().toISOString()
+          triggeredAt: timestamp || new Date().toISOString(),
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   // MCP Session Management Tools
@@ -1298,41 +1475,48 @@ async function registerNovaTools(server) {
       inputSchema: {
         requestedTools: z.array(z.string()).optional(),
         context: z.object({}).optional(),
-        sessionName: z.string().optional()
-      }
+        sessionName: z.string().optional(),
+      },
     },
     async ({ requestedTools = [], context = {}, sessionName }) => {
       try {
         const session = {
           id: `MCP-${Date.now()}`,
-          availableTools: requestedTools.length > 0 ? requestedTools : [
-            'nova.tickets.create',
-            'nova.lore.search',
-            'nova.ai.analyze_ticket',
-            'nova.gamification.grant_xp'
-          ],
+          availableTools:
+            requestedTools.length > 0
+              ? requestedTools
+              : [
+                  'nova.tickets.create',
+                  'nova.lore.search',
+                  'nova.ai.analyze_ticket',
+                  'nova.gamification.grant_xp',
+                ],
           context,
           status: 'active',
           createdAt: new Date().toISOString(),
-          name: sessionName || 'Unnamed Session'
+          name: sessionName || 'Unnamed Session',
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(session)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(session),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   server.registerTool(
@@ -1342,8 +1526,8 @@ async function registerNovaTools(server) {
       description: 'Retrieve MCP session state and context',
       inputSchema: {
         sessionId: z.string(),
-        userId: z.string()
-      }
+        userId: z.string(),
+      },
     },
     async ({ sessionId, userId }) => {
       try {
@@ -1355,25 +1539,29 @@ async function registerNovaTools(server) {
           status: 'active',
           callHistory: [],
           createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-          lastActive: new Date().toISOString()
+          lastActive: new Date().toISOString(),
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(session)
-          }]
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(session),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ error: error.message })
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ error: error.message }),
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 
   server.registerTool(
@@ -1383,29 +1571,33 @@ async function registerNovaTools(server) {
       description: 'End and cleanup MCP session',
       inputSchema: {
         sessionId: z.string(),
-        userId: z.string()
-      }
+        userId: z.string(),
+      },
     },
     async ({ sessionId, userId }) => {
       try {
         logger.info(`MCP session ${sessionId} ended by user ${userId}`);
-        
+
         return {
-          content: [{
-            type: 'text',
-            text: `✅ MCP session ${sessionId} ended successfully`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `✅ MCP session ${sessionId} ended successfully`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `❌ Failed to end MCP session: ${error.message}`
-          }],
-          isError: true
+          content: [
+            {
+              type: 'text',
+              text: `❌ Failed to end MCP session: ${error.message}`,
+            },
+          ],
+          isError: true,
         };
       }
-    }
+    },
   );
 }
 
@@ -1423,7 +1615,7 @@ export async function startConversation(conversationId, userId, tenantId, contex
       status: 'active',
       createdAt: new Date(),
       updatedAt: new Date(),
-      lastActivity: new Date()
+      lastActivity: new Date(),
     };
 
     conversations.set(conversationId, conversation);
@@ -1466,7 +1658,7 @@ export async function sendMessage(conversationId, userId, message, context = {})
       id: uuidv4(),
       from: 'user',
       text: message,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
     conversation.messages.push(userMessage);
 
@@ -1479,7 +1671,7 @@ export async function sendMessage(conversationId, userId, message, context = {})
       from: 'cosmo',
       text: aiResponse.message,
       timestamp: new Date(),
-      metadata: aiResponse.metadata
+      metadata: aiResponse.metadata,
     };
     conversation.messages.push(cosmoMessage);
 
@@ -1491,7 +1683,7 @@ export async function sendMessage(conversationId, userId, message, context = {})
     return {
       message: aiResponse.message,
       metadata: aiResponse.metadata,
-      actions: aiResponse.actions
+      actions: aiResponse.actions,
     };
   } catch (error) {
     logger.error('Error sending message:', error);
@@ -1571,7 +1763,7 @@ export async function createEscalation(conversationId, userId, tenantId, escalat
       context: escalationData.context,
       suggestedActions: generateEscalationActions(escalationData),
       status: 'pending',
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     escalations.set(escalation.id, escalation);
@@ -1604,7 +1796,7 @@ export async function handleMCPRequest(userId, tenantId, mcpRequest) {
     const context = {
       userId,
       tenantId,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     // Process MCP request through the server
@@ -1628,7 +1820,7 @@ async function processMessageWithAI(message, conversation, context) {
   try {
     // This is where you'd integrate with actual AI providers (OpenAI, Anthropic, etc.)
     // For now, we'll simulate intelligent responses
-    
+
     const intent = classifyIntent(message);
     let response = '';
     let metadata = {};
@@ -1636,7 +1828,8 @@ async function processMessageWithAI(message, conversation, context) {
 
     switch (intent) {
       case 'create_ticket':
-        response = "I can help you create a ticket! Let me gather some information first. What type of issue are you experiencing?";
+        response =
+          'I can help you create a ticket! Let me gather some information first. What type of issue are you experiencing?';
         metadata.actionable = true;
         metadata.tools = ['nova.tickets.create'];
         break;
@@ -1648,40 +1841,41 @@ async function processMessageWithAI(message, conversation, context) {
           metadata.tools = ['nova.lore.search'];
           actions.push({
             type: 'search_knowledge',
-            payload: { query: searchQuery }
+            payload: { query: searchQuery },
           });
         } else {
-          response = "What would you like me to search for in our knowledge base?";
+          response = 'What would you like me to search for in our knowledge base?';
         }
         break;
 
       case 'system_status':
-        response = "Let me check the current system status for you...";
+        response = 'Let me check the current system status for you...';
         metadata.tools = ['nova.system.status'];
         actions.push({
           type: 'check_status',
-          payload: {}
+          payload: {},
         });
         break;
 
       case 'escalation_needed':
-        response = "I understand this issue needs escalation. Let me create an escalation for you.";
+        response = 'I understand this issue needs escalation. Let me create an escalation for you.';
         metadata.escalation = {
           level: 'medium',
           reason: 'User requested escalation',
-          suggestedActions: ['Assign to Level 2 support', 'Schedule call with user']
+          suggestedActions: ['Assign to Level 2 support', 'Schedule call with user'],
         };
         actions.push({
           type: 'escalate',
           payload: {
             level: 'medium',
-            reason: 'User requested escalation'
-          }
+            reason: 'User requested escalation',
+          },
         });
         break;
 
       case 'greeting':
-        response = "Hello! I'm Cosmo, your AI assistant. How can I help you today? I can help with creating tickets, searching our knowledge base, checking system status, and more!";
+        response =
+          "Hello! I'm Cosmo, your AI assistant. How can I help you today? I can help with creating tickets, searching our knowledge base, checking system status, and more!";
         break;
 
       default:
@@ -1697,22 +1891,23 @@ async function processMessageWithAI(message, conversation, context) {
         payload: {
           userId: conversation.userId,
           amount: 5,
-          reason: 'Active engagement with Cosmo'
-        }
+          reason: 'Active engagement with Cosmo',
+        },
       });
     }
 
     return {
       message: response,
       metadata,
-      actions
+      actions,
     };
   } catch (error) {
     logger.error('Error processing message with AI:', error);
     return {
-      message: "I apologize, but I'm having trouble processing your request right now. Please try again or contact support if the issue persists.",
+      message:
+        "I apologize, but I'm having trouble processing your request right now. Please try again or contact support if the issue persists.",
       metadata: { error: true },
-      actions: []
+      actions: [],
     };
   }
 }
@@ -1722,27 +1917,46 @@ async function processMessageWithAI(message, conversation, context) {
  */
 function classifyIntent(message) {
   const lowerMessage = message.toLowerCase();
-  
-  if (lowerMessage.includes('create') && (lowerMessage.includes('ticket') || lowerMessage.includes('issue'))) {
+
+  if (
+    lowerMessage.includes('create') &&
+    (lowerMessage.includes('ticket') || lowerMessage.includes('issue'))
+  ) {
     return 'create_ticket';
   }
-  
-  if (lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('look up')) {
+
+  if (
+    lowerMessage.includes('search') ||
+    lowerMessage.includes('find') ||
+    lowerMessage.includes('look up')
+  ) {
     return 'search_knowledge';
   }
-  
-  if (lowerMessage.includes('status') || lowerMessage.includes('health') || lowerMessage.includes('down')) {
+
+  if (
+    lowerMessage.includes('status') ||
+    lowerMessage.includes('health') ||
+    lowerMessage.includes('down')
+  ) {
     return 'system_status';
   }
-  
-  if (lowerMessage.includes('escalate') || lowerMessage.includes('urgent') || lowerMessage.includes('emergency')) {
+
+  if (
+    lowerMessage.includes('escalate') ||
+    lowerMessage.includes('urgent') ||
+    lowerMessage.includes('emergency')
+  ) {
     return 'escalation_needed';
   }
-  
-  if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+
+  if (
+    lowerMessage.includes('hello') ||
+    lowerMessage.includes('hi') ||
+    lowerMessage.includes('hey')
+  ) {
     return 'greeting';
   }
-  
+
   return 'general_inquiry';
 }
 
@@ -1751,19 +1965,15 @@ function classifyIntent(message) {
  */
 function extractSearchQuery(message) {
   // Simple extraction - in a real system, use NLP
-  const patterns = [
-    /search for (.+)/i,
-    /find (.+)/i,
-    /look up (.+)/i
-  ];
-  
+  const patterns = [/search for (.+)/i, /find (.+)/i, /look up (.+)/i];
+
   for (const pattern of patterns) {
     const match = message.match(pattern);
     if (match) {
       return match[1].trim();
     }
   }
-  
+
   return null;
 }
 
@@ -1772,12 +1982,12 @@ function extractSearchQuery(message) {
  */
 function generateContextualResponse(message, conversation, context) {
   const responses = [
-    "I understand your question. Let me help you with that.",
+    'I understand your question. Let me help you with that.',
     "Thanks for reaching out! I'll do my best to assist you.",
     "I'm here to help! Could you provide a bit more detail about what you need?",
-    "That's a great question. Let me see what I can find for you."
+    "That's a great question. Let me see what I can find for you.",
   ];
-  
+
   return responses[Math.floor(Math.random() * responses.length)];
 }
 
@@ -1786,8 +1996,10 @@ function generateContextualResponse(message, conversation, context) {
  */
 function shouldAwardXP(intent, conversation) {
   // Award XP for meaningful interactions
-  return ['create_ticket', 'search_knowledge', 'system_status'].includes(intent) &&
-         conversation.messages.length > 2; // Not on first interaction
+  return (
+    ['create_ticket', 'search_knowledge', 'system_status'].includes(intent) &&
+    conversation.messages.length > 2
+  ); // Not on first interaction
 }
 
 /**
@@ -1795,36 +2007,69 @@ function shouldAwardXP(intent, conversation) {
  */
 function generateEscalationActions(escalationData) {
   const actions = [];
-  
+
   switch (escalationData.level) {
     case 'critical':
       actions.push(
-        { type: 'immediate_assignment', description: 'Assign to on-call technician', priority: 1, automated: true },
-        { type: 'notification', description: 'Send SMS to management', priority: 1, automated: true },
-        { type: 'status_page', description: 'Update status page', priority: 2, automated: false }
+        {
+          type: 'immediate_assignment',
+          description: 'Assign to on-call technician',
+          priority: 1,
+          automated: true,
+        },
+        {
+          type: 'notification',
+          description: 'Send SMS to management',
+          priority: 1,
+          automated: true,
+        },
+        { type: 'status_page', description: 'Update status page', priority: 2, automated: false },
       );
       break;
-    
+
     case 'high':
       actions.push(
-        { type: 'priority_assignment', description: 'Assign to senior technician', priority: 1, automated: true },
-        { type: 'email_notification', description: 'Email team lead', priority: 2, automated: true }
+        {
+          type: 'priority_assignment',
+          description: 'Assign to senior technician',
+          priority: 1,
+          automated: true,
+        },
+        {
+          type: 'email_notification',
+          description: 'Email team lead',
+          priority: 2,
+          automated: true,
+        },
       );
       break;
-    
+
     case 'medium':
       actions.push(
-        { type: 'queue_assignment', description: 'Add to priority queue', priority: 1, automated: true },
-        { type: 'follow_up', description: 'Schedule 2-hour follow-up', priority: 2, automated: false }
+        {
+          type: 'queue_assignment',
+          description: 'Add to priority queue',
+          priority: 1,
+          automated: true,
+        },
+        {
+          type: 'follow_up',
+          description: 'Schedule 2-hour follow-up',
+          priority: 2,
+          automated: false,
+        },
       );
       break;
-    
+
     default:
-      actions.push(
-        { type: 'standard_assignment', description: 'Assign to available technician', priority: 1, automated: true }
-      );
+      actions.push({
+        type: 'standard_assignment',
+        description: 'Assign to available technician',
+        priority: 1,
+        automated: true,
+      });
   }
-  
+
   return actions;
 }
 
@@ -1852,7 +2097,7 @@ async function createTicketInDatabase(userId, ticketData) {
         ticketData.location,
         ticketData.assignedTo,
         now,
-        now
+        now,
       ]);
       resolve(ticketId);
     } catch (err) {
@@ -1869,25 +2114,25 @@ async function searchKnowledgeBase(query, category, limit) {
       WHERE (title LIKE ? OR content LIKE ?)
     `;
     const params = [`%${query}%`, `%${query}%`];
-    
+
     if (category) {
       sql += ' AND category = ?';
       params.push(category);
     }
-    
+
     sql += ' ORDER BY updated_at DESC LIMIT ?';
     params.push(limit);
-    
+
     db.all(sql, params, (err, rows) => {
       if (err) {
         reject(err);
       } else {
-        const articles = rows.map(row => ({
+        const articles = rows.map((row) => ({
           id: row.id,
           title: row.title,
           summary: row.content.substring(0, 150) + '...',
           category: row.category,
-          url: `/knowledge/${row.slug}`
+          url: `/knowledge/${row.slug}`,
         }));
         resolve(articles);
       }
@@ -1901,8 +2146,8 @@ async function awardUserXP(userId, amount, reason, category) {
       INSERT INTO user_xp (user_id, amount, reason, category, created_at)
       VALUES (?, ?, ?, ?, ?)
     `;
-    
-    db.run(sql, [userId, amount, reason, category, new Date().toISOString()], function(err) {
+
+    db.run(sql, [userId, amount, reason, category, new Date().toISOString()], function (err) {
       if (err) {
         reject(err);
       } else {
@@ -1918,9 +2163,9 @@ async function getSystemStatus(component) {
     api: { status: 'healthy', response_time: '25ms' },
     database: { status: 'healthy', connections: 5 },
     redis: { status: 'healthy', memory_usage: '45%' },
-    websocket: { status: 'healthy', active_connections: 12 }
+    websocket: { status: 'healthy', active_connections: 12 },
   };
-  
+
   if (component === 'all') {
     return status;
   } else {
@@ -1932,14 +2177,20 @@ async function executeWorkflow(workflowId, parameters, context) {
   try {
     const id = uuidv4();
     const startedAt = new Date().toISOString();
-    await db.run(`
+    await db.run(
+      `
       INSERT INTO workflow_executions (id, workflow_id, parameters, status, created_by, created_at)
       VALUES (?, ?, ?, 'running', ?, ?)
-    `, [id, workflowId, JSON.stringify(parameters || {}), context?.userId || 'system', startedAt]);
+    `,
+      [id, workflowId, JSON.stringify(parameters || {}), context?.userId || 'system', startedAt],
+    );
 
     // Simulate execution; in production this would enqueue a background worker
     setImmediate(async () => {
-      await db.run(`UPDATE workflow_executions SET status = 'completed', finished_at = ? WHERE id = ?`, [new Date().toISOString(), id]);
+      await db.run(
+        `UPDATE workflow_executions SET status = 'completed', finished_at = ? WHERE id = ?`,
+        [new Date().toISOString(), id],
+      );
     });
 
     return { workflowId, executionId: id, status: 'running', queuedAt: startedAt };
@@ -1965,25 +2216,29 @@ async function storeEscalationInDatabase(escalation) {
       INSERT INTO escalations (id, conversation_id, user_id, tenant_id, ticket_id, level, reason, context, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    
-    db.run(sql, [
-      escalation.id,
-      escalation.conversationId,
-      escalation.userId,
-      escalation.tenantId,
-      escalation.ticketId,
-      escalation.level,
-      escalation.reason,
-      JSON.stringify(escalation.context),
-      escalation.status,
-      escalation.createdAt.toISOString()
-    ], function(err) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(this.lastID);
-      }
-    });
+
+    db.run(
+      sql,
+      [
+        escalation.id,
+        escalation.conversationId,
+        escalation.userId,
+        escalation.tenantId,
+        escalation.ticketId,
+        escalation.level,
+        escalation.reason,
+        JSON.stringify(escalation.context),
+        escalation.status,
+        escalation.createdAt.toISOString(),
+      ],
+      function (err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(this.lastID);
+        }
+      },
+    );
   });
 }
 
@@ -1997,15 +2252,15 @@ async function notifyEscalationTeams(escalation) {
  */
 export async function notifyCosmoEscalation(ticketId, reason) {
   logger.info(`Legacy escalation notification for ticket ${ticketId}: ${reason}`);
-  
+
   // Create escalation using new system
   const escalationData = {
     ticketId,
     level: 'medium',
     reason,
-    context: { legacy: true }
+    context: { legacy: true },
   };
-  
+
   try {
     await createEscalation(null, 'system', 'default', escalationData);
   } catch (error) {
@@ -2023,7 +2278,7 @@ export async function analyzeAlertSituation(context, message, userRole) {
     confidence: 0.5,
     suggestions: [],
     alertData: null,
-    escalationData: null
+    escalationData: null,
   };
 
   // Priority-based analysis
@@ -2036,7 +2291,10 @@ export async function analyzeAlertSituation(context, message, userRole) {
         break;
       case 'high':
         analysis.confidence += 0.2;
-        if (context.customerTier === 'vip' || (context.affectedUsers && context.affectedUsers > 5)) {
+        if (
+          context.customerTier === 'vip' ||
+          (context.affectedUsers && context.affectedUsers > 5)
+        ) {
           analysis.action = 'create_alert';
           analysis.reasoning = 'High priority with significant impact requires alert.';
         } else {
@@ -2075,8 +2333,10 @@ export async function analyzeAlertSituation(context, message, userRole) {
   // Keyword-based analysis
   if (context.keywords && context.keywords.length > 0) {
     const criticalKeywords = ['outage', 'down', 'security', 'breach', 'critical', 'emergency'];
-    const hasCriticalKeywords = context.keywords.some(k => criticalKeywords.includes(k.toLowerCase()));
-    
+    const hasCriticalKeywords = context.keywords.some((k) =>
+      criticalKeywords.includes(k.toLowerCase()),
+    );
+
     if (hasCriticalKeywords) {
       analysis.confidence += 0.25;
       if (analysis.action === 'no_action' || analysis.action === 'suggest_resolution') {
@@ -2086,8 +2346,10 @@ export async function analyzeAlertSituation(context, message, userRole) {
     }
 
     const securityKeywords = ['security', 'breach', 'malware', 'phishing', 'unauthorized'];
-    const hasSecurityKeywords = context.keywords.some(k => securityKeywords.includes(k.toLowerCase()));
-    
+    const hasSecurityKeywords = context.keywords.some((k) =>
+      securityKeywords.includes(k.toLowerCase()),
+    );
+
     if (hasSecurityKeywords) {
       analysis.confidence += 0.3;
       analysis.action = 'create_alert';
@@ -2152,27 +2414,27 @@ export async function analyzeAlertSituation(context, message, userRole) {
       analysis.suggestions.push(
         'Review on-call schedule before creating alert',
         'Include relevant context in alert description',
-        'Set appropriate priority level'
+        'Set appropriate priority level',
       );
       break;
     case 'escalate_alert':
       analysis.suggestions.push(
         'Document escalation reason clearly',
         'Notify relevant stakeholders',
-        'Update ticket with escalation details'
+        'Update ticket with escalation details',
       );
       break;
     case 'suggest_resolution':
       analysis.suggestions.push(
         'Continue normal resolution process',
         'Monitor for changes in severity',
-        'Update ticket status regularly'
+        'Update ticket status regularly',
       );
       break;
     case 'no_action':
       analysis.suggestions.push(
         'Continue current resolution process',
-        'No immediate alert action required'
+        'No immediate alert action required',
       );
       break;
   }

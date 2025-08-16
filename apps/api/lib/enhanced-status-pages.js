@@ -10,7 +10,7 @@ export const statusPageService = {
   },
   async generateStatusBadge(badge, status, uptime) {
     return `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='20'><rect width='120' height='20' fill='#555'/><text x='60' y='14' fill='#fff' font-family='Verdana' font-size='11' text-anchor='middle'>${status} ${uptime}%</text></svg>`;
-  }
+  },
 };
 
 export default statusPageService;

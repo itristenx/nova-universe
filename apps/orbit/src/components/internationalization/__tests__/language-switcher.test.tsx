@@ -39,27 +39,40 @@ const messages = {
   },
 };
 
-const TestWrapper = ({ children, locale = 'en' }: { children: React.ReactNode; locale?: string }) => (
+const TestWrapper = ({
+  children,
+  locale = 'en',
+}: {
+  children: React.ReactNode;
+  locale?: string;
+}) => (
   <NextIntlClientProvider locale={locale} messages={messages[locale as keyof typeof messages]}>
     {children}
   </NextIntlClientProvider>
 );
 
 // Test component for CulturalFormatting hook
-const TestCulturalFormatting = ({ 
-  type, 
-  value, 
-  options 
+const TestCulturalFormatting = ({
+  type,
+  value,
+  options,
 }: {
   type: 'date' | 'time' | 'datetime' | 'number' | 'currency' | 'relative';
   value: Date | number;
   options?: Intl.NumberFormatOptions | Intl.DateTimeFormatOptions;
 }) => {
-  const { formatDate, formatTime, formatDateTime, formatNumber, formatCurrency, formatRelativeTime } = useCulturalFormatting();
-  
+  const {
+    formatDate,
+    formatTime,
+    formatDateTime,
+    formatNumber,
+    formatCurrency,
+    formatRelativeTime,
+  } = useCulturalFormatting();
+
   let formatted = '';
   let ariaLabel = '';
-  
+
   if (type === 'date' && value instanceof Date) {
     formatted = formatDate(value, options as Intl.DateTimeFormatOptions);
     ariaLabel = value.toLocaleDateString('en-US', { dateStyle: 'full' });
@@ -79,9 +92,12 @@ const TestCulturalFormatting = ({
     formatted = formatRelativeTime(value);
     ariaLabel = `Time: ${value.toISOString()}`;
   }
-  
+
   return (
-    <span title={value instanceof Date ? value.toISOString() : value.toString()} aria-label={ariaLabel}>
+    <span
+      title={value instanceof Date ? value.toISOString() : value.toString()}
+      aria-label={ariaLabel}
+    >
       {formatted}
     </span>
   );
@@ -92,7 +108,7 @@ describe('LanguageSwitcher', () => {
     render(
       <TestWrapper>
         <LanguageSwitcher />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     const languageButton = screen.getByRole('combobox', { name: /language/i });
@@ -105,7 +121,7 @@ describe('LanguageSwitcher', () => {
     render(
       <TestWrapper>
         <LanguageSwitcher />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     const languageButton = screen.getByRole('combobox');
@@ -126,11 +142,11 @@ describe('LanguageSwitcher', () => {
     render(
       <TestWrapper>
         <LanguageSwitcher />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     const languageButton = screen.getByRole('combobox');
-    
+
     // Open with Enter key
     languageButton.focus();
     fireEvent.keyDown(languageButton, { key: 'Enter' });
@@ -166,7 +182,7 @@ describe('LanguageSwitcher', () => {
     render(
       <TestWrapper>
         <LanguageSwitcher />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     const languageButton = screen.getByRole('combobox');
@@ -187,7 +203,7 @@ describe('LanguageSwitcher', () => {
     render(
       <TestWrapper locale="es">
         <LanguageSwitcher />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     const languageButton = screen.getByRole('combobox');
@@ -198,7 +214,7 @@ describe('LanguageSwitcher', () => {
     render(
       <TestWrapper>
         <LanguageSwitcher />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     const languageButton = screen.getByRole('combobox');
@@ -210,7 +226,7 @@ describe('LanguageSwitcher', () => {
     render(
       <TestWrapper locale="ar">
         <LanguageSwitcher />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     const languageButton = screen.getByRole('combobox');
@@ -232,11 +248,8 @@ describe('CulturalFormatting Hook', () => {
   it('formats dates according to locale', () => {
     render(
       <TestWrapper locale="en">
-        <TestCulturalFormatting
-          type="date"
-          value={testDate}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="date" value={testDate} />
+      </TestWrapper>,
     );
 
     // Should format as US date format (the hook uses the locale from context)
@@ -247,11 +260,8 @@ describe('CulturalFormatting Hook', () => {
   it('formats dates for different locales', () => {
     render(
       <TestWrapper locale="es">
-        <TestCulturalFormatting
-          type="date"
-          value={testDate}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="date" value={testDate} />
+      </TestWrapper>,
     );
 
     // Should format according to Spanish locale settings
@@ -262,11 +272,8 @@ describe('CulturalFormatting Hook', () => {
   it('formats numbers with locale-specific separators', () => {
     render(
       <TestWrapper locale="en">
-        <TestCulturalFormatting
-          type="number"
-          value={testNumber}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="number" value={testNumber} />
+      </TestWrapper>,
     );
 
     // US format should use comma for thousands, period for decimal
@@ -277,11 +284,8 @@ describe('CulturalFormatting Hook', () => {
   it('formats numbers for European locales', () => {
     render(
       <TestWrapper locale="fr">
-        <TestCulturalFormatting
-          type="number"
-          value={testNumber}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="number" value={testNumber} />
+      </TestWrapper>,
     );
 
     // French format should use appropriate separators
@@ -292,11 +296,8 @@ describe('CulturalFormatting Hook', () => {
   it('formats currency with proper symbols', () => {
     render(
       <TestWrapper locale="en">
-        <TestCulturalFormatting
-          type="currency"
-          value={testCurrency}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="currency" value={testCurrency} />
+      </TestWrapper>,
     );
 
     // Should format with currency symbol
@@ -307,11 +308,8 @@ describe('CulturalFormatting Hook', () => {
   it('formats currency for different locales and currencies', () => {
     render(
       <TestWrapper locale="fr">
-        <TestCulturalFormatting
-          type="currency"
-          value={testCurrency}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="currency" value={testCurrency} />
+      </TestWrapper>,
     );
 
     // Should format with appropriate currency for French locale
@@ -322,11 +320,8 @@ describe('CulturalFormatting Hook', () => {
   it('formats time with locale-specific conventions', () => {
     render(
       <TestWrapper locale="en">
-        <TestCulturalFormatting
-          type="time"
-          value={testDate}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="time" value={testDate} />
+      </TestWrapper>,
     );
 
     // Should format time according to locale
@@ -337,11 +332,8 @@ describe('CulturalFormatting Hook', () => {
   it('formats time for different locales', () => {
     render(
       <TestWrapper locale="fr">
-        <TestCulturalFormatting
-          type="time"
-          value={testDate}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="time" value={testDate} />
+      </TestWrapper>,
     );
 
     // Should format time according to French locale
@@ -355,11 +347,8 @@ describe('CulturalFormatting Hook', () => {
 
     render(
       <TestWrapper locale="en">
-        <TestCulturalFormatting
-          type="relative"
-          value={oneHourAgo}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="relative" value={oneHourAgo} />
+      </TestWrapper>,
     );
 
     // Should show relative time
@@ -370,26 +359,23 @@ describe('CulturalFormatting Hook', () => {
   it('provides proper accessibility attributes', () => {
     render(
       <TestWrapper locale="en">
-        <TestCulturalFormatting
-          type="date"
-          value={testDate}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="date" value={testDate} />
+      </TestWrapper>,
     );
 
     const formattedElement = screen.getByTitle(testDate.toISOString());
     expect(formattedElement).toHaveAttribute('title', testDate.toISOString());
-    expect(formattedElement).toHaveAttribute('aria-label', expect.stringContaining('March 15, 2024'));
+    expect(formattedElement).toHaveAttribute(
+      'aria-label',
+      expect.stringContaining('March 15, 2024'),
+    );
   });
 
   it('handles datetime formatting correctly', () => {
     render(
       <TestWrapper locale="en">
-        <TestCulturalFormatting
-          type="datetime"
-          value={testDate}
-        />
-      </TestWrapper>
+        <TestCulturalFormatting type="datetime" value={testDate} />
+      </TestWrapper>,
     );
 
     // Should format both date and time
@@ -408,7 +394,7 @@ describe('CulturalFormatting Hook', () => {
             maximumFractionDigits: 3,
           }}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     // Should format with custom decimal places

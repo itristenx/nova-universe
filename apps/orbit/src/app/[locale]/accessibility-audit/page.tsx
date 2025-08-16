@@ -5,7 +5,7 @@ import UserStatusDashboard from '@/components/monitoring/UserStatusDashboard';
 
 export default function AccessibilityAuditPage(): React.ReactElement {
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <header>
         <h1 className="text-2xl font-bold">Accessibility Audit</h1>
         <p className="text-muted-foreground">Real-time checks and best practices guidance</p>
@@ -14,5 +14,3 @@ export default function AccessibilityAuditPage(): React.ReactElement {
     </div>
   );
 }
-
-

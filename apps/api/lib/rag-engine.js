@@ -44,7 +44,7 @@ class RAGEngine {
 
     this.documents.set(doc.id, doc);
     logger.info('Document added to RAG Engine', { docId: doc.id });
-    
+
     return { success: true, docId: doc.id };
   }
 
@@ -57,12 +57,12 @@ class RAGEngine {
     }
 
     logger.info('RAG search executed', { query, options });
-    
+
     return {
       results: [],
       totalCount: 0,
       query,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -75,12 +75,12 @@ class RAGEngine {
     }
 
     logger.info('RAG response generation', { query });
-    
+
     return {
       response: 'RAG-generated response',
       confidence: 0.8,
       sources: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }
@@ -90,7 +90,7 @@ export const ragEngine = new RAGEngine();
 
 // Initialize on module load
 if (process.env.NODE_ENV !== 'test') {
-  ragEngine.initialize().catch(err => {
+  ragEngine.initialize().catch((err) => {
     logger.error('RAG Engine initialization failed', { error: err.message });
   });
 }

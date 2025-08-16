@@ -3,7 +3,6 @@ import db from '../db.js';
 
 const router = express.Router();
 
-
 /**
  * @swagger
  * /api/v1/organizations/config:
@@ -35,7 +34,9 @@ router.get('/config', async (req, res) => {
 
     // Parse known JSON fields
     if (config.integration_smtp) {
-      try { config.integration_smtp = JSON.parse(config.integration_smtp); } catch {}
+      try {
+        config.integration_smtp = JSON.parse(config.integration_smtp);
+      } catch {}
     }
 
     // Parse numeric fields
@@ -49,4 +50,3 @@ router.get('/config', async (req, res) => {
 });
 
 export default router;
-

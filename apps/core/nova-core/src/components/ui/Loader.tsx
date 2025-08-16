@@ -7,6 +7,8 @@ interface LoaderProps {
   className?: string;
 }
 
-export const Loader: React.FC<LoaderProps> = ({ size = 'md', color = 'primary', className = '' }) => (
-  <span className={`loader loader--${size} loader--${color} ${className}`} />
-);
+export const Loader: React.FC<LoaderProps> = ({
+  size = 'md',
+  color = 'primary',
+  className = '',
+}) => <span className={`loader loader--${size} loader--${color} ${className}`} />;

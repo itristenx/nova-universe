@@ -85,17 +85,22 @@
 }
 
 .gradientBg {
-  background: linear-gradient(135deg, var(--theme-color-10, rgba(31, 41, 55, 0.1)) 0%, var(--theme-color-30, rgba(31, 41, 55, 0.3)) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--theme-color-10, rgba(31, 41, 55, 0.1)) 0%,
+    var(--theme-color-30, rgba(31, 41, 55, 0.3)) 100%
+  );
 }
 
 .backgroundImage {
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), var(--background-image);
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), var(--background-image);
   background-position: center;
   background-size: cover;
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.1;
     transform: scale(1);
   }
@@ -110,7 +115,7 @@
   .loginContainer {
     padding: 0.5rem;
   }
-  
+
   .backgroundElement1,
   .backgroundElement2 {
     width: 16rem;

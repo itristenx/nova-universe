@@ -11,12 +11,14 @@ This guide provides comprehensive instructions for deploying Nova Universe in pr
 ### System Requirements
 
 #### Minimum Requirements
+
 - **CPU**: 4 cores (2.4 GHz or higher)
 - **RAM**: 8 GB
 - **Storage**: 100 GB SSD
 - **Network**: 1 Gbps connection
 
 #### Recommended Requirements
+
 - **CPU**: 8+ cores (3.0 GHz or higher)
 - **RAM**: 16+ GB
 - **Storage**: 500+ GB NVMe SSD
@@ -25,6 +27,7 @@ This guide provides comprehensive instructions for deploying Nova Universe in pr
 ### Software Dependencies
 
 #### Required
+
 - **Docker**: 24.0+ and Docker Compose v2.20+
 - **Node.js**: 18.x LTS (for development)
 - **PostgreSQL**: 15+ (primary database)
@@ -32,6 +35,7 @@ This guide provides comprehensive instructions for deploying Nova Universe in pr
 - **Nginx**: 1.24+ (reverse proxy and load balancing)
 
 #### Optional
+
 - **MongoDB**: 7.0+ (document storage)
 - **Elasticsearch**: 8.8+ (search and analytics)
 - **Prometheus**: (monitoring)
@@ -46,6 +50,7 @@ This guide provides comprehensive instructions for deploying Nova Universe in pr
 This is the fastest way to get Nova Universe running in production.
 
 #### Step 1: Download Nova Universe
+
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/nova-universe.git
@@ -58,6 +63,7 @@ cd nova-universe
 ```
 
 #### Step 2: Configure Environment
+
 ```bash
 # Copy environment template
 cp .env.production.template .env.production
@@ -67,6 +73,7 @@ nano .env.production
 ```
 
 **Required Environment Variables:**
+
 ```bash
 # Database Configuration
 DATABASE_URL=postgresql://nova:password@postgres:5432/nova_production
@@ -94,6 +101,7 @@ SSL_KEY_PATH=/etc/ssl/private/your-domain.key
 ```
 
 #### Step 3: SSL Certificate Setup
+
 ```bash
 # Option 1: Let's Encrypt (Recommended)
 sudo apt install certbot
@@ -106,6 +114,7 @@ cp your-domain.key ssl/
 ```
 
 #### Step 4: Deploy with Docker Compose
+
 ```bash
 # Start production deployment
 chmod +x deploy-production.sh
@@ -116,6 +125,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ```
 
 #### Step 5: Initial Setup
+
 ```bash
 # Create admin user
 docker-compose exec api npm run create-admin
@@ -132,6 +142,7 @@ curl -k https://your-domain.com/api/health
 For enterprise environments requiring orchestration and auto-scaling.
 
 #### Step 1: Prepare Kubernetes Manifests
+
 ```bash
 # Apply namespace
 kubectl apply -f k8s/namespace.yaml
@@ -142,6 +153,7 @@ kubectl apply -f k8s/secrets.yaml
 ```
 
 #### Step 2: Deploy Database Layer
+
 ```bash
 # PostgreSQL
 kubectl apply -f k8s/postgres.yaml
@@ -154,6 +166,7 @@ kubectl wait --for=condition=ready pod -l app=postgres -n nova-universe --timeou
 ```
 
 #### Step 3: Deploy Application Layer
+
 ```bash
 # API Services
 kubectl apply -f k8s/api.yaml
@@ -166,6 +179,7 @@ kubectl apply -f k8s/ingress.yaml
 ```
 
 #### Step 4: Verify Deployment
+
 ```bash
 # Check pod status
 kubectl get pods -n nova-universe
@@ -184,6 +198,7 @@ kubectl logs -f deployment/nova-api -n nova-universe
 ### SSL/TLS Setup
 
 #### Nginx Configuration
+
 ```nginx
 # /etc/nginx/sites-available/nova-universe
 server {
@@ -198,7 +213,7 @@ server {
 
     ssl_certificate /etc/ssl/certs/your-domain.crt;
     ssl_certificate_key /etc/ssl/private/your-domain.key;
-    
+
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
@@ -222,6 +237,7 @@ server {
 ### Firewall Configuration
 
 #### UFW (Ubuntu)
+
 ```bash
 # Allow SSH
 sudo ufw allow ssh
@@ -239,6 +255,7 @@ sudo ufw enable
 ```
 
 #### iptables
+
 ```bash
 # Basic firewall rules
 iptables -A INPUT -p tcp --dport 22 -j ACCEPT
@@ -250,6 +267,7 @@ iptables -A INPUT -j DROP
 ### Database Security
 
 #### PostgreSQL Hardening
+
 ```sql
 -- Create restricted user
 CREATE USER nova_app WITH PASSWORD 'secure_password';
@@ -270,6 +288,7 @@ ALTER SYSTEM SET ssl_key_file = 'server.key';
 ### Application Monitoring
 
 #### Health Checks
+
 ```bash
 # API Health
 curl https://your-domain.com/api/monitoring/health
@@ -282,6 +301,7 @@ curl https://your-domain.com/api/monitoring/alerts
 ```
 
 #### Prometheus Configuration
+
 ```yaml
 # prometheus.yml
 global:
@@ -298,18 +318,20 @@ scrape_configs:
 ### Log Management
 
 #### Docker Compose Logging
+
 ```yaml
 # docker-compose.prod.yml
 services:
   api:
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 ```
 
 #### Centralized Logging with ELK Stack
+
 ```bash
 # Deploy Elasticsearch
 docker run -d --name elasticsearch \
@@ -331,6 +353,7 @@ docker run -d --name kibana \
 ### Database Optimization
 
 #### PostgreSQL Tuning
+
 ```sql
 -- postgresql.conf optimizations
 shared_buffers = 256MB
@@ -344,6 +367,7 @@ effective_io_concurrency = 200
 ```
 
 #### Index Optimization
+
 ```sql
 -- Common indexes for performance
 CREATE INDEX CONCURRENTLY idx_tickets_status ON support_tickets(status);
@@ -355,6 +379,7 @@ CREATE INDEX CONCURRENTLY idx_tickets_vip ON support_tickets(vip_priority_score)
 ### Application Caching
 
 #### Redis Configuration
+
 ```redis
 # redis.conf
 maxmemory 512mb
@@ -365,19 +390,21 @@ save 60 10000
 ```
 
 #### Application-Level Caching
+
 ```javascript
 // Cache configuration in Nova Universe
 const cacheConfig = {
-  tickets: 300,     // 5 minutes
-  users: 1800,      // 30 minutes
-  analytics: 900,   // 15 minutes
-  system: 3600      // 1 hour
+  tickets: 300, // 5 minutes
+  users: 1800, // 30 minutes
+  analytics: 900, // 15 minutes
+  system: 3600, // 1 hour
 };
 ```
 
 ### CDN Configuration
 
 #### CloudFlare Setup
+
 ```bash
 # DNS Configuration
 CNAME www your-domain.com
@@ -397,6 +424,7 @@ CNAME assets cdn.your-domain.com
 ### Horizontal Scaling
 
 #### Load Balancer Configuration
+
 ```nginx
 # nginx.conf
 upstream nova_backend {
@@ -409,7 +437,7 @@ upstream nova_backend {
 server {
     listen 443 ssl;
     server_name your-domain.com;
-    
+
     location / {
         proxy_pass http://nova_backend;
         proxy_next_upstream error timeout invalid_header http_500;
@@ -418,6 +446,7 @@ server {
 ```
 
 #### Database Replication
+
 ```sql
 -- Primary database configuration
 wal_level = replica
@@ -433,6 +462,7 @@ primary_conninfo = 'host=primary-db user=replicator'
 ### Auto-Scaling with Kubernetes
 
 #### Horizontal Pod Autoscaler
+
 ```yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -446,12 +476,12 @@ spec:
   minReplicas: 3
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
 ```
 
 ---
@@ -461,6 +491,7 @@ spec:
 ### Database Backup
 
 #### Automated PostgreSQL Backup
+
 ```bash
 #!/bin/bash
 # backup-postgres.sh
@@ -483,6 +514,7 @@ aws s3 cp "$BACKUP_DIR/$BACKUP_FILE.gz" s3://your-backup-bucket/postgres/
 ```
 
 #### Backup Verification
+
 ```bash
 # Test restore procedure
 pg_restore -h test-postgres -U nova -d nova_test /backups/latest.sql.gz
@@ -491,6 +523,7 @@ pg_restore -h test-postgres -U nova -d nova_test /backups/latest.sql.gz
 ### Application Backup
 
 #### File System Backup
+
 ```bash
 #!/bin/bash
 # backup-files.sh
@@ -508,6 +541,7 @@ tar -czf "/backups/ssl_$(date +%Y%m%d).tar.gz" /etc/ssl/
 ### Disaster Recovery
 
 #### Recovery Procedures
+
 ```bash
 # 1. Restore database
 pg_restore -h postgres -U nova -d nova_production /backups/latest.sql.gz
@@ -530,8 +564,10 @@ curl https://your-domain.com/api/health
 ### Common Issues
 
 #### Application Won't Start
+
 **Symptoms**: Container exits or fails to start
 **Solutions**:
+
 ```bash
 # Check logs
 docker-compose logs api
@@ -544,8 +580,10 @@ docker-compose exec api npm run db:test
 ```
 
 #### Database Connection Issues
+
 **Symptoms**: "Connection refused" or timeout errors
 **Solutions**:
+
 ```bash
 # Check database status
 docker-compose ps postgres
@@ -558,8 +596,10 @@ sudo ufw status
 ```
 
 #### High Memory Usage
+
 **Symptoms**: Out of memory errors or slow performance
 **Solutions**:
+
 ```bash
 # Monitor memory usage
 docker stats
@@ -572,8 +612,10 @@ docker-compose exec postgres psql -U nova -c "SELECT * FROM pg_stat_activity;"
 ```
 
 #### SSL Certificate Issues
+
 **Symptoms**: Certificate warnings or HTTPS failures
 **Solutions**:
+
 ```bash
 # Check certificate validity
 openssl x509 -in /etc/ssl/certs/your-domain.crt -text -noout
@@ -588,6 +630,7 @@ openssl s_client -connect your-domain.com:443
 ### Debug Mode
 
 #### Enable Debug Logging
+
 ```bash
 # Set debug environment
 export DEBUG=nova:*
@@ -598,6 +641,7 @@ docker-compose restart api
 ```
 
 #### Performance Profiling
+
 ```bash
 # Enable profiling
 export NODE_ENV=production
@@ -614,6 +658,7 @@ docker-compose exec api npm run profile
 ### Update Procedures
 
 #### Application Updates
+
 ```bash
 # 1. Backup current deployment
 ./backup-production.sh
@@ -635,6 +680,7 @@ docker-compose restart
 ```
 
 #### Security Updates
+
 ```bash
 # Update base images
 docker-compose pull
@@ -650,6 +696,7 @@ docker-compose restart
 ### Maintenance Windows
 
 #### Planned Maintenance
+
 ```bash
 # 1. Notify users
 curl -X POST https://your-domain.com/api/admin/maintenance \

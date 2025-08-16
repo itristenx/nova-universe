@@ -71,7 +71,7 @@ Description: Advanced AI assistant for Nova ITSM platform with access to tickets
 
 Instructions: |
   You are Nova, an intelligent ITSM (IT Service Management) assistant powered by the Nova AI Fabric. You have access to a comprehensive suite of tools for:
-  
+
   - 🎫 Ticket Management: Create, search, analyze, and auto-resolve tickets
   - 📚 Knowledge Base: Search and submit knowledge articles
   - 🔍 Analytics: Generate insights and trends from ITSM data  
@@ -82,59 +82,59 @@ Instructions: |
   - 💬 Conversations: Manage MCP sessions and interactions
 
   ## Core Capabilities:
-  
+
   1. **Intelligent Ticket Handling**
      - Automatically classify and prioritize tickets
      - Find similar historical tickets for faster resolution
      - Suggest solutions based on Nova's knowledge base
      - Auto-create tickets from user descriptions
-  
+
   2. **Knowledge Management**
      - Semantic search across documentation and solutions
      - Submit new knowledge articles and feedback
      - Provide contextual recommendations
-  
+
   3. **Analytics & Insights**
      - Analyze ticket trends and patterns
      - Generate performance reports
      - Identify improvement opportunities
-  
+
   4. **Workflow Automation**
      - Execute predefined workflows
      - Trigger custom automation sequences
      - Manage approval processes
-  
+
   ## Interaction Guidelines:
-  
+
   - Always be helpful, professional, and accurate
   - Use Nova tools to provide real-time, up-to-date information
   - Explain your reasoning and data sources
   - Offer proactive suggestions and recommendations
   - Maintain security and privacy standards
   - Follow ITSM best practices and industry standards
-  
+
   ## Security & Compliance:
-  
+
   - Respect user permissions and access controls
   - Handle sensitive information appropriately
   - Maintain audit trails for all actions
   - Follow GDPR, CCPA, and other privacy regulations
-  
+
   When users ask questions or request actions, use the appropriate Nova tools to:
   1. Gather relevant information
   2. Perform the requested operations
   3. Provide comprehensive, actionable responses
   4. Suggest next steps or related actions
-  
+
   Always aim to be more helpful than a traditional chatbot by leveraging Nova's powerful AI and automation capabilities.
 
 Conversation Starters:
-- "Create a new incident ticket for server downtime"
-- "Find knowledge articles about password reset procedures"
-- "Analyze recent ticket trends and patterns"
-- "Execute the new user onboarding workflow"
-- "What are the most common IT issues this week?"
-- "Help me troubleshoot a network connectivity problem"
+  - 'Create a new incident ticket for server downtime'
+  - 'Find knowledge articles about password reset procedures'
+  - 'Analyze recent ticket trends and patterns'
+  - 'Execute the new user onboarding workflow'
+  - 'What are the most common IT issues this week?'
+  - 'Help me troubleshoot a network connectivity problem'
 ```
 
 ### 3. Actions Configuration
@@ -191,14 +191,14 @@ Schema:
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "server": {"type": "string"},
-                    "version": {"type": "string"},
-                    "description": {"type": "string"},
+                    "server": { "type": "string" },
+                    "version": { "type": "string" },
+                    "description": { "type": "string" },
                     "capabilities": {
                       "type": "array",
-                      "items": {"type": "string"}
+                      "items": { "type": "string" }
                     },
-                    "endpoints": {"type": "object"}
+                    "endpoints": { "type": "object" }
                   }
                 }
               }
@@ -223,9 +223,9 @@ Schema:
                     "type": "string",
                     "enum": ["2.0"]
                   },
-                  "method": {"type": "string"},
-                  "params": {"type": "object"},
-                  "id": {"type": "string"}
+                  "method": { "type": "string" },
+                  "params": { "type": "object" },
+                  "id": { "type": "string" }
                 },
                 "required": ["jsonrpc", "method", "id"]
               }
@@ -240,10 +240,10 @@ Schema:
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "jsonrpc": {"type": "string"},
-                    "result": {"type": "object"},
-                    "error": {"type": "object"},
-                    "id": {"type": "string"}
+                    "jsonrpc": { "type": "string" },
+                    "result": { "type": "object" },
+                    "error": { "type": "object" },
+                    "id": { "type": "string" }
                   }
                 }
               }
@@ -264,14 +264,14 @@ Schema:
               "schema": {
                 "type": "object",
                 "properties": {
-                  "title": {"type": "string"},
-                  "description": {"type": "string"},
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
                   "priority": {
                     "type": "string",
                     "enum": ["low", "medium", "high", "critical"]
                   },
-                  "category": {"type": "string"},
-                  "userId": {"type": "string"}
+                  "category": { "type": "string" },
+                  "userId": { "type": "string" }
                 },
                 "required": ["title", "description"]
               }
@@ -286,9 +286,9 @@ Schema:
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {"type": "boolean"},
-                    "ticketId": {"type": "string"},
-                    "message": {"type": "string"}
+                    "success": { "type": "boolean" },
+                    "ticketId": { "type": "string" },
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -309,9 +309,9 @@ Schema:
               "schema": {
                 "type": "object",
                 "properties": {
-                  "query": {"type": "string"},
-                  "limit": {"type": "integer", "default": 5},
-                  "category": {"type": "string"}
+                  "query": { "type": "string" },
+                  "limit": { "type": "integer", "default": 5 },
+                  "category": { "type": "string" }
                 },
                 "required": ["query"]
               }
@@ -326,17 +326,17 @@ Schema:
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {"type": "boolean"},
+                    "success": { "type": "boolean" },
                     "results": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "id": {"type": "string"},
-                          "title": {"type": "string"},
-                          "content": {"type": "string"},
-                          "category": {"type": "string"},
-                          "relevance": {"type": "number"}
+                          "id": { "type": "string" },
+                          "title": { "type": "string" },
+                          "content": { "type": "string" },
+                          "category": { "type": "string" },
+                          "relevance": { "type": "number" }
                         }
                       }
                     }
@@ -360,7 +360,7 @@ Schema:
               "schema": {
                 "type": "object",
                 "properties": {
-                  "ticketContent": {"type": "string"},
+                  "ticketContent": { "type": "string" },
                   "analysisType": {
                     "type": "string",
                     "enum": ["classification", "sentiment", "priority", "urgency"]
@@ -379,12 +379,12 @@ Schema:
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {"type": "boolean"},
-                    "analysis": {"type": "object"},
-                    "confidence": {"type": "number"},
+                    "success": { "type": "boolean" },
+                    "analysis": { "type": "object" },
+                    "confidence": { "type": "number" },
                     "recommendations": {
                       "type": "array",
-                      "items": {"type": "string"}
+                      "items": { "type": "string" }
                     }
                   }
                 }
@@ -410,10 +410,10 @@ Schema:
                     "type": "string",
                     "enum": ["24h", "7d", "30d", "90d"]
                   },
-                  "category": {"type": "string"},
+                  "category": { "type": "string" },
                   "metrics": {
                     "type": "array",
-                    "items": {"type": "string"}
+                    "items": { "type": "string" }
                   }
                 },
                 "required": ["timeframe"]
@@ -429,15 +429,15 @@ Schema:
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {"type": "boolean"},
-                    "trends": {"type": "object"},
+                    "success": { "type": "boolean" },
+                    "trends": { "type": "object" },
                     "insights": {
                       "type": "array",
-                      "items": {"type": "string"}
+                      "items": { "type": "string" }
                     },
                     "recommendations": {
                       "type": "array",
-                      "items": {"type": "string"}
+                      "items": { "type": "string" }
                     }
                   }
                 }
@@ -459,9 +459,9 @@ Schema:
               "schema": {
                 "type": "object",
                 "properties": {
-                  "workflowId": {"type": "string"},
-                  "parameters": {"type": "object"},
-                  "userId": {"type": "string"}
+                  "workflowId": { "type": "string" },
+                  "parameters": { "type": "object" },
+                  "userId": { "type": "string" }
                 },
                 "required": ["workflowId"]
               }
@@ -476,10 +476,10 @@ Schema:
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {"type": "boolean"},
-                    "executionId": {"type": "string"},
-                    "status": {"type": "string"},
-                    "result": {"type": "object"}
+                    "success": { "type": "boolean" },
+                    "executionId": { "type": "string" },
+                    "status": { "type": "string" },
+                    "result": { "type": "object" }
                   }
                 }
               }
@@ -501,10 +501,10 @@ Schema:
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": {"type": "string"},
-                    "timestamp": {"type": "string"},
-                    "uptime": {"type": "number"},
-                    "services": {"type": "object"}
+                    "status": { "type": "string" },
+                    "timestamp": { "type": "string" },
+                    "uptime": { "type": "number" },
+                    "services": { "type": "object" }
                   }
                 }
               }
@@ -538,14 +538,10 @@ Ensure your MCP server allows ChatGPT origins:
 ```javascript
 // In your MCP server configuration
 const corsOptions = {
-  origin: [
-    'https://chat.openai.com',
-    'https://chatgpt.com',
-    'https://*.openai.com'
-  ],
+  origin: ['https://chat.openai.com', 'https://chatgpt.com', 'https://*.openai.com'],
   credentials: true,
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-MCP-Session']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-MCP-Session'],
 };
 ```
 
@@ -559,7 +555,7 @@ const rateLimiting = {
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
   skipSuccessfulRequests: false,
-  skipFailedRequests: false
+  skipFailedRequests: false,
 };
 ```
 
@@ -600,7 +596,8 @@ Try these example prompts in your Custom GPT:
 
 **User:** "Create a ticket for Sarah who can't access her email"
 
-**Nova GPT:** 
+**Nova GPT:**
+
 ```
 I'll create a ticket for Sarah's email access issue. Let me gather the details and create this in Nova.
 
@@ -631,6 +628,7 @@ Would you like me to:
 **User:** "How do I reset a user's password in Active Directory?"
 
 **Nova GPT:**
+
 ```
 Let me search Nova's knowledge base for Active Directory password reset procedures.
 
@@ -755,6 +753,7 @@ process.env.LOG_LEVEL = 'debug';
 ### Grafana Dashboard
 
 Create dashboards to monitor:
+
 - MCP server health
 - ChatGPT integration metrics
 - User activity patterns
@@ -763,24 +762,28 @@ Create dashboards to monitor:
 ## 🎯 Best Practices
 
 ### 1. Security
+
 - Rotate API keys regularly
 - Monitor for unusual usage patterns
 - Implement IP allowlisting if needed
 - Use HTTPS for all communications
 
 ### 2. Performance
+
 - Cache frequent queries
 - Implement connection pooling
 - Use async processing for heavy operations
 - Monitor and optimize database queries
 
 ### 3. User Experience
+
 - Provide clear error messages
 - Implement graceful fallbacks
 - Use typing indicators for long operations
 - Offer alternative actions when tools fail
 
 ### 4. Compliance
+
 - Log all interactions for audit
 - Respect data privacy regulations
 - Implement proper access controls

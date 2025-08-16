@@ -13,7 +13,7 @@ const payload = {
   email: 'admin@nova.local',
   roles: ['admin'],
   iat: Math.floor(Date.now() / 1000),
-  exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour expiration
+  exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour expiration
 };
 
 const token = jwt.sign(payload, JWT_SECRET);

@@ -46,7 +46,7 @@ const storage = multer.diskStorage({
     const fileExtension = path.extname(file.originalname);
     const secureFilename = crypto.randomBytes(16).toString('hex') + fileExtension;
     cb(null, secureFilename);
-  }
+  },
 });
 
 // File filter for security
@@ -54,7 +54,7 @@ const fileFilter = (req, file, cb) => {
   // Allowed file types
   const allowedTypes = [
     'image/jpeg',
-    'image/png', 
+    'image/png',
     'image/gif',
     'image/webp',
     'application/pdf',
@@ -64,7 +64,7 @@ const fileFilter = (req, file, cb) => {
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/zip',
-    'application/x-zip-compressed'
+    'application/x-zip-compressed',
   ];
 
   // Check file type
@@ -76,9 +76,21 @@ const fileFilter = (req, file, cb) => {
 
   // Additional security checks
   const filename = file.originalname.toLowerCase();
-  const dangerousExtensions = ['.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '.js', '.jar', '.php', '.asp'];
-  
-  if (dangerousExtensions.some(ext => filename.endsWith(ext))) {
+  const dangerousExtensions = [
+    '.exe',
+    '.bat',
+    '.cmd',
+    '.com',
+    '.pif',
+    '.scr',
+    '.vbs',
+    '.js',
+    '.jar',
+    '.php',
+    '.asp',
+  ];
+
+  if (dangerousExtensions.some((ext) => filename.endsWith(ext))) {
     const error = new Error('File extension not allowed');
     error.code = 'DANGEROUS_FILE_EXTENSION';
     return cb(error, false);
@@ -92,8 +104,8 @@ const upload = multer({
   fileFilter,
   limits: {
     fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB default
-    files: 1 // Single file upload
-  }
+    files: 1, // Single file upload
+  },
 });
 
 /**
@@ -168,7 +180,8 @@ const upload = multer({
  *       413:
  *         description: File too large
  */
-router.post('/upload',
+router.post(
+  '/upload',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20), // 20 uploads per 15 minutes
   (req, res, next) => {
@@ -179,15 +192,15 @@ router.post('/upload',
             success: false,
             error: 'File too large',
             maxSize: process.env.MAX_FILE_SIZE || '10MB',
-            errorCode: 'FILE_TOO_LARGE'
+            errorCode: 'FILE_TOO_LARGE',
           });
         }
-        
+
         if (err.code === 'INVALID_FILE_TYPE' || err.code === 'DANGEROUS_FILE_EXTENSION') {
           return res.status(400).json({
             success: false,
             error: err.message,
-            errorCode: err.code
+            errorCode: err.code,
           });
         }
 
@@ -195,7 +208,7 @@ router.post('/upload',
         return res.status(500).json({
           success: false,
           error: 'Upload failed',
-          errorCode: 'UPLOAD_ERROR'
+          errorCode: 'UPLOAD_ERROR',
         });
       }
       next();
@@ -207,7 +220,7 @@ router.post('/upload',
         return res.status(400).json({
           success: false,
           error: 'No file provided',
-          errorCode: 'NO_FILE'
+          errorCode: 'NO_FILE',
         });
       }
 
@@ -229,9 +242,9 @@ router.post('/upload',
           req.file.path,
           req.user.id,
           description,
-          tags
+          tags,
         ],
-        function(err) {
+        function (err) {
           if (err) {
             logger.error('Error saving file metadata:', err);
             // Clean up uploaded file
@@ -239,7 +252,7 @@ router.post('/upload',
             return res.status(500).json({
               success: false,
               error: 'Failed to save file metadata',
-              errorCode: 'METADATA_ERROR'
+              errorCode: 'METADATA_ERROR',
             });
           }
 
@@ -247,7 +260,7 @@ router.post('/upload',
             fileId,
             filename: req.file.originalname,
             size: req.file.size,
-            uploadedBy: req.user.id
+            uploadedBy: req.user.id,
           });
 
           res.status(201).json({
@@ -262,14 +275,17 @@ router.post('/upload',
               uploadedAt: new Date().toISOString(),
               url: `/api/v2/files/${fileId}`,
               description,
-              tags: tags.split(',').map(tag => tag.trim()).filter(Boolean)
-            }
+              tags: tags
+                .split(',')
+                .map((tag) => tag.trim())
+                .filter(Boolean),
+            },
           });
-        }
+        },
       );
     } catch (error) {
       logger.error('Error processing file upload:', error);
-      
+
       // Clean up uploaded file if it exists
       if (req.file) {
         fs.unlink(req.file.path).catch(console.error);
@@ -278,10 +294,10 @@ router.post('/upload',
       res.status(500).json({
         success: false,
         error: 'Internal server error',
-        errorCode: 'INTERNAL_ERROR'
+        errorCode: 'INTERNAL_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -320,7 +336,8 @@ router.post('/upload',
  *       404:
  *         description: File not found
  */
-router.get('/:id',
+router.get(
+  '/:id',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100), // 100 downloads per 15 minutes
   async (req, res) => {
@@ -329,93 +346,92 @@ router.get('/:id',
       const { download = false } = req.query;
 
       // Get file metadata
-      db.get(
-        'SELECT * FROM files WHERE id = $1 AND isActive = 1',
-        [id],
-        async (err, file) => {
-          if (err) {
-            logger.error('Database error getting file:', err);
-            return res.status(500).json({
-              success: false,
-              error: 'Database error',
-              errorCode: 'DB_ERROR'
-            });
-          }
-
-          if (!file) {
-            return res.status(404).json({
-              success: false,
-              error: 'File not found',
-              errorCode: 'FILE_NOT_FOUND'
-            });
-          }
-
-          // Access control check
-          const hasAccess = canReadFile(req.user, file);
-
-          if (!hasAccess) {
-            logger.warn('Unauthorized file access attempt', {
-              fileId: id,
-              userId: req.user.id,
-              fileOwner: file.uploadedBy
-            });
-            
-            return res.status(403).json({
-              success: false,
-              error: 'Access denied',
-              errorCode: 'ACCESS_DENIED'
-            });
-          }
-
-          try {
-            // Check if file exists on disk
-            await fs.access(file.path);
-
-            // Set appropriate headers
-            res.setHeader('Content-Type', file.mimeType);
-            res.setHeader('Content-Length', file.size);
-            
-            if (download === 'true') {
-              res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
-            } else {
-              res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
-            }
-
-            // Security headers
-            res.setHeader('X-Content-Type-Options', 'nosniff');
-            res.setHeader('X-Frame-Options', 'DENY');
-
-            // Stream file to response
-            const fileStream = require('fs').createReadStream(file.path);
-            fileStream.pipe(res);
-
-            // Log file access
-            logger.info('File accessed', {
-              fileId: id,
-              filename: file.originalName,
-              userId: req.user.id,
-              ip: req.ip
-            });
-
-          } catch (fileError) {
-            logger.error('File not found on disk:', { fileId: id, path: file.path, error: fileError });
-            return res.status(404).json({
-              success: false,
-              error: 'File not found on disk',
-              errorCode: 'FILE_NOT_ON_DISK'
-            });
-          }
+      db.get('SELECT * FROM files WHERE id = $1 AND isActive = 1', [id], async (err, file) => {
+        if (err) {
+          logger.error('Database error getting file:', err);
+          return res.status(500).json({
+            success: false,
+            error: 'Database error',
+            errorCode: 'DB_ERROR',
+          });
         }
-      );
+
+        if (!file) {
+          return res.status(404).json({
+            success: false,
+            error: 'File not found',
+            errorCode: 'FILE_NOT_FOUND',
+          });
+        }
+
+        // Access control check
+        const hasAccess = canReadFile(req.user, file);
+
+        if (!hasAccess) {
+          logger.warn('Unauthorized file access attempt', {
+            fileId: id,
+            userId: req.user.id,
+            fileOwner: file.uploadedBy,
+          });
+
+          return res.status(403).json({
+            success: false,
+            error: 'Access denied',
+            errorCode: 'ACCESS_DENIED',
+          });
+        }
+
+        try {
+          // Check if file exists on disk
+          await fs.access(file.path);
+
+          // Set appropriate headers
+          res.setHeader('Content-Type', file.mimeType);
+          res.setHeader('Content-Length', file.size);
+
+          if (download === 'true') {
+            res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
+          } else {
+            res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
+          }
+
+          // Security headers
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.setHeader('X-Frame-Options', 'DENY');
+
+          // Stream file to response
+          const fileStream = require('fs').createReadStream(file.path);
+          fileStream.pipe(res);
+
+          // Log file access
+          logger.info('File accessed', {
+            fileId: id,
+            filename: file.originalName,
+            userId: req.user.id,
+            ip: req.ip,
+          });
+        } catch (fileError) {
+          logger.error('File not found on disk:', {
+            fileId: id,
+            path: file.path,
+            error: fileError,
+          });
+          return res.status(404).json({
+            success: false,
+            error: 'File not found on disk',
+            errorCode: 'FILE_NOT_ON_DISK',
+          });
+        }
+      });
     } catch (error) {
       logger.error('Error downloading file:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error',
-        errorCode: 'INTERNAL_ERROR'
+        errorCode: 'INTERNAL_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -451,7 +467,8 @@ router.get('/:id',
  *       404:
  *         description: File not found
  */
-router.get('/:id/metadata',
+router.get(
+  '/:id/metadata',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 200), // 200 requests per 15 minutes
   async (req, res) => {
@@ -470,7 +487,7 @@ router.get('/:id/metadata',
             return res.status(500).json({
               success: false,
               error: 'Database error',
-              errorCode: 'DB_ERROR'
+              errorCode: 'DB_ERROR',
             });
           }
 
@@ -478,7 +495,7 @@ router.get('/:id/metadata',
             return res.status(404).json({
               success: false,
               error: 'File not found',
-              errorCode: 'FILE_NOT_FOUND'
+              errorCode: 'FILE_NOT_FOUND',
             });
           }
 
@@ -494,21 +511,26 @@ router.get('/:id/metadata',
               uploaderName: file.uploaderName,
               uploadedAt: file.uploadedAt,
               description: file.description,
-              tags: file.tags ? file.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
-              url: `/api/v2/files/${file.id}`
-            }
+              tags: file.tags
+                ? file.tags
+                    .split(',')
+                    .map((tag) => tag.trim())
+                    .filter(Boolean)
+                : [],
+              url: `/api/v2/files/${file.id}`,
+            },
           });
-        }
+        },
       );
     } catch (error) {
       logger.error('Error getting file metadata:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error',
-        errorCode: 'INTERNAL_ERROR'
+        errorCode: 'INTERNAL_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -542,7 +564,8 @@ router.get('/:id/metadata',
  *       404:
  *         description: File not found
  */
-router.delete('/:id',
+router.delete(
+  '/:id',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 50), // 50 deletions per 15 minutes
   async (req, res) => {
@@ -551,110 +574,107 @@ router.delete('/:id',
       const { permanent = false } = req.query;
 
       // Get file metadata
-      db.get(
-        'SELECT * FROM files WHERE id = $1',
-        [id],
-        async (err, file) => {
-          if (err) {
-            logger.error('Database error getting file for deletion:', err);
-            return res.status(500).json({
-              success: false,
-              error: 'Database error',
-              errorCode: 'DB_ERROR'
-            });
+      db.get('SELECT * FROM files WHERE id = $1', [id], async (err, file) => {
+        if (err) {
+          logger.error('Database error getting file for deletion:', err);
+          return res.status(500).json({
+            success: false,
+            error: 'Database error',
+            errorCode: 'DB_ERROR',
+          });
+        }
+
+        if (!file) {
+          return res.status(404).json({
+            success: false,
+            error: 'File not found',
+            errorCode: 'FILE_NOT_FOUND',
+          });
+        }
+
+        // Check access permissions
+        const canDelete = canDeleteFile(req.user, file, permanent === 'true');
+
+        if (!canDelete) {
+          return res.status(403).json({
+            success: false,
+            error: 'Access denied',
+            errorCode: 'ACCESS_DENIED',
+          });
+        }
+
+        // Only admins can permanently delete
+        const shouldPermanentDelete =
+          permanent === 'true' &&
+          (req.user.roles?.includes('admin') || req.user.roles?.includes('superadmin'));
+
+        if (shouldPermanentDelete) {
+          // Permanent deletion - remove from disk and database
+          try {
+            await fs.unlink(file.path);
+          } catch (fsError) {
+            logger.warn('File not found on disk during deletion:', { fileId: id, path: file.path });
           }
 
-          if (!file) {
-            return res.status(404).json({
-              success: false,
-              error: 'File not found',
-              errorCode: 'FILE_NOT_FOUND'
-            });
-          }
-
-          // Check access permissions
-          const canDelete = canDeleteFile(req.user, file, permanent === 'true');
-
-          if (!canDelete) {
-            return res.status(403).json({
-              success: false,
-              error: 'Access denied',
-              errorCode: 'ACCESS_DENIED'
-            });
-          }
-
-          // Only admins can permanently delete
-          const shouldPermanentDelete = permanent === 'true' && 
-                                      (req.user.roles?.includes('admin') || req.user.roles?.includes('superadmin'));
-
-          if (shouldPermanentDelete) {
-            // Permanent deletion - remove from disk and database
-            try {
-              await fs.unlink(file.path);
-            } catch (fsError) {
-              logger.warn('File not found on disk during deletion:', { fileId: id, path: file.path });
+          db.run('DELETE FROM files WHERE id = $1', [id], (deleteErr) => {
+            if (deleteErr) {
+              logger.error('Error permanently deleting file:', deleteErr);
+              return res.status(500).json({
+                success: false,
+                error: 'Failed to delete file',
+                errorCode: 'DELETE_ERROR',
+              });
             }
 
-            db.run('DELETE FROM files WHERE id = $1', [id], (deleteErr) => {
-              if (deleteErr) {
-                logger.error('Error permanently deleting file:', deleteErr);
+            logger.info('File permanently deleted', {
+              fileId: id,
+              filename: file.originalName,
+              deletedBy: req.user.id,
+            });
+
+            res.json({
+              success: true,
+              message: 'File permanently deleted',
+            });
+          });
+        } else {
+          // Soft deletion - mark as inactive
+          db.run(
+            'UPDATE files SET isActive = 0, deletedAt = datetime("now"), deletedBy = $1 WHERE id = $2',
+            [req.user.id, id],
+            (updateErr) => {
+              if (updateErr) {
+                logger.error('Error soft deleting file:', updateErr);
                 return res.status(500).json({
                   success: false,
                   error: 'Failed to delete file',
-                  errorCode: 'DELETE_ERROR'
+                  errorCode: 'DELETE_ERROR',
                 });
               }
 
-              logger.info('File permanently deleted', {
+              logger.info('File soft deleted', {
                 fileId: id,
                 filename: file.originalName,
-                deletedBy: req.user.id
+                deletedBy: req.user.id,
               });
 
               res.json({
                 success: true,
-                message: 'File permanently deleted'
+                message: 'File deleted',
               });
-            });
-          } else {
-            // Soft deletion - mark as inactive
-            db.run(
-              'UPDATE files SET isActive = 0, deletedAt = datetime("now"), deletedBy = $1 WHERE id = $2',
-              [req.user.id, id],
-              (updateErr) => {
-                if (updateErr) {
-                  logger.error('Error soft deleting file:', updateErr);
-                  return res.status(500).json({
-                    success: false,
-                    error: 'Failed to delete file',
-                    errorCode: 'DELETE_ERROR'
-                  });
-                }
-
-                logger.info('File soft deleted', {
-                  fileId: id,
-                  filename: file.originalName,
-                  deletedBy: req.user.id
-                });
-
-                res.json({
-                  success: true,
-                  message: 'File deleted'
-                });
-              }
-            );
-          }
+            },
+          );
         }
-      );
+      });
     } catch (error) {
       logger.error('Error deleting file:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error',
-        errorCode: 'INTERNAL_ERROR'
+        errorCode: 'INTERNAL_ERROR',
       });
     }
-  }
+  },
 );
 
 export default router;

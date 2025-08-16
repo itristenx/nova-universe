@@ -6,7 +6,9 @@ const router = express.Router();
 
 router.get('/', authenticateJWT, async (req, res) => {
   try {
-    const result = await db.query('SELECT id, name, form_schema, workflow_id FROM request_catalog_items');
+    const result = await db.query(
+      'SELECT id, name, form_schema, workflow_id FROM request_catalog_items',
+    );
     res.json(result.rows);
   } catch (err) {
     logger.error('Error fetching catalog items', err);
@@ -19,7 +21,7 @@ router.post('/', authenticateJWT, async (req, res) => {
   try {
     const result = await db.query(
       'INSERT INTO request_catalog_items (name, form_schema, workflow_id) VALUES ($1,$2,$3) RETURNING id, name, form_schema, workflow_id',
-      [name, formSchema, workflowId]
+      [name, formSchema, workflowId],
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -34,7 +36,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
   try {
     await db.query(
       'UPDATE request_catalog_items SET name=$1, form_schema=$2, workflow_id=$3 WHERE id=$4',
-      [name, formSchema, workflowId, id]
+      [name, formSchema, workflowId, id],
     );
     res.json({ message: 'updated' });
   } catch (err) {

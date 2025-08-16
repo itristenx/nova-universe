@@ -14,9 +14,9 @@ export class WebSocketManager {
       this.broadcastToSubscribers('tickets', {
         type: 'ticket_created',
         data: ticket,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       // Send notification to admins
       this.broadcastToRoom('admin', {
         type: 'notification',
@@ -24,8 +24,8 @@ export class WebSocketManager {
           title: 'New Ticket Created',
           message: `Ticket #${ticket.id}: ${ticket.title}`,
           level: 'info',
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       });
     });
 
@@ -33,7 +33,7 @@ export class WebSocketManager {
       this.broadcastToSubscribers('tickets', {
         type: 'ticket_updated',
         data: ticket,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -41,7 +41,7 @@ export class WebSocketManager {
       this.broadcastToSubscribers('tickets', {
         type: 'ticket_status_changed',
         data: ticketData,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -50,17 +50,17 @@ export class WebSocketManager {
       this.broadcastToSubscribers('kiosks', {
         type: 'kiosk_registered',
         data: kioskData,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       this.broadcastToRoom('admin', {
         type: 'notification',
         data: {
           title: 'Kiosk Registered',
           message: `Kiosk ${kioskData.id} has come online`,
           level: 'success',
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       });
     });
 
@@ -68,7 +68,7 @@ export class WebSocketManager {
       this.broadcastToSubscribers('kiosks', {
         type: 'kiosk_activated',
         data,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       this.broadcastToRoom('admin', {
         type: 'notification',
@@ -76,8 +76,8 @@ export class WebSocketManager {
           title: 'Kiosk Paired',
           message: `Kiosk ${data.kioskId} paired successfully`,
           level: 'success',
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       });
     });
 
@@ -85,7 +85,7 @@ export class WebSocketManager {
       this.broadcastToSubscribers('kiosks', {
         type: 'kiosk_check_in',
         data,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -93,17 +93,17 @@ export class WebSocketManager {
       this.broadcastToSubscribers('kiosks', {
         type: 'kiosk_offline',
         data: kioskData,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       this.broadcastToRoom('admin', {
         type: 'notification',
         data: {
           title: 'Kiosk Offline',
           message: `Kiosk ${kioskData.id} has gone offline`,
           level: 'warning',
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       });
     });
 
@@ -112,7 +112,7 @@ export class WebSocketManager {
       this.broadcastToSubscribers('users', {
         type: 'user_created',
         data: userData,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -120,7 +120,7 @@ export class WebSocketManager {
       this.broadcastToSubscribers('users', {
         type: 'user_updated',
         data: userData,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -129,7 +129,7 @@ export class WebSocketManager {
       this.broadcastToRoom('admin', {
         type: 'system_alert',
         data: alertData,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -137,7 +137,7 @@ export class WebSocketManager {
       this.broadcastToSubscribers('modules', {
         type: 'module_status_changed',
         data: moduleData,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -146,7 +146,7 @@ export class WebSocketManager {
       this.broadcastToRoom('admin', {
         type: 'config_updated',
         data: configData,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -155,7 +155,7 @@ export class WebSocketManager {
       this.broadcastToSubscribers('analytics', {
         type: 'analytics_updated',
         data: analyticsData,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -185,7 +185,7 @@ export class WebSocketManager {
     this.broadcastToSubscribers('system_status', {
       type: 'system_status',
       data: status,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -193,8 +193,8 @@ export class WebSocketManager {
   getConnectionStats() {
     const sockets = this.io.sockets.sockets;
     const connectedUsers = new Set();
-    
-    sockets.forEach(socket => {
+
+    sockets.forEach((socket) => {
       if (socket.userId) {
         connectedUsers.add(socket.userId);
       }
@@ -203,7 +203,7 @@ export class WebSocketManager {
     return {
       totalConnections: sockets.size,
       authenticatedUsers: connectedUsers.size,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }
@@ -214,7 +214,7 @@ export function emitRealtimeUpdate(io, type, data) {
     io.emit('realtime_update', {
       type,
       data,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }

@@ -18,7 +18,7 @@ import {
   WrenchScrewdriverIcon,
   GlobeAltIcon,
   FireIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
@@ -90,7 +90,9 @@ interface SystemStats {
 
 const NovaSentinelDashboard: React.FC = () => {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'monitors' | 'status-pages' | 'maintenance' | 'analytics'>('monitors');
+  const [activeTab, setActiveTab] = useState<
+    'monitors' | 'status-pages' | 'maintenance' | 'analytics'
+  >('monitors');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -103,14 +105,14 @@ const NovaSentinelDashboard: React.FC = () => {
 
     const base = window.location.origin.replace(/^http/, 'ws');
     const ws = new WebSocket(`${base}/ws/monitoring`);
-    
+
     ws.onopen = () => {
       ws.send(JSON.stringify({ type: 'authenticate', token }));
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      
+
       switch (data.type) {
         case 'heartbeat':
         case 'monitor_updated':
@@ -138,13 +140,13 @@ const NovaSentinelDashboard: React.FC = () => {
     queryKey: ['sentinel-stats'],
     queryFn: async (): Promise<SystemStats> => {
       const response = await fetch('/api/v2/monitoring/analytics/system', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (!response.ok) throw new Error('Failed to fetch system stats');
       const data = await response.json();
       return data.analytics;
     },
-    refetchInterval: 30000
+    refetchInterval: 30000,
   });
 
   // Fetch monitors
@@ -157,13 +159,13 @@ const NovaSentinelDashboard: React.FC = () => {
       if (searchTerm) params.append('search', searchTerm);
 
       const response = await fetch(`/api/v2/monitoring/monitors?${params}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (!response.ok) throw new Error('Failed to fetch monitors');
       const data = await response.json();
       return data.monitors;
     },
-    refetchInterval: 30000
+    refetchInterval: 30000,
   });
 
   // Fetch status pages
@@ -171,13 +173,13 @@ const NovaSentinelDashboard: React.FC = () => {
     queryKey: ['sentinel-status-pages'],
     queryFn: async (): Promise<StatusPage[]> => {
       const response = await fetch('/api/v2/monitoring/status-pages', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (!response.ok) throw new Error('Failed to fetch status pages');
       const data = await response.json();
       return data.statusPages;
     },
-    enabled: activeTab === 'status-pages'
+    enabled: activeTab === 'status-pages',
   });
 
   // Fetch maintenance windows
@@ -185,28 +187,34 @@ const NovaSentinelDashboard: React.FC = () => {
     queryKey: ['sentinel-maintenance'],
     queryFn: async (): Promise<Maintenance[]> => {
       const response = await fetch('/api/v2/monitoring/maintenance', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (!response.ok) throw new Error('Failed to fetch maintenance');
       const data = await response.json();
       return data.maintenance;
     },
-    enabled: activeTab === 'maintenance'
+    enabled: activeTab === 'maintenance',
   });
 
   // Toggle monitor pause/resume
   const toggleMonitorMutation = useMutation({
-    mutationFn: async ({ monitorId, action }: { monitorId: string; action: 'pause' | 'resume' }) => {
+    mutationFn: async ({
+      monitorId,
+      action,
+    }: {
+      monitorId: string;
+      action: 'pause' | 'resume';
+    }) => {
       const response = await fetch(`/api/v2/monitoring/monitors/${monitorId}/${action}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (!response.ok) throw new Error(`Failed to ${action} monitor`);
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sentinel-monitors'] });
-    }
+    },
   });
 
   // Toggle favorite monitor
@@ -215,24 +223,24 @@ const NovaSentinelDashboard: React.FC = () => {
       const endpoint = favorite ? 'favorite' : 'unfavorite';
       const response = await fetch(`/api/v2/monitoring/monitors/${monitorId}/${endpoint}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (!response.ok) throw new Error('Failed to update favorite');
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sentinel-monitors'] });
-    }
+    },
   });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'up':
-        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
+        return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
       case 'down':
-        return <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />;
+        return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />;
       default:
-        return <ClockIcon className="w-5 h-5 text-gray-500" />;
+        return <ClockIcon className="h-5 w-5 text-gray-500" />;
     }
   };
 
@@ -251,16 +259,16 @@ const NovaSentinelDashboard: React.FC = () => {
     switch (type) {
       case 'http':
       case 'https':
-        return <GlobeAltIcon className="w-4 h-4" />;
+        return <GlobeAltIcon className="h-4 w-4" />;
       case 'port':
       case 'tcp':
-        return <ServerIcon className="w-4 h-4" />;
+        return <ServerIcon className="h-4 w-4" />;
       case 'ping':
-        return <ShieldCheckIcon className="w-4 h-4" />;
+        return <ShieldCheckIcon className="h-4 w-4" />;
       case 'dns':
-        return <FireIcon className="w-4 h-4" />;
+        return <FireIcon className="h-4 w-4" />;
       default:
-        return <ServerIcon className="w-4 h-4" />;
+        return <ServerIcon className="h-4 w-4" />;
     }
   };
 
@@ -274,7 +282,7 @@ const NovaSentinelDashboard: React.FC = () => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / 60000);
-    
+
     if (minutes < 1) return 'Just now';
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
@@ -286,8 +294,13 @@ const NovaSentinelDashboard: React.FC = () => {
   const tabs = [
     { id: 'monitors', name: 'Monitors', icon: ServerIcon, count: monitors.length },
     { id: 'status-pages', name: 'Status Pages', icon: GlobeAltIcon, count: statusPages.length },
-    { id: 'maintenance', name: 'Maintenance', icon: WrenchScrewdriverIcon, count: maintenance.filter(m => m.status !== 'completed').length },
-    { id: 'analytics', name: 'Analytics', icon: ChartBarIcon, count: 0 }
+    {
+      id: 'maintenance',
+      name: 'Maintenance',
+      icon: WrenchScrewdriverIcon,
+      count: maintenance.filter((m) => m.status !== 'completed').length,
+    },
+    { id: 'analytics', name: 'Analytics', icon: ChartBarIcon, count: 0 },
   ];
 
   return (
@@ -296,9 +309,7 @@ const NovaSentinelDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Nova Sentinel</h1>
-          <p className="text-gray-600 mt-1">
-            Complete monitoring and status management
-          </p>
+          <p className="mt-1 text-gray-600">Complete monitoring and status management</p>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -309,21 +320,21 @@ const NovaSentinelDashboard: React.FC = () => {
               queryClient.invalidateQueries({ queryKey: ['sentinel-monitors'] });
               queryClient.invalidateQueries({ queryKey: ['sentinel-stats'] });
             }}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="rounded-lg p-2 text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700"
             title="Refresh data"
           >
-            <ArrowPathIcon className="w-5 h-5" />
+            <ArrowPathIcon className="h-5 w-5" />
           </motion.button>
         </div>
       </div>
 
       {/* System Stats */}
       {systemStats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+          <div className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircleIcon className="w-6 h-6 text-green-600" />
+              <div className="rounded-lg bg-green-100 p-2">
+                <CheckCircleIcon className="h-6 w-6 text-green-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{systemStats.monitors.up}</p>
@@ -332,10 +343,10 @@ const NovaSentinelDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+          <div className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
+              <div className="rounded-lg bg-red-100 p-2">
+                <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{systemStats.monitors.down}</p>
@@ -344,10 +355,10 @@ const NovaSentinelDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+          <div className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <GlobeAltIcon className="w-6 h-6 text-blue-600" />
+              <div className="rounded-lg bg-blue-100 p-2">
+                <GlobeAltIcon className="h-6 w-6 text-blue-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{systemStats.statusPages}</p>
@@ -356,10 +367,10 @@ const NovaSentinelDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+          <div className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <BellIcon className="w-6 h-6 text-purple-600" />
+              <div className="rounded-lg bg-purple-100 p-2">
+                <BellIcon className="h-6 w-6 text-purple-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{systemStats.recentEvents}</p>
@@ -371,7 +382,7 @@ const NovaSentinelDashboard: React.FC = () => {
       )}
 
       {/* Navigation Tabs */}
-      <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-1">
+      <div className="rounded-xl border border-gray-200/50 bg-white/80 p-1 backdrop-blur-xl">
         <div className="flex space-x-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -381,20 +392,20 @@ const NovaSentinelDashboard: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all duration-200 ${
+                className={`flex items-center space-x-2 rounded-lg px-4 py-3 transition-all duration-200 ${
                   activeTab === tab.id
                     ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="h-5 w-5" />
                 <span className="font-medium">{tab.name}</span>
                 {tab.count > 0 && (
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    activeTab === tab.id 
-                      ? 'bg-white/20 text-white' 
-                      : 'bg-gray-200 text-gray-600'
-                  }`}>
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs ${
+                      activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
                     {tab.count}
                   </span>
                 )}
@@ -405,7 +416,7 @@ const NovaSentinelDashboard: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl">
+      <div className="rounded-2xl border border-gray-200/50 bg-white/80 backdrop-blur-xl">
         <AnimatePresence mode="wait">
           {activeTab === 'monitors' && (
             <motion.div
@@ -415,22 +426,22 @@ const NovaSentinelDashboard: React.FC = () => {
               exit={{ opacity: 0, y: -20 }}
               className="p-6"
             >
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-gray-900">Monitor Management</h2>
-                
+
                 <div className="flex items-center space-x-3">
                   <input
                     type="text"
                     placeholder="Search monitors..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
                   />
-                  
+
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     aria-label="Filter by status"
                   >
                     <option value="all">All Status</option>
@@ -441,7 +452,7 @@ const NovaSentinelDashboard: React.FC = () => {
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     aria-label="Filter by monitor type"
                   >
                     <option value="all">All Types</option>
@@ -460,14 +471,16 @@ const NovaSentinelDashboard: React.FC = () => {
                     layout
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 border rounded-xl ${getStatusColor(monitor.status)} hover:shadow-md transition-all duration-200`}
+                    className={`rounded-xl border p-4 ${getStatusColor(monitor.status)} transition-all duration-200 hover:shadow-md`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         {getStatusIcon(monitor.status)}
                         <div className="flex items-center space-x-2">
                           {getMonitorTypeIcon(monitor.type)}
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">{monitor.type}</span>
+                          <span className="text-xs tracking-wide text-gray-500 uppercase">
+                            {monitor.type}
+                          </span>
                         </div>
                         <div>
                           <div className="flex items-center space-x-2">
@@ -477,29 +490,33 @@ const NovaSentinelDashboard: React.FC = () => {
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
-                              onClick={() => toggleFavoriteMutation.mutate({
-                                monitorId: monitor.id,
-                                favorite: !monitor.userPreferences.favorite
-                              })}
+                              onClick={() =>
+                                toggleFavoriteMutation.mutate({
+                                  monitorId: monitor.id,
+                                  favorite: !monitor.userPreferences.favorite,
+                                })
+                              }
                               className="text-gray-400 hover:text-yellow-500"
                             >
                               {monitor.userPreferences.favorite ? (
-                                <StarIconSolid className="w-4 h-4 text-yellow-500" />
+                                <StarIconSolid className="h-4 w-4 text-yellow-500" />
                               ) : (
-                                <StarIcon className="w-4 h-4" />
+                                <StarIcon className="h-4 w-4" />
                               )}
                             </motion.button>
                           </div>
                           <div className="flex items-center space-x-4 text-sm text-gray-600">
                             <span>Uptime: {formatUptime(monitor.uptime)}</span>
-                            {monitor.responseTime && <span>Response: {monitor.responseTime}ms</span>}
+                            {monitor.responseTime && (
+                              <span>Response: {monitor.responseTime}ms</span>
+                            )}
                             <span>Last seen: {formatLastSeen(monitor.lastHeartbeat)}</span>
                           </div>
                           {monitor.config.url && (
-                            <p className="text-xs text-gray-500 mt-1">{monitor.config.url}</p>
+                            <p className="mt-1 text-xs text-gray-500">{monitor.config.url}</p>
                           )}
                           {monitor.errorMessage && (
-                            <p className="text-xs text-red-600 mt-1">{monitor.errorMessage}</p>
+                            <p className="mt-1 text-xs text-red-600">{monitor.errorMessage}</p>
                           )}
                         </div>
                       </div>
@@ -509,26 +526,34 @@ const NovaSentinelDashboard: React.FC = () => {
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => setSelectedMonitor(monitor)}
-                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+                          className="rounded-lg bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
                         >
-                          <EyeIcon className="w-4 h-4 inline mr-1" />
+                          <EyeIcon className="mr-1 inline h-4 w-4" />
                           View
                         </motion.button>
 
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => toggleMonitorMutation.mutate({
-                            monitorId: monitor.id,
-                            action: monitor.status === 'up' ? 'pause' : 'resume'
-                          })}
+                          onClick={() =>
+                            toggleMonitorMutation.mutate({
+                              monitorId: monitor.id,
+                              action: monitor.status === 'up' ? 'pause' : 'resume',
+                            })
+                          }
                           disabled={toggleMonitorMutation.isPending}
-                          className="px-3 py-1 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 disabled:opacity-50"
+                          className="rounded-lg bg-gray-600 px-3 py-1 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
                         >
                           {monitor.status === 'up' ? (
-                            <><PauseIcon className="w-4 h-4 inline mr-1" />Pause</>
+                            <>
+                              <PauseIcon className="mr-1 inline h-4 w-4" />
+                              Pause
+                            </>
                           ) : (
-                            <><PlayIcon className="w-4 h-4 inline mr-1" />Resume</>
+                            <>
+                              <PlayIcon className="mr-1 inline h-4 w-4" />
+                              Resume
+                            </>
                           )}
                         </motion.button>
                       </div>
@@ -537,8 +562,8 @@ const NovaSentinelDashboard: React.FC = () => {
                 ))}
 
                 {monitors.length === 0 && !monitorsLoading && (
-                  <div className="text-center py-12">
-                    <ServerIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <div className="py-12 text-center">
+                    <ServerIcon className="mx-auto mb-4 h-12 w-12 text-gray-300" />
                     <p className="text-gray-500">No monitors found matching your criteria</p>
                   </div>
                 )}
@@ -554,38 +579,40 @@ const NovaSentinelDashboard: React.FC = () => {
               exit={{ opacity: 0, y: -20 }}
               className="p-6"
             >
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-gray-900">Status Pages</h2>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                 >
-                  <PlusIcon className="w-4 h-4 inline mr-2" />
+                  <PlusIcon className="mr-2 inline h-4 w-4" />
                   Create Status Page
                 </motion.button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {statusPages.map((statusPage) => (
                   <motion.div
                     key={statusPage.id}
                     layout
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200"
+                    className="rounded-lg border border-gray-200 p-4 transition-all duration-200 hover:shadow-md"
                   >
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="mb-3 flex items-start justify-between">
                       <div className="flex items-center space-x-2">
-                        <GlobeAltIcon className="w-5 h-5 text-blue-600" />
+                        <GlobeAltIcon className="h-5 w-5 text-blue-600" />
                         <h3 className="font-medium text-gray-900">{statusPage.title}</h3>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          statusPage.published 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs ${
+                            statusPage.published
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {statusPage.published ? 'Published' : 'Draft'}
                         </span>
                         <motion.button
@@ -594,14 +621,14 @@ const NovaSentinelDashboard: React.FC = () => {
                           className="text-gray-400 hover:text-yellow-500"
                         >
                           {statusPage.userPreferences.favorite ? (
-                            <StarIconSolid className="w-4 h-4 text-yellow-500" />
+                            <StarIconSolid className="h-4 w-4 text-yellow-500" />
                           ) : (
-                            <StarIcon className="w-4 h-4" />
+                            <StarIcon className="h-4 w-4" />
                           )}
                         </motion.button>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex justify-between">
                         <span>Monitors:</span>
@@ -613,28 +640,34 @@ const NovaSentinelDashboard: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span>Status:</span>
-                        <span className={statusPage.stats.downMonitors > 0 ? 'text-red-600' : 'text-green-600'}>
-                          {statusPage.stats.downMonitors > 0 ? 'Issues Detected' : 'All Operational'}
+                        <span
+                          className={
+                            statusPage.stats.downMonitors > 0 ? 'text-red-600' : 'text-green-600'
+                          }
+                        >
+                          {statusPage.stats.downMonitors > 0
+                            ? 'Issues Detected'
+                            : 'All Operational'}
                         </span>
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="mt-4 border-t border-gray-200 pt-4">
                       <div className="flex space-x-2">
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm"
+                          className="flex-1 rounded-lg bg-blue-100 px-3 py-2 text-sm text-blue-700 hover:bg-blue-200"
                         >
-                          <EyeIcon className="w-4 h-4 inline mr-1" />
+                          <EyeIcon className="mr-1 inline h-4 w-4" />
                           View
                         </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+                          className="flex-1 rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
                         >
-                          <CogIcon className="w-4 h-4 inline mr-1" />
+                          <CogIcon className="mr-1 inline h-4 w-4" />
                           Config
                         </motion.button>
                       </div>
@@ -653,14 +686,14 @@ const NovaSentinelDashboard: React.FC = () => {
               exit={{ opacity: 0, y: -20 }}
               className="p-6"
             >
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-gray-900">Maintenance Windows</h2>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                 >
-                  <PlusIcon className="w-4 h-4 inline mr-2" />
+                  <PlusIcon className="mr-2 inline h-4 w-4" />
                   Schedule Maintenance
                 </motion.button>
               </div>
@@ -672,23 +705,28 @@ const NovaSentinelDashboard: React.FC = () => {
                     layout
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="p-4 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200"
+                    className="rounded-xl border border-gray-200 p-4 transition-all duration-200 hover:shadow-md"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3">
-                        <WrenchScrewdriverIcon className="w-5 h-5 text-orange-600 mt-1" />
+                        <WrenchScrewdriverIcon className="mt-1 h-5 w-5 text-orange-600" />
                         <div>
                           <h3 className="font-medium text-gray-900">{maint.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{maint.description}</p>
-                          <div className="flex items-center space-x-4 text-xs text-gray-500 mt-2">
+                          <p className="mt-1 text-sm text-gray-600">{maint.description}</p>
+                          <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                             <span>Start: {new Date(maint.startTime).toLocaleString()}</span>
                             <span>End: {new Date(maint.endTime).toLocaleString()}</span>
-                            <span className={`px-2 py-1 rounded text-white ${
-                              maint.status === 'active' ? 'bg-orange-500' :
-                              maint.status === 'completed' ? 'bg-green-500' :
-                              maint.status === 'cancelled' ? 'bg-red-500' :
-                              'bg-blue-500'
-                            }`}>
+                            <span
+                              className={`rounded px-2 py-1 text-white ${
+                                maint.status === 'active'
+                                  ? 'bg-orange-500'
+                                  : maint.status === 'completed'
+                                    ? 'bg-green-500'
+                                    : maint.status === 'cancelled'
+                                      ? 'bg-red-500'
+                                      : 'bg-blue-500'
+                              }`}
+                            >
                               {maint.status.toUpperCase()}
                             </span>
                           </div>
@@ -696,7 +734,7 @@ const NovaSentinelDashboard: React.FC = () => {
                             <div className="mt-2">
                               <span className="text-xs text-gray-500">Affected monitors: </span>
                               <span className="text-xs text-gray-700">
-                                {maint.monitorDetails.map(m => m.name).join(', ')}
+                                {maint.monitorDetails.map((m) => m.name).join(', ')}
                               </span>
                             </div>
                           )}
@@ -709,14 +747,14 @@ const NovaSentinelDashboard: React.FC = () => {
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              className="px-3 py-1 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700"
+                              className="rounded-lg bg-orange-600 px-3 py-1 text-sm text-white hover:bg-orange-700"
                             >
                               Start Now
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              className="px-3 py-1 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700"
+                              className="rounded-lg bg-gray-600 px-3 py-1 text-sm text-white hover:bg-gray-700"
                             >
                               Cancel
                             </motion.button>
@@ -726,7 +764,7 @@ const NovaSentinelDashboard: React.FC = () => {
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
+                            className="rounded-lg bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700"
                           >
                             Complete
                           </motion.button>
@@ -734,9 +772,9 @@ const NovaSentinelDashboard: React.FC = () => {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+                          className="rounded-lg bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
                         >
-                          <EyeIcon className="w-4 h-4 inline mr-1" />
+                          <EyeIcon className="mr-1 inline h-4 w-4" />
                           Details
                         </motion.button>
                       </div>
@@ -745,8 +783,8 @@ const NovaSentinelDashboard: React.FC = () => {
                 ))}
 
                 {maintenance.length === 0 && (
-                  <div className="text-center py-12">
-                    <WrenchScrewdriverIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <div className="py-12 text-center">
+                    <WrenchScrewdriverIcon className="mx-auto mb-4 h-12 w-12 text-gray-300" />
                     <p className="text-gray-500">No maintenance windows scheduled</p>
                   </div>
                 )}
@@ -762,10 +800,12 @@ const NovaSentinelDashboard: React.FC = () => {
               exit={{ opacity: 0, y: -20 }}
               className="p-6"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">System Analytics</h2>
-              <div className="text-center py-12">
-                <ChartBarIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No analytics available yet. Connect data sources or view Monitors.</p>
+              <h2 className="mb-6 text-xl font-semibold text-gray-900">System Analytics</h2>
+              <div className="py-12 text-center">
+                <ChartBarIcon className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+                <p className="text-gray-500">
+                  No analytics available yet. Connect data sources or view Monitors.
+                </p>
               </div>
             </motion.div>
           )}
@@ -779,7 +819,7 @@ const NovaSentinelDashboard: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
             onClick={() => setSelectedMonitor(null)}
           >
             <motion.div
@@ -787,18 +827,18 @@ const NovaSentinelDashboard: React.FC = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+              className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6"
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">Monitor Details</h3>
                 <button
                   onClick={() => setSelectedMonitor(null)}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
+                  className="rounded-lg p-2 hover:bg-gray-100"
                 >
                   ×
                 </button>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   {getStatusIcon(selectedMonitor.status)}
@@ -807,11 +847,13 @@ const NovaSentinelDashboard: React.FC = () => {
                     <p className="text-sm text-gray-600">Type: {selectedMonitor.type}</p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Status:</span>
-                    <span className={`ml-2 px-2 py-1 rounded text-xs ${getStatusColor(selectedMonitor.status)}`}>
+                    <span
+                      className={`ml-2 rounded px-2 py-1 text-xs ${getStatusColor(selectedMonitor.status)}`}
+                    >
                       {selectedMonitor.status.toUpperCase()}
                     </span>
                   </div>
@@ -830,18 +872,22 @@ const NovaSentinelDashboard: React.FC = () => {
                     <span className="ml-2">{formatLastSeen(selectedMonitor.lastHeartbeat)}</span>
                   </div>
                 </div>
-                
+
                 {selectedMonitor.config.url && (
                   <div>
-                    <span className="text-gray-600 text-sm">URL:</span>
-                    <p className="mt-1 p-2 bg-gray-50 rounded text-sm break-all">{selectedMonitor.config.url}</p>
+                    <span className="text-sm text-gray-600">URL:</span>
+                    <p className="mt-1 rounded bg-gray-50 p-2 text-sm break-all">
+                      {selectedMonitor.config.url}
+                    </p>
                   </div>
                 )}
-                
+
                 {selectedMonitor.errorMessage && (
                   <div>
-                    <span className="text-gray-600 text-sm">Last Error:</span>
-                    <p className="mt-1 p-2 bg-red-50 text-red-800 rounded text-sm">{selectedMonitor.errorMessage}</p>
+                    <span className="text-sm text-gray-600">Last Error:</span>
+                    <p className="mt-1 rounded bg-red-50 p-2 text-sm text-red-800">
+                      {selectedMonitor.errorMessage}
+                    </p>
                   </div>
                 )}
               </div>

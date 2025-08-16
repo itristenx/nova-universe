@@ -30,7 +30,6 @@ export interface MonitorCheck {
  * Supports all Uptime Kuma monitor types including Steam, Docker, Keyword, JSON Query, etc.
  */
 export class ExtendedMonitorService {
-
   /**
    * Keyword monitoring - Check if specific text is present in HTTP response
    */
@@ -45,13 +44,13 @@ export class ExtendedMonitorService {
         headers,
         data: body,
         timeout: check.timeout * 1000,
-        validateStatus: () => true // Accept any status code
+        validateStatus: () => true, // Accept any status code
       });
 
       const responseTime = Date.now() - startTime;
       const content = response.data?.toString() || '';
       const keywordFound = content.includes(keyword);
-      
+
       // If inverted, we expect keyword NOT to be found
       const success = inverted ? !keywordFound : keywordFound;
 
@@ -59,7 +58,7 @@ export class ExtendedMonitorService {
         success,
         responseTime,
         statusCode: response.status,
-        message: success 
+        message: success
           ? `Keyword check passed - "${keyword}" ${inverted ? 'not found' : 'found'} in response`
           : `Keyword check failed - "${keyword}" ${inverted ? 'found' : 'not found'} in response`,
         data: {
@@ -67,15 +66,15 @@ export class ExtendedMonitorService {
           inverted,
           keywordFound,
           responseLength: content.length,
-          statusCode: response.status
-        }
+          statusCode: response.status,
+        },
       };
     } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
         message: `Keyword check failed: ${error.message}`,
-        data: { error: error.message, keyword }
+        data: { error: error.message, keyword },
       };
     }
   }
@@ -93,15 +92,15 @@ export class ExtendedMonitorService {
         url,
         headers,
         data: body,
-        timeout: check.timeout * 1000
+        timeout: check.timeout * 1000,
       });
 
       const responseTime = Date.now() - startTime;
-      
+
       // Extract value using JSON path (simple dot notation)
       let actualValue = response.data;
       const pathParts = json_path.split('.');
-      
+
       for (const part of pathParts) {
         if (actualValue && typeof actualValue === 'object') {
           actualValue = actualValue[part];
@@ -117,22 +116,22 @@ export class ExtendedMonitorService {
         success,
         responseTime,
         statusCode: response.status,
-        message: success 
+        message: success
           ? `JSON query passed - ${json_path} equals "${expected_value}"`
           : `JSON query failed - ${json_path} returned "${actualValue}", expected "${expected_value}"`,
         data: {
           json_path,
           expected_value,
           actual_value: actualValue,
-          statusCode: response.status
-        }
+          statusCode: response.status,
+        },
       };
     } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
         message: `JSON query failed: ${error.message}`,
-        data: { error: error.message, json_path }
+        data: { error: error.message, json_path },
       };
     }
   }
@@ -155,22 +154,25 @@ export class ExtendedMonitorService {
         socket.connect(port, hostname, () => {
           clearTimeout(timeout);
           const responseTime = Date.now() - startTime;
-          
+
           // Send A2S_INFO packet
-          const infoPacket = Buffer.from([0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00]);
+          const infoPacket = Buffer.from([
+            0xff, 0xff, 0xff, 0xff, 0x54, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6e,
+            0x67, 0x69, 0x6e, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00,
+          ]);
           socket.write(infoPacket);
-          
+
           socket.on('data', (data) => {
             socket.destroy();
             resolve({
               success: true,
               responseTime,
               message: `Steam server is responding`,
-              data: { 
-                hostname, 
+              data: {
+                hostname,
                 port,
-                response_size: data.length
-              }
+                response_size: data.length,
+              },
             });
           });
         });
@@ -181,7 +183,7 @@ export class ExtendedMonitorService {
             success: false,
             responseTime: Date.now() - startTime,
             message: `Steam server check failed: ${error.message}`,
-            data: { error: error.message, hostname, port }
+            data: { error: error.message, hostname, port },
           });
         });
 
@@ -191,7 +193,7 @@ export class ExtendedMonitorService {
             success: false,
             responseTime: Date.now() - startTime,
             message: `Steam server check timed out`,
-            data: { hostname, port, timeout: check.timeout }
+            data: { hostname, port, timeout: check.timeout },
           });
         });
       });
@@ -200,7 +202,7 @@ export class ExtendedMonitorService {
         success: false,
         responseTime: Date.now() - startTime,
         message: `Steam server check failed: ${error.message}`,
-        data: { error: error.message, hostname, port }
+        data: { error: error.message, hostname, port },
       };
     }
   }
@@ -214,13 +216,15 @@ export class ExtendedMonitorService {
 
     try {
       // Docker API call to get container info
-      const dockerUrl = docker_host.startsWith('unix://') 
+      const dockerUrl = docker_host.startsWith('unix://')
         ? `http://localhost/v1.41/containers/${container_name}/json`
         : `${docker_host}/v1.41/containers/${container_name}/json`;
 
       const response = await axios.get(dockerUrl, {
         timeout: check.timeout * 1000,
-        socketPath: docker_host.startsWith('unix://') ? docker_host.replace('unix://', '') : undefined
+        socketPath: docker_host.startsWith('unix://')
+          ? docker_host.replace('unix://', '')
+          : undefined,
       });
 
       const responseTime = Date.now() - startTime;
@@ -230,7 +234,7 @@ export class ExtendedMonitorService {
       return {
         success: isRunning,
         responseTime,
-        message: isRunning 
+        message: isRunning
           ? `Container "${container_name}" is running`
           : `Container "${container_name}" is not running (status: ${container.State?.Status})`,
         data: {
@@ -238,15 +242,15 @@ export class ExtendedMonitorService {
           status: container.State?.Status,
           started_at: container.State?.StartedAt,
           image: container.Config?.Image,
-          ports: container.NetworkSettings?.Ports
-        }
+          ports: container.NetworkSettings?.Ports,
+        },
       };
     } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
         message: `Docker container check failed: ${error.message}`,
-        data: { error: error.message, container_name }
+        data: { error: error.message, container_name },
       };
     }
   }
@@ -270,12 +274,12 @@ export class ExtendedMonitorService {
         socket.connect(port, hostname, () => {
           clearTimeout(timeout);
           socket.destroy();
-          
+
           resolve({
             success: true,
             responseTime: Date.now() - startTime,
             message: `gRPC service is accepting connections`,
-            data: { hostname, port, service_name, method_name }
+            data: { hostname, port, service_name, method_name },
           });
         });
 
@@ -285,7 +289,7 @@ export class ExtendedMonitorService {
             success: false,
             responseTime: Date.now() - startTime,
             message: `gRPC check failed: ${error.message}`,
-            data: { error: error.message, hostname, port }
+            data: { error: error.message, hostname, port },
           });
         });
       });
@@ -294,7 +298,7 @@ export class ExtendedMonitorService {
         success: false,
         responseTime: Date.now() - startTime,
         message: `gRPC check failed: ${error.message}`,
-        data: { error: error.message, hostname, port }
+        data: { error: error.message, hostname, port },
       };
     }
   }
@@ -318,12 +322,12 @@ export class ExtendedMonitorService {
         socket.connect(port, hostname, () => {
           clearTimeout(timeout);
           socket.destroy();
-          
+
           resolve({
             success: true,
             responseTime: Date.now() - startTime,
             message: `MQTT broker is accepting connections`,
-            data: { hostname, port, topic }
+            data: { hostname, port, topic },
           });
         });
 
@@ -333,7 +337,7 @@ export class ExtendedMonitorService {
             success: false,
             responseTime: Date.now() - startTime,
             message: `MQTT check failed: ${error.message}`,
-            data: { error: error.message, hostname, port }
+            data: { error: error.message, hostname, port },
           });
         });
       });
@@ -342,7 +346,7 @@ export class ExtendedMonitorService {
         success: false,
         responseTime: Date.now() - startTime,
         message: `MQTT check failed: ${error.message}`,
-        data: { error: error.message, hostname, port }
+        data: { error: error.message, hostname, port },
       };
     }
   }
@@ -366,12 +370,12 @@ export class ExtendedMonitorService {
         socket.connect(port, hostname, () => {
           clearTimeout(timeout);
           socket.destroy();
-          
+
           resolve({
             success: true,
             responseTime: Date.now() - startTime,
             message: `RADIUS server is accepting connections`,
-            data: { hostname, port, username }
+            data: { hostname, port, username },
           });
         });
 
@@ -381,7 +385,7 @@ export class ExtendedMonitorService {
             success: false,
             responseTime: Date.now() - startTime,
             message: `RADIUS check failed: ${error.message}`,
-            data: { error: error.message, hostname, port }
+            data: { error: error.message, hostname, port },
           });
         });
       });
@@ -390,7 +394,7 @@ export class ExtendedMonitorService {
         success: false,
         responseTime: Date.now() - startTime,
         message: `RADIUS check failed: ${error.message}`,
-        data: { error: error.message, hostname, port }
+        data: { error: error.message, hostname, port },
       };
     }
   }
@@ -404,35 +408,37 @@ export class ExtendedMonitorService {
 
     try {
       const tls = await import('tls');
-      
+
       return new Promise((resolve) => {
         const timeout = setTimeout(() => {
           resolve({
             success: false,
             responseTime: Date.now() - startTime,
             message: 'SSL certificate check timed out',
-            data: { hostname, port }
+            data: { hostname, port },
           });
         }, check.timeout * 1000);
 
         const socket = tls.connect(port, hostname, { servername: hostname }, () => {
           clearTimeout(timeout);
-          
+
           const cert = socket.getPeerCertificate(true);
           const now = new Date();
           const validTo = new Date(cert.valid_to);
           const validFrom = new Date(cert.valid_from);
-          const daysRemaining = Math.floor((validTo.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          
+          const daysRemaining = Math.floor(
+            (validTo.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+          );
+
           const isValid = now >= validFrom && now <= validTo;
           const success = ignore_expired || isValid;
-          
+
           socket.destroy();
-          
+
           resolve({
             success,
             responseTime: Date.now() - startTime,
-            message: success 
+            message: success
               ? `SSL certificate is valid (${daysRemaining} days remaining)`
               : `SSL certificate is invalid or expired`,
             data: {
@@ -446,8 +452,8 @@ export class ExtendedMonitorService {
               serial_number: cert.serialNumber,
               fingerprint: cert.fingerprint,
               fingerprint256: cert.fingerprint256,
-              is_valid: isValid
-            }
+              is_valid: isValid,
+            },
           });
         });
 
@@ -457,7 +463,7 @@ export class ExtendedMonitorService {
             success: false,
             responseTime: Date.now() - startTime,
             message: `SSL certificate check failed: ${error.message}`,
-            data: { error: error.message, hostname, port }
+            data: { error: error.message, hostname, port },
           });
         });
       });
@@ -466,7 +472,7 @@ export class ExtendedMonitorService {
         success: false,
         responseTime: Date.now() - startTime,
         message: `SSL certificate check failed: ${error.message}`,
-        data: { error: error.message, hostname, port }
+        data: { error: error.message, hostname, port },
       };
     }
   }
@@ -502,7 +508,7 @@ export class ExtendedMonitorService {
         success: false,
         responseTime: 0,
         message: `Monitor check failed: ${error.message}`,
-        data: { error: error.message, type: check.type }
+        data: { error: error.message, type: check.type },
       };
     }
   }

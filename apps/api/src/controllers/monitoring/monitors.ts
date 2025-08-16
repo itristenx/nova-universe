@@ -1,5 +1,7 @@
 import { PrismaClient } from '../../../../prisma/generated/core/index.js';
-const prisma = new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+const prisma = new PrismaClient({
+  datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+});
 
 export interface MonitorData {
   name: string;
@@ -72,12 +74,11 @@ export const createMonitor = async (data: MonitorData) => {
         ${data.user_id}, ${'active'}, NOW(), NOW()
       ) RETURNING id
     `;
-    
+
     const monitor = await prisma.$queryRaw`
       SELECT * FROM nova_monitors WHERE id = ${(result as any)[0].id}
     `;
 
-    
     return (monitor as any)[0];
   } catch (error) {
     console.error('Database error creating monitor:', error);
@@ -119,26 +120,41 @@ export const updateMonitor = async (id: string, data: UpdateMonitorData, userId:
     // Build dynamic update query
     const fields: string[] = [];
     const values: any[] = [];
-    
-    if (data.name !== undefined) { fields.push('name = $' + (fields.length + 1)); values.push(data.name); }
-    if (data.type !== undefined) { fields.push('type = $' + (fields.length + 1)); values.push(data.type); }
-    if (data.url !== undefined) { fields.push('url = $' + (fields.length + 1)); values.push(data.url); }
-    if (data.interval !== undefined) { fields.push('interval_seconds = $' + (fields.length + 1)); values.push(data.interval); }
-    if (data.timeout !== undefined) { fields.push('timeout_seconds = $' + (fields.length + 1)); values.push(data.timeout); }
-    
+
+    if (data.name !== undefined) {
+      fields.push('name = $' + (fields.length + 1));
+      values.push(data.name);
+    }
+    if (data.type !== undefined) {
+      fields.push('type = $' + (fields.length + 1));
+      values.push(data.type);
+    }
+    if (data.url !== undefined) {
+      fields.push('url = $' + (fields.length + 1));
+      values.push(data.url);
+    }
+    if (data.interval !== undefined) {
+      fields.push('interval_seconds = $' + (fields.length + 1));
+      values.push(data.interval);
+    }
+    if (data.timeout !== undefined) {
+      fields.push('timeout_seconds = $' + (fields.length + 1));
+      values.push(data.timeout);
+    }
+
     if (fields.length === 0) {
       return await getMonitorById(id, userId);
     }
-    
+
     fields.push('updated_at = NOW()');
     values.push(id, userId);
-    
+
     const query = `
       UPDATE nova_monitors 
       SET ${fields.join(', ')}
       WHERE id = $${values.length - 1} AND tenant_id = $${values.length}
     `;
-    
+
     await prisma.$executeRawUnsafe(query, ...values);
     return await getMonitorById(id, userId);
   } catch (error) {

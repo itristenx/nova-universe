@@ -197,6 +197,7 @@ ADMIN_PASSWORD=TempPassword123!
 ## Required Variables by Environment
 
 ### Development Environment
+
 ```bash
 # Minimal setup for development
 NODE_ENV=development
@@ -209,6 +210,7 @@ KIOSK_TOKEN=dev-kiosk-token
 ```
 
 ### Production Environment
+
 ```bash
 # All critical infrastructure variables required
 NODE_ENV=production
@@ -216,6 +218,7 @@ NODE_ENV=production
 ```
 
 ### Testing Environment
+
 ```bash
 # Testing-specific overrides
 NODE_ENV=test
@@ -226,6 +229,7 @@ CORE_DATABASE_URL=postgresql://localhost:5432/nova_core_test
 ## Security Best Practices
 
 ### 1. Secret Generation
+
 ```bash
 # Generate secure JWT secret
 JWT_SECRET=$(openssl rand -base64 32)
@@ -241,6 +245,7 @@ DB_PASSWORD=$(openssl rand -base64 32)
 ```
 
 ### 2. Environment File Security
+
 ```bash
 # Set proper permissions on .env file
 chmod 600 .env
@@ -250,6 +255,7 @@ echo ".env" >> .gitignore
 ```
 
 ### 3. Production Deployment
+
 - Use environment-specific secrets management (AWS Secrets Manager, Azure Key Vault, etc.)
 - Rotate secrets regularly
 - Use different secrets for each environment
@@ -271,6 +277,7 @@ node scripts/test-configuration.js
 ## Common Issues & Solutions
 
 ### Database Connection Issues
+
 ```bash
 # Test PostgreSQL connection
 psql -h localhost -U nova_user -d nova_core
@@ -280,10 +287,13 @@ mongosh "mongodb://localhost:27017/nova_audit"
 ```
 
 ### Missing Environment Variables
+
 The application will show specific error messages for missing required variables. Check the logs for details.
 
 ### SSL/TLS Issues
+
 For production deployments with SSL:
+
 ```bash
 # PostgreSQL SSL
 POSTGRES_SSL_MODE=require

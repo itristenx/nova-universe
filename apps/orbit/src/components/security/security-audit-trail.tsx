@@ -5,13 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Shield, 
-  User, 
-  Lock, 
-  Unlock, 
-  Eye, 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Shield,
+  User,
+  Lock,
+  Unlock,
+  Eye,
   Settings,
   AlertTriangle,
   CheckCircle,
@@ -23,7 +29,7 @@ import {
   MapPin,
   Smartphone,
   Monitor,
-  Globe
+  Globe,
 } from 'lucide-react';
 
 interface AuditEvent {
@@ -63,7 +69,7 @@ const mockAuditEvents: AuditEvent[] = [
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
     location: 'New York, NY',
     details: { method: '2FA', deviceFingerprint: 'abc123' },
-    riskLevel: 'low'
+    riskLevel: 'low',
   },
   {
     id: '2',
@@ -77,7 +83,7 @@ const mockAuditEvents: AuditEvent[] = [
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
     location: 'London, UK',
     details: { exportType: 'profile', dataSize: '2.4KB' },
-    riskLevel: 'medium'
+    riskLevel: 'medium',
   },
   {
     id: '3',
@@ -91,7 +97,7 @@ const mockAuditEvents: AuditEvent[] = [
     userAgent: 'Mozilla/5.0 (X11; Linux x86_64)',
     location: 'San Francisco, CA',
     details: { targetUser: 'user123', permission: 'admin', action: 'granted' },
-    riskLevel: 'high'
+    riskLevel: 'high',
   },
   {
     id: '4',
@@ -105,7 +111,7 @@ const mockAuditEvents: AuditEvent[] = [
     userAgent: 'curl/7.68.0',
     location: 'Unknown',
     details: { reason: 'invalid_credentials', attempts: 5 },
-    riskLevel: 'critical'
+    riskLevel: 'critical',
   },
   {
     id: '5',
@@ -119,8 +125,8 @@ const mockAuditEvents: AuditEvent[] = [
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
     location: 'New York, NY',
     details: { method: 'self_service', strength: 'strong' },
-    riskLevel: 'low'
-  }
+    riskLevel: 'low',
+  },
 ];
 
 const mockMetrics: SecurityMetrics = {
@@ -129,7 +135,7 @@ const mockMetrics: SecurityMetrics = {
   failedLogins: 23,
   suspiciousActivity: 5,
   dataAccess: 234,
-  permissionChanges: 12
+  permissionChanges: 12,
 };
 
 export function SecurityAuditTrail() {
@@ -142,7 +148,7 @@ export function SecurityAuditTrail() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsRefreshing(false);
   };
 
@@ -151,43 +157,44 @@ export function SecurityAuditTrail() {
     alert('Audit log export initiated. You will receive an email when ready.');
   };
 
-  const filteredEvents = events.filter(event => {
-    const matchesSearch = searchTerm === '' || 
+  const filteredEvents = events.filter((event) => {
+    const matchesSearch =
+      searchTerm === '' ||
       event.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.ipAddress.includes(searchTerm);
-    
+
     const matchesStatus = filterStatus === 'all' || event.status === filterStatus;
     const matchesRisk = filterRisk === 'all' || event.riskLevel === filterRisk;
-    
+
     return matchesSearch && matchesStatus && matchesRisk;
   });
 
   const getStatusIcon = (status: AuditEvent['status']) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'failure':
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
     }
   };
 
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'login':
-        return <User className="w-4 h-4" />;
+        return <User className="h-4 w-4" />;
       case 'logout':
-        return <Lock className="w-4 h-4" />;
+        return <Lock className="h-4 w-4" />;
       case 'data_export':
-        return <Download className="w-4 h-4" />;
+        return <Download className="h-4 w-4" />;
       case 'permission_change':
-        return <Settings className="w-4 h-4" />;
+        return <Settings className="h-4 w-4" />;
       case 'password_change':
-        return <Unlock className="w-4 h-4" />;
+        return <Unlock className="h-4 w-4" />;
       default:
-        return <Eye className="w-4 h-4" />;
+        return <Eye className="h-4 w-4" />;
     }
   };
 
@@ -196,13 +203,17 @@ export function SecurityAuditTrail() {
       low: { variant: 'secondary' as const, className: 'text-green-600' },
       medium: { variant: 'outline' as const, className: 'text-yellow-600' },
       high: { variant: 'destructive' as const, className: 'text-orange-600' },
-      critical: { variant: 'destructive' as const, className: 'text-red-600' }
+      critical: { variant: 'destructive' as const, className: 'text-red-600' },
     };
     return variants[riskLevel];
   };
 
   const getDeviceIcon = (userAgent: string) => {
-    if (userAgent.includes('Mobile') || userAgent.includes('Android') || userAgent.includes('iPhone')) {
+    if (
+      userAgent.includes('Mobile') ||
+      userAgent.includes('Android') ||
+      userAgent.includes('iPhone')
+    ) {
       return Smartphone;
     } else if (userAgent.includes('curl') || userAgent.includes('bot')) {
       return Globe;
@@ -212,11 +223,11 @@ export function SecurityAuditTrail() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Shield className="w-8 h-8 text-primary" />
+          <Shield className="text-primary h-8 w-8" />
           <div>
             <h1 className="text-3xl font-bold">Security Audit Trail</h1>
             <p className="text-muted-foreground">
@@ -226,68 +237,74 @@ export function SecurityAuditTrail() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handleExport}>
-            <Download className="w-4 h-4 mr-2" />
+            <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
           <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
       </div>
 
       {/* Metrics Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-6">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold">{mockMetrics.totalEvents}</div>
-              <div className="text-sm text-muted-foreground">Total Events</div>
+              <div className="text-muted-foreground text-sm">Total Events</div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{mockMetrics.successfulLogins}</div>
-              <div className="text-sm text-muted-foreground">Successful Logins</div>
+              <div className="text-2xl font-bold text-green-600">
+                {mockMetrics.successfulLogins}
+              </div>
+              <div className="text-muted-foreground text-sm">Successful Logins</div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">{mockMetrics.failedLogins}</div>
-              <div className="text-sm text-muted-foreground">Failed Logins</div>
+              <div className="text-muted-foreground text-sm">Failed Logins</div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{mockMetrics.suspiciousActivity}</div>
-              <div className="text-sm text-muted-foreground">Suspicious Activity</div>
+              <div className="text-2xl font-bold text-yellow-600">
+                {mockMetrics.suspiciousActivity}
+              </div>
+              <div className="text-muted-foreground text-sm">Suspicious Activity</div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{mockMetrics.dataAccess}</div>
-              <div className="text-sm text-muted-foreground">Data Access</div>
+              <div className="text-muted-foreground text-sm">Data Access</div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{mockMetrics.permissionChanges}</div>
-              <div className="text-sm text-muted-foreground">Permission Changes</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {mockMetrics.permissionChanges}
+              </div>
+              <div className="text-muted-foreground text-sm">Permission Changes</div>
             </div>
           </CardContent>
         </Card>
@@ -297,15 +314,15 @@ export function SecurityAuditTrail() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Filter className="w-5 h-5" />
+            <Filter className="h-5 w-5" />
             Filters
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-4 md:flex-row">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
                 <Input
                   placeholder="Search by user, action, or IP address..."
                   value={searchTerm}
@@ -314,7 +331,7 @@ export function SecurityAuditTrail() {
                 />
               </div>
             </div>
-            
+
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by status" />
@@ -326,7 +343,7 @@ export function SecurityAuditTrail() {
                 <SelectItem value="warning">Warning</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select value={filterRisk} onValueChange={setFilterRisk}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by risk" />
@@ -356,53 +373,53 @@ export function SecurityAuditTrail() {
             {filteredEvents.map((event) => {
               const riskBadge = getRiskBadge(event.riskLevel);
               const DeviceIcon = getDeviceIcon(event.userAgent);
-              
+
               return (
-                <div key={event.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                <div
+                  key={event.id}
+                  className="hover:bg-muted/50 rounded-lg border p-4 transition-colors"
+                >
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="p-2 bg-muted rounded-lg">
-                        {getActionIcon(event.action)}
-                      </div>
-                      
+                    <div className="flex flex-1 items-start gap-3">
+                      <div className="bg-muted rounded-lg p-2">{getActionIcon(event.action)}</div>
+
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <h4 className="font-medium capitalize">
                             {event.action.replace('_', ' ')}
                           </h4>
-                          <Badge {...riskBadge}>
-                            {event.riskLevel} risk
-                          </Badge>
+                          <Badge {...riskBadge}>{event.riskLevel} risk</Badge>
                           {getStatusIcon(event.status)}
                         </div>
-                        
-                        <div className="text-sm text-muted-foreground mb-2">
-                          <span className="font-medium">{event.userEmail}</span> performed {event.action} on {event.resource}
+
+                        <div className="text-muted-foreground mb-2 text-sm">
+                          <span className="font-medium">{event.userEmail}</span> performed{' '}
+                          {event.action} on {event.resource}
                         </div>
-                        
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+
+                        <div className="text-muted-foreground flex items-center gap-4 text-xs">
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
+                            <Clock className="h-3 w-3" />
                             {event.timestamp.toLocaleString()}
                           </span>
                           <span className="flex items-center gap-1">
-                            <Globe className="w-3 h-3" />
+                            <Globe className="h-3 w-3" />
                             {event.ipAddress}
                           </span>
                           {event.location && (
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
+                              <MapPin className="h-3 w-3" />
                               {event.location}
                             </span>
                           )}
                           <span className="flex items-center gap-1">
-                            <DeviceIcon className="w-3 h-3" />
+                            <DeviceIcon className="h-3 w-3" />
                             {event.userAgent.split(' ')[0]}
                           </span>
                         </div>
-                        
+
                         {Object.keys(event.details).length > 0 && (
-                          <div className="mt-2 p-2 bg-muted rounded text-xs">
+                          <div className="bg-muted mt-2 rounded p-2 text-xs">
                             <strong>Details:</strong> {JSON.stringify(event.details, null, 2)}
                           </div>
                         )}
@@ -412,9 +429,9 @@ export function SecurityAuditTrail() {
                 </div>
               );
             })}
-            
+
             {filteredEvents.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-muted-foreground py-8 text-center">
                 No events match your current filters
               </div>
             )}

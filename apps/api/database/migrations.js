@@ -73,15 +73,15 @@ class MigrationManager {
     try {
       const files = await fs.readdir(this.migrationsPath);
       return files
-        .filter(file => file.endsWith('.sql'))
+        .filter((file) => file.endsWith('.sql'))
         .sort()
-        .map(file => {
+        .map((file) => {
           const version = file.replace('.sql', '');
           return {
             version,
             name: this.extractMigrationName(file),
             filename: file,
-            path: path.join(this.migrationsPath, file)
+            path: path.join(this.migrationsPath, file),
           };
         });
     } catch (error) {
@@ -98,7 +98,10 @@ class MigrationManager {
   extractMigrationName(filename) {
     // Extract name from format: 001_create_users_table.sql
     const parts = filename.replace('.sql', '').split('_');
-    return parts.slice(1).join(' ').replace(/\b\w/g, l => l.toUpperCase());
+    return parts
+      .slice(1)
+      .join(' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase());
   }
 
   /**
@@ -107,9 +110,9 @@ class MigrationManager {
   async getExecutedMigrations() {
     try {
       const result = await postgresManager.query(
-        'SELECT version FROM schema_migrations ORDER BY version'
+        'SELECT version FROM schema_migrations ORDER BY version',
       );
-      return result.rows.map(row => row.version);
+      return result.rows.map((row) => row.version);
     } catch (error) {
       logger.error('❌ Error getting executed migrations:', error.message);
       return [];
@@ -135,7 +138,7 @@ class MigrationManager {
     const executedMigrations = await this.getExecutedMigrations();
 
     const pendingMigrations = migrationFiles.filter(
-      migration => !executedMigrations.includes(migration.version)
+      (migration) => !executedMigrations.includes(migration.version),
     );
 
     if (pendingMigrations.length === 0) {
@@ -157,7 +160,7 @@ class MigrationManager {
    */
   async runMigration(migration) {
     const startTime = Date.now();
-    
+
     try {
       logger.info(`▶️  Running migration: ${migration.version} - ${migration.name}`);
 
@@ -176,13 +179,12 @@ class MigrationManager {
           `INSERT INTO schema_migrations (version, name, execution_time_ms, checksum) 
            VALUES ($1, $2, $3, $4)`,
           [migration.version, migration.name, executionTime, checksum],
-          { client }
+          { client },
         );
       });
 
       const executionTime = Date.now() - startTime;
       logger.info(`✅ Migration completed: ${migration.version} (${executionTime}ms)`);
-
     } catch (error) {
       logger.error(`❌ Migration failed: ${migration.version}`, error.message);
       throw new Error(`Migration ${migration.version} failed: ${error.message}`);
@@ -194,7 +196,7 @@ class MigrationManager {
    */
   async rollbackLastMigration() {
     const result = await postgresManager.query(
-      'SELECT * FROM schema_migrations ORDER BY executed_at DESC LIMIT 1'
+      'SELECT * FROM schema_migrations ORDER BY executed_at DESC LIMIT 1',
     );
 
     if (result.rows.length === 0) {
@@ -207,16 +209,16 @@ class MigrationManager {
 
     // Look for rollback file
     const rollbackFile = path.join(this.migrationsPath, `${migration.version}_rollback.sql`);
-    
+
     try {
       const rollbackSQL = await fs.readFile(rollbackFile, 'utf8');
-      
+
       await postgresManager.transaction(async (client) => {
         await postgresManager.executeSQL(rollbackSQL);
         await postgresManager.query(
           'DELETE FROM schema_migrations WHERE version = $1',
           [migration.version],
-          { client }
+          { client },
         );
       });
 
@@ -260,7 +262,7 @@ class MigrationManager {
 
     await fs.writeFile(filePath, template);
     logger.info(`📝 Created migration file: ${filename}`);
-    
+
     return filePath;
   }
 
@@ -272,12 +274,12 @@ class MigrationManager {
 
     try {
       const seedFiles = await fs.readdir(this.seedsPath);
-      const sqlSeeds = seedFiles.filter(file => file.endsWith('.sql')).sort();
+      const sqlSeeds = seedFiles.filter((file) => file.endsWith('.sql')).sort();
 
       for (const seedFile of sqlSeeds) {
         const seedPath = path.join(this.seedsPath, seedFile);
         const sql = await fs.readFile(seedPath, 'utf8');
-        
+
         logger.info(`🌱 Running seed: ${seedFile}`);
         await postgresManager.executeSQL(sql);
       }
@@ -300,10 +302,10 @@ class MigrationManager {
       total_migrations: migrationFiles.length,
       executed_migrations: executedMigrations.length,
       pending_migrations: migrationFiles.length - executedMigrations.length,
-      migrations: migrationFiles.map(migration => ({
+      migrations: migrationFiles.map((migration) => ({
         ...migration,
-        executed: executedMigrations.includes(migration.version)
-      }))
+        executed: executedMigrations.includes(migration.version),
+      })),
     };
   }
 }

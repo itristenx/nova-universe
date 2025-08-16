@@ -75,18 +75,20 @@ export const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
 
   const isAssertive = toast.type === 'error' || toast.type === 'warning';
   return isAssertive ? (
-    <div className={`rounded-lg border p-4 shadow-sm ${getBgColor()}`} role="alert" aria-live="assertive">
+    <div
+      className={`rounded-lg border p-4 shadow-sm ${getBgColor()}`}
+      role="alert"
+      aria-live="assertive"
+    >
       <div className="flex">
         <div className="flex-shrink-0">{getIcon()}</div>
         <div className="ml-3 flex-1">
           <p className="text-sm font-medium text-gray-900">{toast.title}</p>
-          {toast.description && (
-            <p className="mt-1 text-sm text-gray-600">{toast.description}</p>
-          )}
+          {toast.description && <p className="mt-1 text-sm text-gray-600">{toast.description}</p>}
         </div>
         <div className="ml-4 flex-shrink-0">
           <button
-            className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="focus:ring-primary-500 inline-flex text-gray-400 hover:text-gray-600 focus:ring-2 focus:outline-none"
             onClick={() => onRemove(toast.id)}
             aria-label={`Dismiss ${toast.type} notification`}
           >
@@ -96,18 +98,20 @@ export const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
       </div>
     </div>
   ) : (
-    <div className={`rounded-lg border p-4 shadow-sm ${getBgColor()}`} role="status" aria-live="polite">
+    <div
+      className={`rounded-lg border p-4 shadow-sm ${getBgColor()}`}
+      role="status"
+      aria-live="polite"
+    >
       <div className="flex">
         <div className="flex-shrink-0">{getIcon()}</div>
         <div className="ml-3 flex-1">
           <p className="text-sm font-medium text-gray-900">{toast.title}</p>
-          {toast.description && (
-            <p className="mt-1 text-sm text-gray-600">{toast.description}</p>
-          )}
+          {toast.description && <p className="mt-1 text-sm text-gray-600">{toast.description}</p>}
         </div>
         <div className="ml-4 flex-shrink-0">
           <button
-            className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="focus:ring-primary-500 inline-flex text-gray-400 hover:text-gray-600 focus:ring-2 focus:outline-none"
             onClick={() => onRemove(toast.id)}
             aria-label={`Dismiss ${toast.type} notification`}
           >
@@ -128,7 +132,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2 w-96">
+    <div className="fixed top-4 right-4 z-50 w-96 space-y-2">
       {toasts.map((toast) => (
         <Toast key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
@@ -139,6 +143,6 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove
 // Connected ToastContainer that uses the store
 export const ConnectedToastContainer: React.FC = () => {
   const { toasts, removeToast } = useToastStore();
-  
+
   return <ToastContainer toasts={toasts} onRemove={removeToast} />;
 };

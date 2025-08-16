@@ -173,10 +173,8 @@ export default function Input({
   const baseClasses = 'nova-input';
   const sizeClass = `nova-input--${size}`;
   const stateClass = state ? `nova-input--${state}` : '';
-  
-  const allClasses = [baseClasses, sizeClass, stateClass, className]
-    .filter(Boolean)
-    .join(' ');
+
+  const allClasses = [baseClasses, sizeClass, stateClass, className].filter(Boolean).join(' ');
 
   return (
     <input
@@ -194,7 +192,7 @@ export default function Input({
 // Label component
 export function Label({ children, required = false, htmlFor, className = '' }) {
   const labelClasses = `nova-label ${required ? 'nova-label--required' : ''} ${className}`;
-  
+
   return (
     <label htmlFor={htmlFor} className={labelClasses}>
       {children}
@@ -205,30 +203,18 @@ export function Label({ children, required = false, htmlFor, className = '' }) {
 // Help text component
 export function HelpText({ children, state, className = '' }) {
   const helpClasses = `nova-help-text ${state ? `nova-help-text--${state}` : ''} ${className}`;
-  
-  return (
-    <div className={helpClasses}>
-      {children}
-    </div>
-  );
+
+  return <div className={helpClasses}>{children}</div>;
 }
 
 // Input group component
 export function InputGroup({ children, className = '' }) {
-  return (
-    <div className={`nova-input-group ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`nova-input-group ${className}`}>{children}</div>;
 }
 
 // Input addon component
 export function InputAddon({ children, position = 'prepend', className = '' }) {
   const addonClasses = `nova-input-group__addon nova-input-group__addon--${position} ${className}`;
-  
-  return (
-    <div className={addonClasses}>
-      {children}
-    </div>
-  );
+
+  return <div className={addonClasses}>{children}</div>;
 }

@@ -1,14 +1,14 @@
 /**
  * Nova Universe Slack Integration Service
- * 
+ *
  * This service provides Slack bot functionality for Nova Universe, allowing users to:
  * - Submit tickets via /new-ticket command
  * - Interact with modals for ticket creation
  * - Receive confirmations and status updates
- * 
+ *
  * Environment Variables Required:
  * - SLACK_SIGNING_SECRET: Slack app signing secret
- * - SLACK_BOT_TOKEN: Bot User OAuth token  
+ * - SLACK_BOT_TOKEN: Bot User OAuth token
  * - API_URL: Nova Universe API base URL
  * - JWT_SECRET: Secret for JWT token generation
  * - JWT_EXPIRES_IN: JWT expiration time (default: 1h)
@@ -28,7 +28,7 @@ const {
   serviceUserEmail,
   serviceUserName,
   serviceUserRole,
-  tenantId
+  tenantId,
 } = validateEnv();
 
 const app = new App({
@@ -46,7 +46,11 @@ function issueServiceJWT(extraPayload = {}) {
     source: 'comms',
     ...extraPayload,
   };
-  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: jwtExpiresIn, issuer: 'nova-universe-api', audience: 'nova-universe' });
+  return jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: jwtExpiresIn,
+    issuer: 'nova-universe-api',
+    audience: 'nova-universe',
+  });
 }
 
 function buildModal(systems = [], urgencies = [], channel) {
@@ -54,9 +58,7 @@ function buildModal(systems = [], urgencies = [], channel) {
     text: { type: 'plain_text', text: s },
     value: s,
   }));
-  const urgencyOptions = urgencies.length
-    ? urgencies
-    : ['Urgent', 'High', 'Medium', 'Low'];
+  const urgencyOptions = urgencies.length ? urgencies : ['Urgent', 'High', 'Medium', 'Low'];
 
   return {
     type: 'modal',
@@ -164,9 +166,7 @@ app.command('/it-help', async ({ ack, body, client }) => {
     const res = await axios.get(`${process.env.API_URL}/api/config`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const systems = Array.isArray(res.data.systems)
-      ? res.data.systems
-      : [];
+    const systems = Array.isArray(res.data.systems) ? res.data.systems : [];
     const urgencies = Array.isArray(res.data.urgencyLevels)
       ? res.data.urgencyLevels
       : ['Low', 'Medium', 'High', 'Critical'];
@@ -186,8 +186,7 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
     name: state.name.value.value,
     email: state.email.value.value,
     title: state.title.value.value,
-    system:
-      state.system.value.selected_option?.value || state.system.value.value,
+    system: state.system.value.selected_option?.value || state.system.value.value,
     urgency: state.urgency.value.selected_option.value,
     description: state.description?.value?.value || '',
   };
@@ -201,13 +200,11 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
       category: payload.system || 'general',
       priority: String(payload.urgency || 'Medium').toLowerCase(),
       contactMethod: 'email',
-      contactInfo: payload.email
+      contactInfo: payload.email,
     };
-    const res = await axios.post(
-      `${process.env.API_URL}/api/v1/orbit/tickets`,
-      createBody,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const res = await axios.post(`${process.env.API_URL}/api/v1/orbit/tickets`, createBody, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     const ticket = res.data?.ticket;
     const ticketId = ticket?.ticketId || ticket?.id || 'INC-NEW';
     const aUrl = adminUrl;
@@ -253,19 +250,33 @@ app.command('/nova-status', async ({ ack, body, client }) => {
   try {
     const token = issueServiceJWT();
     const [statusConfig, monitors] = await Promise.all([
-      axios.get(`${process.env.API_URL}/api/status-config`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.data).catch(() => ({})),
-      axios.get(`${process.env.API_URL}/api/enhanced-monitoring/monitors`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.data).catch(() => ({ monitors: [] })),
+      axios
+        .get(`${process.env.API_URL}/api/status-config`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((r) => r.data)
+        .catch(() => ({})),
+      axios
+        .get(`${process.env.API_URL}/api/enhanced-monitoring/monitors`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((r) => r.data)
+        .catch(() => ({ monitors: [] })),
     ]);
     const current = statusConfig.currentStatus || 'unknown';
     const total = (monitors.monitors || []).length;
-    const up = (monitors.monitors || []).filter(m => m.current_status !== false).length;
+    const up = (monitors.monitors || []).filter((m) => m.current_status !== false).length;
     await client.chat.postEphemeral({
       channel: body.channel_id,
       user: body.user_id,
       text: `Status: ${current} | Monitors up: ${up}/${total}`,
     });
   } catch (e) {
-    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: 'Unable to fetch status.' });
+    await client.chat.postEphemeral({
+      channel: body.channel_id,
+      user: body.user_id,
+      text: 'Unable to fetch status.',
+    });
   }
 });
 
@@ -274,12 +285,25 @@ app.command('/nova-queue', async ({ ack, body, client }) => {
   await ack();
   try {
     const token = issueServiceJWT();
-    const res = await axios.get(`${process.env.API_URL}/api/v1/pulse/queues/metrics`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await axios.get(`${process.env.API_URL}/api/v1/pulse/queues/metrics`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     const metrics = res.data?.metrics || [];
-    const top = metrics.slice(0, 5).map((q) => `• ${q.queue_name || q.queueName}: ${q.open_tickets || q.openTickets || 0} open`).join('\n');
-    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: top || 'No queue metrics found.' });
+    const top = metrics
+      .slice(0, 5)
+      .map((q) => `• ${q.queue_name || q.queueName}: ${q.open_tickets || q.openTickets || 0} open`)
+      .join('\n');
+    await client.chat.postEphemeral({
+      channel: body.channel_id,
+      user: body.user_id,
+      text: top || 'No queue metrics found.',
+    });
   } catch (e) {
-    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: 'Unable to fetch queues.' });
+    await client.chat.postEphemeral({
+      channel: body.channel_id,
+      user: body.user_id,
+      text: 'Unable to fetch queues.',
+    });
   }
 });
 
@@ -287,14 +311,30 @@ app.command('/nova-queue', async ({ ack, body, client }) => {
 app.command('/nova-feedback', async ({ ack, body, client, command }) => {
   await ack();
   try {
-    const token = issueServiceJWT({ name: body.user_name, id: body.user_id, email: `${body.user_id}@slack.local` });
+    const token = issueServiceJWT({
+      name: body.user_name,
+      id: body.user_id,
+      email: `${body.user_id}@slack.local`,
+    });
     const subject = 'Slack Feedback';
     const message = command.text?.slice(0, 1000) || 'No message';
     const type = 'feedback';
-    await axios.post(`${process.env.API_URL}/api/v1/orbit/feedback`, { subject, message, type }, { headers: { Authorization: `Bearer ${token}` } });
-    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: 'Thanks for the feedback!' });
+    await axios.post(
+      `${process.env.API_URL}/api/v1/orbit/feedback`,
+      { subject, message, type },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    await client.chat.postEphemeral({
+      channel: body.channel_id,
+      user: body.user_id,
+      text: 'Thanks for the feedback!',
+    });
   } catch (e) {
-    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: 'Failed to submit feedback.' });
+    await client.chat.postEphemeral({
+      channel: body.channel_id,
+      user: body.user_id,
+      text: 'Failed to submit feedback.',
+    });
   }
 });
 
@@ -303,32 +343,63 @@ app.command('/nova-assign', async ({ ack, body, client, command }) => {
   await ack();
   const text = (command.text || '').trim();
   if (!text) {
-    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: 'Usage: /nova-assign INC000001' });
+    await client.chat.postEphemeral({
+      channel: body.channel_id,
+      user: body.user_id,
+      text: 'Usage: /nova-assign INC000001',
+    });
     return;
   }
   try {
     const token = issueServiceJWT();
-    const optimize = await axios.post(`${process.env.API_URL}/api/v1/synth/optimize/assignment`, { ticketId: text }, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.data).catch(() => null);
+    const optimize = await axios
+      .post(
+        `${process.env.API_URL}/api/v1/synth/optimize/assignment`,
+        { ticketId: text },
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
+      .then((r) => r.data)
+      .catch(() => null);
     const rec = optimize?.recommendation?.recommendedTechnician?.name || 'a technician';
-    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: `Recommended assignee for ${text}: ${rec}` });
+    await client.chat.postEphemeral({
+      channel: body.channel_id,
+      user: body.user_id,
+      text: `Recommended assignee for ${text}: ${rec}`,
+    });
   } catch (e) {
-    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: 'Failed to compute assignment.' });
+    await client.chat.postEphemeral({
+      channel: body.channel_id,
+      user: body.user_id,
+      text: 'Failed to compute assignment.',
+    });
   }
 });
 
 // Cosmo thread: mention @Cosmo to start conversation and reply
 app.event('app_mention', async ({ event, client, context }) => {
   try {
-    const token = issueServiceJWT({ name: event.user, id: event.user, email: `${event.user}@slack.local` });
+    const token = issueServiceJWT({
+      name: event.user,
+      id: event.user,
+      email: `${event.user}@slack.local`,
+    });
     // Start conversation in Synth v2 with module context
-    const start = await axios.post(`${process.env.API_URL}/api/v2/synth/conversation/start`, {
-      context: { module: 'comms', userRole: 'user' },
-      initialMessage: event.text.replace(/<@[^>]+>/g, '').trim() || 'Help'
-    }, { headers: { Authorization: `Bearer ${token}` } });
+    const start = await axios.post(
+      `${process.env.API_URL}/api/v2/synth/conversation/start`,
+      {
+        context: { module: 'comms', userRole: 'user' },
+        initialMessage: event.text.replace(/<@[^>]+>/g, '').trim() || 'Help',
+      },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
     const message = start.data?.message || 'How can I help?';
     await client.chat.postMessage({ channel: event.channel, thread_ts: event.ts, text: message });
   } catch (e) {
-    await client.chat.postMessage({ channel: event.channel, thread_ts: event.ts, text: 'Cosmo is unavailable right now.' });
+    await client.chat.postMessage({
+      channel: event.channel,
+      thread_ts: event.ts,
+      text: 'Cosmo is unavailable right now.',
+    });
   }
 });
 

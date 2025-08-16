@@ -18,5 +18,3 @@ describe('Button', () => {
     expect(btn.className).toMatch(/h-11/);
   });
 });
-
-

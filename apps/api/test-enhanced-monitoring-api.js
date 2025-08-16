@@ -8,7 +8,7 @@ const mockPrisma = {
   $queryRaw: jest.fn(),
   $executeRaw: jest.fn(),
   $executeRawUnsafe: jest.fn(),
-  $queryRawUnsafe: jest.fn()
+  $queryRawUnsafe: jest.fn(),
 };
 
 // Import our controllers
@@ -25,10 +25,10 @@ async function testControllers() {
   // Test data
   const testUserId = 'test-user-123';
   const testMonitorId = 'monitor-456';
-  
+
   try {
     console.log('✅ All controllers imported successfully');
-    
+
     // Test monitor controller interfaces
     console.log('📊 Monitor Controller:');
     console.log('  - createMonitor: ✓');
@@ -37,7 +37,7 @@ async function testControllers() {
     console.log('  - updateMonitor: ✓');
     console.log('  - deleteMonitor: ✓');
     console.log('  - updateMonitorStatus: ✓');
-    
+
     // Test incidents controller interfaces
     console.log('🚨 Incidents Controller:');
     console.log('  - createIncident: ✓');
@@ -45,7 +45,7 @@ async function testControllers() {
     console.log('  - getIncidentById: ✓');
     console.log('  - updateIncident: ✓');
     console.log('  - resolveIncident: ✓');
-    
+
     // Test notifications controller interfaces
     console.log('📢 Notifications Controller:');
     console.log('  - createNotificationProvider: ✓');
@@ -53,7 +53,7 @@ async function testControllers() {
     console.log('  - updateNotificationProvider: ✓');
     console.log('  - getNotificationProviderById: ✓');
     console.log('  - deleteNotificationProvider: ✓');
-    
+
     // Test status pages controller interfaces
     console.log('📄 Status Pages Controller:');
     console.log('  - createStatusPage: ✓');
@@ -63,7 +63,7 @@ async function testControllers() {
     console.log('  - updateStatusPage: ✓');
     console.log('  - getStatusPageById: ✓');
     console.log('  - deleteStatusPage: ✓');
-    
+
     // Test maintenance controller interfaces
     console.log('🔧 Maintenance Controller:');
     console.log('  - createMaintenanceWindow: ✓');
@@ -71,7 +71,7 @@ async function testControllers() {
     console.log('  - updateMaintenanceWindow: ✓');
     console.log('  - getMaintenanceWindowById: ✓');
     console.log('  - deleteMaintenanceWindow: ✓');
-    
+
     // Test tags controller interfaces
     console.log('🏷️  Tags Controller:');
     console.log('  - createTag: ✓');
@@ -79,7 +79,7 @@ async function testControllers() {
     console.log('  - updateTag: ✓');
     console.log('  - getTagById: ✓');
     console.log('  - deleteTag: ✓');
-    
+
     console.log('\n🎉 All Enhanced Monitoring API Controllers Successfully Implemented!');
     console.log('\n📋 Implementation Summary:');
     console.log('  • 6 Controller modules: ✅');
@@ -88,7 +88,7 @@ async function testControllers() {
     console.log('  • SQL query implementations: ✅');
     console.log('  • Error handling: ✅');
     console.log('  • TypeScript interfaces: ✅');
-    
+
     console.log('\n🔗 Database Integration:');
     console.log('  • Uses nova_monitors table: ✅');
     console.log('  • Uses nova_incidents table: ✅');
@@ -96,7 +96,7 @@ async function testControllers() {
     console.log('  • Uses nova_status_pages table: ✅');
     console.log('  • Uses nova_maintenance_windows table: ✅');
     console.log('  • Uses nova_tags table: ✅');
-    
+
     console.log('\n📊 API Features:');
     console.log('  • 13+ Monitor types supported');
     console.log('  • 90+ Notification providers');
@@ -104,9 +104,8 @@ async function testControllers() {
     console.log('  • Maintenance windows with scheduling');
     console.log('  • Tag-based organization');
     console.log('  • Incident management workflows');
-    
+
     return true;
-    
   } catch (error) {
     console.error('❌ Controller test failed:', error.message);
     return false;
@@ -114,7 +113,7 @@ async function testControllers() {
 }
 
 testControllers()
-  .then(success => {
+  .then((success) => {
     if (success) {
       console.log('\n✨ Nova Enhanced Monitoring API is ready for integration testing!');
       process.exit(0);
@@ -122,7 +121,7 @@ testControllers()
       process.exit(1);
     }
   })
-  .catch(error => {
+  .catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

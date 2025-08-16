@@ -1,7 +1,7 @@
 import React from 'react';
 interface ServerConnectionModalProps {
-    isOpen: boolean;
-    onClose: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 export declare const ServerConnectionModal: React.FC<ServerConnectionModalProps>;
 export {};

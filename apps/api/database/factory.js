@@ -2,7 +2,7 @@
 import { logger } from '../logger.js';
 import { databaseConfig } from '../config/database.js';
 import postgresManager, { PostgreSQLManager } from './postgresql.js';
-import mongoManager, { MongoDBManager } from './mongodb.js';
+import mongoManager from './mongodb.js';
 
 /**
  * Database Factory
@@ -35,19 +35,26 @@ class DatabaseFactory {
           await this.initializeMongoDB();
         }
         if (this.availableDatabases.size === 0) {
-          const allowDegraded = process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development';
+          const allowDegraded =
+            process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development';
           if (allowDegraded) {
-            logger.warn('⚠️  No databases available. Continuing in degraded mode (ALLOW_START_WITHOUT_DB).');
+            logger.warn(
+              '⚠️  No databases available. Continuing in degraded mode (ALLOW_START_WITHOUT_DB).',
+            );
           } else {
             throw new Error('No databases available. At least one database must be configured.');
           }
         } else {
           this.initialized = true;
-          logger.info(`✅ Database initialization complete. Available: ${Array.from(this.availableDatabases).join(', ')}`);
+          logger.info(
+            `✅ Database initialization complete. Available: ${Array.from(this.availableDatabases).join(', ')}`,
+          );
         }
       } catch (error) {
         logger.error('❌ Database initialization failed:', error.message);
-        if (!(process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development')) {
+        if (
+          !(process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development')
+        ) {
           throw error;
         }
       } finally {
@@ -150,7 +157,7 @@ class DatabaseFactory {
       initialized: this.initialized,
       available_databases: Array.from(this.availableDatabases),
       primary_database: databaseConfig.primary,
-      health_checks: {}
+      health_checks: {},
     };
 
     // Check PostgreSQL health
@@ -160,7 +167,7 @@ class DatabaseFactory {
       } catch (error) {
         status.health_checks.postgresql = {
           status: 'error',
-          error: error.message
+          error: error.message,
         };
       }
     }
@@ -172,7 +179,7 @@ class DatabaseFactory {
       } catch (error) {
         status.health_checks.mongodb = {
           status: 'error',
-          error: error.message
+          error: error.message,
         };
       }
     }
@@ -194,14 +201,14 @@ class DatabaseFactory {
       }
     } catch (error) {
       logger.error('❌ Primary database query failed:', error.message);
-      
+
       // Try fallback to MongoDB if available and not already using it
       if (primaryDb !== this.auditDb && this.isDatabaseAvailable('audit_db')) {
         logger.warn('🔄 Falling back to MongoDB');
         const collectionName = sql.split(' ')[2]; // Extract collection name from SQL (naive approach)
         return await this.getDocuments(collectionName, params[0]);
       }
-      
+
       throw error;
     }
   }
@@ -218,7 +225,7 @@ class DatabaseFactory {
     return await mongoCollection.insertOne({
       ...document,
       created_at: new Date(),
-      updated_at: new Date()
+      updated_at: new Date(),
     });
   }
 
@@ -245,7 +252,7 @@ class DatabaseFactory {
       try {
         await this.query(
           'INSERT INTO audit_logs (action, user_id, details, timestamp) VALUES ($1, $2, $3, $4)',
-          [action, userId, JSON.stringify(details), new Date().toISOString()]
+          [action, userId, JSON.stringify(details), new Date().toISOString()],
         );
       } catch (error) {
         logger.error('❌ Failed to create audit log:', error.message);

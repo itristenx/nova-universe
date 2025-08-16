@@ -32,9 +32,13 @@ export const LoginPage: React.FC = () => {
         const ssoInfo = await api.getSSOAvailability();
         setSsoAvailable(ssoInfo.available);
         setSsoLoginUrl(ssoInfo.loginUrl || null);
-        
+
         // Check if passkeys are available (WebAuthn support)
-        const webAuthnSupported = !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create);
+        const webAuthnSupported = !!(
+          window.PublicKeyCredential &&
+          navigator.credentials &&
+          navigator.credentials.create
+        );
         setPasskeyAvailable(webAuthnSupported);
 
         console.log('WebAuthn supported:', webAuthnSupported);
@@ -46,24 +50,24 @@ export const LoginPage: React.FC = () => {
       // Check for token in URL (from SSO redirect)
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
-      
+
       if (token) {
         try {
           // Clear URL parameters
           window.history.replaceState({}, document.title, window.location.pathname);
-          
+
           // Store token and get user info
           localStorage.setItem('auth_token', token);
           const user = await api.me(token);
-          
+
           login(token, user);
-          
+
           addToast({
             type: 'success',
             title: 'SSO Login successful',
             description: `Welcome back, ${user.name}!`,
           });
-          
+
           navigate('/');
         } catch (error) {
           console.error('SSO token validation failed:', error);
@@ -77,11 +81,16 @@ export const LoginPage: React.FC = () => {
     };
 
     checkSSOAndToken();
-    api.getOrganizationBranding()
+    api
+      .getOrganizationBranding()
       .then(setBranding)
       .catch((error) => {
         console.error('Failed to fetch organization branding:', error);
-        setBranding({ logoUrl: '/logo.png', welcomeMessage: 'Sign in to Nova Universe Portal', helpMessage: 'Manage your kiosks, users, and support tickets' }); // Fallback branding
+        setBranding({
+          logoUrl: '/logo.png',
+          welcomeMessage: 'Sign in to Nova Universe Portal',
+          helpMessage: 'Manage your kiosks, users, and support tickets',
+        }); // Fallback branding
       });
   }, [login, navigate, addToast]);
 
@@ -98,21 +107,26 @@ export const LoginPage: React.FC = () => {
       const options = await api.beginPasskeyAuthentication();
 
       // Convert base64url to ArrayBuffer for the challenge
-      const challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+      const challenge = Uint8Array.from(
+        atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')),
+        (c) => c.charCodeAt(0),
+      );
 
       // Convert allowCredentials if present
       const allowCredentials = options.allowCredentials?.map((cred: any) => ({
         ...cred,
-        id: Uint8Array.from(atob(cred.id.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0))
+        id: Uint8Array.from(atob(cred.id.replace(/-/g, '+').replace(/_/g, '/')), (c) =>
+          c.charCodeAt(0),
+        ),
       }));
 
-      const credential = await navigator.credentials.get({
+      const credential = (await navigator.credentials.get({
         publicKey: {
           ...options,
           challenge,
-          allowCredentials
-        }
-      }) as PublicKeyCredential;
+          allowCredentials,
+        },
+      })) as PublicKeyCredential;
 
       if (!credential) {
         throw new Error('Failed to get credential');
@@ -127,37 +141,37 @@ export const LoginPage: React.FC = () => {
           clientDataJSON: arrayBufferToBase64url(response.clientDataJSON),
           authenticatorData: arrayBufferToBase64url(response.authenticatorData),
           signature: arrayBufferToBase64url(response.signature),
-          userHandle: response.userHandle ? arrayBufferToBase64url(response.userHandle) : null
+          userHandle: response.userHandle ? arrayBufferToBase64url(response.userHandle) : null,
         },
-        type: credential.type
+        type: credential.type,
       };
 
       // Authenticate with server
       const result = await api.completePasskeyAuthentication(credentialData);
-      
+
       if (result.verified && result.token) {
         // Store token and get user info
         localStorage.setItem('auth_token', result.token);
-        const user = result.user || await api.me(result.token);
-        
+        const user = result.user || (await api.me(result.token));
+
         login(result.token, user);
-        
+
         addToast({
           type: 'success',
           title: 'Passkey Login successful',
           description: `Welcome back, ${user.name}!`,
         });
-        
+
         navigate('/');
       } else {
         throw new Error('Passkey authentication failed');
       }
     } catch (error: any) {
       console.error('Passkey login error:', error);
-      
+
       const errorTitle = 'Passkey Login failed';
       let errorDescription = 'Authentication failed. Please try again.';
-      
+
       if (error.name === 'NotAllowedError') {
         errorDescription = 'Authentication was cancelled or timed out.';
       } else if (error.name === 'InvalidStateError') {
@@ -165,7 +179,7 @@ export const LoginPage: React.FC = () => {
       } else if (error.message.includes('WebAuthn')) {
         errorDescription = 'Your browser does not support passkey authentication.';
       }
-      
+
       addToast({
         type: 'error',
         title: errorTitle,
@@ -182,10 +196,7 @@ export const LoginPage: React.FC = () => {
     for (let i = 0; i < bytes.byteLength; i++) {
       binary += String.fromCharCode(bytes[i]);
     }
-    return btoa(binary)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -194,43 +205,49 @@ export const LoginPage: React.FC = () => {
 
     try {
       const { token } = await api.login({ email, password });
-      
+
       // Store token immediately so it's available for subsequent API calls
       localStorage.setItem('auth_token', token);
-      
+
       // Use the token directly for the user profile call
       const user = await api.me(token);
-      
+
       login(token, user);
-      
+
       addToast({
         type: 'success',
         title: 'Login successful',
         description: `Welcome back, ${user.name}!`,
       });
-      
+
       navigate('/');
     } catch (error: any) {
       console.error('Login error:', error);
-      
+
       let errorTitle = 'Login failed';
       let errorDescription = 'Please check your credentials and try again.';
-      
+
       // Handle different types of errors
-      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      if (
+        error.code === 'ECONNREFUSED' ||
+        error.code === 'ERR_NETWORK' ||
+        error.message === 'Network Error'
+      ) {
         errorTitle = 'Connection failed';
-        errorDescription = 'Unable to connect to the server. Please check your internet connection and try again.';
+        errorDescription =
+          'Unable to connect to the server. Please check your internet connection and try again.';
       } else if (error.response?.status === 401) {
         errorTitle = 'Invalid credentials';
         errorDescription = 'The email or password you entered is incorrect. Please try again.';
       } else if (error.response?.status === 429) {
         errorTitle = 'Too many attempts';
-        errorDescription = 'Too many login attempts. Please wait a few minutes before trying again.';
+        errorDescription =
+          'Too many login attempts. Please wait a few minutes before trying again.';
       } else if (error.response?.status >= 500) {
         errorTitle = 'Server error';
         errorDescription = 'The server is experiencing issues. Please try again later.';
       }
-      
+
       addToast({
         type: 'error',
         title: errorTitle,
@@ -242,10 +259,10 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900">
+      <div className="w-full max-w-md space-y-8">
         <div>
-          <div className="mx-auto h-24 w-48 flex items-center justify-center mb-8">
+          <div className="mx-auto mb-8 flex h-24 w-48 items-center justify-center">
             <img
               className="h-20 w-auto max-w-full object-contain"
               src={branding.logoUrl || '/logo.png'}
@@ -302,7 +319,7 @@ export const LoginPage: React.FC = () => {
                     <div className="w-full border-t border-gray-300 dark:border-gray-600" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
+                    <span className="bg-white px-2 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                       Or
                     </span>
                   </div>
@@ -318,7 +335,7 @@ export const LoginPage: React.FC = () => {
                       onClick={handlePasskeyLogin}
                       isLoading={isPasskeyLoading}
                     >
-                      <KeyIcon className="h-4 w-4 mr-2" />
+                      <KeyIcon className="mr-2 h-4 w-4" />
                       Sign in with Passkey
                     </Button>
                   )}
@@ -346,10 +363,10 @@ export const LoginPage: React.FC = () => {
         <div className="flex justify-center">
           <button
             onClick={() => setShowServerModal(true)}
-            className="flex items-center space-x-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center space-x-2 rounded-full border border-gray-200 bg-white px-3 py-1 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
             title="Server connection status - Click to configure"
           >
-            <div 
+            <div
               className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
             />
             <span className="text-xs text-gray-600 dark:text-gray-400">
@@ -360,10 +377,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {/* Server Connection Modal */}
-      <ServerConnectionModal
-        isOpen={showServerModal}
-        onClose={() => setShowServerModal(false)}
-      />
+      <ServerConnectionModal isOpen={showServerModal} onClose={() => setShowServerModal(false)} />
     </div>
   );
 };

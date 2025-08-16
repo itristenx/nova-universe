@@ -125,7 +125,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
 
   constructor(config?: Partial<GPTOSSConfig>) {
     super();
-    
+
     this.config = {
       modelPath: process.env.GPT_OSS_MODEL_PATH || '/workspace/models/gpt-oss-20b',
       maxTokens: 2048,
@@ -137,7 +137,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
       timeoutMs: 30000,
       maxConcurrentRequests: 5,
       memoryLimit: '8GB',
-      ...config
+      ...config,
     };
 
     this.initializeEncryption();
@@ -177,48 +177,48 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           {
             type: 'regex',
             pattern: '\\b(?:password|token|secret|key)\\s*[=:]\\s*\\S+',
-            action: 'sanitize'
+            action: 'sanitize',
           },
           {
             type: 'keyword',
             pattern: 'DROP TABLE|DELETE FROM|INSERT INTO',
-            action: 'block'
+            action: 'block',
           },
           {
             type: 'classifier',
             pattern: 'malicious_prompt',
-            action: 'block'
-          }
+            action: 'block',
+          },
         ],
         outputFilters: [
           {
             type: 'pii',
             detector: 'nova_pii_detector',
-            action: 'redact'
+            action: 'redact',
           },
           {
             type: 'sensitive',
             detector: 'nova_sensitive_detector',
-            action: 'flag'
+            action: 'flag',
           },
           {
             type: 'harmful',
             detector: 'openai_moderation',
-            action: 'block'
-          }
+            action: 'block',
+          },
         ],
         contextRestrictions: {
           maxHistoryLength: 10,
           allowedDataTypes: ['text', 'json', 'markdown'],
-          forbiddenPatterns: ['<script', 'javascript:', 'data:']
-        }
+          forbiddenPatterns: ['<script', 'javascript:', 'data:'],
+        },
       },
       compliance: {
         gdprCompliant: true,
         ccpaCompliant: true,
         hipaaCompliant: false,
-        customRequirements: ['nova_data_protection', 'itsm_compliance']
-      }
+        customRequirements: ['nova_data_protection', 'itsm_compliance'],
+      },
     };
 
     this.securityPolicies.set('nova-default', defaultPolicy);
@@ -233,27 +233,30 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           {
             type: 'regex',
             pattern: '\\b\\d{3}-\\d{2}-\\d{4}\\b', // SSN pattern
-            action: 'block'
-          }
+            action: 'block',
+          },
         ],
         outputFilters: [
           ...defaultPolicy.rules.outputFilters,
           {
             type: 'pii',
             detector: 'hipaa_phi_detector',
-            action: 'block'
-          }
+            action: 'block',
+          },
         ],
         contextRestrictions: {
           ...defaultPolicy.rules.contextRestrictions,
-          maxHistoryLength: 5 // Stricter for HIPAA
-        }
+          maxHistoryLength: 5, // Stricter for HIPAA
+        },
       },
       compliance: {
         ...defaultPolicy.compliance,
         hipaaCompliant: true,
-        customRequirements: [...defaultPolicy.compliance.customRequirements, 'hipaa_phi_protection']
-      }
+        customRequirements: [
+          ...defaultPolicy.compliance.customRequirements,
+          'hipaa_phi_protection',
+        ],
+      },
     };
 
     this.securityPolicies.set('nova-hipaa', hipaaPolicy);
@@ -285,7 +288,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   private async initializeContainerIsolation(): Promise<void> {
     // Create isolated container for GPT-OSS model
     const containerId = crypto.randomBytes(8).toString('hex');
-    
+
     const container: IsolationContainer = {
       id: containerId,
       status: 'initializing',
@@ -293,23 +296,23 @@ export class SecureGPTOSSIntegration extends EventEmitter {
         cpuLimit: '4',
         memoryLimit: this.config.memoryLimit,
         networkIsolation: true,
-        filesystemAccess: 'readonly'
+        filesystemAccess: 'readonly',
       },
       security: {
         seccompProfile: 'runtime/default',
         selinuxContext: 'system_u:system_r:container_t:s0',
         capabilities: ['CAP_NET_BIND_SERVICE'],
-        userNamespace: true
+        userNamespace: true,
       },
       createdAt: new Date(),
-      lastUsed: new Date()
+      lastUsed: new Date(),
     };
 
     this.isolationContainers.set(containerId, container);
 
     // In production, actually create Docker container here
     // docker run --security-opt seccomp=runtime/default --memory=8g --cpus=4 ...
-    
+
     container.status = 'ready';
     this.isolationContainers.set(containerId, container);
   }
@@ -340,9 +343,12 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     }, 30000);
 
     // Container cleanup every 5 minutes
-    setInterval(async () => {
-      await this.cleanupContainers();
-    }, 5 * 60 * 1000);
+    setInterval(
+      async () => {
+        await this.cleanupContainers();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   /**
@@ -350,10 +356,10 @@ export class SecureGPTOSSIntegration extends EventEmitter {
    */
   async processRequest(request: GPTOSSRequest): Promise<GPTOSSResponse> {
     const startTime = Date.now();
-    
+
     // Security validation
     await this.validateRequest(request);
-    
+
     // Apply rate limiting
     if (this.activeRequests >= this.config.maxConcurrentRequests) {
       this.requestQueue.push(request);
@@ -365,22 +371,22 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     try {
       // Sanitize input
       const sanitizedPrompt = await this.sanitizeInput(request);
-      
+
       // Get available container
       const container = await this.getAvailableContainer();
-      
+
       // Process in isolated environment
       const rawResponse = await this.executeInIsolation(container, {
         ...request,
-        prompt: sanitizedPrompt
+        prompt: sanitizedPrompt,
       });
-      
+
       // Filter output
       const filteredResponse = await this.filterOutput(rawResponse, request);
-      
+
       // Security assessment
       const securityAssessment = await this.assessSecurity(request, filteredResponse);
-      
+
       const response: GPTOSSResponse = {
         id: request.id,
         response: filteredResponse.content,
@@ -390,13 +396,13 @@ export class SecureGPTOSSIntegration extends EventEmitter {
         modelInfo: {
           version: 'gpt-oss-20b',
           checkpoint: 'nova-secure-v1',
-          temperature: request.constraints?.temperature || this.config.temperature
+          temperature: request.constraints?.temperature || this.config.temperature,
         },
         metadata: {
           containerId: container.id,
           securityPolicy: 'nova-default',
-          encryptionUsed: this.config.encryptionEnabled
-        }
+          encryptionUsed: this.config.encryptionEnabled,
+        },
       };
 
       // Record audit event
@@ -407,9 +413,9 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           requestId: request.id,
           tokens: response.tokens.total,
           securityLevel: request.securityContext.classification,
-          processingTime: response.processingTime
+          processingTime: response.processingTime,
         },
-        riskLevel: securityAssessment.riskLevel
+        riskLevel: securityAssessment.riskLevel,
       });
 
       // Record performance metric
@@ -418,13 +424,12 @@ export class SecureGPTOSSIntegration extends EventEmitter {
         value: response.processingTime,
         metadata: {
           tokens: response.tokens.total,
-          containerId: container.id
-        }
+          containerId: container.id,
+        },
       });
 
       this.emit('requestProcessed', response);
       return response;
-
     } catch (error) {
       await aiMonitoringSystem.recordAuditEvent({
         type: 'gpt_oss_request_failed',
@@ -432,9 +437,9 @@ export class SecureGPTOSSIntegration extends EventEmitter {
         details: {
           requestId: request.id,
           error: error.message,
-          securityLevel: request.securityContext.classification
+          securityLevel: request.securityContext.classification,
         },
-        riskLevel: 'high'
+        riskLevel: 'high',
       });
 
       throw error;
@@ -467,7 +472,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     const maliciousPatterns = [
       /\b(ignore|forget|disregard)\s+(previous|above|system)\s+(instructions?|prompts?)\b/i,
       /\b(you\s+are\s+now|act\s+as|pretend\s+to\s+be)\b/i,
-      /\b(jailbreak|bypass|override)\b/i
+      /\b(jailbreak|bypass|override)\b/i,
     ];
 
     for (const pattern of maliciousPatterns) {
@@ -476,7 +481,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           type: 'malicious_prompt_detected',
           userId: request.userId || 'system',
           details: { requestId: request.id, pattern: pattern.source },
-          riskLevel: 'high'
+          riskLevel: 'high',
         });
         throw new Error('Request rejected: potentially malicious prompt detected');
       }
@@ -506,7 +511,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
               type: 'input_flagged',
               userId: request.userId || 'system',
               details: { requestId: request.id, filter: filter.type },
-              riskLevel: 'medium'
+              riskLevel: 'medium',
             });
           }
           break;
@@ -543,7 +548,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
    */
   private async executeInIsolation(
     container: IsolationContainer,
-    request: GPTOSSRequest
+    request: GPTOSSRequest,
   ): Promise<any> {
     try {
       // Encrypt request if enabled
@@ -558,15 +563,14 @@ export class SecureGPTOSSIntegration extends EventEmitter {
         tokens: {
           prompt: Math.ceil(request.prompt.length / 4),
           completion: 100,
-          total: Math.ceil(request.prompt.length / 4) + 100
-        }
+          total: Math.ceil(request.prompt.length / 4) + 100,
+        },
       };
 
       // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
 
       return mockResponse;
-
     } catch (error) {
       throw new Error(`Container execution failed: ${error.message}`);
     } finally {
@@ -584,11 +588,11 @@ export class SecureGPTOSSIntegration extends EventEmitter {
 
     const cipher = crypto.createCipher('aes-256-gcm', this.encryptionKey);
     const encrypted = cipher.update(JSON.stringify(request), 'utf8', 'hex') + cipher.final('hex');
-    
+
     return {
       encrypted: true,
       data: encrypted,
-      iv: cipher.getAuthTag()
+      iv: cipher.getAuthTag(),
     };
   }
 
@@ -618,7 +622,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
 
     return {
       ...response,
-      content: filteredContent
+      content: filteredContent,
     };
   }
 
@@ -627,14 +631,17 @@ export class SecureGPTOSSIntegration extends EventEmitter {
    */
   private async redactPII(content: string): Promise<string> {
     // Email addresses
-    content = content.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL_REDACTED]');
-    
+    content = content.replace(
+      /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+      '[EMAIL_REDACTED]',
+    );
+
     // Phone numbers
     content = content.replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[PHONE_REDACTED]');
-    
+
     // Credit card numbers (simple pattern)
     content = content.replace(/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g, '[CARD_REDACTED]');
-    
+
     return content;
   }
 
@@ -644,7 +651,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   private async flagSensitive(content: string, request: GPTOSSRequest): Promise<string> {
     const sensitivePatterns = [
       /\b(confidential|secret|proprietary)\b/i,
-      /\b(password|api[_\s]*key|token)\b/i
+      /\b(password|api[_\s]*key|token)\b/i,
     ];
 
     for (const pattern of sensitivePatterns) {
@@ -653,7 +660,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           type: 'sensitive_content_detected',
           userId: request.userId || 'system',
           details: { requestId: request.id, pattern: pattern.source },
-          riskLevel: 'medium'
+          riskLevel: 'medium',
         });
       }
     }
@@ -666,12 +673,9 @@ export class SecureGPTOSSIntegration extends EventEmitter {
    */
   private async detectHarmful(content: string): Promise<boolean> {
     // Simplified harmful content detection
-    const harmfulPatterns = [
-      /\b(violence|threat|harm)\b/i,
-      /\b(illegal|criminal)\b/i
-    ];
+    const harmfulPatterns = [/\b(violence|threat|harm)\b/i, /\b(illegal|criminal)\b/i];
 
-    return harmfulPatterns.some(pattern => pattern.test(content));
+    return harmfulPatterns.some((pattern) => pattern.test(content));
   }
 
   /**
@@ -679,7 +683,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
    */
   private async assessSecurity(
     request: GPTOSSRequest,
-    response: any
+    response: any,
   ): Promise<GPTOSSResponse['securityAssessment']> {
     const issues: string[] = [];
     let riskLevel: 'low' | 'medium' | 'high' = 'low';
@@ -688,8 +692,8 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     const inputSanitized = request.prompt !== request.prompt; // Simplified check
 
     // Check output filtering
-    const outputFiltered = response.content.includes('[REDACTED]') || 
-                          response.content.includes('[EMAIL_REDACTED]');
+    const outputFiltered =
+      response.content.includes('[REDACTED]') || response.content.includes('[EMAIL_REDACTED]');
 
     // Assess overall risk
     if (request.securityContext.classification === 'restricted') {
@@ -704,7 +708,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
       inputSanitized,
       outputFiltered,
       riskLevel,
-      detectedIssues: issues
+      detectedIssues: issues,
     };
   }
 
@@ -714,7 +718,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   private async waitForQueueProcessing(requestId: string): Promise<void> {
     return new Promise((resolve) => {
       const checkQueue = () => {
-        const index = this.requestQueue.findIndex(r => r.id === requestId);
+        const index = this.requestQueue.findIndex((r) => r.id === requestId);
         if (index === -1) {
           resolve();
         } else {
@@ -731,7 +735,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   private processQueue(): void {
     if (this.requestQueue.length > 0 && this.activeRequests < this.config.maxConcurrentRequests) {
       const nextRequest = this.requestQueue.shift()!;
-      this.processRequest(nextRequest).catch(error => {
+      this.processRequest(nextRequest).catch((error) => {
         console.error('Queue processing error:', error);
       });
     }
@@ -761,18 +765,17 @@ export class SecureGPTOSSIntegration extends EventEmitter {
         value: 1,
         metadata: {
           modelStatus: this.modelStatus,
-          activeContainers: this.isolationContainers.size
-        }
+          activeContainers: this.isolationContainers.size,
+        },
       });
-
     } catch (error) {
       console.error('GPT-OSS health check failed:', error);
-      
+
       await aiMonitoringSystem.recordAuditEvent({
         type: 'gpt_oss_health_check_failed',
         userId: 'system',
         details: { error: error.message },
-        riskLevel: 'high'
+        riskLevel: 'high',
       });
     }
   }
@@ -782,14 +785,14 @@ export class SecureGPTOSSIntegration extends EventEmitter {
    */
   private async loadModel(): Promise<void> {
     this.modelStatus = 'loading';
-    
+
     try {
       // In production, actually load the model
       console.log('Loading GPT-OSS-20B model...');
-      
+
       // Simulate model loading
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
       this.modelStatus = 'ready';
       console.log('GPT-OSS-20B model loaded successfully');
 
@@ -797,9 +800,8 @@ export class SecureGPTOSSIntegration extends EventEmitter {
         type: 'gpt_oss_model_loaded',
         userId: 'system',
         details: { modelPath: this.config.modelPath },
-        riskLevel: 'low'
+        riskLevel: 'low',
       });
-
     } catch (error) {
       this.modelStatus = 'error';
       throw error;
@@ -814,14 +816,13 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     if (!container) return;
 
     container.status = 'initializing';
-    
+
     try {
       // In production, restart actual container
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       container.status = 'ready';
       container.lastUsed = new Date();
-
     } catch (error) {
       container.status = 'error';
       console.error(`Failed to restart container ${containerId}:`, error);
@@ -836,12 +837,13 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     const cleanupThreshold = 10 * 60 * 1000; // 10 minutes
 
     for (const [id, container] of this.isolationContainers) {
-      if (container.status === 'ready' && 
-          now.getTime() - container.lastUsed.getTime() > cleanupThreshold) {
-        
+      if (
+        container.status === 'ready' &&
+        now.getTime() - container.lastUsed.getTime() > cleanupThreshold
+      ) {
         container.status = 'terminated';
         this.isolationContainers.delete(id);
-        
+
         console.log(`Cleaned up unused container: ${id}`);
       }
     }
@@ -857,15 +859,17 @@ export class SecureGPTOSSIntegration extends EventEmitter {
       queueLength: this.requestQueue.length,
       containers: {
         total: this.isolationContainers.size,
-        ready: Array.from(this.isolationContainers.values()).filter(c => c.status === 'ready').length,
-        busy: Array.from(this.isolationContainers.values()).filter(c => c.status === 'busy').length
+        ready: Array.from(this.isolationContainers.values()).filter((c) => c.status === 'ready')
+          .length,
+        busy: Array.from(this.isolationContainers.values()).filter((c) => c.status === 'busy')
+          .length,
       },
       config: {
         securityLevel: this.config.securityLevel,
         isolationMode: this.config.isolationMode,
-        encryptionEnabled: this.config.encryptionEnabled
+        encryptionEnabled: this.config.encryptionEnabled,
       },
-      lastHealthCheck: this.lastHealthCheck
+      lastHealthCheck: this.lastHealthCheck,
     };
   }
 
@@ -874,10 +878,10 @@ export class SecureGPTOSSIntegration extends EventEmitter {
    */
   async shutdown(): Promise<void> {
     console.log('Shutting down GPT-OSS integration...');
-    
+
     // Wait for active requests to complete
     while (this.activeRequests > 0) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     // Cleanup containers
@@ -902,9 +906,9 @@ aiFabric.registerProvider({
   config: {
     secure: true,
     isolated: true,
-    compliant: true
+    compliant: true,
   },
   isActive: true,
   healthStatus: 'healthy',
-  lastHealthCheck: new Date()
+  lastHealthCheck: new Date(),
 });

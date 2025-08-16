@@ -6,7 +6,7 @@ import {
   CalendarIcon,
   ArrowPathIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { Schedule, ScheduleCardProps } from '../../types/alerts';
 import OnCallIndicator from './OnCallIndicator';
@@ -17,20 +17,20 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onOverrideCreate,
   onRotateNow,
   showCurrentOnly = false,
-  compact = false
+  compact = false,
 }) => {
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     });
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -55,27 +55,17 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
-      className={`
-        relative overflow-hidden
-        ${compact ? 'p-4' : 'p-6'}
-        bg-white/80 backdrop-blur-xl
-        border border-gray-200/50
-        rounded-2xl shadow-sm hover:shadow-md
-        transition-all duration-300 ease-out
-        group cursor-pointer
-      `}
+      className={`relative overflow-hidden ${compact ? 'p-4' : 'p-6'} group cursor-pointer rounded-2xl border border-gray-200/50 bg-white/80 shadow-sm backdrop-blur-xl transition-all duration-300 ease-out hover:shadow-md`}
       onClick={() => onScheduleSelect?.(schedule)}
     >
       {/* Status Indicator */}
-      <div className="flex items-start justify-between mb-4">
+      <div className="mb-4 flex items-start justify-between">
         <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-full ${getStatusColor()}`}>
-            <StatusIcon className="w-5 h-5" />
+          <div className={`rounded-full p-2 ${getStatusColor()}`}>
+            <StatusIcon className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 text-base leading-tight">
-              {schedule.name}
-            </h3>
+            <h3 className="text-base leading-tight font-semibold text-gray-900">{schedule.name}</h3>
             <p className="text-sm text-gray-600">
               {schedule.timeZone} • {schedule.enabled ? 'Active' : 'Disabled'}
             </p>
@@ -91,10 +81,10 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 e.stopPropagation();
                 onRotateNow?.(schedule.id);
               }}
-              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+              className="rounded-lg p-2 text-gray-400 transition-colors duration-200 hover:bg-blue-50 hover:text-blue-600"
               title="Rotate now"
             >
-              <ArrowPathIcon className="w-4 h-4" />
+              <ArrowPathIcon className="h-4 w-4" />
             </motion.button>
           </div>
         )}
@@ -103,16 +93,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       {/* Description */}
       {!compact && schedule.description && (
         <div className="mb-4">
-          <p className="text-gray-700 text-sm leading-relaxed">
-            {schedule.description}
-          </p>
+          <p className="text-sm leading-relaxed text-gray-700">{schedule.description}</p>
         </div>
       )}
 
       {/* Current On-Call */}
       {schedule.currentOnCall.length > 0 && (
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">Currently On-Call</span>
             {!compact && (
               <span className="text-xs text-gray-500">
@@ -120,7 +108,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
               </span>
             )}
           </div>
-          
+
           <OnCallIndicator
             users={schedule.currentOnCall}
             schedule={schedule}
@@ -133,13 +121,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       {/* Next On-Call */}
       {!showCurrentOnly && !compact && schedule.nextOnCall.length > 0 && (
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">Next On-Call</span>
             <span className="text-xs text-gray-500">
-              {formatDate(schedule.nextOnCall[0]?.shiftStart)} at {formatTime(schedule.nextOnCall[0]?.shiftStart)}
+              {formatDate(schedule.nextOnCall[0]?.shiftStart)} at{' '}
+              {formatTime(schedule.nextOnCall[0]?.shiftStart)}
             </span>
           </div>
-          
+
           <OnCallIndicator
             users={schedule.nextOnCall}
             schedule={schedule}
@@ -151,22 +140,18 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
 
       {/* No one on call warning */}
       {schedule.enabled && schedule.currentOnCall.length === 0 && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
           <div className="flex items-center space-x-2">
-            <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
-            <span className="text-sm font-medium text-red-900">
-              No one currently on-call
-            </span>
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
+            <span className="text-sm font-medium text-red-900">No one currently on-call</span>
           </div>
-          <p className="text-xs text-red-700 mt-1">
-            Alerts may not be delivered properly
-          </p>
+          <p className="mt-1 text-xs text-red-700">Alerts may not be delivered properly</p>
         </div>
       )}
 
       {/* Quick Actions */}
       {!compact && schedule.userCanEdit && (
-        <div className="flex items-center space-x-2 pt-4 border-t border-gray-100">
+        <div className="flex items-center space-x-2 border-t border-gray-100 pt-4">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -178,12 +163,12 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 userId: '', // Would be selected from a modal
                 start: new Date().toISOString(),
                 end: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-                reason: ''
+                reason: '',
               });
             }}
-            className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center space-x-1"
+            className="flex items-center space-x-1 rounded-lg bg-blue-500 px-3 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-600"
           >
-            <CalendarIcon className="w-4 h-4" />
+            <CalendarIcon className="h-4 w-4" />
             <span>Override</span>
           </motion.button>
 
@@ -194,16 +179,16 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
               e.stopPropagation();
               onRotateNow?.(schedule.id);
             }}
-            className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center space-x-1"
+            className="flex items-center space-x-1 rounded-lg bg-orange-500 px-3 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-orange-600"
           >
-            <ArrowPathIcon className="w-4 h-4" />
+            <ArrowPathIcon className="h-4 w-4" />
             <span>Rotate</span>
           </motion.button>
         </div>
       )}
 
       {/* Hover Effect Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 rounded-2xl transition-all duration-300 pointer-events-none" />
+      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 transition-all duration-300 group-hover:from-blue-500/5 group-hover:to-purple-500/5" />
     </motion.div>
   );
 };

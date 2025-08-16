@@ -7,21 +7,16 @@ export const WebSocketStatus: React.FC = () => {
 
   if (connectionError) {
     return (
-      <Chip 
-        color="danger" 
-        variant="flat" 
-        size="sm"
-        title={`WebSocket Error: ${connectionError}`}
-      >
+      <Chip color="danger" variant="flat" size="sm" title={`WebSocket Error: ${connectionError}`}>
         ⚠️ Connection Error
       </Chip>
     );
   }
 
   return (
-    <Chip 
-      color={isConnected ? 'success' : 'warning'} 
-      variant="flat" 
+    <Chip
+      color={isConnected ? 'success' : 'warning'}
+      variant="flat"
       size="sm"
       title={isConnected ? 'WebSocket Connected' : 'WebSocket Disconnected'}
     >

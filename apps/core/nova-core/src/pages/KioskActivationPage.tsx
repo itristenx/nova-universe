@@ -17,7 +17,11 @@ export const KioskActivationPage: React.FC = () => {
   const [linkKioskId, setLinkKioskId] = useState('');
   const [assetTag, setAssetTag] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
-  const [latestActivation, setLatestActivation] = useState<{ code: string; qr?: string; expiresAt: string } | null>(null);
+  const [latestActivation, setLatestActivation] = useState<{
+    code: string;
+    qr?: string;
+    expiresAt: string;
+  } | null>(null);
   const [waiting, setWaiting] = useState(false);
   const [paired, setPaired] = useState(false);
   const { addToast } = useToastStore();
@@ -26,7 +30,7 @@ export const KioskActivationPage: React.FC = () => {
   useEffect(() => {
     loadActivations();
     loadSystems();
-    
+
     // Auto-refresh activations every 30 seconds to sync with other pages
     const interval = setInterval(loadActivations, 30000);
     return () => clearInterval(interval);
@@ -96,15 +100,27 @@ export const KioskActivationPage: React.FC = () => {
       setGeneratingQR(true);
       setWaiting(false);
       setPaired(false);
-      const input = { kioskId: kioskId || `kiosk-${Math.random().toString(36).slice(2,7)}` } as any;
+      const input = {
+        kioskId: kioskId || `kiosk-${Math.random().toString(36).slice(2, 7)}`,
+      } as any;
       const activation = await fetch('/api/v2/beacon/activation-codes', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input)
-      }).then(r=>r.json());
-      setLatestActivation({ code: activation.code, qr: activation.qr, expiresAt: activation.expiresAt });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }).then((r) => r.json());
+      setLatestActivation({
+        code: activation.code,
+        qr: activation.qr,
+        expiresAt: activation.expiresAt,
+      });
       setWaiting(true);
       addToast({ type: 'success', title: 'Success', description: 'Activation code generated' });
     } catch (error) {
-      addToast({ type: 'error', title: 'Error', description: 'Failed to generate activation code' });
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to generate activation code',
+      });
     } finally {
       setGeneratingQR(false);
     }
@@ -182,7 +198,7 @@ export const KioskActivationPage: React.FC = () => {
 
   const removeSystem = async (systemToRemove: string) => {
     try {
-      const updatedSystems = (systems || []).filter(s => s !== systemToRemove);
+      const updatedSystems = (systems || []).filter((s) => s !== systemToRemove);
       await api.updateKioskSystems(updatedSystems);
       setSystems(updatedSystems);
       addToast({
@@ -206,19 +222,33 @@ export const KioskActivationPage: React.FC = () => {
 
   const linkAsset = async () => {
     if (!linkKioskId || (!assetTag && !serialNumber)) {
-      addToast({ type: 'error', title: 'Error', description: 'Enter kiosk ID and asset tag or serial' });
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Enter kiosk ID and asset tag or serial',
+      });
       return;
     }
     try {
       const res = await fetch('/api/v2/beacon/link-asset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kioskId: linkKioskId, assetTag: assetTag || undefined, serialNumber: serialNumber || undefined })
+        body: JSON.stringify({
+          kioskId: linkKioskId,
+          assetTag: assetTag || undefined,
+          serialNumber: serialNumber || undefined,
+        }),
       });
       if (!res.ok) throw new Error('Link failed');
       const data = await res.json();
-      addToast({ type: 'success', title: 'Linked', description: `Linked to asset ${data?.result?.asset?.tag || ''}` });
-      setLinkKioskId(''); setAssetTag(''); setSerialNumber('');
+      addToast({
+        type: 'success',
+        title: 'Linked',
+        description: `Linked to asset ${data?.result?.asset?.tag || ''}`,
+      });
+      setLinkKioskId('');
+      setAssetTag('');
+      setSerialNumber('');
     } catch (e) {
       addToast({ type: 'error', title: 'Error', description: 'Failed to link asset' });
     }
@@ -233,15 +263,17 @@ export const KioskActivationPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Manual Activation */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Manual Activation
-          </h2>
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">Manual Activation</h2>
           <div className="mb-3">
-            <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${waiting && !paired ? 'bg-blue-100 text-blue-800 animate-pulse' : paired ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-              <span className={`w-2 h-2 rounded-full ${waiting && !paired ? 'bg-blue-500' : paired ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+            <span
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${waiting && !paired ? 'animate-pulse bg-blue-100 text-blue-800' : paired ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${waiting && !paired ? 'bg-blue-500' : paired ? 'bg-green-500' : 'bg-gray-400'}`}
+              ></span>
               {waiting && !paired ? 'Waiting for kiosk...' : paired ? 'Kiosk Paired' : 'Idle'}
             </span>
           </div>
@@ -265,10 +297,8 @@ export const KioskActivationPage: React.FC = () => {
 
         {/* QR Code Generation */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Generate Activation QR Code
-          </h2>
-          <p className="text-gray-600 mb-4">
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">Generate Activation QR Code</h2>
+          <p className="mb-4 text-gray-600">
             Generate a QR code that kiosks can scan to activate themselves.
           </p>
           <Button
@@ -280,20 +310,20 @@ export const KioskActivationPage: React.FC = () => {
             {generatingQR ? 'Generating...' : 'Generate QR Code'}
           </Button>
           {latestActivation && (
-            <div className="mt-4 border rounded p-4 text-center">
+            <div className="mt-4 rounded border p-4 text-center">
               <div className="text-sm text-gray-600">Activation Code</div>
               <div className="text-2xl font-semibold tracking-wider">{latestActivation.code}</div>
               {latestActivation.qr && (
                 <img src={latestActivation.qr} alt="QR" className="mx-auto mt-3 h-36" />
               )}
-              <div className="text-xs text-gray-500 mt-2">Expires {new Date(latestActivation.expiresAt).toLocaleString()}</div>
+              <div className="mt-2 text-xs text-gray-500">
+                Expires {new Date(latestActivation.expiresAt).toLocaleString()}
+              </div>
               <div className="mt-3">
                 {waiting && !paired && (
-                  <div className="text-blue-600 animate-pulse">Waiting for kiosk to pair...</div>
+                  <div className="animate-pulse text-blue-600">Waiting for kiosk to pair...</div>
                 )}
-                {paired && (
-                  <div className="text-green-600">Kiosk paired!</div>
-                )}
+                {paired && <div className="text-green-600">Kiosk paired!</div>}
               </div>
             </div>
           )}
@@ -302,24 +332,39 @@ export const KioskActivationPage: React.FC = () => {
 
       {/* Link kiosk to inventory asset */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Link Kiosk to Inventory Asset</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <Input label="Kiosk ID" value={linkKioskId} onChange={e => setLinkKioskId(e.target.value)} placeholder="kiosk-001" />
-          <Input label="Asset Tag" value={assetTag} onChange={e => setAssetTag(e.target.value)} placeholder="ASSET-123" />
-          <Input label="Serial Number" value={serialNumber} onChange={e => setSerialNumber(e.target.value)} placeholder="SN123456" />
-          <Button variant="primary" onClick={linkAsset} className="w-full">Link Asset</Button>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Link Kiosk to Inventory Asset</h2>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+          <Input
+            label="Kiosk ID"
+            value={linkKioskId}
+            onChange={(e) => setLinkKioskId(e.target.value)}
+            placeholder="kiosk-001"
+          />
+          <Input
+            label="Asset Tag"
+            value={assetTag}
+            onChange={(e) => setAssetTag(e.target.value)}
+            placeholder="ASSET-123"
+          />
+          <Input
+            label="Serial Number"
+            value={serialNumber}
+            onChange={(e) => setSerialNumber(e.target.value)}
+            placeholder="SN123456"
+          />
+          <Button variant="primary" onClick={linkAsset} className="w-full">
+            Link Asset
+          </Button>
         </div>
       </Card>
 
       {/* Systems Management */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Kiosk Systems Configuration
-        </h2>
-        <p className="text-gray-600 mb-4">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Kiosk Systems Configuration</h2>
+        <p className="mb-4 text-gray-600">
           Manage the list of systems that appear in the kiosk interface for ticket creation.
         </p>
-        
+
         {/* Add New System */}
         <div className="mb-6">
           <div className="flex space-x-2">
@@ -336,7 +381,7 @@ export const KioskActivationPage: React.FC = () => {
               disabled={!newSystem.trim() || systemsLoading}
               className="flex items-center space-x-2"
             >
-              <PlusIcon className="w-4 h-4" />
+              <PlusIcon className="h-4 w-4" />
               <span>Add</span>
             </Button>
           </div>
@@ -344,28 +389,26 @@ export const KioskActivationPage: React.FC = () => {
 
         {/* Systems List */}
         {systemsLoading ? (
-          <div className="text-center py-8">Loading systems...</div>
+          <div className="py-8 text-center">Loading systems...</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {(systems || []).map((system) => (
               <div
                 key={system}
-                className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg border"
+                className="flex items-center justify-between rounded-lg border bg-gray-50 px-3 py-2"
               >
-                <span className="text-sm font-medium text-gray-900">
-                  {system}
-                </span>
+                <span className="text-sm font-medium text-gray-900">{system}</span>
                 <button
                   onClick={() => removeSystem(system)}
-                  className="text-red-500 hover:text-red-700 transition-colors"
+                  className="text-red-500 transition-colors hover:text-red-700"
                   title="Remove system"
                 >
-                  <XMarkIcon className="w-4 h-4" />
+                  <XMarkIcon className="h-4 w-4" />
                 </button>
               </div>
             ))}
             {(systems || []).length === 0 && (
-              <div className="col-span-full text-center py-8 text-gray-500">
+              <div className="col-span-full py-8 text-center text-gray-500">
                 No systems configured yet.
               </div>
             )}
@@ -375,10 +418,8 @@ export const KioskActivationPage: React.FC = () => {
 
       {/* Activation Codes List */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Activation Codes
-          </h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">Activation Codes</h2>
           <Button
             variant="bordered"
             size="sm"
@@ -387,34 +428,30 @@ export const KioskActivationPage: React.FC = () => {
             className="text-blue-600 hover:text-blue-900"
             title="Refresh activation codes"
           >
-            <ArrowPathIcon className="w-4 h-4 mr-1" />
+            <ArrowPathIcon className="mr-1 h-4 w-4" />
             Refresh
           </Button>
         </div>
-        
+
         {loading ? (
-          <div className="text-center py-8">Loading activations...</div>
+          <div className="py-8 text-center">Loading activations...</div>
         ) : activations.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No activation codes generated yet.
-          </div>
+          <div className="py-8 text-center text-gray-500">No activation codes generated yet.</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {activations.map((activation) => (
               <div
                 key={activation.id}
-                className={`border rounded-lg p-4 ${
-                  activation.used 
-                    ? 'border-gray-300 bg-gray-50' 
+                className={`rounded-lg border p-4 ${
+                  activation.used
+                    ? 'border-gray-300 bg-gray-50'
                     : isExpired(activation.expiresAt)
-                    ? 'border-red-300 bg-red-50'
-                    : 'border-green-300 bg-green-50'
+                      ? 'border-red-300 bg-red-50'
+                      : 'border-green-300 bg-green-50'
                 }`}
               >
                 <div className="mb-3">
-                  <div className="text-sm font-medium text-gray-900">
-                    Code: {activation.code}
-                  </div>
+                  <div className="text-sm font-medium text-gray-900">Code: {activation.code}</div>
                   <div className="text-xs text-gray-500">
                     Created: {new Date(activation.createdAt).toLocaleString()}
                   </div>
@@ -422,28 +459,30 @@ export const KioskActivationPage: React.FC = () => {
                     Expires: {new Date(activation.expiresAt).toLocaleString()}
                   </div>
                 </div>
-                
+
                 {activation.qrCode && (
                   <div className="mb-3 text-center">
                     <img
                       src={activation.qrCode}
                       alt="QR Code"
-                      className="mx-auto max-w-full h-32"
+                      className="mx-auto h-32 max-w-full"
                     />
                   </div>
                 )}
-                
+
                 <div className="text-center">
                   {activation.used ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      Used {activation.usedAt && `on ${new Date(activation.usedAt).toLocaleDateString()}`}
+                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                      Used{' '}
+                      {activation.usedAt &&
+                        `on ${new Date(activation.usedAt).toLocaleDateString()}`}
                     </span>
                   ) : isExpired(activation.expiresAt) ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
                       Expired
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                       Active
                     </span>
                   )}

@@ -19,7 +19,7 @@ class NovaSynthProductionConfig {
         synthUrl: process.env.NOVA_SYNTH_API_URL || 'https://api.novasynth.ai',
         fallbackUrl: process.env.NOVA_SYNTH_FALLBACK_URL || 'https://fallback.novasynth.ai',
         healthCheckUrl: '/health',
-        metricsUrl: '/metrics'
+        metricsUrl: '/metrics',
       },
 
       // Authentication Configuration
@@ -28,7 +28,7 @@ class NovaSynthProductionConfig {
         tokenUrl: process.env.NOVA_SYNTH_TOKEN_URL,
         refreshUrl: process.env.NOVA_SYNTH_REFRESH_URL,
         scope: 'data-intelligence read write',
-        tokenRefreshThreshold: 300 // seconds before expiry
+        tokenRefreshThreshold: 300, // seconds before expiry
       },
 
       // Organization Configuration
@@ -36,7 +36,7 @@ class NovaSynthProductionConfig {
         id: process.env.NOVA_ORGANIZATION_ID,
         name: process.env.NOVA_ORGANIZATION_NAME,
         tier: process.env.NOVA_ORGANIZATION_TIER || 'enterprise',
-        dataRetentionDays: parseInt(process.env.NOVA_DATA_RETENTION_DAYS) || 365
+        dataRetentionDays: parseInt(process.env.NOVA_DATA_RETENTION_DAYS) || 365,
       },
 
       // Quality and Performance Configuration
@@ -44,7 +44,7 @@ class NovaSynthProductionConfig {
         minConfidenceThreshold: 0.75,
         qualityMonitoringEnabled: true,
         realTimeQualityChecks: true,
-        qualityMetricsRetention: 90 // days
+        qualityMetricsRetention: 90, // days
       },
 
       // Training Configuration
@@ -53,7 +53,7 @@ class NovaSynthProductionConfig {
         retrainingFrequency: 'weekly', // daily, weekly, monthly
         minimumFeedbackThreshold: 50,
         trainingDataRetention: 180, // days
-        incrementalTrainingEnabled: true
+        incrementalTrainingEnabled: true,
       },
 
       // Monitoring Configuration
@@ -64,15 +64,15 @@ class NovaSynthProductionConfig {
         performanceThresholds: {
           responseTime: 2000, // milliseconds
           errorRate: 0.05, // 5%
-          availability: 0.999 // 99.9%
-        }
+          availability: 0.999, // 99.9%
+        },
       },
 
       // Rate Limiting
       rateLimiting: {
         requestsPerMinute: 1000,
         burstLimit: 100,
-        backoffStrategy: 'exponential'
+        backoffStrategy: 'exponential',
       },
 
       // Fallback Configuration
@@ -81,7 +81,7 @@ class NovaSynthProductionConfig {
         maxRetries: 3,
         retryDelay: 1000, // milliseconds
         circuitBreakerThreshold: 10,
-        circuitBreakerTimeout: 30000 // 30 seconds
+        circuitBreakerTimeout: 30000, // 30 seconds
       },
 
       // Security Configuration
@@ -90,8 +90,8 @@ class NovaSynthProductionConfig {
         dataRedactionEnabled: true,
         auditLoggingEnabled: true,
         sensitiveFields: ['ssn', 'credit_card', 'password'],
-        ipWhitelisting: process.env.NOVA_IP_WHITELIST?.split(',') || []
-      }
+        ipWhitelisting: process.env.NOVA_IP_WHITELIST?.split(',') || [],
+      },
     };
   }
 
@@ -100,14 +100,14 @@ class NovaSynthProductionConfig {
    */
   buildEnvironmentConfig() {
     const env = process.env.NODE_ENV || 'development';
-    
+
     const environments = {
       development: {
         debug: true,
         logLevel: 'debug',
         mockMode: true,
         rateLimiting: { requestsPerMinute: 100 },
-        monitoring: { healthCheckInterval: 60000 }
+        monitoring: { healthCheckInterval: 60000 },
       },
 
       staging: {
@@ -115,7 +115,7 @@ class NovaSynthProductionConfig {
         logLevel: 'info',
         mockMode: false,
         rateLimiting: { requestsPerMinute: 500 },
-        monitoring: { healthCheckInterval: 45000 }
+        monitoring: { healthCheckInterval: 45000 },
       },
 
       production: {
@@ -123,8 +123,8 @@ class NovaSynthProductionConfig {
         logLevel: 'warn',
         mockMode: false,
         rateLimiting: { requestsPerMinute: 1000 },
-        monitoring: { healthCheckInterval: 30000 }
-      }
+        monitoring: { healthCheckInterval: 30000 },
+      },
     };
 
     return environments[env] || environments.development;
@@ -136,7 +136,7 @@ class NovaSynthProductionConfig {
   getConfig(environment = null) {
     const env = environment || process.env.NODE_ENV || 'development';
     const envConfig = this.buildEnvironmentConfig()[env] || this.environmentConfig.development;
-    
+
     return this.mergeDeep(this.defaultConfig, envConfig);
   }
 
@@ -145,13 +145,13 @@ class NovaSynthProductionConfig {
    */
   getAuthConfig(strategy = null) {
     const authStrategy = strategy || process.env.NOVA_SYNTH_AUTH_STRATEGY || 'oauth2';
-    
+
     const authConfigs = {
       bearer: {
         type: 'bearer',
         credentials: {
-          token: process.env.NOVA_SYNTH_BEARER_TOKEN
-        }
+          token: process.env.NOVA_SYNTH_BEARER_TOKEN,
+        },
       },
 
       oauth2: {
@@ -159,13 +159,13 @@ class NovaSynthProductionConfig {
         credentials: {
           clientId: process.env.NOVA_SYNTH_CLIENT_ID,
           clientSecret: process.env.NOVA_SYNTH_CLIENT_SECRET,
-          issuer: process.env.NOVA_SYNTH_ISSUER
+          issuer: process.env.NOVA_SYNTH_ISSUER,
         },
         authentication: {
           tokenUrl: process.env.NOVA_SYNTH_TOKEN_URL,
           refreshUrl: process.env.NOVA_SYNTH_REFRESH_URL,
-          scope: 'data-intelligence read write'
-        }
+          scope: 'data-intelligence read write',
+        },
       },
 
       jwt: {
@@ -173,17 +173,17 @@ class NovaSynthProductionConfig {
         credentials: {
           issuer: process.env.NOVA_SYNTH_JWT_ISSUER,
           subject: process.env.NOVA_SYNTH_JWT_SUBJECT,
-          jwtSecret: process.env.NOVA_SYNTH_JWT_SECRET
-        }
+          jwtSecret: process.env.NOVA_SYNTH_JWT_SECRET,
+        },
       },
 
       api_key: {
         type: 'api_key',
         credentials: {
           apiKey: process.env.NOVA_SYNTH_API_KEY,
-          apiKeyHeader: process.env.NOVA_SYNTH_API_KEY_HEADER || 'X-API-Key'
-        }
-      }
+          apiKeyHeader: process.env.NOVA_SYNTH_API_KEY_HEADER || 'X-API-Key',
+        },
+      },
     };
 
     return authConfigs[authStrategy] || authConfigs.oauth2;
@@ -197,33 +197,33 @@ class NovaSynthProductionConfig {
       namePatterns: [
         /^[A-Z][a-z]+ [A-Z][a-z]+$/, // First Last
         /^[A-Z]\. [A-Z][a-z]+$/, // F. Last
-        /^[A-Z][a-z]+, [A-Z][a-z]+$/ // Last, First
+        /^[A-Z][a-z]+, [A-Z][a-z]+$/, // Last, First
       ],
-      
+
       emailDomains: process.env.NOVA_ORG_EMAIL_DOMAINS?.split(',') || [
         'company.com',
-        'organization.org'
+        'organization.org',
       ],
-      
+
       departmentMappings: {
-        'IT': ['Information Technology', 'Tech', 'Technology'],
-        'HR': ['Human Resources', 'People', 'Personnel'],
-        'Finance': ['Accounting', 'Financial', 'Treasury'],
-        'Sales': ['Business Development', 'Revenue', 'Commercial'],
-        'Marketing': ['Brand', 'Communications', 'Digital']
+        IT: ['Information Technology', 'Tech', 'Technology'],
+        HR: ['Human Resources', 'People', 'Personnel'],
+        Finance: ['Accounting', 'Financial', 'Treasury'],
+        Sales: ['Business Development', 'Revenue', 'Commercial'],
+        Marketing: ['Brand', 'Communications', 'Digital'],
       },
-      
+
       deviceNamingConventions: [
         /^[A-Z]{2,3}-\d{3,4}$/, // IT-001, CORP-1234
         /^[a-z]+-[a-z]+-\d+$/, // laptop-user-001
-        /^\w+\.\w+\.\w+$/ // device.department.number
+        /^\w+\.\w+\.\w+$/, // device.department.number
       ],
-      
+
       customAttributes: {
         employeeIdPattern: /^EMP\d{6}$/,
         locationPattern: /^[A-Z]{2}-[A-Z]{3}-\d{2}$/, // US-NYC-01
-        costCenterPattern: /^\d{4}-\d{3}$/ // 1234-001
-      }
+        costCenterPattern: /^\d{4}-\d{3}$/, // 1234-001
+      },
     };
   }
 
@@ -260,7 +260,7 @@ class NovaSynthProductionConfig {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -269,9 +269,9 @@ class NovaSynthProductionConfig {
    */
   mergeDeep(target, source) {
     const output = Object.assign({}, target);
-    
+
     if (this.isObject(target) && this.isObject(source)) {
-      Object.keys(source).forEach(key => {
+      Object.keys(source).forEach((key) => {
         if (this.isObject(source[key])) {
           if (!(key in target)) {
             Object.assign(output, { [key]: source[key] });
@@ -283,7 +283,7 @@ class NovaSynthProductionConfig {
         }
       });
     }
-    
+
     return output;
   }
 

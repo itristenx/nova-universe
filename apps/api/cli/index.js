@@ -12,11 +12,15 @@ import figlet from 'figlet';
 const program = new Command();
 
 // ASCII Art Banner
-console.log(chalk.cyan(figlet.textSync('Nova CLI', {
-  font: 'Standard',
-  horizontalLayout: 'default',
-  verticalLayout: 'default'
-})));
+console.log(
+  chalk.cyan(
+    figlet.textSync('Nova CLI', {
+      font: 'Standard',
+      horizontalLayout: 'default',
+      verticalLayout: 'default',
+    }),
+  ),
+);
 
 console.log(chalk.gray('Nova Universe Command Line Interface'));
 console.log(chalk.gray('Modern development tools for the Nova platform\n'));
@@ -38,7 +42,7 @@ async function loadCommands() {
     { name: 'dev', file: './commands/dev.js', export: 'devCommand' },
     { name: 'health', file: './commands/health.js', export: 'healthCommand' },
     { name: 'logs', file: './commands/logs.js', export: 'logsCommand' },
-    { name: 'dashboard', file: './commands/dashboard.js', export: 'dashboardCommand' }
+    { name: 'dashboard', file: './commands/dashboard.js', export: 'dashboardCommand' },
   ];
 
   for (const { name, file, export: exportName } of commands) {
@@ -75,11 +79,13 @@ process.on('unhandledRejection', (reason, promise) => {
 // Enhanced help
 program.configureHelp({
   sortSubcommands: true,
-  subcommandTerm: (cmd) => cmd.name() + ' ' + cmd.usage()
+  subcommandTerm: (cmd) => cmd.name() + ' ' + cmd.usage(),
 });
 
 // Custom help text
-program.addHelpText('after', `
+program.addHelpText(
+  'after',
+  `
 ${chalk.cyan('Examples:')}
   ${chalk.gray('$')} nova setup                    ${chalk.dim('# Interactive setup wizard')}
   ${chalk.gray('$')} nova service start            ${chalk.dim('# Start all services')}
@@ -105,7 +111,8 @@ ${chalk.cyan('Documentation:')}
 
 ${chalk.cyan('Support:')}
   ${chalk.blue('https://github.com/nova-universe/nova-universe/issues')}
-`);
+`,
+);
 
 export { program };
 

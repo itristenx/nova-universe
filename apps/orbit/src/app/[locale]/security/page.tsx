@@ -7,7 +7,7 @@ interface SecurityPageProps {
 
 export default async function SecurityPage({ params }: SecurityPageProps) {
   const { locale } = await params;
-  
+
   // Enable static rendering
   setRequestLocale(locale);
 
@@ -15,10 +15,5 @@ export default async function SecurityPage({ params }: SecurityPageProps) {
 }
 
 export function generateStaticParams() {
-  return [
-    { locale: 'en' },
-    { locale: 'es' },
-    { locale: 'fr' },
-    { locale: 'ar' }
-  ];
+  return [{ locale: 'en' }, { locale: 'es' }, { locale: 'fr' }, { locale: 'ar' }];
 }

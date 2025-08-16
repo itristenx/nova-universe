@@ -5,12 +5,10 @@ import KioskApp from '@/components/KioskApp';
 
 export default function KioskPreviewPage(): React.ReactElement {
   return (
-    <div className="max-w-7xl mx-auto py-6 px-4">
+    <div className="mx-auto max-w-7xl px-4 py-6">
       <div className="rounded-lg border p-4">
         <KioskApp />
       </div>
     </div>
   );
 }
-
-

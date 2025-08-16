@@ -13,11 +13,8 @@ export type {
   CosmoConfig,
   CosmoEventType,
   CosmoEvent,
-  CosmoEventHandler
+  CosmoEventHandler,
 } from './types';
 
 // Hook types
-export type {
-  UseCosmoOptions,
-  UseCosmoReturn
-} from './useCosmo';
+export type { UseCosmoOptions, UseCosmoReturn } from './useCosmo';

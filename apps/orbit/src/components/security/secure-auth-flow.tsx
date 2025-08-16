@@ -7,19 +7,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Shield, 
-  Eye, 
-  EyeOff, 
-  Lock, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  Shield,
+  Eye,
+  EyeOff,
+  Lock,
+  CheckCircle2,
+  XCircle,
   AlertTriangle,
   Smartphone,
   Mail,
   Key,
   Timer,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 
 interface AuthStep {
@@ -58,27 +58,27 @@ export function SecureAuthFlow() {
       id: 'credentials',
       title: 'Account Credentials',
       description: 'Enter your email and create a secure password',
-      status: currentStep === 0 ? 'current' : currentStep > 0 ? 'completed' : 'pending'
+      status: currentStep === 0 ? 'current' : currentStep > 0 ? 'completed' : 'pending',
     },
     {
       id: 'verification',
       title: 'Email Verification',
       description: 'Verify your email address',
-      status: currentStep === 1 ? 'current' : currentStep > 1 ? 'completed' : 'pending'
+      status: currentStep === 1 ? 'current' : currentStep > 1 ? 'completed' : 'pending',
     },
     {
       id: 'two-factor',
       title: 'Two-Factor Authentication',
       description: 'Set up additional security (recommended)',
       status: currentStep === 2 ? 'current' : currentStep > 2 ? 'completed' : 'pending',
-      optional: true
+      optional: true,
     },
     {
       id: 'complete',
       title: 'Security Setup Complete',
       description: 'Your account is now secure',
-      status: currentStep === 3 ? 'completed' : 'pending'
-    }
+      status: currentStep === 3 ? 'completed' : 'pending',
+    },
   ];
 
   // Password strength calculator
@@ -88,24 +88,24 @@ export function SecureAuthFlow() {
       uppercase: /[A-Z]/.test(pwd),
       lowercase: /[a-z]/.test(pwd),
       numbers: /\d/.test(pwd),
-      symbols: /[!@#$%^&*(),.?":{}|<>]/.test(pwd)
+      symbols: /[!@#$%^&*(),.?":{}|<>]/.test(pwd),
     };
 
     const score = Object.values(requirements).filter(Boolean).length;
-    
+
     const strengthLevels = [
       { label: 'Very Weak', color: 'bg-red-500' },
       { label: 'Weak', color: 'bg-orange-500' },
       { label: 'Fair', color: 'bg-yellow-500' },
       { label: 'Good', color: 'bg-blue-500' },
-      { label: 'Strong', color: 'bg-green-500' }
+      { label: 'Strong', color: 'bg-green-500' },
     ];
 
     return {
       score,
       label: strengthLevels[score] ? strengthLevels[score].label : 'Very Weak',
       color: strengthLevels[score] ? strengthLevels[score].color : 'bg-red-500',
-      requirements
+      requirements,
     };
   };
 
@@ -122,8 +122,8 @@ export function SecureAuthFlow() {
   const handleNext = async () => {
     setIsLoading(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setCurrentStep(prev => prev + 1);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setCurrentStep((prev) => prev + 1);
     setIsLoading(false);
 
     if (currentStep === 0) {
@@ -144,7 +144,7 @@ export function SecureAuthFlow() {
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Mail className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
                 <Input
                   id="email"
                   type="email"
@@ -159,24 +159,24 @@ export function SecureAuthFlow() {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Lock className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Create a strong password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10"
+                  className="pr-10 pl-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground absolute top-3 right-3 h-4 w-4"
                 >
                   {showPassword ? <EyeOff /> : <Eye />}
                 </button>
               </div>
-              
+
               {password && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
@@ -186,8 +186,8 @@ export function SecureAuthFlow() {
                     </Badge>
                   </div>
                   <Progress value={(passwordStrength.score / 5) * 100} className="h-2" />
-                  
-                  <div className="text-xs space-y-1">
+
+                  <div className="space-y-1 text-xs">
                     {Object.entries(passwordStrength.requirements).map(([req, met]) => (
                       <div key={req} className="flex items-center gap-2">
                         {met ? (
@@ -212,7 +212,7 @@ export function SecureAuthFlow() {
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Lock className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -222,7 +222,7 @@ export function SecureAuthFlow() {
                   className="pl-10"
                 />
                 {confirmPassword && (
-                  <div className="absolute right-3 top-3">
+                  <div className="absolute top-3 right-3">
                     {password === confirmPassword ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     ) : (
@@ -241,28 +241,28 @@ export function SecureAuthFlow() {
       case 1: // Email Verification
         return (
           <div className="space-y-6 text-center">
-            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
               <Mail className="h-8 w-8 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">Check Your Email</h3>
+              <h3 className="mb-2 text-lg font-semibold">Check Your Email</h3>
               <p className="text-muted-foreground">
                 We&apos;ve sent a verification link to <strong>{email}</strong>
               </p>
             </div>
-            
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="flex items-center gap-2 justify-center mb-2">
+
+            <div className="bg-muted rounded-lg p-4">
+              <div className="mb-2 flex items-center justify-center gap-2">
                 <Timer className="h-4 w-4" />
                 <span className="text-sm">Didn&apos;t receive the email?</span>
               </div>
               {countdown > 0 ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Resend available in {countdown} seconds
                 </p>
               ) : (
                 <Button variant="outline" size="sm" onClick={handleResendCode}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
+                  <RefreshCw className="mr-2 h-4 w-4" />
                   Resend Verification Email
                 </Button>
               )}
@@ -274,10 +274,10 @@ export function SecureAuthFlow() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
                 <Smartphone className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Two-Factor Authentication</h3>
+              <h3 className="mb-2 text-lg font-semibold">Two-Factor Authentication</h3>
               <p className="text-muted-foreground">
                 Add an extra layer of security to your account
               </p>
@@ -287,15 +287,15 @@ export function SecureAuthFlow() {
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <Key className="h-5 w-5 text-primary" />
+                    <Key className="text-primary h-5 w-5" />
                     <div>
                       <h4 className="font-medium">Authenticator App</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         Use Google Authenticator or similar app
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="twoFactorCode">Enter the 6-digit code</Label>
                     <Input
@@ -303,7 +303,9 @@ export function SecureAuthFlow() {
                       type="text"
                       placeholder="000000"
                       value={twoFactorCode}
-                      onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      onChange={(e) =>
+                        setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+                      }
                       className="text-center text-lg tracking-widest"
                       maxLength={6}
                     />
@@ -311,8 +313,8 @@ export function SecureAuthFlow() {
                 </div>
               </CardContent>
             </Card>
-            
-            <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+
+            <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
               <AlertTriangle className="h-4 w-4 text-amber-600" />
               <p className="text-sm text-amber-700">
                 This step is optional but highly recommended for security
@@ -324,29 +326,29 @@ export function SecureAuthFlow() {
       case 3: // Complete
         return (
           <div className="space-y-6 text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <CheckCircle2 className="h-8 w-8 text-green-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">Account Secured!</h3>
+              <h3 className="mb-2 text-lg font-semibold">Account Secured!</h3>
               <p className="text-muted-foreground">
                 Your account has been set up with enhanced security features
               </p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto mb-2" />
+
+            <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+              <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+                <CheckCircle2 className="mx-auto mb-2 h-4 w-4 text-green-600" />
                 <div className="font-medium">Strong Password</div>
                 <div className="text-muted-foreground">Protected with encryption</div>
               </div>
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <Mail className="h-4 w-4 text-blue-600 mx-auto mb-2" />
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+                <Mail className="mx-auto mb-2 h-4 w-4 text-blue-600" />
                 <div className="font-medium">Email Verified</div>
                 <div className="text-muted-foreground">Account confirmed</div>
               </div>
-              <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                <Smartphone className="h-4 w-4 text-purple-600 mx-auto mb-2" />
+              <div className="rounded-lg border border-purple-200 bg-purple-50 p-3">
+                <Smartphone className="mx-auto mb-2 h-4 w-4 text-purple-600" />
                 <div className="font-medium">2FA Enabled</div>
                 <div className="text-muted-foreground">Extra protection active</div>
               </div>
@@ -362,8 +364,13 @@ export function SecureAuthFlow() {
   const canProceed = () => {
     switch (currentStep) {
       case 0:
-        return email && password && confirmPassword && 
-               password === confirmPassword && passwordStrength.score >= 3;
+        return (
+          email &&
+          password &&
+          confirmPassword &&
+          password === confirmPassword &&
+          passwordStrength.score >= 3
+        );
       case 1:
         return true; // Email verification is simulated
       case 2:
@@ -374,49 +381,46 @@ export function SecureAuthFlow() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="mx-auto max-w-2xl p-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-6 w-6" />
             Secure Account Setup
           </CardTitle>
-          <CardDescription>
-            Follow these steps to create a secure account
-          </CardDescription>
+          <CardDescription>Follow these steps to create a secure account</CardDescription>
         </CardHeader>
         <CardContent>
           {/* Progress Steps */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 flex items-center justify-between">
               {authSteps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
-                  <div className={`
-                    w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                    ${step.status === 'completed' ? 'bg-green-500 text-white' :
-                      step.status === 'current' ? 'bg-primary text-primary-foreground' :
-                      'bg-muted text-muted-foreground'}
-                  `}>
-                    {step.status === 'completed' ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      index + 1
-                    )}
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
+                      step.status === 'completed'
+                        ? 'bg-green-500 text-white'
+                        : step.status === 'current'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                    } `}
+                  >
+                    {step.status === 'completed' ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
                   </div>
                   {index < authSteps.length - 1 && (
-                    <div className={`w-12 h-1 mx-2 ${
-                      step.status === 'completed' ? 'bg-green-500' : 'bg-muted'
-                    }`} />
+                    <div
+                      className={`mx-2 h-1 w-12 ${
+                        step.status === 'completed' ? 'bg-green-500' : 'bg-muted'
+                      }`}
+                    />
                   )}
                 </div>
               ))}
             </div>
-            
+
             <div className="text-center">
               <h2 className="text-lg font-semibold">{authSteps[currentStep]?.title}</h2>
-              <p className="text-sm text-muted-foreground">
-                {authSteps[currentStep]?.description}
-              </p>
+              <p className="text-muted-foreground text-sm">{authSteps[currentStep]?.description}</p>
             </div>
           </div>
 
@@ -424,42 +428,37 @@ export function SecureAuthFlow() {
           {renderStepContent()}
 
           {/* Actions */}
-          <div className="flex justify-between mt-8">
+          <div className="mt-8 flex justify-between">
             <Button
               variant="outline"
-              onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+              onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
               disabled={currentStep === 0 || isLoading}
             >
               Back
             </Button>
-            
+
             <div className="flex gap-2">
               {currentStep === 2 && (
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentStep(3)}
-                  disabled={isLoading}
-                >
+                <Button variant="outline" onClick={() => setCurrentStep(3)} disabled={isLoading}>
                   Skip (Not Recommended)
                 </Button>
               )}
-              
+
               {currentStep < 3 ? (
-                <Button
-                  onClick={handleNext}
-                  disabled={!canProceed() || isLoading}
-                >
+                <Button onClick={handleNext} disabled={!canProceed() || isLoading}>
                   {isLoading ? (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                       Processing...
                     </>
+                  ) : currentStep === 2 ? (
+                    'Complete Setup'
                   ) : (
-                    currentStep === 2 ? 'Complete Setup' : 'Continue'
+                    'Continue'
                   )}
                 </Button>
               ) : (
-                <Button onClick={() => window.location.href = '/dashboard'}>
+                <Button onClick={() => (window.location.href = '/dashboard')}>
                   Go to Dashboard
                 </Button>
               )}

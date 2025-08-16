@@ -17,7 +17,7 @@ const oktaUser = {
   email: 'john.doe@company.com',
   department: 'engineering',
   employeeId: 'EMP001',
-  source: 'okta'
+  source: 'okta',
 };
 
 const jamfDevice = {
@@ -27,7 +27,7 @@ const jamfDevice = {
   serialNumber: 'C02ABC123456',
   osVersion: '14.2.1',
   lastCheckin: '2024-01-15T10:30:00Z',
-  source: 'jamf'
+  source: 'jamf',
 };
 
 const crowdStrikeHost = {
@@ -37,7 +37,7 @@ const crowdStrikeHost = {
   lastSeen: '2024-01-15T10:25:00Z',
   riskScore: 25,
   policies: ['Default Policy'],
-  source: 'crowdstrike'
+  source: 'crowdstrike',
 };
 
 const slackUser = {
@@ -46,7 +46,7 @@ const slackUser = {
   email: 'j.doe@company.com', // Note: slightly different email format
   displayName: 'John D.',
   department: 'Engineering', // Note: different capitalization
-  source: 'slack'
+  source: 'slack',
 };
 
 console.log('📊 Sample Data from Different Systems:');
@@ -60,10 +60,14 @@ console.log('\n🧠 How Nova Synth Should Help with Data Matching:');
 console.log('================================================');
 
 console.log('\n1. 🔍 Profile Matching:');
-console.log('   Nova Synth would analyze these profiles and identify that they all belong to the same person:');
+console.log(
+  '   Nova Synth would analyze these profiles and identify that they all belong to the same person:',
+);
 console.log('   • Email correlation: john.doe@company.com ≈ j.doe@company.com (fuzzy match)');
 console.log('   • Name matching: "John Doe" across all systems');
-console.log('   • Device correlation: hostname "Johns-MacBook-Pro" ≈ "johns-macbook-pro.company.com"');
+console.log(
+  '   • Device correlation: hostname "Johns-MacBook-Pro" ≈ "johns-macbook-pro.company.com"',
+);
 console.log('   • Department normalization: "engineering" ≈ "Engineering"');
 
 console.log('\n2. 🔄 Data Transformation:');
@@ -132,13 +136,13 @@ const expectedUser360 = {
   identity: {
     okta: 'okta_12345',
     slack: 'slack_U1234567',
-    employeeId: 'EMP001'
+    employeeId: 'EMP001',
   },
   profile: {
     firstName: 'John',
     lastName: 'Doe',
     displayName: 'John D.',
-    department: 'Engineering' // Normalized
+    department: 'Engineering', // Normalized
   },
   devices: [
     {
@@ -150,29 +154,29 @@ const expectedUser360 = {
       securityStatus: {
         agentVersion: '7.04.15109.0',
         riskScore: 25,
-        policies: ['Default Policy']
+        policies: ['Default Policy'],
       },
       lastActivity: '2024-01-15T10:30:00Z', // Latest timestamp
-      confidence: 0.95 // High confidence merge
-    }
+      confidence: 0.95, // High confidence merge
+    },
   ],
   security: {
     mfa: true, // From Okta
     riskScore: 25, // From CrowdStrike
-    policies: ['Default Policy']
+    policies: ['Default Policy'],
   },
   communication: {
     slack: {
       userId: 'slack_U1234567',
-      displayName: 'John D.'
-    }
+      displayName: 'John D.',
+    },
   },
   dataQuality: {
     completeness: 0.92,
     confidence: 0.89,
-    lastValidation: '2024-01-15T10:35:00Z'
+    lastValidation: '2024-01-15T10:35:00Z',
   },
-  lastUpdated: '2024-01-15T10:35:00Z'
+  lastUpdated: '2024-01-15T10:35:00Z',
 };
 
 console.log(JSON.stringify(expectedUser360, null, 2));

@@ -9,15 +9,16 @@ export class NovaNotificationPlatform {
       retryAttempts: 3,
       retryDelay: 1000,
       batchSize: 100,
-      ...config
+      ...config,
     };
   }
 
   async sendNotification(notification) {
     const results = [];
-    const channels = Array.isArray(notification?.channels) && notification.channels.length > 0
-      ? notification.channels
-      : [{ type: 'in_app' }];
+    const channels =
+      Array.isArray(notification?.channels) && notification.channels.length > 0
+        ? notification.channels
+        : [{ type: 'in_app' }];
 
     for (const channel of channels) {
       const result = await this.sendToChannel(channel, notification);
@@ -27,7 +28,7 @@ export class NovaNotificationPlatform {
     return {
       success: true,
       results,
-      notificationId: notification?.id || cryptoRandomId()
+      notificationId: notification?.id || cryptoRandomId(),
     };
   }
 
@@ -37,7 +38,7 @@ export class NovaNotificationPlatform {
     for (let i = 0; i < list.length; i += this.config.batchSize) {
       const batch = list.slice(i, i + this.config.batchSize);
       const batchResults = await Promise.allSettled(
-        batch.map(notification => this.sendNotification(notification))
+        batch.map((notification) => this.sendNotification(notification)),
       );
       results.push(...batchResults);
     }

@@ -472,38 +472,39 @@ const services = [
     id: 'it-support',
     icon: '💻',
     title: 'IT Support',
-    description: 'Computer problems, software issues, network connectivity, and technical assistance'
+    description:
+      'Computer problems, software issues, network connectivity, and technical assistance',
   },
   {
     id: 'facilities',
     icon: '🏢',
     title: 'Facilities',
-    description: 'Building maintenance, room reservations, cleaning requests, and facility issues'
+    description: 'Building maintenance, room reservations, cleaning requests, and facility issues',
   },
   {
     id: 'hr-services',
     icon: '👥',
     title: 'HR Services',
-    description: 'Employee services, benefits questions, policy inquiries, and HR assistance'
+    description: 'Employee services, benefits questions, policy inquiries, and HR assistance',
   },
   {
     id: 'visitor-services',
     icon: '🎯',
     title: 'Visitor Services',
-    description: 'Guest registration, visitor badges, directions, and general assistance'
+    description: 'Guest registration, visitor badges, directions, and general assistance',
   },
   {
     id: 'security',
     icon: '🔒',
     title: 'Security',
-    description: 'Security issues, access card problems, safety concerns, and emergency assistance'
+    description: 'Security issues, access card problems, safety concerns, and emergency assistance',
   },
   {
     id: 'other',
     icon: '📝',
     title: 'Other Services',
-    description: 'General inquiries, feedback, suggestions, and miscellaneous requests'
-  }
+    description: 'General inquiries, feedback, suggestions, and miscellaneous requests',
+  },
 ];
 
 const urgencyLevels = [
@@ -511,26 +512,26 @@ const urgencyLevels = [
     id: 'low',
     label: 'Low',
     description: 'Not urgent, can wait',
-    class: 'low'
+    class: 'low',
   },
   {
     id: 'medium',
     label: 'Medium',
     description: 'Moderate priority',
-    class: 'medium'
+    class: 'medium',
   },
   {
     id: 'high',
     label: 'High',
     description: 'Needs attention soon',
-    class: 'high'
+    class: 'high',
   },
   {
     id: 'critical',
     label: 'Critical',
     description: 'Urgent, immediate action',
-    class: 'critical'
-  }
+    class: 'critical',
+  },
 ];
 
 export default function KioskApp() {
@@ -543,7 +544,7 @@ export default function KioskApp() {
     department: '',
     title: '',
     description: '',
-    urgency: 'medium'
+    urgency: 'medium',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedTicket, setSubmittedTicket] = useState(null);
@@ -577,7 +578,7 @@ export default function KioskApp() {
           department: '',
           title: '',
           description: '',
-          urgency: 'medium'
+          urgency: 'medium',
         });
         setSubmittedTicket(null);
         setTimeoutWarning(false);
@@ -615,7 +616,7 @@ export default function KioskApp() {
     let countdownTimer;
     if (timeoutWarning && timeLeft > 0) {
       countdownTimer = setTimeout(() => {
-        setTimeLeft(prev => prev - 1);
+        setTimeLeft((prev) => prev - 1);
       }, 1000);
     }
     return () => clearTimeout(countdownTimer);
@@ -628,21 +629,21 @@ export default function KioskApp() {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    
+
     setIsSubmitting(true);
-    
+
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     // Generate ticket number
     const ticketNumber = `NOV-${Date.now().toString().slice(-6)}`;
-    
+
     setSubmittedTicket({
       number: ticketNumber,
-      service: services.find(s => s.id === selectedService)?.title,
-      ...formData
+      service: services.find((s) => s.id === selectedService)?.title,
+      ...formData,
     });
-    
+
     setIsSubmitting(false);
     setCurrentScreen('success');
   };
@@ -656,7 +657,7 @@ export default function KioskApp() {
       department: '',
       title: '',
       description: '',
-      urgency: 'medium'
+      urgency: 'medium',
     });
     setSubmittedTicket(null);
   };
@@ -664,7 +665,7 @@ export default function KioskApp() {
   const getCurrentTime = () => {
     return new Date().toLocaleTimeString('en-US', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -672,9 +673,7 @@ export default function KioskApp() {
     <div className="kiosk-app">
       {/* Timeout Warning */}
       {timeoutWarning && (
-        <div className="timeout-warning">
-          Session will expire in {timeLeft} seconds
-        </div>
+        <div className="timeout-warning">Session will expire in {timeLeft} seconds</div>
       )}
 
       {/* Header */}
@@ -690,10 +689,10 @@ export default function KioskApp() {
           <div className="welcome-screen">
             <h2 className="welcome-title">Welcome! How can we help you today?</h2>
             <p className="welcome-subtitle">
-              Select a service category below to submit a support request. 
-              Our team will respond as quickly as possible.
+              Select a service category below to submit a support request. Our team will respond as
+              quickly as possible.
             </p>
-            
+
             <div className="service-grid">
               {services.map((service) => (
                 <div
@@ -710,12 +709,12 @@ export default function KioskApp() {
                     }
                   }}
                 >
-                  <div className="service-icon" aria-hidden="true">{service.icon}</div>
+                  <div className="service-icon" aria-hidden="true">
+                    {service.icon}
+                  </div>
                   <h3 className="service-title">{service.title}</h3>
                   <p className="service-description">{service.description}</p>
-                  <PrimaryButton className="service-button">
-                    Select Service
-                  </PrimaryButton>
+                  <PrimaryButton className="service-button">Select Service</PrimaryButton>
                 </div>
               ))}
             </div>
@@ -727,7 +726,7 @@ export default function KioskApp() {
           <div className="ticket-form">
             <div className="form-header">
               <h2 className="form-title">
-                Submit {services.find(s => s.id === selectedService)?.title} Request
+                Submit {services.find((s) => s.id === selectedService)?.title} Request
               </h2>
               <p className="form-subtitle">
                 Please provide the details below to help us assist you better
@@ -745,7 +744,7 @@ export default function KioskApp() {
                       type="text"
                       className="form-input"
                       value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                       required
                       placeholder="Enter your full name"
                     />
@@ -756,7 +755,7 @@ export default function KioskApp() {
                       type="email"
                       className="form-input"
                       value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                       required
                       placeholder="your.email@company.com"
                     />
@@ -766,7 +765,9 @@ export default function KioskApp() {
                     <select
                       className="form-input form-select"
                       value={formData.department}
-                      onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, department: e.target.value }))
+                      }
                     >
                       <option value="">Select department</option>
                       <option value="IT">Information Technology</option>
@@ -791,7 +792,7 @@ export default function KioskApp() {
                     type="text"
                     className="form-input"
                     value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
                     required
                     placeholder="Brief description of your issue"
                   />
@@ -801,7 +802,9 @@ export default function KioskApp() {
                   <textarea
                     className="form-input form-textarea"
                     value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, description: e.target.value }))
+                    }
                     required
                     placeholder="Please provide as much detail as possible about your issue..."
                   />
@@ -816,7 +819,7 @@ export default function KioskApp() {
                     <div
                       key={level.id}
                       className={`urgency-option ${level.class} ${formData.urgency === level.id ? 'selected' : ''}`}
-                      onClick={() => setFormData(prev => ({ ...prev, urgency: level.id }))}
+                      onClick={() => setFormData((prev) => ({ ...prev, urgency: level.id }))}
                     >
                       <div className="urgency-label">{level.label}</div>
                       <div className="urgency-description">{level.description}</div>
@@ -835,11 +838,7 @@ export default function KioskApp() {
                 >
                   Back
                 </OutlineButton>
-                <PrimaryButton
-                  type="submit"
-                  className="form-button"
-                  disabled={isSubmitting}
-                >
+                <PrimaryButton type="submit" className="form-button" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <Spinner size="sm" style={{ marginRight: 'var(--space-2)' }} />
@@ -860,33 +859,28 @@ export default function KioskApp() {
             <div className="success-icon">✅</div>
             <h2 className="success-title">Request Submitted Successfully!</h2>
             <p className="success-message">
-              Your support request has been received and assigned a ticket number. 
-              You will receive email updates about the progress of your request.
+              Your support request has been received and assigned a ticket number. You will receive
+              email updates about the progress of your request.
             </p>
-            
-            <div className="ticket-number">
-              Ticket #{submittedTicket.number}
-            </div>
-            
+
+            <div className="ticket-number">Ticket #{submittedTicket.number}</div>
+
             <p className="success-message">
-              Expected response time: 
-              {submittedTicket.urgency === 'critical' ? ' Within 1 hour' :
-               submittedTicket.urgency === 'high' ? ' Within 4 hours' :
-               submittedTicket.urgency === 'medium' ? ' Within 1 business day' :
-               ' Within 3 business days'}
+              Expected response time:
+              {submittedTicket.urgency === 'critical'
+                ? ' Within 1 hour'
+                : submittedTicket.urgency === 'high'
+                  ? ' Within 4 hours'
+                  : submittedTicket.urgency === 'medium'
+                    ? ' Within 1 business day'
+                    : ' Within 3 business days'}
             </p>
 
             <div className="success-actions">
-              <PrimaryButton
-                className="form-button"
-                onClick={handleBackToWelcome}
-              >
+              <PrimaryButton className="form-button" onClick={handleBackToWelcome}>
                 Submit Another Request
               </PrimaryButton>
-              <OutlineButton
-                className="form-button"
-                onClick={() => window.print()}
-              >
+              <OutlineButton className="form-button" onClick={() => window.print()}>
                 Print Receipt
               </OutlineButton>
             </div>
@@ -896,9 +890,7 @@ export default function KioskApp() {
 
       {/* Footer */}
       <div className="kiosk-footer">
-        <div className="footer-info">
-          Kiosk ID: NOVA-KIOSK-001 • {getCurrentTime()}
-        </div>
+        <div className="footer-info">Kiosk ID: NOVA-KIOSK-001 • {getCurrentTime()}</div>
         <div className="footer-actions">
           <GhostButton size="sm">Help</GhostButton>
           <GhostButton size="sm">Accessibility</GhostButton>

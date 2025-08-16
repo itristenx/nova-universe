@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom';
 import { TextEncoder, TextDecoder } from 'util';
 import React from 'react';
- 
 
 // Polyfill for TextEncoder/TextDecoder in Node.js environment
 (global as any).TextEncoder = TextEncoder;
@@ -29,12 +28,12 @@ Object.defineProperty(window, 'matchMedia', {
 HTMLCanvasElement.prototype.getContext = (global as any).jest?.fn() as any;
 
 // Mock fetch for API calls
-(global as any).fetch = ((global as any).jest?.fn(() =>
+(global as any).fetch = (global as any).jest?.fn(() =>
   Promise.resolve({
     ok: true,
     json: () => Promise.resolve({}),
-  })
-)) as any;
+  }),
+) as any;
 
 // Mock localStorage
 const localStorageMock = {

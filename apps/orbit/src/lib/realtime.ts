@@ -29,8 +29,10 @@ export interface OptimisticUpdate<T> {
 export function useWebSocket<T = unknown>(config: WebSocketConfig) {
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage<T> | null>(null);
-  const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
-  
+  const [connectionState, setConnectionState] = useState<
+    'connecting' | 'connected' | 'disconnected' | 'error'
+  >('disconnected');
+
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -41,7 +43,7 @@ export function useWebSocket<T = unknown>(config: WebSocketConfig) {
     url,
     reconnectInterval = 3000,
     maxReconnectAttempts = 5,
-    heartbeatInterval = 30000
+    heartbeatInterval = 30000,
   } = config;
 
   const connect = useCallback(() => {
@@ -50,7 +52,7 @@ export function useWebSocket<T = unknown>(config: WebSocketConfig) {
     }
 
     setConnectionState('connecting');
-    
+
     try {
       wsRef.current = new WebSocket(url);
 
@@ -71,10 +73,12 @@ export function useWebSocket<T = unknown>(config: WebSocketConfig) {
         if (heartbeatInterval > 0) {
           heartbeatIntervalRef.current = setInterval(() => {
             if (wsRef.current?.readyState === WebSocket.OPEN) {
-              wsRef.current.send(JSON.stringify({
-                type: 'ping',
-                timestamp: Date.now()
-              }));
+              wsRef.current.send(
+                JSON.stringify({
+                  type: 'ping',
+                  timestamp: Date.now(),
+                }),
+              );
             }
           }, heartbeatInterval);
         }
@@ -92,7 +96,7 @@ export function useWebSocket<T = unknown>(config: WebSocketConfig) {
       wsRef.current.onclose = () => {
         setIsConnected(false);
         setConnectionState('disconnected');
-        
+
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current);
           heartbeatIntervalRef.current = null;
@@ -110,7 +114,6 @@ export function useWebSocket<T = unknown>(config: WebSocketConfig) {
       wsRef.current.onerror = () => {
         setConnectionState('error');
       };
-
     } catch (error) {
       console.error('WebSocket connection failed:', error);
       setConnectionState('error');
@@ -122,7 +125,7 @@ export function useWebSocket<T = unknown>(config: WebSocketConfig) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-    
+
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current);
       heartbeatIntervalRef.current = null;
@@ -140,7 +143,7 @@ export function useWebSocket<T = unknown>(config: WebSocketConfig) {
   const sendMessage = useCallback((message: Omit<WebSocketMessage<T>, 'timestamp'>) => {
     const fullMessage: WebSocketMessage<T> = {
       ...message,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -162,7 +165,7 @@ export function useWebSocket<T = unknown>(config: WebSocketConfig) {
     lastMessage,
     sendMessage,
     connect,
-    disconnect
+    disconnect,
   };
 }
 
@@ -173,30 +176,30 @@ export function useOptimisticUpdates<T>() {
   const addOptimisticUpdate = useCallback((update: Omit<OptimisticUpdate<T>, 'timestamp'>) => {
     const fullUpdate: OptimisticUpdate<T> = {
       ...update,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
-    setPendingUpdates(prev => [...prev, fullUpdate]);
+    setPendingUpdates((prev) => [...prev, fullUpdate]);
 
     // Auto-remove after timeout if not confirmed
     setTimeout(() => {
-      setPendingUpdates(prev => prev.filter(u => u.id !== fullUpdate.id));
+      setPendingUpdates((prev) => prev.filter((u) => u.id !== fullUpdate.id));
     }, 10000); // 10 seconds timeout
 
     return fullUpdate.id;
   }, []);
 
   const confirmUpdate = useCallback((id: string) => {
-    setPendingUpdates(prev => prev.filter(u => u.id !== id));
+    setPendingUpdates((prev) => prev.filter((u) => u.id !== id));
   }, []);
 
   const rollbackUpdate = useCallback((id: string) => {
-    setPendingUpdates(prev => {
-      const update = prev.find(u => u.id === id);
+    setPendingUpdates((prev) => {
+      const update = prev.find((u) => u.id === id);
       if (update?.rollback) {
         update.rollback();
       }
-      return prev.filter(u => u.id !== id);
+      return prev.filter((u) => u.id !== id);
     });
   }, []);
 
@@ -209,31 +212,36 @@ export function useOptimisticUpdates<T>() {
     addOptimisticUpdate,
     confirmUpdate,
     rollbackUpdate,
-    clearPendingUpdates
+    clearPendingUpdates,
   };
 }
 
 // Background Sync Hook
 export function useBackgroundSync<T = unknown>() {
-  const [syncQueue, setSyncQueue] = useState<Array<{
-    id: string;
-    operation: string;
-    data: T;
-    timestamp: number;
-    retries: number;
-  }>>([]);
+  const [syncQueue, setSyncQueue] = useState<
+    Array<{
+      id: string;
+      operation: string;
+      data: T;
+      timestamp: number;
+      retries: number;
+    }>
+  >([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
   const addToSyncQueue = useCallback((operation: string, data: T) => {
     const id = `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    setSyncQueue(prev => [...prev, {
-      id,
-      operation,
-      data,
-      timestamp: Date.now(),
-      retries: 0
-    }]);
+
+    setSyncQueue((prev) => [
+      ...prev,
+      {
+        id,
+        operation,
+        data,
+        timestamp: Date.now(),
+        retries: 0,
+      },
+    ]);
 
     return id;
   }, []);
@@ -248,24 +256,21 @@ export function useBackgroundSync<T = unknown>() {
     for (const item of syncQueue) {
       try {
         // In a real app, you would make the actual API call here
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-        
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+
         // Remove successful item from queue
-        setSyncQueue(prev => prev.filter(i => i.id !== item.id));
-        
+        setSyncQueue((prev) => prev.filter((i) => i.id !== item.id));
       } catch (error) {
         console.error('Sync failed for operation:', item.operation, error);
-        
+
         // Increment retry count
-        setSyncQueue(prev => prev.map(i => 
-          i.id === item.id 
-            ? { ...i, retries: i.retries + 1 }
-            : i
-        ));
+        setSyncQueue((prev) =>
+          prev.map((i) => (i.id === item.id ? { ...i, retries: i.retries + 1 } : i)),
+        );
 
         // Remove if too many retries
         if (item.retries >= 3) {
-          setSyncQueue(prev => prev.filter(i => i.id !== item.id));
+          setSyncQueue((prev) => prev.filter((i) => i.id !== item.id));
         }
       }
     }
@@ -297,7 +302,7 @@ export function useBackgroundSync<T = unknown>() {
     syncQueue,
     isSyncing,
     addToSyncQueue,
-    processSyncQueue
+    processSyncQueue,
   };
 }
 
@@ -309,8 +314,10 @@ export function usePushNotifications() {
 
   useEffect(() => {
     // Check if notifications are supported
-    setIsSupported('Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window);
-    
+    setIsSupported(
+      'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window,
+    );
+
     if ('Notification' in window) {
       setPermission(Notification.permission);
     }
@@ -335,7 +342,7 @@ export function usePushNotifications() {
       const registration = await navigator.serviceWorker.ready;
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_KEY // You'd need to set this
+        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_KEY, // You'd need to set this
       });
 
       setSubscription(sub);
@@ -353,15 +360,18 @@ export function usePushNotifications() {
     }
   }, [subscription]);
 
-  const showNotification = useCallback((title: string, options?: NotificationOptions) => {
-    if (permission === 'granted') {
-      new Notification(title, {
-        icon: '/icon-192x192.png',
-        badge: '/icon-192x192.png',
-        ...options
-      });
-    }
-  }, [permission]);
+  const showNotification = useCallback(
+    (title: string, options?: NotificationOptions) => {
+      if (permission === 'granted') {
+        new Notification(title, {
+          icon: '/icon-192x192.png',
+          badge: '/icon-192x192.png',
+          ...options,
+        });
+      }
+    },
+    [permission],
+  );
 
   return {
     isSupported,
@@ -370,7 +380,7 @@ export function usePushNotifications() {
     requestPermission,
     subscribeToPush,
     unsubscribeFromPush,
-    showNotification
+    showNotification,
   };
 }
 
@@ -397,7 +407,7 @@ class EventBus {
 
   emit(event: string, ...args: unknown[]) {
     if (this.events.has(event)) {
-      this.events.get(event)!.forEach(callback => {
+      this.events.get(event)!.forEach((callback) => {
         try {
           callback(...args);
         } catch (error) {

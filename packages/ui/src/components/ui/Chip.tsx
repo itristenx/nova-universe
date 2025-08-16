@@ -7,14 +7,21 @@ export interface ChipProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'filled' | 'outlined';
   sx?: React.CSSProperties;
 }
-export const Chip: React.FC<ChipProps> = ({ label, color, icon, size = 'medium', variant = 'filled', sx = {}, style, ...props }) => (
+export const Chip: React.FC<ChipProps> = ({
+  label,
+  color,
+  icon,
+  size = 'medium',
+  variant = 'filled',
+  sx = {},
+  style,
+  ...props
+}) => (
   <div
     {...props}
-    className={[
-      props.className || 'chip',
-      `chip--${size}`,
-      `chip--${variant}`
-    ].filter(Boolean).join(' ')}
+    className={[props.className || 'chip', `chip--${size}`, `chip--${variant}`]
+      .filter(Boolean)
+      .join(' ')}
     style={{ ...sx, ...(color ? { backgroundColor: color } : {}), ...style }}
   >
     {icon && <span className="chip-icon">{icon}</span>}

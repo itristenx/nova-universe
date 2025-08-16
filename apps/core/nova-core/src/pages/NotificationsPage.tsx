@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Modal, Textarea, Select } from '@/components/ui';
-import { 
-  BellIcon, 
-  PlusIcon, 
+import {
+  BellIcon,
+  PlusIcon,
   TrashIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
   ShieldExclamationIcon,
-  ChatBubbleBottomCenterTextIcon
+  ChatBubbleBottomCenterTextIcon,
 } from '@heroicons/react/24/outline';
 import { formatDate } from '@/lib/utils';
 import { api } from '@/lib/api';
@@ -30,7 +30,7 @@ export const NotificationsPage: React.FC = () => {
   const [formData, setFormData] = useState<NotificationFormData>({
     message: '',
     type: 'system',
-    level: 'info'
+    level: 'info',
   });
   const { addToast } = useToastStore();
 
@@ -66,13 +66,13 @@ export const NotificationsPage: React.FC = () => {
         message: formData.message,
         type: formData.type,
         level: formData.level,
-        read: false
+        read: false,
       });
-      
+
       setNotifications([newNotification, ...notifications]);
       setShowCreateModal(false);
       resetForm();
-      
+
       addToast({
         type: 'success',
         title: 'Success',
@@ -94,7 +94,7 @@ export const NotificationsPage: React.FC = () => {
     setFormData({
       message: '',
       type: 'system',
-      level: 'info'
+      level: 'info',
     });
   };
 
@@ -102,7 +102,7 @@ export const NotificationsPage: React.FC = () => {
     if (confirm('Are you sure you want to delete this notification?')) {
       try {
         await api.deleteNotification(id);
-        setNotifications(notifications.filter(n => n.id !== id));
+        setNotifications(notifications.filter((n) => n.id !== id));
         addToast({
           type: 'success',
           title: 'Success',
@@ -145,7 +145,7 @@ export const NotificationsPage: React.FC = () => {
           return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
       }
     }
-    
+
     // Fallback to type-based icons
     switch (type) {
       case 'system':
@@ -175,7 +175,7 @@ export const NotificationsPage: React.FC = () => {
           return 'bg-green-50 border-green-200';
       }
     }
-    
+
     // Fallback to type-based backgrounds
     switch (type) {
       case 'system':
@@ -192,27 +192,24 @@ export const NotificationsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Kiosk Notifications</h1>
           <p className="mt-1 text-sm text-gray-600">
             Manage real-time notifications displayed on kiosks
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={openCreateModal}
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
+        <Button variant="primary" onClick={openCreateModal}>
+          <PlusIcon className="mr-2 h-4 w-4" />
           Create Kiosk Notification
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-blue-500">
+            <div className="rounded-lg bg-blue-500 p-3">
               <BellIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
@@ -223,39 +220,39 @@ export const NotificationsPage: React.FC = () => {
         </Card>
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-red-500">
+            <div className="rounded-lg bg-red-500 p-3">
               <ExclamationTriangleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">System</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {notifications.filter(n => n.type === 'system').length}
+                {notifications.filter((n) => n.type === 'system').length}
               </p>
             </div>
           </div>
         </Card>
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-yellow-500">
+            <div className="rounded-lg bg-yellow-500 p-3">
               <ExclamationTriangleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Integration</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {notifications.filter(n => n.type === 'integration').length}
+                {notifications.filter((n) => n.type === 'integration').length}
               </p>
             </div>
           </div>
         </Card>
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-green-500">
+            <div className="rounded-lg bg-green-500 p-3">
               <CheckCircleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Unread</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {notifications.filter(n => !n.read).length}
+                {notifications.filter((n) => !n.read).length}
               </p>
             </div>
           </div>
@@ -266,21 +263,18 @@ export const NotificationsPage: React.FC = () => {
       <Card>
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <div className="border-primary-600 h-8 w-8 animate-spin rounded-full border-b-2"></div>
           </div>
         ) : notifications.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="py-12 text-center">
             <BellIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No notifications</h3>
             <p className="mt-1 text-sm text-gray-500">
               Create your first notification to get started.
             </p>
             <div className="mt-6">
-              <Button
-                variant="primary"
-                onClick={openCreateModal}
-              >
-                <PlusIcon className="h-4 w-4 mr-2" />
+              <Button variant="primary" onClick={openCreateModal}>
+                <PlusIcon className="mr-2 h-4 w-4" />
                 Create Kiosk Notification
               </Button>
             </div>
@@ -297,20 +291,18 @@ export const NotificationsPage: React.FC = () => {
                     {getNotificationIcon(notification.type, notification.level)}
                   </div>
                   <div className="ml-3 flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      {notification.message}
-                    </p>
+                    <p className="text-sm font-medium text-gray-900">{notification.message}</p>
                     <div className="mt-1 flex items-center space-x-4 text-xs text-gray-500">
                       <span>Type: {notification.type}</span>
-                      {notification.level && (
-                        <span>Level: {notification.level}</span>
-                      )}
+                      {notification.level && <span>Level: {notification.level}</span>}
                       <span>Created: {formatDate(notification.createdAt)}</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        !notification.read 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          !notification.read
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
                         {!notification.read ? 'Unread' : 'Read'}
                       </span>
                     </div>
@@ -340,14 +332,16 @@ export const NotificationsPage: React.FC = () => {
         size="lg"
       >
         <div className="space-y-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+          <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
             <div className="flex">
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">
-                  Kiosk Notification System
-                </h3>
+                <h3 className="text-sm font-medium text-blue-800">Kiosk Notification System</h3>
                 <div className="mt-2 text-sm text-blue-700">
-                  <p>Create real-time notifications that will be displayed on all active kiosks. Notifications appear as non-dismissible overlays and are automatically streamed to kiosks via Server-Sent Events.</p>
+                  <p>
+                    Create real-time notifications that will be displayed on all active kiosks.
+                    Notifications appear as non-dismissible overlays and are automatically streamed
+                    to kiosks via Server-Sent Events.
+                  </p>
                 </div>
               </div>
             </div>
@@ -364,7 +358,7 @@ export const NotificationsPage: React.FC = () => {
               helperText="This message will be displayed on all active kiosks in real-time"
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Select
                 label="Notification Type"
                 value={formData.type}
@@ -372,7 +366,7 @@ export const NotificationsPage: React.FC = () => {
                 options={[
                   { value: 'system', label: 'System Alert' },
                   { value: 'integration', label: 'Service Integration' },
-                  { value: 'ticket', label: 'Ticket Notice' }
+                  { value: 'ticket', label: 'Ticket Notice' },
                 ]}
                 required
                 helperText="Categorizes the notification for filtering"
@@ -386,7 +380,7 @@ export const NotificationsPage: React.FC = () => {
                   { value: 'info', label: 'Info (Blue)' },
                   { value: 'warning', label: 'Warning (Orange)' },
                   { value: 'error', label: 'Error (Red)' },
-                  { value: 'critical', label: 'Critical (Dark Red)' }
+                  { value: 'critical', label: 'Critical (Dark Red)' },
                 ]}
                 required
                 helperText="Determines the color and icon displayed"
@@ -394,9 +388,11 @@ export const NotificationsPage: React.FC = () => {
             </div>
 
             {/* Preview */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Preview on Kiosk</h4>
-              <div className={`rounded-lg border p-3 ${getNotificationBg(formData.type, formData.level)}`}>
+            <div className="rounded-lg border border-gray-200 p-4">
+              <h4 className="mb-3 text-sm font-medium text-gray-900">Preview on Kiosk</h4>
+              <div
+                className={`rounded-lg border p-3 ${getNotificationBg(formData.type, formData.level)}`}
+              >
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     {getNotificationIcon(formData.type, formData.level)}
@@ -415,12 +411,12 @@ export const NotificationsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex justify-end space-x-3 mt-6">
+        <div className="mt-6 flex justify-end space-x-3">
           <Button variant="secondary" onClick={closeCreateModal}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={createNotification}
             isLoading={creating}
             disabled={!formData.message.trim()}

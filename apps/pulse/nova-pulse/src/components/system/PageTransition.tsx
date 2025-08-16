@@ -1,9 +1,9 @@
-import React from 'react'
-import { motion } from 'framer-motion'
+import React from 'react';
+import { motion } from 'framer-motion';
 
 type PageTransitionProps = {
-  children: React.ReactNode
-}
+  children: React.ReactNode;
+};
 
 const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
   return (
@@ -15,9 +15,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     >
       {children}
     </motion.div>
-  )
-}
+  );
+};
 
-export default PageTransition
-
-
+export default PageTransition;

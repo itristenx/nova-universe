@@ -4,10 +4,10 @@ import { PrismaClient } from '../../prisma/generated/core/index.js';
 // Test the logScimOperation function in isolation
 async function testLogScimOperation() {
   const prisma = new PrismaClient();
-  
+
   try {
     console.log('🧪 Testing logScimOperation helper function...');
-    
+
     // Test logging a successful operation
     await prisma.scimLog.create({
       data: {
@@ -20,17 +20,17 @@ async function testLogScimOperation() {
         responseBody: { id: 'test-helper-1', status: 'created' },
         userAgent: 'Helper-Test/1.0',
         ipAddress: '127.0.0.1',
-        duration: 123
-      }
+        duration: 123,
+      },
     });
-    
+
     console.log('✅ Successfully logged SCIM operation');
-    
+
     // Verify the log was created
     const log = await prisma.scimLog.findFirst({
-      where: { entityId: 'test-helper-1' }
+      where: { entityId: 'test-helper-1' },
     });
-    
+
     if (log) {
       console.log('✅ Log retrieved successfully:');
       console.log(`   Operation: ${log.operation}`);
@@ -38,15 +38,14 @@ async function testLogScimOperation() {
       console.log(`   Status: ${log.statusCode}`);
       console.log(`   Duration: ${log.duration}ms`);
     }
-    
+
     // Clean up
     await prisma.scimLog.delete({
-      where: { id: log.id }
+      where: { id: log.id },
     });
-    
+
     console.log('✅ Test data cleaned up');
     console.log('\n🎉 logScimOperation helper test passed!');
-    
   } catch (error) {
     console.error('❌ Helper test failed:', error);
     throw error;

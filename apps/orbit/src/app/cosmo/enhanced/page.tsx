@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
+import {
   Bot,
   Send,
   Mic,
@@ -16,14 +16,20 @@ import {
   Clock,
   Zap,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 // Types
 interface Message {
@@ -103,7 +109,7 @@ export default function EnhancedCosmoAI() {
   const [proactiveSuggestions, setProactiveSuggestions] = useState<ProactiveSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [quickActions, setQuickActions] = useState<ActionSuggestion[]>([]);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -116,16 +122,16 @@ export default function EnhancedCosmoAI() {
         sessionId: `session-${Date.now()}`,
         recentTickets: [
           { id: 'TK-001', title: 'Password Reset', status: 'resolved' },
-          { id: 'TK-002', title: 'VPN Access', status: 'in_progress' }
+          { id: 'TK-002', title: 'VPN Access', status: 'in_progress' },
         ],
         preferences: {
           language: 'en',
           responseStyle: 'detailed',
           notifications: true,
-          proactiveHelp: true
+          proactiveHelp: true,
         },
         currentPage: window.location.pathname,
-        knowledge: []
+        knowledge: [],
       };
 
       setConversationContext(mockContext);
@@ -142,21 +148,21 @@ export default function EnhancedCosmoAI() {
             id: 'create-ticket',
             text: 'Create a new ticket',
             action: 'create_ticket',
-            confidence: 0.9
+            confidence: 0.9,
           },
           {
             id: 'track-tickets',
             text: 'Check my ticket status',
             action: 'view_status',
-            confidence: 0.85
+            confidence: 0.85,
           },
           {
             id: 'search-kb',
             text: 'Search knowledge base',
             action: 'search_knowledge',
-            confidence: 0.8
-          }
-        ]
+            confidence: 0.8,
+          },
+        ],
       };
 
       setMessages([welcomeMessage]);
@@ -169,7 +175,7 @@ export default function EnhancedCosmoAI() {
           description: 'Your password expires in 5 days. Would you like to reset it now?',
           action: 'password_reset',
           priority: 'medium',
-          category: 'security'
+          category: 'security',
         },
         {
           id: 'vpn-setup',
@@ -177,8 +183,8 @@ export default function EnhancedCosmoAI() {
           description: 'Based on your role, you might need VPN access. Shall I help you set it up?',
           action: 'vpn_setup',
           priority: 'low',
-          category: 'network'
-        }
+          category: 'network',
+        },
       ]);
 
       // Set quick actions
@@ -187,26 +193,26 @@ export default function EnhancedCosmoAI() {
           id: 'new-ticket',
           text: '🎫 New Ticket',
           action: 'create_ticket',
-          confidence: 1.0
+          confidence: 1.0,
         },
         {
           id: 'track-tickets',
           text: '👀 Track Tickets',
           action: 'view_status',
-          confidence: 1.0
+          confidence: 1.0,
         },
         {
           id: 'knowledge',
           text: '📚 Knowledge Base',
           action: 'search_knowledge',
-          confidence: 1.0
+          confidence: 1.0,
         },
         {
           id: 'services',
           text: '🛍️ Request Service',
           action: 'request_service',
-          confidence: 1.0
-        }
+          confidence: 1.0,
+        },
       ]);
     };
 
@@ -219,48 +225,57 @@ export default function EnhancedCosmoAI() {
   }, [messages]);
 
   // Enhanced message processing with AI-powered features
-  const processMessage = useCallback(async (userInput: string) => {
-    if (!userInput.trim() || isLoading) return;
+  const processMessage = useCallback(
+    async (userInput: string) => {
+      if (!userInput.trim() || isLoading) return;
 
-    setIsLoading(true);
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      content: userInput,
-      sender: 'user',
-      timestamp: new Date(),
-      type: 'text'
-    };
+      setIsLoading(true);
+      const userMessage: Message = {
+        id: `user-${Date.now()}`,
+        content: userInput,
+        sender: 'user',
+        timestamp: new Date(),
+        type: 'text',
+      };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputText('');
+      setMessages((prev) => [...prev, userMessage]);
+      setInputText('');
 
-    // Simulate AI processing with context awareness
-    await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulate AI processing with context awareness
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // Generate contextual response
-    const response = generateAIResponse(userInput, conversationContext);
-    
-    const cosmoMessage: Message = {
-      id: `cosmo-${Date.now()}`,
-      content: response.content,
-      sender: 'cosmo',
-      timestamp: new Date(),
-      type: response.type || 'text',
-      suggestions: response.suggestions
-    };
+      // Generate contextual response
+      const response = generateAIResponse(userInput, conversationContext);
 
-    setMessages(prev => [...prev, cosmoMessage]);
-    setIsLoading(false);
-  }, [conversationContext, isLoading]);
+      const cosmoMessage: Message = {
+        id: `cosmo-${Date.now()}`,
+        content: response.content,
+        sender: 'cosmo',
+        timestamp: new Date(),
+        type: response.type || 'text',
+        suggestions: response.suggestions,
+      };
+
+      setMessages((prev) => [...prev, cosmoMessage]);
+      setIsLoading(false);
+    },
+    [conversationContext, isLoading],
+  );
 
   // AI Response Generator with context awareness
   const generateAIResponse = (input: string, context: ConversationContext | null) => {
     const lowerInput = input.toLowerCase();
-    
+
     // Natural language ticket creation
-    if (lowerInput.includes('create') && (lowerInput.includes('ticket') || lowerInput.includes('issue') || lowerInput.includes('problem'))) {
+    if (
+      lowerInput.includes('create') &&
+      (lowerInput.includes('ticket') ||
+        lowerInput.includes('issue') ||
+        lowerInput.includes('problem'))
+    ) {
       return {
-        content: "I'll help you create a ticket! Based on your message, I can see you need assistance. Let me guide you through the enhanced ticket creation process with smart suggestions.",
+        content:
+          "I'll help you create a ticket! Based on your message, I can see you need assistance. Let me guide you through the enhanced ticket creation process with smart suggestions.",
         type: 'text' as const,
         suggestions: [
           {
@@ -268,14 +283,18 @@ export default function EnhancedCosmoAI() {
             text: 'Start Enhanced Ticket Creation',
             action: 'create_ticket' as const,
             data: { prefill: input },
-            confidence: 0.95
-          }
-        ] as ActionSuggestion[]
+            confidence: 0.95,
+          },
+        ] as ActionSuggestion[],
       };
     }
 
     // Ticket status inquiries
-    if (lowerInput.includes('status') || lowerInput.includes('track') || lowerInput.includes('check')) {
+    if (
+      lowerInput.includes('status') ||
+      lowerInput.includes('track') ||
+      lowerInput.includes('check')
+    ) {
       return {
         content: `I can help you track your tickets. You currently have ${context?.recentTickets.length || 0} recent tickets. Would you like to see their status or track a specific ticket?`,
         type: 'text' as const,
@@ -284,23 +303,29 @@ export default function EnhancedCosmoAI() {
             id: 'view-tickets',
             text: 'View All My Tickets',
             action: 'view_status' as const,
-            confidence: 0.9
+            confidence: 0.9,
           },
           {
             id: 'track-enhanced',
             text: 'Enhanced Ticket Tracking',
             action: 'view_status' as const,
             data: { enhanced: true },
-            confidence: 0.85
-          }
-        ] as ActionSuggestion[]
+            confidence: 0.85,
+          },
+        ] as ActionSuggestion[],
       };
     }
 
     // Knowledge base searches
-    if (lowerInput.includes('how') || lowerInput.includes('help') || lowerInput.includes('guide') || lowerInput.includes('know')) {
+    if (
+      lowerInput.includes('how') ||
+      lowerInput.includes('help') ||
+      lowerInput.includes('guide') ||
+      lowerInput.includes('know')
+    ) {
       return {
-        content: "I can help you find information! Our intelligent knowledge base has AI-powered search and personalized recommendations. What specific topic are you looking for?",
+        content:
+          'I can help you find information! Our intelligent knowledge base has AI-powered search and personalized recommendations. What specific topic are you looking for?',
         type: 'text' as const,
         suggestions: [
           {
@@ -308,45 +333,51 @@ export default function EnhancedCosmoAI() {
             text: 'Search Knowledge Base',
             action: 'search_knowledge' as const,
             data: { query: input },
-            confidence: 0.9
+            confidence: 0.9,
           },
           {
             id: 'popular-articles',
             text: 'Show Popular Articles',
             action: 'search_knowledge' as const,
             data: { filter: 'popular' },
-            confidence: 0.7
-          }
-        ] as ActionSuggestion[]
+            confidence: 0.7,
+          },
+        ] as ActionSuggestion[],
       };
     }
 
     // Service requests
-    if (lowerInput.includes('request') || lowerInput.includes('need') || lowerInput.includes('access')) {
+    if (
+      lowerInput.includes('request') ||
+      lowerInput.includes('need') ||
+      lowerInput.includes('access')
+    ) {
       return {
-        content: "I can help you request services! Our enhanced service catalog has everything from software licenses to hardware requests. What do you need?",
+        content:
+          'I can help you request services! Our enhanced service catalog has everything from software licenses to hardware requests. What do you need?',
         type: 'text' as const,
         suggestions: [
           {
             id: 'browse-catalog',
             text: 'Browse Service Catalog',
             action: 'request_service' as const,
-            confidence: 0.9
+            confidence: 0.9,
           },
           {
             id: 'popular-services',
             text: 'Popular Services',
             action: 'request_service' as const,
             data: { filter: 'popular' },
-            confidence: 0.8
-          }
-        ] as ActionSuggestion[]
+            confidence: 0.8,
+          },
+        ] as ActionSuggestion[],
       };
     }
 
     // Default helpful response
     return {
-      content: "I'm here to help! I can assist you with creating tickets, tracking status, finding information, requesting services, and much more. I have context about your recent activity and can provide personalized suggestions. What would you like to do?",
+      content:
+        "I'm here to help! I can assist you with creating tickets, tracking status, finding information, requesting services, and much more. I have context about your recent activity and can provide personalized suggestions. What would you like to do?",
       type: 'text' as const,
       suggestions: [
         {
@@ -354,16 +385,16 @@ export default function EnhancedCosmoAI() {
           text: 'Go to Dashboard',
           action: 'view_status' as const,
           data: { page: 'dashboard' },
-          confidence: 0.8
+          confidence: 0.8,
         },
         {
           id: 'help-guide',
           text: 'Show Help Guide',
           action: 'search_knowledge' as const,
           data: { category: 'getting-started' },
-          confidence: 0.7
-        }
-      ] as ActionSuggestion[]
+          confidence: 0.7,
+        },
+      ] as ActionSuggestion[],
     };
   };
 
@@ -403,45 +434,55 @@ export default function EnhancedCosmoAI() {
 
   // Message reactions
   const addReaction = (messageId: string, reactionType: MessageReaction['type']) => {
-    setMessages(prev => prev.map(msg => {
-      if (msg.id === messageId) {
-        const newReaction: MessageReaction = {
-          type: reactionType,
-          timestamp: new Date()
-        };
-        return {
-          ...msg,
-          reactions: [...(msg.reactions || []), newReaction]
-        };
-      }
-      return msg;
-    }));
+    setMessages((prev) =>
+      prev.map((msg) => {
+        if (msg.id === messageId) {
+          const newReaction: MessageReaction = {
+            type: reactionType,
+            timestamp: new Date(),
+          };
+          return {
+            ...msg,
+            reactions: [...(msg.reactions || []), newReaction],
+          };
+        }
+        return msg;
+      }),
+    );
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 p-6">
       {/* Header */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-white">
-                <Brain className="w-6 h-6" />
+              <div className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 p-2 text-white">
+                <Brain className="h-6 w-6" />
               </div>
               <div>
                 <CardTitle className="flex items-center gap-2">
                   Cosmo AI Assistant
-                  <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100">
+                  <Badge
+                    variant="secondary"
+                    className="bg-gradient-to-r from-blue-100 to-purple-100"
+                  >
                     Enhanced
                   </Badge>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Contextual AI with persistent memory and proactive suggestions
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Select value={chatMode} onValueChange={(value: string) => setChatMode(value as 'chat' | 'assistant' | 'expert')}>
+              <Select
+                value={chatMode}
+                onValueChange={(value: string) =>
+                  setChatMode(value as 'chat' | 'assistant' | 'expert')
+                }
+              >
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -456,7 +497,11 @@ export default function EnhancedCosmoAI() {
                 size="sm"
                 onClick={() => setShowSuggestions(!showSuggestions)}
               >
-                {showSuggestions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {showSuggestions ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
@@ -467,24 +512,32 @@ export default function EnhancedCosmoAI() {
       {showSuggestions && proactiveSuggestions.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Sparkles className="h-4 w-4" />
               Proactive Suggestions
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {proactiveSuggestions.map((suggestion) => (
-              <div key={suggestion.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                <div className={`w-2 h-2 rounded-full ${
-                  suggestion.priority === 'high' ? 'bg-red-500' :
-                  suggestion.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                }`} />
+              <div
+                key={suggestion.id}
+                className="hover:bg-muted/50 flex items-center gap-3 rounded-lg border p-3 transition-colors"
+              >
+                <div
+                  className={`h-2 w-2 rounded-full ${
+                    suggestion.priority === 'high'
+                      ? 'bg-red-500'
+                      : suggestion.priority === 'medium'
+                        ? 'bg-yellow-500'
+                        : 'bg-green-500'
+                  }`}
+                />
                 <div className="flex-1">
-                  <h4 className="font-medium text-sm">{suggestion.title}</h4>
-                  <p className="text-xs text-muted-foreground">{suggestion.description}</p>
+                  <h4 className="text-sm font-medium">{suggestion.title}</h4>
+                  <p className="text-muted-foreground text-xs">{suggestion.description}</p>
                 </div>
                 <Button size="sm" variant="outline">
-                  <Zap className="w-3 h-3 mr-1" />
+                  <Zap className="mr-1 h-3 w-3" />
                   Act
                 </Button>
               </div>
@@ -493,7 +546,7 @@ export default function EnhancedCosmoAI() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Quick Actions Sidebar */}
         <Card className="lg:col-span-1">
           <CardHeader>
@@ -517,38 +570,38 @@ export default function EnhancedCosmoAI() {
         {/* Main Chat Interface */}
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle className="text-sm flex items-center justify-between">
+            <CardTitle className="flex items-center justify-between text-sm">
               <span>Conversation</span>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="text-xs">
                   {messages.length} messages
                 </Badge>
                 <Button variant="ghost" size="sm">
-                  <RotateCcw className="w-3 h-3" />
+                  <RotateCcw className="h-3 w-3" />
                 </Button>
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {/* Messages */}
-            <div className="h-96 overflow-y-auto space-y-4 mb-4 p-4 border rounded-lg bg-muted/20">
+            <div className="bg-muted/20 mb-4 h-96 space-y-4 overflow-y-auto rounded-lg border p-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`max-w-[80%] ${
-                    message.sender === 'user' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-white border'
-                  } rounded-lg p-3 shadow-sm`}>
+                  <div
+                    className={`max-w-[80%] ${
+                      message.sender === 'user' ? 'bg-blue-600 text-white' : 'border bg-white'
+                    } rounded-lg p-3 shadow-sm`}
+                  >
                     <div className="flex items-start gap-2">
                       {message.sender === 'cosmo' && (
-                        <Bot className="w-4 h-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                        <Bot className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600" />
                       )}
                       <div className="flex-1">
                         <p className="text-sm">{message.content}</p>
-                        
+
                         {/* Suggestions */}
                         {message.suggestions && message.suggestions.length > 0 && (
                           <div className="mt-3 space-y-1">
@@ -565,13 +618,13 @@ export default function EnhancedCosmoAI() {
                             ))}
                           </div>
                         )}
-                        
+
                         {/* Message metadata */}
-                        <div className="flex items-center justify-between mt-2">
+                        <div className="mt-2 flex items-center justify-between">
                           <span className="text-xs opacity-60">
                             {message.timestamp.toLocaleTimeString()}
                           </span>
-                          
+
                           {/* Reaction buttons for Cosmo messages */}
                           {message.sender === 'cosmo' && (
                             <div className="flex gap-1">
@@ -581,7 +634,7 @@ export default function EnhancedCosmoAI() {
                                 className="h-6 w-6 p-0"
                                 onClick={() => addReaction(message.id, 'helpful')}
                               >
-                                <ThumbsUp className="w-3 h-3" />
+                                <ThumbsUp className="h-3 w-3" />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -589,7 +642,7 @@ export default function EnhancedCosmoAI() {
                                 className="h-6 w-6 p-0"
                                 onClick={() => addReaction(message.id, 'not_helpful')}
                               >
-                                <ThumbsDown className="w-3 h-3" />
+                                <ThumbsDown className="h-3 w-3" />
                               </Button>
                             </div>
                           )}
@@ -599,30 +652,30 @@ export default function EnhancedCosmoAI() {
                   </div>
                 </div>
               ))}
-              
+
               {/* Loading indicator */}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white border rounded-lg p-3 shadow-sm">
+                  <div className="rounded-lg border bg-white p-3 shadow-sm">
                     <div className="flex items-center gap-2">
-                      <Bot className="w-4 h-4 text-blue-600 animate-pulse" />
+                      <Bot className="h-4 w-4 animate-pulse text-blue-600" />
                       <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" />
-                        <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-100" />
-                        <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-200" />
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600" />
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 delay-100" />
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 delay-200" />
                       </div>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
             <div className="space-y-3">
               <div className="flex gap-2">
-                <div className="flex-1 relative">
+                <div className="relative flex-1">
                   <Input
                     ref={inputRef}
                     value={inputText}
@@ -637,21 +690,17 @@ export default function EnhancedCosmoAI() {
                     disabled={isLoading}
                     className="pr-20"
                   />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                  <div className="absolute top-1/2 right-2 flex -translate-y-1/2 gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0"
                       onClick={toggleVoiceInput}
                     >
-                      {isListening ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
+                      {isListening ? <MicOff className="h-3 w-3" /> : <Mic className="h-3 w-3" />}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                    >
-                      <Paperclip className="w-3 h-3" />
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                      <Paperclip className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
@@ -660,14 +709,14 @@ export default function EnhancedCosmoAI() {
                   disabled={isLoading || !inputText.trim()}
                   className="px-6"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="h-4 w-4" />
                 </Button>
               </div>
-              
+
               {/* Context indicators */}
               {conversationContext && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock className="w-3 h-3" />
+                <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                  <Clock className="h-3 w-3" />
                   <span>Session active</span>
                   <span>•</span>
                   <span>{conversationContext.recentTickets.length} recent tickets</span>

@@ -22,7 +22,7 @@ const DEFAULT_CONFIG = {
     primaryColor: '#1D4ED8',
     secondaryColor: '#9333EA',
     welcomeMessage: 'Welcome to the Help Desk',
-    helpMessage: 'Need to report an issue?'
+    helpMessage: 'Need to report an issue?',
   },
 
   // Security settings (UI configurable with validation)
@@ -31,7 +31,7 @@ const DEFAULT_CONFIG = {
     maxPinLength: 8,
     sessionMaxAge: 86400000, // 24 hours
     maxLoginAttempts: 5,
-    lockoutDuration: 900000 // 15 minutes
+    lockoutDuration: 900000, // 15 minutes
   },
 
   // Application behavior (UI configurable)
@@ -41,7 +41,7 @@ const DEFAULT_CONFIG = {
     enableRegistration: true,
     requireEmailVerification: false,
     enableGuestAccess: false,
-    maintenanceMode: false
+    maintenanceMode: false,
   },
 
   // Search settings (UI configurable)
@@ -51,7 +51,7 @@ const DEFAULT_CONFIG = {
     maxSearchResults: 100,
     searchTimeout: 10000,
     enableSearchSuggestions: true,
-    enableSearchAnalytics: true
+    enableSearchAnalytics: true,
   },
 
   // Rate limiting (performance tuning)
@@ -60,7 +60,7 @@ const DEFAULT_CONFIG = {
     windowMs: 900000, // 15 minutes
     maxRequests: 100,
     skipSuccessfulRequests: false,
-    skipFailedRequests: false
+    skipFailedRequests: false,
   },
 
   // Feature toggles (UI configurable)
@@ -72,7 +72,7 @@ const DEFAULT_CONFIG = {
     pushNotifications: false,
     darkModeSupport: true,
     multiLanguageSupport: false,
-    statusPages: false
+    statusPages: false,
   },
 
   // Status messages (UI configurable)
@@ -83,7 +83,7 @@ const DEFAULT_CONFIG = {
     meeting: 'In a Meeting - Back Soon',
     brb: 'Be Right Back',
     lunch: 'Out to Lunch - Back in 1 Hour',
-    unavailable: 'Status Unavailable'
+    unavailable: 'Status Unavailable',
   },
 
   // Email templates (UI configurable)
@@ -93,8 +93,8 @@ const DEFAULT_CONFIG = {
     welcomeSubject: 'Welcome to Nova Universe',
     passwordResetSubject: 'Password Reset Request',
     ticketCreatedSubject: 'Ticket Created: {{ticketId}}',
-    ticketUpdatedSubject: 'Ticket Updated: {{ticketId}}'
-  }
+    ticketUpdatedSubject: 'Ticket Updated: {{ticketId}}',
+  },
 };
 
 // Configuration cache
@@ -137,10 +137,10 @@ class ConfigurationManager {
 
       // Store in database
       await this.saveToDatabase(key, value, userId);
-      
+
       // Invalidate cache
       this.invalidateCache();
-      
+
       logger.info('Configuration updated', { key, userId, hasValue: value !== null });
       return true;
     } catch (error) {
@@ -156,7 +156,7 @@ class ConfigurationManager {
   static async getFullConfig() {
     // Check cache
     const now = Date.now();
-    if (configCache && (now - cacheTimestamp) < CACHE_TTL) {
+    if (configCache && now - cacheTimestamp < CACHE_TTL) {
       return configCache;
     }
 
@@ -191,17 +191,17 @@ class ConfigurationManager {
     try {
       // Ensure database is ready
       await db.ensureReady();
-      
+
       const query = 'SELECT key, value FROM configurations';
       const result = await db.query(query);
       const rows = result.rows || [];
 
       const config = {};
-      rows.forEach(row => {
+      rows.forEach((row) => {
         try {
           const value = JSON.parse(row.value);
           this.setNestedValue(config, row.key, value);
-        } catch (error) {
+        } catch {
           // If it's not valid JSON, use the string value directly
           this.setNestedValue(config, row.key, row.value);
         }
@@ -292,9 +292,9 @@ class ConfigurationManager {
       (config_key, config_value, updated_by, updated_at, enabled) 
       VALUES (?, ?, ?, datetime('now'), 1)
     `;
-    
+
     return new Promise((resolve, reject) => {
-      db.run(query, [key, JSON.stringify(value), userId], function(err) {
+      db.run(query, [key, JSON.stringify(value), userId], function (err) {
         if (err) reject(err);
         else resolve(this.lastID);
       });
@@ -314,7 +314,12 @@ class ConfigurationManager {
         return Number.isInteger(value) && value >= 1 && value <= 20;
       }
       if (key === 'security.maxPinLength') {
-        return Number.isInteger(value) && value >= 1 && value <= 20 && value >= (await this.get('security.minPinLength', 4));
+        return (
+          Number.isInteger(value) &&
+          value >= 1 &&
+          value <= 20 &&
+          value >= (await this.get('security.minPinLength', 4))
+        );
       }
       if (key === 'security.maxLoginAttempts') {
         return Number.isInteger(value) && value >= 1 && value <= 20;
@@ -381,7 +386,7 @@ class ConfigurationManager {
    */
   static mergeConfigurations(base, override) {
     const result = JSON.parse(JSON.stringify(base));
-    
+
     function merge(target, source) {
       for (const key in source) {
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
@@ -392,7 +397,7 @@ class ConfigurationManager {
         }
       }
     }
-    
+
     merge(result, override);
     return result;
   }
@@ -421,7 +426,7 @@ class ConfigurationManager {
           enabled INTEGER DEFAULT 1
         )
       `;
-      
+
       await new Promise((resolve, reject) => {
         db.run(createTableQuery, [], (err) => {
           if (err) reject(err);
@@ -431,7 +436,7 @@ class ConfigurationManager {
 
       // Load initial configuration to populate cache
       await this.getFullConfig();
-      
+
       logger.info('Configuration management system initialized');
     } catch (error) {
       logger.error('Failed to initialize configuration system:', error);
@@ -448,7 +453,7 @@ class ConfigurationManager {
       return {
         timestamp: new Date().toISOString(),
         version: '1.0',
-        configuration: config
+        configuration: config,
       };
     } catch (error) {
       logger.error('Error exporting configuration:', error);
@@ -471,7 +476,7 @@ class ConfigurationManager {
       // Validate and import each configuration item
       const promises = [];
       const flatConfig = this.flattenObject(configData.configuration);
-      
+
       for (const [key, value] of Object.entries(flatConfig)) {
         if (await this.validateConfigValue(key, value)) {
           promises.push(this.saveToDatabase(key, value, userId));
@@ -480,7 +485,7 @@ class ConfigurationManager {
 
       await Promise.all(promises);
       this.invalidateCache();
-      
+
       logger.info('Configuration imported successfully', { userId, itemCount: promises.length });
       return true;
     } catch (error) {
@@ -497,17 +502,17 @@ class ConfigurationManager {
    */
   static flattenObject(obj, prefix = '') {
     const flattened = {};
-    
+
     for (const key in obj) {
       const newKey = prefix ? `${prefix}.${key}` : key;
-      
+
       if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
         Object.assign(flattened, this.flattenObject(obj[key], newKey));
       } else {
         flattened[newKey] = obj[key];
       }
     }
-    
+
     return flattened;
   }
 }

@@ -3,7 +3,7 @@
 /**
  * Nova Integration Layer Test Suite
  * Comprehensive testing for all connectors and User 360 functionality
- * 
+ *
  * @author Nova Team
  * @version 1.0.0
  */
@@ -21,37 +21,39 @@ console.log('=====================================\n');
 
 async function testConnectorValidation() {
   console.log('📋 Testing Connector Validation...');
-  
+
   try {
     // Test Okta Connector
     const oktaConnector = new OktaConnector();
     const oktaValidation = oktaConnector.validateConfig({
       id: 'okta-test',
       credentials: {
-        apiToken: 'test-token'
+        apiToken: 'test-token',
       },
       endpoints: {
-        oktaUrl: 'https://test.okta.com'
-      }
+        oktaUrl: 'https://test.okta.com',
+      },
     });
-    
+
     console.log('  ✅ Okta connector validation:', oktaValidation.valid ? 'PASS' : 'FAIL');
-    
+
     // Test CrowdStrike Connector
     const crowdstrikeConnector = new CrowdStrikeConnector();
     const crowdstrikeValidation = crowdstrikeConnector.validateConfig({
       id: 'crowdstrike-test',
       credentials: {
         clientId: 'a'.repeat(32), // 32 hex chars
-        clientSecret: 'test-secret'
+        clientSecret: 'test-secret',
       },
       endpoints: {
-        falconUrl: 'https://api.crowdstrike.com'
-      }
+        falconUrl: 'https://api.crowdstrike.com',
+      },
     });
-    
-    console.log('  ✅ CrowdStrike connector validation:', crowdstrikeValidation.valid ? 'PASS' : 'FAIL');
-    
+
+    console.log(
+      '  ✅ CrowdStrike connector validation:',
+      crowdstrikeValidation.valid ? 'PASS' : 'FAIL',
+    );
   } catch (error) {
     console.log('  ❌ Connector validation test failed:', error.message);
   }
@@ -59,7 +61,7 @@ async function testConnectorValidation() {
 
 async function testConnectorCapabilities() {
   console.log('\n🔧 Testing Connector Capabilities...');
-  
+
   try {
     const connectors = [
       new OktaConnector(),
@@ -67,19 +69,18 @@ async function testConnectorCapabilities() {
       new CrowdStrikeConnector(),
       new IntuneConnector(),
       new SlackConnector(),
-      new ZoomConnector()
+      new ZoomConnector(),
     ];
-    
+
     for (const connector of connectors) {
       const capabilities = connector.getCapabilities();
       console.log(`  ✅ ${connector.name}:`, {
         sync: capabilities.supportsSync,
         push: capabilities.supportsPush,
         poll: capabilities.supportsPoll,
-        dataTypes: capabilities.dataTypes?.length || 0
+        dataTypes: capabilities.dataTypes?.length || 0,
       });
     }
-    
   } catch (error) {
     console.log('  ❌ Capabilities test failed:', error.message);
   }
@@ -87,24 +88,19 @@ async function testConnectorCapabilities() {
 
 async function testDataSchemas() {
   console.log('\n📊 Testing Data Schemas...');
-  
+
   try {
-    const connectors = [
-      new OktaConnector(),
-      new CrowdStrikeConnector(),
-      new JamfConnector()
-    ];
-    
+    const connectors = [new OktaConnector(), new CrowdStrikeConnector(), new JamfConnector()];
+
     for (const connector of connectors) {
       const schema = connector.getSchema();
       console.log(`  ✅ ${connector.name} schema:`, {
         hasInput: !!schema.input,
         hasOutput: !!schema.output,
         inputKeys: Object.keys(schema.input || {}),
-        outputKeys: Object.keys(schema.output || {})
+        outputKeys: Object.keys(schema.output || {}),
       });
     }
-    
   } catch (error) {
     console.log('  ❌ Schema test failed:', error.message);
   }
@@ -112,16 +108,15 @@ async function testDataSchemas() {
 
 async function testIntegrationLayerInitialization() {
   console.log('\n🏗️  Testing Integration Layer Initialization...');
-  
+
   try {
     // Test that the singleton is created properly
     console.log('  ✅ Integration layer singleton created');
     console.log('  ✅ Configuration loaded:', {
       tenantId: novaIntegrationLayer.config?.tenantId || 'default',
       hasDatabase: !!novaIntegrationLayer.config?.database?.url,
-      hasSecurity: !!novaIntegrationLayer.config?.security
+      hasSecurity: !!novaIntegrationLayer.config?.security,
     });
-    
   } catch (error) {
     console.log('  ❌ Integration layer initialization failed:', error.message);
   }
@@ -129,23 +124,22 @@ async function testIntegrationLayerInitialization() {
 
 async function testUser360Methods() {
   console.log('\n👤 Testing User 360 Methods...');
-  
+
   try {
     // Test method existence
     const methods = [
       'getUserProfile',
-      'getUserAssets', 
+      'getUserAssets',
       'getUserTickets',
       'getUserActivity',
       'updateUserProfile',
-      'mergeUserProfiles'
+      'mergeUserProfiles',
     ];
-    
+
     for (const method of methods) {
       const exists = typeof novaIntegrationLayer[method] === 'function';
       console.log(`  ${exists ? '✅' : '❌'} ${method}: ${exists ? 'EXISTS' : 'MISSING'}`);
     }
-    
   } catch (error) {
     console.log('  ❌ User 360 methods test failed:', error.message);
   }
@@ -153,7 +147,7 @@ async function testUser360Methods() {
 
 async function testHelperMethods() {
   console.log('\n🛠️  Testing Helper Methods...');
-  
+
   try {
     // Test helper method existence
     const helpers = [
@@ -162,14 +156,13 @@ async function testHelperMethods() {
       'fetchUserActivityFromConnector',
       'mergeConnectorData',
       'getConnectorUserId',
-      'mergeProfileData'
+      'mergeProfileData',
     ];
-    
+
     for (const helper of helpers) {
       const exists = typeof novaIntegrationLayer[helper] === 'function';
       console.log(`  ${exists ? '✅' : '❌'} ${helper}: ${exists ? 'EXISTS' : 'MISSING'}`);
     }
-    
   } catch (error) {
     console.log('  ❌ Helper methods test failed:', error.message);
   }
@@ -177,7 +170,7 @@ async function testHelperMethods() {
 
 async function testIndustryStandardCompliance() {
   console.log('\n🏅 Testing Industry Standard Compliance...');
-  
+
   try {
     console.log('  ✅ Circuit breaker pattern: Implemented');
     console.log('  ✅ Rate limiting: Implemented');
@@ -189,7 +182,6 @@ async function testIndustryStandardCompliance() {
     console.log('  ✅ Data validation: Implemented');
     console.log('  ✅ Configuration management: Implemented');
     console.log('  ✅ Connector abstraction: Implemented');
-    
   } catch (error) {
     console.log('  ❌ Compliance test failed:', error.message);
   }
@@ -197,7 +189,7 @@ async function testIndustryStandardCompliance() {
 
 async function runAllTests() {
   const startTime = Date.now();
-  
+
   await testConnectorValidation();
   await testConnectorCapabilities();
   await testDataSchemas();
@@ -205,9 +197,9 @@ async function runAllTests() {
   await testUser360Methods();
   await testHelperMethods();
   await testIndustryStandardCompliance();
-  
+
   const duration = Date.now() - startTime;
-  
+
   console.log('\n🎉 Test Suite Complete!');
   console.log(`⏱️  Total execution time: ${duration}ms`);
   console.log('\n📋 Summary:');
@@ -221,7 +213,7 @@ async function runAllTests() {
 }
 
 // Run the test suite
-runAllTests().catch(error => {
+runAllTests().catch((error) => {
   console.error('❌ Test suite failed:', error);
   process.exit(1);
 });

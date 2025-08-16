@@ -6,7 +6,9 @@ import bcrypt from 'bcryptjs';
 async function seed() {
   console.log('Seeding UAT data...');
   // Ensure roles exist (db initialization covers this, but re-assert minimal)
-  await db.query("INSERT INTO roles (id, name) VALUES (1,'superadmin') ON CONFLICT (id) DO NOTHING");
+  await db.query(
+    "INSERT INTO roles (id, name) VALUES (1,'superadmin') ON CONFLICT (id) DO NOTHING",
+  );
   await db.query("INSERT INTO roles (id, name) VALUES (2,'admin') ON CONFLICT (id) DO NOTHING");
   await db.query("INSERT INTO roles (id, name) VALUES (3,'user') ON CONFLICT (id) DO NOTHING");
 
@@ -23,14 +25,14 @@ async function seed() {
       `INSERT INTO users (name, email, password_hash, disabled, created_at, updated_at)
        VALUES ($1,$2,$3,false,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
        ON CONFLICT (email) DO NOTHING RETURNING id`,
-      [u.name, u.email, hash]
+      [u.name, u.email, hash],
     );
     const userId = res.rows?.[0]?.id;
     if (userId) {
       await db.query(
         `INSERT INTO user_roles (user_id, role_id, created_at)
          VALUES ($1,$2,CURRENT_TIMESTAMP) ON CONFLICT DO NOTHING`,
-        [userId, u.roleId]
+        [userId, u.roleId],
       );
     }
   }
@@ -38,10 +40,15 @@ async function seed() {
   // Minimal config defaults
   await db.query(
     `INSERT INTO config (key, value) VALUES ('organizationName','Nova Universe UAT')
-     ON CONFLICT (key) DO NOTHING`
+     ON CONFLICT (key) DO NOTHING`,
   );
 
   console.log('UAT seed complete');
 }
 
-seed().then(()=>process.exit(0)).catch((e)=>{console.error(e);process.exit(1)});
+seed()
+  .then(() => process.exit(0))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

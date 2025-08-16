@@ -11,15 +11,15 @@ const ThemeContext = createContext({
   colorMode: 'light',
   setColorMode: () => {},
   theme: themeConfig,
-  config: designSystemConfig
+  config: designSystemConfig,
 });
 
 // Theme Provider Component
-export function ThemeProvider({ 
-  children, 
+export function ThemeProvider({
+  children,
   defaultColorMode = 'light',
   enableSystemTheme = true,
-  storageKey = 'nova-theme'
+  storageKey = 'nova-theme',
 }) {
   const [colorMode, setColorModeState] = useState(() => {
     // Try to get theme from localStorage first
@@ -28,17 +28,17 @@ export function ThemeProvider({
       if (stored && ['light', 'dark', 'high-contrast'].includes(stored)) {
         return stored;
       }
-      
+
       // Fall back to system preference if enabled
       if (enableSystemTheme && window.matchMedia) {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const prefersHighContrast = window.matchMedia('(prefers-contrast: high)').matches;
-        
+
         if (prefersHighContrast) return 'high-contrast';
         if (prefersDark) return 'dark';
       }
     }
-    
+
     return defaultColorMode;
   });
 
@@ -46,7 +46,7 @@ export function ThemeProvider({
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', colorMode);
-      
+
       // Also update class for compatibility
       document.documentElement.className = document.documentElement.className
         .replace(/theme-\w+/g, '')
@@ -111,23 +111,19 @@ export function ThemeProvider({
     setColorMode,
     theme: themeConfig,
     config: designSystemConfig,
-    
+
     // Helper functions
     isDark: colorMode === 'dark',
     isLight: colorMode === 'light',
     isHighContrast: colorMode === 'high-contrast',
-    
+
     // Toggle between light and dark
     toggleColorMode: () => {
       setColorMode(colorMode === 'light' ? 'dark' : 'light');
-    }
+    },
   };
 
-  return (
-    <ThemeContext.Provider value={contextValue}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 }
 
 // Hook to use theme context
@@ -148,7 +144,7 @@ export function useColorMode() {
     toggleColorMode,
     isDark,
     isLight,
-    isHighContrast
+    isHighContrast,
   };
 }
 
@@ -168,20 +164,20 @@ export function createStyledTheme(colorMode = 'light') {
       content: 'var(--color-content)',
       muted: 'var(--color-muted)',
       white: 'var(--color-white)',
-      black: 'var(--color-black)'
+      black: 'var(--color-black)',
     },
     spacing: {
       xs: 'var(--spacing-xs)',
       sm: 'var(--spacing-sm)',
       md: 'var(--spacing-md)',
       lg: 'var(--spacing-lg)',
-      xl: 'var(--spacing-xl)'
+      xl: 'var(--spacing-xl)',
     },
     typography: {
       fontFamily: {
         sans: 'var(--font-sans)',
         mono: 'var(--font-mono)',
-        display: 'var(--font-display)'
+        display: 'var(--font-display)',
       },
       fontSize: {
         xs: 'var(--text-xs)',
@@ -193,7 +189,7 @@ export function createStyledTheme(colorMode = 'light') {
         '3xl': 'var(--text-3xl)',
         '4xl': 'var(--text-4xl)',
         '5xl': 'var(--text-5xl)',
-        '6xl': 'var(--text-6xl)'
+        '6xl': 'var(--text-6xl)',
       },
       fontWeight: {
         thin: 'var(--font-thin)',
@@ -203,8 +199,8 @@ export function createStyledTheme(colorMode = 'light') {
         semibold: 'var(--font-semibold)',
         bold: 'var(--font-bold)',
         extrabold: 'var(--font-extrabold)',
-        black: 'var(--font-black)'
-      }
+        black: 'var(--font-black)',
+      },
     },
     borderRadius: {
       none: 'var(--radius-none)',
@@ -215,7 +211,7 @@ export function createStyledTheme(colorMode = 'light') {
       xl: 'var(--radius-xl)',
       '2xl': 'var(--radius-2xl)',
       '3xl': 'var(--radius-3xl)',
-      full: 'var(--radius-full)'
+      full: 'var(--radius-full)',
     },
     shadows: {
       xs: 'var(--shadow-xs)',
@@ -226,7 +222,7 @@ export function createStyledTheme(colorMode = 'light') {
       xl: 'var(--shadow-xl)',
       '2xl': 'var(--shadow-2xl)',
       inner: 'var(--shadow-inner)',
-      none: 'var(--shadow-none)'
+      none: 'var(--shadow-none)',
     },
     zIndex: {
       hide: 'var(--z-hide)',
@@ -241,7 +237,7 @@ export function createStyledTheme(colorMode = 'light') {
       popover: 'var(--z-popover)',
       skipLink: 'var(--z-skip-link)',
       toast: 'var(--z-toast)',
-      tooltip: 'var(--z-tooltip)'
+      tooltip: 'var(--z-tooltip)',
     },
     transitions: {
       duration: {
@@ -252,17 +248,17 @@ export function createStyledTheme(colorMode = 'light') {
         300: 'var(--duration-300)',
         500: 'var(--duration-500)',
         700: 'var(--duration-700)',
-        1000: 'var(--duration-1000)'
+        1000: 'var(--duration-1000)',
       },
       easing: {
         linear: 'var(--ease-linear)',
         in: 'var(--ease-in)',
         out: 'var(--ease-out)',
-        inOut: 'var(--ease-in-out)'
-      }
+        inOut: 'var(--ease-in-out)',
+      },
     },
     breakpoints: themeConfig.breakpoints,
-    colorMode
+    colorMode,
   };
 
   return baseTheme;
@@ -286,10 +282,10 @@ export function injectCSSVariables() {
 
   const style = document.createElement('style');
   style.id = 'nova-css-variables';
-  
+
   // Import CSS variables from the design system
   style.textContent = `@import url('./css-variables.css');`;
-  
+
   document.head.appendChild(style);
 }
 
@@ -299,7 +295,7 @@ export function initializeTheme(options = {}) {
     colorMode = 'light',
     enableSystemTheme = true,
     storageKey = 'nova-theme',
-    injectVariables = true
+    injectVariables = true,
   } = options;
 
   // Inject CSS variables if requested
@@ -316,6 +312,6 @@ export function initializeTheme(options = {}) {
   return {
     colorMode,
     enableSystemTheme,
-    storageKey
+    storageKey,
   };
 }

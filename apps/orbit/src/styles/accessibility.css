@@ -99,7 +99,7 @@
 }
 
 :root.enhanced-focus button:focus,
-:root.enhanced-focus [role="button"]:focus,
+:root.enhanced-focus [role='button']:focus,
 :root.enhanced-focus a:focus,
 :root.enhanced-focus input:focus,
 :root.enhanced-focus textarea:focus,
@@ -157,25 +157,25 @@
 }
 
 /* Enhanced Button Styles for Accessibility */
-button[aria-expanded="true"] {
+button[aria-expanded='true'] {
   background-color: var(--accent);
   color: var(--accent-foreground);
 }
 
 /* Improved Focus for Interactive Elements */
-[role="button"],
-[role="link"],
-[role="menuitem"],
-[role="tab"],
-[role="option"] {
+[role='button'],
+[role='link'],
+[role='menuitem'],
+[role='tab'],
+[role='option'] {
   cursor: pointer;
 }
 
-[role="button"]:focus,
-[role="link"]:focus,
-[role="menuitem"]:focus,
-[role="tab"]:focus,
-[role="option"]:focus {
+[role='button']:focus,
+[role='link']:focus,
+[role='menuitem']:focus,
+[role='tab']:focus,
+[role='option']:focus {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
@@ -197,17 +197,17 @@ td {
   padding: 8px 12px;
 }
 
-th[scope="col"] {
+th[scope='col'] {
   background-color: var(--muted);
 }
 
-th[scope="row"] {
+th[scope='row'] {
   background-color: var(--muted);
   font-weight: 600;
 }
 
 /* Focus Management for Modals */
-[role="dialog"] {
+[role='dialog'] {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -220,7 +220,7 @@ th[scope="row"] {
   z-index: 50;
 }
 
-[role="dialog"]:focus {
+[role='dialog']:focus {
   outline: none;
 }
 
@@ -231,9 +231,9 @@ label {
   font-weight: 500;
 }
 
-input[aria-invalid="true"],
-textarea[aria-invalid="true"],
-select[aria-invalid="true"] {
+input[aria-invalid='true'],
+textarea[aria-invalid='true'],
+select[aria-invalid='true'] {
   border-color: var(--destructive);
   background-color: rgba(239, 68, 68, 0.1);
 }
@@ -266,15 +266,15 @@ select[aria-invalid="true"] {
 }
 
 /* Progress Bar Accessibility */
-[role="progressbar"] {
+[role='progressbar'] {
   background-color: var(--muted);
   border-radius: 4px;
   overflow: hidden;
   position: relative;
 }
 
-[role="progressbar"]::before {
-  content: attr(aria-valuenow) "% complete";
+[role='progressbar']::before {
+  content: attr(aria-valuenow) '% complete';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -285,8 +285,8 @@ select[aria-invalid="true"] {
 }
 
 /* Toast/Alert Accessibility */
-[role="alert"],
-[role="status"] {
+[role='alert'],
+[role='status'] {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -295,11 +295,11 @@ select[aria-invalid="true"] {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-[role="alert"] {
+[role='alert'] {
   border-left: 4px solid var(--destructive);
 }
 
-[role="status"] {
+[role='status'] {
   border-left: 4px solid #10b981;
 }
 
@@ -312,7 +312,7 @@ select[aria-invalid="true"] {
 /* Touch Target Improvements */
 @media (pointer: coarse) {
   button,
-  [role="button"],
+  [role='button'],
   a,
   input,
   textarea,
@@ -329,13 +329,13 @@ select[aria-invalid="true"] {
     color: black !important;
     box-shadow: none !important;
   }
-  
+
   a[href]::after {
-    content: " (" attr(href) ")";
+    content: ' (' attr(href) ')';
   }
-  
+
   abbr[title]::after {
-    content: " (" attr(title) ")";
+    content: ' (' attr(title) ')';
   }
 }
 
@@ -351,11 +351,7 @@ select[aria-invalid="true"] {
 }
 
 .pattern-dots {
-  background-image: radial-gradient(
-    circle,
-    currentColor 1px,
-    transparent 1px
-  );
+  background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
   background-size: 8px 8px;
 }
 
@@ -366,7 +362,7 @@ select[aria-invalid="true"] {
 
 .focus-trap::before,
 .focus-trap::after {
-  content: "";
+  content: '';
   position: absolute;
   width: 1px;
   height: 1px;
@@ -386,20 +382,20 @@ a:hover {
 }
 
 /* RTL Support */
-[dir="rtl"] {
+[dir='rtl'] {
   text-align: right;
 }
 
-[dir="rtl"] .flex {
+[dir='rtl'] .flex {
   flex-direction: row-reverse;
 }
 
-[dir="rtl"] .ml-auto {
+[dir='rtl'] .ml-auto {
   margin-left: 0;
   margin-right: auto;
 }
 
-[dir="rtl"] .mr-auto {
+[dir='rtl'] .mr-auto {
   margin-right: 0;
   margin-left: auto;
 }

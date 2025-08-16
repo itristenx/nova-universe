@@ -9,7 +9,9 @@ async function getCorePrisma() {
   try {
     const mod = await import('../../../prisma/generated/core/index.js');
     PrismaClient = mod.PrismaClient;
-    return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+    return new PrismaClient({
+      datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+    });
   } catch (e) {
     logger.warn('Prisma unavailable in Mailroom routes', { error: e?.message });
     return null;
@@ -27,7 +29,18 @@ router.post('/packages', authenticateJWT, canEdit, async (req, res) => {
   try {
     const prisma = await prismaPromise;
     if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
-    const { trackingNumber, carrier, sender, recipientId, department, packageType, assignedLocation, flags, linkedTicketId, linkedAssetId } = req.body || {};
+    const {
+      trackingNumber,
+      carrier,
+      sender,
+      recipientId,
+      department,
+      packageType,
+      assignedLocation,
+      flags,
+      linkedTicketId,
+      linkedAssetId,
+    } = req.body || {};
     const pkg = await prisma.mailroomPackage.create({
       data: {
         trackingNumber,
@@ -111,7 +124,10 @@ router.post('/packages/:id/link-ticket', authenticateJWT, canEdit, async (req, r
     const id = parseInt(req.params.id);
     const { ticketId } = req.body || {};
     if (!ticketId) return res.status(400).json({ error: 'ticketId required' });
-    const pkg = await prisma.mailroomPackage.update({ where: { id }, data: { linkedTicketId: ticketId } });
+    const pkg = await prisma.mailroomPackage.update({
+      where: { id },
+      data: { linkedTicketId: ticketId },
+    });
     res.json({ package: pkg });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -124,7 +140,8 @@ router.post('/packages/bulk', authenticateJWT, canEdit, async (req, res) => {
     const prisma = await prismaPromise;
     if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
     const { packages } = req.body || {};
-    if (!Array.isArray(packages) || packages.length === 0) return res.status(400).json({ error: 'packages array required' });
+    if (!Array.isArray(packages) || packages.length === 0)
+      return res.status(400).json({ error: 'packages array required' });
     const created = await prisma.mailroomPackage.createMany({ data: packages });
     res.status(201).json({ count: created.count });
   } catch (err) {

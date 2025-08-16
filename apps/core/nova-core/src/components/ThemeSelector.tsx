@@ -15,20 +15,20 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ className = '' }) 
       value: 'light',
       label: 'Light',
       icon: SunIcon,
-      description: 'Light mode'
+      description: 'Light mode',
     },
     {
       value: 'dark',
-      label: 'Dark', 
+      label: 'Dark',
       icon: MoonIcon,
-      description: 'Dark mode'
+      description: 'Dark mode',
     },
     {
       value: 'system',
       label: 'System',
       icon: ComputerDesktopIcon,
-      description: 'Follow system preference'
-    }
+      description: 'Follow system preference',
+    },
   ] as const;
 
   return (
@@ -43,15 +43,15 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ className = '' }) 
             variant={mode === theme.value ? 'primary' : 'secondary'}
             size="sm"
             onClick={() => setTheme(theme.value)}
-            className="flex flex-col items-center p-3 h-auto"
+            className="flex h-auto flex-col items-center p-3"
           >
-            <theme.icon className="h-5 w-5 mb-1" />
+            <theme.icon className="mb-1 h-5 w-5" />
             <span className="text-xs">{theme.label}</span>
           </Button>
         ))}
       </div>
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        Current: {themes.find(t => t.value === mode)?.description}
+        Current: {themes.find((t) => t.value === mode)?.description}
       </p>
     </div>
   );

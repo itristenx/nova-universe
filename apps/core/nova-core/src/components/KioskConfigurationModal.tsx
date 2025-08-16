@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal } from '@/components/ui';
 import { ScheduleManager } from '@/components/ScheduleManager';
-import { 
+import {
   CogIcon,
   ClockIcon,
   BellIcon,
   PhotoIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  XMarkIcon
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-import type { 
-  Kiosk, 
-  KioskConfiguration, 
-  ScheduleConfig, 
+import type {
+  Kiosk,
+  KioskConfiguration,
+  ScheduleConfig,
   OfficeHours,
-  GlobalConfiguration
+  GlobalConfiguration,
 } from '@/types';
 
 interface KioskConfigurationModalProps {
@@ -35,7 +35,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
   onClose,
   kiosk,
   globalConfig,
-  onUpdate
+  onUpdate,
 }) => {
   const [activeTab, setActiveTab] = useState<ConfigTab>('status');
   const [kioskConfig, setKioskConfig] = useState<KioskConfiguration | null>(null);
@@ -53,17 +53,21 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
       meetingMessage: 'In a Meeting - Back Soon',
       brbMessage: 'Be Right Back',
       lunchMessage: 'Out to Lunch - Back in 1 Hour',
-      unavailableMessage: 'Status Unavailable'
-    }
+      unavailableMessage: 'Status Unavailable',
+    },
   });
 
-  const [scheduleConfig, setScheduleConfig] = useState<ScheduleConfig>(globalConfig.defaultSchedule);
-  const [officeHoursConfig, setOfficeHoursConfig] = useState<OfficeHours>(globalConfig.defaultOfficeHours);
+  const [scheduleConfig, setScheduleConfig] = useState<ScheduleConfig>(
+    globalConfig.defaultSchedule,
+  );
+  const [officeHoursConfig, setOfficeHoursConfig] = useState<OfficeHours>(
+    globalConfig.defaultOfficeHours,
+  );
   const [brandingConfig, setBrandingConfig] = useState({
     logoUrl: kiosk.effectiveConfig.logoUrl || globalConfig.defaultBranding.logoUrl,
     backgroundUrl: kiosk.effectiveConfig.bgUrl || globalConfig.defaultBranding.backgroundUrl || '',
     welcomeMessage: globalConfig.defaultBranding.welcomeMessage,
-    helpMessage: globalConfig.defaultBranding.helpMessage
+    helpMessage: globalConfig.defaultBranding.helpMessage,
   });
 
   useEffect(() => {
@@ -77,37 +81,49 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
       setLoading(true);
       const config = await api.getKioskConfiguration(kiosk.id);
       setKioskConfig(config);
-      
+
       // Update local state with existing overrides
       if (config.statusConfig) {
         setStatusConfig({
           enabled: config.statusConfig.enabled,
           currentStatus: config.statusConfig.currentStatus,
           customMessages: {
-            openMessage: config.statusConfig.customMessages?.openMessage || statusConfig.customMessages.openMessage,
-            closedMessage: config.statusConfig.customMessages?.closedMessage || statusConfig.customMessages.closedMessage,
-            meetingMessage: config.statusConfig.customMessages?.meetingMessage || statusConfig.customMessages.meetingMessage,
-            brbMessage: config.statusConfig.customMessages?.brbMessage || statusConfig.customMessages.brbMessage,
-            lunchMessage: config.statusConfig.customMessages?.lunchMessage || statusConfig.customMessages.lunchMessage,
-            unavailableMessage: config.statusConfig.customMessages?.unavailableMessage || statusConfig.customMessages.unavailableMessage
-          }
+            openMessage:
+              config.statusConfig.customMessages?.openMessage ||
+              statusConfig.customMessages.openMessage,
+            closedMessage:
+              config.statusConfig.customMessages?.closedMessage ||
+              statusConfig.customMessages.closedMessage,
+            meetingMessage:
+              config.statusConfig.customMessages?.meetingMessage ||
+              statusConfig.customMessages.meetingMessage,
+            brbMessage:
+              config.statusConfig.customMessages?.brbMessage ||
+              statusConfig.customMessages.brbMessage,
+            lunchMessage:
+              config.statusConfig.customMessages?.lunchMessage ||
+              statusConfig.customMessages.lunchMessage,
+            unavailableMessage:
+              config.statusConfig.customMessages?.unavailableMessage ||
+              statusConfig.customMessages.unavailableMessage,
+          },
         });
       }
-      
+
       if (config.scheduleConfig) {
         setScheduleConfig(config.scheduleConfig.schedule);
       }
-      
+
       if (config.officeHoursConfig) {
         setOfficeHoursConfig(config.officeHoursConfig.officeHours);
       }
-      
+
       if (config.brandingConfig) {
         setBrandingConfig({
           logoUrl: config.brandingConfig.logoUrl || brandingConfig.logoUrl,
           backgroundUrl: config.brandingConfig.backgroundUrl || brandingConfig.backgroundUrl,
           welcomeMessage: config.brandingConfig.welcomeMessage || brandingConfig.welcomeMessage,
-          helpMessage: config.brandingConfig.helpMessage || brandingConfig.helpMessage
+          helpMessage: config.brandingConfig.helpMessage || brandingConfig.helpMessage,
         });
       }
     } catch (error) {
@@ -125,7 +141,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
   const saveOverride = async (configType: ConfigTab) => {
     try {
       setSaving(true);
-      
+
       let configData;
       switch (configType) {
         case 'status':
@@ -142,14 +158,18 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
           break;
       }
 
-      await api.setKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType, configData);
-      
+      await api.setKioskOverride(
+        kiosk.id,
+        configType === 'office-hours' ? 'officeHours' : configType,
+        configData,
+      );
+
       addToast({
         type: 'success',
         title: 'Success',
         description: `${configType} configuration saved successfully`,
       });
-      
+
       onUpdate();
       await loadKioskConfiguration();
     } catch (error) {
@@ -167,14 +187,17 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
   const removeOverride = async (configType: ConfigTab) => {
     try {
       setSaving(true);
-      await api.removeKioskOverride(kiosk.id, configType === 'office-hours' ? 'officeHours' : configType);
-      
+      await api.removeKioskOverride(
+        kiosk.id,
+        configType === 'office-hours' ? 'officeHours' : configType,
+      );
+
       addToast({
         type: 'success',
         title: 'Success',
         description: `${configType} override removed - using global settings`,
       });
-      
+
       onUpdate();
       await loadKioskConfiguration();
     } catch (error) {
@@ -191,7 +214,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
 
   const hasOverride = (configType: ConfigTab): boolean => {
     if (!kioskConfig) return false;
-    
+
     switch (configType) {
       case 'status':
         return !!kioskConfig.statusConfig;
@@ -216,36 +239,43 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
   const currentlyUsingGlobal = kiosk.configScope === 'global';
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Configure ${kiosk.id}`}
-      size="xl"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={`Configure ${kiosk.id}`} size="xl">
       <div className="space-y-6">
         {/* Configuration Mode Notice */}
-        <div className={`border rounded-md p-4 ${
-          currentlyUsingGlobal ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'
-        }`}>
+        <div
+          className={`rounded-md border p-4 ${
+            currentlyUsingGlobal ? 'border-blue-200 bg-blue-50' : 'border-orange-200 bg-orange-50'
+          }`}
+        >
           <div className="flex items-start space-x-3">
             {currentlyUsingGlobal ? (
-              <CheckCircleIcon className="h-5 w-5 text-blue-500 mt-0.5" />
+              <CheckCircleIcon className="mt-0.5 h-5 w-5 text-blue-500" />
             ) : (
-              <ExclamationTriangleIcon className="h-5 w-5 text-orange-500 mt-0.5" />
+              <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 text-orange-500" />
             )}
             <div>
-              <h3 className={`text-sm font-medium ${
-                currentlyUsingGlobal ? 'text-blue-800' : 'text-orange-800'
-              }`}>
+              <h3
+                className={`text-sm font-medium ${
+                  currentlyUsingGlobal ? 'text-blue-800' : 'text-orange-800'
+                }`}
+              >
                 Configuration Mode: {kiosk.configScope === 'global' ? 'Global' : 'Individual'}
               </h3>
-              <div className={`mt-2 text-sm ${
-                currentlyUsingGlobal ? 'text-blue-700' : 'text-orange-700'
-              }`}>
+              <div
+                className={`mt-2 text-sm ${
+                  currentlyUsingGlobal ? 'text-blue-700' : 'text-orange-700'
+                }`}
+              >
                 {currentlyUsingGlobal ? (
-                  <p>This kiosk uses global configuration settings. Any overrides you create will switch it to individual mode.</p>
+                  <p>
+                    This kiosk uses global configuration settings. Any overrides you create will
+                    switch it to individual mode.
+                  </p>
                 ) : (
-                  <p>This kiosk has {kiosk.overrideCount} individual override{kiosk.overrideCount !== 1 ? 's' : ''}. Changes will only affect this kiosk.</p>
+                  <p>
+                    This kiosk has {kiosk.overrideCount} individual override
+                    {kiosk.overrideCount !== 1 ? 's' : ''}. Changes will only affect this kiosk.
+                  </p>
                 )}
               </div>
             </div>
@@ -254,7 +284,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <div className="border-primary-600 h-8 w-8 animate-spin rounded-full border-b-2"></div>
           </div>
         ) : (
           <>
@@ -265,18 +295,22 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`group inline-flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
+                    className={`group inline-flex items-center border-b-2 px-1 py-2 text-sm font-medium ${
                       activeTab === tab.id
                         ? 'border-primary-500 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     }`}
                   >
-                    <tab.icon className={`-ml-0.5 mr-2 h-5 w-5 ${
-                      activeTab === tab.id ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
-                    }`} />
+                    <tab.icon
+                      className={`mr-2 -ml-0.5 h-5 w-5 ${
+                        activeTab === tab.id
+                          ? 'text-primary-500'
+                          : 'text-gray-400 group-hover:text-gray-500'
+                      }`}
+                    />
                     {tab.name}
                     {hasOverride(tab.id) && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      <span className="ml-2 inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800">
                         Override
                       </span>
                     )}
@@ -289,7 +323,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
             <div className="space-y-6">
               {activeTab === 'status' && (
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium text-gray-900">Status Configuration</h3>
                     <div className="flex space-x-2">
                       {hasOverride('status') && (
@@ -299,15 +333,11 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                           onClick={() => removeOverride('status')}
                           disabled={saving}
                         >
-                          <XMarkIcon className="h-4 w-4 mr-1" />
+                          <XMarkIcon className="mr-1 h-4 w-4" />
                           Remove Override
                         </Button>
                       )}
-                      <Button
-                        onClick={() => saveOverride('status')}
-                        disabled={saving}
-                        size="sm"
-                      >
+                      <Button onClick={() => saveOverride('status')} disabled={saving} size="sm">
                         {hasOverride('status') ? 'Update Override' : 'Create Override'}
                       </Button>
                     </div>
@@ -320,7 +350,9 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                         type="checkbox"
                         id="status-enabled"
                         checked={statusConfig.enabled}
-                        onChange={(e) => setStatusConfig(prev => ({ ...prev, enabled: e.target.checked }))}
+                        onChange={(e) =>
+                          setStatusConfig((prev) => ({ ...prev, enabled: e.target.checked }))
+                        }
                         className="rounded border-gray-300"
                       />
                       <label htmlFor="status-enabled" className="text-sm font-medium text-gray-700">
@@ -330,17 +362,22 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
 
                     {/* Current Status */}
                     <div>
-                      <label htmlFor="current-status" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="current-status"
+                        className="mb-2 block text-sm font-medium text-gray-700"
+                      >
                         Current Status
                       </label>
                       <select
                         id="current-status"
                         value={statusConfig.currentStatus}
-                        onChange={(e) => setStatusConfig(prev => ({ 
-                          ...prev, 
-                          currentStatus: e.target.value as any 
-                        }))}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        onChange={(e) =>
+                          setStatusConfig((prev) => ({
+                            ...prev,
+                            currentStatus: e.target.value as any,
+                          }))
+                        }
+                        className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                       >
                         <option value="open">Open</option>
                         <option value="closed">Closed</option>
@@ -352,95 +389,143 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                     </div>
 
                     {/* Status Messages */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
-                        <label htmlFor="open-message" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="open-message"
+                          className="mb-2 block text-sm font-medium text-gray-700"
+                        >
                           Open Message
                         </label>
                         <input
                           id="open-message"
                           type="text"
                           value={statusConfig.customMessages.openMessage}
-                          onChange={(e) => setStatusConfig(prev => ({
-                            ...prev,
-                            customMessages: { ...prev.customMessages, openMessage: e.target.value }
-                          }))}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          onChange={(e) =>
+                            setStatusConfig((prev) => ({
+                              ...prev,
+                              customMessages: {
+                                ...prev.customMessages,
+                                openMessage: e.target.value,
+                              },
+                            }))
+                          }
+                          className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                         />
                       </div>
                       <div>
-                        <label htmlFor="closed-message" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="closed-message"
+                          className="mb-2 block text-sm font-medium text-gray-700"
+                        >
                           Closed Message
                         </label>
                         <input
                           id="closed-message"
                           type="text"
                           value={statusConfig.customMessages.closedMessage}
-                          onChange={(e) => setStatusConfig(prev => ({
-                            ...prev,
-                            customMessages: { ...prev.customMessages, closedMessage: e.target.value }
-                          }))}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          onChange={(e) =>
+                            setStatusConfig((prev) => ({
+                              ...prev,
+                              customMessages: {
+                                ...prev.customMessages,
+                                closedMessage: e.target.value,
+                              },
+                            }))
+                          }
+                          className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                         />
                       </div>
                       <div>
-                        <label htmlFor="meeting-message" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="meeting-message"
+                          className="mb-2 block text-sm font-medium text-gray-700"
+                        >
                           Meeting Message
                         </label>
                         <input
                           id="meeting-message"
                           type="text"
                           value={statusConfig.customMessages.meetingMessage}
-                          onChange={(e) => setStatusConfig(prev => ({
-                            ...prev,
-                            customMessages: { ...prev.customMessages, meetingMessage: e.target.value }
-                          }))}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          onChange={(e) =>
+                            setStatusConfig((prev) => ({
+                              ...prev,
+                              customMessages: {
+                                ...prev.customMessages,
+                                meetingMessage: e.target.value,
+                              },
+                            }))
+                          }
+                          className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                         />
                       </div>
                       <div>
-                        <label htmlFor="brb-message" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="brb-message"
+                          className="mb-2 block text-sm font-medium text-gray-700"
+                        >
                           Be Right Back Message
                         </label>
                         <input
                           id="brb-message"
                           type="text"
                           value={statusConfig.customMessages.brbMessage}
-                          onChange={(e) => setStatusConfig(prev => ({
-                            ...prev,
-                            customMessages: { ...prev.customMessages, brbMessage: e.target.value }
-                          }))}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          onChange={(e) =>
+                            setStatusConfig((prev) => ({
+                              ...prev,
+                              customMessages: {
+                                ...prev.customMessages,
+                                brbMessage: e.target.value,
+                              },
+                            }))
+                          }
+                          className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label htmlFor="lunch-message" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="lunch-message"
+                          className="mb-2 block text-sm font-medium text-gray-700"
+                        >
                           Out to Lunch Message
                         </label>
                         <input
                           id="lunch-message"
                           type="text"
                           value={statusConfig.customMessages.lunchMessage}
-                          onChange={(e) => setStatusConfig(prev => ({
-                            ...prev,
-                            customMessages: { ...prev.customMessages, lunchMessage: e.target.value }
-                          }))}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          onChange={(e) =>
+                            setStatusConfig((prev) => ({
+                              ...prev,
+                              customMessages: {
+                                ...prev.customMessages,
+                                lunchMessage: e.target.value,
+                              },
+                            }))
+                          }
+                          className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label htmlFor="unavailable-message" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="unavailable-message"
+                          className="mb-2 block text-sm font-medium text-gray-700"
+                        >
                           Status Unavailable Message
                         </label>
                         <input
                           id="unavailable-message"
                           type="text"
                           value={statusConfig.customMessages.unavailableMessage}
-                          onChange={(e) => setStatusConfig(prev => ({
-                            ...prev,
-                            customMessages: { ...prev.customMessages, unavailableMessage: e.target.value }
-                          }))}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          onChange={(e) =>
+                            setStatusConfig((prev) => ({
+                              ...prev,
+                              customMessages: {
+                                ...prev.customMessages,
+                                unavailableMessage: e.target.value,
+                              },
+                            }))
+                          }
+                          className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                         />
                       </div>
                     </div>
@@ -450,7 +535,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
 
               {activeTab === 'schedule' && (
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium text-gray-900">Schedule Configuration</h3>
                     <div className="flex space-x-2">
                       {hasOverride('schedule') && (
@@ -460,15 +545,11 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                           onClick={() => removeOverride('schedule')}
                           disabled={saving}
                         >
-                          <XMarkIcon className="h-4 w-4 mr-1" />
+                          <XMarkIcon className="mr-1 h-4 w-4" />
                           Remove Override
                         </Button>
                       )}
-                      <Button
-                        onClick={() => saveOverride('schedule')}
-                        disabled={saving}
-                        size="sm"
-                      >
+                      <Button onClick={() => saveOverride('schedule')} disabled={saving} size="sm">
                         {hasOverride('schedule') ? 'Update Override' : 'Create Override'}
                       </Button>
                     </div>
@@ -487,8 +568,10 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
 
               {activeTab === 'office-hours' && (
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium text-gray-900">Office Hours Configuration</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-gray-900">
+                      Office Hours Configuration
+                    </h3>
                     <div className="flex space-x-2">
                       {hasOverride('office-hours') && (
                         <Button
@@ -497,7 +580,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                           onClick={() => removeOverride('office-hours')}
                           disabled={saving}
                         >
-                          <XMarkIcon className="h-4 w-4 mr-1" />
+                          <XMarkIcon className="mr-1 h-4 w-4" />
                           Remove Override
                         </Button>
                       )}
@@ -526,7 +609,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
 
               {activeTab === 'branding' && (
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium text-gray-900">Branding Configuration</h3>
                     <div className="flex space-x-2">
                       {hasOverride('branding') && (
@@ -536,67 +619,77 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                           onClick={() => removeOverride('branding')}
                           disabled={saving}
                         >
-                          <XMarkIcon className="h-4 w-4 mr-1" />
+                          <XMarkIcon className="mr-1 h-4 w-4" />
                           Remove Override
                         </Button>
                       )}
-                      <Button
-                        onClick={() => saveOverride('branding')}
-                        disabled={saving}
-                        size="sm"
-                      >
+                      <Button onClick={() => saveOverride('branding')} disabled={saving} size="sm">
                         {hasOverride('branding') ? 'Update Override' : 'Create Override'}
                       </Button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
                         Logo URL
                       </label>
                       <input
                         type="url"
                         value={brandingConfig.logoUrl}
-                        onChange={(e) => setBrandingConfig(prev => ({ ...prev, logoUrl: e.target.value }))}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        onChange={(e) =>
+                          setBrandingConfig((prev) => ({ ...prev, logoUrl: e.target.value }))
+                        }
+                        className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                         placeholder="https://example.com/logo.png"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
                         Background URL (Optional)
                       </label>
                       <input
                         type="url"
                         value={brandingConfig.backgroundUrl}
-                        onChange={(e) => setBrandingConfig(prev => ({ ...prev, backgroundUrl: e.target.value }))}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        onChange={(e) =>
+                          setBrandingConfig((prev) => ({ ...prev, backgroundUrl: e.target.value }))
+                        }
+                        className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                         placeholder="https://example.com/background.jpg"
                       />
                     </div>
                     <div>
-                      <label htmlFor="welcome-message" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="welcome-message"
+                        className="mb-2 block text-sm font-medium text-gray-700"
+                      >
                         Welcome Message
                       </label>
                       <input
                         id="welcome-message"
                         type="text"
                         value={brandingConfig.welcomeMessage}
-                        onChange={(e) => setBrandingConfig(prev => ({ ...prev, welcomeMessage: e.target.value }))}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        onChange={(e) =>
+                          setBrandingConfig((prev) => ({ ...prev, welcomeMessage: e.target.value }))
+                        }
+                        className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                       />
                     </div>
                     <div>
-                      <label htmlFor="help-message" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="help-message"
+                        className="mb-2 block text-sm font-medium text-gray-700"
+                      >
                         Help Message
                       </label>
                       <input
                         id="help-message"
                         type="text"
                         value={brandingConfig.helpMessage}
-                        onChange={(e) => setBrandingConfig(prev => ({ ...prev, helpMessage: e.target.value }))}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        onChange={(e) =>
+                          setBrandingConfig((prev) => ({ ...prev, helpMessage: e.target.value }))
+                        }
+                        className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
                       />
                     </div>
                   </div>
@@ -604,10 +697,10 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
                   {/* Logo Preview */}
                   {brandingConfig.logoUrl && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
                         Logo Preview
                       </label>
-                      <div className="border rounded-md p-4 bg-gray-50">
+                      <div className="rounded-md border bg-gray-50 p-4">
                         <img
                           src={brandingConfig.logoUrl}
                           alt="Logo Preview"
@@ -626,7 +719,7 @@ export const KioskConfigurationModal: React.FC<KioskConfigurationModalProps> = (
         )}
       </div>
 
-      <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
+      <div className="mt-6 flex justify-end space-x-3 border-t pt-6">
         <Button variant="secondary" onClick={onClose}>
           Close
         </Button>

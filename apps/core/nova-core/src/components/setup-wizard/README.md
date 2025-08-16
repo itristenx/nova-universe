@@ -27,9 +27,7 @@ function App() {
     // Redirect to main application
   };
 
-  return (
-    <SetupWizardApp onComplete={handleSetupComplete} />
-  );
+  return <SetupWizardApp onComplete={handleSetupComplete} />;
 }
 ```
 
@@ -41,7 +39,7 @@ import { SetupProvider, SetupWizard } from './components/setup-wizard';
 function App() {
   return (
     <SetupProvider>
-      <SetupWizard 
+      <SetupWizard
         onComplete={() => {
           // Handle completion
         }}
@@ -54,32 +52,38 @@ function App() {
 ## 📋 Setup Steps
 
 ### 1. Welcome Step
+
 - Introduction to Nova Universe
 - Auto-setup option for testing
 - Platform overview
 
 ### 2. Organization Setup
+
 - Company name and domain
 - Organization size and industry
 - Timezone configuration
 - Basic branding elements
 
 ### 3. Admin Account Creation
+
 - Administrator user details
 - Password setup with strength validation
 - Contact information
 
 ### 4. Database Configuration
+
 - Database type selection (PostgreSQL, SQLite, MySQL)
 - Connection details and testing
 - Migration options
 
 ### 5. Email & Notifications
+
 - Email provider setup (SMTP, SendGrid, Amazon SES)
 - From address configuration
 - Connection testing
 
 ### 6. Authentication & Security
+
 - SSO configuration (SAML, OAuth, LDAP)
 - SCIM provisioning setup
 - Multi-factor authentication
@@ -87,6 +91,7 @@ function App() {
 - Session management
 
 ### 7. Services & Integrations
+
 - **Team Communication**
   - Slack integration
   - Microsoft Teams webhooks
@@ -98,6 +103,7 @@ function App() {
   - AI assistant with OpenAI integration
 
 ### 8. Branding & Appearance
+
 - Logo and favicon upload
 - Color theme customization
 - Dark mode configuration
@@ -105,6 +111,7 @@ function App() {
 - Custom CSS support
 
 ### 9. Completion
+
 - Setup summary
 - Platform launch options
 - Next steps guidance
@@ -112,6 +119,7 @@ function App() {
 ## 🎨 Design Principles
 
 ### Apple-Inspired Interface
+
 - **Progressive Disclosure**: Show only relevant options
 - **Clean Typography**: Clear hierarchy and readable fonts
 - **Spacious Layout**: Generous whitespace and padding
@@ -119,6 +127,7 @@ function App() {
 - **Smooth Transitions**: Animated state changes
 
 ### User Experience
+
 - **Logical Flow**: Steps build upon each other naturally
 - **Optional Configuration**: Core features vs. advanced options
 - **Helpful Guidance**: Tooltips, descriptions, and examples
@@ -128,6 +137,7 @@ function App() {
 ## 🛠 Technical Architecture
 
 ### Component Structure
+
 ```
 setup-wizard/
 ├── SetupWizardApp.tsx          # Main app with provider
@@ -148,12 +158,14 @@ setup-wizard/
 ```
 
 ### State Management
+
 - **Context API**: Centralized state with React Context
 - **Local Storage**: Automatic progress persistence
 - **Validation**: Step-by-step validation with error handling
 - **Type Safety**: Full TypeScript support
 
 ### Data Flow
+
 1. User interacts with step component
 2. Data flows to context via `updateStepData`
 3. Validation runs automatically
@@ -163,6 +175,7 @@ setup-wizard/
 ## 🔧 Configuration Options
 
 ### SetupData Interface
+
 ```typescript
 interface SetupData {
   organization?: OrganizationData;
@@ -176,7 +189,9 @@ interface SetupData {
 ```
 
 ### Auto-Setup for Testing
+
 The wizard includes a one-click auto-setup feature that:
+
 - Fills all forms with realistic test data
 - Configures safe default options
 - Uses local/console options for external services
@@ -185,12 +200,14 @@ The wizard includes a one-click auto-setup feature that:
 ## 🎯 Validation & Error Handling
 
 ### Real-time Validation
+
 - Form field validation on blur/change
 - Visual error indicators with helpful messages
 - Async validation for connections and availability
 - Progressive validation (doesn't block until needed)
 
 ### Connection Testing
+
 - Database connection verification
 - Email provider testing
 - Integration endpoint validation
@@ -199,6 +216,7 @@ The wizard includes a one-click auto-setup feature that:
 ## 🌙 Theming & Customization
 
 ### Built-in Themes
+
 - **Nova (Default)**: Purple and blue gradients
 - **Ocean**: Blue and cyan tones
 - **Forest**: Green nature theme
@@ -206,6 +224,7 @@ The wizard includes a one-click auto-setup feature that:
 - **Professional**: Neutral business colors
 
 ### Custom Styling
+
 - CSS custom properties for colors
 - Tailwind CSS classes for layout
 - Dark mode with system preference detection
@@ -214,22 +233,24 @@ The wizard includes a one-click auto-setup feature that:
 ## 🚦 Integration Points
 
 ### Backend API Endpoints
+
 The wizard expects these API endpoints:
 
 ```typescript
 // Testing endpoints
-POST /api/setup/test-database
-POST /api/setup/test-email
-POST /api/setup/test-slack
-POST /api/setup/test-teams
-POST /api/setup/test-s3
-POST /api/setup/test-elasticsearch
+POST / api / setup / test - database;
+POST / api / setup / test - email;
+POST / api / setup / test - slack;
+POST / api / setup / test - teams;
+POST / api / setup / test - s3;
+POST / api / setup / test - elasticsearch;
 
 // Setup completion
-POST /api/setup/complete
+POST / api / setup / complete;
 ```
 
 ### Data Submission
+
 Final setup data is submitted as JSON with the complete configuration:
 
 ```typescript
@@ -244,11 +265,13 @@ Final setup data is submitted as JSON with the complete configuration:
 ## 📱 Responsive Design
 
 ### Breakpoints
+
 - **Mobile**: Stack sidebar below content
 - **Tablet**: Narrow sidebar with icons
 - **Desktop**: Full sidebar with navigation
 
 ### Touch Support
+
 - Large touch targets (44px minimum)
 - Swipe gestures for step navigation
 - Keyboard navigation support
@@ -256,12 +279,14 @@ Final setup data is submitted as JSON with the complete configuration:
 ## ♿ Accessibility
 
 ### WCAG 2.1 Compliance
+
 - **Keyboard Navigation**: Full keyboard support
 - **Screen Reader**: Semantic HTML and ARIA labels
 - **Color Contrast**: WCAG AA compliant colors
 - **Focus Management**: Clear focus indicators
 
 ### Progressive Enhancement
+
 - Works without JavaScript (basic form submission)
 - Graceful degradation for older browsers
 - Reduced motion respect
@@ -269,12 +294,14 @@ Final setup data is submitted as JSON with the complete configuration:
 ## 🔐 Security Considerations
 
 ### Data Handling
+
 - Sensitive data (passwords, API keys) never logged
 - Secure transmission (HTTPS only)
 - Local storage encryption for sensitive fields
 - Automatic cleanup of temporary data
 
 ### Validation
+
 - Server-side validation for all inputs
 - SQL injection prevention
 - XSS protection with sanitization
@@ -283,13 +310,16 @@ Final setup data is submitted as JSON with the complete configuration:
 ## 🧪 Testing
 
 ### Auto-Setup Feature
+
 Use the "Auto-Setup for Testing" button to:
+
 - Quickly populate all forms with test data
 - Use safe, local-only configurations
 - Skip to completion for rapid testing
 - Generate realistic sample data
 
 ### Manual Testing
+
 1. Test each step individually
 2. Verify validation errors display correctly
 3. Test connection testing features
@@ -299,6 +329,7 @@ Use the "Auto-Setup for Testing" button to:
 ## 📝 Future Enhancements
 
 ### Planned Features
+
 - **Setup Templates**: Pre-configured setups for common use cases
 - **Bulk Import**: CSV/JSON configuration import
 - **Setup Analytics**: Track completion rates and common issues
@@ -306,6 +337,7 @@ Use the "Auto-Setup for Testing" button to:
 - **Multi-language**: Internationalization support
 
 ### Integration Roadmap
+
 - **Active Directory**: Enterprise directory integration
 - **Okta/Auth0**: Additional SSO providers
 - **Webhooks**: Custom webhook configurations

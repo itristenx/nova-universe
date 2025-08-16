@@ -34,4 +34,4 @@ export function checkPermissions(requiredPermissions = []) {
       return res.status(500).json({ error: 'RBAC processing error' });
     }
   };
-};
+}

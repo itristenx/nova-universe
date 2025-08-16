@@ -4,7 +4,9 @@ async function getCmdbPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
     const mod = await import('../../../../prisma/generated/cmdb/index.js');
-    return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
+    return new mod.PrismaClient({
+      datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } },
+    });
   } catch {
     return null;
   }
@@ -14,7 +16,9 @@ async function getCorePrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
     const mod = await import('../../../../prisma/generated/core/index.js');
-    return new mod.PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+    return new mod.PrismaClient({
+      datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+    });
   } catch {
     return null;
   }
@@ -47,17 +51,17 @@ class CmdbService {
           include: {
             ciType_rel: true,
             outgoingRelationships: {
-              include: { targetCi: true, relationshipType: true }
+              include: { targetCi: true, relationshipType: true },
             },
             incomingRelationships: {
-              include: { sourceCi: true, relationshipType: true }
-            }
+              include: { sourceCi: true, relationshipType: true },
+            },
           },
-          orderBy: [ { updatedAt: 'desc' }, { name: 'asc' } ],
+          orderBy: [{ updatedAt: 'desc' }, { name: 'asc' }],
           skip,
-          take: pagination.limit
+          take: pagination.limit,
         }),
-        client.configurationItem.count({ where })
+        client.configurationItem.count({ where }),
       ]);
 
       return {
@@ -68,8 +72,8 @@ class CmdbService {
           total,
           totalPages: Math.ceil(total / pagination.limit),
           hasNext: pagination.page * pagination.limit < total,
-          hasPrev: pagination.page > 1
-        }
+          hasPrev: pagination.page > 1,
+        },
       };
     } catch (error) {
       logger.error('Error fetching Configuration Items:', error);
@@ -84,14 +88,28 @@ class CmdbService {
     try {
       const { client } = await this._getClients();
       const where = this._isUUID(identifier) ? { id: identifier } : { ciId: identifier };
-      const include = { ciType_rel: true, hardwareDetails: true, softwareDetails: true, applicationDetails: true, networkDetails: true, serviceDetails: true, databaseDetails: true, virtualDetails: true, facilityDetails: true };
+      const include = {
+        ciType_rel: true,
+        hardwareDetails: true,
+        softwareDetails: true,
+        applicationDetails: true,
+        networkDetails: true,
+        serviceDetails: true,
+        databaseDetails: true,
+        virtualDetails: true,
+        facilityDetails: true,
+      };
       if (options.includeRelationships) {
         include.outgoingRelationships = { include: { targetCi: true, relationshipType: true } };
         include.incomingRelationships = { include: { sourceCi: true, relationshipType: true } };
       }
       const ci = await client.configurationItem.findFirst({ where, include });
       if (options.includeHistory && ci) {
-        const auditLogs = await client.ciAuditLog.findMany({ where: { ciId: ci.id }, orderBy: { timestamp: 'desc' }, take: 50 });
+        const auditLogs = await client.ciAuditLog.findMany({
+          where: { ciId: ci.id },
+          orderBy: { timestamp: 'desc' },
+          take: 50,
+        });
         ci.auditHistory = auditLogs;
       }
       return ci;
@@ -112,7 +130,7 @@ class CmdbService {
 
       // Validate CI Type exists
       const ciType = await client.ciType.findUnique({
-        where: { id: ciData.ciType }
+        where: { id: ciData.ciType },
       });
 
       if (!ciType) {
@@ -124,11 +142,11 @@ class CmdbService {
         data: {
           ...ciData,
           ciId,
-          ciStatus: ciData.ciStatus || ciType.defaultStatus || 'Active'
+          ciStatus: ciData.ciStatus || ciType.defaultStatus || 'Active',
         },
         include: {
-          ciType_rel: true
-        }
+          ciType_rel: true,
+        },
       });
 
       // Create audit log
@@ -148,9 +166,7 @@ class CmdbService {
   async updateConfigurationItem(identifier, updateData) {
     try {
       const { client } = await this._getClients();
-      const where = this._isUUID(identifier) 
-        ? { id: identifier }
-        : { ciId: identifier };
+      const where = this._isUUID(identifier) ? { id: identifier } : { ciId: identifier };
 
       // Get existing CI for audit trail
       const existingCi = await client.configurationItem.findFirst({ where });
@@ -163,8 +179,8 @@ class CmdbService {
         where: { id: existingCi.id },
         data: updateData,
         include: {
-          ciType_rel: true
-        }
+          ciType_rel: true,
+        },
       });
 
       // Create audit logs for changed fields
@@ -184,9 +200,7 @@ class CmdbService {
   async deleteConfigurationItem(identifier, deletedBy) {
     try {
       const { client } = await this._getClients();
-      const where = this._isUUID(identifier) 
-        ? { id: identifier }
-        : { ciId: identifier };
+      const where = this._isUUID(identifier) ? { id: identifier } : { ciId: identifier };
 
       const ci = await client.configurationItem.findFirst({ where });
       if (!ci) {
@@ -196,12 +210,9 @@ class CmdbService {
       // Check for active relationships
       const relationshipCount = await client.ciRelationship.count({
         where: {
-          OR: [
-            { sourceCiId: ci.id },
-            { targetCiId: ci.id }
-          ],
-          isActive: true
-        }
+          OR: [{ sourceCiId: ci.id }, { targetCiId: ci.id }],
+          isActive: true,
+        },
       });
 
       if (relationshipCount > 0) {
@@ -231,12 +242,9 @@ class CmdbService {
         where: { isActive: true },
         include: {
           parentType: true,
-          childTypes: true
+          childTypes: true,
         },
-        orderBy: [
-          { category: 'asc' },
-          { name: 'asc' }
-        ]
+        orderBy: [{ category: 'asc' }, { name: 'asc' }],
       });
     } catch (error) {
       logger.error('Error fetching CI Types:', error);
@@ -253,8 +261,8 @@ class CmdbService {
       const ciType = await client.ciType.create({
         data: typeData,
         include: {
-          parentType: true
-        }
+          parentType: true,
+        },
       });
 
       logger.info(`CI Type created: ${ciType.name}`);
@@ -275,11 +283,11 @@ class CmdbService {
         include: {
           configurationItems: {
             include: {
-              configurationItem: true
-            }
-          }
+              configurationItem: true,
+            },
+          },
         },
-        orderBy: { name: 'asc' }
+        orderBy: { name: 'asc' },
       });
     } catch (error) {
       logger.error('Error fetching Business Services:', error);
@@ -296,27 +304,29 @@ class CmdbService {
       today.setHours(0, 0, 0, 0);
 
       // Calculate metrics
-      const [
-        totalCis,
-        activeCis,
-        staleCis,
-        orphanedCis,
-        totalRelationships,
-        discoveredCis
-      ] = await Promise.all([
-        this._getClients().then(({ client }) => client.configurationItem.count()),
-        this._getClients().then(({ client }) => client.configurationItem.count({ where: { ciStatus: 'Active' } })),
-        this._getClients().then(({ client }) => client.configurationItem.count({
-          where: {
-            updatedAt: {
-              lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
-            }
-          }
-        })),
-        this._getOrphanedCisCount(),
-        this._getClients().then(({ client }) => client.ciRelationship.count({ where: { isActive: true } })),
-        this._getClients().then(({ client }) => client.configurationItem.count({ where: { isDiscovered: true } }))
-      ]);
+      const [totalCis, activeCis, staleCis, orphanedCis, totalRelationships, discoveredCis] =
+        await Promise.all([
+          this._getClients().then(({ client }) => client.configurationItem.count()),
+          this._getClients().then(({ client }) =>
+            client.configurationItem.count({ where: { ciStatus: 'Active' } }),
+          ),
+          this._getClients().then(({ client }) =>
+            client.configurationItem.count({
+              where: {
+                updatedAt: {
+                  lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+                },
+              },
+            }),
+          ),
+          this._getOrphanedCisCount(),
+          this._getClients().then(({ client }) =>
+            client.ciRelationship.count({ where: { isActive: true } }),
+          ),
+          this._getClients().then(({ client }) =>
+            client.configurationItem.count({ where: { isDiscovered: true } }),
+          ),
+        ]);
 
       // Calculate completeness score (percentage of CIs with required fields)
       const completenessScore = await this._calculateCompletenessScore();
@@ -338,14 +348,16 @@ class CmdbService {
           activeCis,
           staleCis,
           orphanedCis,
-          completenessScore
-        })
+          completenessScore,
+        }),
       };
 
       // Store the health record
-      await this._getClients().then(({ client }) => client.cmdbHealth.create({
-        data: health
-      }));
+      await this._getClients().then(({ client }) =>
+        client.cmdbHealth.create({
+          data: health,
+        }),
+      );
 
       return health;
     } catch (error) {
@@ -366,7 +378,7 @@ class CmdbService {
       isPrimary = false,
       startDate,
       responsibilities = [],
-      assignedBy
+      assignedBy,
     } = ownershipData;
 
     // Validate user exists in core database
@@ -374,7 +386,7 @@ class CmdbService {
       const { coreDb } = await this._getClients();
       const user = await coreDb.user.findUnique({
         where: { id: userId },
-        select: { id: true, name: true, email: true }
+        select: { id: true, name: true, email: true },
       });
       if (!user) {
         throw new Error('User not found');
@@ -385,7 +397,7 @@ class CmdbService {
     if (supportGroupId) {
       const { client } = await this._getClients();
       const supportGroup = await client.supportGroup.findUnique({
-        where: { id: supportGroupId }
+        where: { id: supportGroupId },
       });
       if (!supportGroup) {
         throw new Error('Support group not found');
@@ -399,9 +411,9 @@ class CmdbService {
         ciId_ownershipType_userId: {
           ciId,
           ownershipType,
-          userId
-        }
-      }
+          userId,
+        },
+      },
     });
 
     if (existingOwnership) {
@@ -417,8 +429,8 @@ class CmdbService {
         isPrimary,
         startDate,
         responsibilities,
-        assignedBy
-      }
+        assignedBy,
+      },
     });
 
     return ownership;
@@ -431,9 +443,9 @@ class CmdbService {
         ciId_ownershipType_userId: {
           ciId,
           ownershipType,
-          userId
-        }
-      }
+          userId,
+        },
+      },
     });
 
     return { success: true };
@@ -446,10 +458,10 @@ class CmdbService {
         ciId_ownershipType_userId: {
           ciId,
           ownershipType,
-          userId
-        }
+          userId,
+        },
       },
-      data: updateData
+      data: updateData,
     });
 
     return ownership;
@@ -465,10 +477,10 @@ class CmdbService {
             id: true,
             name: true,
             type: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
 
     // Enrich with user details from core database
@@ -477,10 +489,10 @@ class CmdbService {
         const { coreDb } = await this._getClients();
         const user = await coreDb.user.findUnique({
           where: { id: owner.userId },
-          select: { id: true, name: true, email: true, department: true }
+          select: { id: true, name: true, email: true, department: true },
         });
         return { ...owner, user };
-      })
+      }),
     );
 
     return enrichedOwnership;
@@ -491,7 +503,7 @@ class CmdbService {
     const where = {
       userId,
       isActive: true,
-      ...(ownershipType && { ownershipType })
+      ...(ownershipType && { ownershipType }),
     };
 
     const ownership = await client.ciOwnership.findMany({
@@ -499,22 +511,22 @@ class CmdbService {
       include: {
         configurationItem: {
           include: {
-            ciType_rel: true
-          }
-        }
-      }
+            ciType_rel: true,
+          },
+        },
+      },
     });
 
-    return ownership.map(owner => ({
+    return ownership.map((owner) => ({
       ...owner.configurationItem,
       ownershipDetails: {
         ownershipType: owner.ownershipType,
         isPrimary: owner.isPrimary,
         responsibilities: owner.responsibilities,
-        assignedAt: owner.assignedAt
-      }
+        assignedAt: owner.assignedAt,
+      },
     }));
-  }  /**
+  } /**
    * Build WHERE clause for CI filtering
    */
   _buildCiWhereClause(filters) {
@@ -539,7 +551,7 @@ class CmdbService {
     if (filters.location) {
       where.location = {
         contains: filters.location,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
@@ -549,7 +561,7 @@ class CmdbService {
         { description: { contains: filters.search, mode: 'insensitive' } },
         { serialNumber: { contains: filters.search, mode: 'insensitive' } },
         { assetTag: { contains: filters.search, mode: 'insensitive' } },
-        { ciId: { contains: filters.search, mode: 'insensitive' } }
+        { ciId: { contains: filters.search, mode: 'insensitive' } },
       ];
     }
 
@@ -580,10 +592,10 @@ class CmdbService {
     while (exists) {
       const number = Math.floor(100000 + Math.random() * 900000);
       ciId = `${prefix}${number}`;
-      
+
       const { client } = await this._getClients();
       const existing = await client.configurationItem.findUnique({
-        where: { ciId }
+        where: { ciId },
       });
       exists = !!existing;
     }
@@ -612,8 +624,8 @@ class CmdbService {
           fieldName,
           oldValue: oldValue ? String(oldValue) : null,
           newValue: newValue ? String(newValue) : null,
-          changedBy
-        }
+          changedBy,
+        },
       });
     } catch (error) {
       logger.error('Error creating audit log:', error);
@@ -628,11 +640,11 @@ class CmdbService {
 
     for (const [field, newValue] of Object.entries(updateData)) {
       if (field === 'updatedBy' || field === 'updatedAt') continue;
-      
+
       const oldValue = existingCi[field];
       if (oldValue !== newValue) {
         auditPromises.push(
-          this._createAuditLog(existingCi.id, 'UPDATE', field, oldValue, newValue, changedBy)
+          this._createAuditLog(existingCi.id, 'UPDATE', field, oldValue, newValue, changedBy),
         );
       }
     }
@@ -651,19 +663,19 @@ class CmdbService {
           AND: [
             {
               outgoingRelationships: {
-                none: { isActive: true }
-              }
+                none: { isActive: true },
+              },
             },
             {
               incomingRelationships: {
-                none: { isActive: true }
-              }
-            }
-          ]
+                none: { isActive: true },
+              },
+            },
+          ],
         },
-        select: { id: true }
+        select: { id: true },
       });
-      
+
       return result.length;
     } catch (error) {
       logger.error('Error counting orphaned CIs:', error);
@@ -677,27 +689,25 @@ class CmdbService {
   async _calculateCompletenessScore() {
     try {
       const requiredFields = ['name', 'ciType', 'environment', 'owner'];
-      
+
       const { client } = await this._getClients();
       const totalCis = await client.configurationItem.count();
       if (totalCis === 0) return 100;
 
       let completeCount = 0;
-      
+
       const cis = await client.configurationItem.findMany({
         select: {
           name: true,
           ciType: true,
           environment: true,
-          owner: true
-        }
+          owner: true,
+        },
       });
 
       for (const ci of cis) {
-        const isComplete = requiredFields.every(field => 
-          ci[field] && ci[field].trim() !== ''
-        );
-        
+        const isComplete = requiredFields.every((field) => ci[field] && ci[field].trim() !== '');
+
         if (isComplete) {
           completeCount++;
         }

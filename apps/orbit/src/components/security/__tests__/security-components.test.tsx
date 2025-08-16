@@ -9,7 +9,9 @@ describe('PermissionManager', () => {
     render(<PermissionManager />);
 
     expect(screen.getByRole('heading', { name: /permission management/i })).toBeInTheDocument();
-    expect(screen.getByText(/manage your account permissions and security settings/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/manage your account permissions and security settings/i),
+    ).toBeInTheDocument();
   });
 
   it('displays permission categories with proper roles', () => {
@@ -33,9 +35,9 @@ describe('PermissionManager', () => {
     // Test toggling a permission
     const firstSwitch = switches[0];
     const initialState = firstSwitch.getAttribute('aria-checked');
-    
+
     await userEvent.click(firstSwitch);
-    
+
     // State should change
     expect(firstSwitch).toHaveAttribute('aria-checked', initialState === 'true' ? 'false' : 'true');
   });
@@ -71,7 +73,7 @@ describe('PermissionManager', () => {
 
     // All switches should be properly accessible
     const switches = screen.getAllByRole('switch');
-    switches.forEach(switchEl => {
+    switches.forEach((switchEl) => {
       expect(switchEl).toHaveAttribute('aria-checked');
     });
   });
@@ -83,7 +85,7 @@ describe('SecureAuthFlow', () => {
 
     // The card title contains "Secure Account Setup"
     expect(screen.getByText(/secure account setup/i)).toBeInTheDocument();
-    
+
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInputs = screen.getAllByLabelText(/password/i);
     const continueButton = screen.getByRole('button', { name: /continue/i });
@@ -94,7 +96,7 @@ describe('SecureAuthFlow', () => {
 
     // Check accessibility attributes
     expect(emailInput).toHaveAttribute('type', 'email');
-    passwordInputs.forEach(input => {
+    passwordInputs.forEach((input) => {
       expect(input).toHaveAttribute('type', 'password');
     });
   });
@@ -104,15 +106,16 @@ describe('SecureAuthFlow', () => {
 
     const passwordInputs = screen.getAllByLabelText(/password/i);
     const passwordInput = passwordInputs[0];
-    
+
     // Type a password to trigger strength indicator
     await userEvent.type(passwordInput, 'weak');
-    
+
     // Should show password strength feedback
     await waitFor(() => {
-      const strengthIndicator = screen.queryByText(/password strength/i) || 
-                              screen.queryByText(/weak/i) || 
-                              document.querySelector('[data-testid*="strength"]');
+      const strengthIndicator =
+        screen.queryByText(/password strength/i) ||
+        screen.queryByText(/weak/i) ||
+        document.querySelector('[data-testid*="strength"]');
       if (strengthIndicator) {
         expect(strengthIndicator).toBeInTheDocument();
       }
@@ -123,7 +126,7 @@ describe('SecureAuthFlow', () => {
     render(<SecureAuthFlow />);
 
     const continueButton = screen.getByRole('button', { name: /continue/i });
-    
+
     // Try to submit without filling fields
     await userEvent.click(continueButton);
 
@@ -140,7 +143,7 @@ describe('SecureAuthFlow', () => {
     render(<SecureAuthFlow />);
 
     const emailInput = screen.getByLabelText(/email/i);
-    
+
     // Email input should be focusable
     emailInput.focus();
     expect(emailInput).toHaveFocus();
@@ -166,7 +169,7 @@ describe('SecureAuthFlow', () => {
     const passwordInputs = screen.getAllByLabelText(/password/i);
 
     expect(emailInput).toHaveAttribute('id');
-    passwordInputs.forEach(input => {
+    passwordInputs.forEach((input) => {
       expect(input).toHaveAttribute('id');
     });
 
@@ -193,7 +196,7 @@ describe('DataPrivacyDashboard', () => {
     expect(switches.length).toBeGreaterThan(0);
 
     // Each switch should have proper ARIA states
-    switches.forEach(switchEl => {
+    switches.forEach((switchEl) => {
       expect(switchEl).toHaveAttribute('aria-checked');
     });
   });
@@ -205,13 +208,16 @@ describe('DataPrivacyDashboard', () => {
     if (switches.length > 0) {
       const firstSwitch = switches[0];
       const initialState = firstSwitch.getAttribute('aria-checked');
-      
+
       // Only test if switch is not disabled
       if (!firstSwitch.hasAttribute('disabled')) {
         await userEvent.click(firstSwitch);
-        
+
         // State should change
-        expect(firstSwitch).toHaveAttribute('aria-checked', initialState === 'true' ? 'false' : 'true');
+        expect(firstSwitch).toHaveAttribute(
+          'aria-checked',
+          initialState === 'true' ? 'false' : 'true',
+        );
       }
     }
   });
@@ -244,7 +250,9 @@ describe('DataPrivacyDashboard', () => {
     expect(headings.length).toBeGreaterThan(0);
 
     // Check for common privacy setting categories
-    expect(screen.getByText(/usage analytics/i) || screen.getByText(/analytics/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/usage analytics/i) || screen.getByText(/analytics/i),
+    ).toBeInTheDocument();
   });
 
   it('supports keyboard navigation through privacy controls', async () => {
@@ -269,7 +277,7 @@ describe('DataPrivacyDashboard', () => {
 
     // Interactive elements should have proper roles
     const switches = screen.getAllByRole('switch');
-    switches.forEach(switchEl => {
+    switches.forEach((switchEl) => {
       expect(switchEl).toHaveAttribute('aria-checked');
     });
   });
@@ -278,12 +286,12 @@ describe('DataPrivacyDashboard', () => {
     render(<DataPrivacyDashboard />);
 
     // Look for essential cookies - should be enabled and disabled
-    const essentialSwitches = screen.getAllByRole('switch').filter(switchEl => 
-      switchEl.hasAttribute('disabled')
-    );
+    const essentialSwitches = screen
+      .getAllByRole('switch')
+      .filter((switchEl) => switchEl.hasAttribute('disabled'));
 
     // If there are disabled switches, they should be checked
-    essentialSwitches.forEach(essentialSwitch => {
+    essentialSwitches.forEach((essentialSwitch) => {
       expect(essentialSwitch).toBeChecked();
       expect(essentialSwitch).toBeDisabled();
     });

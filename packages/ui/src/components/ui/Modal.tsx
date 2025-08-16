@@ -32,15 +32,12 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         {/* Backdrop */}
-        <div
-          className="fixed inset-0 modal"
-          onClick={onClose}
-        />
+        <div className="modal fixed inset-0" onClick={onClose} />
         {/* Modal */}
         <div className={`relative w-full ${sizeClasses[size]} modal`}>
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b">
-            <h3 className="text-lg font-medium modal-title">{title}</h3>
+          <div className="flex items-center justify-between border-b p-6">
+            <h3 className="modal-title text-lg font-medium">{title}</h3>
             {showCloseButton && (
               <Button
                 variant="ghost"
@@ -53,9 +50,7 @@ export const Modal: React.FC<ModalProps> = ({
             )}
           </div>
           {/* Content */}
-          <div className="p-6 modal-content">
-            {children}
-          </div>
+          <div className="modal-content p-6">{children}</div>
         </div>
       </div>
     </div>

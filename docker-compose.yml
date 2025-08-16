@@ -11,9 +11,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-nova_universe}
       POSTGRES_USER: ${POSTGRES_USER:-nova_admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nova_password}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=en_US.UTF-8'
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/postgres-init:/docker-entrypoint-initdb.d
@@ -21,7 +21,8 @@ services:
     networks:
       - nova-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nova_admin} -d ${POSTGRES_DB:-nova_universe}"]
+      test:
+        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-nova_admin} -d ${POSTGRES_DB:-nova_universe}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -60,7 +61,7 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     ports:
-      - "${PGADMIN_PORT:-8080}:80"
+      - '${PGADMIN_PORT:-8080}:80'
     volumes:
       - pgadmin_data:/var/lib/pgadmin
       - ./scripts/pgadmin-servers.json:/pgladmin4/servers.json:ro
@@ -82,7 +83,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-mongo_secure_pass_2024}
       MONGO_INITDB_DATABASE: ${MONGO_DB:-nova_logs}
     ports:
-      - "${MONGO_PORT:-27017}:27017"
+      - '${MONGO_PORT:-27017}:27017'
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
@@ -91,7 +92,7 @@ services:
     networks:
       - nova-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      test: ['CMD', 'mongosh', '--eval', "db.runCommand('ping').ok"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -111,15 +112,15 @@ services:
       - cluster.name=nova-cluster
       - node.name=nova-node-1
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
       - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
         hard: -1
     ports:
-      - "${ELASTIC_PORT:-9200}:9200"
-      - "9300:9300"
+      - '${ELASTIC_PORT:-9200}:9200'
+      - '9300:9300'
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
       - ./scripts/elasticsearch-config:/usr/share/elasticsearch/config/scripts
@@ -127,7 +128,7 @@ services:
     networks:
       - nova-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: ['CMD-SHELL', 'curl -f http://localhost:9200/_cluster/health || exit 1']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -146,7 +147,7 @@ services:
       - SERVER_NAME=nova-kibana
       - SERVER_HOST=0.0.0.0
     ports:
-      - "${KIBANA_PORT:-5601}:5601"
+      - '${KIBANA_PORT:-5601}:5601'
     networks:
       - nova-network
     depends_on:
@@ -167,7 +168,7 @@ services:
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGOEXPRESS_USERNAME:-admin}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGOEXPRESS_PASSWORD:-admin123}
     ports:
-      - "${MONGOEXPRESS_PORT:-8081}:8081"
+      - '${MONGOEXPRESS_PORT:-8081}:8081'
     networks:
       - nova-network
     depends_on:
@@ -189,13 +190,13 @@ services:
       --maxmemory 256mb
       --maxmemory-policy allkeys-lru
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - '${REDIS_PORT:-6379}:6379'
     volumes:
       - redis_data:/data
     networks:
       - nova-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5

@@ -12,11 +12,11 @@ import { configureSAML, generateSAMLMetadata } from '../middleware/saml.js';
 import scimRouter from './scim.js';
 import rolesRouter from './roles.js';
 import {
-    disable2FA,
-    generate2FASecret,
-    get2FAStatus,
-    regenerateBackupCodes,
-    verify2FASetup
+  disable2FA,
+  generate2FASecret,
+  get2FAStatus,
+  regenerateBackupCodes,
+  verify2FASetup,
 } from '../middleware/twoFactor.js';
 
 const router = express.Router();
@@ -44,7 +44,7 @@ const router = express.Router();
  *         createdAt:
  *           type: string
  *           format: date-time
- *     
+ *
  *     AuthResponse:
  *       type: object
  *       properties:
@@ -92,39 +92,35 @@ const router = express.Router();
  *       401:
  *         description: Not authenticated
  */
-router.get('/session',
-  authenticateJWT,
-  createRateLimit(15 * 60 * 1000, 100),
-  async (req, res) => {
-    try {
-      const user = req.user;
-      
-      res.json({
-        success: true,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          roles: user.roles || [],
-          lastLogin: user.lastLogin,
-          createdAt: user.createdAt
-        },
-        session: {
-          loginAt: user.loginAt || new Date().toISOString(),
-          ipAddress: req.ip,
-          userAgent: req.get('User-Agent')
-        }
-      });
-    } catch (error) {
-      logger.error('Error getting session info:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to get session information',
-        errorCode: 'SESSION_ERROR'
-      });
-    }
+router.get('/session', authenticateJWT, createRateLimit(15 * 60 * 1000, 100), async (req, res) => {
+  try {
+    const user = req.user;
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles || [],
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt,
+      },
+      session: {
+        loginAt: user.loginAt || new Date().toISOString(),
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      },
+    });
+  } catch (error) {
+    logger.error('Error getting session info:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get session information',
+      errorCode: 'SESSION_ERROR',
+    });
   }
-);
+});
 
 /**
  * @swagger
@@ -161,11 +157,12 @@ router.get('/session',
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login',
+router.post(
+  '/login',
   createRateLimit(15 * 60 * 1000, 5), // 5 attempts per 15 minutes
   [
     body('email').isEmail().withMessage('Valid email is required'),
-    body('password').notEmpty().withMessage('Password is required')
+    body('password').notEmpty().withMessage('Password is required'),
   ],
   async (req, res) => {
     try {
@@ -175,99 +172,106 @@ router.post('/login',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
       const { email, password } = req.body;
 
       // Get user from database
-      db.get('SELECT * FROM users WHERE email = $1 AND disabled = false', [email], async (err, user) => {
-        if (err) {
-          logger.error('Database error during login:', err);
-          return res.status(500).json({
-            success: false,
-            error: 'Authentication failed',
-            errorCode: 'DB_ERROR'
-          });
-        }
+      db.get(
+        'SELECT * FROM users WHERE email = $1 AND disabled = false',
+        [email],
+        async (err, user) => {
+          if (err) {
+            logger.error('Database error during login:', err);
+            return res.status(500).json({
+              success: false,
+              error: 'Authentication failed',
+              errorCode: 'DB_ERROR',
+            });
+          }
 
-        if (!user) {
-          return res.status(401).json({
-            success: false,
-            error: 'Invalid credentials',
-            errorCode: 'INVALID_CREDENTIALS'
-          });
-        }
+          if (!user) {
+            return res.status(401).json({
+              success: false,
+              error: 'Invalid credentials',
+              errorCode: 'INVALID_CREDENTIALS',
+            });
+          }
 
-        // Debug logging
-        console.log('User object keys:', Object.keys(user));
-        console.log('User password_hash:', user.password_hash);
+          // Debug logging
+          console.log('User object keys:', Object.keys(user));
+          console.log('User password_hash:', user.password_hash);
 
-        // Check password
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
-        if (!isValidPassword) {
-          return res.status(401).json({
-            success: false,
-            error: 'Invalid credentials',
-            errorCode: 'INVALID_CREDENTIALS'
-          });
-        }
+          // Check password
+          const isValidPassword = await bcrypt.compare(password, user.password_hash);
+          if (!isValidPassword) {
+            return res.status(401).json({
+              success: false,
+              error: 'Invalid credentials',
+              errorCode: 'INVALID_CREDENTIALS',
+            });
+          }
 
-        // Get user roles
-        db.all(
-          `SELECT r.name FROM roles r 
+          // Get user roles
+          db.all(
+            `SELECT r.name FROM roles r 
            JOIN user_roles ur ON r.id = ur.roleId 
            WHERE ur.userId = $1`,
-          [user.id],
-          (roleErr, roles) => {
-            if (roleErr) {
-              logger.error('Error fetching user roles:', roleErr);
-              return res.status(500).json({
-                success: false,
-                error: 'Authentication failed',
-                errorCode: 'ROLES_ERROR'
-              });
-            }
+            [user.id],
+            (roleErr, roles) => {
+              if (roleErr) {
+                logger.error('Error fetching user roles:', roleErr);
+                return res.status(500).json({
+                  success: false,
+                  error: 'Authentication failed',
+                  errorCode: 'ROLES_ERROR',
+                });
+              }
 
-            const userRoles = roles ? roles.map(r => r.name) : [];
+              const userRoles = roles ? roles.map((r) => r.name) : [];
 
-            // Update last login
-            db.run('UPDATE users SET "lastLoginAt" = $1 WHERE id = $2', [new Date().toISOString(), user.id]);
+              // Update last login
+              db.run('UPDATE users SET "lastLoginAt" = $1 WHERE id = $2', [
+                new Date().toISOString(),
+                user.id,
+              ]);
 
-            // Generate JWT token
-            const token = sign({
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              roles: userRoles
-            });
-
-            res.json({
-              success: true,
-              token,
-              user: {
+              // Generate JWT token
+              const token = sign({
                 id: user.id,
                 name: user.name,
                 email: user.email,
                 roles: userRoles,
-                lastLogin: new Date().toISOString(),
-                createdAt: user.created_at
-              },
-              expiresIn: process.env.JWT_EXPIRES_IN || '1h'
-            });
-          }
-        );
-      });
+              });
+
+              res.json({
+                success: true,
+                token,
+                user: {
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
+                  roles: userRoles,
+                  lastLogin: new Date().toISOString(),
+                  createdAt: user.created_at,
+                },
+                expiresIn: process.env.JWT_EXPIRES_IN || '1h',
+              });
+            },
+          );
+        },
+      );
     } catch (error) {
       logger.error('Error during login:', error);
       res.status(500).json({
         success: false,
         error: 'Authentication failed',
-        errorCode: 'LOGIN_ERROR'
+        errorCode: 'LOGIN_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -305,66 +309,62 @@ router.post('/login',
  *       401:
  *         description: Not authenticated
  */
-router.get('/me/roles',
-  authenticateJWT,
-  createRateLimit(15 * 60 * 1000, 100),
-  async (req, res) => {
-    try {
-      const userId = req.user.id;
+router.get('/me/roles', authenticateJWT, createRateLimit(15 * 60 * 1000, 100), async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-      // Get user roles with permissions
-      db.all(
-        `SELECT r.name, r.description, p.name as permission_name
+    // Get user roles with permissions
+    db.all(
+      `SELECT r.name, r.description, p.name as permission_name
          FROM roles r
          JOIN user_roles ur ON r.id = ur.roleId
          LEFT JOIN role_permissions rp ON r.id = rp.roleId
          LEFT JOIN permissions p ON rp.permissionId = p.id
          WHERE ur.userId = $1
          ORDER BY r.name, p.name`,
-        [userId],
-        (err, rows) => {
-          if (err) {
-            logger.error('Error fetching user roles and permissions:', err);
-            return res.status(500).json({
-              success: false,
-              error: 'Failed to fetch roles',
-              errorCode: 'ROLES_ERROR'
-            });
-          }
-
-          // Group permissions by role
-          const rolesMap = {};
-          rows.forEach(row => {
-            if (!rolesMap[row.name]) {
-              rolesMap[row.name] = {
-                name: row.name,
-                description: row.description,
-                permissions: []
-              };
-            }
-            if (row.permission_name) {
-              rolesMap[row.name].permissions.push(row.permission_name);
-            }
-          });
-
-          const roles = Object.values(rolesMap);
-
-          res.json({
-            success: true,
-            roles
+      [userId],
+      (err, rows) => {
+        if (err) {
+          logger.error('Error fetching user roles and permissions:', err);
+          return res.status(500).json({
+            success: false,
+            error: 'Failed to fetch roles',
+            errorCode: 'ROLES_ERROR',
           });
         }
-      );
-    } catch (error) {
-      logger.error('Error getting user roles:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to get user roles',
-        errorCode: 'ROLES_ERROR'
-      });
-    }
+
+        // Group permissions by role
+        const rolesMap = {};
+        rows.forEach((row) => {
+          if (!rolesMap[row.name]) {
+            rolesMap[row.name] = {
+              name: row.name,
+              description: row.description,
+              permissions: [],
+            };
+          }
+          if (row.permission_name) {
+            rolesMap[row.name].permissions.push(row.permission_name);
+          }
+        });
+
+        const roles = Object.values(rolesMap);
+
+        res.json({
+          success: true,
+          roles,
+        });
+      },
+    );
+  } catch (error) {
+    logger.error('Error getting user roles:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get user roles',
+      errorCode: 'ROLES_ERROR',
+    });
   }
-);
+});
 
 /**
  * @swagger
@@ -423,7 +423,8 @@ router.get('/me/roles',
  *       403:
  *         description: Admin access required
  */
-router.get('/audit/logs',
+router.get(
+  '/audit/logs',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 50),
   async (req, res) => {
@@ -434,7 +435,7 @@ router.get('/audit/logs',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
 
@@ -472,13 +473,13 @@ router.get('/audit/logs',
           return res.status(500).json({
             success: false,
             error: 'Failed to fetch audit logs',
-            errorCode: 'AUDIT_ERROR'
+            errorCode: 'AUDIT_ERROR',
           });
         }
 
         res.json({
           success: true,
-          logs: logs || []
+          logs: logs || [],
         });
       });
     } catch (error) {
@@ -486,10 +487,10 @@ router.get('/audit/logs',
       res.status(500).json({
         success: false,
         error: 'Failed to get audit logs',
-        errorCode: 'AUDIT_ERROR'
+        errorCode: 'AUDIT_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -518,7 +519,8 @@ router.get('/audit/logs',
  *       403:
  *         description: Admin access required
  */
-router.get('/sso/configuration',
+router.get(
+  '/sso/configuration',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20),
   async (req, res) => {
@@ -529,7 +531,7 @@ router.get('/sso/configuration',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
 
@@ -540,12 +542,12 @@ router.get('/sso/configuration',
           return res.status(500).json({
             success: false,
             error: 'Failed to fetch SSO configuration',
-            errorCode: 'SSO_CONFIG_ERROR'
+            errorCode: 'SSO_CONFIG_ERROR',
           });
         }
         res.json({
           success: true,
-          sso: configs || []
+          sso: configs || [],
         });
       });
     } catch (error) {
@@ -553,10 +555,10 @@ router.get('/sso/configuration',
       res.status(500).json({
         success: false,
         error: 'Failed to get SSO configuration',
-        errorCode: 'SSO_CONFIG_ERROR'
+        errorCode: 'SSO_CONFIG_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -593,7 +595,8 @@ router.get('/sso/configuration',
  *       401:
  *         description: Not authenticated
  */
-router.post('/2fa/setup',
+router.post(
+  '/2fa/setup',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 5), // 5 setup attempts per 15 minutes
   async (req, res) => {
@@ -606,7 +609,7 @@ router.post('/2fa/setup',
         return res.status(400).json({
           success: false,
           error: '2FA is already enabled for this account',
-          errorCode: '2FA_ALREADY_ENABLED'
+          errorCode: '2FA_ALREADY_ENABLED',
         });
       }
 
@@ -617,18 +620,18 @@ router.post('/2fa/setup',
         setup: {
           qrCode: setupData.qrCode,
           manualEntryKey: setupData.manualEntryKey,
-          tempId: setupData.tempId
-        }
+          tempId: setupData.tempId,
+        },
       });
     } catch (error) {
       logger.error('Error setting up 2FA:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to setup 2FA',
-        errorCode: '2FA_SETUP_ERROR'
+        errorCode: '2FA_SETUP_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -674,12 +677,13 @@ router.post('/2fa/setup',
  *       400:
  *         description: Invalid verification code
  */
-router.post('/2fa/verify',
+router.post(
+  '/2fa/verify',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 10), // 10 verification attempts per 15 minutes
   [
     body('tempId').isUUID().withMessage('Valid tempId is required'),
-    body('token').isLength({ min: 6, max: 6 }).withMessage('6-digit token is required')
+    body('token').isLength({ min: 6, max: 6 }).withMessage('6-digit token is required'),
   ],
   async (req, res) => {
     try {
@@ -689,7 +693,7 @@ router.post('/2fa/verify',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -701,26 +705,26 @@ router.post('/2fa/verify',
       res.json({
         success: true,
         message: '2FA setup completed successfully',
-        backupCodes: result.backupCodes
+        backupCodes: result.backupCodes,
       });
     } catch (error) {
       logger.error('Error verifying 2FA setup:', error);
-      
+
       if (error.message === 'Invalid verification code') {
         return res.status(400).json({
           success: false,
           error: 'Invalid verification code',
-          errorCode: 'INVALID_2FA_CODE'
+          errorCode: 'INVALID_2FA_CODE',
         });
       }
 
       res.status(500).json({
         success: false,
         error: 'Failed to verify 2FA setup',
-        errorCode: '2FA_VERIFY_ERROR'
+        errorCode: '2FA_VERIFY_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -753,7 +757,8 @@ router.post('/2fa/verify',
  *                     backupCodesRemaining:
  *                       type: integer
  */
-router.get('/2fa/status',
+router.get(
+  '/2fa/status',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100),
   async (req, res) => {
@@ -762,17 +767,17 @@ router.get('/2fa/status',
 
       res.json({
         success: true,
-        status
+        status,
       });
     } catch (error) {
       logger.error('Error getting 2FA status:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to get 2FA status',
-        errorCode: '2FA_STATUS_ERROR'
+        errorCode: '2FA_STATUS_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -802,12 +807,11 @@ router.get('/2fa/status',
  *       400:
  *         description: Invalid password
  */
-router.post('/2fa/disable',
+router.post(
+  '/2fa/disable',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 5), // 5 disable attempts per 15 minutes
-  [
-    body('password').notEmpty().withMessage('Password is required')
-  ],
+  [body('password').notEmpty().withMessage('Password is required')],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -816,7 +820,7 @@ router.post('/2fa/disable',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -829,7 +833,7 @@ router.post('/2fa/disable',
           return res.status(500).json({
             success: false,
             error: 'Failed to verify password',
-            errorCode: 'PASSWORD_VERIFY_ERROR'
+            errorCode: 'PASSWORD_VERIFY_ERROR',
           });
         }
 
@@ -838,7 +842,7 @@ router.post('/2fa/disable',
           return res.status(400).json({
             success: false,
             error: 'Invalid password',
-            errorCode: 'INVALID_PASSWORD'
+            errorCode: 'INVALID_PASSWORD',
           });
         }
 
@@ -847,14 +851,14 @@ router.post('/2fa/disable',
 
           res.json({
             success: true,
-            message: '2FA disabled successfully'
+            message: '2FA disabled successfully',
           });
         } catch (disableError) {
           logger.error('Error disabling 2FA:', disableError);
           res.status(500).json({
             success: false,
             error: 'Failed to disable 2FA',
-            errorCode: '2FA_DISABLE_ERROR'
+            errorCode: '2FA_DISABLE_ERROR',
           });
         }
       });
@@ -863,10 +867,10 @@ router.post('/2fa/disable',
       res.status(500).json({
         success: false,
         error: 'Failed to disable 2FA',
-        errorCode: '2FA_DISABLE_ERROR'
+        errorCode: '2FA_DISABLE_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -905,12 +909,11 @@ router.post('/2fa/disable',
  *                   items:
  *                     type: string
  */
-router.post('/2fa/backup-codes',
+router.post(
+  '/2fa/backup-codes',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 3), // 3 regenerations per 15 minutes
-  [
-    body('password').notEmpty().withMessage('Password is required')
-  ],
+  [body('password').notEmpty().withMessage('Password is required')],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -919,7 +922,7 @@ router.post('/2fa/backup-codes',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -932,7 +935,7 @@ router.post('/2fa/backup-codes',
           return res.status(500).json({
             success: false,
             error: 'Failed to verify password',
-            errorCode: 'PASSWORD_VERIFY_ERROR'
+            errorCode: 'PASSWORD_VERIFY_ERROR',
           });
         }
 
@@ -941,7 +944,7 @@ router.post('/2fa/backup-codes',
           return res.status(400).json({
             success: false,
             error: 'Invalid password',
-            errorCode: 'INVALID_PASSWORD'
+            errorCode: 'INVALID_PASSWORD',
           });
         }
 
@@ -951,14 +954,14 @@ router.post('/2fa/backup-codes',
           res.json({
             success: true,
             backupCodes,
-            message: 'New backup codes generated successfully'
+            message: 'New backup codes generated successfully',
           });
         } catch (regenError) {
           logger.error('Error regenerating backup codes:', regenError);
           res.status(500).json({
             success: false,
             error: 'Failed to regenerate backup codes',
-            errorCode: 'BACKUP_CODES_ERROR'
+            errorCode: 'BACKUP_CODES_ERROR',
           });
         }
       });
@@ -967,10 +970,10 @@ router.post('/2fa/backup-codes',
       res.status(500).json({
         success: false,
         error: 'Failed to regenerate backup codes',
-        errorCode: 'BACKUP_CODES_ERROR'
+        errorCode: 'BACKUP_CODES_ERROR',
       });
     }
-  }
+  },
 );
 
 // SAML SSO Routes
@@ -990,13 +993,17 @@ router.post('/2fa/backup-codes',
 router.get('/sso/saml/login', (req, res, next) => {
   try {
     const passport = configureSAML();
-    passport.authenticate('saml', { failureRedirect: '/login', failureFlash: true })(req, res, next);
+    passport.authenticate('saml', { failureRedirect: '/login', failureFlash: true })(
+      req,
+      res,
+      next,
+    );
   } catch (error) {
     logger.error('SAML login initiation error:', error);
     res.status(500).json({
       success: false,
       error: 'SAML configuration error',
-      errorCode: 'SAML_CONFIG_ERROR'
+      errorCode: 'SAML_CONFIG_ERROR',
     });
   }
 });
@@ -1036,7 +1043,7 @@ router.post('/sso/saml/callback', (req, res, next) => {
         return res.status(500).json({
           success: false,
           error: 'SAML authentication error',
-          errorCode: 'SAML_AUTH_ERROR'
+          errorCode: 'SAML_AUTH_ERROR',
         });
       }
 
@@ -1045,16 +1052,16 @@ router.post('/sso/saml/callback', (req, res, next) => {
         return res.status(401).json({
           success: false,
           error: 'SAML authentication failed',
-          errorCode: 'SAML_AUTH_FAILED'
+          errorCode: 'SAML_AUTH_FAILED',
         });
       }
 
       try {
         // Generate JWT token for authenticated user
         const token = sign({ userId: user.id, email: user.email, roles: user.roles });
-        
+
         logger.info(`SAML SSO successful for user: ${user.email}`);
-        
+
         res.json({
           success: true,
           token,
@@ -1064,15 +1071,15 @@ router.post('/sso/saml/callback', (req, res, next) => {
             name: user.name,
             roles: user.roles,
             department: user.department,
-            loginMethod: 'saml'
-          }
+            loginMethod: 'saml',
+          },
         });
       } catch (tokenError) {
         logger.error('Token generation error:', tokenError);
         res.status(500).json({
           success: false,
           error: 'Token generation failed',
-          errorCode: 'TOKEN_ERROR'
+          errorCode: 'TOKEN_ERROR',
         });
       }
     })(req, res, next);
@@ -1081,7 +1088,7 @@ router.post('/sso/saml/callback', (req, res, next) => {
     res.status(500).json({
       success: false,
       error: 'SAML callback processing error',
-      errorCode: 'SAML_CALLBACK_ERROR'
+      errorCode: 'SAML_CALLBACK_ERROR',
     });
   }
 });
@@ -1113,7 +1120,7 @@ router.get('/sso/saml/metadata', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to generate SAML metadata',
-      errorCode: 'METADATA_ERROR'
+      errorCode: 'METADATA_ERROR',
     });
   }
 });
@@ -1123,42 +1130,60 @@ router.use('/scim/v2', scimRouter);
 router.use('/roles', rolesRouter);
 
 // Update VIP status for a user
-router.put('/users/:id/vip',
+router.put(
+  '/users/:id/vip',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20),
   [
     body('isVip').isBoolean().withMessage('isVip must be boolean'),
-    body('vipLevel').optional().isIn(['gold', 'exec', 'priority']).withMessage('Invalid VIP level')
+    body('vipLevel').optional().isIn(['gold', 'exec', 'priority']).withMessage('Invalid VIP level'),
   ],
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ success: false, error: 'Invalid input', details: errors.array(), errorCode: 'VALIDATION_ERROR' });
+        return res
+          .status(400)
+          .json({
+            success: false,
+            error: 'Invalid input',
+            details: errors.array(),
+            errorCode: 'VALIDATION_ERROR',
+          });
       }
 
       const adminRoles = req.user?.roles || [];
       if (!adminRoles.includes('admin') && !adminRoles.includes('superadmin')) {
-        return res.status(403).json({ success: false, error: 'Admin access required', errorCode: 'ADMIN_ACCESS_REQUIRED' });
+        return res
+          .status(403)
+          .json({
+            success: false,
+            error: 'Admin access required',
+            errorCode: 'ADMIN_ACCESS_REQUIRED',
+          });
       }
 
       const { id } = req.params;
       const { isVip, vipLevel } = req.body;
       const now = new Date().toISOString();
 
-      await db.none(
-        'UPDATE users SET is_vip = $1, vip_level = $2, updated_at = $3 WHERE id = $4',
-        [isVip ? 1 : 0, vipLevel || null, now, id]
-      );
+      await db.none('UPDATE users SET is_vip = $1, vip_level = $2, updated_at = $3 WHERE id = $4', [
+        isVip ? 1 : 0,
+        vipLevel || null,
+        now,
+        id,
+      ]);
 
       await db.createAuditLog('VIP_ASSIGN', req.user.id, { targetUserId: id, isVip, vipLevel });
 
       res.json({ success: true });
     } catch (error) {
       logger.error('Error assigning VIP status:', error);
-      res.status(500).json({ success: false, error: 'Failed to assign VIP', errorCode: 'VIP_ASSIGN_ERROR' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to assign VIP', errorCode: 'VIP_ASSIGN_ERROR' });
     }
-  }
+  },
 );
 
 export default router;

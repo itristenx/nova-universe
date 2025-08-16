@@ -52,7 +52,7 @@ describe('FocusManager', () => {
 
       // Try to pop from empty stack
       FocusManager.popFocus();
-      
+
       // Should not throw error
       expect(document.activeElement).toBe(button);
     });
@@ -73,13 +73,13 @@ describe('FocusManager', () => {
 
       const focusableElements = FocusManager.findFocusableElements(container);
       // Should find: button, input, link (tabindex="-1" elements should be excluded)
-      const visibleElements = focusableElements.filter(el => el.tabIndex !== -1);
+      const visibleElements = focusableElements.filter((el) => el.tabIndex !== -1);
       expect(visibleElements).toHaveLength(3);
     });
 
     it('traps focus within container', async () => {
       render(<TestFocusTrap />);
-      
+
       const buttons = screen.getAllByRole('button');
       expect(buttons).toHaveLength(3);
 
@@ -104,21 +104,24 @@ describe('FocusManager', () => {
 describe('useAutoFocus Hook', () => {
   it('automatically focuses element when enabled', async () => {
     render(<TestAutoFocus enabled={true} />);
-    
+
     const button = screen.getByText('Auto Focus Button');
-    
-    await waitFor(() => {
-      expect(button).toHaveFocus();
-    }, { timeout: 200 });
+
+    await waitFor(
+      () => {
+        expect(button).toHaveFocus();
+      },
+      { timeout: 200 },
+    );
   });
 
   it('does not focus element when disabled', async () => {
     render(<TestAutoFocus enabled={false} />);
-    
+
     const button = screen.getByText('Auto Focus Button');
-    
+
     // Wait a bit to ensure focus doesn't happen
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise((resolve) => setTimeout(resolve, 150));
     expect(button).not.toHaveFocus();
   });
 });
@@ -126,10 +129,10 @@ describe('useAutoFocus Hook', () => {
 describe('useFocusTrap Hook', () => {
   it('activates focus trap when active', () => {
     render(<TestFocusTrap active={true} />);
-    
+
     const buttons = screen.getAllByRole('button');
     const firstButton = buttons[0];
-    
+
     firstButton.focus();
     expect(document.activeElement).toBe(firstButton);
 
@@ -141,10 +144,10 @@ describe('useFocusTrap Hook', () => {
 
   it('does not trap focus when inactive', () => {
     render(<TestFocusTrap active={false} />);
-    
+
     const buttons = screen.getAllByRole('button');
     const firstButton = buttons[0];
-    
+
     firstButton.focus();
     expect(document.activeElement).toBe(firstButton);
 
@@ -157,7 +160,7 @@ describe('useFocusTrap Hook', () => {
 describe('LiveAnnouncement Component', () => {
   it('renders with proper aria attributes for polite announcement', () => {
     render(<LiveAnnouncement message="Test announcement" priority="polite" />);
-    
+
     const announcement = screen.getByText('Test announcement');
     expect(announcement).toBeInTheDocument();
     expect(announcement).toHaveAttribute('aria-live', 'polite');
@@ -167,7 +170,7 @@ describe('LiveAnnouncement Component', () => {
 
   it('renders with proper aria attributes for assertive announcement', () => {
     render(<LiveAnnouncement message="Urgent announcement" priority="assertive" />);
-    
+
     const announcement = screen.getByText('Urgent announcement');
     expect(announcement).toHaveAttribute('aria-live', 'assertive');
     expect(announcement).toHaveAttribute('aria-atomic', 'true');
@@ -175,7 +178,7 @@ describe('LiveAnnouncement Component', () => {
 
   it('defaults to polite priority', () => {
     render(<LiveAnnouncement message="Default announcement" />);
-    
+
     const announcement = screen.getByText('Default announcement');
     expect(announcement).toHaveAttribute('aria-live', 'polite');
   });
@@ -184,16 +187,16 @@ describe('LiveAnnouncement Component', () => {
     render(
       <LiveAnnouncement message="Parent message">
         <span>Child content</span>
-      </LiveAnnouncement>
+      </LiveAnnouncement>,
     );
-    
+
     expect(screen.getByText('Parent message')).toBeInTheDocument();
     expect(screen.getByText('Child content')).toBeInTheDocument();
   });
 
   it('is visually hidden but accessible to screen readers', () => {
     render(<LiveAnnouncement message="Screen reader announcement" />);
-    
+
     const announcement = screen.getByText('Screen reader announcement');
     expect(announcement).toHaveClass('sr-only');
     expect(announcement).not.toHaveAttribute('aria-hidden');
@@ -201,9 +204,9 @@ describe('LiveAnnouncement Component', () => {
 
   it('updates message content dynamically', () => {
     const { rerender } = render(<LiveAnnouncement message="Initial message" />);
-    
+
     expect(screen.getByText('Initial message')).toBeInTheDocument();
-    
+
     rerender(<LiveAnnouncement message="Updated message" />);
     expect(screen.getByText('Updated message')).toBeInTheDocument();
     expect(screen.queryByText('Initial message')).not.toBeInTheDocument();

@@ -201,7 +201,7 @@ export default function Card({
   const interactiveClass = interactive ? 'nova-card--interactive' : '';
   const loadingClass = loading ? 'nova-card--loading' : '';
   const statusClass = status ? `nova-card--${status}` : '';
-  
+
   const allClasses = [
     baseClasses,
     variantClass,
@@ -209,15 +209,13 @@ export default function Card({
     interactiveClass,
     loadingClass,
     statusClass,
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div 
-      className={allClasses}
-      onClick={onClick}
-      {...props}
-    >
+    <div className={allClasses} onClick={onClick} {...props}>
       {children}
     </div>
   );
@@ -225,65 +223,37 @@ export default function Card({
 
 // Card Header component
 export function CardHeader({ children, className = '' }) {
-  return (
-    <div className={`nova-card__header ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`nova-card__header ${className}`}>{children}</div>;
 }
 
 // Card Body component
 export function CardBody({ children, className = '' }) {
-  return (
-    <div className={`nova-card__body ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`nova-card__body ${className}`}>{children}</div>;
 }
 
 // Card Footer component
 export function CardFooter({ children, className = '' }) {
-  return (
-    <div className={`nova-card__footer ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`nova-card__footer ${className}`}>{children}</div>;
 }
 
 // Card Title component
 export function CardTitle({ children, className = '' }) {
-  return (
-    <h3 className={`nova-card__title ${className}`}>
-      {children}
-    </h3>
-  );
+  return <h3 className={`nova-card__title ${className}`}>{children}</h3>;
 }
 
 // Card Subtitle component
 export function CardSubtitle({ children, className = '' }) {
-  return (
-    <p className={`nova-card__subtitle ${className}`}>
-      {children}
-    </p>
-  );
+  return <p className={`nova-card__subtitle ${className}`}>{children}</p>;
 }
 
 // Card Text component
 export function CardText({ children, className = '' }) {
-  return (
-    <p className={`nova-card__text ${className}`}>
-      {children}
-    </p>
-  );
+  return <p className={`nova-card__text ${className}`}>{children}</p>;
 }
 
 // Card Actions component
 export function CardActions({ children, justify = 'left', className = '' }) {
   const justifyClass = justify !== 'left' ? `nova-card__actions--${justify}` : '';
-  
-  return (
-    <div className={`nova-card__actions ${justifyClass} ${className}`}>
-      {children}
-    </div>
-  );
+
+  return <div className={`nova-card__actions ${justifyClass} ${className}`}>{children}</div>;
 }

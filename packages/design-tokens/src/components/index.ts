@@ -2,5 +2,5 @@
  * Components Export
  */
 
-export * from './Typography'
-export * from './NovaIcon'
+export * from './Typography';
+export * from './NovaIcon';

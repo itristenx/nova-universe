@@ -8,7 +8,7 @@ import {
   BellIcon,
   EnvelopeIcon,
   DocumentIcon,
-  WrenchScrewdriverIcon
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
@@ -106,8 +106,8 @@ const SystemConfigurationPage: React.FC = () => {
     try {
       // For now, use mock data since the API endpoint doesn't exist yet
       // const response = await api.getConfig();
-      
-      // Set default config 
+
+      // Set default config
       setConfig({
         general: {
           systemName: 'Nova Universe',
@@ -116,7 +116,7 @@ const SystemConfigurationPage: React.FC = () => {
           defaultLanguage: 'en',
           maintenanceMode: false,
           debugMode: false,
-          logLevel: 'info'
+          logLevel: 'info',
         },
         security: {
           sessionTimeout: 3600,
@@ -126,10 +126,10 @@ const SystemConfigurationPage: React.FC = () => {
             requireUppercase: true,
             requireLowercase: true,
             requireNumbers: true,
-            requireSpecialChars: true
+            requireSpecialChars: true,
           },
           twoFactorEnabled: false,
-          ipWhitelist: []
+          ipWhitelist: [],
         },
         email: {
           smtpHost: '',
@@ -138,7 +138,7 @@ const SystemConfigurationPage: React.FC = () => {
           smtpPassword: '',
           smtpSecure: true,
           fromEmail: '',
-          fromName: 'Nova Universe'
+          fromName: 'Nova Universe',
         },
         notifications: {
           emailNotifications: true,
@@ -146,13 +146,13 @@ const SystemConfigurationPage: React.FC = () => {
           discordWebhook: '',
           teamsWebhook: '',
           criticalAlerts: true,
-          systemUpdates: true
+          systemUpdates: true,
         },
         storage: {
           maxFileSize: 10485760, // 10MB
           allowedFileTypes: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
           storageQuota: 1073741824, // 1GB
-          backupRetention: 30
+          backupRetention: 30,
         },
         integrations: {
           elasticsearchEnabled: false,
@@ -160,8 +160,8 @@ const SystemConfigurationPage: React.FC = () => {
           redisEnabled: false,
           redisUrl: '',
           webhooksEnabled: true,
-          apiRateLimit: 100
-        }
+          apiRateLimit: 100,
+        },
       });
     } catch (error) {
       console.error('Failed to load system config:', error);
@@ -174,7 +174,7 @@ const SystemConfigurationPage: React.FC = () => {
     try {
       // For now, use mock data since the API endpoint doesn't exist yet
       // const response = await api.getFeatureFlags();
-      
+
       // Set some default feature flags
       setFeatureFlags([
         {
@@ -183,7 +183,7 @@ const SystemConfigurationPage: React.FC = () => {
           description: 'Enable the new modern UI design',
           enabled: true,
           category: 'ui',
-          rolloutPercentage: 100
+          rolloutPercentage: 100,
         },
         {
           id: 'ai-suggestions',
@@ -191,7 +191,7 @@ const SystemConfigurationPage: React.FC = () => {
           description: 'Enable AI-powered ticket suggestions',
           enabled: false,
           category: 'experimental',
-          rolloutPercentage: 10
+          rolloutPercentage: 10,
         },
         {
           id: 'advanced-analytics',
@@ -199,8 +199,8 @@ const SystemConfigurationPage: React.FC = () => {
           description: 'Enable advanced analytics dashboard',
           enabled: true,
           category: 'ui',
-          rolloutPercentage: 80
-        }
+          rolloutPercentage: 80,
+        },
       ]);
     } catch (error) {
       console.error('Failed to load feature flags:', error);
@@ -211,27 +211,27 @@ const SystemConfigurationPage: React.FC = () => {
     try {
       // For now, use mock data since the API endpoint doesn't exist yet
       // const response = await api.getEnvironmentVariables();
-      
+
       // Set some default env vars (non-sensitive)
       setEnvVars([
         {
           key: 'NODE_ENV',
           value: 'production',
           description: 'Node.js environment',
-          sensitive: false
+          sensitive: false,
         },
         {
           key: 'DATABASE_URL',
           value: '***REDACTED***',
           description: 'Database connection string',
-          sensitive: true
+          sensitive: true,
         },
         {
           key: 'API_RATE_LIMIT',
           value: '100',
           description: 'API rate limit per minute',
-          sensitive: false
-        }
+          sensitive: false,
+        },
       ]);
     } catch (error) {
       console.error('Failed to load environment variables:', error);
@@ -240,19 +240,19 @@ const SystemConfigurationPage: React.FC = () => {
 
   const saveConfig = async () => {
     if (!config) return;
-    
+
     setSaving(true);
     try {
       // For now, just simulate save since the API endpoint doesn't exist yet
       // await api.updateConfig(config);
-      
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
+
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+
       addToast({
         id: Date.now().toString(),
         type: 'success',
         title: 'Configuration Saved',
-        message: 'System configuration has been updated successfully'
+        message: 'System configuration has been updated successfully',
       });
     } catch (error) {
       console.error('Failed to save config:', error);
@@ -260,7 +260,7 @@ const SystemConfigurationPage: React.FC = () => {
         id: Date.now().toString(),
         type: 'error',
         title: 'Save Failed',
-        message: 'Failed to save system configuration'
+        message: 'Failed to save system configuration',
       });
     } finally {
       setSaving(false);
@@ -271,16 +271,16 @@ const SystemConfigurationPage: React.FC = () => {
     try {
       // For now, just simulate toggle since the API endpoint doesn't exist yet
       // await api.toggleFeatureFlag(flagId);
-      
-      setFeatureFlags(prev => prev.map(flag => 
-        flag.id === flagId ? { ...flag, enabled: !flag.enabled } : flag
-      ));
-      
+
+      setFeatureFlags((prev) =>
+        prev.map((flag) => (flag.id === flagId ? { ...flag, enabled: !flag.enabled } : flag)),
+      );
+
       addToast({
         id: Date.now().toString(),
         type: 'success',
         title: 'Feature Flag Updated',
-        message: 'Feature flag has been toggled successfully'
+        message: 'Feature flag has been toggled successfully',
       });
     } catch (error) {
       console.error('Failed to toggle feature flag:', error);
@@ -288,43 +288,48 @@ const SystemConfigurationPage: React.FC = () => {
         id: Date.now().toString(),
         type: 'error',
         title: 'Toggle Failed',
-        message: 'Failed to toggle feature flag'
+        message: 'Failed to toggle feature flag',
       });
     }
   };
 
   const updateConfig = (section: keyof SystemConfig, field: string, value: any) => {
     if (!config) return;
-    
-    setConfig(prev => ({
+
+    setConfig((prev) => ({
       ...prev!,
       [section]: {
         ...prev![section],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
-  const updateNestedConfig = (section: keyof SystemConfig, parentField: string, field: string, value: any) => {
+  const updateNestedConfig = (
+    section: keyof SystemConfig,
+    parentField: string,
+    field: string,
+    value: any,
+  ) => {
     if (!config) return;
-    
-    setConfig(prev => ({
+
+    setConfig((prev) => ({
       ...prev!,
       [section]: {
         ...prev![section],
         [parentField]: {
           ...(prev![section] as any)[parentField],
-          [field]: value
-        }
-      }
+          [field]: value,
+        },
+      },
     }));
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-96">
+      <div className="flex min-h-96 items-center justify-center">
         <div className="text-center">
-          <CogIcon className="w-12 h-12 mx-auto animate-spin text-primary" />
+          <CogIcon className="text-primary mx-auto h-12 w-12 animate-spin" />
           <p className="mt-4 text-lg">Loading system configuration...</p>
         </div>
       </div>
@@ -333,7 +338,7 @@ const SystemConfigurationPage: React.FC = () => {
 
   if (!config) {
     return (
-      <div className="text-center py-12">
+      <div className="py-12 text-center">
         <p className="text-red-600">Failed to load system configuration</p>
       </div>
     );
@@ -342,7 +347,7 @@ const SystemConfigurationPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">System Configuration</h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -352,7 +357,7 @@ const SystemConfigurationPage: React.FC = () => {
         <div className="flex gap-2">
           <Button
             color="success"
-            startContent={<WrenchScrewdriverIcon className="w-4 h-4" />}
+            startContent={<WrenchScrewdriverIcon className="h-4 w-4" />}
             onPress={saveConfig}
             isLoading={saving}
           >
@@ -373,7 +378,7 @@ const SystemConfigurationPage: React.FC = () => {
                 label: 'General',
                 content: (
                   <div className="space-y-6 pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <Input
                         label="System Name"
                         value={config.general.systemName}
@@ -407,29 +412,35 @@ const SystemConfigurationPage: React.FC = () => {
                         ]}
                       />
                     </div>
-                    
+
                     <Textarea
                       label="System Description"
                       value={config.general.systemDescription}
                       onChange={(e) => updateConfig('general', 'systemDescription', e.target.value)}
                     />
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-medium">Maintenance Mode</h4>
-                          <p className="text-sm text-gray-600">Put the system into maintenance mode</p>
+                          <p className="text-sm text-gray-600">
+                            Put the system into maintenance mode
+                          </p>
                         </div>
                         <Switch
                           checked={config.general.maintenanceMode}
-                          onChange={(checked) => updateConfig('general', 'maintenanceMode', checked)}
+                          onChange={(checked) =>
+                            updateConfig('general', 'maintenanceMode', checked)
+                          }
                         />
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-medium">Debug Mode</h4>
-                          <p className="text-sm text-gray-600">Enable debug logging and error details</p>
+                          <p className="text-sm text-gray-600">
+                            Enable debug logging and error details
+                          </p>
                         </div>
                         <Switch
                           checked={config.general.debugMode}
@@ -445,63 +456,102 @@ const SystemConfigurationPage: React.FC = () => {
                 label: 'Security',
                 content: (
                   <div className="space-y-6 pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <Input
                         type="number"
                         label="Session Timeout (seconds)"
                         value={config.security.sessionTimeout.toString()}
-                        onChange={(e) => updateConfig('security', 'sessionTimeout', parseInt(e.target.value))}
+                        onChange={(e) =>
+                          updateConfig('security', 'sessionTimeout', parseInt(e.target.value))
+                        }
                       />
                       <Input
                         type="number"
                         label="Max Login Attempts"
                         value={config.security.maxLoginAttempts.toString()}
-                        onChange={(e) => updateConfig('security', 'maxLoginAttempts', parseInt(e.target.value))}
+                        onChange={(e) =>
+                          updateConfig('security', 'maxLoginAttempts', parseInt(e.target.value))
+                        }
                       />
                     </div>
-                    
+
                     <div>
-                      <h3 className="text-lg font-semibold mb-4">Password Policy</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <h3 className="mb-4 text-lg font-semibold">Password Policy</h3>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <Input
                           type="number"
                           label="Minimum Length"
                           value={config.security.passwordPolicy.minLength.toString()}
-                          onChange={(e) => updateNestedConfig('security', 'passwordPolicy', 'minLength', parseInt(e.target.value))}
+                          onChange={(e) =>
+                            updateNestedConfig(
+                              'security',
+                              'passwordPolicy',
+                              'minLength',
+                              parseInt(e.target.value),
+                            )
+                          }
                         />
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <span>Require Uppercase</span>
                             <Switch
                               checked={config.security.passwordPolicy.requireUppercase}
-                              onChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireUppercase', checked)}
+                              onChange={(checked) =>
+                                updateNestedConfig(
+                                  'security',
+                                  'passwordPolicy',
+                                  'requireUppercase',
+                                  checked,
+                                )
+                              }
                             />
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Require Lowercase</span>
                             <Switch
                               checked={config.security.passwordPolicy.requireLowercase}
-                              onChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireLowercase', checked)}
+                              onChange={(checked) =>
+                                updateNestedConfig(
+                                  'security',
+                                  'passwordPolicy',
+                                  'requireLowercase',
+                                  checked,
+                                )
+                              }
                             />
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Require Numbers</span>
                             <Switch
                               checked={config.security.passwordPolicy.requireNumbers}
-                              onChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireNumbers', checked)}
+                              onChange={(checked) =>
+                                updateNestedConfig(
+                                  'security',
+                                  'passwordPolicy',
+                                  'requireNumbers',
+                                  checked,
+                                )
+                              }
                             />
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Require Special Characters</span>
                             <Switch
                               checked={config.security.passwordPolicy.requireSpecialChars}
-                              onChange={(checked) => updateNestedConfig('security', 'passwordPolicy', 'requireSpecialChars', checked)}
+                              onChange={(checked) =>
+                                updateNestedConfig(
+                                  'security',
+                                  'passwordPolicy',
+                                  'requireSpecialChars',
+                                  checked,
+                                )
+                              }
                             />
                           </div>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-medium">Two-Factor Authentication</h4>
@@ -509,7 +559,9 @@ const SystemConfigurationPage: React.FC = () => {
                       </div>
                       <Switch
                         checked={config.security.twoFactorEnabled}
-                        onChange={(checked) => updateConfig('security', 'twoFactorEnabled', checked)}
+                        onChange={(checked) =>
+                          updateConfig('security', 'twoFactorEnabled', checked)
+                        }
                       />
                     </div>
                   </div>
@@ -520,7 +572,7 @@ const SystemConfigurationPage: React.FC = () => {
                 label: 'Email',
                 content: (
                   <div className="space-y-6 pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <Input
                         label="SMTP Host"
                         value={config.email.smtpHost}
@@ -530,7 +582,9 @@ const SystemConfigurationPage: React.FC = () => {
                         type="number"
                         label="SMTP Port"
                         value={config.email.smtpPort.toString()}
-                        onChange={(e) => updateConfig('email', 'smtpPort', parseInt(e.target.value))}
+                        onChange={(e) =>
+                          updateConfig('email', 'smtpPort', parseInt(e.target.value))
+                        }
                       />
                       <Input
                         label="SMTP Username"
@@ -554,7 +608,7 @@ const SystemConfigurationPage: React.FC = () => {
                         onChange={(e) => updateConfig('email', 'fromName', e.target.value)}
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-medium">SMTP Secure (TLS/SSL)</h4>
@@ -581,29 +635,39 @@ const SystemConfigurationPage: React.FC = () => {
                         </div>
                         <Switch
                           checked={config.notifications.emailNotifications}
-                          onChange={(checked) => updateConfig('notifications', 'emailNotifications', checked)}
+                          onChange={(checked) =>
+                            updateConfig('notifications', 'emailNotifications', checked)
+                          }
                         />
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-medium">Critical Alerts</h4>
-                          <p className="text-sm text-gray-600">Send alerts for critical system events</p>
+                          <p className="text-sm text-gray-600">
+                            Send alerts for critical system events
+                          </p>
                         </div>
                         <Switch
                           checked={config.notifications.criticalAlerts}
-                          onChange={(checked) => updateConfig('notifications', 'criticalAlerts', checked)}
+                          onChange={(checked) =>
+                            updateConfig('notifications', 'criticalAlerts', checked)
+                          }
                         />
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-medium">System Updates</h4>
-                          <p className="text-sm text-gray-600">Send notifications for system updates</p>
+                          <p className="text-sm text-gray-600">
+                            Send notifications for system updates
+                          </p>
                         </div>
                         <Switch
                           checked={config.notifications.systemUpdates}
-                          onChange={(checked) => updateConfig('notifications', 'systemUpdates', checked)}
+                          onChange={(checked) =>
+                            updateConfig('notifications', 'systemUpdates', checked)
+                          }
                         />
                       </div>
                     </div>
@@ -613,19 +677,25 @@ const SystemConfigurationPage: React.FC = () => {
                       <Input
                         label="Slack Webhook"
                         value={config.notifications.slackWebhook}
-                        onChange={(e) => updateConfig('notifications', 'slackWebhook', e.target.value)}
+                        onChange={(e) =>
+                          updateConfig('notifications', 'slackWebhook', e.target.value)
+                        }
                         placeholder="https://hooks.slack.com/services/..."
                       />
                       <Input
                         label="Discord Webhook"
                         value={config.notifications.discordWebhook}
-                        onChange={(e) => updateConfig('notifications', 'discordWebhook', e.target.value)}
+                        onChange={(e) =>
+                          updateConfig('notifications', 'discordWebhook', e.target.value)
+                        }
                         placeholder="https://discord.com/api/webhooks/..."
                       />
                       <Input
                         label="Teams Webhook"
                         value={config.notifications.teamsWebhook}
-                        onChange={(e) => updateConfig('notifications', 'teamsWebhook', e.target.value)}
+                        onChange={(e) =>
+                          updateConfig('notifications', 'teamsWebhook', e.target.value)
+                        }
                         placeholder="https://outlook.office.com/webhook/..."
                       />
                     </div>
@@ -637,9 +707,9 @@ const SystemConfigurationPage: React.FC = () => {
                 label: 'Integrations',
                 content: (
                   <div className="space-y-6 pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                       <Card>
-                        <div className="p-4 border-b">
+                        <div className="border-b p-4">
                           <h3 className="text-lg font-semibold">Elasticsearch</h3>
                         </div>
                         <div className="p-4">
@@ -648,21 +718,25 @@ const SystemConfigurationPage: React.FC = () => {
                               <span>Enable Elasticsearch</span>
                               <Switch
                                 checked={config.integrations.elasticsearchEnabled}
-                                onChange={(checked) => updateConfig('integrations', 'elasticsearchEnabled', checked)}
+                                onChange={(checked) =>
+                                  updateConfig('integrations', 'elasticsearchEnabled', checked)
+                                }
                               />
                             </div>
                             <Input
                               label="Elasticsearch URL"
                               value={config.integrations.elasticsearchUrl}
-                              onChange={(e) => updateConfig('integrations', 'elasticsearchUrl', e.target.value)}
+                              onChange={(e) =>
+                                updateConfig('integrations', 'elasticsearchUrl', e.target.value)
+                              }
                               disabled={!config.integrations.elasticsearchEnabled}
                             />
                           </div>
                         </div>
                       </Card>
-                      
+
                       <Card>
-                        <div className="p-4 border-b">
+                        <div className="border-b p-4">
                           <h3 className="text-lg font-semibold">Redis</h3>
                         </div>
                         <div className="p-4">
@@ -671,21 +745,25 @@ const SystemConfigurationPage: React.FC = () => {
                               <span>Enable Redis</span>
                               <Switch
                                 checked={config.integrations.redisEnabled}
-                                onChange={(checked) => updateConfig('integrations', 'redisEnabled', checked)}
+                                onChange={(checked) =>
+                                  updateConfig('integrations', 'redisEnabled', checked)
+                                }
                               />
                             </div>
                             <Input
                               label="Redis URL"
                               value={config.integrations.redisUrl}
-                              onChange={(e) => updateConfig('integrations', 'redisUrl', e.target.value)}
+                              onChange={(e) =>
+                                updateConfig('integrations', 'redisUrl', e.target.value)
+                              }
                               disabled={!config.integrations.redisEnabled}
                             />
                           </div>
                         </div>
                       </Card>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-medium">Webhooks</h4>
@@ -693,15 +771,19 @@ const SystemConfigurationPage: React.FC = () => {
                         </div>
                         <Switch
                           checked={config.integrations.webhooksEnabled}
-                          onChange={(checked) => updateConfig('integrations', 'webhooksEnabled', checked)}
+                          onChange={(checked) =>
+                            updateConfig('integrations', 'webhooksEnabled', checked)
+                          }
                         />
                       </div>
-                      
+
                       <Input
                         type="number"
                         label="API Rate Limit (per minute)"
                         value={config.integrations.apiRateLimit.toString()}
-                        onChange={(e) => updateConfig('integrations', 'apiRateLimit', parseInt(e.target.value))}
+                        onChange={(e) =>
+                          updateConfig('integrations', 'apiRateLimit', parseInt(e.target.value))
+                        }
                       />
                     </div>
                   </div>
@@ -722,9 +804,13 @@ const SystemConfigurationPage: React.FC = () => {
                                   <h4 className="font-medium">{flag.name}</h4>
                                   <Chip
                                     color={
-                                      flag.category === 'ui' ? 'primary' :
-                                      flag.category === 'api' ? 'secondary' :
-                                      flag.category === 'integration' ? 'success' : 'warning'
+                                      flag.category === 'ui'
+                                        ? 'primary'
+                                        : flag.category === 'api'
+                                          ? 'secondary'
+                                          : flag.category === 'integration'
+                                            ? 'success'
+                                            : 'warning'
                                     }
                                     variant="flat"
                                     size="sm"
@@ -737,8 +823,8 @@ const SystemConfigurationPage: React.FC = () => {
                                     </Chip>
                                   )}
                                 </div>
-                                <p className="text-sm text-gray-600 mt-1">{flag.description}</p>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="mt-1 text-sm text-gray-600">{flag.description}</p>
+                                <p className="mt-1 text-xs text-gray-500">
                                   Rollout: {flag.rolloutPercentage}%
                                 </p>
                               </div>
@@ -759,13 +845,13 @@ const SystemConfigurationPage: React.FC = () => {
                 label: 'Environment',
                 content: (
                   <div className="space-y-6 pt-4">
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Environment Variables</h3>
                       {/* <Button size="sm" onPress={onOpen}> */}
                       {/* Add Variable */}
                       {/* </Button> */}
                     </div>
-                    
+
                     <div className="space-y-3">
                       {envVars.map((envVar) => (
                         <Card key={envVar.key}>
@@ -773,7 +859,7 @@ const SystemConfigurationPage: React.FC = () => {
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3">
-                                  <code className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                                  <code className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">
                                     {envVar.key}
                                   </code>
                                   {envVar.sensitive && (
@@ -782,8 +868,8 @@ const SystemConfigurationPage: React.FC = () => {
                                     </Chip>
                                   )}
                                 </div>
-                                <p className="text-sm text-gray-600 mt-1">{envVar.description}</p>
-                                <p className="text-xs font-mono text-gray-500 mt-1">
+                                <p className="mt-1 text-sm text-gray-600">{envVar.description}</p>
+                                <p className="mt-1 font-mono text-xs text-gray-500">
                                   {envVar.sensitive ? '***REDACTED***' : envVar.value}
                                 </p>
                               </div>

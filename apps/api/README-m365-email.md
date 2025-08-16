@@ -43,11 +43,13 @@
    - Use `POST /email/send` with `{ from, to, subject, html, queue }`.
 
 ## Security Notes
+
 - Store secrets securely (do not commit to source control).
 - Use HTTPS for all endpoints.
 - Monitor and renew webhook subscriptions regularly.
 
 ## References
+
 - [Microsoft Graph API Docs](https://learn.microsoft.com/en-us/graph/overview)
 - [Change Notifications/Webhooks](https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks)
 - [Delta Query](https://learn.microsoft.com/en-us/graph/delta-query-overview)

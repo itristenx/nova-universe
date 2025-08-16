@@ -21,7 +21,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   magenta: '\x1b[35m',
-  cyan: '\x1b[36m'
+  cyan: '\x1b[36m',
 };
 
 // Helper function for colored output
@@ -31,7 +31,7 @@ const log = {
   warning: (msg) => console.log(`${colors.yellow}⚠️  ${msg}${colors.reset}`),
   info: (msg) => console.log(`${colors.blue}ℹ️  ${msg}${colors.reset}`),
   header: (msg) => console.log(`${colors.cyan}${colors.bright}🚀 ${msg}${colors.reset}`),
-  section: (msg) => console.log(`${colors.magenta}${colors.bright}📋 ${msg}${colors.reset}`)
+  section: (msg) => console.log(`${colors.magenta}${colors.bright}📋 ${msg}${colors.reset}`),
 };
 
 // Test results tracking
@@ -39,7 +39,7 @@ let testResults = {
   passed: 0,
   failed: 0,
   warnings: 0,
-  total: 0
+  total: 0,
 };
 
 // Helper function to check file existence
@@ -66,8 +66,8 @@ function checkFileContent(filePath, searchTerms, description) {
   }
 
   const content = fs.readFileSync(filePath, 'utf8');
-  const missingTerms = searchTerms.filter(term => !content.includes(term));
-  
+  const missingTerms = searchTerms.filter((term) => !content.includes(term));
+
   if (missingTerms.length === 0) {
     log.success(`${description}: All required content found`);
     testResults.passed++;
@@ -82,12 +82,14 @@ function checkFileContent(filePath, searchTerms, description) {
 // Main validation function
 function validatePhase3Implementation() {
   log.header('Nova Universe Phase 3 Implementation Validation');
-  console.log('Testing design system components, accessibility, and implementation completeness...\n');
+  console.log(
+    'Testing design system components, accessibility, and implementation completeness...\n',
+  );
 
   // Test 1: Design System Core Files
   log.section('1. Design System Core Files');
   const designSystemPath = '/Users/tneibarger/nova-universe/packages/design-system';
-  
+
   checkFile(`${designSystemPath}/tokens.js`, 'Design Tokens');
   checkFile(`${designSystemPath}/css-variables.css`, 'CSS Variables');
   checkFile(`${designSystemPath}/ThemeProvider.js`, 'Theme Provider');
@@ -97,8 +99,8 @@ function validatePhase3Implementation() {
   // Test 2: Component Library
   log.section('2. Component Library');
   const components = ['Button', 'Input', 'Card', 'Modal', 'Toast', 'Loading', 'Label'];
-  
-  components.forEach(component => {
+
+  components.forEach((component) => {
     checkFile(`${designSystemPath}/${component}.js`, `${component} Component`);
   });
 
@@ -110,7 +112,7 @@ function validatePhase3Implementation() {
     'typography: {',
     'spacing: {',
     'elevation: {',
-    'animation: {'
+    'animation: {',
   ];
   checkFileContent(`${designSystemPath}/tokens.js`, tokenRequirements, 'Design Token Structure');
 
@@ -122,32 +124,27 @@ function validatePhase3Implementation() {
     '--space-1:',
     '--text-base:',
     '--radius-md:',
-    '--duration-200:'
+    '--duration-200:',
   ];
-  checkFileContent(`${designSystemPath}/css-variables.css`, cssRequirements, 'CSS Variables Structure');
+  checkFileContent(
+    `${designSystemPath}/css-variables.css`,
+    cssRequirements,
+    'CSS Variables Structure',
+  );
 
   // Test 5: Component Implementation Validation
   log.section('5. Component Implementation Validation');
-  
+
   // Button component validation
-  const buttonRequirements = [
-    'variant =',
-    'size =',
-    'loading',
-    'disabled',
-    'CSS-in-JS',
-    'aria-'
-  ];
-  checkFileContent(`${designSystemPath}/Button.js`, buttonRequirements, 'Button Component Features');
+  const buttonRequirements = ['variant =', 'size =', 'loading', 'disabled', 'CSS-in-JS', 'aria-'];
+  checkFileContent(
+    `${designSystemPath}/Button.js`,
+    buttonRequirements,
+    'Button Component Features',
+  );
 
   // Input component validation
-  const inputRequirements = [
-    'type =',
-    'error',
-    'required',
-    'aria-invalid',
-    'aria-describedby'
-  ];
+  const inputRequirements = ['type =', 'error', 'required', 'aria-invalid', 'aria-describedby'];
   checkFileContent(`${designSystemPath}/Input.js`, inputRequirements, 'Input Component Features');
 
   // Test 6: Accessibility Implementation
@@ -159,9 +156,13 @@ function validatePhase3Implementation() {
     'prefers-reduced-motion',
     'prefers-contrast',
     'announceToScreenReader',
-    'screenReaderTestUtils'
+    'screenReaderTestUtils',
   ];
-  checkFileContent(`${designSystemPath}/accessibility.js`, accessibilityRequirements, 'Accessibility Features');
+  checkFileContent(
+    `${designSystemPath}/accessibility.js`,
+    accessibilityRequirements,
+    'Accessibility Features',
+  );
 
   // Test 7: Theme Provider Implementation
   log.section('7. Theme Provider Implementation');
@@ -173,14 +174,18 @@ function validatePhase3Implementation() {
     'useTheme',
     'light',
     'dark',
-    'high-contrast'
+    'high-contrast',
   ];
-  checkFileContent(`${designSystemPath}/ThemeProvider.js`, themeRequirements, 'Theme Provider Features');
+  checkFileContent(
+    `${designSystemPath}/ThemeProvider.js`,
+    themeRequirements,
+    'Theme Provider Features',
+  );
 
   // Test 8: Admin Interface Components
   log.section('8. Admin Interface Components');
   const adminPath = '/Users/tneibarger/nova-universe/apps/core/nova-core/src/components/admin';
-  
+
   checkFile(`${adminPath}/AdminDashboard.jsx`, 'Admin Dashboard');
   checkFile(`${adminPath}/TicketManagement.jsx`, 'Ticket Management');
   checkFile(`${adminPath}/UserManagement.jsx`, 'User Management');
@@ -189,7 +194,7 @@ function validatePhase3Implementation() {
   // Test 9: Kiosk Interface Components
   log.section('9. Kiosk Interface Components');
   const kioskPath = '/Users/tneibarger/nova-universe/apps/orbit/src/components';
-  
+
   checkFile(`${kioskPath}/KioskApp.jsx`, 'Kiosk App Interface');
   checkFile(`${kioskPath}/KioskStatusDisplay.jsx`, 'Kiosk Status Display');
 
@@ -202,9 +207,13 @@ function validatePhase3Implementation() {
     'system health',
     'responsive',
     'design tokens',
-    'CSS-in-JS'
+    'CSS-in-JS',
   ];
-  checkFileContent(`${adminPath}/AdminDashboard.jsx`, dashboardRequirements, 'Admin Dashboard Features');
+  checkFileContent(
+    `${adminPath}/AdminDashboard.jsx`,
+    dashboardRequirements,
+    'Admin Dashboard Features',
+  );
 
   // Test 11: Kiosk App Content Validation
   log.section('11. Kiosk App Content Validation');
@@ -215,20 +224,23 @@ function validatePhase3Implementation() {
     'ticket submission',
     'accessibility',
     'session timeout',
-    'responsive'
+    'responsive',
   ];
   checkFileContent(`${kioskPath}/KioskApp.jsx`, kioskRequirements, 'Kiosk App Features');
 
   // Test 12: Documentation
   log.section('12. Documentation');
   const docsPath = '/Users/tneibarger/nova-universe/docs';
-  
-  checkFile(`${docsPath}/PHASE_3_UI_UX_IMPLEMENTATION_COMPLETE.md`, 'Phase 3 Implementation Documentation');
+
+  checkFile(
+    `${docsPath}/PHASE_3_UI_UX_IMPLEMENTATION_COMPLETE.md`,
+    'Phase 3 Implementation Documentation',
+  );
 
   // Test 13: Design System Demo
   log.section('13. Design System Demo');
   const demoPath = '/Users/tneibarger/nova-universe/apps/core/nova-core/src/components';
-  
+
   checkFile(`${demoPath}/DesignSystemDemo.jsx`, 'Design System Demo Component');
 
   // Test 14: Export Validation
@@ -239,14 +251,16 @@ function validatePhase3Implementation() {
     'export.*Card',
     'export.*Modal',
     'export.*ThemeProvider',
-    'export.*AccessibilityProvider'
+    'export.*AccessibilityProvider',
   ];
-  
+
   testResults.total++;
   if (fs.existsSync(`${designSystemPath}/index.js`)) {
     const indexContent = fs.readFileSync(`${designSystemPath}/index.js`, 'utf8');
-    const missingExports = exportRequirements.filter(pattern => !new RegExp(pattern).test(indexContent));
-    
+    const missingExports = exportRequirements.filter(
+      (pattern) => !new RegExp(pattern).test(indexContent),
+    );
+
     if (missingExports.length === 0) {
       log.success('All components properly exported');
       testResults.passed++;
@@ -263,19 +277,21 @@ function validatePhase3Implementation() {
   console.log('\n' + '='.repeat(60));
   log.header('PHASE 3 VALIDATION RESULTS');
   console.log('='.repeat(60));
-  
+
   console.log(`${colors.green}✅ Tests Passed: ${testResults.passed}${colors.reset}`);
   console.log(`${colors.red}❌ Tests Failed: ${testResults.failed}${colors.reset}`);
   console.log(`${colors.yellow}⚠️  Warnings: ${testResults.warnings}${colors.reset}`);
   console.log(`📊 Total Tests: ${testResults.total}`);
-  
+
   const successRate = ((testResults.passed / testResults.total) * 100).toFixed(1);
   console.log(`🎯 Success Rate: ${successRate}%`);
 
   console.log('\n' + '='.repeat(60));
-  
+
   if (testResults.failed === 0) {
-    log.success('🎉 ALL TESTS PASSED! Phase 3 implementation is complete and ready for production.');
+    log.success(
+      '🎉 ALL TESTS PASSED! Phase 3 implementation is complete and ready for production.',
+    );
     console.log('\n📋 Implementation Summary:');
     console.log('  • Complete design system with tokens and themes');
     console.log('  • Full component library with accessibility');
@@ -297,7 +313,7 @@ function validatePhase3Implementation() {
 // Additional utility functions
 function generateImplementationReport() {
   log.header('Generating Implementation Report');
-  
+
   const report = {
     timestamp: new Date().toISOString(),
     phase: 'Phase 3: UI/UX Design & Branding',
@@ -309,20 +325,20 @@ function generateImplementationReport() {
         'Theme Provider with Color Mode Support',
         'Accessibility Implementation (WCAG 2.1 AA)',
         'Component Library (7 core components)',
-        'Design System Demo Interface'
+        'Design System Demo Interface',
       ],
       adminInterfaces: [
         'Admin Dashboard with Real-time Monitoring',
         'Ticket Management System',
         'User Management Interface',
-        'Kiosk Fleet Management'
+        'Kiosk Fleet Management',
       ],
       kioskInterfaces: [
         'iPad-optimized Kiosk App',
         'Real-time Status Display',
         'Touch-friendly Interface',
-        'Session Management'
-      ]
+        'Session Management',
+      ],
     },
     accessibility: {
       wcagCompliance: '2.1 AA',
@@ -332,15 +348,15 @@ function generateImplementationReport() {
         'Keyboard navigation',
         'High contrast mode',
         'Reduced motion support',
-        'Touch-friendly targets (44px minimum)'
-      ]
+        'Touch-friendly targets (44px minimum)',
+      ],
     },
     technical: {
       architecture: 'React + CSS-in-JS',
       theming: 'Multi-mode (light/dark/high-contrast)',
       responsive: 'Mobile-first design',
-      browser_support: 'Chrome 90+, Firefox 88+, Safari 14+, Edge 90+'
-    }
+      browser_support: 'Chrome 90+, Firefox 88+, Safari 14+, Edge 90+',
+    },
   };
 
   const reportPath = '/Users/tneibarger/nova-universe/docs/PHASE_3_VALIDATION_REPORT.json';
@@ -355,7 +371,7 @@ function generateImplementationReport() {
 // CLI handling
 if (require.main === module) {
   const command = process.argv[2];
-  
+
   switch (command) {
     case 'validate':
       validatePhase3Implementation();
@@ -381,5 +397,5 @@ if (require.main === module) {
 
 module.exports = {
   validatePhase3Implementation,
-  generateImplementationReport
+  generateImplementationReport,
 };

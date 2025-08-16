@@ -355,27 +355,32 @@ export const AccessibilityProvider = ({ children }) => {
         }
       }
     `;
-    
+
     const styleElement = document.createElement('style');
     styleElement.textContent = accessibilityStyles;
     document.head.appendChild(styleElement);
-    
+
     return () => {
       document.head.removeChild(styleElement);
     };
   }, []);
-  
+
   return (
     <>
       {/* Skip Link */}
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
-      
+
       {/* Screen Reader Announcements */}
       <div id="aria-live-region" aria-live="polite" aria-atomic="true" className="sr-only"></div>
-      <div id="aria-live-region-assertive" aria-live="assertive" aria-atomic="true" className="sr-only"></div>
-      
+      <div
+        id="aria-live-region-assertive"
+        aria-live="assertive"
+        aria-atomic="true"
+        className="sr-only"
+      ></div>
+
       {children}
     </>
   );
@@ -384,9 +389,9 @@ export const AccessibilityProvider = ({ children }) => {
 // Utility functions for accessibility
 export const announceToScreenReader = (message, priority = 'polite') => {
   const region = document.getElementById(
-    priority === 'assertive' ? 'aria-live-region-assertive' : 'aria-live-region'
+    priority === 'assertive' ? 'aria-live-region-assertive' : 'aria-live-region',
   );
-  
+
   if (region) {
     region.textContent = message;
     // Clear after announcement
@@ -397,99 +402,99 @@ export const announceToScreenReader = (message, priority = 'polite') => {
 };
 
 // Enhanced Button component with accessibility
-export const AccessibleButton = React.forwardRef(({
-  children,
-  onClick,
-  disabled,
-  loading,
-  variant = 'primary',
-  size = 'md',
-  ariaLabel,
-  ariaDescribedBy,
-  className = '',
-  ...props
-}, ref) => {
-  const handleClick = (e) => {
-    if (!disabled && !loading && onClick) {
-      onClick(e);
-      announceToScreenReader('Button activated');
-    }
-  };
+export const AccessibleButton = React.forwardRef(
+  (
+    {
+      children,
+      onClick,
+      disabled,
+      loading,
+      variant = 'primary',
+      size = 'md',
+      ariaLabel,
+      ariaDescribedBy,
+      className = '',
+      ...props
+    },
+    ref,
+  ) => {
+    const handleClick = (e) => {
+      if (!disabled && !loading && onClick) {
+        onClick(e);
+        announceToScreenReader('Button activated');
+      }
+    };
 
-  const handleKeyDown = (e) => {
-    // Handle space key for button activation
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      handleClick(e);
-    }
-  };
+    const handleKeyDown = (e) => {
+      // Handle space key for button activation
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        handleClick(e);
+      }
+    };
 
-  return (
-    <button
-      ref={ref}
-      type="button"
-      className={`button button--${variant} button--${size} focus-visible ${className}`}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      disabled={disabled || loading}
-      aria-label={ariaLabel}
-      aria-describedby={ariaDescribedBy}
-      aria-busy={loading}
-      {...props}
-    >
-      {loading && (
-        <span className="sr-only">Loading, please wait</span>
-      )}
-      {children}
-    </button>
-  );
-});
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={`button button--${variant} button--${size} focus-visible ${className}`}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        disabled={disabled || loading}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        aria-busy={loading}
+        {...props}
+      >
+        {loading && <span className="sr-only">Loading, please wait</span>}
+        {children}
+      </button>
+    );
+  },
+);
 
 // Enhanced Input component with accessibility
-export const AccessibleInput = React.forwardRef(({
-  label,
-  error,
-  required,
-  type = 'text',
-  className = '',
-  id,
-  ariaDescribedBy,
-  ...props
-}, ref) => {
-  const inputId = id || `input-${React.useId()}`;
-  const errorId = error ? `${inputId}-error` : undefined;
-  const describedBy = [ariaDescribedBy, errorId].filter(Boolean).join(' ');
+export const AccessibleInput = React.forwardRef(
+  (
+    { label, error, required, type = 'text', className = '', id, ariaDescribedBy, ...props },
+    ref,
+  ) => {
+    const inputId = id || `input-${React.useId()}`;
+    const errorId = error ? `${inputId}-error` : undefined;
+    const describedBy = [ariaDescribedBy, errorId].filter(Boolean).join(' ');
 
-  return (
-    <div className="form-group">
-      {label && (
-        <label htmlFor={inputId} className="form-label">
-          {label}
-          {required && (
-            <span className="required-indicator" aria-label="required">
-              {' '}*
-            </span>
-          )}
-        </label>
-      )}
-      <input
-        ref={ref}
-        id={inputId}
-        type={type}
-        className={`form-input focus-visible ${error ? 'error-field' : ''} ${className}`}
-        aria-required={required}
-        aria-invalid={!!error}
-        aria-describedby={describedBy || undefined}
-        {...props}
-      />
-      {error && (
-        <div id={errorId} className="error-message" role="alert">
-          {error}
-        </div>
-      )}
-    </div>
-  );
-});
+    return (
+      <div className="form-group">
+        {label && (
+          <label htmlFor={inputId} className="form-label">
+            {label}
+            {required && (
+              <span className="required-indicator" aria-label="required">
+                {' '}
+                *
+              </span>
+            )}
+          </label>
+        )}
+        <input
+          ref={ref}
+          id={inputId}
+          type={type}
+          className={`form-input focus-visible ${error ? 'error-field' : ''} ${className}`}
+          aria-required={required}
+          aria-invalid={!!error}
+          aria-describedby={describedBy || undefined}
+          {...props}
+        />
+        {error && (
+          <div id={errorId} className="error-message" role="alert">
+            {error}
+          </div>
+        )}
+      </div>
+    );
+  },
+);
 
 // Enhanced Modal component with accessibility
 export const AccessibleModal = ({
@@ -498,7 +503,7 @@ export const AccessibleModal = ({
   title,
   children,
   size = 'md',
-  className = ''
+  className = '',
 }) => {
   const modalRef = React.useRef(null);
   const previousFocusRef = React.useRef(null);
@@ -507,20 +512,20 @@ export const AccessibleModal = ({
     if (isOpen) {
       // Store previously focused element
       previousFocusRef.current = document.activeElement;
-      
+
       // Focus modal when opened
       setTimeout(() => {
         modalRef.current?.focus();
       }, 100);
-      
+
       // Prevent body scroll
       document.body.style.overflow = 'hidden';
-      
+
       announceToScreenReader(`Dialog opened: ${title}`, 'assertive');
     } else {
       // Restore body scroll
       document.body.style.overflow = '';
-      
+
       // Return focus to previously focused element
       if (previousFocusRef.current) {
         previousFocusRef.current.focus();
@@ -548,9 +553,9 @@ export const AccessibleModal = ({
   const handleKeyDown = (e) => {
     if (e.key === 'Tab') {
       const focusableElements = modalRef.current?.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       );
-      
+
       if (focusableElements?.length) {
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];
@@ -588,38 +593,23 @@ export const AccessibleModal = ({
           <h2 id="modal-title" className="modal-title">
             {title}
           </h2>
-          <button
-            className="modal-close focus-visible"
-            onClick={onClose}
-            aria-label="Close dialog"
-          >
+          <button className="modal-close focus-visible" onClick={onClose} aria-label="Close dialog">
             ×
           </button>
         </div>
-        
-        <div className="modal-body">
-          {children}
-        </div>
+
+        <div className="modal-body">{children}</div>
       </div>
     </div>
   );
 };
 
 // Enhanced Table component with accessibility
-export const AccessibleTable = ({
-  columns,
-  data,
-  caption,
-  className = ''
-}) => {
+export const AccessibleTable = ({ columns, data, caption, className = '' }) => {
   return (
     <div className="table-container" role="region" aria-label="Data table" tabIndex={0}>
       <table className={`accessible-table ${className}`} role="table">
-        {caption && (
-          <caption className="table-caption">
-            {caption}
-          </caption>
-        )}
+        {caption && <caption className="table-caption">{caption}</caption>}
         <thead>
           <tr role="row">
             {columns.map((column, index) => (
@@ -631,11 +621,7 @@ export const AccessibleTable = ({
                 aria-sort={column.sortable ? 'none' : undefined}
               >
                 {column.header}
-                {column.sortable && (
-                  <span className="sr-only">
-                    {' '}(sortable column)
-                  </span>
-                )}
+                {column.sortable && <span className="sr-only"> (sortable column)</span>}
               </th>
             ))}
           </tr>
@@ -667,10 +653,10 @@ export const AccessibleProgress = ({
   max = 100,
   label,
   variant = 'primary',
-  className = ''
+  className = '',
 }) => {
   const percentage = Math.round((value / max) * 100);
-  
+
   return (
     <div className={`progress-container ${className}`}>
       {label && (
@@ -687,10 +673,7 @@ export const AccessibleProgress = ({
         aria-valuetext={`${percentage}% complete`}
         aria-labelledby={label ? `progress-label-${React.useId()}` : undefined}
       >
-        <div
-          className="progress-fill"
-          style={{ width: `${percentage}%` }}
-        />
+        <div className="progress-fill" style={{ width: `${percentage}%` }} />
       </div>
     </div>
   );
@@ -700,31 +683,34 @@ export const AccessibleProgress = ({
 export const useKeyboardNavigation = (items, onSelect) => {
   const [focusedIndex, setFocusedIndex] = React.useState(0);
 
-  const handleKeyDown = React.useCallback((e) => {
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setFocusedIndex(prev => (prev + 1) % items.length);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setFocusedIndex(prev => (prev - 1 + items.length) % items.length);
-        break;
-      case 'Enter':
-      case ' ':
-        e.preventDefault();
-        onSelect(items[focusedIndex]);
-        break;
-      case 'Home':
-        e.preventDefault();
-        setFocusedIndex(0);
-        break;
-      case 'End':
-        e.preventDefault();
-        setFocusedIndex(items.length - 1);
-        break;
-    }
-  }, [items, focusedIndex, onSelect]);
+  const handleKeyDown = React.useCallback(
+    (e) => {
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setFocusedIndex((prev) => (prev + 1) % items.length);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setFocusedIndex((prev) => (prev - 1 + items.length) % items.length);
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          onSelect(items[focusedIndex]);
+          break;
+        case 'Home':
+          e.preventDefault();
+          setFocusedIndex(0);
+          break;
+        case 'End':
+          e.preventDefault();
+          setFocusedIndex(items.length - 1);
+          break;
+      }
+    },
+    [items, focusedIndex, onSelect],
+  );
 
   return { focusedIndex, handleKeyDown };
 };
@@ -739,26 +725,26 @@ export const screenReaderTestUtils = {
       element.textContent?.trim()
     );
   },
-  
+
   // Test if interactive element is keyboard accessible
   isKeyboardAccessible: (element) => {
     const tabIndex = element.getAttribute('tabindex');
-    const isInteractive = [
-      'button', 'input', 'select', 'textarea', 'a'
-    ].includes(element.tagName.toLowerCase());
-    
+    const isInteractive = ['button', 'input', 'select', 'textarea', 'a'].includes(
+      element.tagName.toLowerCase(),
+    );
+
     return isInteractive || tabIndex === '0' || tabIndex === null;
   },
-  
+
   // Test color contrast (basic check)
   hasGoodContrast: (element) => {
     const styles = getComputedStyle(element);
     const color = styles.color;
     const backgroundColor = styles.backgroundColor;
-    
+
     // This is a simplified check - in production, use a proper contrast ratio calculator
     return color !== backgroundColor;
-  }
+  },
 };
 
 export default AccessibilityProvider;

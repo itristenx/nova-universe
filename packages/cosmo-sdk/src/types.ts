@@ -141,7 +141,7 @@ export interface CosmoConfig {
   retryDelay?: number;
 }
 
-export type CosmoEventType = 
+export type CosmoEventType =
   | 'message'
   | 'conversation_started'
   | 'conversation_ended'

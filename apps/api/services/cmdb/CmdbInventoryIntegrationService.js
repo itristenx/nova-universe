@@ -5,7 +5,9 @@ async function getCorePrisma() {
   try {
     const mod = await import('../../../../prisma/generated/core/index.js');
     return new mod.PrismaClient();
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 async function getCmdbPrisma() {
@@ -13,7 +15,9 @@ async function getCmdbPrisma() {
   try {
     const mod = await import('../../../../prisma/generated/cmdb/index.js');
     return new mod.PrismaClient();
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 // Initialize database clients
@@ -39,12 +43,12 @@ class CmdbInventoryIntegrationService {
       syncEnabled = true,
       conflictResolution = 'cmdb_wins',
       fieldMapping,
-      createdBy
+      createdBy,
     } = data;
 
     // Validate CI exists
     const ci = await this.cmdbDb.configurationItem.findUnique({
-      where: { id: ciId }
+      where: { id: ciId },
     });
     if (!ci) {
       throw new Error('Configuration Item not found');
@@ -52,7 +56,7 @@ class CmdbInventoryIntegrationService {
 
     // Validate inventory asset exists
     const asset = await this.coreDb.inventoryAsset.findUnique({
-      where: { id: inventoryAssetId }
+      where: { id: inventoryAssetId },
     });
     if (!asset) {
       throw new Error('Inventory Asset not found');
@@ -68,8 +72,8 @@ class CmdbInventoryIntegrationService {
         syncEnabled,
         conflictResolution,
         fieldMapping,
-        createdBy
-      }
+        createdBy,
+      },
     });
 
     // Perform initial sync if enabled
@@ -81,13 +85,7 @@ class CmdbInventoryIntegrationService {
   }
 
   async updateMapping(id, data) {
-    const {
-      mappingType,
-      relationship,
-      syncEnabled,
-      conflictResolution,
-      fieldMapping
-    } = data;
+    const { mappingType, relationship, syncEnabled, conflictResolution, fieldMapping } = data;
 
     const mapping = await this.cmdbDb.cmdbInventoryMapping.update({
       where: { id },
@@ -96,8 +94,8 @@ class CmdbInventoryIntegrationService {
         relationship,
         syncEnabled,
         conflictResolution,
-        fieldMapping
-      }
+        fieldMapping,
+      },
     });
 
     return mapping;
@@ -105,7 +103,7 @@ class CmdbInventoryIntegrationService {
 
   async deleteMapping(id) {
     await this.cmdbDb.cmdbInventoryMapping.delete({
-      where: { id }
+      where: { id },
     });
 
     return { success: true };
@@ -117,10 +115,10 @@ class CmdbInventoryIntegrationService {
       include: {
         configurationItem: {
           include: {
-            ciType_rel: true
-          }
-        }
-      }
+            ciType_rel: true,
+          },
+        },
+      },
     });
 
     if (!mapping) {
@@ -132,35 +130,28 @@ class CmdbInventoryIntegrationService {
       where: { id: mapping.inventoryAssetId },
       include: {
         statusLogs: { take: 5, orderBy: { timestamp: 'desc' } },
-        assignments: { 
+        assignments: {
           where: { returnDate: null },
           take: 1,
-          orderBy: { assignedDate: 'desc' }
-        }
-      }
+          orderBy: { assignedDate: 'desc' },
+        },
+      },
     });
 
     return {
       ...mapping,
-      inventoryAsset
+      inventoryAsset,
     };
   }
 
   async listMappings(filters = {}) {
-    const {
-      ciId,
-      inventoryAssetId,
-      mappingType,
-      syncEnabled,
-      page = 1,
-      limit = 50
-    } = filters;
+    const { ciId, inventoryAssetId, mappingType, syncEnabled, page = 1, limit = 50 } = filters;
 
     const where = {
       ...(ciId && { ciId }),
       ...(inventoryAssetId && { inventoryAssetId }),
       ...(mappingType && { mappingType }),
-      ...(syncEnabled !== undefined && { syncEnabled })
+      ...(syncEnabled !== undefined && { syncEnabled }),
     };
 
     const [mappings, total] = await Promise.all([
@@ -173,15 +164,15 @@ class CmdbInventoryIntegrationService {
               ciId: true,
               name: true,
               ciType: true,
-              ciStatus: true
-            }
-          }
+              ciStatus: true,
+            },
+          },
         },
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       }),
-      this.cmdbDb.cmdbInventoryMapping.count({ where })
+      this.cmdbDb.cmdbInventoryMapping.count({ where }),
     ]);
 
     // Enrich with inventory asset details
@@ -195,11 +186,11 @@ class CmdbInventoryIntegrationService {
             serialNumber: true,
             model: true,
             status: true,
-            assignedToUserId: true
-          }
+            assignedToUserId: true,
+          },
         });
         return { ...mapping, inventoryAsset };
-      })
+      }),
     );
 
     return {
@@ -208,8 +199,8 @@ class CmdbInventoryIntegrationService {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -221,8 +212,8 @@ class CmdbInventoryIntegrationService {
     const mapping = await this.cmdbDb.cmdbInventoryMapping.findUnique({
       where: { id: mappingId },
       include: {
-        configurationItem: true
-      }
+        configurationItem: true,
+      },
     });
 
     if (!mapping) {
@@ -235,7 +226,7 @@ class CmdbInventoryIntegrationService {
 
     try {
       const inventoryAsset = await this.coreDb.inventoryAsset.findUnique({
-        where: { id: mapping.inventoryAssetId }
+        where: { id: mapping.inventoryAssetId },
       });
 
       if (!inventoryAsset) {
@@ -243,11 +234,11 @@ class CmdbInventoryIntegrationService {
       }
 
       const updateData = await this.mapInventoryToCmdb(inventoryAsset, mapping);
-      
+
       // Update CI with mapped data
       await this.cmdbDb.configurationItem.update({
         where: { id: mapping.ciId },
-        data: updateData
+        data: updateData,
       });
 
       // Update mapping sync status
@@ -256,8 +247,8 @@ class CmdbInventoryIntegrationService {
         data: {
           lastSyncAt: new Date(),
           syncStatus: 'success',
-          syncErrors: null
-        }
+          syncErrors: null,
+        },
       });
 
       return { success: true, syncedAt: new Date() };
@@ -268,8 +259,8 @@ class CmdbInventoryIntegrationService {
         data: {
           lastSyncAt: new Date(),
           syncStatus: 'failed',
-          syncErrors: error.message
-        }
+          syncErrors: error.message,
+        },
       });
 
       throw error;
@@ -278,7 +269,7 @@ class CmdbInventoryIntegrationService {
 
   async syncAllMappings() {
     const mappings = await this.cmdbDb.cmdbInventoryMapping.findMany({
-      where: { syncEnabled: true }
+      where: { syncEnabled: true },
     });
 
     const results = [];
@@ -287,19 +278,19 @@ class CmdbInventoryIntegrationService {
         await this.syncMapping(mapping.id);
         results.push({ mappingId: mapping.id, status: 'success' });
       } catch (error) {
-        results.push({ 
-          mappingId: mapping.id, 
-          status: 'failed', 
-          error: error.message 
+        results.push({
+          mappingId: mapping.id,
+          status: 'failed',
+          error: error.message,
         });
       }
     }
 
     return {
       totalMappings: mappings.length,
-      successful: results.filter(r => r.status === 'success').length,
-      failed: results.filter(r => r.status === 'failed').length,
-      results
+      successful: results.filter((r) => r.status === 'success').length,
+      failed: results.filter((r) => r.status === 'failed').length,
+      results,
     };
   }
 
@@ -316,7 +307,7 @@ class CmdbInventoryIntegrationService {
       owner: inventoryAsset.assignedToUserId ? `user_${inventoryAsset.assignedToUserId}` : null,
       ciStatus: this.mapInventoryStatusToCiStatus(inventoryAsset.status),
       customFields: inventoryAsset.customFields,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     // Apply custom field mapping if defined
@@ -335,16 +326,16 @@ class CmdbInventoryIntegrationService {
 
   mapInventoryStatusToCiStatus(inventoryStatus) {
     const statusMap = {
-      'active': 'Active',
-      'deployed': 'Active',
-      'available': 'Active',
-      'in_use': 'Active',
-      'maintenance': 'Non-Operational',
-      'repair': 'Non-Operational',
-      'decommissioned': 'Retired',
-      'disposed': 'Retired',
-      'lost': 'Retired',
-      'stolen': 'Retired'
+      active: 'Active',
+      deployed: 'Active',
+      available: 'Active',
+      in_use: 'Active',
+      maintenance: 'Non-Operational',
+      repair: 'Non-Operational',
+      decommissioned: 'Retired',
+      disposed: 'Retired',
+      lost: 'Retired',
+      stolen: 'Retired',
     };
 
     return statusMap[inventoryStatus?.toLowerCase()] || 'Active';
@@ -360,14 +351,16 @@ class CmdbInventoryIntegrationService {
       where: {
         NOT: {
           id: {
-            in: await this.cmdbDb.cmdbInventoryMapping.findMany({
-              select: { inventoryAssetId: true }
-            }).then(mappings => mappings.map(m => m.inventoryAssetId))
-          }
-        }
+            in: await this.cmdbDb.cmdbInventoryMapping
+              .findMany({
+                select: { inventoryAssetId: true },
+              })
+              .then((mappings) => mappings.map((m) => m.inventoryAssetId)),
+          },
+        },
       },
       take: 100,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
 
     // Find CIs without inventory mapping
@@ -375,17 +368,19 @@ class CmdbInventoryIntegrationService {
       where: {
         NOT: {
           id: {
-            in: await this.cmdbDb.cmdbInventoryMapping.findMany({
-              select: { ciId: true }
-            }).then(mappings => mappings.map(m => m.ciId))
-          }
-        }
+            in: await this.cmdbDb.cmdbInventoryMapping
+              .findMany({
+                select: { ciId: true },
+              })
+              .then((mappings) => mappings.map((m) => m.ciId)),
+          },
+        },
       },
       include: {
-        ciType_rel: true
+        ciType_rel: true,
       },
       take: 100,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
 
     // Suggest potential mappings based on matching criteria
@@ -396,7 +391,7 @@ class CmdbInventoryIntegrationService {
         suggestions.push({
           inventoryAsset: asset,
           potentialCis: potentialCis.slice(0, 3), // Top 3 matches
-          confidence: this.calculateMatchConfidence(asset, potentialCis[0])
+          confidence: this.calculateMatchConfidence(asset, potentialCis[0]),
         });
       }
     }
@@ -405,7 +400,7 @@ class CmdbInventoryIntegrationService {
       unmappedAssets: unmappedAssets.length,
       unmappedCis: unmappedCis.length,
       suggestions: suggestions.slice(0, 20), // Top 20 suggestions
-      totalMappings: await this.cmdbDb.cmdbInventoryMapping.count()
+      totalMappings: await this.cmdbDb.cmdbInventoryMapping.count(),
     };
   }
 
@@ -417,8 +412,8 @@ class CmdbInventoryIntegrationService {
       searchCriteria.push({
         serialNumber: {
           equals: inventoryAsset.serialNumber,
-          mode: 'insensitive'
-        }
+          mode: 'insensitive',
+        },
       });
     }
 
@@ -427,8 +422,8 @@ class CmdbInventoryIntegrationService {
       searchCriteria.push({
         assetTag: {
           equals: inventoryAsset.assetTag,
-          mode: 'insensitive'
-        }
+          mode: 'insensitive',
+        },
       });
     }
 
@@ -437,13 +432,15 @@ class CmdbInventoryIntegrationService {
       searchCriteria.push({
         AND: [
           { model: { contains: inventoryAsset.model, mode: 'insensitive' } },
-          inventoryAsset.serialNumber ? {
-            serialNumber: {
-              contains: inventoryAsset.serialNumber,
-              mode: 'insensitive'
-            }
-          } : {}
-        ]
+          inventoryAsset.serialNumber
+            ? {
+                serialNumber: {
+                  contains: inventoryAsset.serialNumber,
+                  mode: 'insensitive',
+                },
+              }
+            : {},
+        ],
       });
     }
 
@@ -453,12 +450,12 @@ class CmdbInventoryIntegrationService {
 
     const potentialCis = await this.cmdbDb.configurationItem.findMany({
       where: {
-        OR: searchCriteria
+        OR: searchCriteria,
       },
       include: {
-        ciType_rel: true
+        ciType_rel: true,
       },
-      take: 10
+      take: 10,
     });
 
     return potentialCis;
@@ -511,31 +508,31 @@ class CmdbInventoryIntegrationService {
 
   async bulkCreateMappings(mappingData) {
     const results = [];
-    
+
     for (const data of mappingData) {
       try {
         const mapping = await this.createMapping(data);
-        results.push({ 
-          success: true, 
+        results.push({
+          success: true,
           mapping,
           ciId: data.ciId,
-          inventoryAssetId: data.inventoryAssetId
+          inventoryAssetId: data.inventoryAssetId,
         });
       } catch (error) {
-        results.push({ 
-          success: false, 
+        results.push({
+          success: false,
           error: error.message,
           ciId: data.ciId,
-          inventoryAssetId: data.inventoryAssetId
+          inventoryAssetId: data.inventoryAssetId,
         });
       }
     }
 
     return {
       total: mappingData.length,
-      successful: results.filter(r => r.success).length,
-      failed: results.filter(r => !r.success).length,
-      results
+      successful: results.filter((r) => r.success).length,
+      failed: results.filter((r) => !r.success).length,
+      results,
     };
   }
 
@@ -546,7 +543,7 @@ class CmdbInventoryIntegrationService {
       failedSyncs,
       recentActivity,
       unmappedAssets,
-      unmappedCis
+      unmappedCis,
     ] = await Promise.all([
       this.cmdbDb.cmdbInventoryMapping.count(),
       this.cmdbDb.cmdbInventoryMapping.count({ where: { syncEnabled: true } }),
@@ -554,19 +551,19 @@ class CmdbInventoryIntegrationService {
       this.cmdbDb.cmdbInventoryMapping.findMany({
         where: {
           lastSyncAt: {
-            gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
-          }
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+          },
         },
         include: {
           configurationItem: {
-            select: { ciId: true, name: true }
-          }
+            select: { ciId: true, name: true },
+          },
         },
         orderBy: { lastSyncAt: 'desc' },
-        take: 10
+        take: 10,
       }),
-      this.analyzeIntegrationOpportunities().then(result => result.unmappedAssets),
-      this.analyzeIntegrationOpportunities().then(result => result.unmappedCis)
+      this.analyzeIntegrationOpportunities().then((result) => result.unmappedAssets),
+      this.analyzeIntegrationOpportunities().then((result) => result.unmappedCis),
     ]);
 
     return {
@@ -576,7 +573,7 @@ class CmdbInventoryIntegrationService {
         failedSyncs,
         unmappedAssets,
         unmappedCis,
-        integrationHealth: failedSyncs === 0 ? 'Healthy' : failedSyncs < 5 ? 'Warning' : 'Critical'
+        integrationHealth: failedSyncs === 0 ? 'Healthy' : failedSyncs < 5 ? 'Warning' : 'Critical',
       },
       recentActivity,
       recommendations: this.generateRecommendations({
@@ -584,8 +581,8 @@ class CmdbInventoryIntegrationService {
         activeMappings,
         failedSyncs,
         unmappedAssets,
-        unmappedCis
-      })
+        unmappedCis,
+      }),
     };
   }
 
@@ -597,7 +594,7 @@ class CmdbInventoryIntegrationService {
         type: 'error',
         title: 'Sync Failures Detected',
         description: `${metrics.failedSyncs} mappings have failed sync operations`,
-        action: 'Review and resolve sync errors'
+        action: 'Review and resolve sync errors',
       });
     }
 
@@ -606,7 +603,7 @@ class CmdbInventoryIntegrationService {
         type: 'warning',
         title: 'High Number of Unmapped Assets',
         description: `${metrics.unmappedAssets} inventory assets are not mapped to CMDB`,
-        action: 'Consider bulk mapping operations'
+        action: 'Consider bulk mapping operations',
       });
     }
 
@@ -615,7 +612,7 @@ class CmdbInventoryIntegrationService {
         type: 'info',
         title: 'CIs Without Inventory Links',
         description: `${metrics.unmappedCis} configuration items lack inventory mapping`,
-        action: 'Review CIs for potential asset relationships'
+        action: 'Review CIs for potential asset relationships',
       });
     }
 
@@ -624,7 +621,7 @@ class CmdbInventoryIntegrationService {
         type: 'warning',
         title: 'No CMDB-Inventory Integration',
         description: 'No mappings exist between CMDB and Inventory systems',
-        action: 'Start by mapping critical assets to CIs'
+        action: 'Start by mapping critical assets to CIs',
       });
     }
 

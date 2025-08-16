@@ -5,7 +5,12 @@ export interface PaperProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Paper: React.FC<PaperProps> = ({ elevation = 1, children, ...props }) => (
-  <div {...props} className={[props.className || 'paper', `paper-elevation-${elevation}`].filter(Boolean).join(' ')}>
+  <div
+    {...props}
+    className={[props.className || 'paper', `paper-elevation-${elevation}`]
+      .filter(Boolean)
+      .join(' ')}
+  >
     {children}
   </div>
 );

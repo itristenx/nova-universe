@@ -25,7 +25,7 @@ export const Radio: React.FC<RadioProps> = ({
   <div className={`radio-container ${className}`}>
     {label && <span className="radio-label">{label}</span>}
     <div className="radio-group">
-      {options.map(option => (
+      {options.map((option) => (
         <label key={option.value} className="radio-option">
           <input
             type="radio"

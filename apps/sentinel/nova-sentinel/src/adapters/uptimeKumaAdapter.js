@@ -9,7 +9,7 @@ import winston from 'winston';
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.simple(),
-  transports: [new winston.transports.Console()]
+  transports: [new winston.transports.Console()],
 });
 
 export class UptimeKumaAdapter extends EventEmitter {
@@ -38,7 +38,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       await this.authenticate();
       await this.setupEventHandlers();
       await this.syncInitialData();
-      
+
       logger.info('Uptime Kuma adapter initialized successfully');
     } catch (error) {
       logger.error('Failed to initialize Uptime Kuma adapter:', error);
@@ -49,9 +49,9 @@ export class UptimeKumaAdapter extends EventEmitter {
   async connect() {
     return new Promise((resolve, reject) => {
       const wsUrl = this.config.url.replace('http', 'ws') + '/socket.io/?EIO=4&transport=websocket';
-      
+
       logger.info(`Connecting to Uptime Kuma WebSocket: ${wsUrl}`);
-      
+
       this.ws = new WebSocket(wsUrl);
 
       this.ws.on('open', () => {
@@ -90,7 +90,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       await this.sendMessage('login', {
         username: 'admin',
         password: this.config.apiKey,
-        token: this.config.apiKey
+        token: this.config.apiKey,
       });
     }
   }
@@ -128,9 +128,9 @@ export class UptimeKumaAdapter extends EventEmitter {
     await this.sendMessage('getStatusPageList');
     await this.sendMessage('getIncidentList');
     await this.sendMessage('getMaintenanceList');
-    
+
     // Wait a moment for data to sync
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 
   handleMessage(message) {
@@ -139,7 +139,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       if (message.startsWith('42')) {
         const data = JSON.parse(message.substring(2));
         const [event, payload] = data;
-        
+
         logger.debug(`Received event: ${event}`, payload);
         this.emit(event, payload);
       } else if (message.startsWith('40')) {
@@ -158,7 +158,7 @@ export class UptimeKumaAdapter extends EventEmitter {
 
     const message = `42["${event}",${JSON.stringify(data)}]`;
     this.ws.send(message);
-    
+
     logger.debug(`Sent message: ${event}`, data);
   }
 
@@ -168,21 +168,21 @@ export class UptimeKumaAdapter extends EventEmitter {
   }
 
   handleHeartbeatList(heartbeats) {
-    Object.values(heartbeats).forEach(heartbeat => {
+    Object.values(heartbeats).forEach((heartbeat) => {
       this.heartbeats.set(heartbeat.monitorID, heartbeat);
     });
     this.emit('nova:heartbeatList', heartbeats);
   }
 
   handleMonitorList(monitors) {
-    Object.values(monitors).forEach(monitor => {
+    Object.values(monitors).forEach((monitor) => {
       this.monitors.set(monitor.id, monitor);
     });
     this.emit('nova:monitorList', monitors);
   }
 
   handleStatusPageList(statusPages) {
-    Object.values(statusPages).forEach(statusPage => {
+    Object.values(statusPages).forEach((statusPage) => {
       this.statusPages.set(statusPage.id, statusPage);
     });
     this.emit('nova:statusPageList', statusPages);
@@ -265,7 +265,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       radiusSecret: monitorData.radiusSecret || '',
       radiusCalledStationId: monitorData.radiusCalledStationId || '',
       radiusCallingStationId: monitorData.radiusCallingStationId || '',
-      tag: monitorData.tags || []
+      tag: monitorData.tags || [],
     };
 
     await this.sendMessage('add', monitor);
@@ -321,7 +321,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       footerText: statusPageData.footerText || '',
       showPoweredBy: statusPageData.showPoweredBy !== false,
       icon: statusPageData.icon || '/icon.svg',
-      publicGroupList: statusPageData.publicGroupList || []
+      publicGroupList: statusPageData.publicGroupList || [],
     };
 
     await this.sendMessage('saveStatusPage', statusPage);
@@ -356,7 +356,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       type: notificationData.type, // slack, discord, webhook, etc.
       isDefault: notificationData.isDefault || false,
       applyExisting: notificationData.applyExisting || false,
-      ...notificationData.config // Type-specific configuration
+      ...notificationData.config, // Type-specific configuration
     };
 
     await this.sendMessage('addNotification', notification);
@@ -390,7 +390,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       dateTimeEnd: maintenanceData.dateTimeEnd,
       durationMinutes: maintenanceData.durationMinutes,
       monitorList: maintenanceData.monitorList || [],
-      statusPageList: maintenanceData.statusPageList || []
+      statusPageList: maintenanceData.statusPageList || [],
     };
 
     await this.sendMessage('addMaintenance', maintenance);
@@ -424,7 +424,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       title: incidentData.title,
       content: incidentData.content,
       style: incidentData.style || 'danger',
-      statusPageList: incidentData.statusPageList || []
+      statusPageList: incidentData.statusPageList || [],
     };
 
     await this.sendMessage('postIncident', incident);
@@ -448,7 +448,7 @@ export class UptimeKumaAdapter extends EventEmitter {
   async createTag(tagData) {
     const tag = {
       name: tagData.name,
-      color: tagData.color || '#007cba'
+      color: tagData.color || '#007cba',
     };
 
     await this.sendMessage('addTag', tag);
@@ -477,7 +477,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       auth: proxyData.auth || false,
       username: proxyData.username || '',
       password: proxyData.password || '',
-      active: proxyData.active !== false
+      active: proxyData.active !== false,
     };
 
     await this.sendMessage('addProxy', proxy);
@@ -526,7 +526,7 @@ export class UptimeKumaAdapter extends EventEmitter {
     const apiKey = {
       name: keyData.name,
       expires: keyData.expires || null,
-      active: keyData.active !== false
+      active: keyData.active !== false,
     };
 
     await this.sendMessage('addAPIKey', apiKey);
@@ -551,7 +551,7 @@ export class UptimeKumaAdapter extends EventEmitter {
       monitors: this.monitors.size,
       statusPages: this.statusPages.size,
       heartbeats: this.heartbeats.size,
-      reconnectAttempts: this.reconnectAttempts
+      reconnectAttempts: this.reconnectAttempts,
     };
   }
 

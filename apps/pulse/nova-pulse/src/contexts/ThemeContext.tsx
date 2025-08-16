@@ -53,7 +53,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         document.documentElement.style.setProperty(`--color-${key}`, value);
       });
       Object.entries(fonts).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(`--font-${key}`, Array.isArray(value) ? value.join(', ') : value);
+        document.documentElement.style.setProperty(
+          `--font-${key}`,
+          Array.isArray(value) ? value.join(', ') : value,
+        );
       });
       Object.entries(spacing).forEach(([key, value]) => {
         document.documentElement.style.setProperty(`--spacing-${key}`, value);

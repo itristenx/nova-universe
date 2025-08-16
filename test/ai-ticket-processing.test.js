@@ -1,6 +1,6 @@
 /**
  * AI Ticket Processing Tests
- * 
+ *
  * Tests for the comprehensive AI-powered ticket processing system including
  * classification, customer matching, duplicate detection, and trend analysis.
  */
@@ -28,19 +28,19 @@ class MockCosmoTicketProcessor {
   async processTicket(ticketData) {
     this.ticketCounter++;
     this.isProcessing = true;
-    
+
     // Simulate AI processing
     const result = {
       ...ticketData,
       aiProcessing: {
         processedAt: new Date().toISOString(),
         processingTime: Math.random() * 100 + 50,
-        version: '1.0.0'
+        version: '1.0.0',
       },
       aiClassification: this._classifyTicket(ticketData),
       customerMatch: await this._matchCustomer(ticketData),
       duplicateAnalysis: await this._analyzeForDuplicates(ticketData),
-      suggestions: this._generateSuggestions(ticketData)
+      suggestions: this._generateSuggestions(ticketData),
     };
 
     this.tickets.set(ticketData.id, result);
@@ -58,7 +58,12 @@ class MockCosmoTicketProcessor {
     let confidence = 0.5;
 
     // Simple keyword-based classification
-    if (text.includes('computer') || text.includes('laptop') || text.includes('hardware') || text.includes('boot')) {
+    if (
+      text.includes('computer') ||
+      text.includes('laptop') ||
+      text.includes('hardware') ||
+      text.includes('boot')
+    ) {
       category = 'hardware';
       confidence = 0.8;
     } else if (text.includes('network') || text.includes('vpn') || text.includes('connection')) {
@@ -72,14 +77,23 @@ class MockCosmoTicketProcessor {
       confidence = 0.9;
     }
 
-    // Priority detection  
+    // Priority detection
     if (text.includes('critical') || text.includes('outage')) {
       priority = 'critical';
     } else if (text.includes('security') && !text.includes('not urgent')) {
-      priority = 'high';  
-    } else if ((text.includes('urgent') || text.includes('important')) && !text.includes('not urgent')) {
       priority = 'high';
-    } else if (text.includes('minor') || text.includes('not urgent') || text.includes('password') || text.includes('how to') || text.includes('forgot')) {
+    } else if (
+      (text.includes('urgent') || text.includes('important')) &&
+      !text.includes('not urgent')
+    ) {
+      priority = 'high';
+    } else if (
+      text.includes('minor') ||
+      text.includes('not urgent') ||
+      text.includes('password') ||
+      text.includes('how to') ||
+      text.includes('forgot')
+    ) {
       priority = 'low';
     }
 
@@ -87,7 +101,7 @@ class MockCosmoTicketProcessor {
       category,
       priority,
       categoryConfidence: confidence,
-      priorityConfidence: confidence
+      priorityConfidence: confidence,
     };
   }
 
@@ -101,11 +115,11 @@ class MockCosmoTicketProcessor {
 
     // Check for exact email match
     for (const customer of this.customers.values()) {
-      if (customer.emails && customer.emails.some(e => e.toLowerCase() === email)) {
+      if (customer.emails && customer.emails.some((e) => e.toLowerCase() === email)) {
         return {
           customer,
           matchType: 'email',
-          confidence: 1.0
+          confidence: 1.0,
         };
       }
     }
@@ -116,7 +130,7 @@ class MockCosmoTicketProcessor {
         return {
           customer,
           matchType: 'domain',
-          confidence: 0.8
+          confidence: 0.8,
         };
       }
     }
@@ -132,57 +146,69 @@ class MockCosmoTicketProcessor {
       if (existingTicket.id === ticket.id) continue;
 
       const similarity = this._calculateSimilarity(ticket, existingTicket);
-      
+
       if (similarity > 0.9) {
         isDuplicate = true;
       }
-      
+
       if (similarity > 0.5) {
         similarTickets.push({
           ticket: existingTicket,
           similarity,
-          confidence: similarity
+          confidence: similarity,
         });
       }
     }
 
     return {
       isDuplicate,
-      similarTickets: similarTickets.slice(0, 5)
+      similarTickets: similarTickets.slice(0, 5),
     };
   }
 
   _calculateSimilarity(ticket1, ticket2) {
     const text1 = `${ticket1.title || ''} ${ticket1.description || ''}`.toLowerCase();
     const text2 = `${ticket2.title || ''} ${ticket2.description || ''}`.toLowerCase();
-    
+
     // Enhanced similarity calculation
-    const words1 = text1.split(/\s+/).filter(w => w.length > 2);
-    const words2 = text2.split(/\s+/).filter(w => w.length > 2);
-    
+    const words1 = text1.split(/\s+/).filter((w) => w.length > 2);
+    const words2 = text2.split(/\s+/).filter((w) => w.length > 2);
+
     if (words1.length === 0 || words2.length === 0) return 0;
-    
+
     // Calculate jaccard similarity
     const set1 = new Set(words1);
     const set2 = new Set(words2);
-    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const intersection = new Set([...set1].filter((x) => set2.has(x)));
     const union = new Set([...set1, ...set2]);
-    
+
     let similarity = intersection.size / union.size;
-    
+
     // Boost similarity for keyword matches
-    const keywords = ['computer', 'laptop', 'boot', 'network', 'vpn', 'connection', 'email', 'outlook', 'connect', 'authentication', 'login'];
+    const keywords = [
+      'computer',
+      'laptop',
+      'boot',
+      'network',
+      'vpn',
+      'connection',
+      'email',
+      'outlook',
+      'connect',
+      'authentication',
+      'login',
+    ];
     let keywordMatches = 0;
     for (const keyword of keywords) {
       if (text1.includes(keyword) && text2.includes(keyword)) {
         keywordMatches++;
       }
     }
-    
+
     if (keywordMatches > 0) {
       similarity += keywordMatches * 0.3; // Boost similarity more aggressively
     }
-    
+
     return Math.min(similarity, 1.0);
   }
 
@@ -195,7 +221,7 @@ class MockCosmoTicketProcessor {
         type: 'category',
         action: 'set_category',
         value: classification.category,
-        confidence: classification.categoryConfidence
+        confidence: classification.categoryConfidence,
       });
     }
 
@@ -204,7 +230,7 @@ class MockCosmoTicketProcessor {
         type: 'priority',
         action: 'set_priority',
         value: classification.priority,
-        confidence: classification.priorityConfidence
+        confidence: classification.priorityConfidence,
       });
     }
 
@@ -215,7 +241,7 @@ class MockCosmoTicketProcessor {
         type: 'escalation',
         action: 'escalate_customer',
         value: 'high_priority_customer',
-        confidence: 0.9
+        confidence: 0.9,
       });
     }
 
@@ -232,14 +258,12 @@ class MockCosmoTicketProcessor {
         results.push({
           ticket,
           similarity,
-          confidence: similarity
+          confidence: similarity,
         });
       }
     }
 
-    return results
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, limit);
+    return results.sort((a, b) => b.similarity - a.similarity).slice(0, limit);
   }
 
   getStats() {
@@ -248,7 +272,7 @@ class MockCosmoTicketProcessor {
       queueLength: this.isProcessing ? 1 : 0,
       customers: this.customers.size,
       processing: this.isProcessing,
-      trends: this.getTrends()
+      trends: this.getTrends(),
     };
   }
 
@@ -260,7 +284,7 @@ class MockCosmoTicketProcessor {
       if (ticket.aiClassification) {
         const cat = ticket.aiClassification.category;
         const pri = ticket.aiClassification.priority;
-        
+
         categories.set(cat, (categories.get(cat) || 0) + 1);
         priorities.set(pri, (priorities.get(pri) || 0) + 1);
       }
@@ -268,25 +292,33 @@ class MockCosmoTicketProcessor {
 
     return {
       current: new Map([
-        ['daily', { categories: Object.fromEntries(categories), priorities: Object.fromEntries(priorities) }]
+        [
+          'daily',
+          {
+            categories: Object.fromEntries(categories),
+            priorities: Object.fromEntries(priorities),
+          },
+        ],
       ]),
       patterns: {
-        mostCommonCategory: categories.size > 0 ? [...categories.entries()].sort((a, b) => b[1] - a[1])[0][0] : null,
-        mostCommonPriority: priorities.size > 0 ? [...priorities.entries()].sort((a, b) => b[1] - a[1])[0][0] : null
+        mostCommonCategory:
+          categories.size > 0 ? [...categories.entries()].sort((a, b) => b[1] - a[1])[0][0] : null,
+        mostCommonPriority:
+          priorities.size > 0 ? [...priorities.entries()].sort((a, b) => b[1] - a[1])[0][0] : null,
       },
-      predictions: this._generatePredictions(categories, priorities)
+      predictions: this._generatePredictions(categories, priorities),
     };
   }
 
   _generatePredictions(categories, priorities) {
     const predictions = [];
-    
+
     if (categories.size > 0) {
       const topCategory = [...categories.entries()].sort((a, b) => b[1] - a[1])[0];
       predictions.push({
         category: topCategory[0],
         probability: Math.min(topCategory[1] / this.ticketCounter, 1),
-        confidence: topCategory[1] > 2 ? 'high' : topCategory[1] > 1 ? 'medium' : 'low'
+        confidence: topCategory[1] > 2 ? 'high' : topCategory[1] > 1 ? 'medium' : 'low',
       });
     }
 
@@ -314,7 +346,7 @@ describe('AI Ticket Processing System', () => {
       enableDuplicateDetection: true,
       duplicateThreshold: 0.8,
       autoClassifyPriority: true,
-      autoMatchCustomers: true
+      autoMatchCustomers: true,
     });
 
     // Add test customers
@@ -325,7 +357,7 @@ describe('AI Ticket Processing System', () => {
       contract: 'enterprise',
       priority: 'high',
       location: 'New York',
-      department: 'IT'
+      department: 'IT',
     });
 
     await processor.addCustomer({
@@ -335,7 +367,7 @@ describe('AI Ticket Processing System', () => {
       contract: 'standard',
       priority: 'medium',
       location: 'California',
-      department: 'Engineering'
+      department: 'Engineering',
     });
 
     // Sample test tickets
@@ -343,34 +375,38 @@ describe('AI Ticket Processing System', () => {
       {
         id: 'test-1',
         title: 'Computer not booting up',
-        description: 'My laptop will not turn on after the power went out. The power button does not respond and no lights are showing.',
+        description:
+          'My laptop will not turn on after the power went out. The power button does not respond and no lights are showing.',
         requesterEmail: 'john.doe@acme.com',
-        requesterName: 'John Doe'
+        requesterName: 'John Doe',
       },
       {
         id: 'test-2',
         title: 'Network connectivity issues',
-        description: 'Cannot connect to the company VPN. Getting authentication errors when trying to log in.',
-        requesterEmail: 'support@acme.com'
+        description:
+          'Cannot connect to the company VPN. Getting authentication errors when trying to log in.',
+        requesterEmail: 'support@acme.com',
       },
       {
         id: 'test-3',
         title: 'Email not working',
-        description: 'Outlook keeps crashing when I try to send emails. This is urgent as I have important client communications.',
-        requesterEmail: 'help@techstart.com'
+        description:
+          'Outlook keeps crashing when I try to send emails. This is urgent as I have important client communications.',
+        requesterEmail: 'help@techstart.com',
       },
       {
         id: 'test-4',
         title: 'Security breach detected',
-        description: 'Multiple failed login attempts detected on admin account. Possible security incident.',
-        requesterEmail: 'security@acme.com'
+        description:
+          'Multiple failed login attempts detected on admin account. Possible security incident.',
+        requesterEmail: 'security@acme.com',
       },
       {
         id: 'test-5',
         title: 'How to reset password',
         description: 'I forgot my password and need help resetting it. This is not urgent.',
-        requesterEmail: 'newuser@techstart.com'
-      }
+        requesterEmail: 'newuser@techstart.com',
+      },
     ];
 
     console.log('AI Ticket Processor initialized with test data');
@@ -389,23 +425,40 @@ describe('AI Ticket Processing System', () => {
       const processed = await processor.processTicket(ticket);
 
       assert.ok(processed.aiClassification, 'Should have AI classification');
-      assert.strictEqual(processed.aiClassification.category, 'hardware', 'Should classify as hardware');
-      assert.ok(processed.aiClassification.categoryConfidence > 0.5, 'Should have reasonable confidence');
+      assert.strictEqual(
+        processed.aiClassification.category,
+        'hardware',
+        'Should classify as hardware',
+      );
+      assert.ok(
+        processed.aiClassification.categoryConfidence > 0.5,
+        'Should have reasonable confidence',
+      );
     });
 
     test('should classify network tickets correctly', async () => {
       const ticket = testTickets[1]; // Network connectivity
       const processed = await processor.processTicket(ticket);
 
-      assert.strictEqual(processed.aiClassification.category, 'network', 'Should classify as network');
-      assert.ok(processed.aiClassification.categoryConfidence > 0.5, 'Should have reasonable confidence');
+      assert.strictEqual(
+        processed.aiClassification.category,
+        'network',
+        'Should classify as network',
+      );
+      assert.ok(
+        processed.aiClassification.categoryConfidence > 0.5,
+        'Should have reasonable confidence',
+      );
     });
 
     test('should classify software tickets correctly', async () => {
       const ticket = testTickets[2]; // Email/Outlook issue
       const processed = await processor.processTicket(ticket);
 
-      assert.ok(['software', 'email'].includes(processed.aiClassification.category), 'Should classify as software or email');
+      assert.ok(
+        ['software', 'email'].includes(processed.aiClassification.category),
+        'Should classify as software or email',
+      );
       assert.ok(processed.aiClassification.categoryConfidence > 0.3, 'Should have some confidence');
     });
 
@@ -413,15 +466,26 @@ describe('AI Ticket Processing System', () => {
       const ticket = testTickets[3]; // Security breach
       const processed = await processor.processTicket(ticket);
 
-      assert.strictEqual(processed.aiClassification.category, 'security', 'Should classify as security');
-      assert.ok(['high', 'critical'].includes(processed.aiClassification.priority), 'Should have high/critical priority');
+      assert.strictEqual(
+        processed.aiClassification.category,
+        'security',
+        'Should classify as security',
+      );
+      assert.ok(
+        ['high', 'critical'].includes(processed.aiClassification.priority),
+        'Should have high/critical priority',
+      );
     });
 
     test('should classify low priority requests correctly', async () => {
       const ticket = testTickets[4]; // Password reset
       const processed = await processor.processTicket(ticket);
 
-      assert.strictEqual(processed.aiClassification.priority, 'low', 'Should classify as low priority');
+      assert.strictEqual(
+        processed.aiClassification.priority,
+        'low',
+        'Should classify as low priority',
+      );
     });
   });
 
@@ -432,7 +496,11 @@ describe('AI Ticket Processing System', () => {
 
       assert.ok(processed.customerMatch, 'Should have customer match');
       assert.ok(processed.customerMatch.customer, 'Should find customer');
-      assert.strictEqual(processed.customerMatch.customer.name, 'Acme Corporation', 'Should match Acme Corporation');
+      assert.strictEqual(
+        processed.customerMatch.customer.name,
+        'Acme Corporation',
+        'Should match Acme Corporation',
+      );
       assert.ok(processed.customerMatch.confidence >= 0.8, 'Should have high confidence');
     });
 
@@ -441,7 +509,11 @@ describe('AI Ticket Processing System', () => {
       const processed = await processor.processTicket(ticket);
 
       assert.ok(processed.customerMatch.customer, 'Should find customer');
-      assert.strictEqual(processed.customerMatch.customer.name, 'TechStart Inc', 'Should match TechStart Inc');
+      assert.strictEqual(
+        processed.customerMatch.customer.name,
+        'TechStart Inc',
+        'Should match TechStart Inc',
+      );
       assert.strictEqual(processed.customerMatch.matchType, 'email', 'Should match by email');
     });
 
@@ -450,7 +522,7 @@ describe('AI Ticket Processing System', () => {
         id: 'unknown-1',
         title: 'Test ticket',
         description: 'Test description',
-        requesterEmail: 'unknown@unknown.com'
+        requesterEmail: 'unknown@unknown.com',
       };
 
       const processed = await processor.processTicket(unknownTicket);
@@ -471,31 +543,38 @@ describe('AI Ticket Processing System', () => {
       const duplicateTicket = {
         id: 'duplicate-1',
         title: 'Laptop not starting',
-        description: 'My computer will not boot up after power outage. Power button not responding and no lights.',
-        requesterEmail: 'different@acme.com'
+        description:
+          'My computer will not boot up after power outage. Power button not responding and no lights.',
+        requesterEmail: 'different@acme.com',
       };
 
       const processed = await processor.processTicket(duplicateTicket);
 
       assert.ok(processed.duplicateAnalysis, 'Should have duplicate analysis');
-      assert.ok(processed.duplicateAnalysis.isDuplicate || processed.duplicateAnalysis.similarTickets.length > 0, 
-        'Should detect similarity or duplicate');
+      assert.ok(
+        processed.duplicateAnalysis.isDuplicate ||
+          processed.duplicateAnalysis.similarTickets.length > 0,
+        'Should detect similarity or duplicate',
+      );
     });
 
     test('should find similar tickets', async () => {
       // Process multiple network-related tickets first
       await processor.processTicket(testTickets[1]); // Network connectivity issues
-      
+
       const similarTicket = {
         id: 'similar-1',
-        title: 'VPN connection problems', 
+        title: 'VPN connection problems',
         description: 'Having trouble connecting to company VPN, authentication keeps failing',
-        requesterEmail: 'test@example.com'
+        requesterEmail: 'test@example.com',
       };
 
       const processed = await processor.processTicket(similarTicket);
 
-      assert.ok(processed.duplicateAnalysis.similarTickets.length > 0, 'Should find similar tickets');
+      assert.ok(
+        processed.duplicateAnalysis.similarTickets.length > 0,
+        'Should find similar tickets',
+      );
     });
 
     test('should search for similar tickets independently', async () => {
@@ -506,7 +585,7 @@ describe('AI Ticket Processing System', () => {
       const results = await processor.searchSimilarTickets(
         'Hardware failure',
         'Computer hardware issue with power supply',
-        5
+        5,
       );
 
       assert.ok(Array.isArray(results), 'Should return array');
@@ -520,16 +599,20 @@ describe('AI Ticket Processing System', () => {
         id: 'suggestion-1',
         title: 'Printer not working',
         description: 'The office printer is jammed and not printing anything',
-        requesterEmail: 'test@acme.com'
+        requesterEmail: 'test@acme.com',
       };
 
       const processed = await processor.processTicket(ticket);
 
       assert.ok(processed.suggestions, 'Should have suggestions');
-      const categorySuggestion = processed.suggestions.find(s => s.type === 'category');
-      
+      const categorySuggestion = processed.suggestions.find((s) => s.type === 'category');
+
       if (categorySuggestion) {
-        assert.strictEqual(categorySuggestion.action, 'set_category', 'Should suggest category setting');
+        assert.strictEqual(
+          categorySuggestion.action,
+          'set_category',
+          'Should suggest category setting',
+        );
         assert.ok(categorySuggestion.confidence > 0, 'Should have confidence score');
       }
     });
@@ -539,15 +622,18 @@ describe('AI Ticket Processing System', () => {
         id: 'urgent-1',
         title: 'Critical system outage',
         description: 'All servers are down, business operations stopped',
-        requesterEmail: 'ceo@acme.com'
+        requesterEmail: 'ceo@acme.com',
       };
 
       const processed = await processor.processTicket(urgentTicket);
 
-      const prioritySuggestion = processed.suggestions.find(s => s.type === 'priority');
-      
+      const prioritySuggestion = processed.suggestions.find((s) => s.type === 'priority');
+
       if (prioritySuggestion) {
-        assert.ok(['high', 'critical'].includes(prioritySuggestion.value), 'Should suggest high/critical priority');
+        assert.ok(
+          ['high', 'critical'].includes(prioritySuggestion.value),
+          'Should suggest high/critical priority',
+        );
       }
     });
 
@@ -556,15 +642,19 @@ describe('AI Ticket Processing System', () => {
         id: 'acme-escalation',
         title: 'Minor issue',
         description: 'Small problem that needs attention',
-        requesterEmail: 'support@acme.com' // Acme is high priority customer
+        requesterEmail: 'support@acme.com', // Acme is high priority customer
       };
 
       const processed = await processor.processTicket(acmeTicket);
 
-      const escalationSuggestion = processed.suggestions.find(s => s.type === 'escalation');
-      
+      const escalationSuggestion = processed.suggestions.find((s) => s.type === 'escalation');
+
       if (escalationSuggestion) {
-        assert.strictEqual(escalationSuggestion.action, 'escalate_customer', 'Should suggest customer escalation');
+        assert.strictEqual(
+          escalationSuggestion.action,
+          'escalate_customer',
+          'Should suggest customer escalation',
+        );
       }
     });
   });
@@ -591,22 +681,22 @@ describe('AI Ticket Processing System', () => {
           title: 'Internet down',
           description: 'No internet connection in office',
           category: 'network',
-          timestamp: Date.now() - 1000
+          timestamp: Date.now() - 1000,
         },
         {
-          id: 'net-2', 
+          id: 'net-2',
           title: 'WiFi not working',
           description: 'Cannot connect to WiFi network',
           category: 'network',
-          timestamp: Date.now() - 500
+          timestamp: Date.now() - 500,
         },
         {
           id: 'net-3',
           title: 'Network slow',
           description: 'Very slow network performance',
           category: 'network',
-          timestamp: Date.now()
-        }
+          timestamp: Date.now(),
+        },
       ];
 
       for (const ticket of networkTickets) {
@@ -618,7 +708,7 @@ describe('AI Ticket Processing System', () => {
       assert.ok(trends.current, 'Should have current trends');
       assert.ok(trends.patterns, 'Should have pattern analysis');
       assert.ok(trends.predictions, 'Should have predictions');
-      
+
       // Check if network category shows up in trends
       if (trends.current.has('daily')) {
         const dailyTrends = trends.current.get('daily');
@@ -628,14 +718,17 @@ describe('AI Ticket Processing System', () => {
 
     test('should generate predictions', async () => {
       const trends = processor.getTrends();
-      
+
       assert.ok(Array.isArray(trends.predictions), 'Predictions should be an array');
-      
+
       if (trends.predictions.length > 0) {
         const prediction = trends.predictions[0];
         assert.ok(prediction.category, 'Should have category');
         assert.ok(typeof prediction.probability === 'number', 'Should have probability');
-        assert.ok(['low', 'medium', 'high'].includes(prediction.confidence), 'Should have confidence level');
+        assert.ok(
+          ['low', 'medium', 'high'].includes(prediction.confidence),
+          'Should have confidence level',
+        );
       }
     });
   });
@@ -645,7 +738,7 @@ describe('AI Ticket Processing System', () => {
       const badTicket = {
         title: '', // Empty title
         description: 'x', // Too short description
-        requesterEmail: 'invalid-email' // Invalid email
+        requesterEmail: 'invalid-email', // Invalid email
       };
 
       const processed = await processor.processTicket(badTicket);
@@ -659,28 +752,28 @@ describe('AI Ticket Processing System', () => {
       const concurrentTickets = testTickets.map((ticket, index) => ({
         ...ticket,
         id: `concurrent-${index}`,
-        title: `Concurrent ${ticket.title}`
+        title: `Concurrent ${ticket.title}`,
       }));
 
-      const promises = concurrentTickets.map(ticket => processor.processTicket(ticket));
+      const promises = concurrentTickets.map((ticket) => processor.processTicket(ticket));
       const results = await Promise.all(promises);
 
       assert.strictEqual(results.length, concurrentTickets.length, 'Should process all tickets');
-      results.forEach(result => {
+      results.forEach((result) => {
         assert.ok(result.aiProcessing, 'Each ticket should have AI processing metadata');
       });
     });
 
     test('should maintain performance with large datasets', async () => {
       const startTime = Date.now();
-      
+
       // Process many tickets
       const manyTickets = Array.from({ length: 50 }, (_, i) => ({
         id: `perf-${i}`,
         title: `Performance test ticket ${i}`,
         description: `This is performance test ticket number ${i} with some generic description about a technical issue`,
         requesterEmail: `user${i}@test.com`,
-        timestamp: Date.now() + i
+        timestamp: Date.now() + i,
       }));
 
       for (const ticket of manyTickets) {
@@ -691,8 +784,10 @@ describe('AI Ticket Processing System', () => {
       const processingTime = endTime - startTime;
       const avgTimePerTicket = processingTime / manyTickets.length;
 
-      console.log(`Processed ${manyTickets.length} tickets in ${processingTime}ms (avg: ${avgTimePerTicket.toFixed(2)}ms per ticket)`);
-      
+      console.log(
+        `Processed ${manyTickets.length} tickets in ${processingTime}ms (avg: ${avgTimePerTicket.toFixed(2)}ms per ticket)`,
+      );
+
       // Should process reasonably quickly (less than 1 second per ticket on average)
       assert.ok(avgTimePerTicket < 1000, 'Should process tickets efficiently');
     });
@@ -705,7 +800,7 @@ describe('AI Ticket Processing System', () => {
         domain: 'testco.com',
         emails: ['admin@testco.com'],
         contract: 'premium',
-        priority: 'high'
+        priority: 'high',
       });
 
       assert.ok(newCustomer.id, 'Should create customer with ID');
@@ -716,12 +811,16 @@ describe('AI Ticket Processing System', () => {
         id: 'integration-1',
         title: 'Integration test',
         description: 'Testing customer integration',
-        requesterEmail: 'admin@testco.com'
+        requesterEmail: 'admin@testco.com',
       };
 
       const processed = await processor.processTicket(ticket);
-      
-      assert.strictEqual(processed.customerMatch.customer.name, 'Test Company', 'Should match new customer');
+
+      assert.strictEqual(
+        processed.customerMatch.customer.name,
+        'Test Company',
+        'Should match new customer',
+      );
     });
 
     test('should provide comprehensive stats', async () => {

@@ -1,4 +1,15 @@
-import type { User, Kiosk, Log, Config, Notification, Integration, EmailAccount, DashboardStats, Role, Permission } from '@/types';
+import type {
+  User,
+  Kiosk,
+  Log,
+  Config,
+  Notification,
+  Integration,
+  EmailAccount,
+  DashboardStats,
+  Role,
+  Permission,
+} from '@/types';
 export declare const mockUsers: User[];
 export declare const mockKiosks: Kiosk[];
 export declare const mockLogs: Log[];

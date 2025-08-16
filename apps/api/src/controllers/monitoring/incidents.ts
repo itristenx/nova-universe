@@ -1,5 +1,7 @@
 import { PrismaClient } from '../../../../prisma/generated/core/index.js';
-const prisma = new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+const prisma = new PrismaClient({
+  datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+});
 
 export interface IncidentData {
   title: string;
@@ -27,11 +29,11 @@ export const createIncident = async (data: IncidentData) => {
         NOW(), NOW()
       ) RETURNING id
     `;
-    
+
     const incident = await prisma.$queryRaw`
       SELECT * FROM nova_incidents WHERE id = ${(result as any)[0].id}
     `;
-    
+
     return (incident as any)[0];
   } catch (error) {
     console.error('Database error creating incident:', error);
@@ -72,29 +74,41 @@ export const updateIncident = async (id: string, data: UpdateIncidentData, userI
   try {
     const fields: string[] = [];
     const values: any[] = [];
-    
-    if (data.title !== undefined) { fields.push('title = $' + (fields.length + 1)); values.push(data.title); }
-    if (data.description !== undefined) { fields.push('description = $' + (fields.length + 1)); values.push(data.description); }
-    if (data.status !== undefined) { fields.push('status = $' + (fields.length + 1)); values.push(data.status); }
-    if (data.severity !== undefined) { fields.push('severity = $' + (fields.length + 1)); values.push(data.severity); }
-    if (data.affected_monitors !== undefined) { 
-      fields.push('affected_monitors = $' + (fields.length + 1)); 
-      values.push(JSON.stringify(data.affected_monitors)); 
+
+    if (data.title !== undefined) {
+      fields.push('title = $' + (fields.length + 1));
+      values.push(data.title);
     }
-    
+    if (data.description !== undefined) {
+      fields.push('description = $' + (fields.length + 1));
+      values.push(data.description);
+    }
+    if (data.status !== undefined) {
+      fields.push('status = $' + (fields.length + 1));
+      values.push(data.status);
+    }
+    if (data.severity !== undefined) {
+      fields.push('severity = $' + (fields.length + 1));
+      values.push(data.severity);
+    }
+    if (data.affected_monitors !== undefined) {
+      fields.push('affected_monitors = $' + (fields.length + 1));
+      values.push(JSON.stringify(data.affected_monitors));
+    }
+
     if (fields.length === 0) {
       return await getIncidentById(id, userId);
     }
-    
+
     fields.push('updated_at = NOW()');
     values.push(id, userId);
-    
+
     const query = `
       UPDATE nova_incidents 
       SET ${fields.join(', ')}
       WHERE id = $${values.length - 1} AND tenant_id = $${values.length}
     `;
-    
+
     await prisma.$executeRawUnsafe(query, ...values);
     return await getIncidentById(id, userId);
   } catch (error) {

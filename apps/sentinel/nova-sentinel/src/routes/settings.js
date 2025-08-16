@@ -11,7 +11,7 @@ const router = express.Router();
 const settingsRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
-  message: 'Too many settings requests, please try again later.'
+  message: 'Too many settings requests, please try again later.',
 });
 
 router.use(settingsRateLimit);
@@ -29,14 +29,18 @@ router.use(settingsRateLimit);
  */
 router.get('/', async (req, res) => {
   try {
-    const settings = await req.services.database.db.prepare(`
+    const settings = await req.services.database.db
+      .prepare(
+        `
       SELECT key, value, type, description FROM settings ORDER BY key
-    `).all();
+    `,
+      )
+      .all();
 
     const formattedSettings = {};
-    settings.forEach(setting => {
+    settings.forEach((setting) => {
       let value = setting.value;
-      
+
       switch (setting.type) {
         case 'number':
           value = parseFloat(value);
@@ -48,26 +52,25 @@ router.get('/', async (req, res) => {
           value = JSON.parse(value);
           break;
       }
-      
+
       formattedSettings[setting.key] = {
         value,
         type: setting.type,
-        description: setting.description
+        description: setting.description,
       };
     });
 
     res.json({
       success: true,
       settings: formattedSettings,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Settings fetch error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve settings',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -79,7 +82,8 @@ router.get('/', async (req, res) => {
  *     tags: [Settings]
  *     summary: Update system settings
  */
-router.put('/',
+router.put(
+  '/',
   [body('settings').isObject().withMessage('Settings object required')],
   async (req, res) => {
     try {
@@ -88,7 +92,7 @@ router.put('/',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -98,7 +102,7 @@ router.put('/',
       // Update each setting
       for (const [key, config] of Object.entries(settings)) {
         const { value, type = 'string', description } = config;
-        
+
         let stringValue = value;
         if (type === 'json') {
           stringValue = JSON.stringify(value);
@@ -108,10 +112,14 @@ router.put('/',
           stringValue = String(value);
         }
 
-        await req.services.database.db.prepare(`
+        await req.services.database.db
+          .prepare(
+            `
           INSERT OR REPLACE INTO settings (key, value, type, description, updated_by, updated_at)
           VALUES (?, ?, ?, ?, ?, datetime('now'))
-        `).run(key, stringValue, type, description, userId);
+        `,
+          )
+          .run(key, stringValue, type, description, userId);
       }
 
       // Update Uptime Kuma settings if needed
@@ -120,18 +128,17 @@ router.put('/',
       res.json({
         success: true,
         message: 'Settings updated successfully',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Settings update error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to update settings',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 export default router;

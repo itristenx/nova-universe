@@ -126,12 +126,18 @@ function validateByRules(value, rules, valueType) {
       return { valid: false, error: `Value must be at least ${rules.minLength} characters long` };
     }
     if (rules.maxLength && typedValue.length > rules.maxLength) {
-      return { valid: false, error: `Value must be no more than ${rules.maxLength} characters long` };
+      return {
+        valid: false,
+        error: `Value must be no more than ${rules.maxLength} characters long`,
+      };
     }
     if (rules.pattern) {
       const regex = new RegExp(rules.pattern);
       if (!regex.test(typedValue)) {
-        return { valid: false, error: rules.patternMessage || 'Value does not match required pattern' };
+        return {
+          valid: false,
+          error: rules.patternMessage || 'Value does not match required pattern',
+        };
       }
     }
     if (rules.allowedValues && !rules.allowedValues.includes(typedValue)) {
@@ -208,8 +214,12 @@ function validateByKey(key, value) {
 
     case 'security.rate_limit_window':
       const window = Number(value);
-      if (window < 1000 || window > 86400000) { // 1 second to 24 hours
-        return { valid: false, error: 'Rate limit window must be between 1 second (1000ms) and 24 hours (86400000ms)' };
+      if (window < 1000 || window > 86400000) {
+        // 1 second to 24 hours
+        return {
+          valid: false,
+          error: 'Rate limit window must be between 1 second (1000ms) and 24 hours (86400000ms)',
+        };
       }
       break;
 
@@ -232,14 +242,25 @@ function validateByKey(key, value) {
     case 'integrations.directory_provider':
       const validDirProviders = ['mock', 'ldap', 'azure_ad', 'okta', 'google'];
       if (!validDirProviders.includes(stringValue)) {
-        return { valid: false, error: `Directory provider must be one of: ${validDirProviders.join(', ')}` };
+        return {
+          valid: false,
+          error: `Directory provider must be one of: ${validDirProviders.join(', ')}`,
+        };
       }
       break;
 
     case 'integrations.cosmo_personality':
-      const validPersonalities = ['friendly_professional', 'technical_expert', 'casual_helper', 'formal_assistant'];
+      const validPersonalities = [
+        'friendly_professional',
+        'technical_expert',
+        'casual_helper',
+        'formal_assistant',
+      ];
       if (!validPersonalities.includes(stringValue)) {
-        return { valid: false, error: `Personality must be one of: ${validPersonalities.join(', ')}` };
+        return {
+          valid: false,
+          error: `Personality must be one of: ${validPersonalities.join(', ')}`,
+        };
       }
       break;
 
@@ -300,7 +321,7 @@ export function getConfigValidationSchema(key, config) {
     type: config.valueType || 'string',
     description: config.description,
     required: config.isRequired || false,
-    default: config.defaultValue
+    default: config.defaultValue,
   };
 
   // Add type-specific schema properties
@@ -327,7 +348,8 @@ export function getConfigValidationSchema(key, config) {
       schema.type = 'array';
       if (config.validationRules?.minItems) schema.minItems = config.validationRules.minItems;
       if (config.validationRules?.maxItems) schema.maxItems = config.validationRules.maxItems;
-      if (config.validationRules?.uniqueItems) schema.uniqueItems = config.validationRules.uniqueItems;
+      if (config.validationRules?.uniqueItems)
+        schema.uniqueItems = config.validationRules.uniqueItems;
       break;
 
     case 'json':
@@ -377,7 +399,12 @@ function addKeySpecificValidation(key, schema) {
       break;
 
     case 'integrations.cosmo_personality':
-      schema.enum = ['friendly_professional', 'technical_expert', 'casual_helper', 'formal_assistant'];
+      schema.enum = [
+        'friendly_professional',
+        'technical_expert',
+        'casual_helper',
+        'formal_assistant',
+      ];
       break;
   }
 }
@@ -395,7 +422,7 @@ export function validateConfigDependencies(configs) {
   if (minPin >= maxPin) {
     errors.push({
       keys: ['security.min_pin_length', 'security.max_pin_length'],
-      error: 'Minimum PIN length must be less than maximum PIN length'
+      error: 'Minimum PIN length must be less than maximum PIN length',
     });
   }
 
@@ -405,7 +432,7 @@ export function validateConfigDependencies(configs) {
   if (rateWindow < 1000 && rateMax > 100) {
     errors.push({
       keys: ['security.rate_limit_window', 'security.rate_limit_max'],
-      error: 'Very short rate limit windows should have lower maximum request limits'
+      error: 'Very short rate limit windows should have lower maximum request limits',
     });
   }
 
@@ -415,7 +442,7 @@ export function validateConfigDependencies(configs) {
   if (aiProcessingEnabled && !cosmoEnabled) {
     errors.push({
       keys: ['features.cosmo_enabled', 'features.ai_ticket_processing'],
-      error: 'AI ticket processing requires Cosmo AI assistant to be enabled'
+      error: 'AI ticket processing requires Cosmo AI assistant to be enabled',
     });
   }
 
@@ -425,5 +452,5 @@ export function validateConfigDependencies(configs) {
 export default {
   validateConfigValue,
   getConfigValidationSchema,
-  validateConfigDependencies
+  validateConfigDependencies,
 };

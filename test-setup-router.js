@@ -35,16 +35,16 @@ if (indexContent.includes("app.use('/api/setup', setupRouter);")) {
 const setupContent = fs.readFileSync(setupRouterPath, 'utf8');
 const expectedRoutes = [
   '/test-slack',
-  '/test-teams', 
+  '/test-teams',
   '/test-elasticsearch',
   '/test-s3',
   '/test-sentinel',
   '/test-goalert',
-  '/complete'
+  '/complete',
 ];
 
 console.log('\nChecking setup router endpoints:');
-expectedRoutes.forEach(route => {
+expectedRoutes.forEach((route) => {
   if (setupContent.includes(`'${route}'`)) {
     console.log(`✅ ${route} endpoint exists`);
   } else {
@@ -56,15 +56,15 @@ expectedRoutes.forEach(route => {
 const servicesStepPath = './apps/core/nova-core/src/components/setup-wizard/steps/ServicesStep.tsx';
 if (fs.existsSync(servicesStepPath)) {
   const servicesContent = fs.readFileSync(servicesStepPath, 'utf8');
-  
+
   console.log('\nChecking ServicesStep enhancements:');
-  
+
   if (servicesContent.includes('sentinelEnabled')) {
     console.log('✅ Sentinel configuration added to ServicesStep');
   } else {
     console.log('❌ Sentinel configuration missing from ServicesStep');
   }
-  
+
   if (servicesContent.includes('goalertEnabled')) {
     console.log('✅ GoAlert configuration added to ServicesStep');
   } else {
@@ -78,15 +78,15 @@ if (fs.existsSync(servicesStepPath)) {
 const setupContextPath = './apps/core/nova-core/src/components/setup-wizard/SetupContext.tsx';
 if (fs.existsSync(setupContextPath)) {
   const contextContent = fs.readFileSync(setupContextPath, 'utf8');
-  
+
   console.log('\nChecking SetupContext updates:');
-  
+
   if (contextContent.includes('sentinelEnabled')) {
     console.log('✅ Sentinel configuration added to SetupContext');
   } else {
     console.log('❌ Sentinel configuration missing from SetupContext');
   }
-  
+
   if (contextContent.includes('goalertEnabled')) {
     console.log('✅ GoAlert configuration added to SetupContext');
   } else {

@@ -1,6 +1,6 @@
-import { defineConfig } from 'rollup'
-import typescript from '@rollup/plugin-typescript'
-import { nodeResolve } from '@rollup/plugin-node-resolve'
+import { defineConfig } from 'rollup';
+import typescript from '@rollup/plugin-typescript';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 export default defineConfig({
   input: 'src/index.ts',
@@ -8,13 +8,13 @@ export default defineConfig({
     {
       file: 'dist/index.js',
       format: 'cjs',
-      sourcemap: true
+      sourcemap: true,
     },
     {
       file: 'dist/index.esm.js',
       format: 'esm',
-      sourcemap: true
-    }
+      sourcemap: true,
+    },
   ],
   plugins: [
     nodeResolve(),
@@ -22,8 +22,8 @@ export default defineConfig({
       tsconfig: './tsconfig.json',
       declaration: true,
       declarationDir: 'dist',
-      sourceMap: true
-    })
+      sourceMap: true,
+    }),
   ],
-  external: ['react', 'clsx', 'tailwind-merge']
-})
+  external: ['react', 'clsx', 'tailwind-merge'],
+});

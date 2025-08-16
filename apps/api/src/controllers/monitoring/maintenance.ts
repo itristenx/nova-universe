@@ -1,5 +1,7 @@
 import { PrismaClient } from '../../../../prisma/generated/core/index.js';
-const prisma = new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+const prisma = new PrismaClient({
+  datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+});
 
 export interface MaintenanceWindowData {
   title: string;
@@ -30,11 +32,11 @@ export const createMaintenanceWindow = async (data: MaintenanceWindowData) => {
         ${false}, ${data.user_id}, NOW(), NOW()
       ) RETURNING id
     `;
-    
+
     const maintenance = await prisma.$queryRaw`
       SELECT * FROM nova_maintenance_windows WHERE id = ${(result as any)[0].id}
     `;
-    
+
     return (maintenance as any)[0];
   } catch (error) {
     console.error('Database error creating maintenance window:', error);
@@ -57,30 +59,49 @@ export const getMaintenanceWindows = async (userId: string) => {
   }
 };
 
-export const updateMaintenanceWindow = async (id: string, data: UpdateMaintenanceWindowData, userId: string) => {
+export const updateMaintenanceWindow = async (
+  id: string,
+  data: UpdateMaintenanceWindowData,
+  userId: string,
+) => {
   try {
     const fields: string[] = [];
     const values: any[] = [];
-    
-    if (data.title !== undefined) { fields.push('title = $' + (fields.length + 1)); values.push(data.title); }
-    if (data.description !== undefined) { fields.push('description = $' + (fields.length + 1)); values.push(data.description); }
-    if (data.start_time !== undefined) { fields.push('start_time = $' + (fields.length + 1)); values.push(new Date(data.start_time)); }
-    if (data.end_time !== undefined) { fields.push('end_time = $' + (fields.length + 1)); values.push(new Date(data.end_time)); }
-    if (data.recurring !== undefined) { fields.push('recurring = $' + (fields.length + 1)); values.push(data.recurring); }
-    
+
+    if (data.title !== undefined) {
+      fields.push('title = $' + (fields.length + 1));
+      values.push(data.title);
+    }
+    if (data.description !== undefined) {
+      fields.push('description = $' + (fields.length + 1));
+      values.push(data.description);
+    }
+    if (data.start_time !== undefined) {
+      fields.push('start_time = $' + (fields.length + 1));
+      values.push(new Date(data.start_time));
+    }
+    if (data.end_time !== undefined) {
+      fields.push('end_time = $' + (fields.length + 1));
+      values.push(new Date(data.end_time));
+    }
+    if (data.recurring !== undefined) {
+      fields.push('recurring = $' + (fields.length + 1));
+      values.push(data.recurring);
+    }
+
     if (fields.length === 0) {
       return await getMaintenanceWindowById(id, userId);
     }
-    
+
     fields.push('updated_at = NOW()');
     values.push(id, userId);
-    
+
     const query = `
       UPDATE nova_maintenance_windows 
       SET ${fields.join(', ')}
       WHERE id = $${values.length - 1} AND tenant_id = $${values.length}
     `;
-    
+
     await prisma.$executeRawUnsafe(query, ...values);
     return await getMaintenanceWindowById(id, userId);
   } catch (error) {

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   Bot,
   Zap,
   Settings,
@@ -10,7 +10,6 @@ import {
   Edit,
   Plus,
   Clock,
-
   CheckCircle,
   Brain,
   TrendingUp,
@@ -19,14 +18,20 @@ import {
   BarChart3,
   Timer,
   Eye,
-  Lightbulb
+  Lightbulb,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 
@@ -54,7 +59,12 @@ interface WorkflowTrigger {
 
 interface WorkflowAction {
   id: string;
-  type: 'assign_ticket' | 'send_notification' | 'escalate' | 'suggest_knowledge' | 'update_priority';
+  type:
+    | 'assign_ticket'
+    | 'send_notification'
+    | 'escalate'
+    | 'suggest_knowledge'
+    | 'update_priority';
   parameters: Record<string, unknown>;
   order: number;
 }
@@ -97,7 +107,7 @@ export default function IntelligentAutomation() {
     const loadAutomationData = async () => {
       try {
         setLoading(true);
-        
+
         // Load workflows
         const workflowsResponse = await fetch('/api/v2/automation/workflows');
         if (workflowsResponse.ok) {
@@ -113,16 +123,29 @@ export default function IntelligentAutomation() {
               type: 'auto_assignment',
               status: 'active',
               trigger: { type: 'ticket_created', conditions: ['priority=high'] },
-              actions: [{ id: 'act-001', type: 'assign_ticket', parameters: { algorithm: 'skills_based' }, order: 1 }],
+              actions: [
+                {
+                  id: 'act-001',
+                  type: 'assign_ticket',
+                  parameters: { algorithm: 'skills_based' },
+                  order: 1,
+                },
+              ],
               conditions: [{ field: 'priority', operator: 'equals', value: 'high' }],
-              metrics: { totalRuns: 1247, successRate: 94.2, avgExecutionTime: 1.8, lastRun: new Date(), impactScore: 8.5 },
+              metrics: {
+                totalRuns: 1247,
+                successRate: 94.2,
+                avgExecutionTime: 1.8,
+                lastRun: new Date(),
+                impactScore: 8.5,
+              },
               nextRun: new Date(),
               createdBy: 'system',
-              lastModified: new Date()
-            }
+              lastModified: new Date(),
+            },
           ]);
         }
-        
+
         // Load insights
         const insightsResponse = await fetch('/api/v2/automation/insights');
         if (insightsResponse.ok) {
@@ -139,11 +162,10 @@ export default function IntelligentAutomation() {
               confidence: 0.89,
               severity: 'high',
               suggestedAction: 'Enable machine learning refinement and add feedback loop',
-              data: { currentEfficiency: 85, potentialEfficiency: 98 }
-            }
+              data: { currentEfficiency: 85, potentialEfficiency: 98 },
+            },
           ]);
         }
-        
       } catch (error) {
         console.error('Failed to load automation data:', error);
         // Use minimal fallback data
@@ -153,110 +175,135 @@ export default function IntelligentAutomation() {
         setLoading(false);
       }
     };
-    
+
     loadAutomationData();
   }, []);
 
   // Filter workflows
-  const filteredWorkflows = workflows.filter(workflow => {
+  const filteredWorkflows = workflows.filter((workflow) => {
     const matchesStatus = filterStatus === 'all' || workflow.status === filterStatus;
-    const matchesSearch = workflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         workflow.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      workflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      workflow.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
   const toggleWorkflowStatus = (workflowId: string) => {
-    setWorkflows(prev => prev.map(wf => 
-      wf.id === workflowId 
-        ? { ...wf, status: wf.status === 'active' ? 'paused' : 'active' }
-        : wf
-    ));
+    setWorkflows((prev) =>
+      prev.map((wf) =>
+        wf.id === workflowId ? { ...wf, status: wf.status === 'active' ? 'paused' : 'active' } : wf,
+      ),
+    );
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'paused': return 'bg-yellow-100 text-yellow-800';
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'paused':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'draft':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'auto_assignment': return <Users className="w-4 h-4" />;
-      case 'sla_prediction': return <Clock className="w-4 h-4" />;
-      case 'escalation': return <TrendingUp className="w-4 h-4" />;
-      case 'knowledge_recommendation': return <Brain className="w-4 h-4" />;
-      default: return <Bot className="w-4 h-4" />;
+      case 'auto_assignment':
+        return <Users className="h-4 w-4" />;
+      case 'sla_prediction':
+        return <Clock className="h-4 w-4" />;
+      case 'escalation':
+        return <TrendingUp className="h-4 w-4" />;
+      case 'knowledge_recommendation':
+        return <Brain className="h-4 w-4" />;
+      default:
+        return <Bot className="h-4 w-4" />;
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'high': return 'text-red-600 bg-red-50';
-      case 'medium': return 'text-yellow-600 bg-yellow-50';
-      case 'low': return 'text-green-600 bg-green-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'high':
+        return 'text-red-600 bg-red-50';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50';
+      case 'low':
+        return 'text-green-600 bg-green-50';
+      default:
+        return 'text-gray-600 bg-gray-50';
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-600 rounded-lg text-white">
-                <Zap className="w-6 h-6" />
+              <div className="rounded-lg bg-gradient-to-r from-purple-500 to-blue-600 p-2 text-white">
+                <Zap className="h-6 w-6" />
               </div>
               <div>
                 <CardTitle className="flex items-center gap-2">
                   Intelligent Automation Workflows
-                  <Badge variant="secondary" className="bg-gradient-to-r from-purple-100 to-blue-100">
+                  <Badge
+                    variant="secondary"
+                    className="bg-gradient-to-r from-purple-100 to-blue-100"
+                  >
                     AI-Powered
                   </Badge>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Automated ticket assignment, SLA prediction, and smart escalation
                 </p>
               </div>
             </div>
             <Button>
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Create Workflow
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-lg border bg-gradient-to-br from-purple-50 to-blue-50">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <div className="rounded-lg border bg-gradient-to-br from-purple-50 to-blue-50 p-4">
               <div className="flex items-center gap-2">
-                <Brain className="w-4 h-4 text-purple-600" />
+                <Brain className="h-4 w-4 text-purple-600" />
                 <p className="text-sm font-medium">Active Workflows</p>
               </div>
-              <p className="text-2xl font-bold">{filteredWorkflows.filter(w => w.status === 'active').length}</p>
+              <p className="text-2xl font-bold">
+                {filteredWorkflows.filter((w) => w.status === 'active').length}
+              </p>
             </div>
-            <div className="p-4 rounded-lg border bg-gradient-to-br from-green-50 to-emerald-50">
+            <div className="rounded-lg border bg-gradient-to-br from-green-50 to-emerald-50 p-4">
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-emerald-600" />
+                <Activity className="h-4 w-4 text-emerald-600" />
                 <p className="text-sm font-medium">Average Success Rate</p>
               </div>
-              <p className="text-2xl font-bold">{filteredWorkflows.length > 0 ?
-                `${Math.round(filteredWorkflows.reduce((acc, w) => acc + (w.metrics.successRate || 0), 0) / filteredWorkflows.length)}%` : '—'}</p>
+              <p className="text-2xl font-bold">
+                {filteredWorkflows.length > 0
+                  ? `${Math.round(filteredWorkflows.reduce((acc, w) => acc + (w.metrics.successRate || 0), 0) / filteredWorkflows.length)}%`
+                  : '—'}
+              </p>
             </div>
-            <div className="p-4 rounded-lg border bg-gradient-to-br from-yellow-50 to-amber-50">
+            <div className="rounded-lg border bg-gradient-to-br from-yellow-50 to-amber-50 p-4">
               <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 text-amber-600" />
+                <Timer className="h-4 w-4 text-amber-600" />
                 <p className="text-sm font-medium">Avg. Execution Time</p>
               </div>
-              <p className="text-2xl font-bold">{filteredWorkflows.length > 0 ?
-                `${(filteredWorkflows.reduce((acc, w) => acc + (w.metrics.avgExecutionTime || 0), 0) / filteredWorkflows.length).toFixed(1)}s` : '—'}</p>
+              <p className="text-2xl font-bold">
+                {filteredWorkflows.length > 0
+                  ? `${(filteredWorkflows.reduce((acc, w) => acc + (w.metrics.avgExecutionTime || 0), 0) / filteredWorkflows.length).toFixed(1)}s`
+                  : '—'}
+              </p>
             </div>
-            <div className="p-4 rounded-lg border bg-gradient-to-br from-blue-50 to-indigo-50">
+            <div className="rounded-lg border bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
               <div className="flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-indigo-600" />
+                <Lightbulb className="h-4 w-4 text-indigo-600" />
                 <p className="text-sm font-medium">Pending Insights</p>
               </div>
               <p className="text-2xl font-bold">{predictiveInsights.length}</p>
@@ -268,8 +315,8 @@ export default function IntelligentAutomation() {
       {/* Controls */}
       <Card>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between py-2">
-            <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex flex-col items-center justify-between gap-4 py-2 md:flex-row">
+            <div className="flex w-full items-center gap-2 md:w-auto">
               <Input
                 placeholder="Search workflows..."
                 value={searchTerm}
@@ -289,11 +336,11 @@ export default function IntelligentAutomation() {
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
+                <Settings className="mr-2 h-4 w-4" />
                 Configure
               </Button>
               <Button>
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 New Workflow
               </Button>
             </div>
@@ -318,11 +365,13 @@ export default function IntelligentAutomation() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">Loading automation data…</div>
+                <div className="text-muted-foreground py-8 text-center text-sm">
+                  Loading automation data…
+                </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {filteredWorkflows.map((workflow) => (
-                    <div key={workflow.id} className="p-4 rounded-lg border">
+                    <div key={workflow.id} className="rounded-lg border p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2">
                           {getTypeIcon(workflow.type)}
@@ -330,21 +379,40 @@ export default function IntelligentAutomation() {
                         </div>
                         <Badge className={getStatusColor(workflow.status)}>{workflow.status}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">{workflow.description}</p>
-                      <div className="flex items-center gap-2 mt-4">
-                        <Button size="sm" variant="outline" onClick={() => toggleWorkflowStatus(workflow.id)}>
-                          {workflow.status === 'active' ? <Pause className="w-4 h-4 mr-1" /> : <Play className="w-4 h-4 mr-1" />}
+                      <p className="text-muted-foreground mt-2 text-sm">{workflow.description}</p>
+                      <div className="mt-4 flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleWorkflowStatus(workflow.id)}
+                        >
+                          {workflow.status === 'active' ? (
+                            <Pause className="mr-1 h-4 w-4" />
+                          ) : (
+                            <Play className="mr-1 h-4 w-4" />
+                          )}
                           {workflow.status === 'active' ? 'Pause' : 'Activate'}
                         </Button>
                         <Button size="sm" variant="outline">
-                          <Edit className="w-4 h-4 mr-1" />
+                          <Edit className="mr-1 h-4 w-4" />
                           Edit
                         </Button>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 mt-4 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Success: {workflow.metrics.successRate}%</div>
-                        <div className="flex items-center gap-1"><Timer className="w-3 h-3" /> Avg Time: {workflow.metrics.avgExecutionTime}s</div>
-                        <div className="flex items-center gap-1"><Clock className="w-3 h-3" /> Last Run: {workflow.metrics.lastRun ? new Date(workflow.metrics.lastRun).toLocaleString() : '—'}</div>
+                      <div className="text-muted-foreground mt-4 grid grid-cols-3 gap-2 text-xs">
+                        <div className="flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3" /> Success:{' '}
+                          {workflow.metrics.successRate}%
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Timer className="h-3 w-3" /> Avg Time:{' '}
+                          {workflow.metrics.avgExecutionTime}s
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> Last Run:{' '}
+                          {workflow.metrics.lastRun
+                            ? new Date(workflow.metrics.lastRun).toLocaleString()
+                            : '—'}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -361,19 +429,28 @@ export default function IntelligentAutomation() {
             </CardHeader>
             <CardContent className="space-y-4">
               {predictiveInsights.map((insight) => (
-                <div key={insight.id} className={`p-4 rounded-lg border ${getSeverityColor(insight.severity)}`}>
+                <div
+                  key={insight.id}
+                  className={`rounded-lg border p-4 ${getSeverityColor(insight.severity)}`}
+                >
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="font-medium">{insight.title}</h3>
                       <p className="text-sm">{insight.description}</p>
                     </div>
-                    <Badge variant="secondary">Confidence: {Math.round(insight.confidence * 100)}%</Badge>
+                    <Badge variant="secondary">
+                      Confidence: {Math.round(insight.confidence * 100)}%
+                    </Badge>
                   </div>
-                  <div className="mt-2 text-xs text-muted-foreground">Suggested action: {insight.suggestedAction}</div>
+                  <div className="text-muted-foreground mt-2 text-xs">
+                    Suggested action: {insight.suggestedAction}
+                  </div>
                 </div>
               ))}
               {predictiveInsights.length === 0 && (
-                <div className="py-8 text-center text-sm text-muted-foreground">No insights available</div>
+                <div className="text-muted-foreground py-8 text-center text-sm">
+                  No insights available
+                </div>
               )}
             </CardContent>
           </Card>
@@ -385,17 +462,36 @@ export default function IntelligentAutomation() {
               <CardTitle>Automation Analytics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg border">
-                  <div className="flex items-center gap-2"><BarChart3 className="w-4 h-4" /><span>Overall Success Rate</span></div>
-                  <Progress value={Math.min(100, Math.round(filteredWorkflows.reduce((acc, w) => acc + (w.metrics.successRate || 0), 0) / Math.max(1, filteredWorkflows.length)))} />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="rounded-lg border p-4">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Overall Success Rate</span>
+                  </div>
+                  <Progress
+                    value={Math.min(
+                      100,
+                      Math.round(
+                        filteredWorkflows.reduce(
+                          (acc, w) => acc + (w.metrics.successRate || 0),
+                          0,
+                        ) / Math.max(1, filteredWorkflows.length),
+                      ),
+                    )}
+                  />
                 </div>
-                <div className="p-4 rounded-lg border">
-                  <div className="flex items-center gap-2"><Eye className="w-4 h-4" /><span>Execution Visibility</span></div>
+                <div className="rounded-lg border p-4">
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    <span>Execution Visibility</span>
+                  </div>
                   <Progress value={78} />
                 </div>
-                <div className="p-4 rounded-lg border">
-                  <div className="flex items-center gap-2"><Activity className="w-4 h-4" /><span>Automation Coverage</span></div>
+                <div className="rounded-lg border p-4">
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-4 w-4" />
+                    <span>Automation Coverage</span>
+                  </div>
                   <Progress value={64} />
                 </div>
               </div>
@@ -409,20 +505,20 @@ export default function IntelligentAutomation() {
               <CardTitle>Automation Settings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg border">
-                  <h3 className="font-medium mb-2">Notification Preferences</h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4">
+                  <h3 className="mb-2 font-medium">Notification Preferences</h3>
                   <div className="flex items-center gap-2">
                     <input id="notif-email" type="checkbox" className="rounded border-gray-300" />
                     <label htmlFor="notif-email">Email notifications</label>
                   </div>
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="mt-2 flex items-center gap-2">
                     <input id="notif-slack" type="checkbox" className="rounded border-gray-300" />
                     <label htmlFor="notif-slack">Slack notifications</label>
                   </div>
                 </div>
-                <div className="p-4 rounded-lg border">
-                  <h3 className="font-medium mb-2">Execution Settings</h3>
+                <div className="rounded-lg border p-4">
+                  <h3 className="mb-2 font-medium">Execution Settings</h3>
                   <div className="flex items-center gap-2">
                     <input id="auto-run" type="checkbox" className="rounded border-gray-300" />
                     <label htmlFor="auto-run">Auto-run workflows</label>

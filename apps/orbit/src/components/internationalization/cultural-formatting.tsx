@@ -27,7 +27,7 @@ const CULTURAL_INFO: Record<string, CulturalInfo> = {
     numberFormat: 'en-US',
     currency: 'USD',
     firstDayOfWeek: 0,
-    rtl: false
+    rtl: false,
   },
   es: {
     locale: 'es-ES',
@@ -37,7 +37,7 @@ const CULTURAL_INFO: Record<string, CulturalInfo> = {
     numberFormat: 'es-ES',
     currency: 'EUR',
     firstDayOfWeek: 1,
-    rtl: false
+    rtl: false,
   },
   fr: {
     locale: 'fr-FR',
@@ -47,7 +47,7 @@ const CULTURAL_INFO: Record<string, CulturalInfo> = {
     numberFormat: 'fr-FR',
     currency: 'EUR',
     firstDayOfWeek: 1,
-    rtl: false
+    rtl: false,
   },
   ar: {
     locale: 'ar-SA',
@@ -57,8 +57,8 @@ const CULTURAL_INFO: Record<string, CulturalInfo> = {
     numberFormat: 'ar-SA',
     currency: 'SAR',
     firstDayOfWeek: 0,
-    rtl: true
-  }
+    rtl: true,
+  },
 };
 
 // Hook for cultural formatting
@@ -69,7 +69,7 @@ export function useCulturalFormatting() {
   const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions) => {
     return new Intl.DateTimeFormat(culturalInfo.locale, {
       timeZone: culturalInfo.timezone,
-      ...options
+      ...options,
     }).format(date);
   };
 
@@ -78,7 +78,7 @@ export function useCulturalFormatting() {
       timeZone: culturalInfo.timezone,
       hour: 'numeric',
       minute: '2-digit',
-      hour12: culturalInfo.timeFormat === '12h'
+      hour12: culturalInfo.timeFormat === '12h',
     }).format(date);
   };
 
@@ -90,7 +90,7 @@ export function useCulturalFormatting() {
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
-      hour12: culturalInfo.timeFormat === '12h'
+      hour12: culturalInfo.timeFormat === '12h',
     }).format(date);
   };
 
@@ -101,16 +101,16 @@ export function useCulturalFormatting() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(culturalInfo.numberFormat, {
       style: 'currency',
-      currency: culturalInfo.currency
+      currency: culturalInfo.currency,
     }).format(amount);
   };
 
   const formatRelativeTime = (date: Date) => {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     const rtf = new Intl.RelativeTimeFormat(culturalInfo.locale, { numeric: 'auto' });
-    
+
     if (diffInSeconds < 60) {
       return rtf.format(-diffInSeconds, 'second');
     } else if (diffInSeconds < 3600) {
@@ -129,7 +129,7 @@ export function useCulturalFormatting() {
     formatDateTime,
     formatNumber,
     formatCurrency,
-    formatRelativeTime
+    formatRelativeTime,
   };
 }
 
@@ -140,7 +140,11 @@ interface DateTimeDisplayProps {
   className?: string;
 }
 
-export function DateTimeDisplay({ date, format = 'datetime', className = '' }: DateTimeDisplayProps) {
+export function DateTimeDisplay({
+  date,
+  format = 'datetime',
+  className = '',
+}: DateTimeDisplayProps) {
   const { formatDate, formatTime, formatDateTime, formatRelativeTime } = useCulturalFormatting();
 
   const getFormattedValue = () => {
@@ -191,7 +195,7 @@ export function NumberDisplay({ value, format = 'number', className = '' }: Numb
 export function TimezoneSelector() {
   const locale = useLocale();
   const [selectedTimezone, setSelectedTimezone] = React.useState(
-    CULTURAL_INFO[locale]?.timezone || 'UTC'
+    CULTURAL_INFO[locale]?.timezone || 'UTC',
   );
 
   const commonTimezones = [
@@ -204,18 +208,18 @@ export function TimezoneSelector() {
     'Asia/Tokyo',
     'Asia/Shanghai',
     'Asia/Riyadh',
-    'Australia/Sydney'
+    'Australia/Sydney',
   ];
 
   const getTimezoneDisplay = (timezone: string) => {
     const date = new Date();
     const formatter = new Intl.DateTimeFormat('en', {
       timeZone: timezone,
-      timeZoneName: 'short'
+      timeZoneName: 'short',
     });
     const parts = formatter.formatToParts(date);
-    const timeZoneName = parts.find(part => part.type === 'timeZoneName')?.value || timezone;
-    
+    const timeZoneName = parts.find((part) => part.type === 'timeZoneName')?.value || timezone;
+
     return `${timezone.replace('_', ' ')} (${timeZoneName})`;
   };
 
@@ -223,7 +227,7 @@ export function TimezoneSelector() {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Clock className="w-5 h-5" />
+          <Clock className="h-5 w-5" />
           Timezone Settings
         </CardTitle>
       </CardHeader>
@@ -231,7 +235,7 @@ export function TimezoneSelector() {
         <select
           value={selectedTimezone}
           onChange={(e) => setSelectedTimezone(e.target.value)}
-          className="w-full p-2 border rounded-md bg-background"
+          className="bg-background w-full rounded-md border p-2"
           title="Select timezone"
           aria-label="Select timezone"
         >
@@ -241,16 +245,16 @@ export function TimezoneSelector() {
             </option>
           ))}
         </select>
-        
-        <div className="mt-4 p-3 bg-muted rounded-md">
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin className="w-4 h-4" />
+
+        <div className="bg-muted mt-4 rounded-md p-3">
+          <div className="mb-2 flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
             <span className="text-sm font-medium">Current Time</span>
           </div>
-          <DateTimeDisplay 
-            date={new Date()} 
+          <DateTimeDisplay
+            date={new Date()}
             format="datetime"
-            className="text-sm text-muted-foreground"
+            className="text-muted-foreground text-sm"
           />
         </div>
       </CardContent>
@@ -267,53 +271,55 @@ export function CulturalPreferences() {
     <Card className="w-full max-w-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Calendar className="w-5 h-5" />
+          <Calendar className="h-5 w-5" />
           Cultural Preferences
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <span className="text-sm text-muted-foreground">Date Format</span>
+            <span className="text-muted-foreground text-sm">Date Format</span>
             <div className="font-medium">{culturalInfo.dateFormat}</div>
           </div>
           <div>
-            <span className="text-sm text-muted-foreground">Time Format</span>
+            <span className="text-muted-foreground text-sm">Time Format</span>
             <div className="font-medium">{culturalInfo.timeFormat}</div>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <span className="text-sm text-muted-foreground">Currency</span>
+            <span className="text-muted-foreground text-sm">Currency</span>
             <div className="font-medium">{culturalInfo.currency}</div>
           </div>
           <div>
-            <span className="text-sm text-muted-foreground">First Day of Week</span>
+            <span className="text-muted-foreground text-sm">First Day of Week</span>
             <div className="font-medium">
               {culturalInfo.firstDayOfWeek === 0 ? 'Sunday' : 'Monday'}
             </div>
           </div>
         </div>
-        
+
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline">
-            Timezone: {culturalInfo.timezone}
-          </Badge>
-          {culturalInfo.rtl && (
-            <Badge variant="secondary">
-              RTL Layout
-            </Badge>
-          )}
+          <Badge variant="outline">Timezone: {culturalInfo.timezone}</Badge>
+          {culturalInfo.rtl && <Badge variant="secondary">RTL Layout</Badge>}
         </div>
-        
-        <div className="mt-4 p-3 bg-muted rounded-md">
-          <div className="text-sm text-muted-foreground mb-2">Sample Formatting</div>
+
+        <div className="bg-muted mt-4 rounded-md p-3">
+          <div className="text-muted-foreground mb-2 text-sm">Sample Formatting</div>
           <div className="space-y-1 text-sm">
-            <div>Date: <DateTimeDisplay date={new Date()} format="date" /></div>
-            <div>Time: <DateTimeDisplay date={new Date()} format="time" /></div>
-            <div>Number: <NumberDisplay value={1234.56} /></div>
-            <div>Currency: <NumberDisplay value={1234.56} format="currency" /></div>
+            <div>
+              Date: <DateTimeDisplay date={new Date()} format="date" />
+            </div>
+            <div>
+              Time: <DateTimeDisplay date={new Date()} format="time" />
+            </div>
+            <div>
+              Number: <NumberDisplay value={1234.56} />
+            </div>
+            <div>
+              Currency: <NumberDisplay value={1234.56} format="currency" />
+            </div>
           </div>
         </div>
       </CardContent>

@@ -22,6 +22,6 @@ export const useToastStore = create<ToastState>()(
           toasts: state.toasts.filter((t) => t.id !== id),
         })),
     }),
-    { name: 'toast-store' }
-  )
+    { name: 'toast-store' },
+  ),
 );

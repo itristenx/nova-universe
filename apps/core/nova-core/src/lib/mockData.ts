@@ -1,4 +1,15 @@
-import type { User, Kiosk, Log, Config, Notification, Integration, EmailAccount, DashboardStats, Role, Permission } from '@/types';
+import type {
+  User,
+  Kiosk,
+  Log,
+  Config,
+  Notification,
+  Integration,
+  EmailAccount,
+  DashboardStats,
+  Role,
+  Permission,
+} from '@/types';
 import type { ModuleStatus } from '@/types';
 
 // Mock data for development when API is not available
@@ -8,22 +19,22 @@ export const mockUsers: User[] = [
     name: 'John Doe',
     email: 'john@example.com',
     roles: ['admin'],
-    permissions: ['users.create', 'users.edit', 'users.delete', 'kiosks.manage']
+    permissions: ['users.create', 'users.edit', 'users.delete', 'kiosks.manage'],
   },
   {
     id: 2,
     name: 'Jane Smith',
     email: 'jane@example.com',
     roles: ['user'],
-    permissions: ['tickets.view']
+    permissions: ['tickets.view'],
   },
   {
     id: 3,
     name: 'Bob Wilson',
     email: 'bob@example.com',
     roles: ['support'],
-    permissions: ['tickets.view', 'tickets.edit']
-  }
+    permissions: ['tickets.view', 'tickets.edit'],
+  },
 ];
 
 export const mockKiosks: Kiosk[] = [
@@ -42,8 +53,8 @@ export const mockKiosks: Kiosk[] = [
       currentStatus: 'open',
       openMsg: 'Help Desk is Open',
       closedMsg: 'Help Desk is Closed',
-      errorMsg: 'System error occurred'
-    }
+      errorMsg: 'System error occurred',
+    },
   },
   {
     id: 'kiosk-002',
@@ -60,28 +71,28 @@ export const mockKiosks: Kiosk[] = [
       currentStatus: 'meeting',
       openMsg: 'Reception is available',
       closedMsg: 'Reception is closed',
-      errorMsg: 'System maintenance'
+      errorMsg: 'System maintenance',
     },
     overrides: {
       status: {
         scope: 'individual',
         kioskId: 'kiosk-002',
         overriddenAt: new Date().toISOString(),
-        overriddenBy: 'admin@example.com'
+        overriddenBy: 'admin@example.com',
       },
       branding: {
         scope: 'individual',
         kioskId: 'kiosk-002',
         overriddenAt: new Date().toISOString(),
-        overriddenBy: 'admin@example.com'
+        overriddenBy: 'admin@example.com',
       },
       schedule: {
         scope: 'individual',
         kioskId: 'kiosk-002',
         overriddenAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-        overriddenBy: 'manager@example.com'
-      }
-    }
+        overriddenBy: 'manager@example.com',
+      },
+    },
   },
   {
     id: 'kiosk-003',
@@ -98,17 +109,17 @@ export const mockKiosks: Kiosk[] = [
       currentStatus: 'closed',
       openMsg: 'IT Support Available',
       closedMsg: 'IT Support Currently Closed - Back at 8 AM',
-      errorMsg: 'System error occurred'
+      errorMsg: 'System error occurred',
     },
     overrides: {
       officeHours: {
         scope: 'individual',
         kioskId: 'kiosk-003',
         overriddenAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-        overriddenBy: 'it-admin@example.com'
-      }
-    }
-  }
+        overriddenBy: 'it-admin@example.com',
+      },
+    },
+  },
 ];
 
 export const mockLogs: Log[] = [
@@ -121,7 +132,7 @@ export const mockLogs: Log[] = [
     system: 'Desktop',
     urgency: 'Medium',
     timestamp: new Date().toISOString(),
-    emailStatus: 'success'
+    emailStatus: 'success',
   },
   {
     id: 2,
@@ -132,8 +143,8 @@ export const mockLogs: Log[] = [
     system: 'Laptop',
     urgency: 'Critical',
     timestamp: new Date(Date.now() - 1800000).toISOString(), // 30 minutes ago
-    emailStatus: 'success'
-  }
+    emailStatus: 'success',
+  },
 ];
 
 export const mockConfig: Config = {
@@ -154,7 +165,7 @@ export const mockConfig: Config = {
   directoryEnabled: true,
   directoryProvider: 'activedirectory',
   directoryUrl: 'ldap://company.local',
-  directoryToken: ''
+  directoryToken: '',
 };
 
 export const mockIntegrations: Integration[] = [
@@ -168,9 +179,9 @@ export const mockIntegrations: Integration[] = [
       host: 'smtp.company.com',
       port: 587,
       secure: true,
-      username: 'noreply@company.com'
+      username: 'noreply@company.com',
     },
-    working: true
+    working: true,
   },
   {
     id: 2,
@@ -180,10 +191,10 @@ export const mockIntegrations: Integration[] = [
     settings: {},
     config: {
       apiKey: 'hs_***',
-      mailboxId: '123456'
+      mailboxId: '123456',
     },
-    working: true
-  }
+    working: true,
+  },
 ];
 
 export const mockEmailAccounts: EmailAccount[] = [
@@ -212,7 +223,7 @@ export const mockRoles: Role[] = [
   { id: 1, name: 'admin' },
   { id: 2, name: 'support' },
   { id: 3, name: 'user' },
-  { id: 4, name: 'readonly' }
+  { id: 4, name: 'readonly' },
 ];
 
 export const mockPermissions: Permission[] = [
@@ -222,7 +233,7 @@ export const mockPermissions: Permission[] = [
   { id: 4, name: 'kiosks.manage' },
   { id: 5, name: 'tickets.view' },
   { id: 6, name: 'tickets.edit' },
-  { id: 7, name: 'settings.manage' }
+  { id: 7, name: 'settings.manage' },
 ];
 
 export const mockNotifications: Notification[] = [
@@ -231,22 +242,22 @@ export const mockNotifications: Notification[] = [
     message: 'New ticket submitted from Kiosk 001',
     createdAt: new Date().toISOString(),
     read: false,
-    type: 'ticket'
+    type: 'ticket',
   },
   {
     id: 2,
     message: 'Kiosk 003 went offline',
     createdAt: new Date(Date.now() - 1800000).toISOString(),
     read: false,
-    type: 'system'
+    type: 'system',
   },
   {
     id: 3,
     message: 'Integration test successful for Help Scout',
     createdAt: new Date(Date.now() - 3600000).toISOString(),
     read: true,
-    type: 'integration'
-  }
+    type: 'integration',
+  },
 ];
 
 export const mockDashboardStats: DashboardStats = {
@@ -261,19 +272,19 @@ export const mockDashboardStats: DashboardStats = {
       id: 1,
       type: 'ticket_created',
       message: 'New ticket from John Doe',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     },
     {
       id: 2,
       type: 'kiosk_offline',
       message: 'Kiosk 003 went offline',
-      timestamp: new Date(Date.now() - 900000).toISOString()
-    }
-  ]
+      timestamp: new Date(Date.now() - 900000).toISOString(),
+    },
+  ],
 };
 
 // Helper function to simulate API delay
-export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Helper function to simulate API errors
 export const shouldSimulateError = (errorRate: number = 0.1) => Math.random() < errorRate;

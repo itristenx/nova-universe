@@ -22,7 +22,12 @@ export const Showcase: React.FC = () => {
       <h2>Pagination</h2>
       <Pagination page={page} pageCount={5} onPageChange={setPage} />
       <h2>Tabs</h2>
-      <Tabs tabs={[{ label: 'Tab 1', content: 'Content 1' }, { label: 'Tab 2', content: 'Content 2' }]} />
+      <Tabs
+        tabs={[
+          { label: 'Tab 1', content: 'Content 1' },
+          { label: 'Tab 2', content: 'Content 2' },
+        ]}
+      />
       <h2>Drawer</h2>
       <button onClick={() => setDrawerOpen(true)}>Open Drawer</button>
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
@@ -31,18 +36,27 @@ export const Showcase: React.FC = () => {
       <h2>Stepper</h2>
       <Stepper steps={[{ label: 'Step 1', completed: true }, { label: 'Step 2' }]} activeStep={1} />
       <h2>Accordion</h2>
-      <Accordion items={[
-        { label: 'Section 1', content: 'Accordion Content 1' },
-        { label: 'Section 2', content: 'Accordion Content 2' },
-      ]} />
+      <Accordion
+        items={[
+          { label: 'Section 1', content: 'Accordion Content 1' },
+          { label: 'Section 2', content: 'Accordion Content 2' },
+        ]}
+      />
       <h2>Menu</h2>
-      <Menu buttonLabel="Open Menu" items={[
-        { label: 'Item 1', onClick: () => alert('Item 1') },
-        { label: 'Item 2', onClick: () => alert('Item 2') },
-      ]} />
+      <Menu
+        buttonLabel="Open Menu"
+        items={[
+          { label: 'Item 1', onClick: () => alert('Item 1') },
+          { label: 'Item 2', onClick: () => alert('Item 2') },
+        ]}
+      />
       <h2>Snackbar</h2>
       <button onClick={() => setSnackbarOpen(true)}>Show Snackbar</button>
-      <Snackbar open={snackbarOpen} onClose={() => setSnackbarOpen(false)} message="This is a snackbar!" />
+      <Snackbar
+        open={snackbarOpen}
+        onClose={() => setSnackbarOpen(false)}
+        message="This is a snackbar!"
+      />
       <h2>Skeleton</h2>
       <Skeleton size="md" />
     </div>

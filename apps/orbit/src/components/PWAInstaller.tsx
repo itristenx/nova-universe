@@ -9,7 +9,6 @@ export function PWAInstaller() {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          
           // Check for updates
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
@@ -32,11 +31,11 @@ export function PWAInstaller() {
 
     // Handle PWA install prompt
     let deferredPrompt: Event | null = null;
-    
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       deferredPrompt = e;
-      
+
       // Show install banner after a delay
       setTimeout(() => {
         showInstallBanner();
@@ -92,7 +91,7 @@ export function PWAInstaller() {
           </div>
         </div>
       `;
-      
+
       document.body.appendChild(banner);
 
       // Install button click
@@ -128,8 +127,8 @@ export function PWAInstaller() {
 
     // Check if user hasn't dismissed recently
     const lastDismissed = localStorage.getItem('pwa-install-dismissed');
-    const shouldShowPrompt = !lastDismissed || 
-      (Date.now() - parseInt(lastDismissed)) > 24 * 60 * 60 * 1000; // 24 hours
+    const shouldShowPrompt =
+      !lastDismissed || Date.now() - parseInt(lastDismissed) > 24 * 60 * 60 * 1000; // 24 hours
 
     if (shouldShowPrompt) {
       window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -139,7 +138,7 @@ export function PWAInstaller() {
     window.addEventListener('appinstalled', () => {
       // No-op in production
       deferredPrompt = null;
-      
+
       // Show success message
       const successBanner = document.createElement('div');
       successBanner.innerHTML = `
@@ -161,7 +160,7 @@ export function PWAInstaller() {
         </div>
       `;
       document.body.appendChild(successBanner);
-      
+
       setTimeout(() => successBanner.remove(), 3000);
     });
 

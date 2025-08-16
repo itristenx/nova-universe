@@ -8,7 +8,7 @@ import winston from 'winston';
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.simple(),
-  transports: [new winston.transports.Console()]
+  transports: [new winston.transports.Console()],
 });
 
 export class NotificationService {
@@ -22,7 +22,7 @@ export class NotificationService {
     try {
       // Initialize email transporter
       await this.initializeEmailTransporter();
-      
+
       this.isInitialized = true;
       logger.info('Notification service initialized');
     } catch (error) {
@@ -40,8 +40,8 @@ export class NotificationService {
         secure: process.env.SMTP_SECURE === 'true',
         auth: {
           user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
+          pass: process.env.SMTP_PASS,
+        },
       });
 
       // Test email connection
@@ -76,7 +76,7 @@ export class NotificationService {
         providerData.type,
         JSON.stringify(providerData.config),
         providerData.isDefault || false,
-        providerData.active !== false
+        providerData.active !== false,
       );
 
       return { id, ...providerData };
@@ -93,9 +93,9 @@ export class NotificationService {
       `);
 
       const providers = stmt.all(tenantId);
-      return providers.map(provider => ({
+      return providers.map((provider) => ({
         ...provider,
-        config: JSON.parse(provider.config)
+        config: JSON.parse(provider.config),
       }));
     } catch (error) {
       logger.error('Error getting notification providers:', error);
@@ -109,7 +109,7 @@ export class NotificationService {
         title: 'Test Notification',
         message: 'This is a test notification from Nova Sentinel',
         severity: 'info',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       const result = await this.sendNotification(providerData, testMessage);
@@ -157,7 +157,7 @@ export class NotificationService {
       to: config.to,
       subject: `${message.title} - Nova Sentinel`,
       text: message.message,
-      html: html
+      html: html,
     };
 
     const result = await this.emailTransporter.sendMail(mailOptions);
@@ -167,24 +167,29 @@ export class NotificationService {
   async sendSlackNotification(config, message) {
     const payload = {
       text: message.title,
-      attachments: [{
-        color: this.getSeverityColor(message.severity),
-        fields: [{
-          title: 'Message',
-          value: message.message,
-          short: false
-        }, {
-          title: 'Time',
-          value: new Date(message.timestamp).toLocaleString(),
-          short: true
-        }]
-      }]
+      attachments: [
+        {
+          color: this.getSeverityColor(message.severity),
+          fields: [
+            {
+              title: 'Message',
+              value: message.message,
+              short: false,
+            },
+            {
+              title: 'Time',
+              value: new Date(message.timestamp).toLocaleString(),
+              short: true,
+            },
+          ],
+        },
+      ],
     };
 
     const response = await fetch(config.webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -196,21 +201,23 @@ export class NotificationService {
 
   async sendDiscordNotification(config, message) {
     const payload = {
-      embeds: [{
-        title: message.title,
-        description: message.message,
-        color: parseInt(this.getSeverityColor(message.severity).replace('#', ''), 16),
-        timestamp: message.timestamp,
-        footer: {
-          text: 'Nova Sentinel'
-        }
-      }]
+      embeds: [
+        {
+          title: message.title,
+          description: message.message,
+          color: parseInt(this.getSeverityColor(message.severity).replace('#', ''), 16),
+          timestamp: message.timestamp,
+          footer: {
+            text: 'Nova Sentinel',
+          },
+        },
+      ],
     };
 
     const response = await fetch(config.webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -227,16 +234,16 @@ export class NotificationService {
       severity: message.severity,
       timestamp: message.timestamp,
       source: 'nova-sentinel',
-      ...config.customFields
+      ...config.customFields,
     };
 
     const response = await fetch(config.url, {
       method: config.method || 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...config.headers
+        ...config.headers,
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -248,18 +255,18 @@ export class NotificationService {
 
   async sendTelegramNotification(config, message) {
     const text = `*${message.title}*\n\n${message.message}\n\n_${new Date(message.timestamp).toLocaleString()}_`;
-    
+
     const url = `https://api.telegram.org/bot${config.botToken}/sendMessage`;
     const payload = {
       chat_id: config.chatId,
       text: text,
-      parse_mode: 'Markdown'
+      parse_mode: 'Markdown',
     };
 
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -275,18 +282,20 @@ export class NotificationService {
       '@context': 'http://schema.org/extensions',
       summary: message.title,
       themeColor: this.getSeverityColor(message.severity),
-      sections: [{
-        activityTitle: message.title,
-        activitySubtitle: new Date(message.timestamp).toLocaleString(),
-        text: message.message,
-        markdown: true
-      }]
+      sections: [
+        {
+          activityTitle: message.title,
+          activitySubtitle: new Date(message.timestamp).toLocaleString(),
+          text: message.message,
+          markdown: true,
+        },
+      ],
     };
 
     const response = await fetch(config.webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -303,26 +312,26 @@ export class NotificationService {
   async notifyStatusPageSubscribers(statusPageId, notification) {
     try {
       const subscribers = await this.database.getSubscribers(statusPageId, notification.type);
-      
+
       if (subscribers.length === 0) {
         logger.debug(`No subscribers for status page ${statusPageId}`);
         return;
       }
 
       const results = [];
-      
+
       for (const subscriber of subscribers) {
         try {
           const emailConfig = {
             to: subscriber.email,
-            from: process.env.SMTP_FROM || 'noreply@nova-sentinel.com'
+            from: process.env.SMTP_FROM || 'noreply@nova-sentinel.com',
           };
 
           const message = {
             title: notification.title,
             message: notification.content,
             severity: notification.type === 'incident' ? 'error' : 'info',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           };
 
           await this.sendEmailNotification(emailConfig, message);
@@ -333,7 +342,9 @@ export class NotificationService {
         }
       }
 
-      logger.info(`Notified ${results.filter(r => r.status === 'sent').length}/${subscribers.length} subscribers`);
+      logger.info(
+        `Notified ${results.filter((r) => r.status === 'sent').length}/${subscribers.length} subscribers`,
+      );
       return results;
     } catch (error) {
       logger.error('Error notifying status page subscribers:', error);
@@ -383,7 +394,7 @@ export class NotificationService {
         from: process.env.SMTP_FROM || 'noreply@nova-sentinel.com',
         to: email,
         subject: `Confirm subscription to ${statusPageTitle}`,
-        html: html
+        html: html,
       };
 
       await this.emailTransporter.sendMail(mailOptions);
@@ -427,10 +438,10 @@ export class NotificationService {
 
   formatMonitorEventMessage(monitor, event) {
     const isDown = event.type === 'monitor_down';
-    
+
     return {
       title: `${monitor.name} is ${isDown ? 'DOWN' : 'UP'}`,
-      message: isDown 
+      message: isDown
         ? `Monitor "${monitor.name}" has failed.\n\nError: ${event.heartbeat.msg || 'Unknown error'}\nURL: ${monitor.config?.url || 'N/A'}`
         : `Monitor "${monitor.name}" has recovered.\n\nResponse time: ${event.heartbeat.ping || 0}ms`,
       severity: isDown ? 'error' : 'success',
@@ -439,8 +450,8 @@ export class NotificationService {
         monitorId: monitor.uptime_kuma_id,
         monitorType: monitor.type,
         responseTime: event.heartbeat.ping,
-        previousStatus: event.previousStatus
-      }
+        previousStatus: event.previousStatus,
+      },
     };
   }
 
@@ -453,7 +464,7 @@ export class NotificationService {
       success: '#10b981',
       info: '#3b82f6',
       warning: '#f59e0b',
-      error: '#ef4444'
+      error: '#ef4444',
     };
 
     const color = severityColors[message.severity] || '#6b7280';
@@ -492,7 +503,7 @@ export class NotificationService {
       success: '#10b981',
       info: '#3b82f6',
       warning: '#f59e0b',
-      error: '#ef4444'
+      error: '#ef4444',
     };
     return colors[severity] || '#6b7280';
   }

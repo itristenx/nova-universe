@@ -31,26 +31,25 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
 
       // Get users from the API
       const allUsers = await api.getUsers();
-      
+
       // Apply client-side filtering
       let filteredUsers = allUsers;
 
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        filteredUsers = filteredUsers.filter(user =>
-          user.name?.toLowerCase().includes(searchLower) ||
-          user.email?.toLowerCase().includes(searchLower)
+        filteredUsers = filteredUsers.filter(
+          (user) =>
+            user.name?.toLowerCase().includes(searchLower) ||
+            user.email?.toLowerCase().includes(searchLower),
         );
       }
 
       if (filters.role && filters.role !== 'all') {
-        filteredUsers = filteredUsers.filter(user =>
-          user.roles?.includes(filters.role!)
-        );
+        filteredUsers = filteredUsers.filter((user) => user.roles?.includes(filters.role!));
       }
 
       if (filters.status && filters.status !== 'all') {
-        filteredUsers = filteredUsers.filter(user => {
+        filteredUsers = filteredUsers.filter((user) => {
           if (filters.status === 'active') {
             return !user.disabled;
           } else if (filters.status === 'disabled') {
@@ -64,7 +63,7 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
       const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
-      
+
       setUsers(paginatedUsers);
       setTotal(filteredUsers.length);
       setTotalPages(Math.ceil(filteredUsers.length / limit));
@@ -114,26 +113,26 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
   };
 
   const toggleUserStatus = async (id: number): Promise<boolean> => {
-    const user = users.find(u => u.id === id);
+    const user = users.find((u) => u.id === id);
     if (!user) return false;
 
-    return await updateUser(id, { disabled: !user.disabled }) !== null;
+    return (await updateUser(id, { disabled: !user.disabled })) !== null;
   };
 
   const assignRole = async (userId: number, role: string): Promise<boolean> => {
-    const user = users.find(u => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (!user) return false;
 
     const updatedRoles = [...(user.roles || []), role];
-    return await updateUser(userId, { roles: updatedRoles }) !== null;
+    return (await updateUser(userId, { roles: updatedRoles })) !== null;
   };
 
   const removeRole = async (userId: number, role: string): Promise<boolean> => {
-    const user = users.find(u => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (!user) return false;
 
-    const updatedRoles = (user.roles || []).filter(r => r !== role);
-    return await updateUser(userId, { roles: updatedRoles }) !== null;
+    const updatedRoles = (user.roles || []).filter((r) => r !== role);
+    return (await updateUser(userId, { roles: updatedRoles })) !== null;
   };
 
   return {

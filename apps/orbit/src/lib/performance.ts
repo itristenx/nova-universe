@@ -34,10 +34,10 @@ export class PerformanceMonitor {
 
     // Core Web Vitals monitoring
     this.observeCoreWebVitals();
-    
+
     // Resource loading monitoring
     this.observeResourceTiming();
-    
+
     // Navigation timing
     this.observeNavigationTiming();
   }
@@ -51,7 +51,7 @@ export class PerformanceMonitor {
         this.metrics.set('LCP', lastEntry.startTime);
         this.reportMetric('LCP', lastEntry.startTime);
       });
-      
+
       try {
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
         this.observers.push(lcpObserver);
@@ -123,7 +123,9 @@ export class PerformanceMonitor {
     if (typeof window !== 'undefined' && 'performance' in window) {
       window.addEventListener('load', () => {
         setTimeout(() => {
-          const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+          const navigation = performance.getEntriesByType(
+            'navigation',
+          )[0] as PerformanceNavigationTiming;
           if (navigation) {
             const ttfb = navigation.responseStart - navigation.fetchStart;
             const domContentLoaded = navigation.domContentLoadedEventEnd - navigation.fetchStart;
@@ -145,14 +147,16 @@ export class PerformanceMonitor {
   private analyzeResourceTiming(resource: PerformanceResourceTiming) {
     const loadTime = resource.responseEnd - resource.startTime;
     const resourceType = this.getResourceType(resource.name);
-    
+
     // Track slow resources
-    if (loadTime > 1000) { // Slower than 1 second
+    if (loadTime > 1000) {
+      // Slower than 1 second
       this.reportSlowResource(resource.name, loadTime, resourceType);
     }
 
     // Track large resources
-    if (resource.transferSize > 500 * 1024) { // Larger than 500KB
+    if (resource.transferSize > 500 * 1024) {
+      // Larger than 500KB
       this.reportLargeResource(resource.name, resource.transferSize, resourceType);
     }
   }
@@ -160,7 +164,13 @@ export class PerformanceMonitor {
   private getResourceType(url: string): string {
     if (url.includes('.js')) return 'javascript';
     if (url.includes('.css')) return 'stylesheet';
-    if (url.includes('.png') || url.includes('.jpg') || url.includes('.webp') || url.includes('.svg')) return 'image';
+    if (
+      url.includes('.png') ||
+      url.includes('.jpg') ||
+      url.includes('.webp') ||
+      url.includes('.svg')
+    )
+      return 'image';
     if (url.includes('.woff') || url.includes('.ttf')) return 'font';
     return 'other';
   }
@@ -204,7 +214,7 @@ export class PerformanceMonitor {
   public endTiming(label: string): number | null {
     if (typeof window !== 'undefined' && 'performance' in window) {
       performance.mark(`${label}-end`);
-      
+
       try {
         performance.measure(label, `${label}-start`, `${label}-end`);
         const measure = performance.getEntriesByName(label, 'measure')[0];
@@ -234,7 +244,7 @@ export class PerformanceMonitor {
   }
 
   public dispose(): void {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
     this.metrics.clear();
   }
@@ -253,18 +263,17 @@ export function usePerformanceMonitor() {
 }
 
 // Image optimization utilities
-export function getOptimizedImageProps(src: string, alt: string, options: {
-  width?: number;
-  height?: number;
-  quality?: number;
-  priority?: boolean;
-} = {}) {
-  const {
-    width = 800,
-    height = 600,
-    quality = 85,
-    priority = false
-  } = options;
+export function getOptimizedImageProps(
+  src: string,
+  alt: string,
+  options: {
+    width?: number;
+    height?: number;
+    quality?: number;
+    priority?: boolean;
+  } = {},
+) {
+  const { width = 800, height = 600, quality = 85, priority = false } = options;
 
   return {
     src,
@@ -274,13 +283,16 @@ export function getOptimizedImageProps(src: string, alt: string, options: {
     quality,
     priority,
     placeholder: 'blur' as const,
-    blurDataURL: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==',
+    blurDataURL:
+      'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==',
     sizes: `(max-width: 768px) 100vw, (max-width: 1200px) 50vw, ${width}px`,
   };
 }
 
 // Lazy loading utilities
-export function createLazyComponent<T>(importFn: () => Promise<{ default: React.ComponentType<T> }>) {
+export function createLazyComponent<T>(
+  importFn: () => Promise<{ default: React.ComponentType<T> }>,
+) {
   return React.lazy(importFn);
 }
 
@@ -298,7 +310,7 @@ export function trackBundleSize() {
         transferSize: `${(transferSize / 1024).toFixed(2)}KB`,
         encodedSize: `${(encodedSize / 1024).toFixed(2)}KB`,
         decodedSize: `${(decodedSize / 1024).toFixed(2)}KB`,
-        compressionRatio: `${((1 - encodedSize / decodedSize) * 100).toFixed(1)}%`
+        compressionRatio: `${((1 - encodedSize / decodedSize) * 100).toFixed(1)}%`,
       });
     }
   }

@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { 
-  Search, 
+import {
+  Search,
   Star,
   Clock,
   CheckCircle2,
@@ -27,7 +27,7 @@ import {
   Heart,
   Tag,
   DollarSign,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,7 +35,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 // Types
 interface ServiceItem {
@@ -98,7 +104,7 @@ export default function EnhancedServiceCatalog() {
     approvalRequired: '',
     costType: '',
     sortBy: 'popularity',
-    sortOrder: 'desc'
+    sortOrder: 'desc',
   });
   const [showFilters, setShowFilters] = useState(false);
   const [cart, setCart] = useState<string[]>([]);
@@ -108,7 +114,7 @@ export default function EnhancedServiceCatalog() {
     resolver: zodResolver(searchSchema),
     defaultValues: {
       query: '',
-    }
+    },
   });
 
   const watchedQuery = watch('query');
@@ -120,42 +126,42 @@ export default function EnhancedServiceCatalog() {
         id: 'hardware',
         name: 'Hardware',
         description: 'Computer equipment and devices',
-        icon: <Monitor className="w-6 h-6" />,
+        icon: <Monitor className="h-6 w-6" />,
         color: 'bg-blue-100 text-blue-800',
-        serviceCount: 12
+        serviceCount: 12,
       },
       {
         id: 'software',
         name: 'Software',
         description: 'Applications and licenses',
-        icon: <Settings className="w-6 h-6" />,
+        icon: <Settings className="h-6 w-6" />,
         color: 'bg-green-100 text-green-800',
-        serviceCount: 25
+        serviceCount: 25,
       },
       {
         id: 'access',
         name: 'Access & Security',
         description: 'Permissions and authentication',
-        icon: <Key className="w-6 h-6" />,
+        icon: <Key className="h-6 w-6" />,
         color: 'bg-purple-100 text-purple-800',
-        serviceCount: 8
+        serviceCount: 8,
       },
       {
         id: 'network',
         name: 'Network',
         description: 'Connectivity and infrastructure',
-        icon: <Wifi className="w-6 h-6" />,
+        icon: <Wifi className="h-6 w-6" />,
         color: 'bg-orange-100 text-orange-800',
-        serviceCount: 6
+        serviceCount: 6,
       },
       {
         id: 'facilities',
         name: 'Facilities',
         description: 'Office space and resources',
-        icon: <Building className="w-6 h-6" />,
+        icon: <Building className="h-6 w-6" />,
         color: 'bg-pink-100 text-pink-800',
-        serviceCount: 9
-      }
+        serviceCount: 9,
+      },
     ];
 
     const mockServices: ServiceItem[] = [
@@ -165,7 +171,7 @@ export default function EnhancedServiceCatalog() {
         description: 'Request a new laptop for work with standard software configuration',
         category: 'hardware',
         subcategory: 'computers',
-        icon: <Monitor className="w-8 h-8" />,
+        icon: <Monitor className="h-8 w-8" />,
         estimatedTime: '3-5 business days',
         sla: '5 days',
         cost: 1200,
@@ -179,7 +185,7 @@ export default function EnhancedServiceCatalog() {
         requirements: ['Manager approval', 'Asset return form'],
         isBookmarked: true,
         isFavorite: false,
-        lastUpdated: '2024-01-15'
+        lastUpdated: '2024-01-15',
       },
       {
         id: '2',
@@ -187,7 +193,7 @@ export default function EnhancedServiceCatalog() {
         description: 'Access to Microsoft Office suite including Word, Excel, PowerPoint',
         category: 'software',
         subcategory: 'productivity',
-        icon: <FileText className="w-8 h-8" />,
+        icon: <FileText className="h-8 w-8" />,
         estimatedTime: '1-2 hours',
         sla: '4 hours',
         cost: 12,
@@ -201,7 +207,7 @@ export default function EnhancedServiceCatalog() {
         requirements: ['Valid employee ID'],
         isBookmarked: false,
         isFavorite: true,
-        lastUpdated: '2024-01-10'
+        lastUpdated: '2024-01-10',
       },
       {
         id: '3',
@@ -209,7 +215,7 @@ export default function EnhancedServiceCatalog() {
         description: 'Secure remote access to company network and resources',
         category: 'access',
         subcategory: 'remote-access',
-        icon: <Shield className="w-8 h-8" />,
+        icon: <Shield className="h-8 w-8" />,
         estimatedTime: '30 minutes',
         sla: '2 hours',
         cost: 0,
@@ -223,7 +229,7 @@ export default function EnhancedServiceCatalog() {
         requirements: ['Security training completion'],
         isBookmarked: true,
         isFavorite: true,
-        lastUpdated: '2024-01-20'
+        lastUpdated: '2024-01-20',
       },
       {
         id: '4',
@@ -231,7 +237,7 @@ export default function EnhancedServiceCatalog() {
         description: 'Configuration of work phone or tablet with corporate apps',
         category: 'hardware',
         subcategory: 'mobile',
-        icon: <Smartphone className="w-8 h-8" />,
+        icon: <Smartphone className="h-8 w-8" />,
         estimatedTime: '2-3 hours',
         sla: '1 day',
         cost: 500,
@@ -245,7 +251,7 @@ export default function EnhancedServiceCatalog() {
         requirements: ['Department head approval', 'Data plan selection'],
         isBookmarked: false,
         isFavorite: false,
-        lastUpdated: '2024-01-12'
+        lastUpdated: '2024-01-12',
       },
       {
         id: '5',
@@ -253,7 +259,7 @@ export default function EnhancedServiceCatalog() {
         description: 'Reserved parking space in company garage',
         category: 'facilities',
         subcategory: 'parking',
-        icon: <Building className="w-8 h-8" />,
+        icon: <Building className="h-8 w-8" />,
         estimatedTime: '1-2 days',
         sla: '3 days',
         cost: 50,
@@ -267,7 +273,7 @@ export default function EnhancedServiceCatalog() {
         requirements: ['Seniority level 3+', 'Valid driver license'],
         isBookmarked: false,
         isFavorite: false,
-        lastUpdated: '2024-01-08'
+        lastUpdated: '2024-01-08',
       },
       {
         id: '6',
@@ -275,7 +281,7 @@ export default function EnhancedServiceCatalog() {
         description: 'Read/write access to specific databases for development',
         category: 'access',
         subcategory: 'database',
-        icon: <Key className="w-8 h-8" />,
+        icon: <Key className="h-8 w-8" />,
         estimatedTime: '4-6 hours',
         sla: '1 day',
         cost: 0,
@@ -289,8 +295,8 @@ export default function EnhancedServiceCatalog() {
         requirements: ['Technical lead approval', 'Security clearance'],
         isBookmarked: false,
         isFavorite: false,
-        lastUpdated: '2024-01-18'
-      }
+        lastUpdated: '2024-01-18',
+      },
     ];
 
     setCategories(mockCategories);
@@ -304,33 +310,34 @@ export default function EnhancedServiceCatalog() {
 
     // Apply search query
     if (watchedQuery && watchedQuery.length > 0) {
-      result = result.filter(service =>
-        service.name.toLowerCase().includes(watchedQuery.toLowerCase()) ||
-        service.description.toLowerCase().includes(watchedQuery.toLowerCase()) ||
-        service.tags.some(tag => tag.toLowerCase().includes(watchedQuery.toLowerCase()))
+      result = result.filter(
+        (service) =>
+          service.name.toLowerCase().includes(watchedQuery.toLowerCase()) ||
+          service.description.toLowerCase().includes(watchedQuery.toLowerCase()) ||
+          service.tags.some((tag) => tag.toLowerCase().includes(watchedQuery.toLowerCase())),
       );
     }
 
     // Apply category filter
     if (filters.category || activeCategory) {
       const categoryFilter = filters.category || activeCategory;
-      result = result.filter(s => s.category === categoryFilter);
+      result = result.filter((s) => s.category === categoryFilter);
     }
 
     // Apply availability filter
     if (filters.availability) {
-      result = result.filter(s => s.availability === filters.availability);
+      result = result.filter((s) => s.availability === filters.availability);
     }
 
     // Apply approval filter
     if (filters.approvalRequired !== '') {
       const requiresApproval = filters.approvalRequired === 'true';
-      result = result.filter(s => s.approvalRequired === requiresApproval);
+      result = result.filter((s) => s.approvalRequired === requiresApproval);
     }
 
     // Apply cost type filter
     if (filters.costType) {
-      result = result.filter(s => s.costType === filters.costType);
+      result = result.filter((s) => s.costType === filters.costType);
     }
 
     // Apply sorting
@@ -361,29 +368,29 @@ export default function EnhancedServiceCatalog() {
   };
 
   const toggleBookmark = (serviceId: string) => {
-    setServices(prev => prev.map(service =>
-      service.id === serviceId
-        ? { ...service, isBookmarked: !service.isBookmarked }
-        : service
-    ));
+    setServices((prev) =>
+      prev.map((service) =>
+        service.id === serviceId ? { ...service, isBookmarked: !service.isBookmarked } : service,
+      ),
+    );
   };
 
   const toggleFavorite = (serviceId: string) => {
-    setServices(prev => prev.map(service =>
-      service.id === serviceId
-        ? { ...service, isFavorite: !service.isFavorite }
-        : service
-    ));
+    setServices((prev) =>
+      prev.map((service) =>
+        service.id === serviceId ? { ...service, isFavorite: !service.isFavorite } : service,
+      ),
+    );
   };
 
   const addToCart = (serviceId: string) => {
     if (!cart.includes(serviceId)) {
-      setCart(prev => [...prev, serviceId]);
+      setCart((prev) => [...prev, serviceId]);
     }
   };
 
   const removeFromCart = (serviceId: string) => {
-    setCart(prev => prev.filter(id => id !== serviceId));
+    setCart((prev) => prev.filter((id) => id !== serviceId));
   };
 
   const getAvailabilityColor = (availability: string) => {
@@ -402,13 +409,13 @@ export default function EnhancedServiceCatalog() {
   const getAvailabilityIcon = (availability: string) => {
     switch (availability) {
       case 'available':
-        return <CheckCircle2 className="w-4 h-4" />;
+        return <CheckCircle2 className="h-4 w-4" />;
       case 'limited':
-        return <AlertCircle className="w-4 h-4" />;
+        return <AlertCircle className="h-4 w-4" />;
       case 'unavailable':
-        return <AlertCircle className="w-4 h-4" />;
+        return <AlertCircle className="h-4 w-4" />;
       default:
-        return <AlertCircle className="w-4 h-4" />;
+        return <AlertCircle className="h-4 w-4" />;
     }
   };
 
@@ -416,7 +423,7 @@ export default function EnhancedServiceCatalog() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-3 h-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+        className={`h-3 w-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
       />
     ));
   };
@@ -435,14 +442,14 @@ export default function EnhancedServiceCatalog() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
-          <ShoppingCart className="w-8 h-8 text-blue-600" />
+      <div className="mb-8 text-center">
+        <h1 className="mb-2 flex items-center justify-center gap-2 text-3xl font-bold">
+          <ShoppingCart className="h-8 w-8 text-blue-600" />
           Service Catalog
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
           Browse and request services, access, and resources you need to get your work done
         </p>
         {cart.length > 0 && (
@@ -463,24 +470,24 @@ export default function EnhancedServiceCatalog() {
           <CardTitle>Service Categories</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <Card 
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5">
+            <Card
               className={`cursor-pointer transition-all hover:shadow-md ${
                 activeCategory === '' ? 'ring-2 ring-blue-500' : ''
               }`}
               onClick={() => setActiveCategory('')}
             >
               <CardContent className="p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Grid className="w-6 h-6 text-gray-600" />
+                <div className="mb-2 flex items-center justify-center">
+                  <Grid className="h-6 w-6 text-gray-600" />
                 </div>
                 <h3 className="font-semibold">All Services</h3>
-                <p className="text-sm text-muted-foreground">{services.length} total</p>
+                <p className="text-muted-foreground text-sm">{services.length} total</p>
               </CardContent>
             </Card>
-            
+
             {categories.map((category) => (
-              <Card 
+              <Card
                 key={category.id}
                 className={`cursor-pointer transition-all hover:shadow-md ${
                   activeCategory === category.id ? 'ring-2 ring-blue-500' : ''
@@ -488,11 +495,9 @@ export default function EnhancedServiceCatalog() {
                 onClick={() => setActiveCategory(category.id)}
               >
                 <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center mb-2">
-                    {category.icon}
-                  </div>
+                  <div className="mb-2 flex items-center justify-center">{category.icon}</div>
                   <h3 className="font-semibold">{category.name}</h3>
-                  <p className="text-sm text-muted-foreground">{category.serviceCount} services</p>
+                  <p className="text-muted-foreground text-sm">{category.serviceCount} services</p>
                   <Badge className={category.color} variant="secondary">
                     {category.description}
                   </Badge>
@@ -508,44 +513,51 @@ export default function EnhancedServiceCatalog() {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit(handleSearch)} className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
               <Input
                 {...register('query')}
                 placeholder="Search services, access, software..."
-                className="pl-10 pr-4 py-3"
+                className="py-3 pr-4 pl-10"
               />
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
-                variant={showFilters ? "default" : "outline"}
+                variant={showFilters ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
               >
-                <Filter className="w-4 h-4 mr-2" />
+                <Filter className="mr-2 h-4 w-4" />
                 Filters
               </Button>
-              
-              <div className="flex items-center gap-2 ml-auto">
+
+              <div className="ml-auto flex items-center gap-2">
                 <Label className="text-sm">View:</Label>
                 <Button
                   type="button"
-                  variant={viewMode === 'grid' ? "default" : "outline"}
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                 >
-                  {viewMode === 'grid' ? <Grid className="w-4 h-4" /> : <List className="w-4 h-4" />}
+                  {viewMode === 'grid' ? (
+                    <Grid className="h-4 w-4" />
+                  ) : (
+                    <List className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
 
             {/* Filters Panel */}
             {showFilters && (
-              <div className="border-t pt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 gap-4 border-t pt-4 md:grid-cols-4">
                 <div>
                   <Label className="text-sm font-medium">Availability</Label>
-                  <Select value={filters.availability} onValueChange={(value) => setFilters(f => ({ ...f, availability: value }))}>
+                  <Select
+                    value={filters.availability}
+                    onValueChange={(value) => setFilters((f) => ({ ...f, availability: value }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All" />
                     </SelectTrigger>
@@ -560,7 +572,12 @@ export default function EnhancedServiceCatalog() {
 
                 <div>
                   <Label className="text-sm font-medium">Approval Required</Label>
-                  <Select value={filters.approvalRequired} onValueChange={(value) => setFilters(f => ({ ...f, approvalRequired: value }))}>
+                  <Select
+                    value={filters.approvalRequired}
+                    onValueChange={(value) =>
+                      setFilters((f) => ({ ...f, approvalRequired: value }))
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All" />
                     </SelectTrigger>
@@ -574,7 +591,10 @@ export default function EnhancedServiceCatalog() {
 
                 <div>
                   <Label className="text-sm font-medium">Cost Type</Label>
-                  <Select value={filters.costType} onValueChange={(value) => setFilters(f => ({ ...f, costType: value }))}>
+                  <Select
+                    value={filters.costType}
+                    onValueChange={(value) => setFilters((f) => ({ ...f, costType: value }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All" />
                     </SelectTrigger>
@@ -590,7 +610,12 @@ export default function EnhancedServiceCatalog() {
 
                 <div>
                   <Label className="text-sm font-medium">Sort By</Label>
-                  <Select value={filters.sortBy} onValueChange={(value: 'popularity' | 'rating' | 'name' | 'recent') => setFilters(f => ({ ...f, sortBy: value }))}>
+                  <Select
+                    value={filters.sortBy}
+                    onValueChange={(value: 'popularity' | 'rating' | 'name' | 'recent') =>
+                      setFilters((f) => ({ ...f, sortBy: value }))
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -612,10 +637,9 @@ export default function EnhancedServiceCatalog() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {activeCategory 
-              ? `${categories.find(c => c.id === activeCategory)?.name || 'Category'} Services`
-              : 'All Services'
-            }
+            {activeCategory
+              ? `${categories.find((c) => c.id === activeCategory)?.name || 'Category'} Services`
+              : 'All Services'}
             <Badge variant="secondary" className="ml-2">
               {filteredServices.length} services
             </Badge>
@@ -623,46 +647,57 @@ export default function EnhancedServiceCatalog() {
         </CardHeader>
         <CardContent>
           {filteredServices.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="py-8 text-center">
               <div className="text-muted-foreground mb-4">
-                <Search className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <Search className="mx-auto mb-2 h-12 w-12 opacity-50" />
                 No services found matching your criteria.
               </div>
-              <Button variant="outline" onClick={() => {
-                setFilters({
-                  category: '',
-                  availability: '',
-                  approvalRequired: '',
-                  costType: '',
-                  sortBy: 'popularity',
-                  sortOrder: 'desc'
-                });
-                setActiveCategory('');
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setFilters({
+                    category: '',
+                    availability: '',
+                    approvalRequired: '',
+                    costType: '',
+                    sortBy: 'popularity',
+                    sortOrder: 'desc',
+                  });
+                  setActiveCategory('');
+                }}
+              >
                 Clear Filters
               </Button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' 
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
-              : "space-y-4"
-            }>
+            <div
+              className={
+                viewMode === 'grid'
+                  ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
+                  : 'space-y-4'
+              }
+            >
               {filteredServices.map((service) => (
-                <Card key={service.id} className={`hover:shadow-lg transition-all ${viewMode === 'list' ? 'flex' : ''}`}>
-                  <CardContent className={viewMode === 'list' ? "flex items-center p-4 space-x-4 flex-1" : "p-4"}>
+                <Card
+                  key={service.id}
+                  className={`transition-all hover:shadow-lg ${viewMode === 'list' ? 'flex' : ''}`}
+                >
+                  <CardContent
+                    className={
+                      viewMode === 'list' ? 'flex flex-1 items-center space-x-4 p-4' : 'p-4'
+                    }
+                  >
                     {viewMode === 'list' && (
-                      <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-lg">
+                      <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-lg">
                         {service.icon}
                       </div>
                     )}
-                    
+
                     <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="mb-3 flex items-start justify-between">
                         <div className="flex items-center gap-2">
                           {viewMode === 'grid' && (
-                            <div className="p-2 bg-muted rounded-lg">
-                              {service.icon}
-                            </div>
+                            <div className="bg-muted rounded-lg p-2">{service.icon}</div>
                           )}
                           <div>
                             <Badge className={getAvailabilityColor(service.availability)}>
@@ -678,7 +713,9 @@ export default function EnhancedServiceCatalog() {
                             onClick={() => toggleFavorite(service.id)}
                             className="h-8 w-8 p-0"
                           >
-                            <Heart className={`w-4 h-4 ${service.isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+                            <Heart
+                              className={`h-4 w-4 ${service.isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+                            />
                           </Button>
                           <Button
                             variant="ghost"
@@ -686,48 +723,52 @@ export default function EnhancedServiceCatalog() {
                             onClick={() => toggleBookmark(service.id)}
                             className="h-8 w-8 p-0"
                           >
-                            <Bookmark className={`w-4 h-4 ${service.isBookmarked ? 'fill-current' : ''}`} />
+                            <Bookmark
+                              className={`h-4 w-4 ${service.isBookmarked ? 'fill-current' : ''}`}
+                            />
                           </Button>
                         </div>
                       </div>
-                      
-                      <h3 className="font-semibold text-lg mb-2">{service.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
-                      
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
+
+                      <h3 className="mb-2 text-lg font-semibold">{service.name}</h3>
+                      <p className="text-muted-foreground mb-3 text-sm">{service.description}</p>
+
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
                         {service.tags.slice(0, 3).map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs">
-                            <Tag className="w-3 h-3 mr-1" />
+                            <Tag className="mr-1 h-3 w-3" />
                             {tag}
                           </Badge>
                         ))}
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+
+                      <div className="mb-4 grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                            <Clock className="w-3 h-3" />
+                          <div className="text-muted-foreground mb-1 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
                             <span>Delivery</span>
                           </div>
                           <span className="font-medium">{service.estimatedTime}</span>
                         </div>
                         <div>
-                          <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                            <DollarSign className="w-3 h-3" />
+                          <div className="text-muted-foreground mb-1 flex items-center gap-1">
+                            <DollarSign className="h-3 w-3" />
                             <span>Cost</span>
                           </div>
-                          <span className="font-medium">{formatCost(service.cost, service.costType)}</span>
+                          <span className="font-medium">
+                            {formatCost(service.cost, service.costType)}
+                          </span>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
+
+                      <div className="text-muted-foreground mb-4 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
                             {renderStars(service.rating)}
                             <span className="ml-1">{service.rating}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />
+                            <TrendingUp className="h-3 w-3" />
                             <span>{service.popularity}% popular</span>
                           </div>
                         </div>
@@ -737,7 +778,7 @@ export default function EnhancedServiceCatalog() {
                           </Badge>
                         )}
                       </div>
-                      
+
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -748,33 +789,33 @@ export default function EnhancedServiceCatalog() {
                               addToCart(service.id);
                             }
                           }}
-                          variant={cart.includes(service.id) ? "default" : "outline"}
+                          variant={cart.includes(service.id) ? 'default' : 'outline'}
                           className="flex-1"
                         >
                           {cart.includes(service.id) ? (
                             <>
-                              <CheckCircle2 className="w-4 h-4 mr-2" />
+                              <CheckCircle2 className="mr-2 h-4 w-4" />
                               In Cart
                             </>
                           ) : (
                             <>
-                              <ShoppingCart className="w-4 h-4 mr-2" />
+                              <ShoppingCart className="mr-2 h-4 w-4" />
                               Add to Cart
                             </>
                           )}
                         </Button>
                         <Button size="sm" variant="outline">
-                          <ArrowRight className="w-4 h-4" />
+                          <ArrowRight className="h-4 w-4" />
                         </Button>
                       </div>
-                      
+
                       {service.requirements.length > 0 && (
-                        <div className="mt-3 pt-3 border-t">
-                          <p className="text-xs text-muted-foreground mb-1">Requirements:</p>
-                          <ul className="text-xs text-muted-foreground space-y-1">
+                        <div className="mt-3 border-t pt-3">
+                          <p className="text-muted-foreground mb-1 text-xs">Requirements:</p>
+                          <ul className="text-muted-foreground space-y-1 text-xs">
                             {service.requirements.map((req, index) => (
                               <li key={index} className="flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3 text-green-500" />
+                                <CheckCircle2 className="h-3 w-3 text-green-500" />
                                 {req}
                               </li>
                             ))}

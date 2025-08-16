@@ -1,5 +1,7 @@
 import { PrismaClient } from '../../../../prisma/generated/core/index.js';
-const prisma = new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+const prisma = new PrismaClient({
+  datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+});
 
 export interface TagData {
   name: string;
@@ -19,11 +21,11 @@ export const createTag = async (data: TagData) => {
         ${data.user_id}, NOW(), NOW()
       ) RETURNING id
     `;
-    
+
     const tag = await prisma.$queryRaw`
       SELECT * FROM nova_tags WHERE id = ${(result as any)[0].id}
     `;
-    
+
     return (tag as any)[0];
   } catch (error) {
     console.error('Database error creating tag:', error);
@@ -50,23 +52,29 @@ export const updateTag = async (id: string, data: UpdateTagData, userId: string)
   try {
     const fields: string[] = [];
     const values: any[] = [];
-    
-    if (data.name !== undefined) { fields.push('name = $' + (fields.length + 1)); values.push(data.name); }
-    if (data.color !== undefined) { fields.push('color = $' + (fields.length + 1)); values.push(data.color); }
-    
+
+    if (data.name !== undefined) {
+      fields.push('name = $' + (fields.length + 1));
+      values.push(data.name);
+    }
+    if (data.color !== undefined) {
+      fields.push('color = $' + (fields.length + 1));
+      values.push(data.color);
+    }
+
     if (fields.length === 0) {
       return await getTagById(id, userId);
     }
-    
+
     fields.push('updated_at = NOW()');
     values.push(id, userId);
-    
+
     const query = `
       UPDATE nova_tags 
       SET ${fields.join(', ')}
       WHERE id = $${values.length - 1} AND tenant_id = $${values.length}
     `;
-    
+
     await prisma.$executeRawUnsafe(query, ...values);
     return await getTagById(id, userId);
   } catch (error) {

@@ -14,11 +14,12 @@ import {
   createSpinner,
   getProjectRoot,
   checkServiceStatus,
-  connectDatabase
+  connectDatabase,
 } from '../utils/index.js';
 
-export const dashboardCommand = new Command('dashboard')
-  .description('Web-based monitoring dashboard');
+export const dashboardCommand = new Command('dashboard').description(
+  'Web-based monitoring dashboard',
+);
 
 // Dashboard start command
 dashboardCommand
@@ -57,9 +58,9 @@ async function startDashboard(options) {
   const server = createServer(app);
   const io = new SocketIOServer(server, {
     cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
-    }
+      origin: '*',
+      methods: ['GET', 'POST'],
+    },
   });
 
   const port = parseInt(options.port);
@@ -68,10 +69,10 @@ async function startDashboard(options) {
 
   // Serve static dashboard files
   const dashboardPath = path.join(projectRoot, 'nova-api', 'cli', 'dashboard');
-  
+
   // Create dashboard HTML if it doesn't exist
   await ensureDashboardFiles(dashboardPath);
-  
+
   app.use(express.static(dashboardPath));
   app.use(express.json());
 
@@ -95,7 +96,7 @@ async function startDashboard(options) {
     spinner.succeed('Dashboard server started');
 
     const dashboardUrl = `http://${host}:${port}`;
-    
+
     console.log(chalk.green('\n🎉 Nova Universe Dashboard is ready!\n'));
     console.log(chalk.cyan('🌐 URL:'), chalk.blue(dashboardUrl));
     console.log(chalk.gray('Press Ctrl+C to stop the dashboard\n'));
@@ -125,7 +126,6 @@ async function startDashboard(options) {
 
     // Keep the server running
     await new Promise(() => {});
-
   } catch (error) {
     spinner.fail('Failed to start dashboard server');
     throw error;
@@ -159,7 +159,7 @@ function setupDashboardRoutes(app) {
     try {
       const { service } = req.params;
       const { lines = 50 } = req.query;
-      
+
       const logs = await getRecentLogs(service, parseInt(lines));
       res.json(logs);
     } catch (error) {
@@ -208,7 +208,7 @@ async function sendInitialData(socket) {
     const [status, services, metrics] = await Promise.all([
       getSystemStatus(),
       checkServiceStatus(),
-      getSystemMetrics()
+      getSystemMetrics(),
     ]);
 
     socket.emit('status', status);
@@ -224,10 +224,7 @@ function startRealTimeMonitoring(io) {
   // Update every 5 seconds
   setInterval(async () => {
     try {
-      const [services, metrics] = await Promise.all([
-        checkServiceStatus(),
-        getSystemMetrics()
-      ]);
+      const [services, metrics] = await Promise.all([checkServiceStatus(), getSystemMetrics()]);
 
       io.emit('services', services);
       io.emit('metrics', metrics);
@@ -250,7 +247,7 @@ function startRealTimeMonitoring(io) {
 // Get system status
 async function getSystemStatus() {
   const os = await import('os');
-  
+
   return {
     timestamp: new Date().toISOString(),
     platform: os.platform(),
@@ -259,43 +256,43 @@ async function getSystemStatus() {
     memory: {
       total: os.totalmem(),
       free: os.freemem(),
-      used: os.totalmem() - os.freemem()
+      used: os.totalmem() - os.freemem(),
     },
     cpu: {
       count: os.cpus().length,
-      load: os.loadavg()
+      load: os.loadavg(),
     },
     node: process.version,
-    pid: process.pid
+    pid: process.pid,
   };
 }
 
 // Get system metrics
 async function getSystemMetrics() {
   const os = await import('os');
-  
+
   const memory = {
     total: os.totalmem(),
     free: os.freemem(),
-    used: os.totalmem() - os.freemem()
+    used: os.totalmem() - os.freemem(),
   };
 
   const cpu = {
     count: os.cpus().length,
-    load: os.loadavg()
+    load: os.loadavg(),
   };
 
   return {
     timestamp: Date.now(),
     memory: {
       ...memory,
-      percentage: (memory.used / memory.total) * 100
+      percentage: (memory.used / memory.total) * 100,
     },
     cpu: {
       ...cpu,
-      percentage: (cpu.load[0] / cpu.count) * 100
+      percentage: (cpu.load[0] / cpu.count) * 100,
     },
-    uptime: os.uptime()
+    uptime: os.uptime(),
   };
 }
 
@@ -308,7 +305,7 @@ async function getRecentLogs(service, lines) {
     { service: 'api', path: 'nova-api/server.log' },
     { service: 'admin', path: 'nova-core/dist/server.log' },
     { service: 'comms', path: 'nova-comms/server.log' },
-    { service: 'system', path: 'server.log' }
+    { service: 'system', path: 'server.log' },
   ];
 
   for (const logFile of logFiles) {
@@ -318,15 +315,18 @@ async function getRecentLogs(service, lines) {
     if (existsSync(logPath)) {
       try {
         const { runCommand } = await import('../utils/index.js');
-        const { stdout } = await runCommand('tail', ['-n', lines.toString(), logPath], { silent: true });
-        
-        const logLines = stdout.split('\n')
-          .filter(line => line.trim())
-          .map(line => ({
+        const { stdout } = await runCommand('tail', ['-n', lines.toString(), logPath], {
+          silent: true,
+        });
+
+        const logLines = stdout
+          .split('\n')
+          .filter((line) => line.trim())
+          .map((line) => ({
             service: logFile.service,
             timestamp: new Date().toISOString(), // In practice, parse from log line
             message: line,
-            level: extractLogLevel(line)
+            level: extractLogLevel(line),
           }));
 
         logs.push(...logLines);
@@ -343,18 +343,18 @@ async function getRecentLogs(service, lines) {
 async function getHealthCheck() {
   const health = {
     overall: 'healthy',
-    checks: {}
+    checks: {},
   };
 
   try {
     // Check services
     const services = await checkServiceStatus();
-    const runningServices = Object.values(services).filter(s => s.status === 'running');
-    
+    const runningServices = Object.values(services).filter((s) => s.status === 'running');
+
     health.checks.services = {
       status: runningServices.length === Object.keys(services).length ? 'healthy' : 'critical',
       running: runningServices.length,
-      total: Object.keys(services).length
+      total: Object.keys(services).length,
     };
 
     // Check database
@@ -372,17 +372,24 @@ async function getHealthCheck() {
     const cpuLoad = (os.loadavg()[0] / os.cpus().length) * 100;
 
     health.checks.resources = {
-      status: memUsage > 90 || cpuLoad > 100 ? 'critical' : memUsage > 80 || cpuLoad > 80 ? 'warning' : 'healthy',
+      status:
+        memUsage > 90 || cpuLoad > 100
+          ? 'critical'
+          : memUsage > 80 || cpuLoad > 80
+            ? 'warning'
+            : 'healthy',
       memory: memUsage,
-      cpu: cpuLoad
+      cpu: cpuLoad,
     };
 
-    if (health.checks.resources.status === 'critical' || health.checks.services.status === 'critical') {
+    if (
+      health.checks.resources.status === 'critical' ||
+      health.checks.services.status === 'critical'
+    ) {
       health.overall = 'critical';
     } else if (health.checks.resources.status === 'warning') {
       health.overall = 'warning';
     }
-
   } catch (error) {
     health.overall = 'critical';
     health.error = error.message;
@@ -403,7 +410,7 @@ function extractLogLevel(line) {
 // Ensure dashboard files exist
 async function ensureDashboardFiles(dashboardPath) {
   const { mkdirSync, writeFileSync } = await import('fs');
-  
+
   // Create dashboard directory
   if (!existsSync(dashboardPath)) {
     mkdirSync(dashboardPath, { recursive: true });
@@ -431,26 +438,26 @@ async function ensureDashboardFiles(dashboardPath) {
 // Show dashboard information
 async function showDashboardInfo() {
   console.log(chalk.cyan('📊 Nova Universe Dashboard Information\n'));
-  
+
   console.log(chalk.yellow('Features:'));
   console.log(chalk.gray('  • Real-time service monitoring'));
   console.log(chalk.gray('  • System resource metrics'));
   console.log(chalk.gray('  • Live log streaming'));
   console.log(chalk.gray('  • Health check indicators'));
   console.log(chalk.gray('  • Responsive web interface'));
-  
+
   console.log(chalk.yellow('\nEndpoints:'));
   console.log(chalk.gray('  GET  /api/status     - System status'));
   console.log(chalk.gray('  GET  /api/services   - Service status'));
   console.log(chalk.gray('  GET  /api/logs       - Recent logs'));
   console.log(chalk.gray('  GET  /api/metrics    - System metrics'));
   console.log(chalk.gray('  GET  /api/health     - Health check'));
-  
+
   console.log(chalk.yellow('\nUsage:'));
   console.log(chalk.gray('  nova dashboard start              - Start dashboard'));
   console.log(chalk.gray('  nova dashboard start --port 3030  - Custom port'));
   console.log(chalk.gray('  nova dashboard start --host 0.0.0.0 - Listen on all interfaces'));
-  
+
   console.log();
 }
 

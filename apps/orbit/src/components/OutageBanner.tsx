@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react';
 
 export function OutageBanner() {
-  const [status, setStatus] = useState<'operational' | 'degraded' | 'major_outage' | 'maintenance' | null>(null);
+  const [status, setStatus] = useState<
+    'operational' | 'degraded' | 'major_outage' | 'maintenance' | null
+  >(null);
   const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
     let isComponentMounted = true;
-    const tenant = typeof window !== 'undefined' ? localStorage.getItem('tenant_id') || 'public' : 'public';
+    const tenant =
+      typeof window !== 'undefined' ? localStorage.getItem('tenant_id') || 'public' : 'public';
 
     async function fetchStatus() {
       try {
@@ -43,11 +46,14 @@ export function OutageBanner() {
 
   if (!status || status === 'operational' || !message) return null;
 
-  const className = status === 'major_outage' ? 'bg-red-600' : status === 'degraded' ? 'bg-yellow-500' : 'bg-blue-600';
+  const className =
+    status === 'major_outage'
+      ? 'bg-red-600'
+      : status === 'degraded'
+        ? 'bg-yellow-500'
+        : 'bg-blue-600';
 
   return (
-    <div className={`${className} text-white text-sm w-full py-2 px-4 text-center`}>
-      {message}
-    </div>
+    <div className={`${className} w-full px-4 py-2 text-center text-sm text-white`}>{message}</div>
   );
 }

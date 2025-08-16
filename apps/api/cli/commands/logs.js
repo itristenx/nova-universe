@@ -9,17 +9,16 @@ import { existsSync, readdirSync, statSync, readFileSync } from 'fs';
 import { spawn } from 'child_process';
 import path from 'path';
 import Table from 'cli-table3';
-import { 
-  logger, 
-  createSpinner, 
+import {
+  logger,
+  createSpinner,
   runCommand,
   getProjectRoot,
   formatFileSize,
-  formatDate
+  formatDate,
 } from '../utils/index.js';
 
-export const logsCommand = new Command('logs')
-  .description('View and manage Nova Universe logs');
+export const logsCommand = new Command('logs').description('View and manage Nova Universe logs');
 
 // Logs view command
 logsCommand
@@ -184,7 +183,7 @@ async function findLogFiles(projectRoot, service = null) {
     'nova-api/logs/server.log',
     'nova-core/logs/build.log',
     'nova-comms/server.log',
-    'nova-comms/logs/server.log'
+    'nova-comms/logs/server.log',
   ];
 
   const logFiles = [];
@@ -194,7 +193,7 @@ async function findLogFiles(projectRoot, service = null) {
     if (existsSync(fullPath)) {
       const stats = statSync(fullPath);
       const serviceName = extractServiceName(logPath);
-      
+
       // Filter by service if specified
       if (!service || serviceName === service || logPath.includes(service)) {
         logFiles.push({
@@ -202,7 +201,7 @@ async function findLogFiles(projectRoot, service = null) {
           relativePath: logPath,
           service: serviceName,
           size: stats.size,
-          modified: stats.mtime
+          modified: stats.mtime,
         });
       }
     }
@@ -210,7 +209,7 @@ async function findLogFiles(projectRoot, service = null) {
 
   // Also check for rotated logs
   const logDirs = ['logs', 'nova-api/logs', 'nova-core/logs', 'nova-comms/logs'];
-  
+
   for (const logDir of logDirs) {
     const dirPath = path.join(projectRoot, logDir);
     if (existsSync(dirPath)) {
@@ -221,14 +220,14 @@ async function findLogFiles(projectRoot, service = null) {
             const fullPath = path.join(dirPath, file);
             const stats = statSync(fullPath);
             const serviceName = extractServiceName(logDir);
-            
+
             if (!service || serviceName === service) {
               logFiles.push({
                 path: fullPath,
                 relativePath: path.join(logDir, file),
                 service: serviceName,
                 size: stats.size,
-                modified: stats.mtime
+                modified: stats.mtime,
               });
             }
           }
@@ -257,7 +256,7 @@ async function displaySingleLog(logFile, options) {
   if (options.follow) {
     // Follow mode using tail -f
     console.log(chalk.gray('Following logs (Press Ctrl+C to exit)...\n'));
-    
+
     const tailArgs = ['-f'];
     if (options.lines) {
       tailArgs.push('-n', options.lines);
@@ -265,7 +264,7 @@ async function displaySingleLog(logFile, options) {
     tailArgs.push(logFile.path);
 
     const tail = spawn('tail', tailArgs, { stdio: 'inherit' });
-    
+
     process.on('SIGINT', () => {
       tail.kill();
       process.exit(0);
@@ -277,19 +276,19 @@ async function displaySingleLog(logFile, options) {
   } else {
     // Static view
     const tailArgs = ['-n', options.lines, logFile.path];
-    
+
     try {
       let { stdout } = await runCommand('tail', tailArgs, { silent: true });
-      
+
       // Apply filters
       if (options.level) {
         stdout = filterByLogLevel(stdout, options.level);
       }
-      
+
       if (options.grep) {
         stdout = filterByPattern(stdout, options.grep);
       }
-      
+
       if (options.since) {
         stdout = filterBySince(stdout, options.since);
       }
@@ -309,18 +308,21 @@ async function displaySingleLog(logFile, options) {
 async function displayMultipleLogs(logFiles, options) {
   console.log(chalk.cyan('📋 Recent logs from all services\n'));
 
-  for (const logFile of logFiles.slice(0, 5)) { // Show top 5 most recent
-    console.log(chalk.yellow(`\n=== ${logFile.service.toUpperCase()} (${logFile.relativePath}) ===`));
-    
+  for (const logFile of logFiles.slice(0, 5)) {
+    // Show top 5 most recent
+    console.log(
+      chalk.yellow(`\n=== ${logFile.service.toUpperCase()} (${logFile.relativePath}) ===`),
+    );
+
     try {
       const { stdout } = await runCommand('tail', ['-n', '10', logFile.path], { silent: true });
-      
+
       let filteredOutput = stdout;
-      
+
       if (options.level) {
         filteredOutput = filterByLogLevel(filteredOutput, options.level);
       }
-      
+
       if (options.grep) {
         filteredOutput = filterByPattern(filteredOutput, options.grep);
       }
@@ -345,17 +347,20 @@ async function followMultipleLogs(logFiles, options) {
 
   for (const logFile of logFiles) {
     const tail = spawn('tail', ['-f', '-n', '0', logFile.path], { stdio: 'pipe' });
-    
+
     tail.stdout.on('data', (data) => {
-      const lines = data.toString().split('\n').filter(line => line.trim());
+      const lines = data
+        .toString()
+        .split('\n')
+        .filter((line) => line.trim());
       for (const line of lines) {
         let output = line;
-        
+
         // Apply filters
         if (options.level && !matchesLogLevel(line, options.level)) {
           continue;
         }
-        
+
         if (options.grep && !line.includes(options.grep)) {
           continue;
         }
@@ -371,7 +376,7 @@ async function followMultipleLogs(logFiles, options) {
 
   // Handle cleanup
   process.on('SIGINT', () => {
-    processes.forEach(proc => proc.kill());
+    processes.forEach((proc) => proc.kill());
     process.exit(0);
   });
 
@@ -426,11 +431,11 @@ async function searchLogs(pattern, options) {
   for (const logFile of logFiles) {
     try {
       const grepArgs = [];
-      
+
       if (options.ignoreCase) {
         grepArgs.push('-i');
       }
-      
+
       if (options.context) {
         grepArgs.push('-C', options.context);
       } else {
@@ -441,22 +446,24 @@ async function searchLogs(pattern, options) {
           grepArgs.push('-A', options.afterContext);
         }
       }
-      
+
       grepArgs.push('-n', pattern, logFile.path);
 
       const { stdout } = await runCommand('grep', grepArgs, { silent: true });
-      
+
       if (stdout.trim()) {
-        console.log(chalk.yellow(`\n=== ${logFile.service.toUpperCase()} (${logFile.relativePath}) ===`));
-        
-        const matches = stdout.split('\n').filter(line => line.trim());
+        console.log(
+          chalk.yellow(`\n=== ${logFile.service.toUpperCase()} (${logFile.relativePath}) ===`),
+        );
+
+        const matches = stdout.split('\n').filter((line) => line.trim());
         totalMatches += matches.length;
-        
+
         for (const match of matches) {
           // Highlight the pattern in the output
           const highlighted = match.replace(
             new RegExp(pattern, options.ignoreCase ? 'gi' : 'g'),
-            chalk.black.bgYellow(pattern)
+            chalk.black.bgYellow(pattern),
           );
           console.log(highlighted);
         }
@@ -515,7 +522,11 @@ async function cleanLogs(options) {
   if (options.dryRun) {
     console.log(chalk.cyan('\n🔍 Dry run - files that would be deleted:\n'));
     for (const file of toDelete) {
-      console.log(chalk.gray(`   ${file.relativePath} (${formatDate(file.modified)}, ${formatFileSize(file.size)})`));
+      console.log(
+        chalk.gray(
+          `   ${file.relativePath} (${formatDate(file.modified)}, ${formatFileSize(file.size)})`,
+        ),
+      );
     }
     return;
   }
@@ -523,7 +534,11 @@ async function cleanLogs(options) {
   if (!options.force) {
     console.log(chalk.yellow('\n⚠️  Log files to be deleted:\n'));
     for (const file of toDelete) {
-      console.log(chalk.gray(`   ${file.relativePath} (${formatDate(file.modified)}, ${formatFileSize(file.size)})`));
+      console.log(
+        chalk.gray(
+          `   ${file.relativePath} (${formatDate(file.modified)}, ${formatFileSize(file.size)})`,
+        ),
+      );
     }
 
     const { confirm } = await inquirer.prompt([
@@ -531,8 +546,8 @@ async function cleanLogs(options) {
         type: 'confirm',
         name: 'confirm',
         message: `Delete ${toDelete.length} log file(s)?`,
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     if (!confirm) {
@@ -546,7 +561,7 @@ async function cleanLogs(options) {
 
   try {
     let deletedSize = 0;
-    
+
     for (const file of toDelete) {
       deletedSize += file.size;
       await runCommand('rm', [file.path], { silent: true });
@@ -554,7 +569,6 @@ async function cleanLogs(options) {
 
     spinner.succeed(`Cleaned ${toDelete.length} log file(s)`);
     console.log(chalk.green(`   Space freed: ${formatFileSize(deletedSize)}`));
-
   } catch (error) {
     spinner.fail('Cleanup failed');
     throw error;
@@ -575,7 +589,7 @@ async function archiveLogs(options) {
   const archiveDir = path.join(projectRoot, options.output);
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
-  const toArchive = logFiles.filter(file => file.modified < cutoffDate);
+  const toArchive = logFiles.filter((file) => file.modified < cutoffDate);
 
   if (toArchive.length === 0) {
     logger.info('No log files need to be archived');
@@ -594,10 +608,10 @@ async function archiveLogs(options) {
     for (const file of toArchive) {
       const archiveName = `${file.service}-${timestamp}.log`;
       const archivePath = path.join(archiveDir, archiveName);
-      
+
       await runCommand('cp', [file.path, archivePath]);
       archivedSize += file.size;
-      
+
       // Remove original
       await runCommand('rm', [file.path]);
     }
@@ -606,10 +620,10 @@ async function archiveLogs(options) {
       // Compress the entire archive directory
       const archiveTarPath = path.join(projectRoot, `logs-archive-${timestamp}.tar.gz`);
       await runCommand('tar', ['-czf', archiveTarPath, '-C', archiveDir, '.']);
-      
+
       // Remove uncompressed files
       await runCommand('rm', ['-rf', archiveDir]);
-      
+
       spinner.succeed(`Archived and compressed ${toArchive.length} log file(s)`);
       console.log(chalk.green(`   Archive: ${archiveTarPath}`));
     } else {
@@ -618,7 +632,6 @@ async function archiveLogs(options) {
     }
 
     console.log(chalk.gray(`   Size: ${formatFileSize(archivedSize)}`));
-
   } catch (error) {
     spinner.fail('Archive failed');
     throw error;
@@ -645,16 +658,16 @@ async function showLogStats(options) {
       services: {},
       levels: { error: 0, warn: 0, info: 0, debug: 0 },
       oldestLog: null,
-      newestLog: null
+      newestLog: null,
     };
 
     for (const file of logFiles) {
       stats.totalSize += file.size;
-      
+
       if (!stats.oldestLog || file.modified < stats.oldestLog) {
         stats.oldestLog = file.modified;
       }
-      
+
       if (!stats.newestLog || file.modified > stats.newestLog) {
         stats.newestLog = file.modified;
       }
@@ -670,7 +683,7 @@ async function showLogStats(options) {
       try {
         const { stdout } = await runCommand('head', ['-n', '100', file.path], { silent: true });
         const lines = stdout.split('\n');
-        
+
         for (const line of lines) {
           if (line.includes('ERROR') || line.includes('error')) stats.levels.error++;
           else if (line.includes('WARN') || line.includes('warn')) stats.levels.warn++;
@@ -689,7 +702,6 @@ async function showLogStats(options) {
     } else {
       displayLogStats(stats);
     }
-
   } catch (error) {
     spinner.fail('Analysis failed');
     throw error;
@@ -714,33 +726,33 @@ async function exportLogs(options) {
 
     for (const file of logFiles) {
       const content = readFileSync(file.path, 'utf8');
-      
+
       switch (options.format) {
         case 'json':
           // Convert each line to JSON object
-          const lines = content.split('\n').filter(line => line.trim());
+          const lines = content.split('\n').filter((line) => line.trim());
           for (const line of lines) {
             const logEntry = {
               timestamp: new Date().toISOString(),
               service: file.service,
-              message: line
+              message: line,
             };
             exportData += JSON.stringify(logEntry) + '\n';
           }
           break;
-          
+
         case 'csv':
           // CSV format
           if (!exportData) {
             exportData = 'timestamp,service,level,message\n';
           }
-          const csvLines = content.split('\n').filter(line => line.trim());
+          const csvLines = content.split('\n').filter((line) => line.trim());
           for (const line of csvLines) {
             const level = extractLogLevel(line);
             exportData += `"${new Date().toISOString()}","${file.service}","${level}","${line.replace(/"/g, '""')}"\n`;
           }
           break;
-          
+
         case 'txt':
         default:
           // Plain text with service headers
@@ -757,7 +769,6 @@ async function exportLogs(options) {
       spinner.succeed('Logs exported');
       console.log(exportData);
     }
-
   } catch (error) {
     spinner.fail('Export failed');
     throw error;
@@ -767,16 +778,12 @@ async function exportLogs(options) {
 // Helper functions
 function filterByLogLevel(output, level) {
   const lines = output.split('\n');
-  return lines.filter(line => 
-    line.toLowerCase().includes(level.toLowerCase())
-  ).join('\n');
+  return lines.filter((line) => line.toLowerCase().includes(level.toLowerCase())).join('\n');
 }
 
 function filterByPattern(output, pattern) {
   const lines = output.split('\n');
-  return lines.filter(line => 
-    line.includes(pattern)
-  ).join('\n');
+  return lines.filter((line) => line.includes(pattern)).join('\n');
 }
 
 function filterBySince(output, since) {
@@ -788,7 +795,7 @@ function filterBySince(output, since) {
 function formatJsonLogs(output) {
   const lines = output.split('\n');
   let formatted = '';
-  
+
   for (const line of lines) {
     try {
       const parsed = JSON.parse(line);
@@ -797,7 +804,7 @@ function formatJsonLogs(output) {
       formatted += line + '\n';
     }
   }
-  
+
   return formatted;
 }
 
@@ -810,7 +817,7 @@ function getServiceColor(service) {
     api: chalk.blue,
     admin: chalk.green,
     comms: chalk.yellow,
-    system: chalk.gray
+    system: chalk.gray,
   };
   return colors[service] || chalk.white;
 }
@@ -827,7 +834,7 @@ function extractLogLevel(line) {
 function displayLogFilesTable(logFiles, showSize = false) {
   const headers = ['Service', 'File', 'Modified'];
   const colWidths = [10, 30, 20];
-  
+
   if (showSize) {
     headers.push('Size');
     colWidths.push(12);
@@ -835,20 +842,16 @@ function displayLogFilesTable(logFiles, showSize = false) {
 
   const table = new Table({
     head: headers,
-    colWidths: colWidths
+    colWidths: colWidths,
   });
 
   for (const file of logFiles) {
-    const row = [
-      file.service,
-      file.relativePath,
-      formatDate(file.modified)
-    ];
-    
+    const row = [file.service, file.relativePath, formatDate(file.modified)];
+
     if (showSize) {
       row.push(formatFileSize(file.size));
     }
-    
+
     table.push(row);
   }
 
@@ -862,17 +865,29 @@ function displayLogStats(stats) {
 
   // Overview
   const overviewTable = new Table({
-    chars: { 'top': '' , 'top-mid': '' , 'top-left': '' , 'top-right': ''
-            , 'bottom': '' , 'bottom-mid': '' , 'bottom-left': '' , 'bottom-right': ''
-            , 'left': '' , 'left-mid': '' , 'mid': '' , 'mid-mid': ''
-            , 'right': '' , 'right-mid': '' }
+    chars: {
+      top: '',
+      'top-mid': '',
+      'top-left': '',
+      'top-right': '',
+      bottom: '',
+      'bottom-mid': '',
+      'bottom-left': '',
+      'bottom-right': '',
+      left: '',
+      'left-mid': '',
+      mid: '',
+      'mid-mid': '',
+      right: '',
+      'right-mid': '',
+    },
   });
 
   overviewTable.push(
     ['Total Files:', stats.files.toString()],
     ['Total Size:', formatFileSize(stats.totalSize)],
     ['Oldest Log:', stats.oldestLog ? formatDate(stats.oldestLog) : 'N/A'],
-    ['Newest Log:', stats.newestLog ? formatDate(stats.newestLog) : 'N/A']
+    ['Newest Log:', stats.newestLog ? formatDate(stats.newestLog) : 'N/A'],
   );
 
   console.log(overviewTable.toString());
@@ -880,17 +895,17 @@ function displayLogStats(stats) {
   // Services breakdown
   if (Object.keys(stats.services).length > 1) {
     console.log(chalk.cyan('\n📦 By Service\n'));
-    
+
     const serviceTable = new Table({
       head: ['Service', 'Files', 'Size'],
-      colWidths: [15, 10, 15]
+      colWidths: [15, 10, 15],
     });
 
     for (const [service, serviceStats] of Object.entries(stats.services)) {
       serviceTable.push([
         service,
         serviceStats.files.toString(),
-        formatFileSize(serviceStats.size)
+        formatFileSize(serviceStats.size),
       ]);
     }
 
@@ -901,20 +916,16 @@ function displayLogStats(stats) {
   const totalLevelEntries = Object.values(stats.levels).reduce((a, b) => a + b, 0);
   if (totalLevelEntries > 0) {
     console.log(chalk.cyan('\n📈 Log Levels (sample)\n'));
-    
+
     const levelTable = new Table({
       head: ['Level', 'Count', 'Percentage'],
-      colWidths: [10, 10, 15]
+      colWidths: [10, 10, 15],
     });
 
     for (const [level, count] of Object.entries(stats.levels)) {
       if (count > 0) {
         const percentage = ((count / totalLevelEntries) * 100).toFixed(1);
-        levelTable.push([
-          level.toUpperCase(),
-          count.toString(),
-          `${percentage}%`
-        ]);
+        levelTable.push([level.toUpperCase(), count.toString(), `${percentage}%`]);
       }
     }
 

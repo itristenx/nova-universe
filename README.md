@@ -14,8 +14,9 @@
 Nova Universe is an enterprise help desk platform designed for teams who want powerful features without complexity. Submit tickets, track progress, and resolve issues faster.
 
 **Key Features:**
+
 - 🎯 **Simple Setup** - Running in minutes, not hours
-- 📱 **iPad Kiosk** - Self-service ticket submission 
+- 📱 **iPad Kiosk** - Self-service ticket submission
 - 🔍 **Smart Search** - AI-powered ticket discovery
 - 📊 **Real-time Monitoring** - Built-in uptime tracking
 - 🚨 **Smart Alerts** - Intelligent incident management
@@ -37,6 +38,7 @@ cd nova-universe
 That's it. Open http://localhost:3001 and start using Nova Universe.
 
 **Default login:**
+
 - Email: `admin@example.com`
 - Password: `admin`
 
@@ -45,12 +47,14 @@ That's it. Open http://localhost:3001 and start using Nova Universe.
 ## What's Included
 
 **Core Platform:**
+
 - **Nova Core** - Admin interface and dashboard
-- **Nova API** - REST API and GraphQL backend  
+- **Nova API** - REST API and GraphQL backend
 - **Nova Beacon** - iPad kiosk for ticket submission
 - **Nova Comms** - Slack integration and webhooks
 
 **Monitoring & Alerting:**
+
 - **Nova Sentinel** - Uptime monitoring (Uptime Kuma)
 - **GoAlert** - Incident response and escalation
 - **AI Fabric** - Machine learning and automation
@@ -87,13 +91,14 @@ That's it. Open http://localhost:3001 and start using Nova Universe.
 ## Management
 
 **CLI Commands:**
+
 ```bash
 # Service management
 cd apps/api && node cli.js start    # Start all services
-cd apps/api && node cli.js stop     # Stop all services  
+cd apps/api && node cli.js stop     # Stop all services
 cd apps/api && node cli.js health   # Check system health
 
-# User management  
+# User management
 cd apps/api && node cli.js passwd newpassword123  # Change admin password
 cd apps/api && node cli.js users    # List admin users
 
@@ -103,6 +108,7 @@ cd apps/api && node cli.js status   # Show service URLs
 ```
 
 **Testing:**
+
 ```bash
 # Create test environment
 ./setup-test-env.sh                 # Default test environment
@@ -116,6 +122,7 @@ cd apps/api && node cli.js status   # Show service URLs
 ```
 
 **Deployment:**
+
 ```bash
 # Production deployment
 ./scripts/deploy-production.sh
@@ -139,6 +146,7 @@ cd apps/api && node cli.js status   # Show service URLs
 - **PostgreSQL** 15+ (or use Docker)
 
 **Optional for full features:**
+
 - **Redis** (caching)
 - **Elasticsearch** (advanced search)
 - **S3** (file storage)
@@ -154,8 +162,9 @@ Nova Universe configures itself during setup. For advanced configuration:
 3. **Environment Files** - Manual configuration in `.env` files
 
 **Key integrations:**
+
 - Slack/Teams notifications
-- SAML/OIDC authentication  
+- SAML/OIDC authentication
 - Monitoring and alerting
 - AI-powered features
 
@@ -164,6 +173,7 @@ Nova Universe configures itself during setup. For advanced configuration:
 ## Production Deployment
 
 **Quick production setup:**
+
 ```bash
 # Generate production configuration
 bash scripts/generate-production-secrets.sh
@@ -173,8 +183,9 @@ bash scripts/deploy-production.sh
 ```
 
 **What you get:**
+
 - SSL/TLS encryption
-- Production database  
+- Production database
 - Monitoring dashboard
 - Automated backups
 - Health checks
@@ -212,6 +223,7 @@ Open http://localhost:5173 to access the admin interface.
 ---
 
 ## Documentation
+
 - [📖 Full Documentation](docs/README.md)
 - [🚀 Quick Start Guide](docs/quickstart.md)
 - [🔒 Security & Production](docs/security.md)
@@ -220,6 +232,7 @@ Open http://localhost:5173 to access the admin interface.
 ---
 
 ## Community & Contributing
+
 - [Contributing Guidelines](.github/CONTRIBUTING.md)
 - [Code of Conduct](.github/CODE_OF_CONDUCT.md)
 - [Security Policy](.github/SECURITY.md)
@@ -238,6 +251,7 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 ## Credits & Acknowledgments
+
 - [Contributor Covenant](https://www.contributor-covenant.org/) for the Code of Conduct
 - [Choose an Open Source License](https://choosealicense.com/)
 - [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) for README inspiration
@@ -252,11 +266,11 @@ For questions, suggestions, or support, please use [GitHub Discussions](https://
 ---
 
 ## Requirements
+
 - [Node.js](https://nodejs.org/) 18 or higher
 - npm
 - [Mailpit](https://github.com/axllent/mailpit) (SMTP testing server)
 - PostgreSQL 15 or higher
-
 
 ## Setup
 
@@ -267,6 +281,7 @@ You can also follow the manual instructions below.
 See [Local vs Production Setup](docs/environments.md) for details on configuring the environment variables used by each service.
 
 ### Platform API
+
 1. Navigate to `nova-api`.
 2. Dependencies should already be installed from the repository root with `pnpm install`.
 3. Edit the `.env` file with your SMTP configuration and `HELPDESK_EMAIL`.
@@ -291,12 +306,14 @@ query {
 ```
 
 ### Core Admin UI
+
 1. Navigate to `nova-core`.
 2. Dependencies should already be installed from the repository root with `pnpm install`.
 3. Edit the `.env` file and set `VITE_API_URL`. You can also set `VITE_LOGO_URL`.
 4. Start the development server with `npm run dev` and open `http://localhost:5173`.
 
 The admin interface includes comprehensive kiosk management functionality, including:
+
 - Kiosk activation via QR codes or manual entry
 - System configuration management for ticket categories
 - Server management and restart capabilities
@@ -307,6 +324,7 @@ The backend stores ticket logs in a local PostgreSQL database.
 Configuration values are stored in the same database and can be edited from the admin UI.
 
 ### Comms (Slack Service)
+
 1. Create a Slack app following [Slack's app setup guide](https://api.slack.com/apps) and add a `/new-ticket` slash command (see [Slash commands documentation](https://api.slack.com/interactivity/slash-commands)). Set its request URL to this service.
 2. Navigate to `nova-comms` (dependencies were installed from the repository root with `pnpm install`).
 3. Edit the `.env` file and set:
@@ -382,6 +400,7 @@ Nova Universe includes automated test suites for the backend API and the admin U
 ### nova-api
 
 Run from the repository root:
+
 1. `pnpm --filter nova-universe-api test`
 
 The API tests are written with Mocha and exercise the main Express endpoints.
@@ -389,6 +408,7 @@ The API tests are written with Mocha and exercise the main Express endpoints.
 ### nova-core
 
 Run from the repository root:
+
 1. `pnpm --filter nova-core-admin test`
 
 This suite uses Jest and React Testing Library to validate the UI.
@@ -473,7 +493,7 @@ Each app relies on a few environment variables:
 - `HELPSCOUT_SMTP_FALLBACK` – set to `true` to also send email via SMTP.
 - `SESSION_SECRET`, `SAML_ENTRY_POINT`, `SAML_ISSUER`, `SAML_CERT`,
   `SAML_CALLBACK_URL`, `ADMIN_URL` – required for SAML login.
- - Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`, `ORGANIZATION_NAME`.
+- Optional: `API_PORT` (default `3000`), `LOGO_URL`, `FAVICON_URL`, `ORGANIZATION_NAME`.
 - Optional: set `TLS_CERT_PATH` and `TLS_KEY_PATH` to enable HTTPS.
 - `ADMIN_PASSWORD` – seeds the initial admin password for kiosk login and the
   password management endpoints.
@@ -507,21 +527,25 @@ Each app relies on a few environment variables:
 Nova Universe applications automatically load appropriate logos based on the current theme:
 
 ### Logo Assets Location
+
 - **Core Admin UI**: `apps/core/nova-core/public/`
 - **Pulse Dashboard**: `apps/pulse/public/`
 
 ### Required Logo Files
+
 - `logo.png` – Logo for light theme
 - `logo-dark.png` – Logo for dark theme (automatically used when dark mode is enabled)
 
 ### Logo Loading Behavior
+
 - Applications automatically detect the current theme setting
 - Light theme displays `logo.png`
-- Dark theme displays `logo-dark.png` 
+- Dark theme displays `logo-dark.png`
 - Fallback: If `logo-dark.png` is missing, `logo.png` is used for all themes
 - Error fallback: If both logos fail to load, a default icon is displayed
 
 ### Customizing Logos
+
 1. Replace the logo files in each app's `public/` directory
 2. Keep the same filenames: `logo.png` and `logo-dark.png`
 3. Recommended dimensions: 200x60px for optimal display

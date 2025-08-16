@@ -1,6 +1,6 @@
 import React from 'react';
 interface PasskeyManagementProps {
-    showTitle?: boolean;
+  showTitle?: boolean;
 }
 export declare const PasskeyManagement: React.FC<PasskeyManagementProps>;
 export {};

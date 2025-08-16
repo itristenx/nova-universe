@@ -2,7 +2,11 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { Footer } from '@/components/layout/navigation';
-import { DateTimeDisplay, NumberDisplay, CulturalPreferences } from '@/components/internationalization/cultural-formatting';
+import {
+  DateTimeDisplay,
+  NumberDisplay,
+  CulturalPreferences,
+} from '@/components/internationalization/cultural-formatting';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Globe, Clock, Users } from 'lucide-react';
@@ -13,34 +17,34 @@ interface HomePageProps {
 
 export default async function HomePage({ params }: HomePageProps) {
   const { locale } = await params;
-  
+
   // Enable static rendering
   setRequestLocale(locale);
 
   const t = await getTranslations('HomePage');
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-16">
+        <section className="from-primary/10 to-secondary/10 bg-gradient-to-br py-16">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-6xl font-bold mb-6">{t('title')}</h1>
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <div className="mx-auto max-w-4xl text-center">
+              <h1 className="mb-6 text-4xl font-bold md:text-6xl">{t('title')}</h1>
+              <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-lg md:text-xl">
                 {t('description')}
               </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link 
-                  href="/dashboard" 
-                  className="px-8 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+
+              <div className="flex flex-col justify-center gap-4 sm:flex-row">
+                <Link
+                  href="/dashboard"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-8 py-3 font-medium transition-colors"
                 >
                   {t('getStarted')}
                 </Link>
-                <Link 
-                  href="/accessibility-audit" 
-                  className="px-8 py-3 border border-border rounded-lg hover:bg-accent transition-colors font-medium"
+                <Link
+                  href="/accessibility-audit"
+                  className="border-border hover:bg-accent rounded-lg border px-8 py-3 font-medium transition-colors"
                 >
                   {t('learnMore')}
                 </Link>
@@ -52,23 +56,19 @@ export default async function HomePage({ params }: HomePageProps) {
         {/* Features Section */}
         <section className="py-16">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">{t('features')}</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                {t('featuresDescription')}
-              </p>
+            <div className="mb-12 text-center">
+              <h2 className="mb-4 text-3xl font-bold">{t('features')}</h2>
+              <p className="text-muted-foreground mx-auto max-w-2xl">{t('featuresDescription')}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-primary" />
+                    <Globe className="text-primary h-5 w-5" />
                     {t('internationalFeature')}
                   </CardTitle>
-                  <CardDescription>
-                    {t('internationalFeatureDesc')}
-                  </CardDescription>
+                  <CardDescription>{t('internationalFeatureDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -83,17 +83,19 @@ export default async function HomePage({ params }: HomePageProps) {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-primary" />
+                    <Clock className="text-primary h-5 w-5" />
                     {t('timeFeature')}
                   </CardTitle>
-                  <CardDescription>
-                    {t('timeFeatureDesc')}
-                  </CardDescription>
+                  <CardDescription>{t('timeFeatureDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 text-sm">
-                    <div>Current time: <DateTimeDisplay date={new Date()} format="time" /></div>
-                    <div>Today: <DateTimeDisplay date={new Date()} format="date" /></div>
+                    <div>
+                      Current time: <DateTimeDisplay date={new Date()} format="time" />
+                    </div>
+                    <div>
+                      Today: <DateTimeDisplay date={new Date()} format="date" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -101,12 +103,10 @@ export default async function HomePage({ params }: HomePageProps) {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-primary" />
+                    <Users className="text-primary h-5 w-5" />
                     {t('accessibilityFeature')}
                   </CardTitle>
-                  <CardDescription>
-                    {t('accessibilityFeatureDesc')}
-                  </CardDescription>
+                  <CardDescription>{t('accessibilityFeatureDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -121,18 +121,18 @@ export default async function HomePage({ params }: HomePageProps) {
         </section>
 
         {/* Cultural Preferences Demo */}
-        <section className="py-16 bg-muted/50">
+        <section className="bg-muted/50 py-16">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">{t('culturalAdaptation')}</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
+            <div className="mb-12 text-center">
+              <h2 className="mb-4 text-3xl font-bold">{t('culturalAdaptation')}</h2>
+              <p className="text-muted-foreground mx-auto max-w-2xl">
                 {t('culturalAdaptationDesc')}
               </p>
             </div>
 
-            <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="mx-auto grid max-w-4xl grid-cols-1 gap-8 lg:grid-cols-2">
               <div>
-                <h3 className="text-xl font-semibold mb-4">{t('formatExamples')}</h3>
+                <h3 className="mb-4 text-xl font-semibold">{t('formatExamples')}</h3>
                 <div className="space-y-4">
                   <Card>
                     <CardContent className="pt-6">

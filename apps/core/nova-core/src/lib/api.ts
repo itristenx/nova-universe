@@ -58,7 +58,7 @@ class ApiClient {
     this.client.interceptors.request.use((config) => {
       // Update base URL in case it changed
       config.baseURL = this.getServerUrl();
-      
+
       const token = localStorage.getItem('auth_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -76,9 +76,9 @@ class ApiClient {
           method: error.config?.method,
           status: error.response?.status,
           message: error.message,
-          code: error.code
+          code: error.code,
         });
-        
+
         if (error.response?.status === 401) {
           localStorage.removeItem('auth_token');
           // Only redirect if we're not already on the login page
@@ -86,9 +86,9 @@ class ApiClient {
             window.location.href = '/login';
           }
         }
-        
+
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -102,11 +102,11 @@ class ApiClient {
   // Mock method helper
   private async mockRequest<T>(mockData: T, errorRate: number = 0.05): Promise<T> {
     await delay(200 + Math.random() * 500); // Simulate network delay
-    
+
     if (shouldSimulateError(errorRate)) {
       throw new Error('Simulated API error');
     }
-    
+
     return mockData;
   }
 
@@ -152,7 +152,7 @@ class ApiClient {
 
   async updateUser(id: number, user: Partial<User>): Promise<User> {
     if (this.useMockMode) {
-      const existingUser = mockUsers.find(u => u.id === id) || mockUsers[0];
+      const existingUser = mockUsers.find((u) => u.id === id) || mockUsers[0];
       const updatedUser = { ...existingUser, ...user };
       return this.mockRequest(updatedUser);
     }
@@ -170,7 +170,10 @@ class ApiClient {
     return response.data;
   }
 
-  async updateVipStatus(id: number, data: { isVip: boolean; vipLevel?: string }): Promise<ApiResponse> {
+  async updateVipStatus(
+    id: number,
+    data: { isVip: boolean; vipLevel?: string },
+  ): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'VIP updated' });
     }
@@ -183,7 +186,11 @@ class ApiClient {
     return response.data.proxies;
   }
 
-  async createVipProxy(data: { vipId: string; proxyId: string; expiresAt?: string }): Promise<ApiResponse> {
+  async createVipProxy(data: {
+    vipId: string;
+    proxyId: string;
+    expiresAt?: string;
+  }): Promise<ApiResponse> {
     const response = await this.client.post<ApiResponse>('/api/v1/vip/proxies', data);
     return response.data;
   }
@@ -257,7 +264,7 @@ class ApiClient {
 
   async updateKiosk(id: string, kiosk: Partial<Kiosk>): Promise<Kiosk> {
     if (this.useMockMode) {
-      const existingKiosk = mockKiosks.find(k => k.id === id) || mockKiosks[0];
+      const existingKiosk = mockKiosks.find((k) => k.id === id) || mockKiosks[0];
       const updatedKiosk = { ...existingKiosk, ...kiosk };
       return this.mockRequest(updatedKiosk);
     }
@@ -307,7 +314,7 @@ class ApiClient {
           qrCode: 'data:image/png;base64,mock_qr_code',
           expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
           used: false,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         });
       }
       throw error;
@@ -318,7 +325,15 @@ class ApiClient {
   async getKioskSystems(): Promise<{ systems: string[] }> {
     if (this.useMockMode) {
       return this.mockRequest({
-        systems: ['Desktop', 'Laptop', 'Mobile', 'Network', 'Printer', 'Software', 'Account Access']
+        systems: [
+          'Desktop',
+          'Laptop',
+          'Mobile',
+          'Network',
+          'Printer',
+          'Software',
+          'Account Access',
+        ],
       });
     }
 
@@ -370,7 +385,7 @@ class ApiClient {
         status: 'running',
         uptime: 12345,
         version: '1.0.0',
-        nodeVersion: 'v18.0.0'
+        nodeVersion: 'v18.0.0',
       });
     }
 
@@ -400,10 +415,14 @@ class ApiClient {
   async exportLogs(): Promise<Blob> {
     if (this.useMockMode) {
       // Create a mock CSV blob
-      const csvContent = 'ID,Ticket ID,Name,Email,Title,System,Urgency,Timestamp\n' +
-        mockLogs.map(log => 
-          `${log.id},${log.ticketId},${log.name},${log.email},${log.title},${log.system},${log.urgency},${log.timestamp}`
-        ).join('\n');
+      const csvContent =
+        'ID,Ticket ID,Name,Email,Title,System,Urgency,Timestamp\n' +
+        mockLogs
+          .map(
+            (log) =>
+              `${log.id},${log.ticketId},${log.name},${log.email},${log.title},${log.system},${log.urgency},${log.timestamp}`,
+          )
+          .join('\n');
       return new Blob([csvContent], { type: 'text/csv' });
     }
 
@@ -447,7 +466,7 @@ class ApiClient {
         welcomeMessage: 'Welcome',
         helpMessage: 'Need help?',
         primaryColor: '#1D4ED8',
-        secondaryColor: '#9333EA'
+        secondaryColor: '#9333EA',
       });
     }
 
@@ -465,12 +484,14 @@ class ApiClient {
     return response.data;
   }
 
-  async createNotification(notification: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification> {
+  async createNotification(
+    notification: Omit<Notification, 'id' | 'createdAt'>,
+  ): Promise<Notification> {
     if (this.useMockMode) {
       const newNotification: Notification = {
         ...notification,
         id: Date.now(),
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
       return this.mockRequest(newNotification);
     }
@@ -479,7 +500,7 @@ class ApiClient {
     const payload = {
       message: notification.message,
       type: notification.type,
-      level: notification.level || 'info'
+      level: notification.level || 'info',
     };
 
     const response = await this.client.post<Notification>('/api/notifications', payload);
@@ -498,19 +519,24 @@ class ApiClient {
   // Directory
   async searchDirectory(query: string): Promise<DirectoryUser[]> {
     if (this.useMockMode) {
-      const mockDirectoryUsers: DirectoryUser[] = mockUsers.map(user => ({
-        id: user.id.toString(),
-        name: user.name,
-        email: user.email,
-        department: 'Engineering'
-      })).filter(user => 
-        user.name.toLowerCase().includes(query.toLowerCase()) || 
-        user.email.toLowerCase().includes(query.toLowerCase())
-      );
+      const mockDirectoryUsers: DirectoryUser[] = mockUsers
+        .map((user) => ({
+          id: user.id.toString(),
+          name: user.name,
+          email: user.email,
+          department: 'Engineering',
+        }))
+        .filter(
+          (user) =>
+            user.name.toLowerCase().includes(query.toLowerCase()) ||
+            user.email.toLowerCase().includes(query.toLowerCase()),
+        );
       return this.mockRequest(mockDirectoryUsers);
     }
 
-    const response = await this.client.get<DirectoryUser[]>(`/api/directory/search?q=${encodeURIComponent(query)}`);
+    const response = await this.client.get<DirectoryUser[]>(
+      `/api/directory/search?q=${encodeURIComponent(query)}`,
+    );
     return response.data;
   }
 
@@ -536,7 +562,7 @@ class ApiClient {
 
   async updateIntegration(id: number, integration: Partial<Integration>): Promise<Integration> {
     if (this.useMockMode) {
-      const existingIntegration = mockIntegrations.find(i => i.id === id) || mockIntegrations[0];
+      const existingIntegration = mockIntegrations.find((i) => i.id === id) || mockIntegrations[0];
       const updatedIntegration = { ...existingIntegration, ...integration };
       return this.mockRequest(updatedIntegration);
     }
@@ -556,10 +582,10 @@ class ApiClient {
 
   async testIntegration(id: number): Promise<ApiResponse> {
     if (this.useMockMode) {
-      const integration = mockIntegrations.find(i => i.id === id);
+      const integration = mockIntegrations.find((i) => i.id === id);
       const success = integration?.working !== false;
       return this.mockRequest({
-        message: success ? 'Integration test successful' : 'Integration test failed'
+        message: success ? 'Integration test successful' : 'Integration test failed',
       });
     }
 
@@ -652,15 +678,15 @@ class ApiClient {
           name: 'Company Logo',
           type: 'logo',
           url: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=Nova+Universe',
-          uploadedAt: new Date().toISOString()
+          uploadedAt: new Date().toISOString(),
         },
         {
           id: 2,
           name: 'Favicon',
           type: 'favicon',
           url: 'https://via.placeholder.com/32x32/3B82F6/FFFFFF?text=C',
-          uploadedAt: new Date().toISOString()
-        }
+          uploadedAt: new Date().toISOString(),
+        },
       ];
       return this.mockRequest(mockAssets);
     }
@@ -676,7 +702,7 @@ class ApiClient {
         name: file.name,
         type,
         url: `${apiUrl}/assets/${file.name}`,
-        uploadedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
       };
       return this.mockRequest(mockAsset);
     }
@@ -686,7 +712,7 @@ class ApiClient {
     formData.append('type', type);
 
     const response = await this.client.post<Asset>('/api/assets', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   }
@@ -731,7 +757,7 @@ class ApiClient {
         maxLoginAttempts: '5',
         lockoutDuration: '15',
         twoFactorRequired: false,
-        auditLogging: true
+        auditLogging: true,
       });
     }
 
@@ -759,7 +785,7 @@ class ApiClient {
         systemErrorNotify: true,
         dailyReports: false,
         weeklyReports: false,
-        notificationRetention: '30'
+        notificationRetention: '30',
       });
     }
 
@@ -798,8 +824,8 @@ class ApiClient {
             qrCode: 'data:image/png;base64,mock_qr_code',
             expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
             used: false,
-            createdAt: new Date().toISOString()
-          }
+            createdAt: new Date().toISOString(),
+          },
         ]);
       }
       // Return empty array if API fails but we're not in mock mode
@@ -810,21 +836,21 @@ class ApiClient {
   async getKioskConfig(id: string): Promise<KioskConfig> {
     if (this.useMockMode) {
       return this.mockRequest({
-        kiosk: { 
-          id, 
-          active: true, 
+        kiosk: {
+          id,
+          active: true,
           lastSeen: new Date().toISOString(),
           version: '1.0.0',
           configScope: 'global',
           hasOverrides: false,
           overrideCount: 0,
           effectiveConfig: {
-            statusEnabled: true, 
+            statusEnabled: true,
             currentStatus: 'open' as const,
-            openMsg: 'Open', 
-            closedMsg: 'Closed', 
-            errorMsg: 'Error'
-          }
+            openMsg: 'Open',
+            closedMsg: 'Closed',
+            errorMsg: 'Error',
+          },
         },
         config: {
           logoUrl: '/logo.png',
@@ -834,8 +860,16 @@ class ApiClient {
           statusOpenMsg: 'Open',
           statusClosedMsg: 'Closed',
           statusErrorMsg: 'Error',
-          systems: ['Desktop', 'Laptop', 'Mobile', 'Network', 'Printer', 'Software', 'Account Access']
-        }
+          systems: [
+            'Desktop',
+            'Laptop',
+            'Mobile',
+            'Network',
+            'Printer',
+            'Software',
+            'Account Access',
+          ],
+        },
       });
     }
 
@@ -877,7 +911,9 @@ class ApiClient {
       return this.mockRequest({ valid: true });
     }
 
-    const response = await this.client.post<{ valid: boolean }>('/api/verify-password', { password });
+    const response = await this.client.post<{ valid: boolean }>('/api/verify-password', {
+      password,
+    });
     return response.data;
   }
 
@@ -888,7 +924,7 @@ class ApiClient {
 
     const response = await this.client.put<ApiResponse>('/api/admin-password', {
       currentPassword,
-      newPassword
+      newPassword,
     });
     return response.data;
   }
@@ -914,9 +950,9 @@ class ApiClient {
             thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
             friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
             saturday: { enabled: false, slots: [] },
-            sunday: { enabled: false, slots: [] }
+            sunday: { enabled: false, slots: [] },
           },
-          timezone: 'America/New_York'
+          timezone: 'America/New_York',
         },
         officeHours: {
           enabled: false,
@@ -928,11 +964,11 @@ class ApiClient {
             thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
             friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
             saturday: { enabled: false, slots: [] },
-            sunday: { enabled: false, slots: [] }
+            sunday: { enabled: false, slots: [] },
           },
           timezone: 'America/New_York',
-          showNextOpen: true
-        }
+          showNextOpen: true,
+        },
       });
     }
 
@@ -958,7 +994,7 @@ class ApiClient {
         url: '',
         baseDN: '',
         bindDN: '',
-        bindPassword: ''
+        bindPassword: '',
       });
     }
 
@@ -986,8 +1022,8 @@ class ApiClient {
           entryPoint: '',
           issuer: '',
           callbackUrl: '',
-          cert: ''
-        }
+          cert: '',
+        },
       });
     }
 
@@ -1000,7 +1036,9 @@ class ApiClient {
       return this.mockRequest({ available: false });
     }
 
-    const response = await this.client.get<{ available: boolean; loginUrl?: string }>('/api/sso-available');
+    const response = await this.client.get<{ available: boolean; loginUrl?: string }>(
+      '/api/sso-available',
+    );
     return response.data;
   }
 
@@ -1010,7 +1048,7 @@ class ApiClient {
       return this.mockRequest({
         enabled: false,
         token: '',
-        endpoint: '/scim/v2'
+        endpoint: '/scim/v2',
       });
     }
 
@@ -1036,8 +1074,8 @@ class ApiClient {
           name: 'Touch ID',
           created_at: '2025-01-01T00:00:00Z',
           last_used: '2025-01-07T00:00:00Z',
-          credential_device_type: 'platform'
-        }
+          credential_device_type: 'platform',
+        },
       ]);
     }
 
@@ -1061,7 +1099,7 @@ class ApiClient {
         rp: { name: 'Nova Universe Portal', id: window.location.hostname },
         user: { id: 'mock-user-id', name: 'mock@example.com', displayName: 'Mock User' },
         pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-        timeout: 60000
+        timeout: 60000,
       });
     }
 
@@ -1085,7 +1123,7 @@ class ApiClient {
         timeout: 60000,
         rpId: window.location.hostname,
         allowCredentials: [],
-        challengeKey: 'mock-challenge-key'
+        challengeKey: 'mock-challenge-key',
       });
     }
 
@@ -1093,21 +1131,29 @@ class ApiClient {
     return response.data;
   }
 
-  async completePasskeyAuthentication(data: any): Promise<{ verified: boolean; token?: string; user?: any }> {
+  async completePasskeyAuthentication(
+    data: any,
+  ): Promise<{ verified: boolean; token?: string; user?: any }> {
     if (this.useMockMode) {
       return this.mockRequest({
         verified: true,
         token: 'mock-jwt-token',
-        user: { id: 1, name: 'Mock User', email: 'mock@example.com' }
+        user: { id: 1, name: 'Mock User', email: 'mock@example.com' },
       });
     }
 
-    const response = await this.client.post<{ verified: boolean; token?: string; user?: any }>('/api/passkey/authenticate/complete', data);
+    const response = await this.client.post<{ verified: boolean; token?: string; user?: any }>(
+      '/api/passkey/authenticate/complete',
+      data,
+    );
     return response.data;
   }
 
   // Admin Pin Management
-  async updateAdminPins(pinConfig: { globalPin?: string; kioskPins?: Record<string, string> }): Promise<ApiResponse> {
+  async updateAdminPins(pinConfig: {
+    globalPin?: string;
+    kioskPins?: Record<string, string>;
+  }): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'Admin pins updated successfully' });
     }
@@ -1116,15 +1162,21 @@ class ApiClient {
     return response.data;
   }
 
-  async validateAdminPin(pin: string, kioskId?: string): Promise<{ valid: boolean; permissions: string[] }> {
+  async validateAdminPin(
+    pin: string,
+    kioskId?: string,
+  ): Promise<{ valid: boolean; permissions: string[] }> {
     if (this.useMockMode) {
-      return this.mockRequest({ 
-        valid: true, 
-        permissions: ['admin', 'override_status', 'manage_settings'] 
+      return this.mockRequest({
+        valid: true,
+        permissions: ['admin', 'override_status', 'manage_settings'],
       });
     }
 
-    const response = await this.client.post<{ valid: boolean; permissions: string[] }>('/api/admin-pins/validate', { pin, kioskId });
+    const response = await this.client.post<{ valid: boolean; permissions: string[] }>(
+      '/api/admin-pins/validate',
+      { pin, kioskId },
+    );
     return response.data;
   }
 
@@ -1147,16 +1199,16 @@ class ApiClient {
           enabled: true,
           currentStatus: 'open',
           openMessage: 'Help Desk is Open',
-          closedMessage: 'Help Desk is Closed'
+          closedMessage: 'Help Desk is Closed',
         },
         brandingConfig: {
           logoUrl: '/logo.png',
-          welcomeMessage: 'Welcome to IT Help Desk'
+          welcomeMessage: 'Welcome to IT Help Desk',
         },
         scheduleConfig: {
           enabled: false,
-          timezone: 'America/New_York'
-        }
+          timezone: 'America/New_York',
+        },
       });
     }
 
@@ -1164,12 +1216,19 @@ class ApiClient {
     return response.data;
   }
 
-  async setKioskOverride(kioskId: string, configType: string, configData: any): Promise<ApiResponse> {
+  async setKioskOverride(
+    kioskId: string,
+    configType: string,
+    configData: any,
+  ): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'Kiosk override set successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/overrides/${configType}`, configData);
+    const response = await this.client.put<ApiResponse>(
+      `/api/kiosks/${kioskId}/overrides/${configType}`,
+      configData,
+    );
     return response.data;
   }
 
@@ -1178,7 +1237,9 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk override removed successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/kiosks/${kioskId}/overrides/${configType}`);
+    const response = await this.client.delete<ApiResponse>(
+      `/api/kiosks/${kioskId}/overrides/${configType}`,
+    );
     return response.data;
   }
 
@@ -1190,16 +1251,16 @@ class ApiClient {
           enabled: true,
           currentStatus: 'open',
           openMessage: 'Help Desk is Open',
-          closedMessage: 'Help Desk is Closed'
+          closedMessage: 'Help Desk is Closed',
         },
         branding: {
           logoUrl: '/logo.png',
-          welcomeMessage: 'Welcome to IT Help Desk'
+          welcomeMessage: 'Welcome to IT Help Desk',
         },
         schedule: {
           enabled: false,
-          timezone: 'America/New_York'
-        }
+          timezone: 'America/New_York',
+        },
       });
     }
 
@@ -1213,7 +1274,7 @@ class ApiClient {
         totalKiosks: 5,
         globalOverrides: 0,
         kioskOverrides: 2,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       });
     }
 
@@ -1235,7 +1296,9 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk configuration scope updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/config-scope`, { scope });
+    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/config-scope`, {
+      scope,
+    });
     return response.data;
   }
 
@@ -1250,10 +1313,14 @@ class ApiClient {
 
   async applyGlobalConfigToAll(configType: string): Promise<ApiResponse> {
     if (this.useMockMode) {
-      return this.mockRequest({ message: `Global ${configType} configuration applied to all kiosks successfully` });
+      return this.mockRequest({
+        message: `Global ${configType} configuration applied to all kiosks successfully`,
+      });
     }
 
-    const response = await this.client.post<ApiResponse>('/api/configuration/apply-global-to-all', { configType });
+    const response = await this.client.post<ApiResponse>('/api/configuration/apply-global-to-all', {
+      configType,
+    });
     return response.data;
   }
 
@@ -1280,8 +1347,8 @@ class ApiClient {
           thursday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
           friday: { enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
           saturday: { enabled: false, slots: [] },
-          sunday: { enabled: false, slots: [] }
-        }
+          sunday: { enabled: false, slots: [] },
+        },
       });
     }
 
@@ -1305,22 +1372,31 @@ class ApiClient {
       return this.mockRequest([]);
     }
 
-    const response = await this.client.get<{ articles: KnowledgeArticle[] }>('/api/v1/lore/articles', { params });
+    const response = await this.client.get<{ articles: KnowledgeArticle[] }>(
+      '/api/v1/lore/articles',
+      { params },
+    );
     return response.data.articles;
   }
 
   async getKnowledgeArticle(slug: string): Promise<KnowledgeArticle> {
-    const response = await this.client.get<{ article: KnowledgeArticle }>(`/api/v1/lore/articles/${slug}`);
+    const response = await this.client.get<{ article: KnowledgeArticle }>(
+      `/api/v1/lore/articles/${slug}`,
+    );
     return response.data.article;
   }
 
   async getKnowledgeVersions(articleId: number): Promise<KnowledgeArticleVersion[]> {
-    const response = await this.client.get<{ versions: KnowledgeArticleVersion[] }>(`/api/v1/lore/articles/${articleId}/versions`);
+    const response = await this.client.get<{ versions: KnowledgeArticleVersion[] }>(
+      `/api/v1/lore/articles/${articleId}/versions`,
+    );
     return response.data.versions;
   }
 
   async getKnowledgeComments(articleId: number): Promise<any[]> {
-    const response = await this.client.get<{ comments: any[] }>(`/api/v1/lore/articles/${articleId}/comments`);
+    const response = await this.client.get<{ comments: any[] }>(
+      `/api/v1/lore/articles/${articleId}/comments`,
+    );
     return response.data.comments;
   }
 
@@ -1335,17 +1411,33 @@ class ApiClient {
       return this.mockRequest(mockComment);
     }
 
-    const response = await this.client.post<{ comment: any }>(`/api/v1/lore/articles/${articleId}/comments`, data);
+    const response = await this.client.post<{ comment: any }>(
+      `/api/v1/lore/articles/${articleId}/comments`,
+      data,
+    );
     return response.data.comment;
   }
 
-  async createKnowledgeArticle(data: { title: string; content: string; tags?: string[] }): Promise<KnowledgeArticle> {
-    const response = await this.client.post<{ article: KnowledgeArticle }>('/api/v1/lore/articles', data);
+  async createKnowledgeArticle(data: {
+    title: string;
+    content: string;
+    tags?: string[];
+  }): Promise<KnowledgeArticle> {
+    const response = await this.client.post<{ article: KnowledgeArticle }>(
+      '/api/v1/lore/articles',
+      data,
+    );
     return response.data.article;
   }
 
-  async createKnowledgeVersion(articleId: number, data: { content: string }): Promise<KnowledgeArticleVersion> {
-    const response = await this.client.post<{ version: KnowledgeArticleVersion }>(`/api/v1/lore/articles/${articleId}/versions`, data);
+  async createKnowledgeVersion(
+    articleId: number,
+    data: { content: string },
+  ): Promise<KnowledgeArticleVersion> {
+    const response = await this.client.post<{ version: KnowledgeArticleVersion }>(
+      `/api/v1/lore/articles/${articleId}/versions`,
+      data,
+    );
     return response.data.version;
   }
 
@@ -1356,7 +1448,9 @@ class ApiClient {
   }
 
   async createApiKey(description?: string): Promise<{ apiKey: ApiKey }> {
-    const response = await this.client.post<{ apiKey: ApiKey }>('/api/v1/api-keys', { description });
+    const response = await this.client.post<{ apiKey: ApiKey }>('/api/v1/api-keys', {
+      description,
+    });
     return response.data;
   }
 
@@ -1368,11 +1462,16 @@ class ApiClient {
 
 export const api = new ApiClient();
 
-export async function generateActivationCode(input: { kioskId: string; kioskName?: string; location?: string; configuration?: any }) {
+export async function generateActivationCode(input: {
+  kioskId: string;
+  kioskName?: string;
+  location?: string;
+  configuration?: any;
+}) {
   const res = await fetch('/api/v2/beacon/activation-codes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input)
+    body: JSON.stringify(input),
   });
   if (!res.ok) throw new Error('Failed to generate activation code');
   return res.json();

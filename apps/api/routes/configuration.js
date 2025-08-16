@@ -24,7 +24,7 @@ const router = express.Router();
  *           type: string
  *         updatedAt:
  *           type: string
- *     
+ *
  *     ConfigurationResponse:
  *       type: object
  *       properties:
@@ -57,7 +57,8 @@ const router = express.Router();
  *       403:
  *         description: Admin access required
  */
-router.get('/',
+router.get(
+  '/',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 30), // 30 requests per 15 minutes
   async (req, res) => {
@@ -67,7 +68,7 @@ router.get('/',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
 
@@ -76,18 +77,17 @@ router.get('/',
       res.json({
         success: true,
         configuration,
-        message: 'Configuration retrieved successfully'
+        message: 'Configuration retrieved successfully',
       });
-
     } catch (error) {
       logger.error('Error getting configuration:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to get configuration',
-        errorCode: 'CONFIG_GET_ERROR'
+        errorCode: 'CONFIG_GET_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -114,12 +114,13 @@ router.get('/',
  *       401:
  *         description: Unauthorized
  */
-router.get('/public',
+router.get(
+  '/public',
   createRateLimit(15 * 60 * 1000, 100, 15 * 60 * 1000), // 100 requests per 15 minutes (no auth required)
   async (req, res) => {
     try {
       const fullConfig = await ConfigurationManager.getFullConfig();
-      
+
       // Return only non-sensitive configuration
       const publicConfig = {
         organization: fullConfig.organization,
@@ -127,31 +128,30 @@ router.get('/public',
           defaultPageSize: fullConfig.application?.defaultPageSize,
           enableRegistration: fullConfig.application?.enableRegistration,
           enableGuestAccess: fullConfig.application?.enableGuestAccess,
-          maintenanceMode: fullConfig.application?.maintenanceMode
+          maintenanceMode: fullConfig.application?.maintenanceMode,
         },
         search: {
           enableSemanticSearch: fullConfig.search?.enableSemanticSearch,
           enableHybridSearch: fullConfig.search?.enableHybridSearch,
-          enableSearchSuggestions: fullConfig.search?.enableSearchSuggestions
+          enableSearchSuggestions: fullConfig.search?.enableSearchSuggestions,
         },
         features: fullConfig.features,
-        statusMessages: fullConfig.statusMessages
+        statusMessages: fullConfig.statusMessages,
       };
 
       res.json({
         success: true,
-        configuration: publicConfig
+        configuration: publicConfig,
       });
-
     } catch (error) {
       logger.error('Error getting public configuration:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to get public configuration',
-        errorCode: 'PUBLIC_CONFIG_ERROR'
+        errorCode: 'PUBLIC_CONFIG_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -191,7 +191,8 @@ router.get('/public',
  *       404:
  *         description: Configuration key not found
  */
-router.get('/:key',
+router.get(
+  '/:key',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 50, 15 * 60 * 1000),
   async (req, res) => {
@@ -201,7 +202,7 @@ router.get('/:key',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
 
@@ -212,25 +213,24 @@ router.get('/:key',
         return res.status(404).json({
           success: false,
           error: 'Configuration key not found',
-          errorCode: 'CONFIG_KEY_NOT_FOUND'
+          errorCode: 'CONFIG_KEY_NOT_FOUND',
         });
       }
 
       res.json({
         success: true,
         key,
-        value
+        value,
       });
-
     } catch (error) {
       logger.error('Error getting configuration value:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to get configuration value',
-        errorCode: 'CONFIG_VALUE_ERROR'
+        errorCode: 'CONFIG_VALUE_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -279,12 +279,11 @@ router.get('/:key',
  *       403:
  *         description: Admin access required
  */
-router.put('/:key',
+router.put(
+  '/:key',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20, 15 * 60 * 1000),
-  [
-    body('value').exists().withMessage('Value is required')
-  ],
+  [body('value').exists().withMessage('Value is required')],
   async (req, res) => {
     try {
       // Check if user has admin role
@@ -292,7 +291,7 @@ router.put('/:key',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
 
@@ -302,7 +301,7 @@ router.put('/:key',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -316,7 +315,7 @@ router.put('/:key',
         return res.status(400).json({
           success: false,
           error: 'Invalid configuration value or validation failed',
-          errorCode: 'CONFIG_VALIDATION_ERROR'
+          errorCode: 'CONFIG_VALIDATION_ERROR',
         });
       }
 
@@ -326,18 +325,17 @@ router.put('/:key',
         success: true,
         message: 'Configuration updated successfully',
         key,
-        value
+        value,
       });
-
     } catch (error) {
       logger.error('Error updating configuration:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to update configuration',
-        errorCode: 'CONFIG_UPDATE_ERROR'
+        errorCode: 'CONFIG_UPDATE_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -380,12 +378,11 @@ router.put('/:key',
  *       403:
  *         description: Admin access required
  */
-router.put('/bulk',
+router.put(
+  '/bulk',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 10, 15 * 60 * 1000),
-  [
-    body('updates').isObject().withMessage('Updates must be an object')
-  ],
+  [body('updates').isObject().withMessage('Updates must be an object')],
   async (req, res) => {
     try {
       // Check if user has admin role
@@ -393,7 +390,7 @@ router.put('/bulk',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
 
@@ -403,7 +400,7 @@ router.put('/bulk',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -426,29 +423,28 @@ router.put('/bulk',
         }
       }
 
-      logger.info('Bulk configuration update', { 
-        userId, 
+      logger.info('Bulk configuration update', {
+        userId,
         userEmail: req.user.email,
         updatesCount: Object.keys(updates).length,
-        errorsCount: updateErrors.length
+        errorsCount: updateErrors.length,
       });
 
       res.json({
         success: updateErrors.length === 0,
         results,
         errors: updateErrors,
-        message: `Updated ${Object.keys(results).length} configuration items${updateErrors.length > 0 ? ` with ${updateErrors.length} errors` : ''}`
+        message: `Updated ${Object.keys(results).length} configuration items${updateErrors.length > 0 ? ` with ${updateErrors.length} errors` : ''}`,
       });
-
     } catch (error) {
       logger.error('Error in bulk configuration update:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to perform bulk update',
-        errorCode: 'BULK_UPDATE_ERROR'
+        errorCode: 'BULK_UPDATE_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -477,7 +473,8 @@ router.put('/bulk',
  *       403:
  *         description: Admin access required
  */
-router.get('/export',
+router.get(
+  '/export',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 5, 15 * 60 * 1000),
   async (req, res) => {
@@ -487,31 +484,30 @@ router.get('/export',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
 
       const exportData = await ConfigurationManager.exportConfiguration();
 
-      logger.info('Configuration exported', { 
-        userId: req.user.id, 
-        userEmail: req.user.email 
+      logger.info('Configuration exported', {
+        userId: req.user.id,
+        userEmail: req.user.email,
       });
 
       res.json({
         success: true,
-        export: exportData
+        export: exportData,
       });
-
     } catch (error) {
       logger.error('Error exporting configuration:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to export configuration',
-        errorCode: 'CONFIG_EXPORT_ERROR'
+        errorCode: 'CONFIG_EXPORT_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -554,12 +550,11 @@ router.get('/export',
  *       403:
  *         description: Admin access required
  */
-router.post('/import',
+router.post(
+  '/import',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 3, 15 * 60 * 1000),
-  [
-    body('configData').isObject().withMessage('Config data must be an object')
-  ],
+  [body('configData').isObject().withMessage('Config data must be an object')],
   async (req, res) => {
     try {
       // Check if user has admin role
@@ -567,7 +562,7 @@ router.post('/import',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
 
@@ -577,7 +572,7 @@ router.post('/import',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -590,34 +585,34 @@ router.post('/import',
         return res.status(400).json({
           success: false,
           error: 'Failed to import configuration - invalid data format or validation errors',
-          errorCode: 'CONFIG_IMPORT_ERROR'
+          errorCode: 'CONFIG_IMPORT_ERROR',
         });
       }
 
-      logger.info('Configuration imported', { 
-        userId, 
+      logger.info('Configuration imported', {
+        userId,
         userEmail: req.user.email,
-        timestamp: configData.timestamp
+        timestamp: configData.timestamp,
       });
 
       res.json({
         success: true,
-        message: 'Configuration imported successfully'
+        message: 'Configuration imported successfully',
       });
-
     } catch (error) {
       logger.error('Error importing configuration:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to import configuration',
-        errorCode: 'CONFIG_IMPORT_ERROR'
+        errorCode: 'CONFIG_IMPORT_ERROR',
       });
     }
-  }
+  },
 );
 
 // Alias: /api/v1/config for test compatibility
-router.get('/api/v1/config',
+router.get(
+  '/api/v1/config',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 30),
   async (req, res) => {
@@ -626,24 +621,24 @@ router.get('/api/v1/config',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
       const configuration = await ConfigurationManager.getFullConfig();
       res.json({
         success: true,
         configuration,
-        message: 'Configuration retrieved successfully'
+        message: 'Configuration retrieved successfully',
       });
     } catch (error) {
       logger.error('Error getting configuration:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to get configuration',
-        errorCode: 'CONFIG_GET_ERROR'
+        errorCode: 'CONFIG_GET_ERROR',
       });
     }
-  }
+  },
 );
 
 export default router;

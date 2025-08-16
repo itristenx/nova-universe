@@ -13,7 +13,12 @@ Nova Synth is now configured as a `DATA_INTELLIGENCE` connector rather than an `
 ```javascript
 export class NovaSynthConnector extends IConnector {
   constructor() {
-    super('nova-synth-connector', 'Nova Synth Data Intelligence Engine', '1.0.0', ConnectorType.DATA_INTELLIGENCE);
+    super(
+      'nova-synth-connector',
+      'Nova Synth Data Intelligence Engine',
+      '1.0.0',
+      ConnectorType.DATA_INTELLIGENCE,
+    );
   }
 }
 ```
@@ -30,10 +35,7 @@ Nova Synth is integrated into the User 360 profile aggregation process:
 
 ```javascript
 // In getUserProfile method:
-const normalizedData = await this.normalizeUserAttributesWithSynth(
-  connectorData, 
-  connector.type
-);
+const normalizedData = await this.normalizeUserAttributesWithSynth(connectorData, connector.type);
 
 const validationResult = await this.validateProfileWithSynth(profile);
 profile.devices = await this.deduplicateProfileDataWithSynth(profile.devices);
@@ -61,11 +63,13 @@ Automatic data transformation during connector data ingestion:
 
 ```javascript
 // In mergeConnectorData method:
-this.transformDataWithSynth(data, connectorId).then(transformedData => {
-  data = transformedData;
-}).catch(error => {
-  // Graceful fallback to original data
-});
+this.transformDataWithSynth(data, connectorId)
+  .then((transformedData) => {
+    data = transformedData;
+  })
+  .catch((error) => {
+    // Graceful fallback to original data
+  });
 ```
 
 ## Nova Synth Capabilities
@@ -99,18 +103,18 @@ const rules = {
   'okta-connector': [
     { field: 'firstName', target: 'profile.givenName' },
     { field: 'lastName', target: 'profile.familyName' },
-    { field: 'email', target: 'profile.email', normalize: true }
+    { field: 'email', target: 'profile.email', normalize: true },
   ],
   'jamf-connector': [
     { field: 'deviceName', target: 'device.hostname' },
     { field: 'serialNumber', target: 'device.serialNumber' },
-    { field: 'osVersion', target: 'device.osVersion', format: 'version' }
+    { field: 'osVersion', target: 'device.osVersion', format: 'version' },
   ],
   'crowdstrike-connector': [
     { field: 'hostname', target: 'device.hostname' },
     { field: 'agentVersion', target: 'security.agentVersion' },
-    { field: 'lastSeen', target: 'device.lastActivity', format: 'date' }
-  ]
+    { field: 'lastSeen', target: 'device.lastActivity', format: 'date' },
+  ],
 };
 ```
 
@@ -118,20 +122,20 @@ const rules = {
 
 ```javascript
 const rules = {
-  'IDENTITY_PROVIDER': {
+  IDENTITY_PROVIDER: {
     name: { case: 'title', trim: true },
     email: { case: 'lower', validate: 'email' },
-    department: { case: 'title', normalize: 'department_codes' }
+    department: { case: 'title', normalize: 'department_codes' },
   },
-  'DEVICE_MANAGEMENT': {
+  DEVICE_MANAGEMENT: {
     hostname: { case: 'lower', trim: true },
     osVersion: { format: 'semantic_version' },
-    serialNumber: { case: 'upper', trim: true }
+    serialNumber: { case: 'upper', trim: true },
   },
-  'SECURITY_PLATFORM': {
+  SECURITY_PLATFORM: {
     riskScore: { range: [0, 100], normalize: 'score' },
-    severity: { map: 'severity_levels' }
-  }
+    severity: { map: 'severity_levels' },
+  },
 };
 ```
 
@@ -144,7 +148,7 @@ Base URL: http://localhost:3000/api/v2/data-intelligence
 
 - GET  /health              - Health check
 - POST /matching/profiles   - Match user profiles
-- POST /transformation/apply - Apply data transformations  
+- POST /transformation/apply - Apply data transformations
 - POST /correlation/analyze - Analyze entity correlations
 - POST /profiles/merge      - Merge profiles intelligently
 - POST /deduplication/analyze - Deduplicate data
@@ -180,7 +184,9 @@ try {
 const matchResult = await nil.matchUserProfilesWithSynth(sourceProfile, candidateProfiles);
 if (matchResult && matchResult.matches.length > 0) {
   console.log(`Found ${matchResult.matches.length} potential matches`);
-  console.log(`Best match: ${matchResult.bestMatch.targetId} (confidence: ${matchResult.bestMatch.confidence})`);
+  console.log(
+    `Best match: ${matchResult.bestMatch.targetId} (confidence: ${matchResult.bestMatch.confidence})`,
+  );
 }
 ```
 
@@ -190,7 +196,7 @@ if (matchResult && matchResult.matches.length > 0) {
 const mergeResult = await nil.mergeUserProfiles(primaryUserId, secondaryUserId, {
   strategy: 'intelligent', // Uses Nova Synth
   mergedBy: 'admin@example.com',
-  reason: 'Duplicate account detected'
+  reason: 'Duplicate account detected',
 });
 ```
 
@@ -228,17 +234,17 @@ await nil.registerConnector({
   name: 'Nova Synth Data Intelligence Engine',
   type: 'DATA_INTELLIGENCE',
   credentials: {
-    apiToken: process.env.NOVA_SYNTH_API_TOKEN
+    apiToken: process.env.NOVA_SYNTH_API_TOKEN,
   },
   endpoints: {
-    synthUrl: process.env.NOVA_SYNTH_API_URL || 'http://localhost:3000/api/v2/data-intelligence'
+    synthUrl: process.env.NOVA_SYNTH_API_URL || 'http://localhost:3000/api/v2/data-intelligence',
   },
   config: {
     timeout: 30000,
     enableTransformation: true,
     enableMatching: true,
-    enableDeduplication: true
-  }
+    enableDeduplication: true,
+  },
 });
 ```
 
@@ -260,6 +266,7 @@ node test-nova-synth-integration.js
 ```
 
 This test verifies:
+
 - ✅ DATA_INTELLIGENCE connector type registration
 - ✅ All integration methods are available
 - ✅ Transformation and normalization rules are configured

@@ -10,7 +10,6 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 
-
   // Image optimization
   images: {
     formats: ['image/webp', 'image/avif'],
@@ -39,7 +38,7 @@ const nextConfig = {
             analyzerMode: 'static',
             openAnalyzer: false,
             reportFilename: isServer ? '../analyze/server.html' : './analyze/client.html',
-          })
+          }),
         );
       }
 

@@ -12,21 +12,22 @@ Express and PostgreSQL API for the open source [Nova Universe](../README.md) hel
 ---
 
 ## Setup
+
 1. Run `npm install` in this folder.
 2. Create a `.env` file with your SMTP details and set `HELPDESK_EMAIL`.
    To use HelpScout instead, provide `HELPSCOUT_API_KEY` and
    `HELPSCOUT_MAILBOX_ID` (optionally `HELPSCOUT_SMTP_FALLBACK=true` to also
    send email). Optional variables are `API_PORT`, `LOGO_URL` and
    `KIOSK_TOKEN` used by Nova Beacon devices.
-  For SAML login also provide `SESSION_SECRET`, `SAML_ENTRY_POINT`,
-  `SAML_ISSUER`, `SAML_CERT`, `SAML_CALLBACK_URL` and optional
-  `ADMIN_URL` used for the post-login redirect. The server will
-  refuse to start if `SESSION_SECRET` is not set when authentication
-  is enabled. Set `ADMIN_PASSWORD` to seed the initial admin password
-  used for kiosk login and the `/api/admin-password` management
-  endpoints. You may also set `ADMIN_EMAIL` and `ADMIN_NAME` to
-  customise the seeded admin user. By default the credentials are
-  `admin@example.com` / `admin` with the name `Admin`.
+   For SAML login also provide `SESSION_SECRET`, `SAML_ENTRY_POINT`,
+   `SAML_ISSUER`, `SAML_CERT`, `SAML_CALLBACK_URL` and optional
+   `ADMIN_URL` used for the post-login redirect. The server will
+   refuse to start if `SESSION_SECRET` is not set when authentication
+   is enabled. Set `ADMIN_PASSWORD` to seed the initial admin password
+   used for kiosk login and the `/api/admin-password` management
+   endpoints. You may also set `ADMIN_EMAIL` and `ADMIN_NAME` to
+   customise the seeded admin user. By default the credentials are
+   `admin@example.com` / `admin` with the name `Admin`.
 3. Start the server with `node index.js`.
 
 Nova Beacon devices register with `/api/register-kiosk` and can be activated through the Nova Core admin UI.
@@ -151,6 +152,7 @@ All password hashing operations in the codebase consistently use 12 salt rounds,
 ---
 
 ## Community & Contributing
+
 - [Contributing Guidelines](../.github/CONTRIBUTING.md)
 - [Code of Conduct](../.github/CODE_OF_CONDUCT.md)
 - [Security Policy](../.github/SECURITY.md)
@@ -166,5 +168,6 @@ This project is licensed under the [MIT License](../LICENSE).
 ---
 
 ## Credits & Acknowledgments
+
 - [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) for README inspiration
 - All contributors and open source dependencies

@@ -5,7 +5,7 @@ Deploy Nova Universe to production with monitoring, alerting, and AI capabilitie
 ## Pre-Deployment Checklist
 
 - [ ] Server with Docker and Docker Compose
-- [ ] Domain name configured  
+- [ ] Domain name configured
 - [ ] SSL certificates ready
 - [ ] Environment variables configured
 - [ ] Database backup strategy
@@ -14,6 +14,7 @@ Deploy Nova Universe to production with monitoring, alerting, and AI capabilitie
 ## Quick Production Deployment
 
 **One-command deployment:**
+
 ```bash
 git clone https://github.com/itristenx/nova-universe.git
 cd nova-universe
@@ -21,6 +22,7 @@ bash scripts/deploy-production.sh
 ```
 
 This automatically:
+
 - Builds production images
 - Creates SSL certificates
 - Starts all services with monitoring
@@ -32,12 +34,14 @@ This automatically:
 ### 1. Server Requirements
 
 **Minimum specs:**
+
 - 2 CPU cores
-- 4GB RAM  
+- 4GB RAM
 - 50GB storage
 - Ubuntu 20.04+ or equivalent
 
 **Recommended:**
+
 - 4 CPU cores
 - 8GB RAM
 - 100GB SSD storage
@@ -60,16 +64,18 @@ cd nova-universe
 ### 3. Configure Environment
 
 **Generate production secrets:**
+
 ```bash
 bash scripts/generate-production-secrets.sh
 ```
 
 **Edit environment files:**
+
 ```bash
 # API configuration
 nano apps/api/.env
 
-# Monitoring configuration  
+# Monitoring configuration
 nano .env.monitoring
 
 # AI configuration (optional)
@@ -77,6 +83,7 @@ nano .env.ai-fabric
 ```
 
 **Key settings to update:**
+
 - Database credentials
 - JWT secrets
 - Domain names
@@ -86,6 +93,7 @@ nano .env.ai-fabric
 ### 4. SSL Certificates
 
 **Option A: Let's Encrypt (Recommended)**
+
 ```bash
 # Install certbot
 sudo apt-get install certbot
@@ -99,6 +107,7 @@ sudo cp /etc/letsencrypt/live/yourdomain.com/privkey.pem nginx/ssl/key.pem
 ```
 
 **Option B: Self-signed (Development)**
+
 ```bash
 # Generate self-signed certificates
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -146,12 +155,14 @@ After deployment, access these URLs:
 ## Post-Deployment Configuration
 
 ### 1. Complete Setup Wizard
+
 - Visit https://yourdomain.com/setup
 - Configure integrations
 - Set up monitoring targets
 - Configure alerting policies
 
 ### 2. Security Hardening
+
 ```bash
 # Change default admin password
 cd apps/api && node cli.js passwd your-secure-password
@@ -165,6 +176,7 @@ sudo ufw enable
 ```
 
 ### 3. Backup Configuration
+
 ```bash
 # Create backup directory
 mkdir -p /backups/nova-universe
@@ -174,14 +186,16 @@ mkdir -p /backups/nova-universe
 ```
 
 ### 4. Monitoring Setup
+
 - Configure Nova Sentinel monitoring targets
-- Set up GoAlert escalation policies  
+- Set up GoAlert escalation policies
 - Test notification channels
 - Create status pages
 
 ## Scaling and High Availability
 
 ### Database High Availability
+
 ```yaml
 # docker-compose.prod.yml example
 postgres:
@@ -197,6 +211,7 @@ postgres:
 ```
 
 ### Load Balancing
+
 ```nginx
 # nginx/sites-available/nova-universe
 upstream nova_api {
@@ -211,6 +226,7 @@ upstream nova_core {
 ```
 
 ### Redis Clustering
+
 ```yaml
 redis:
   image: redis:7-alpine
@@ -222,18 +238,21 @@ redis:
 ## Monitoring and Alerting
 
 ### Nova Sentinel Configuration
+
 - **Uptime Monitoring**: Add all critical services
 - **Performance Metrics**: CPU, memory, disk usage
 - **Status Pages**: Public status for users
 - **Notifications**: Email, Slack, webhooks
 
 ### GoAlert Setup
+
 - **Escalation Policies**: Define who gets notified when
 - **On-call Schedules**: Rotation schedules
 - **Notification Methods**: SMS, voice, email
 - **Integration**: Connect with Nova Sentinel
 
 ### AI Fabric Monitoring
+
 - **Model Performance**: Track AI response quality
 - **Usage Analytics**: Monitor AI feature adoption
 - **Cost Tracking**: Track OpenAI API usage
@@ -242,6 +261,7 @@ redis:
 ## Backup and Recovery
 
 ### Automated Backups
+
 ```bash
 #!/bin/bash
 # backup.sh
@@ -261,6 +281,7 @@ cp .env.monitoring "$BACKUP_DIR/"
 ```
 
 ### Disaster Recovery
+
 ```bash
 # Stop services
 docker-compose -f docker-compose.prod.yml down
@@ -280,6 +301,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ## Troubleshooting
 
 ### Service Won't Start
+
 ```bash
 # Check logs
 docker-compose -f docker-compose.prod.yml logs [service-name]
@@ -292,6 +314,7 @@ docker-compose -f docker-compose.prod.yml restart [service-name]
 ```
 
 ### Database Issues
+
 ```bash
 # Check PostgreSQL logs
 docker-compose logs postgres
@@ -304,6 +327,7 @@ docker-compose down -v
 ```
 
 ### SSL Certificate Issues
+
 ```bash
 # Test certificate
 openssl x509 -in nginx/ssl/cert.pem -text -noout
@@ -316,6 +340,7 @@ docker-compose restart nginx
 ```
 
 ### Performance Issues
+
 ```bash
 # Monitor resources
 docker stats
@@ -331,6 +356,7 @@ docker-compose logs nova-api
 ## Maintenance
 
 ### Updates
+
 ```bash
 # Pull latest version
 git pull origin main
@@ -340,6 +366,7 @@ bash scripts/deploy-production.sh
 ```
 
 ### Health Monitoring
+
 ```bash
 # Daily health check
 cd apps/api && node cli.js health
@@ -349,6 +376,7 @@ cd apps/api && node cli.js status
 ```
 
 ### Log Rotation
+
 ```bash
 # Configure logrotate
 sudo nano /etc/logrotate.d/docker

@@ -44,7 +44,7 @@ describe('Universal Login System Integration Tests', () => {
     // Setup Express app for testing
     app = express();
     app.use(express.json());
-    
+
     // Import and mount the router
     const { default: router } = await import('../apps/api/routes/helix-universal-login.js');
     helixUniversalLoginRouter = router;
@@ -60,36 +60,40 @@ describe('Universal Login System Integration Tests', () => {
       // Mock database responses
       mockDb.query
         .mockResolvedValueOnce({
-          rows: [{
-            id: testTenantId,
-            name: 'Test Organization',
-            domain: 'example.com',
-            theme_color: '#1f2937',
-            sso_enabled: true,
-            mfa_required: false,
-          }]
+          rows: [
+            {
+              id: testTenantId,
+              name: 'Test Organization',
+              domain: 'example.com',
+              theme_color: '#1f2937',
+              sso_enabled: true,
+              mfa_required: false,
+            },
+          ],
         })
         .mockResolvedValueOnce({
-          rows: [{
-            id: testUserId,
-            email: testEmail,
-            password_hash: await bcrypt.hash('password123', 10),
-          }]
+          rows: [
+            {
+              id: testUserId,
+              email: testEmail,
+              password_hash: await bcrypt.hash('password123', 10),
+            },
+          ],
         })
         .mockResolvedValueOnce({
-          rows: [{
-            provider: 'saml',
-            provider_name: 'Corporate SSO',
-            enabled: true,
-          }]
+          rows: [
+            {
+              provider: 'saml',
+              provider_name: 'Corporate SSO',
+              enabled: true,
+            },
+          ],
         });
 
-      const response = await request(app)
-        .post('/api/v1/helix/login/tenant/discover')
-        .send({
-          email: testEmail,
-          redirectUrl: 'http://localhost:3000/',
-        });
+      const response = await request(app).post('/api/v1/helix/login/tenant/discover').send({
+        email: testEmail,
+        redirectUrl: 'http://localhost:3000/',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('tenant');
@@ -103,12 +107,10 @@ describe('Universal Login System Integration Tests', () => {
     it('should handle unknown domain gracefully', async () => {
       mockDb.query.mockResolvedValueOnce({ rows: [] });
 
-      const response = await request(app)
-        .post('/api/v1/helix/login/tenant/discover')
-        .send({
-          email: 'user@unknown-domain.com',
-          redirectUrl: 'http://localhost:3000/',
-        });
+      const response = await request(app).post('/api/v1/helix/login/tenant/discover').send({
+        email: 'user@unknown-domain.com',
+        redirectUrl: 'http://localhost:3000/',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.tenant.name).toBe('Default Organization');
@@ -116,12 +118,10 @@ describe('Universal Login System Integration Tests', () => {
     });
 
     it('should validate email format', async () => {
-      const response = await request(app)
-        .post('/api/v1/helix/login/tenant/discover')
-        .send({
-          email: 'invalid-email',
-          redirectUrl: 'http://localhost:3000/',
-        });
+      const response = await request(app).post('/api/v1/helix/login/tenant/discover').send({
+        email: 'invalid-email',
+        redirectUrl: 'http://localhost:3000/',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
@@ -133,43 +133,47 @@ describe('Universal Login System Integration Tests', () => {
 
     it('should authenticate user with valid password', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      
+
       // Mock discovery token validation
       mockDb.query
         .mockResolvedValueOnce({
-          rows: [{
-            tenant_id: testTenantId,
-            user_id: testUserId,
-            email: testEmail,
-          }]
+          rows: [
+            {
+              tenant_id: testTenantId,
+              user_id: testUserId,
+              email: testEmail,
+            },
+          ],
         })
         // Mock user lookup
         .mockResolvedValueOnce({
-          rows: [{
-            id: testUserId,
-            email: testEmail,
-            password_hash: hashedPassword,
-            disabled: false,
-            two_factor_enabled: false,
-          }]
+          rows: [
+            {
+              id: testUserId,
+              email: testEmail,
+              password_hash: hashedPassword,
+              disabled: false,
+              two_factor_enabled: false,
+            },
+          ],
         })
         // Mock session creation
         .mockResolvedValueOnce({
-          rows: [{
-            id: uuidv4(),
-            session_token: 'test-session-token',
-          }]
+          rows: [
+            {
+              id: uuidv4(),
+              session_token: 'test-session-token',
+            },
+          ],
         });
 
-      const response = await request(app)
-        .post('/api/v1/helix/login/authenticate')
-        .send({
-          discoveryToken,
-          email: testEmail,
-          authMethod: 'password',
-          password: 'password123',
-          redirectUrl: 'http://localhost:3000/',
-        });
+      const response = await request(app).post('/api/v1/helix/login/authenticate').send({
+        discoveryToken,
+        email: testEmail,
+        authMethod: 'password',
+        password: 'password123',
+        redirectUrl: 'http://localhost:3000/',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
@@ -179,41 +183,45 @@ describe('Universal Login System Integration Tests', () => {
 
     it('should initiate MFA for users with 2FA enabled', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      
+
       mockDb.query
         .mockResolvedValueOnce({
-          rows: [{
-            tenant_id: testTenantId,
-            user_id: testUserId,
-            email: testEmail,
-          }]
+          rows: [
+            {
+              tenant_id: testTenantId,
+              user_id: testUserId,
+              email: testEmail,
+            },
+          ],
         })
         .mockResolvedValueOnce({
-          rows: [{
-            id: testUserId,
-            email: testEmail,
-            password_hash: hashedPassword,
-            disabled: false,
-            two_factor_enabled: true,
-          }]
+          rows: [
+            {
+              id: testUserId,
+              email: testEmail,
+              password_hash: hashedPassword,
+              disabled: false,
+              two_factor_enabled: true,
+            },
+          ],
         })
         .mockResolvedValueOnce({
-          rows: [{
-            method_type: 'totp',
-            method_name: 'Authenticator App',
-            is_primary: true,
-          }]
+          rows: [
+            {
+              method_type: 'totp',
+              method_name: 'Authenticator App',
+              is_primary: true,
+            },
+          ],
         });
 
-      const response = await request(app)
-        .post('/api/v1/helix/login/authenticate')
-        .send({
-          discoveryToken,
-          email: testEmail,
-          authMethod: 'password',
-          password: 'password123',
-          redirectUrl: 'http://localhost:3000/',
-        });
+      const response = await request(app).post('/api/v1/helix/login/authenticate').send({
+        discoveryToken,
+        email: testEmail,
+        authMethod: 'password',
+        password: 'password123',
+        redirectUrl: 'http://localhost:3000/',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.requiresMFA).toBe(true);
@@ -223,33 +231,35 @@ describe('Universal Login System Integration Tests', () => {
 
     it('should reject invalid credentials', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      
+
       mockDb.query
         .mockResolvedValueOnce({
-          rows: [{
-            tenant_id: testTenantId,
-            user_id: testUserId,
-            email: testEmail,
-          }]
+          rows: [
+            {
+              tenant_id: testTenantId,
+              user_id: testUserId,
+              email: testEmail,
+            },
+          ],
         })
         .mockResolvedValueOnce({
-          rows: [{
-            id: testUserId,
-            email: testEmail,
-            password_hash: hashedPassword,
-            disabled: false,
-          }]
+          rows: [
+            {
+              id: testUserId,
+              email: testEmail,
+              password_hash: hashedPassword,
+              disabled: false,
+            },
+          ],
         });
 
-      const response = await request(app)
-        .post('/api/v1/helix/login/authenticate')
-        .send({
-          discoveryToken,
-          email: testEmail,
-          authMethod: 'password',
-          password: 'wrongpassword',
-          redirectUrl: 'http://localhost:3000/',
-        });
+      const response = await request(app).post('/api/v1/helix/login/authenticate').send({
+        discoveryToken,
+        email: testEmail,
+        authMethod: 'password',
+        password: 'wrongpassword',
+        redirectUrl: 'http://localhost:3000/',
+      });
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('error');
@@ -262,20 +272,20 @@ describe('Universal Login System Integration Tests', () => {
     it('should send SMS MFA challenge', async () => {
       mockDb.query
         .mockResolvedValueOnce({
-          rows: [{
-            user_id: testUserId,
-            mfa_method: 'sms',
-            phone_number_encrypted: 'encrypted-phone',
-          }]
+          rows: [
+            {
+              user_id: testUserId,
+              mfa_method: 'sms',
+              phone_number_encrypted: 'encrypted-phone',
+            },
+          ],
         })
         .mockResolvedValueOnce({ rows: [] }); // Insert challenge
 
-      const response = await request(app)
-        .post('/api/v1/helix/login/mfa/challenge')
-        .send({
-          tempSessionId,
-          mfaMethod: 'sms',
-        });
+      const response = await request(app).post('/api/v1/helix/login/mfa/challenge').send({
+        tempSessionId,
+        mfaMethod: 'sms',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message');
@@ -285,32 +295,36 @@ describe('Universal Login System Integration Tests', () => {
     it('should verify TOTP code successfully', async () => {
       mockDb.query
         .mockResolvedValueOnce({
-          rows: [{
-            user_id: testUserId,
-            totp_secret_encrypted: 'encrypted-secret',
-          }]
+          rows: [
+            {
+              user_id: testUserId,
+              totp_secret_encrypted: 'encrypted-secret',
+            },
+          ],
         })
         .mockResolvedValueOnce({
-          rows: [{
-            id: testUserId,
-            email: testEmail,
-            name: 'Test User',
-          }]
+          rows: [
+            {
+              id: testUserId,
+              email: testEmail,
+              name: 'Test User',
+            },
+          ],
         })
         .mockResolvedValueOnce({
-          rows: [{
-            id: uuidv4(),
-            session_token: 'final-session-token',
-          }]
+          rows: [
+            {
+              id: uuidv4(),
+              session_token: 'final-session-token',
+            },
+          ],
         });
 
-      const response = await request(app)
-        .post('/api/v1/helix/login/mfa/verify')
-        .send({
-          tempSessionId,
-          mfaMethod: 'totp',
-          code: '123456',
-        });
+      const response = await request(app).post('/api/v1/helix/login/mfa/verify').send({
+        tempSessionId,
+        mfaMethod: 'totp',
+        code: '123456',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
@@ -319,19 +333,19 @@ describe('Universal Login System Integration Tests', () => {
 
     it('should reject invalid MFA codes', async () => {
       mockDb.query.mockResolvedValueOnce({
-        rows: [{
-          user_id: testUserId,
-          totp_secret_encrypted: 'encrypted-secret',
-        }]
+        rows: [
+          {
+            user_id: testUserId,
+            totp_secret_encrypted: 'encrypted-secret',
+          },
+        ],
       });
 
-      const response = await request(app)
-        .post('/api/v1/helix/login/mfa/verify')
-        .send({
-          tempSessionId,
-          mfaMethod: 'totp',
-          code: '000000',
-        });
+      const response = await request(app).post('/api/v1/helix/login/mfa/verify').send({
+        tempSessionId,
+        mfaMethod: 'totp',
+        code: '000000',
+      });
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('error');
@@ -344,24 +358,26 @@ describe('Universal Login System Integration Tests', () => {
     it('should refresh valid tokens', async () => {
       mockDb.query
         .mockResolvedValueOnce({
-          rows: [{
-            id: uuidv4(),
-            user_id: testUserId,
-            refresh_token: 'valid-refresh-token',
-            expires_at: new Date(Date.now() + 3600000),
-          }]
+          rows: [
+            {
+              id: uuidv4(),
+              user_id: testUserId,
+              refresh_token: 'valid-refresh-token',
+              expires_at: new Date(Date.now() + 3600000),
+            },
+          ],
         })
         .mockResolvedValueOnce({
-          rows: [{
-            session_token: 'new-session-token',
-          }]
+          rows: [
+            {
+              session_token: 'new-session-token',
+            },
+          ],
         });
 
-      const response = await request(app)
-        .post('/api/v1/helix/login/token/refresh')
-        .send({
-          refreshToken: 'valid-refresh-token',
-        });
+      const response = await request(app).post('/api/v1/helix/login/token/refresh').send({
+        refreshToken: 'valid-refresh-token',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
@@ -384,21 +400,21 @@ describe('Universal Login System Integration Tests', () => {
   describe('Phase 5: Audit Logging', () => {
     it('should log authentication events', async () => {
       mockDb.query.mockResolvedValueOnce({
-        rows: [{
-          id: uuidv4(),
-          event_type: 'login_success',
-          user_id: testUserId,
-          ip_address: '127.0.0.1',
-          created_at: new Date(),
-        }]
+        rows: [
+          {
+            id: uuidv4(),
+            event_type: 'login_success',
+            user_id: testUserId,
+            ip_address: '127.0.0.1',
+            created_at: new Date(),
+          },
+        ],
       });
 
-      const response = await request(app)
-        .get('/api/v1/helix/login/audit')
-        .query({
-          userId: testUserId,
-          limit: 10,
-        });
+      const response = await request(app).get('/api/v1/helix/login/audit').query({
+        userId: testUserId,
+        limit: 10,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('logs');
@@ -411,16 +427,14 @@ describe('Universal Login System Integration Tests', () => {
       // Simulate multiple failed attempts
       for (let i = 0; i < 5; i++) {
         mockDb.query.mockResolvedValueOnce({ rows: [] });
-        
-        const response = await request(app)
-          .post('/api/v1/helix/login/authenticate')
-          .send({
-            discoveryToken: 'invalid-token',
-            email: testEmail,
-            authMethod: 'password',
-            password: 'wrongpassword',
-          });
-        
+
+        const response = await request(app).post('/api/v1/helix/login/authenticate').send({
+          discoveryToken: 'invalid-token',
+          email: testEmail,
+          authMethod: 'password',
+          password: 'wrongpassword',
+        });
+
         if (i < 4) {
           expect(response.status).toBe(401);
         } else {
@@ -430,24 +444,20 @@ describe('Universal Login System Integration Tests', () => {
     });
 
     it('should validate required fields', async () => {
-      const response = await request(app)
-        .post('/api/v1/helix/login/authenticate')
-        .send({
-          email: testEmail,
-          // Missing required fields
-        });
+      const response = await request(app).post('/api/v1/helix/login/authenticate').send({
+        email: testEmail,
+        // Missing required fields
+      });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
     });
 
     it('should sanitize input data', async () => {
-      const response = await request(app)
-        .post('/api/v1/helix/login/tenant/discover')
-        .send({
-          email: '<script>alert("xss")</script>@example.com',
-          redirectUrl: 'javascript:alert("xss")',
-        });
+      const response = await request(app).post('/api/v1/helix/login/tenant/discover').send({
+        email: '<script>alert("xss")</script>@example.com',
+        redirectUrl: 'javascript:alert("xss")',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');

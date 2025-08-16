@@ -11,9 +11,21 @@ interface AlertProps {
   onClose?: () => void;
 }
 
-export const Alert: React.FC<AlertProps> = ({ message, severity = 'info', className = '', sx = {}, style, children, onClose }) => (
+export const Alert: React.FC<AlertProps> = ({
+  message,
+  severity = 'info',
+  className = '',
+  sx = {},
+  style,
+  children,
+  onClose,
+}) => (
   <div className={`alert alert--${severity} ${className}`} style={{ ...sx, ...style }}>
-    {onClose && <button className="alert-close" onClick={onClose}>×</button>}
+    {onClose && (
+      <button className="alert-close" onClick={onClose}>
+        ×
+      </button>
+    )}
     {children || message}
   </div>
 );

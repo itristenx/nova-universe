@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Input, Chip } from '@/components/ui';
-import { MagnifyingGlassIcon, FunnelIcon, TrashIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  TrashIcon,
+  DocumentTextIcon,
+} from '@heroicons/react/24/outline';
 import { formatDate, getUrgencyColor, getStatusColor } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
@@ -22,10 +27,10 @@ export const TicketsPage: React.FC = () => {
     onMessage: (message) => {
       console.log('Tickets page received update:', message);
       setLastUpdate(new Date());
-      
+
       switch (message.type) {
         case 'ticket_created':
-          setTickets(prev => [message.data, ...prev]);
+          setTickets((prev) => [message.data, ...prev]);
           addToast({
             type: 'info',
             title: 'New Ticket',
@@ -33,17 +38,19 @@ export const TicketsPage: React.FC = () => {
           });
           break;
         case 'ticket_updated':
-          setTickets(prev => prev.map(ticket => 
-            ticket.id === message.data.id ? { ...ticket, ...message.data } : ticket
-          ));
+          setTickets((prev) =>
+            prev.map((ticket) =>
+              ticket.id === message.data.id ? { ...ticket, ...message.data } : ticket,
+            ),
+          );
           break;
         case 'ticket_deleted':
-          setTickets(prev => prev.filter(ticket => ticket.id !== message.data.id));
+          setTickets((prev) => prev.filter((ticket) => ticket.id !== message.data.id));
           break;
         default:
           console.log('Unhandled ticket message type:', message.type);
       }
-    }
+    },
   });
 
   useEffect(() => {
@@ -71,7 +78,7 @@ export const TicketsPage: React.FC = () => {
     if (confirm('Are you sure you want to delete this ticket?')) {
       try {
         await api.deleteLog(id);
-        setTickets(tickets.filter(t => t.id !== id));
+        setTickets(tickets.filter((t) => t.id !== id));
         addToast({
           type: 'success',
           title: 'Ticket deleted',
@@ -82,7 +89,8 @@ export const TicketsPage: React.FC = () => {
         addToast({
           type: 'error',
           title: 'Failed to delete ticket',
-          description: error.response?.data?.error || 'Unable to delete the ticket. Please try again.',
+          description:
+            error.response?.data?.error || 'Unable to delete the ticket. Please try again.',
         });
       }
     }
@@ -109,33 +117,33 @@ export const TicketsPage: React.FC = () => {
     }
   };
 
-  const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = 
+  const filteredTickets = tickets.filter((ticket) => {
+    const matchesSearch =
       ticket.name.toLowerCase().includes(search.toLowerCase()) ||
       ticket.email.toLowerCase().includes(search.toLowerCase()) ||
       ticket.title.toLowerCase().includes(search.toLowerCase()) ||
       ticket.system.toLowerCase().includes(search.toLowerCase());
-    
+
     const matchesStatus = !statusFilter || ticket.emailStatus === statusFilter;
     const matchesUrgency = !urgencyFilter || ticket.urgency === urgencyFilter;
-    
+
     return matchesSearch && matchesStatus && matchesUrgency;
   });
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center space-x-3">
             <h1 className="text-2xl font-bold text-gray-900">Support Tickets</h1>
-            <Chip 
-              color={isConnected ? "success" : "warning"} 
-              variant="flat" 
+            <Chip
+              color={isConnected ? 'success' : 'warning'}
+              variant="flat"
               size="sm"
-              title={isConnected ? "Live updates enabled" : "Live updates offline"}
+              title={isConnected ? 'Live updates enabled' : 'Live updates offline'}
             >
-              {isConnected ? "🟢 Live" : "🟡 Offline"}
+              {isConnected ? '🟢 Live' : '🟡 Offline'}
             </Chip>
           </div>
           <p className="mt-1 text-sm text-gray-600">
@@ -147,21 +155,17 @@ export const TicketsPage: React.FC = () => {
             )}
           </p>
         </div>
-        <Button
-          color="danger"
-          onClick={clearAllTickets}
-          disabled={tickets.length === 0}
-        >
-          <TrashIcon className="h-4 w-4 mr-2" />
+        <Button color="danger" onClick={clearAllTickets} disabled={tickets.length === 0}>
+          <TrashIcon className="mr-2 h-4 w-4" />
           Clear All
         </Button>
       </div>
 
       {/* Filters */}
       <Card>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div className="relative">
-            <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
             <Input
               type="text"
               placeholder="Search tickets..."
@@ -193,7 +197,7 @@ export const TicketsPage: React.FC = () => {
             <option value="Urgent">Urgent</option>
           </select>
           <div className="flex items-center text-sm text-gray-600">
-            <FunnelIcon className="h-4 w-4 mr-1" />
+            <FunnelIcon className="mr-1 h-4 w-4" />
             {filteredTickets.length} of {tickets.length} tickets
           </div>
         </div>
@@ -203,14 +207,16 @@ export const TicketsPage: React.FC = () => {
       <Card>
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <div className="border-primary-600 h-8 w-8 animate-spin rounded-full border-b-2"></div>
           </div>
         ) : filteredTickets.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="py-12 text-center">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No tickets found</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {tickets.length === 0 ? 'No support tickets have been submitted yet.' : 'Try adjusting your search or filters.'}
+              {tickets.length === 0
+                ? 'No support tickets have been submitted yet.'
+                : 'Try adjusting your search or filters.'}
             </p>
           </div>
         ) : (
@@ -218,22 +224,22 @@ export const TicketsPage: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     Ticket
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     Contact
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     System
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     Urgency
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     Created
                   </th>
                   <th className="relative px-6 py-3">
@@ -241,15 +247,13 @@ export const TicketsPage: React.FC = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 bg-white">
                 {filteredTickets.map((ticket) => (
                   <tr key={ticket.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          #{ticket.ticketId}
-                        </div>
-                        <div className="text-sm text-gray-500 max-w-xs truncate">
+                        <div className="text-sm font-medium text-gray-900">#{ticket.ticketId}</div>
+                        <div className="max-w-xs truncate text-sm text-gray-500">
                           {ticket.title}
                         </div>
                       </div>
@@ -260,23 +264,27 @@ export const TicketsPage: React.FC = () => {
                         <div className="text-sm text-gray-500">{ticket.email}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                       {ticket.system}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getUrgencyColor(ticket.urgency)}`}>
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${getUrgencyColor(ticket.urgency)}`}
+                      >
                         {ticket.urgency}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(ticket.emailStatus)}`}>
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${getStatusColor(ticket.emailStatus)}`}
+                      >
                         {ticket.emailStatus}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                       {formatDate(ticket.timestamp)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                       <Button
                         variant="light"
                         size="sm"

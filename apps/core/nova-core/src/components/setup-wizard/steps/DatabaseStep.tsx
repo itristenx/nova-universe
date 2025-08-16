@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { CircleStackIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import {
+  CircleStackIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+} from '@heroicons/react/24/outline';
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
 import { Select } from '../../ui/Select';
@@ -17,7 +21,7 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
   onUpdate,
   onComplete,
   errors,
-  isLoading
+  isLoading,
 }) => {
   const [formData, setFormData] = useState({
     type: data?.database?.type || 'postgresql',
@@ -28,37 +32,39 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
     password: data?.database?.password || '',
     path: data?.database?.path || './data/nova.db',
     ssl: data?.database?.ssl || false,
-    autoMigrate: data?.database?.autoMigrate || true
+    autoMigrate: data?.database?.autoMigrate || true,
   });
 
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [connectionStatus, setConnectionStatus] = useState<
+    'idle' | 'testing' | 'success' | 'error'
+  >('idle');
   const [connectionError, setConnectionError] = useState<string>('');
   const [isValid, setIsValid] = useState(false);
 
   useEffect(() => {
     let valid = false;
-    
+
     if (formData.type === 'sqlite') {
       valid = formData.path.trim().length > 0;
     } else {
-      valid = 
+      valid =
         formData.host.trim().length > 0 &&
         formData.database.trim().length > 0 &&
         formData.username.trim().length > 0 &&
         formData.port > 0;
     }
-    
+
     setIsValid(valid);
   }, [formData]);
 
   const handleInputChange = (field: string, value: any) => {
     const newFormData = { ...formData, [field]: value };
     setFormData(newFormData);
-    
+
     onUpdate({
-      database: newFormData
+      database: newFormData,
     });
-    
+
     // Reset connection status when config changes
     setConnectionStatus('idle');
     setConnectionError('');
@@ -67,7 +73,7 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
   const testConnection = async () => {
     setConnectionStatus('testing');
     setConnectionError('');
-    
+
     try {
       const response = await fetch('/api/setup/test-database', {
         method: 'POST',
@@ -78,7 +84,7 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         setConnectionStatus('success');
       } else {
@@ -99,10 +105,14 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
 
   const getDatabasePortPlaceholder = () => {
     switch (formData.type) {
-      case 'postgresql': return '5432';
-      case 'mysql': return '3306';
-      case 'sqlite': return '';
-      default: return '5432';
+      case 'postgresql':
+        return '5432';
+      case 'mysql':
+        return '3306';
+      case 'sqlite':
+        return '';
+      default:
+        return '5432';
     }
   };
 
@@ -110,7 +120,7 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
     if (formData.type === 'sqlite') {
       return formData.path;
     }
-    
+
     const protocol = formData.type === 'mysql' ? 'mysql' : 'postgresql';
     return `${protocol}://${formData.username}:****@${formData.host}:${formData.port}/${formData.database}`;
   };
@@ -118,13 +128,15 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="mx-auto w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center">
-          <CircleStackIcon className="w-8 h-8 text-purple-600" />
+      <div className="space-y-4 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/20">
+          <CircleStackIcon className="h-8 w-8 text-purple-600" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Database Configuration</h2>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+            Database Configuration
+          </h2>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
             Connect Nova Universe to your database
           </p>
         </div>
@@ -135,38 +147,38 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
         {/* Database Type Selection */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Database Type</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {[
               {
                 type: 'postgresql',
                 title: 'PostgreSQL',
                 description: 'Recommended for production',
-                icon: '🐘'
+                icon: '🐘',
               },
               {
                 type: 'mysql',
                 title: 'MySQL',
                 description: 'Popular relational database',
-                icon: '🐬'
+                icon: '🐬',
               },
               {
                 type: 'sqlite',
                 title: 'SQLite',
                 description: 'Simple file-based database',
-                icon: '📄'
-              }
+                icon: '📄',
+              },
             ].map((db) => (
               <button
                 key={db.type}
                 onClick={() => handleInputChange('type', db.type)}
-                className={`p-4 rounded-lg border-2 transition-all text-left ${
+                className={`rounded-lg border-2 p-4 text-left transition-all ${
                   formData.type === db.type
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'
                 }`}
               >
-                <div className="text-2xl mb-2">{db.icon}</div>
+                <div className="mb-2 text-2xl">{db.icon}</div>
                 <h4 className="font-medium text-slate-900 dark:text-white">{db.title}</h4>
                 <p className="text-sm text-slate-600 dark:text-slate-400">{db.description}</p>
               </button>
@@ -177,10 +189,12 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
         {/* Database Configuration */}
         {formData.type === 'sqlite' ? (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">SQLite Configuration</h3>
-            
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              SQLite Configuration
+            </h3>
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Database Path *
               </label>
               <Input
@@ -190,20 +204,20 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
                 error={errors.path}
                 className="w-full"
               />
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Path to your SQLite database file (will be created if it doesn't exist)
               </p>
             </div>
 
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+            <div className="rounded-lg bg-yellow-50 p-4 dark:bg-yellow-900/20">
               <div className="flex items-start space-x-3">
-                <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-600" />
                 <div>
-                  <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-1">
+                  <h4 className="mb-1 text-sm font-medium text-yellow-800 dark:text-yellow-200">
                     SQLite Limitations
                   </h4>
                   <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    SQLite is great for development and small deployments, but consider PostgreSQL 
+                    SQLite is great for development and small deployments, but consider PostgreSQL
                     or MySQL for production environments with multiple users or high traffic.
                   </p>
                 </div>
@@ -215,10 +229,10 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
               {formData.type === 'mysql' ? 'MySQL' : 'PostgreSQL'} Configuration
             </h3>
-            
-            <div className="grid md:grid-cols-2 gap-4">
+
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Host *
                 </label>
                 <Input
@@ -231,7 +245,7 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Port *
                 </label>
                 <Input
@@ -246,7 +260,7 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Database Name *
               </label>
               <Input
@@ -256,14 +270,14 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
                 error={errors.database}
                 className="w-full"
               />
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 The database must already exist
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Username *
                 </label>
                 <Input
@@ -276,7 +290,7 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Password
                 </label>
                 <Input
@@ -308,7 +322,9 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
         {/* Connection Test */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Connection Test</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Connection Test
+            </h3>
             <Button
               variant="bordered"
               onClick={testConnection}
@@ -321,40 +337,44 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
 
           {/* Connection Status */}
           {connectionStatus !== 'idle' && (
-            <div className={`rounded-lg p-4 ${
-              connectionStatus === 'success' 
-                ? 'bg-green-50 dark:bg-green-900/20' 
-                : connectionStatus === 'error'
-                ? 'bg-red-50 dark:bg-red-900/20'
-                : 'bg-blue-50 dark:bg-blue-900/20'
-            }`}>
+            <div
+              className={`rounded-lg p-4 ${
+                connectionStatus === 'success'
+                  ? 'bg-green-50 dark:bg-green-900/20'
+                  : connectionStatus === 'error'
+                    ? 'bg-red-50 dark:bg-red-900/20'
+                    : 'bg-blue-50 dark:bg-blue-900/20'
+              }`}
+            >
               <div className="flex items-center space-x-3">
                 {connectionStatus === 'success' && (
-                  <CheckCircleIcon className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircleIcon className="h-5 w-5 flex-shrink-0 text-green-600" />
                 )}
                 {connectionStatus === 'error' && (
-                  <ExclamationTriangleIcon className="w-5 h-5 text-red-600 flex-shrink-0" />
+                  <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-red-600" />
                 )}
                 <div className="flex-1">
-                  <h4 className={`text-sm font-medium mb-1 ${
-                    connectionStatus === 'success' 
-                      ? 'text-green-800 dark:text-green-200'
-                      : 'text-red-800 dark:text-red-200'
-                  }`}>
-                    {connectionStatus === 'success' 
-                      ? 'Connection Successful!' 
-                      : 'Connection Failed'
-                    }
+                  <h4
+                    className={`mb-1 text-sm font-medium ${
+                      connectionStatus === 'success'
+                        ? 'text-green-800 dark:text-green-200'
+                        : 'text-red-800 dark:text-red-200'
+                    }`}
+                  >
+                    {connectionStatus === 'success'
+                      ? 'Connection Successful!'
+                      : 'Connection Failed'}
                   </h4>
-                  <p className={`text-sm ${
-                    connectionStatus === 'success' 
-                      ? 'text-green-700 dark:text-green-300'
-                      : 'text-red-700 dark:text-red-300'
-                  }`}>
-                    {connectionStatus === 'success' 
+                  <p
+                    className={`text-sm ${
+                      connectionStatus === 'success'
+                        ? 'text-green-700 dark:text-green-300'
+                        : 'text-red-700 dark:text-red-300'
+                    }`}
+                  >
+                    {connectionStatus === 'success'
                       ? `Successfully connected to ${formData.type} database`
-                      : connectionError
-                    }
+                      : connectionError}
                   </p>
                 </div>
               </div>
@@ -362,11 +382,11 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
           )}
 
           {/* Connection String Preview */}
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
+            <h4 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
               Connection String Preview
             </h4>
-            <code className="text-sm text-slate-600 dark:text-slate-400 break-all">
+            <code className="text-sm break-all text-slate-600 dark:text-slate-400">
               {getConnectionString()}
             </code>
           </div>
@@ -374,8 +394,10 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
 
         {/* Migration Options */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Migration Options</h3>
-          
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+            Migration Options
+          </h3>
+
           <div className="flex items-center space-x-3">
             <input
               type="checkbox"
@@ -388,10 +410,10 @@ export const DatabaseStep: React.FC<DatabaseStepProps> = ({
               Automatically run database migrations
             </label>
           </div>
-          
+
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            This will create the necessary tables and schema for Nova Universe. 
-            Disable this if you want to run migrations manually.
+            This will create the necessary tables and schema for Nova Universe. Disable this if you
+            want to run migrations manually.
           </p>
         </div>
       </div>

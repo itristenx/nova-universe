@@ -1,19 +1,8 @@
-"use client"
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -22,10 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Alert,
-  AlertDescription,
-} from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,10 +24,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  Settings, 
-  Save, 
-  RefreshCw, 
+import {
+  Settings,
+  Save,
+  RefreshCw,
   AlertTriangle,
   Info,
   Search,
@@ -51,7 +37,7 @@ import {
   Zap,
   Database,
   Mail,
-  Bot
+  Bot,
 } from 'lucide-react';
 
 // Type definitions
@@ -96,7 +82,7 @@ const CONFIG_CATEGORIES: Record<string, ConfigCategory> = {
   branding: {
     id: 'branding',
     name: 'Organization Branding',
-    description: 'Customize your organization\'s appearance and identity',
+    description: "Customize your organization's appearance and identity",
     icon: Palette,
     color: 'bg-purple-500',
   },
@@ -152,16 +138,17 @@ const CONFIG_DEFINITIONS = {
     validation: {
       minLength: 1,
       maxLength: 100,
-      pattern: '^[a-zA-Z0-9\\s&.-]+$'
+      pattern: '^[a-zA-Z0-9\\s&.-]+$',
     },
-    helpText: 'Enter your organization\'s full name. This will appear in headers, emails, and branding.',
+    helpText:
+      "Enter your organization's full name. This will appear in headers, emails, and branding.",
     example: 'Acme Corporation',
   },
   LOGO_URL: {
     key: 'LOGO_URL',
     category: 'branding',
     name: 'Logo URL',
-    description: 'URL or path to your organization\'s logo',
+    description: "URL or path to your organization's logo",
     type: 'string',
     defaultValue: '/assets/logo.png',
     isUIEditable: true,
@@ -182,7 +169,7 @@ const CONFIG_DEFINITIONS = {
     isUIEditable: true,
     isRequired: false,
     validation: {
-      pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+      pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
     },
     helpText: 'Enter a hex color code for your primary brand color',
     example: '#3b82f6',
@@ -200,7 +187,7 @@ const CONFIG_DEFINITIONS = {
     isRequired: false,
     validation: {
       min: 3,
-      max: 10
+      max: 10,
     },
     helpText: 'Set the minimum number of digits required for user PINs',
     example: '4',
@@ -216,7 +203,7 @@ const CONFIG_DEFINITIONS = {
     isRequired: false,
     validation: {
       min: 1,
-      max: 60
+      max: 60,
     },
     helpText: 'Time window in minutes for tracking rate limits',
     example: '15',
@@ -265,7 +252,7 @@ const CONFIG_DEFINITIONS = {
       { value: 'okta', label: 'Okta' },
       { value: 'google', label: 'Google Workspace' },
     ],
-    helpText: 'Select your organization\'s directory service provider',
+    helpText: "Select your organization's directory service provider",
     example: 'azure-ad',
   },
 
@@ -280,7 +267,7 @@ const CONFIG_DEFINITIONS = {
     isUIEditable: true,
     isRequired: false,
     validation: {
-      pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$'
+      pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$',
     },
     helpText: 'Email address used as the sender for system notifications',
     example: 'helpdesk@yourcompany.com',
@@ -365,7 +352,7 @@ const ConfigurationManagement: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         const configsMap: Record<string, ConfigValue> = {};
-        
+
         Object.entries(data).forEach(([key, configData]) => {
           const typedConfigData = configData as ApiConfigResponse;
           configsMap[key] = {
@@ -378,10 +365,10 @@ const ConfigurationManagement: React.FC = () => {
             isRequired: typedConfigData.metadata?.isRequired || false,
             description: typedConfigData.metadata?.description || '',
             updatedAt: new Date().toISOString(),
-            updatedBy: typedConfigData.metadata?.updatedBy
+            updatedBy: typedConfigData.metadata?.updatedBy,
           };
         });
-        
+
         setConfigs(configsMap);
       }
     } catch (error) {
@@ -419,7 +406,7 @@ const ConfigurationManagement: React.FC = () => {
 
       if (response.ok) {
         const updatedConfig = await response.json();
-        setConfigs(prev => ({
+        setConfigs((prev) => ({
           ...prev,
           [key]: {
             ...prev[key],
@@ -429,7 +416,7 @@ const ConfigurationManagement: React.FC = () => {
           },
         }));
         // Remove from unsaved changes
-        setUnsavedChanges(prev => {
+        setUnsavedChanges((prev) => {
           const newChanges = { ...prev };
           delete newChanges[key];
           return newChanges;
@@ -447,7 +434,7 @@ const ConfigurationManagement: React.FC = () => {
 
   const validateConfigValue = (definition: ConfigDefinition, value: string): string | null => {
     const { validation, type } = definition;
-    
+
     if (!validation) return null;
 
     if (type === 'number') {
@@ -477,7 +464,7 @@ const ConfigurationManagement: React.FC = () => {
   };
 
   const handleConfigChange = (key: string, value: string) => {
-    setUnsavedChanges(prev => ({
+    setUnsavedChanges((prev) => ({
       ...prev,
       [key]: value,
     }));
@@ -497,21 +484,26 @@ const ConfigurationManagement: React.FC = () => {
     if (unsavedChanges[key] !== undefined) {
       return unsavedChanges[key];
     }
-    return configs[key]?.value || CONFIG_DEFINITIONS[key as keyof typeof CONFIG_DEFINITIONS]?.defaultValue || '';
+    return (
+      configs[key]?.value ||
+      CONFIG_DEFINITIONS[key as keyof typeof CONFIG_DEFINITIONS]?.defaultValue ||
+      ''
+    );
   };
 
   const hasUnsavedChanges = (key: string): boolean => {
     return unsavedChanges[key] !== undefined;
   };
 
-  const filteredConfigs = Object.values(CONFIG_DEFINITIONS).filter(config => {
-    const matchesSearch = !searchQuery || 
+  const filteredConfigs = Object.values(CONFIG_DEFINITIONS).filter((config) => {
+    const matchesSearch =
+      !searchQuery ||
       config.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       config.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       config.key.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesCategory = config.category === activeTab;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -522,7 +514,10 @@ const ConfigurationManagement: React.FC = () => {
     const validationError = validateConfigValue(definition, value);
 
     return (
-      <Card key={key} className={`transition-all duration-200 ${hasChanges ? 'ring-2 ring-blue-500' : ''}`}>
+      <Card
+        key={key}
+        className={`transition-all duration-200 ${hasChanges ? 'ring-2 ring-blue-500' : ''}`}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -541,20 +536,20 @@ const ConfigurationManagement: React.FC = () => {
                   onClick={() => handleSaveConfig(key)}
                   disabled={saving || !!validationError}
                 >
-                  <Save className="w-3 h-3 mr-1" />
+                  <Save className="mr-1 h-3 w-3" />
                   Save
                 </Button>
               )}
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="ghost"
                     onClick={() => {
                       loadConfigHistory(key);
                     }}
                   >
-                    <History className="w-3 h-3" />
+                    <History className="h-3 w-3" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -564,21 +559,29 @@ const ConfigurationManagement: React.FC = () => {
                       View the change history for this configuration setting
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                  <div className="max-h-96 space-y-2 overflow-y-auto">
                     {configHistory.map((entry) => (
-                      <div key={entry.id} className="border rounded p-3 text-sm">
-                        <div className="flex justify-between items-start mb-1">
+                      <div key={entry.id} className="rounded border p-3 text-sm">
+                        <div className="mb-1 flex items-start justify-between">
                           <span className="font-medium">{entry.changedBy || 'System'}</span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             {new Date(entry.createdAt).toLocaleString()}
                           </span>
                         </div>
-                        <div className="text-xs space-y-1">
-                          <div>Old: <code className="bg-muted px-1 rounded">{entry.oldValue || 'null'}</code></div>
-                          <div>New: <code className="bg-muted px-1 rounded">{entry.newValue || 'null'}</code></div>
-                          {entry.changeReason && (
-                            <div>Reason: {entry.changeReason}</div>
-                          )}
+                        <div className="space-y-1 text-xs">
+                          <div>
+                            Old:{' '}
+                            <code className="bg-muted rounded px-1">
+                              {entry.oldValue || 'null'}
+                            </code>
+                          </div>
+                          <div>
+                            New:{' '}
+                            <code className="bg-muted rounded px-1">
+                              {entry.newValue || 'null'}
+                            </code>
+                          </div>
+                          {entry.changeReason && <div>Reason: {entry.changeReason}</div>}
                         </div>
                       </div>
                     ))}
@@ -596,9 +599,7 @@ const ConfigurationManagement: React.FC = () => {
                 checked={value === 'true'}
                 onCheckedChange={(checked) => handleConfigChange(key, checked.toString())}
               />
-              <Label className="text-sm">
-                {value === 'true' ? 'Enabled' : 'Disabled'}
-              </Label>
+              <Label className="text-sm">{value === 'true' ? 'Enabled' : 'Disabled'}</Label>
             </div>
           )}
 
@@ -610,9 +611,7 @@ const ConfigurationManagement: React.FC = () => {
                 placeholder={example}
                 className={validationError ? 'border-red-500' : ''}
               />
-              {validationError && (
-                <p className="text-xs text-red-500">{validationError}</p>
-              )}
+              {validationError && <p className="text-xs text-red-500">{validationError}</p>}
             </div>
           )}
 
@@ -627,17 +626,12 @@ const ConfigurationManagement: React.FC = () => {
                 max={validation?.max}
                 className={validationError ? 'border-red-500' : ''}
               />
-              {validationError && (
-                <p className="text-xs text-red-500">{validationError}</p>
-              )}
+              {validationError && <p className="text-xs text-red-500">{validationError}</p>}
             </div>
           )}
 
           {type === 'select' && options && (
-            <Select
-              value={value}
-              onValueChange={(newValue) => handleConfigChange(key, newValue)}
-            >
+            <Select value={value} onValueChange={(newValue) => handleConfigChange(key, newValue)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select an option" />
               </SelectTrigger>
@@ -652,16 +646,16 @@ const ConfigurationManagement: React.FC = () => {
           )}
 
           {helpText && (
-            <div className="flex items-start space-x-2 mt-2">
-              <Info className="w-3 h-3 mt-0.5 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">{helpText}</p>
+            <div className="mt-2 flex items-start space-x-2">
+              <Info className="text-muted-foreground mt-0.5 h-3 w-3" />
+              <p className="text-muted-foreground text-xs">{helpText}</p>
             </div>
           )}
 
           {example && (
             <div className="mt-2">
-              <p className="text-xs text-muted-foreground">
-                Example: <code className="bg-muted px-1 rounded text-xs">{example}</code>
+              <p className="text-muted-foreground text-xs">
+                Example: <code className="bg-muted rounded px-1 text-xs">{example}</code>
               </p>
             </div>
           )}
@@ -672,8 +666,8 @@ const ConfigurationManagement: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-6 h-6 animate-spin" />
+      <div className="flex h-64 items-center justify-center">
+        <RefreshCw className="h-6 w-6 animate-spin" />
         <span className="ml-2">Loading configuration...</span>
       </div>
     );
@@ -687,21 +681,17 @@ const ConfigurationManagement: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Configuration Management</h1>
-          <p className="text-muted-foreground">
-            Manage your application settings and preferences
-          </p>
+          <p className="text-muted-foreground">Manage your application settings and preferences</p>
         </div>
         <div className="flex items-center space-x-2">
           {hasAnyUnsavedChanges && (
             <Alert className="w-auto">
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                You have unsaved changes
-              </AlertDescription>
+              <AlertDescription>You have unsaved changes</AlertDescription>
             </Alert>
           )}
           <Button variant="outline" onClick={loadConfigurations}>
-            <RefreshCw className="w-4 h-4 mr-2" />
+            <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
         </div>
@@ -709,8 +699,8 @@ const ConfigurationManagement: React.FC = () => {
 
       {/* Search and filters */}
       <div className="flex items-center space-x-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <div className="relative max-w-md flex-1">
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
           <Input
             placeholder="Search configurations..."
             value={searchQuery}
@@ -719,10 +709,7 @@ const ConfigurationManagement: React.FC = () => {
           />
         </div>
         <div className="flex items-center space-x-2">
-          <Switch
-            checked={showAdvanced}
-            onCheckedChange={setShowAdvanced}
-          />
+          <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
           <Label className="text-sm">Show Advanced</Label>
         </div>
       </div>
@@ -733,8 +720,12 @@ const ConfigurationManagement: React.FC = () => {
           {Object.values(CONFIG_CATEGORIES).map((category) => {
             const IconComponent = category.icon;
             return (
-              <TabsTrigger key={category.id} value={category.id} className="flex items-center space-x-2">
-                <IconComponent className="w-4 h-4" />
+              <TabsTrigger
+                key={category.id}
+                value={category.id}
+                className="flex items-center space-x-2"
+              >
+                <IconComponent className="h-4 w-4" />
                 <span className="hidden sm:inline">{category.name}</span>
               </TabsTrigger>
             );
@@ -743,13 +734,13 @@ const ConfigurationManagement: React.FC = () => {
 
         {Object.values(CONFIG_CATEGORIES).map((category) => (
           <TabsContent key={category.id} value={category.id} className="space-y-4">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className={`p-2 rounded-lg ${category.color} text-white`}>
-                <category.icon className="w-5 h-5" />
+            <div className="mb-4 flex items-center space-x-3">
+              <div className={`rounded-lg p-2 ${category.color} text-white`}>
+                <category.icon className="h-5 w-5" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold">{category.name}</h2>
-                <p className="text-sm text-muted-foreground">{category.description}</p>
+                <p className="text-muted-foreground text-sm">{category.description}</p>
               </div>
             </div>
 
@@ -758,12 +749,10 @@ const ConfigurationManagement: React.FC = () => {
             </div>
 
             {filteredConfigs.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <Settings className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <div className="text-muted-foreground py-8 text-center">
+                <Settings className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No configurations found in this category</p>
-                {searchQuery && (
-                  <p className="text-sm mt-1">Try adjusting your search query</p>
-                )}
+                {searchQuery && <p className="mt-1 text-sm">Try adjusting your search query</p>}
               </div>
             )}
           </TabsContent>

@@ -1,7 +1,7 @@
 /**
  * Okta Identity Provider Connector
  * Implements SCIM 2.0 and Okta API standards
- * 
+ *
  * @author Nova Team
  * @version 1.0.0
  */
@@ -28,19 +28,19 @@ export class OktaConnector extends IConnector {
   async initialize(config) {
     try {
       this.config = config;
-      
+
       // Validate Okta-specific configuration
       this.validateOktaConfig(config);
-      
+
       // Initialize Okta Management API client
       this.client = axios.create({
         baseURL: config.endpoints.oktaUrl,
         headers: {
-          'Authorization': `SSWS ${config.credentials.apiToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          Authorization: `SSWS ${config.credentials.apiToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
-        timeout: config.timeout || 30000
+        timeout: config.timeout || 30000,
       });
 
       // Initialize SCIM client if SCIM endpoint is provided
@@ -48,17 +48,17 @@ export class OktaConnector extends IConnector {
         this.scimClient = axios.create({
           baseURL: config.endpoints.scimUrl,
           headers: {
-            'Authorization': `Bearer ${config.credentials.scimToken}`,
-            'Accept': 'application/scim+json',
-            'Content-Type': 'application/scim+json'
+            Authorization: `Bearer ${config.credentials.scimToken}`,
+            Accept: 'application/scim+json',
+            'Content-Type': 'application/scim+json',
           },
-          timeout: config.timeout || 30000
+          timeout: config.timeout || 30000,
         });
       }
 
       // Test the connection
       await this.testConnection();
-      
+
       console.log('Okta connector initialized successfully');
     } catch (error) {
       console.error('Failed to initialize Okta connector:', error);
@@ -72,7 +72,7 @@ export class OktaConnector extends IConnector {
   async health() {
     try {
       const startTime = Date.now();
-      
+
       // Test Okta Management API
       const orgResponse = await this.client.get('/api/v1/org');
       const apiLatency = Date.now() - startTime;
@@ -80,7 +80,7 @@ export class OktaConnector extends IConnector {
       // Test SCIM endpoint if available
       let scimStatus = 'not_configured';
       let scimLatency = 0;
-      
+
       if (this.scimClient) {
         try {
           const scimStartTime = Date.now();
@@ -92,10 +92,10 @@ export class OktaConnector extends IConnector {
         }
       }
 
-      const overallStatus = orgResponse.status === 200 && 
-        (scimStatus === 'healthy' || scimStatus === 'not_configured') 
-        ? HealthStatus.HEALTHY 
-        : HealthStatus.DEGRADED;
+      const overallStatus =
+        orgResponse.status === 200 && (scimStatus === 'healthy' || scimStatus === 'not_configured')
+          ? HealthStatus.HEALTHY
+          : HealthStatus.DEGRADED;
 
       return {
         status: overallStatus,
@@ -104,27 +104,27 @@ export class OktaConnector extends IConnector {
           {
             name: 'api_latency',
             value: apiLatency,
-            unit: 'ms'
+            unit: 'ms',
           },
           {
             name: 'scim_latency',
             value: scimLatency,
-            unit: 'ms'
+            unit: 'ms',
           },
           {
             name: 'org_status',
             value: orgResponse.status,
-            unit: 'http_status'
-          }
+            unit: 'http_status',
+          },
         ],
-        issues: overallStatus !== HealthStatus.HEALTHY ? ['SCIM endpoint issues detected'] : []
+        issues: overallStatus !== HealthStatus.HEALTHY ? ['SCIM endpoint issues detected'] : [],
       };
     } catch (error) {
       return {
         status: HealthStatus.UNHEALTHY,
         lastCheck: new Date(),
         metrics: [],
-        issues: [error.message]
+        issues: [error.message],
       };
     }
   }
@@ -148,7 +148,7 @@ export class OktaConnector extends IConnector {
         try {
           // Build query parameters
           const params = {
-            limit: batchSize
+            limit: batchSize,
           };
 
           if (after) {
@@ -173,28 +173,26 @@ export class OktaConnector extends IConnector {
               errorCount++;
               errors.push({
                 userId: user.id,
-                message: error.message
+                message: error.message,
               });
             }
           }
 
           totalUsers += users.length;
-          
+
           // Check for next page
           const linkHeader = response.headers.link;
           after = this.extractNextCursor(linkHeader);
-
         } catch (batchError) {
           errorCount++;
           errors.push({
-            message: `Batch error: ${batchError.message}`
+            message: `Batch error: ${batchError.message}`,
           });
           break;
         }
       } while (after && totalUsers < (options.maxUsers || 10000));
 
-      const status = errorCount === 0 ? 'success' : 
-        successCount > 0 ? 'partial' : 'failed';
+      const status = errorCount === 0 ? 'success' : successCount > 0 ? 'partial' : 'failed';
 
       return {
         jobId: crypto.randomUUID(),
@@ -202,12 +200,11 @@ export class OktaConnector extends IConnector {
         metrics: {
           totalRecords: totalUsers,
           successCount,
-          errorCount
+          errorCount,
         },
         errors: errors.slice(0, 10), // Limit error details
-        data: null
+        data: null,
       };
-
     } catch (error) {
       return {
         jobId: crypto.randomUUID(),
@@ -215,11 +212,13 @@ export class OktaConnector extends IConnector {
         metrics: {
           totalRecords: 0,
           successCount: 0,
-          errorCount: 1
+          errorCount: 1,
         },
-        errors: [{
-          message: error.message
-        }]
+        errors: [
+          {
+            message: error.message,
+          },
+        ],
       };
     }
   }
@@ -232,13 +231,14 @@ export class OktaConnector extends IConnector {
       const since = new Date(Date.now() - 5 * 60 * 1000); // Last 5 minutes
       const params = {
         since: since.toISOString(),
-        filter: 'eventType eq "user.lifecycle.create" or eventType eq "user.lifecycle.update" or eventType eq "user.lifecycle.delete"',
-        limit: 100
+        filter:
+          'eventType eq "user.lifecycle.create" or eventType eq "user.lifecycle.update" or eventType eq "user.lifecycle.delete"',
+        limit: 100,
       };
 
       const response = await this.client.get('/api/v1/logs', { params });
-      
-      return response.data.map(event => ({
+
+      return response.data.map((event) => ({
         id: event.uuid,
         type: event.eventType,
         timestamp: new Date(event.published),
@@ -246,11 +246,10 @@ export class OktaConnector extends IConnector {
           userId: event.actor?.id,
           userEmail: event.actor?.alternateId,
           action: event.eventType,
-          details: event.debugContext
+          details: event.debugContext,
         },
-        source: 'okta'
+        source: 'okta',
       }));
-
     } catch (error) {
       console.error('Failed to poll Okta events:', error);
       return [];
@@ -267,25 +266,24 @@ export class OktaConnector extends IConnector {
       switch (actionType) {
         case 'reset_mfa':
           return await this.resetUserMFA(target);
-        
+
         case 'suspend_user':
           return await this.suspendUser(target);
-        
+
         case 'activate_user':
           return await this.activateUser(target);
-        
+
         case 'reset_password':
           return await this.resetPassword(target, parameters);
-        
+
         default:
           throw new Error(`Unsupported action: ${actionType}`);
       }
-
     } catch (error) {
       return {
         success: false,
         message: error.message,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -310,7 +308,7 @@ export class OktaConnector extends IConnector {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -324,18 +322,8 @@ export class OktaConnector extends IConnector {
       supportsPoll: true,
       supportsScim: !!this.config?.endpoints?.scimUrl,
       rateLimit: 600, // Okta rate limit per minute
-      dataTypes: [
-        'users',
-        'groups',
-        'applications',
-        'events'
-      ],
-      actions: [
-        'reset_mfa',
-        'suspend_user',
-        'activate_user',
-        'reset_password'
-      ]
+      dataTypes: ['users', 'groups', 'applications', 'events'],
+      actions: ['reset_mfa', 'suspend_user', 'activate_user', 'reset_password'],
     };
   }
 
@@ -351,8 +339,8 @@ export class OktaConnector extends IConnector {
           email: 'string',
           firstName: 'string',
           lastName: 'string',
-          status: 'string'
-        }
+          status: 'string',
+        },
       },
       output: {
         nova_user: {
@@ -360,9 +348,9 @@ export class OktaConnector extends IConnector {
           email: 'string',
           identity: 'object',
           status: 'string',
-          lastSync: 'date'
-        }
-      }
+          lastSync: 'date',
+        },
+      },
     };
   }
 
@@ -407,18 +395,18 @@ export class OktaConnector extends IConnector {
       status: oktaUser.status,
       oktaId: oktaUser.id,
       lastUpdated: new Date(oktaUser.lastUpdated),
-      source: 'okta'
+      source: 'okta',
     };
 
     // Here you would save to Nova database or send to message queue
     console.log(`Processed user: ${novaUser.email}`);
-    
+
     return novaUser;
   }
 
   extractNextCursor(linkHeader) {
     if (!linkHeader) return null;
-    
+
     const nextMatch = linkHeader.match(/<[^>]*[?&]after=([^&>]+)[^>]*>;\s*rel="next"/);
     return nextMatch ? nextMatch[1] : null;
   }
@@ -429,7 +417,7 @@ export class OktaConnector extends IConnector {
       return {
         success: true,
         message: 'MFA reset successfully',
-        data: { userId, action: 'mfa_reset' }
+        data: { userId, action: 'mfa_reset' },
       };
     } catch (error) {
       throw new Error(`Failed to reset MFA: ${error.message}`);
@@ -442,7 +430,7 @@ export class OktaConnector extends IConnector {
       return {
         success: true,
         message: 'User suspended successfully',
-        data: { userId, action: 'suspend' }
+        data: { userId, action: 'suspend' },
       };
     } catch (error) {
       throw new Error(`Failed to suspend user: ${error.message}`);
@@ -455,7 +443,7 @@ export class OktaConnector extends IConnector {
       return {
         success: true,
         message: 'User activated successfully',
-        data: { userId, action: 'activate' }
+        data: { userId, action: 'activate' },
       };
     } catch (error) {
       throw new Error(`Failed to activate user: ${error.message}`);
@@ -465,17 +453,17 @@ export class OktaConnector extends IConnector {
   async resetPassword(userId, parameters) {
     try {
       const response = await this.client.post(`/api/v1/users/${userId}/lifecycle/reset_password`, {
-        sendEmail: parameters?.sendEmail !== false
+        sendEmail: parameters?.sendEmail !== false,
       });
-      
+
       return {
         success: true,
         message: 'Password reset initiated',
-        data: { 
-          userId, 
+        data: {
+          userId,
           action: 'password_reset',
-          resetUrl: response.data?.resetPasswordUrl 
-        }
+          resetUrl: response.data?.resetPasswordUrl,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to reset password: ${error.message}`);

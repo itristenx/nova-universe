@@ -1,10 +1,10 @@
 /**
  * Nova RAG Engine - Retrieval-Augmented Generation System
- * 
+ *
  * This implements a comprehensive RAG system that enhances AI responses with
  * contextually relevant information from Nova's knowledge base, documentation,
  * tickets, and other data sources.
- * 
+ *
  * Features:
  * - Multi-modal vector embeddings
  * - Semantic search and retrieval
@@ -159,12 +159,12 @@ export class NovaRAGEngine extends EventEmitter {
   private knowledgeGraph: KnowledgeGraph = {
     entities: new Map(),
     relationships: new Map(),
-    concepts: new Map()
+    concepts: new Map(),
   };
-  
+
   private isInitialized = false;
   private indexUpdateInterval: NodeJS.Timeout | null = null;
-  
+
   // Configuration
   private config = {
     defaultEmbeddingModel: 'text-embedding-ada-002',
@@ -175,7 +175,7 @@ export class NovaRAGEngine extends EventEmitter {
     minSimilarity: 0.7,
     rerankingEnabled: true,
     knowledgeGraphEnabled: true,
-    realTimeUpdates: true
+    realTimeUpdates: true,
   };
 
   constructor() {
@@ -280,8 +280,8 @@ export class NovaRAGEngine extends EventEmitter {
           searchStrategy: ragQuery.options.hybridSearch ? 'hybrid' : 'semantic',
           embeddingModel: this.config.defaultEmbeddingModel,
           vectorStore: this.config.defaultVectorStore,
-          filters: ragQuery.filters || {}
-        }
+          filters: ragQuery.filters || {},
+        },
       };
 
       this.resultHistory.set(result.id, result);
@@ -297,11 +297,13 @@ export class NovaRAGEngine extends EventEmitter {
   /**
    * Add documents to the RAG system
    */
-  async addDocuments(documents: Array<{
-    id: string;
-    content: string;
-    metadata: any;
-  }>): Promise<void> {
+  async addDocuments(
+    documents: Array<{
+      id: string;
+      content: string;
+      metadata: any;
+    }>,
+  ): Promise<void> {
     try {
       for (const doc of documents) {
         await this.processDocument(doc);
@@ -340,8 +342,9 @@ export class NovaRAGEngine extends EventEmitter {
   async removeDocument(documentId: string): Promise<void> {
     try {
       // Find and remove all chunks for this document
-      const chunksToRemove = Array.from(this.documentChunks.values())
-        .filter(chunk => chunk.documentId === documentId);
+      const chunksToRemove = Array.from(this.documentChunks.values()).filter(
+        (chunk) => chunk.documentId === documentId,
+      );
 
       for (const chunk of chunksToRemove) {
         this.documentChunks.delete(chunk.id);
@@ -369,9 +372,9 @@ export class NovaRAGEngine extends EventEmitter {
       knowledgeGraph: {
         entities: this.knowledgeGraph.entities.size,
         relationships: this.knowledgeGraph.relationships.size,
-        concepts: this.knowledgeGraph.concepts.size
+        concepts: this.knowledgeGraph.concepts.size,
       },
-      config: this.config
+      config: this.config,
     };
   }
 
@@ -387,9 +390,9 @@ export class NovaRAGEngine extends EventEmitter {
         maxTokens: 8191,
         config: {
           apiKey: process.env.OPENAI_API_KEY,
-          endpoint: 'https://api.openai.com/v1/embeddings'
+          endpoint: 'https://api.openai.com/v1/embeddings',
         },
-        isActive: !!process.env.OPENAI_API_KEY
+        isActive: !!process.env.OPENAI_API_KEY,
       },
       {
         id: 'openai-ada-003',
@@ -400,9 +403,9 @@ export class NovaRAGEngine extends EventEmitter {
         maxTokens: 8191,
         config: {
           apiKey: process.env.OPENAI_API_KEY,
-          endpoint: 'https://api.openai.com/v1/embeddings'
+          endpoint: 'https://api.openai.com/v1/embeddings',
         },
-        isActive: !!process.env.OPENAI_API_KEY
+        isActive: !!process.env.OPENAI_API_KEY,
       },
       {
         id: 'huggingface-sentence-bert',
@@ -413,9 +416,10 @@ export class NovaRAGEngine extends EventEmitter {
         maxTokens: 512,
         config: {
           apiKey: process.env.HUGGINGFACE_API_KEY,
-          endpoint: 'https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2'
+          endpoint:
+            'https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2',
         },
-        isActive: !!process.env.HUGGINGFACE_API_KEY
+        isActive: !!process.env.HUGGINGFACE_API_KEY,
       },
       {
         id: 'nova-local-embeddings',
@@ -425,10 +429,10 @@ export class NovaRAGEngine extends EventEmitter {
         dimensions: 768,
         maxTokens: 512,
         config: {
-          modelPath: '/models/nova-embeddings'
+          modelPath: '/models/nova-embeddings',
         },
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     for (const model of models) {
@@ -448,10 +452,10 @@ export class NovaRAGEngine extends EventEmitter {
         config: {
           host: process.env.CHROMADB_HOST || 'localhost',
           port: process.env.CHROMADB_PORT || 8000,
-          database: 'nova_rag'
+          database: 'nova_rag',
         },
         collections: ['knowledge', 'tickets', 'documentation'],
-        isActive: true
+        isActive: true,
       },
       {
         id: 'pinecone-prod',
@@ -460,10 +464,10 @@ export class NovaRAGEngine extends EventEmitter {
         config: {
           apiKey: process.env.PINECONE_API_KEY,
           environment: process.env.PINECONE_ENVIRONMENT,
-          indexName: 'nova-rag'
+          indexName: 'nova-rag',
         },
         collections: ['main'],
-        isActive: !!process.env.PINECONE_API_KEY
+        isActive: !!process.env.PINECONE_API_KEY,
       },
       {
         id: 'local-faiss',
@@ -471,11 +475,11 @@ export class NovaRAGEngine extends EventEmitter {
         type: 'local',
         config: {
           storagePath: '/data/vector-store',
-          indexType: 'faiss'
+          indexType: 'faiss',
         },
         collections: ['main'],
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     for (const store of stores) {
@@ -527,7 +531,7 @@ export class NovaRAGEngine extends EventEmitter {
   private async loadDocumentChunks(): Promise<void> {
     // Load existing chunks from persistent storage
     logger.info('Loading existing document chunks...');
-    
+
     // This would load from database or file system
     // For now, we'll start with an empty collection
     logger.info('Document chunks loaded');
@@ -539,10 +543,10 @@ export class NovaRAGEngine extends EventEmitter {
     }
 
     logger.info('Initializing knowledge graph...');
-    
+
     // Load entities, relationships, and concepts
     await this.loadKnowledgeGraphData();
-    
+
     logger.info('Knowledge graph initialized');
   }
 
@@ -551,7 +555,11 @@ export class NovaRAGEngine extends EventEmitter {
     // This would connect to a graph database or load from files
   }
 
-  private async processDocument(doc: { id: string; content: string; metadata: any }): Promise<void> {
+  private async processDocument(doc: {
+    id: string;
+    content: string;
+    metadata: any;
+  }): Promise<void> {
     // Split document into chunks
     const chunks = await this.chunkDocument(doc.content, doc.metadata);
 
@@ -559,13 +567,13 @@ export class NovaRAGEngine extends EventEmitter {
     for (const chunk of chunks) {
       chunk.documentId = doc.id;
       chunk.id = crypto.randomUUID();
-      
+
       // Generate embedding
       chunk.embedding = await this.generateEmbedding(chunk.content);
-      
+
       // Store chunk
       this.documentChunks.set(chunk.id, chunk);
-      
+
       // Add to vector store
       await this.addToVectorStore(chunk);
     }
@@ -596,13 +604,13 @@ export class NovaRAGEngine extends EventEmitter {
         metadata: {
           ...metadata,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         position: {
           start,
           end,
-          section: this.extractSection(chunkContent)
-        }
+          section: this.extractSection(chunkContent),
+        },
       };
 
       chunks.push(chunk);
@@ -643,7 +651,10 @@ export class NovaRAGEngine extends EventEmitter {
     return new Array(model.dimensions).fill(0).map(() => Math.random() - 0.5);
   }
 
-  private async generateHuggingFaceEmbedding(text: string, model: EmbeddingModel): Promise<number[]> {
+  private async generateHuggingFaceEmbedding(
+    text: string,
+    model: EmbeddingModel,
+  ): Promise<number[]> {
     // HuggingFace API call for embeddings
     return new Array(model.dimensions).fill(0).map(() => Math.random() - 0.5);
   }
@@ -715,7 +726,10 @@ export class NovaRAGEngine extends EventEmitter {
     // Local store deletion logic
   }
 
-  private async semanticSearch(query: RAGQuery, queryEmbedding: number[]): Promise<DocumentChunk[]> {
+  private async semanticSearch(
+    query: RAGQuery,
+    queryEmbedding: number[],
+  ): Promise<DocumentChunk[]> {
     // Semantic search using vector similarity
     const chunks = Array.from(this.documentChunks.values());
     const results: Array<{ chunk: DocumentChunk; score: number }> = [];
@@ -732,7 +746,7 @@ export class NovaRAGEngine extends EventEmitter {
     // Sort by similarity score
     results.sort((a, b) => b.score - a.score);
 
-    return results.map(r => {
+    return results.map((r) => {
       r.chunk.metadata.relevanceScore = r.score;
       return r.chunk;
     });
@@ -749,7 +763,10 @@ export class NovaRAGEngine extends EventEmitter {
 
   private async keywordSearch(query: string): Promise<DocumentChunk[]> {
     // Simple keyword-based search
-    const keywords = query.toLowerCase().split(' ').filter(word => word.length > 2);
+    const keywords = query
+      .toLowerCase()
+      .split(' ')
+      .filter((word) => word.length > 2);
     const chunks = Array.from(this.documentChunks.values());
     const results: Array<{ chunk: DocumentChunk; score: number }> = [];
 
@@ -768,15 +785,19 @@ export class NovaRAGEngine extends EventEmitter {
     }
 
     results.sort((a, b) => b.score - a.score);
-    return results.map(r => r.chunk);
+    return results.map((r) => r.chunk);
   }
 
-  private mergeSearchResults(semanticResults: DocumentChunk[], keywordResults: DocumentChunk[]): DocumentChunk[] {
+  private mergeSearchResults(
+    semanticResults: DocumentChunk[],
+    keywordResults: DocumentChunk[],
+  ): DocumentChunk[] {
     const merged = new Map<string, DocumentChunk>();
-    
+
     // Add semantic results with higher weight
     semanticResults.forEach((chunk, index) => {
-      chunk.metadata.relevanceScore = (chunk.metadata.relevanceScore || 0) * 0.7 + (1 - index / semanticResults.length) * 0.3;
+      chunk.metadata.relevanceScore =
+        (chunk.metadata.relevanceScore || 0) * 0.7 + (1 - index / semanticResults.length) * 0.3;
       merged.set(chunk.id, chunk);
     });
 
@@ -784,7 +805,8 @@ export class NovaRAGEngine extends EventEmitter {
     keywordResults.forEach((chunk, index) => {
       if (merged.has(chunk.id)) {
         const existing = merged.get(chunk.id)!;
-        existing.metadata.relevanceScore = (existing.metadata.relevanceScore || 0) + (1 - index / keywordResults.length) * 0.2;
+        existing.metadata.relevanceScore =
+          (existing.metadata.relevanceScore || 0) + (1 - index / keywordResults.length) * 0.2;
       } else {
         chunk.metadata.relevanceScore = (1 - index / keywordResults.length) * 0.3;
         merged.set(chunk.id, chunk);
@@ -792,15 +814,15 @@ export class NovaRAGEngine extends EventEmitter {
     });
 
     // Sort by final relevance score
-    return Array.from(merged.values()).sort((a, b) => 
-      (b.metadata.relevanceScore || 0) - (a.metadata.relevanceScore || 0)
+    return Array.from(merged.values()).sort(
+      (a, b) => (b.metadata.relevanceScore || 0) - (a.metadata.relevanceScore || 0),
     );
   }
 
   private applyFilters(chunks: DocumentChunk[], filters?: RAGQuery['filters']): DocumentChunk[] {
     if (!filters) return chunks;
 
-    return chunks.filter(chunk => {
+    return chunks.filter((chunk) => {
       // Source filter
       if (filters.sources && !filters.sources.includes(chunk.metadata.source)) {
         return false;
@@ -812,8 +834,11 @@ export class NovaRAGEngine extends EventEmitter {
       }
 
       // Category filter
-      if (filters.categories && chunk.metadata.category && 
-          !filters.categories.includes(chunk.metadata.category)) {
+      if (
+        filters.categories &&
+        chunk.metadata.category &&
+        !filters.categories.includes(chunk.metadata.category)
+      ) {
         return false;
       }
 
@@ -826,16 +851,17 @@ export class NovaRAGEngine extends EventEmitter {
       }
 
       // Classification filter
-      if (filters.classification && chunk.metadata.classification &&
-          !filters.classification.includes(chunk.metadata.classification)) {
+      if (
+        filters.classification &&
+        chunk.metadata.classification &&
+        !filters.classification.includes(chunk.metadata.classification)
+      ) {
         return false;
       }
 
       // Tags filter
       if (filters.tags && chunk.metadata.tags) {
-        const hasMatchingTag = filters.tags.some(tag => 
-          chunk.metadata.tags!.includes(tag)
-        );
+        const hasMatchingTag = filters.tags.some((tag) => chunk.metadata.tags!.includes(tag));
         if (!hasMatchingTag) return false;
       }
 
@@ -846,7 +872,7 @@ export class NovaRAGEngine extends EventEmitter {
   private async rerankResults(query: string, chunks: DocumentChunk[]): Promise<DocumentChunk[]> {
     // Cross-encoder reranking for better relevance
     // This would use a specialized reranking model
-    
+
     // For now, return chunks as-is
     return chunks;
   }
@@ -854,23 +880,26 @@ export class NovaRAGEngine extends EventEmitter {
   private calculateConfidence(chunks: DocumentChunk[]): number {
     if (chunks.length === 0) return 0;
 
-    const scores = chunks.map(chunk => chunk.metadata.relevanceScore || 0);
+    const scores = chunks.map((chunk) => chunk.metadata.relevanceScore || 0);
     const avgScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-    
+
     // Adjust confidence based on result count and score distribution
     let confidence = avgScore;
-    
+
     if (chunks.length >= 3) confidence *= 1.1;
     if (chunks.length >= 5) confidence *= 1.1;
-    
+
     return Math.min(1, confidence);
   }
 
   private async generateContextSummary(query: string, chunks: DocumentChunk[]): Promise<string> {
     // Generate a summary of the retrieved context
     // This would use a summarization model
-    
-    const combinedContent = chunks.slice(0, 3).map(chunk => chunk.content).join('\n\n');
+
+    const combinedContent = chunks
+      .slice(0, 3)
+      .map((chunk) => chunk.content)
+      .join('\n\n');
     return `Based on ${chunks.length} relevant documents, here's the key information related to "${query}": ${combinedContent.substring(0, 500)}...`;
   }
 
@@ -895,12 +924,12 @@ export class NovaRAGEngine extends EventEmitter {
   private async expandQuery(query: string): Promise<string> {
     // Query expansion using synonyms, related terms, etc.
     // This would use NLP techniques or knowledge graph traversal
-    
+
     // Simple expansion for now
     const synonyms = {
-      'problem': ['issue', 'error', 'bug'],
-      'fix': ['resolve', 'solution', 'repair'],
-      'install': ['setup', 'configure', 'deploy']
+      problem: ['issue', 'error', 'bug'],
+      fix: ['resolve', 'solution', 'repair'],
+      install: ['setup', 'configure', 'deploy'],
     };
 
     let expandedQuery = query;
@@ -913,10 +942,13 @@ export class NovaRAGEngine extends EventEmitter {
     return expandedQuery;
   }
 
-  private async updateKnowledgeGraph(doc: { id: string; content: string; metadata: any }): Promise<void> {
+  private async updateKnowledgeGraph(doc: {
+    id: string;
+    content: string;
+    metadata: any;
+  }): Promise<void> {
     // Extract entities and relationships from document
     // Update knowledge graph
-    
     // This would use NER and relation extraction models
   }
 
@@ -935,7 +967,7 @@ export class NovaRAGEngine extends EventEmitter {
 
   async shutdown(): Promise<void> {
     logger.info('Shutting down RAG Engine...');
-    
+
     if (this.indexUpdateInterval) {
       clearInterval(this.indexUpdateInterval);
     }

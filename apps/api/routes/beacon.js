@@ -19,9 +19,13 @@ async function findInventoryAssetByHardwareId(hardwareId) {
     // If a proper inventory service is available, use that; otherwise fall back to DB lookup
     const helix = (await import('../services/helixKioskIntegration.js')).default;
     if (helix?.db?.inventoryAsset?.findFirst) {
-      const asset = await helix.db.inventoryAsset.findFirst({ where: { hardware_id: hardwareId } }).catch(() => null);
+      const asset = await helix.db.inventoryAsset
+        .findFirst({ where: { hardware_id: hardwareId } })
+        .catch(() => null);
       if (asset) return asset;
-      return await helix.db.inventoryAsset.findFirst({ where: { hardware_id: { equals: hardwareId, mode: 'insensitive' } } }).catch(() => null);
+      return await helix.db.inventoryAsset
+        .findFirst({ where: { hardware_id: { equals: hardwareId, mode: 'insensitive' } } })
+        .catch(() => null);
     }
   } catch {}
   return null;
@@ -86,7 +90,8 @@ const router = express.Router();
  *       401:
  *         description: Invalid kiosk authentication
  */
-router.get('/config',
+router.get(
+  '/config',
   validateKioskAuth,
   createRateLimit(15 * 60 * 1000, 100), // 100 requests per 15 minutes
   async (req, res) => {
@@ -94,68 +99,61 @@ router.get('/config',
       const kioskId = req.kiosk.id;
 
       // Get kiosk configuration
-      db.get(
-        'SELECT * FROM kiosks WHERE id = $1 AND isActive = 1',
-        [kioskId],
-        (err, kiosk) => {
-          if (err) {
-            logger.error('Database error getting kiosk config:', err);
-            return res.status(500).json({
-              success: false,
-              error: 'Database error',
-              errorCode: 'DB_ERROR'
-            });
-          }
-
-          if (!kiosk) {
-            return res.status(404).json({
-              success: false,
-              error: 'Kiosk not found or inactive',
-              errorCode: 'KIOSK_NOT_FOUND'
-            });
-          }
-
-          // Get ticket categories
-          db.all(
-            'SELECT id, name, description FROM ticket_categories WHERE isActive = 1 ORDER BY name',
-            [],
-            (err, categories) => {
-              if (err) {
-                logger.warn('Error getting categories:', err);
-                categories = []; // Fallback to empty array
-              }
-
-              // Update last seen timestamp
-              db.run(
-                'UPDATE kiosks SET lastSeen = datetime("now") WHERE id = $1',
-                [kioskId]
-              );
-
-              res.json({
-                success: true,
-                config: {
-                  id: kiosk.id,
-                  name: kiosk.name,
-                  location: kiosk.location,
-                  isActive: Boolean(kiosk.isActive),
-                  configuration: JSON.parse(kiosk.configuration || '{}'),
-                  lastSeen: kiosk.lastSeen
-                },
-                categories: categories || []
-              });
-            }
-          );
+      db.get('SELECT * FROM kiosks WHERE id = $1 AND isActive = 1', [kioskId], (err, kiosk) => {
+        if (err) {
+          logger.error('Database error getting kiosk config:', err);
+          return res.status(500).json({
+            success: false,
+            error: 'Database error',
+            errorCode: 'DB_ERROR',
+          });
         }
-      );
+
+        if (!kiosk) {
+          return res.status(404).json({
+            success: false,
+            error: 'Kiosk not found or inactive',
+            errorCode: 'KIOSK_NOT_FOUND',
+          });
+        }
+
+        // Get ticket categories
+        db.all(
+          'SELECT id, name, description FROM ticket_categories WHERE isActive = 1 ORDER BY name',
+          [],
+          (err, categories) => {
+            if (err) {
+              logger.warn('Error getting categories:', err);
+              categories = []; // Fallback to empty array
+            }
+
+            // Update last seen timestamp
+            db.run('UPDATE kiosks SET lastSeen = datetime("now") WHERE id = $1', [kioskId]);
+
+            res.json({
+              success: true,
+              config: {
+                id: kiosk.id,
+                name: kiosk.name,
+                location: kiosk.location,
+                isActive: Boolean(kiosk.isActive),
+                configuration: JSON.parse(kiosk.configuration || '{}'),
+                lastSeen: kiosk.lastSeen,
+              },
+              categories: categories || [],
+            });
+          },
+        );
+      });
     } catch (error) {
       logger.error('Error getting kiosk config:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error',
-        errorCode: 'INTERNAL_ERROR'
+        errorCode: 'INTERNAL_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -227,7 +225,8 @@ router.get('/config',
  *       401:
  *         description: Invalid kiosk authentication
  */
-router.post('/ticket',
+router.post(
+  '/ticket',
   validateKioskAuth,
   createRateLimit(5 * 60 * 1000, 10), // 10 tickets per 5 minutes
   [
@@ -240,20 +239,13 @@ router.post('/ticket',
     body('requesterName')
       .isLength({ min: 2, max: 100 })
       .withMessage('Requester name must be between 2 and 100 characters'),
-    body('requesterEmail')
-      .optional()
-      .isEmail()
-      .withMessage('Must be a valid email address'),
-    body('category')
-      .optional()
-      .isString(),
+    body('requesterEmail').optional().isEmail().withMessage('Must be a valid email address'),
+    body('category').optional().isString(),
     body('priority')
       .optional()
       .isIn(['low', 'medium', 'high', 'critical'])
       .withMessage('Priority must be one of: low, medium, high, critical'),
-    body('location')
-      .optional()
-      .isString()
+    body('location').optional().isString(),
   ],
   async (req, res) => {
     try {
@@ -263,7 +255,7 @@ router.post('/ticket',
           success: false,
           error: 'Validation failed',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -274,7 +266,7 @@ router.post('/ticket',
         requesterEmail,
         category = 'general',
         priority = 'medium',
-        location
+        location,
       } = req.body;
 
       const kioskId = req.kiosk.id;
@@ -302,15 +294,15 @@ router.post('/ticket',
               'kiosk',
               requesterEmail || null,
               new Date().toISOString(),
-              new Date().toISOString()
+              new Date().toISOString(),
             ],
-            function(err) {
+            function (err) {
               if (err) {
                 reject(err);
               } else {
                 resolve(this.lastID);
               }
-            }
+            },
           );
         });
 
@@ -320,7 +312,7 @@ router.post('/ticket',
           ticketId,
           kioskId,
           requesterName,
-          title
+          title,
         });
 
         // Trigger notifications/integrations for kiosk status change
@@ -332,7 +324,7 @@ router.post('/ticket',
             severity: 'low',
             title: `Kiosk ${kioskId} activated`,
             message: `Kiosk ${kioskId} was successfully activated and linked.`,
-            data: { kioskId }
+            data: { kioskId },
           });
         } catch {}
 
@@ -344,16 +336,16 @@ router.post('/ticket',
             type: typeCode,
             title,
             status: 'open',
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           },
-          message: `Ticket ${ticketId} created successfully`
+          message: `Ticket ${ticketId} created successfully`,
         });
       } catch (err) {
         logger.error('Error creating ticket from kiosk:', err);
         return res.status(500).json({
           success: false,
           error: 'Failed to create ticket',
-          errorCode: 'TICKET_CREATE_ERROR'
+          errorCode: 'TICKET_CREATE_ERROR',
         });
       }
     } catch (error) {
@@ -361,10 +353,10 @@ router.post('/ticket',
       res.status(500).json({
         success: false,
         error: 'Internal server error',
-        errorCode: 'INTERNAL_ERROR'
+        errorCode: 'INTERNAL_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -416,7 +408,8 @@ router.post('/ticket',
  *       401:
  *         description: Invalid kiosk authentication
  */
-router.get('/assets',
+router.get(
+  '/assets',
   validateKioskAuth,
   createRateLimit(15 * 60 * 1000, 50), // 50 requests per 15 minutes
   async (req, res) => {
@@ -441,13 +434,13 @@ router.get('/assets',
           return res.status(500).json({
             success: false,
             error: 'Database error',
-            errorCode: 'DB_ERROR'
+            errorCode: 'DB_ERROR',
           });
         }
 
         res.json({
           success: true,
-          assets: assets || []
+          assets: assets || [],
         });
       });
     } catch (error) {
@@ -455,10 +448,10 @@ router.get('/assets',
       res.status(500).json({
         success: false,
         error: 'Internal server error',
-        errorCode: 'INTERNAL_ERROR'
+        errorCode: 'INTERNAL_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -512,18 +505,15 @@ router.get('/assets',
  *       404:
  *         description: Activation code not found or expired
  */
-router.post('/activate',
+router.post(
+  '/activate',
   createRateLimit(15 * 60 * 1000, 10), // 10 activation attempts per 15 minutes
   [
     body('activationCode')
       .isLength({ min: 6, max: 32 })
       .withMessage('Activation code must be between 6 and 32 characters'),
-    body('deviceInfo')
-      .isObject()
-      .withMessage('Device info is required'),
-    body('deviceInfo.deviceId')
-      .notEmpty()
-      .withMessage('Device ID is required')
+    body('deviceInfo').isObject().withMessage('Device info is required'),
+    body('deviceInfo.deviceId').notEmpty().withMessage('Device ID is required'),
   ],
   async (req, res) => {
     try {
@@ -533,7 +523,7 @@ router.post('/activate',
           success: false,
           error: 'Validation failed',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -550,19 +540,19 @@ router.post('/activate',
             return res.status(500).json({
               success: false,
               error: 'Database error',
-              errorCode: 'DB_ERROR'
+              errorCode: 'DB_ERROR',
             });
           }
 
           if (!activation) {
             logger.warn('Invalid or expired activation code attempt', {
               activationCode,
-              ip: req.ip
+              ip: req.ip,
             });
             return res.status(404).json({
               success: false,
               error: 'Invalid or expired activation code',
-              errorCode: 'INVALID_ACTIVATION_CODE'
+              errorCode: 'INVALID_ACTIVATION_CODE',
             });
           }
 
@@ -581,15 +571,15 @@ router.post('/activate',
               activation.location,
               JSON.stringify(deviceInfo),
               kioskToken,
-              activation.configuration || '{}'
+              activation.configuration || '{}',
             ],
-            async function(err) {
+            async function (err) {
               if (err) {
                 logger.error('Error creating kiosk record:', err);
                 return res.status(500).json({
                   success: false,
                   error: 'Failed to activate kiosk',
-                  errorCode: 'ACTIVATION_ERROR'
+                  errorCode: 'ACTIVATION_ERROR',
                 });
               }
 
@@ -599,11 +589,18 @@ router.post('/activate',
                 if (hardwareId) {
                   const asset = await findInventoryAssetByHardwareId(hardwareId);
                   if (asset?.id && HelixKioskIntegration?.registerAssetWithKiosk) {
-                    await HelixKioskIntegration.registerAssetWithKiosk(asset.id, activation.kioskId, { userId: 'kiosk-activation' }).catch(()=>null);
+                    await HelixKioskIntegration.registerAssetWithKiosk(
+                      asset.id,
+                      activation.kioskId,
+                      { userId: 'kiosk-activation' },
+                    ).catch(() => null);
                   }
                 }
                 // In a real system, deviceInfo/serial would be matched.
-                HelixKioskIntegration.updateHelixSyncStatus?.(activation.kioskId, 0, { status: 'pending', timestamp: new Date().toISOString() });
+                HelixKioskIntegration.updateHelixSyncStatus?.(activation.kioskId, 0, {
+                  status: 'pending',
+                  timestamp: new Date().toISOString(),
+                });
               } catch (e) {
                 logger.warn('Inventory/Helix auto-registration hook failed:', e.message);
               }
@@ -611,17 +608,21 @@ router.post('/activate',
               // Mark activation as used
               db.run(
                 'UPDATE kiosk_activations SET isUsed = 1, usedAt = datetime("now") WHERE id = $1',
-                [activation.id]
+                [activation.id],
               );
 
               logger.info('Kiosk activated successfully', {
                 kioskId: activation.kioskId,
                 kioskName: activation.kioskName,
-                location: activation.location
+                location: activation.location,
               });
 
               // Emit kiosk-activated for realtime UIs
-              events.emit('kiosk-activated', { kioskId: activation.kioskId, kioskName: activation.kioskName, location: activation.location });
+              events.emit('kiosk-activated', {
+                kioskId: activation.kioskId,
+                kioskName: activation.kioskName,
+                location: activation.location,
+              });
 
               res.json({
                 success: true,
@@ -631,23 +632,23 @@ router.post('/activate',
                   name: activation.kioskName,
                   location: activation.location,
                   isActive: true,
-                  configuration: JSON.parse(activation.configuration || '{}')
+                  configuration: JSON.parse(activation.configuration || '{}'),
                 },
-                message: 'Kiosk activated successfully'
+                message: 'Kiosk activated successfully',
               });
-            }
+            },
           );
-        }
+        },
       );
     } catch (error) {
       logger.error('Error during kiosk activation:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error',
-        errorCode: 'INTERNAL_ERROR'
+        errorCode: 'INTERNAL_ERROR',
       });
     }
-  }
+  },
 );
 
 // Admin-issued activation code generation
@@ -660,14 +661,46 @@ router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req,
     db.run(
       `INSERT INTO kiosk_activations (kioskId, kioskName, location, activationCode, configuration, isUsed, expiresAt)
        VALUES ($1, $2, $3, $4, $5, 0, $6)`,
-      [kioskId, kioskName || kioskId, location || '', code, JSON.stringify(configuration || {}), expiresAt],
-      function(err) {
+      [
+        kioskId,
+        kioskName || kioskId,
+        location || '',
+        code,
+        JSON.stringify(configuration || {}),
+        expiresAt,
+      ],
+      function (err) {
         if (err) return res.status(500).json({ success: false, error: 'DB error' });
         const activationUrl = `${process.env.ADMIN_URL || ''}/activate?kioskId=${encodeURIComponent(kioskId)}&code=${code}`;
-        QRCode.toDataURL(activationUrl).then(qr => {
-          res.status(201).json({ success: true, code, kioskId, kioskName, location, expiresAt, activationUrl, qr });
-        }).catch(() => res.status(201).json({ success: true, code, kioskId, kioskName, location, expiresAt, activationUrl }));
-      }
+        QRCode.toDataURL(activationUrl)
+          .then((qr) => {
+            res
+              .status(201)
+              .json({
+                success: true,
+                code,
+                kioskId,
+                kioskName,
+                location,
+                expiresAt,
+                activationUrl,
+                qr,
+              });
+          })
+          .catch(() =>
+            res
+              .status(201)
+              .json({
+                success: true,
+                code,
+                kioskId,
+                kioskName,
+                location,
+                expiresAt,
+                activationUrl,
+              }),
+          );
+      },
     );
   } catch (e) {
     res.status(500).json({ success: false, error: 'Failed to create activation code' });
@@ -702,7 +735,9 @@ router.post('/link-asset', authenticateJWT, async (req, res) => {
   try {
     const { kioskId, assetTag, serialNumber } = req.body || {};
     if (!kioskId || (!assetTag && !serialNumber)) {
-      return res.status(400).json({ success: false, error: 'kioskId and assetTag or serialNumber required' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'kioskId and assetTag or serialNumber required' });
     }
     const helix = (await import('../services/helixKioskIntegration.js')).default;
 
@@ -711,25 +746,38 @@ router.post('/link-asset', authenticateJWT, async (req, res) => {
     if (assetTag) {
       asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: assetTag } });
       if (!asset) {
-        asset = await helix.db.inventoryAsset.findFirst({ where: { asset_tag: { equals: assetTag, mode: 'insensitive' } } });
+        asset = await helix.db.inventoryAsset.findFirst({
+          where: { asset_tag: { equals: assetTag, mode: 'insensitive' } },
+        });
       }
     }
     if (!asset && serialNumber) {
       // Attempt plaintext field
-      asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: serialNumber } }).catch(() => null);
+      asset = await helix.db.inventoryAsset
+        .findFirst({ where: { serial_number_plain: serialNumber } })
+        .catch(() => null);
       // Fallback: case-insensitive partial match
       if (!asset) {
-        asset = await helix.db.inventoryAsset.findFirst({ where: { serial_number_plain: { contains: serialNumber, mode: 'insensitive' } } }).catch(() => null);
+        asset = await helix.db.inventoryAsset
+          .findFirst({
+            where: { serial_number_plain: { contains: serialNumber, mode: 'insensitive' } },
+          })
+          .catch(() => null);
       }
       // Fallback: decrypt compare across recent assets (bounded scan)
       if (!asset) {
-        const recent = await helix.db.inventoryAsset.findMany({ take: 200, orderBy: { updated_at: 'desc' } }).catch(() => []);
+        const recent = await helix.db.inventoryAsset
+          .findMany({ take: 200, orderBy: { updated_at: 'desc' } })
+          .catch(() => []);
         for (const a of recent) {
           if (a.serial_number_enc) {
             try {
               const { decrypt } = await import('../utils/encryption.js');
               const dec = decrypt(a.serial_number_enc);
-              if (dec && dec.toLowerCase() === String(serialNumber).toLowerCase()) { asset = a; break; }
+              if (dec && dec.toLowerCase() === String(serialNumber).toLowerCase()) {
+                asset = a;
+                break;
+              }
             } catch {}
           }
         }
@@ -739,7 +787,9 @@ router.post('/link-asset', authenticateJWT, async (req, res) => {
       return res.status(404).json({ success: false, error: 'Asset not found' });
     }
 
-    const result = await helix.registerAssetWithKiosk(asset.id, kioskId, { userId: req.user?.id || 'admin' });
+    const result = await helix.registerAssetWithKiosk(asset.id, kioskId, {
+      userId: req.user?.id || 'admin',
+    });
     // Trigger sync immediately for responsiveness, ignoring errors
     try {
       await helix.syncWithHelix(kioskId, asset.id, asset, result.metadata || {});

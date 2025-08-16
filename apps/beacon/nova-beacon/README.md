@@ -40,6 +40,7 @@ A SwiftUI iPad kiosk application for submitting help desk tickets. Part of the o
 - **Tests**: Unit tests in `Nova BeaconTests/` covering configuration and service behavior
 
 ## Community & Contributing
+
 - [Contributing Guidelines](../.github/CONTRIBUTING.md)
 - [Code of Conduct](../.github/CODE_OF_CONDUCT.md)
 - [Security Policy](../.github/SECURITY.md)
@@ -55,6 +56,7 @@ This project is licensed under the [MIT License](../LICENSE).
 ---
 
 ## Credits & Acknowledgments
+
 - [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) for README inspiration
 - All contributors and open source dependencies
 

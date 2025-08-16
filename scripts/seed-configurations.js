@@ -26,17 +26,18 @@ const CONFIG_DEFINITIONS = [
     validationRules: {
       minLength: 1,
       maxLength: 100,
-      pattern: '^[a-zA-Z0-9\\s&.-]+$'
+      pattern: '^[a-zA-Z0-9\\s&.-]+$',
     },
     displayOrder: 1,
-    helpText: 'Enter your organization\'s full name. This will appear in headers, emails, and branding.',
-    isAdvanced: false
+    helpText:
+      "Enter your organization's full name. This will appear in headers, emails, and branding.",
+    isAdvanced: false,
   },
   {
     key: 'LOGO_URL',
     value: null,
     valueType: 'string',
-    description: 'URL or path to your organization\'s logo',
+    description: "URL or path to your organization's logo",
     isPublic: true,
     category: 'branding',
     subcategory: 'assets',
@@ -44,11 +45,11 @@ const CONFIG_DEFINITIONS = [
     isRequired: false,
     defaultValue: '/assets/logo.png',
     validationRules: {
-      pattern: '^(https?://|/)'
+      pattern: '^(https?://|/)',
     },
     displayOrder: 2,
     helpText: 'Provide a URL to your logo image. Recommended size: 200x50px',
-    isAdvanced: false
+    isAdvanced: false,
   },
   {
     key: 'PRIMARY_COLOR',
@@ -62,11 +63,11 @@ const CONFIG_DEFINITIONS = [
     isRequired: false,
     defaultValue: '#3b82f6',
     validationRules: {
-      pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+      pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
     },
     displayOrder: 3,
     helpText: 'Enter a hex color code for your primary brand color',
-    isAdvanced: false
+    isAdvanced: false,
   },
 
   // Security configurations
@@ -83,11 +84,11 @@ const CONFIG_DEFINITIONS = [
     defaultValue: '4',
     validationRules: {
       min: 3,
-      max: 10
+      max: 10,
     },
     displayOrder: 1,
     helpText: 'Set the minimum number of digits required for user PINs',
-    isAdvanced: false
+    isAdvanced: false,
   },
   {
     key: 'RATE_LIMIT_WINDOW',
@@ -102,11 +103,11 @@ const CONFIG_DEFINITIONS = [
     defaultValue: '15',
     validationRules: {
       min: 1,
-      max: 60
+      max: 60,
     },
     displayOrder: 2,
     helpText: 'Time window in minutes for tracking rate limits',
-    isAdvanced: true
+    isAdvanced: true,
   },
 
   // Feature toggles
@@ -124,7 +125,7 @@ const CONFIG_DEFINITIONS = [
     validationRules: null,
     displayOrder: 1,
     helpText: 'Toggle the AI assistant feature for users',
-    isAdvanced: false
+    isAdvanced: false,
   },
   {
     key: 'AI_TICKET_PROCESSING_ENABLED',
@@ -140,7 +141,7 @@ const CONFIG_DEFINITIONS = [
     validationRules: null,
     displayOrder: 2,
     helpText: 'Enable AI to automatically categorize and process tickets',
-    isAdvanced: false
+    isAdvanced: false,
   },
 
   // Integration settings
@@ -156,11 +157,11 @@ const CONFIG_DEFINITIONS = [
     isRequired: false,
     defaultValue: 'local',
     validationRules: {
-      enum: ['local', 'ldap', 'azure-ad', 'okta', 'google']
+      enum: ['local', 'ldap', 'azure-ad', 'okta', 'google'],
     },
     displayOrder: 1,
-    helpText: 'Select your organization\'s directory service provider',
-    isAdvanced: false
+    helpText: "Select your organization's directory service provider",
+    isAdvanced: false,
   },
 
   // Communications
@@ -176,11 +177,11 @@ const CONFIG_DEFINITIONS = [
     isRequired: false,
     defaultValue: 'noreply@example.com',
     validationRules: {
-      pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$'
+      pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$',
     },
     displayOrder: 1,
     helpText: 'Email address used as the sender for system notifications',
-    isAdvanced: false
+    isAdvanced: false,
   },
 
   // AI configurations
@@ -196,11 +197,11 @@ const CONFIG_DEFINITIONS = [
     isRequired: false,
     defaultValue: 'professional',
     validationRules: {
-      enum: ['professional', 'friendly', 'casual', 'technical']
+      enum: ['professional', 'friendly', 'casual', 'technical'],
     },
     displayOrder: 1,
     helpText: 'Choose the personality style for AI interactions',
-    isAdvanced: false
+    isAdvanced: false,
   },
 ];
 
@@ -228,7 +229,7 @@ async function seedConfigurations() {
           displayOrder: config.displayOrder,
           helpText: config.helpText,
           isAdvanced: config.isAdvanced,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         create: {
           key: config.key,
@@ -245,7 +246,7 @@ async function seedConfigurations() {
           displayOrder: config.displayOrder,
           helpText: config.helpText,
           isAdvanced: config.isAdvanced,
-        }
+        },
       });
 
       console.log(`✅ ${config.key}: ${result ? 'created/updated' : 'skipped'}`);
@@ -255,13 +256,12 @@ async function seedConfigurations() {
     console.log(`📊 Processed ${CONFIG_DEFINITIONS.length} configuration definitions`);
 
     // Display summary by category
-    const categories = [...new Set(CONFIG_DEFINITIONS.map(c => c.category))];
+    const categories = [...new Set(CONFIG_DEFINITIONS.map((c) => c.category))];
     console.log('\n📋 Summary by category:');
     for (const category of categories) {
-      const count = CONFIG_DEFINITIONS.filter(c => c.category === category).length;
+      const count = CONFIG_DEFINITIONS.filter((c) => c.category === category).length;
       console.log(`  - ${category}: ${count} configurations`);
     }
-
   } catch (error) {
     console.error('❌ Error during configuration seeding:', error);
     process.exit(1);

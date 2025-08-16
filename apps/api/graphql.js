@@ -21,22 +21,23 @@ const typeDefs = gql`
 const resolvers = {
   Query: {
     tickets: async (_, { status }) => {
-      let sql = 'SELECT id, title, status, priority, assigned_to_id FROM tickets WHERE deleted_at IS NULL';
+      let sql =
+        'SELECT id, title, status, priority, assigned_to_id FROM tickets WHERE deleted_at IS NULL';
       const params = [];
       if (status) {
         sql += ' AND status = $1';
         params.push(status);
       }
       const result = await db.query(sql, params);
-      return result.rows.map(row => ({
+      return result.rows.map((row) => ({
         id: row.id,
         title: row.title,
         status: row.status,
         priority: row.priority,
-        assignedTo: row.assigned_to_id || null
+        assignedTo: row.assigned_to_id || null,
       }));
-    }
-  }
+    },
+  },
 };
 
 export async function setupGraphQL(app) {
@@ -73,7 +74,7 @@ export async function setupGraphQL(app) {
         id: payload.id,
         name: result.rows[0].name,
         email: result.rows[0].email,
-        roles: Array.from(new Set(result.rows.map((r) => r.role).filter(Boolean)))
+        roles: Array.from(new Set(result.rows.map((r) => r.role).filter(Boolean))),
       };
       if (!user.roles.includes('admin') && !user.roles.includes('superadmin')) {
         return res.status(403).json({ error: 'Insufficient permissions' });
@@ -90,7 +91,7 @@ export async function setupGraphQL(app) {
     '/api/v2/graphql',
     authMiddleware,
     expressMiddleware(server, {
-      context: async ({ req }) => ({ user: req.user })
-    })
+      context: async ({ req }) => ({ user: req.user }),
+    }),
   );
 }

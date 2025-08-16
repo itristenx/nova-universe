@@ -35,11 +35,13 @@ A Slack bot that integrates with the Nova Universe ticketing system, allowing us
 ### Installation
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Create a `.env` file with required variables:
+
    ```env
    SLACK_SIGNING_SECRET=your_signing_secret
    SLACK_BOT_TOKEN=xoxb-your-bot-token
@@ -105,7 +107,9 @@ The Slack bot communicates with the Nova Platform API using a service JWT:
 ## Commands
 
 ### `/it-help` and `/new-ticket`
+
 Opens an interactive modal for ticket submission with fields:
+
 - Name (required)
 - Email (required)
 - Title (required)
@@ -114,15 +118,19 @@ Opens an interactive modal for ticket submission with fields:
 - Description (optional)
 
 ### `/nova-status`
+
 Displays aggregated help desk status and monitor uptime.
 
 ### `/nova-queue`
+
 Shows a snapshot of Pulse queues and open counts.
 
 ### `/nova-feedback`
+
 Sends general feedback to the platform.
 
 ### `/nova-assign <TICKET_ID>`
+
 Asks Cosmo to suggest an assignee for a ticket (e.g., `INC000123`, `REQ000045`).
 
 ## Local Testing
@@ -137,16 +145,16 @@ Use the HTTPS forwarding address printed by ngrok as the request URL for your co
 
 ## Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| SLACK_SIGNING_SECRET | Slack app signing secret | Yes |
-| SLACK_BOT_TOKEN | Bot User OAuth token | Yes |
-| API_URL | Nova Platform API base URL | Yes |
-| JWT_SECRET | Secret for JWT generation | Yes |
-| JWT_EXPIRES_IN | JWT expiration time | No (default: 1h) |
-| VITE_ADMIN_URL | Admin portal URL for links | No |
-| SLACK_PORT | Port for the service | No (default: 3001) |
-| COMMS_SERVICE_USER_* | Optional service identity for Nova API JWTs | No |
+| Variable              | Description                                 | Required           |
+| --------------------- | ------------------------------------------- | ------------------ |
+| SLACK_SIGNING_SECRET  | Slack app signing secret                    | Yes                |
+| SLACK_BOT_TOKEN       | Bot User OAuth token                        | Yes                |
+| API_URL               | Nova Platform API base URL                  | Yes                |
+| JWT_SECRET            | Secret for JWT generation                   | Yes                |
+| JWT_EXPIRES_IN        | JWT expiration time                         | No (default: 1h)   |
+| VITE_ADMIN_URL        | Admin portal URL for links                  | No                 |
+| SLACK_PORT            | Port for the service                        | No (default: 3001) |
+| COMMS*SERVICE_USER*\* | Optional service identity for Nova API JWTs | No                 |
 
 ## Deployment
 
@@ -160,6 +168,7 @@ Use the HTTPS forwarding address printed by ngrok as the request URL for your co
 ### Docker Support
 
 Create a `Dockerfile`:
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -181,6 +190,7 @@ CMD ["npm", "start"]
 ## Monitoring
 
 The service logs:
+
 - Incoming slash commands
 - API requests and responses
 - Error conditions
@@ -189,6 +199,7 @@ The service logs:
 Consider integrating with monitoring services for production deployments.
 
 ## Community & Contributing
+
 - [Contributing Guidelines](../.github/CONTRIBUTING.md)
 - [Code of Conduct](../.github/CODE_OF_CONDUCT.md)
 - [Security Policy](../.github/SECURITY.md)
@@ -204,5 +215,6 @@ This project is licensed under the [MIT License](../LICENSE).
 ---
 
 ## Credits & Acknowledgments
+
 - [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) for README inspiration
 - All contributors and open source dependencies

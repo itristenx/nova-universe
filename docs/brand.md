@@ -7,9 +7,11 @@ This document provides an overview of the branding system for Nova Universe, inc
 ## Design Tokens
 
 ### Colors
+
 Refer to `assets/branding/color-palette.json` for the full color palette.
 
 ### Typography
+
 - **Headings**: Sans-serif, bold, modern.
 - **Body Text**: Sans-serif, regular weight.
 - Fonts: "Inter", "Roboto", "SF Pro Display/Text".
@@ -19,6 +21,7 @@ Refer to `assets/branding/color-palette.json` for the full color palette.
 ## Components
 
 ### Button
+
 - **File**: `src/components/Button.js`
 - **Styles**: `src/components/Button.css`
 - **Props**:
@@ -32,6 +35,7 @@ Refer to `assets/branding/color-palette.json` for the full color palette.
 ## Mockups and Wireframes
 
 ### Integration Management
+
 - **Wireframe**: `design/wireframes/integration-management.md`
 - **Mockup**: `design/mockups/integration-management.md`
 

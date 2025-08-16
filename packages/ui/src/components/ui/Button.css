@@ -1,12 +1,12 @@
 .button--primary {
-  background-color: var(--btn-bg, #1D4ED8);
+  background-color: var(--btn-bg, #1d4ed8);
   color: var(--btn-color, #ffffff);
   font-family: var(--btn-font, 'Inter, system-ui, sans-serif');
   padding: var(--btn-padding, 0.5rem 1rem);
   border-radius: var(--btn-radius, 0.25rem);
 }
 .button--secondary {
-  background-color: var(--btn-bg, #9333EA);
+  background-color: var(--btn-bg, #9333ea);
   color: var(--btn-color, #ffffff);
   font-family: var(--btn-font, 'Inter, system-ui, sans-serif');
   padding: var(--btn-padding, 0.5rem 1rem);

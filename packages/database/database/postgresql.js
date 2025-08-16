@@ -21,14 +21,16 @@ export class PostgreSQLManager {
 
     try {
       logger.info('Initializing PostgreSQL connection pool...');
-      
+
       // Configure SSL if enabled
-      const sslConfig = this.config.ssl ? {
-        rejectUnauthorized: false,
-        cert: this.config.sslCert,
-        key: this.config.sslKey,
-        ca: this.config.sslCa
-      } : false;
+      const sslConfig = this.config.ssl
+        ? {
+            rejectUnauthorized: false,
+            cert: this.config.sslCert,
+            key: this.config.sslKey,
+            ca: this.config.sslCa,
+          }
+        : false;
 
       // Create connection pool
       this.pool = new Pool({
@@ -43,7 +45,7 @@ export class PostgreSQLManager {
         idleTimeoutMillis: this.config.idleTimeout,
         connectionTimeoutMillis: this.config.connectionTimeout,
         statement_timeout: 30000,
-        query_timeout: 30000
+        query_timeout: 30000,
       });
 
       // Set up pool event handlers
@@ -81,15 +83,15 @@ export class PostgreSQLManager {
     }
 
     const start = Date.now();
-    
+
     try {
       const result = await this.pool.query(text, params);
       const duration = Date.now() - start;
-      
+
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`SQL Query executed in ${duration}ms:`, { text, params });
       }
-      
+
       return result;
     } catch (error) {
       const duration = Date.now() - start;
@@ -107,7 +109,7 @@ export class PostgreSQLManager {
     }
 
     const client = await this.pool.connect();
-    
+
     try {
       await client.query('BEGIN');
       const result = await callback(client);
@@ -127,7 +129,7 @@ export class PostgreSQLManager {
    */
   async healthCheck() {
     const start = Date.now();
-    
+
     try {
       if (!this.isInitialized) {
         await this.initialize();
@@ -135,21 +137,21 @@ export class PostgreSQLManager {
 
       await this.pool.query('SELECT 1');
       const responseTime = Date.now() - start;
-      
+
       return {
         healthy: true,
         responseTime,
         connections: {
           total: this.pool.totalCount,
           idle: this.pool.idleCount,
-          waiting: this.pool.waitingCount
-        }
+          waiting: this.pool.waitingCount,
+        },
       };
     } catch (error) {
       return {
         healthy: false,
         error: error.message,
-        responseTime: Date.now() - start
+        responseTime: Date.now() - start,
       };
     }
   }

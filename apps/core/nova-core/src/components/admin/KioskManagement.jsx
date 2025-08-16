@@ -4,14 +4,29 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, CardHeader, CardBody, CardTitle, CardText, CardActions,
-  Button, PrimaryButton, OutlineButton, GhostButton, DangerButton,
-  Input, Label,
-  Modal, ModalHeader, ModalBody, ModalFooter,
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardTitle,
+  CardText,
+  CardActions,
+  Button,
+  PrimaryButton,
+  OutlineButton,
+  GhostButton,
+  DangerButton,
+  Input,
+  Label,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
   Toast,
-  Progress, Spinner, Skeleton,
-  useTheme
+  Progress,
+  Spinner,
+  Skeleton,
+  useTheme,
 } from '../../packages/design-system';
 
 const kioskStyles = `
@@ -448,7 +463,7 @@ const mockKiosks = [
     lastUpdate: '2024-01-20T12:45:00Z',
     version: '2.1.4',
     ipAddress: '192.168.1.101',
-    department: 'Reception'
+    department: 'Reception',
   },
   {
     id: 'KIOSK-002',
@@ -462,7 +477,7 @@ const mockKiosks = [
     lastUpdate: '2024-01-20T12:42:00Z',
     version: '2.1.4',
     ipAddress: '192.168.1.102',
-    department: 'IT Support'
+    department: 'IT Support',
   },
   {
     id: 'KIOSK-003',
@@ -476,7 +491,7 @@ const mockKiosks = [
     lastUpdate: '2024-01-20T09:15:00Z',
     version: '2.1.2',
     ipAddress: '192.168.1.103',
-    department: 'Facilities'
+    department: 'Facilities',
   },
   {
     id: 'KIOSK-004',
@@ -490,7 +505,7 @@ const mockKiosks = [
     lastUpdate: '2024-01-19T16:30:00Z',
     version: '2.0.8',
     ipAddress: '192.168.1.104',
-    department: 'HR'
+    department: 'HR',
   },
   {
     id: 'KIOSK-005',
@@ -504,7 +519,7 @@ const mockKiosks = [
     lastUpdate: '2024-01-20T12:47:00Z',
     version: '2.1.4',
     ipAddress: '192.168.1.105',
-    department: 'Security'
+    department: 'Security',
   },
   {
     id: 'KIOSK-006',
@@ -518,8 +533,8 @@ const mockKiosks = [
     lastUpdate: '2024-01-20T12:30:00Z',
     version: '2.1.3',
     ipAddress: '192.168.1.106',
-    department: 'Food Services'
-  }
+    department: 'Food Services',
+  },
 ];
 
 // Mock activity data
@@ -527,28 +542,28 @@ const generateKioskActivity = (kioskId) => [
   {
     type: 'info',
     title: 'Ticket submitted successfully',
-    time: '2024-01-20T12:45:00Z'
+    time: '2024-01-20T12:45:00Z',
   },
   {
     type: 'warning',
     title: 'Low memory warning - 85% usage',
-    time: '2024-01-20T11:30:00Z'
+    time: '2024-01-20T11:30:00Z',
   },
   {
     type: 'success',
     title: 'Software update completed',
-    time: '2024-01-20T09:15:00Z'
+    time: '2024-01-20T09:15:00Z',
   },
   {
     type: 'info',
     title: 'User session started',
-    time: '2024-01-20T09:00:00Z'
+    time: '2024-01-20T09:00:00Z',
   },
   {
     type: 'error',
     title: 'Network connectivity issue resolved',
-    time: '2024-01-19T16:45:00Z'
-  }
+    time: '2024-01-19T16:45:00Z',
+  },
 ];
 
 export default function KioskManagement() {
@@ -560,17 +575,17 @@ export default function KioskManagement() {
   const [filters, setFilters] = useState({
     status: 'all',
     location: 'all',
-    search: ''
+    search: '',
   });
 
   // Load kiosks
   useEffect(() => {
     const loadKiosks = async () => {
       setLoading(true);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       setKiosks(mockKiosks);
       setLoading(false);
     };
@@ -579,33 +594,35 @@ export default function KioskManagement() {
   }, []);
 
   // Filter kiosks
-  const filteredKiosks = kiosks.filter(kiosk => {
+  const filteredKiosks = kiosks.filter((kiosk) => {
     if (filters.status !== 'all' && kiosk.status !== filters.status) {
       return false;
     }
-    
+
     if (filters.location !== 'all' && !kiosk.location.includes(filters.location)) {
       return false;
     }
-    
-    if (filters.search && 
-        !kiosk.name.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !kiosk.id.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !kiosk.location.toLowerCase().includes(filters.search.toLowerCase())) {
+
+    if (
+      filters.search &&
+      !kiosk.name.toLowerCase().includes(filters.search.toLowerCase()) &&
+      !kiosk.id.toLowerCase().includes(filters.search.toLowerCase()) &&
+      !kiosk.location.toLowerCase().includes(filters.search.toLowerCase())
+    ) {
       return false;
     }
-    
+
     return true;
   });
 
   // Calculate overview stats
   const overview = {
     total: kiosks.length,
-    online: kiosks.filter(k => k.status === 'online').length,
-    offline: kiosks.filter(k => k.status === 'offline').length,
-    maintenance: kiosks.filter(k => k.status === 'maintenance').length,
+    online: kiosks.filter((k) => k.status === 'online').length,
+    offline: kiosks.filter((k) => k.status === 'offline').length,
+    maintenance: kiosks.filter((k) => k.status === 'maintenance').length,
     todayTotal: kiosks.reduce((sum, k) => sum + k.todayTickets, 0),
-    avgHealth: Math.round(kiosks.reduce((sum, k) => sum + k.health, 0) / kiosks.length)
+    avgHealth: Math.round(kiosks.reduce((sum, k) => sum + k.health, 0) / kiosks.length),
   };
 
   const handleKioskClick = (kiosk) => {
@@ -614,9 +631,9 @@ export default function KioskManagement() {
   };
 
   const handleStatusUpdate = (kioskId, newStatus) => {
-    setKiosks(prev => prev.map(kiosk => 
-      kiosk.id === kioskId ? { ...kiosk, status: newStatus } : kiosk
-    ));
+    setKiosks((prev) =>
+      prev.map((kiosk) => (kiosk.id === kioskId ? { ...kiosk, status: newStatus } : kiosk)),
+    );
   };
 
   const getHealthColor = (health) => {
@@ -638,7 +655,7 @@ export default function KioskManagement() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -649,7 +666,7 @@ export default function KioskManagement() {
           <Skeleton variant="title" width="300px" />
           <Skeleton variant="button" />
         </div>
-        
+
         <div className="kiosk-overview">
           {[...Array(6)].map((_, i) => (
             <Card key={i}>
@@ -660,7 +677,7 @@ export default function KioskManagement() {
             </Card>
           ))}
         </div>
-        
+
         <div className="kiosk-grid">
           {[...Array(6)].map((_, i) => (
             <Card key={i}>
@@ -690,18 +707,22 @@ export default function KioskManagement() {
           <CardBody>
             <div className="overview-number">{overview.total}</div>
             <div className="overview-label">Total Kiosks</div>
-            <div className="overview-detail">{overview.online} online, {overview.offline} offline</div>
+            <div className="overview-detail">
+              {overview.online} online, {overview.offline} offline
+            </div>
           </CardBody>
         </Card>
-        
+
         <Card className="overview-card">
           <CardBody>
             <div className="overview-number">{overview.online}</div>
             <div className="overview-label">Online</div>
-            <div className="overview-detail">{Math.round(overview.online / overview.total * 100)}% operational</div>
+            <div className="overview-detail">
+              {Math.round((overview.online / overview.total) * 100)}% operational
+            </div>
           </CardBody>
         </Card>
-        
+
         <Card className="overview-card">
           <CardBody>
             <div className="overview-number">{overview.maintenance}</div>
@@ -709,7 +730,7 @@ export default function KioskManagement() {
             <div className="overview-detail">Scheduled updates</div>
           </CardBody>
         </Card>
-        
+
         <Card className="overview-card">
           <CardBody>
             <div className="overview-number">{overview.todayTotal}</div>
@@ -717,7 +738,7 @@ export default function KioskManagement() {
             <div className="overview-detail">Across all kiosks</div>
           </CardBody>
         </Card>
-        
+
         <Card className="overview-card">
           <CardBody>
             <div className="overview-number">{overview.avgHealth}%</div>
@@ -725,7 +746,7 @@ export default function KioskManagement() {
             <div className="overview-detail">System performance</div>
           </CardBody>
         </Card>
-        
+
         <Card className="overview-card">
           <CardBody>
             <div className="overview-number">v2.1.4</div>
@@ -742,21 +763,21 @@ export default function KioskManagement() {
           <Input
             placeholder="Search kiosks..."
             value={filters.search}
-            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
           />
         </div>
-        
+
         <div className="filter-group">
           <label className="filter-label">Status</label>
-          <select 
+          <select
             value={filters.status}
-            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
             style={{
               padding: 'var(--space-2) var(--space-3)',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-muted)40',
               backgroundColor: 'var(--color-background)',
-              color: 'var(--color-content)'
+              color: 'var(--color-content)',
             }}
           >
             <option value="all">All Status</option>
@@ -765,18 +786,18 @@ export default function KioskManagement() {
             <option value="maintenance">Maintenance</option>
           </select>
         </div>
-        
+
         <div className="filter-group">
           <label className="filter-label">Building</label>
-          <select 
+          <select
             value={filters.location}
-            onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
+            onChange={(e) => setFilters((prev) => ({ ...prev, location: e.target.value }))}
             style={{
               padding: 'var(--space-2) var(--space-3)',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-muted)40',
               backgroundColor: 'var(--color-background)',
-              color: 'var(--color-content)'
+              color: 'var(--color-content)',
             }}
           >
             <option value="all">All Buildings</option>
@@ -795,7 +816,7 @@ export default function KioskManagement() {
               <div className="empty-state-icon">🖥️</div>
               <h3 className="empty-state-title">No kiosks found</h3>
               <p className="empty-state-description">
-                {filters.search || filters.status !== 'all' || filters.location !== 'all' 
+                {filters.search || filters.status !== 'all' || filters.location !== 'all'
                   ? 'Try adjusting your filters to see more kiosks.'
                   : 'No kiosks have been configured yet.'}
               </p>
@@ -820,12 +841,10 @@ export default function KioskManagement() {
                     {kiosk.status}
                   </div>
                 </div>
-                
+
                 <h3 className="kiosk-name">{kiosk.name}</h3>
-                <div className="kiosk-location">
-                  📍 {kiosk.location}
-                </div>
-                
+                <div className="kiosk-location">📍 {kiosk.location}</div>
+
                 <div className="kiosk-stats">
                   <div className="kiosk-stat">
                     <div className="kiosk-stat-value">{kiosk.todayTickets}</div>
@@ -844,22 +863,20 @@ export default function KioskManagement() {
                     <div className="kiosk-stat-label">Version</div>
                   </div>
                 </div>
-                
+
                 <div className="kiosk-health">
                   <div className="health-label">
                     System Health: {kiosk.health}% - {getHealthLabel(kiosk.health)}
                   </div>
                   <div className="health-bar">
-                    <div 
+                    <div
                       className={`health-progress health-progress--${getHealthColor(kiosk.health)}`}
                       style={{ width: `${kiosk.health}%` }}
                     ></div>
                   </div>
-                  <div className="health-details">
-                    CPU, Memory, Network status
-                  </div>
+                  <div className="health-details">CPU, Memory, Network status</div>
                 </div>
-                
+
                 <div className="kiosk-actions">
                   {kiosk.status === 'offline' ? (
                     <PrimaryButton
@@ -911,7 +928,7 @@ export default function KioskManagement() {
                     Details
                   </PrimaryButton>
                 </div>
-                
+
                 <div className="kiosk-last-update">
                   Last update: {formatTimestamp(kiosk.lastUpdate)}
                 </div>
@@ -922,11 +939,7 @@ export default function KioskManagement() {
       )}
 
       {/* Kiosk Detail Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        size="xl"
-      >
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="xl">
         <ModalHeader onClose={() => setShowModal(false)}>
           Kiosk Details - {selectedKiosk?.id}
         </ModalHeader>
@@ -978,7 +991,7 @@ export default function KioskManagement() {
                     <div className="info-value">
                       {selectedKiosk.health}% - {getHealthLabel(selectedKiosk.health)}
                       <div className="health-bar" style={{ marginTop: 'var(--space-1)' }}>
-                        <div 
+                        <div
                           className={`health-progress health-progress--${getHealthColor(selectedKiosk.health)}`}
                           style={{ width: `${selectedKiosk.health}%` }}
                         ></div>

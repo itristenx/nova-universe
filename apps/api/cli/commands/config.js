@@ -9,12 +9,12 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import path from 'path';
 import Table from 'cli-table3';
 import dotenv from 'dotenv';
-import { 
-  logger, 
-  createSpinner, 
+import {
+  logger,
+  createSpinner,
   getProjectRoot,
   validateEmail,
-  runCommand
+  runCommand,
 } from '../utils/index.js';
 
 export const configCommand = new Command('config')
@@ -42,7 +42,7 @@ configCommand
   .command('set <key> <value>')
   .description('Set configuration value')
   .option('-e, --env <env>', 'Environment file (.env, .env.local, etc)', '.env')
-  .option('-c, --create', 'Create file if it doesn\'t exist')
+  .option('-c, --create', "Create file if it doesn't exist")
   .action(async (key, value, options) => {
     try {
       await setConfig(key, value, options);
@@ -194,7 +194,7 @@ async function setConfig(key, value, options) {
     const envPath = path.join(projectRoot, options.env);
 
     let config = {};
-    
+
     if (existsSync(envPath)) {
       config = dotenv.parse(readFileSync(envPath));
     } else if (!options.create) {
@@ -220,7 +220,6 @@ async function setConfig(key, value, options) {
       console.log(chalk.gray(`   Previous: ${oldValue}`));
     }
     console.log(chalk.green(`   Current:  ${value}`));
-
   } catch (error) {
     spinner.fail('Failed to set configuration');
     throw error;
@@ -260,7 +259,6 @@ async function unsetConfig(key, options) {
 
     spinner.succeed(`Configuration key removed`);
     console.log(chalk.gray(`   Removed: ${key}=${oldValue}`));
-
   } catch (error) {
     spinner.fail('Failed to remove configuration');
     throw error;
@@ -270,7 +268,7 @@ async function unsetConfig(key, options) {
 // List configuration files
 async function listConfigFiles(options) {
   const projectRoot = getProjectRoot();
-  
+
   const configFiles = [
     '.env',
     '.env.local',
@@ -279,7 +277,7 @@ async function listConfigFiles(options) {
     '.env.test',
     'nova-api/.env',
     'nova-core/.env',
-    'nova-comms/.env'
+    'nova-comms/.env',
   ];
 
   const foundFiles = [];
@@ -289,13 +287,13 @@ async function listConfigFiles(options) {
     if (existsSync(filePath)) {
       const stats = require('fs').statSync(filePath);
       const config = dotenv.parse(readFileSync(filePath));
-      
+
       foundFiles.push({
         file,
         path: filePath,
         size: stats.size,
         modified: stats.mtime,
-        keys: Object.keys(config).length
+        keys: Object.keys(config).length,
       });
     }
   }
@@ -329,28 +327,28 @@ async function validateConfig(options) {
       DATABASE_URL: {
         required: true,
         validator: (value) => value && value.includes('://'),
-        message: 'Must be a valid database connection string'
+        message: 'Must be a valid database connection string',
       },
       JWT_SECRET: {
         required: true,
         validator: (value) => value && value.length >= 32,
-        message: 'Must be at least 32 characters long'
+        message: 'Must be at least 32 characters long',
       },
       PORT: {
         required: false,
         validator: (value) => !value || (!isNaN(value) && value > 0 && value <= 65535),
-        message: 'Must be a valid port number (1-65535)'
+        message: 'Must be a valid port number (1-65535)',
       },
       NODE_ENV: {
         required: false,
         validator: (value) => !value || ['development', 'production', 'test'].includes(value),
-        message: 'Must be one of: development, production, test'
+        message: 'Must be one of: development, production, test',
       },
       ADMIN_EMAIL: {
         required: false,
         validator: (value) => !value || validateEmail(value),
-        message: 'Must be a valid email address'
-      }
+        message: 'Must be a valid email address',
+      },
     };
 
     // Check each rule
@@ -361,13 +359,13 @@ async function validateConfig(options) {
         issues.push({
           type: 'error',
           key,
-          message: `Required key '${key}' is missing`
+          message: `Required key '${key}' is missing`,
         });
       } else if (value && !rule.validator(value)) {
         issues.push({
           type: 'error',
           key,
-          message: `Invalid value for '${key}': ${rule.message}`
+          message: `Invalid value for '${key}': ${rule.message}`,
         });
       }
     }
@@ -377,7 +375,7 @@ async function validateConfig(options) {
       issues.push({
         type: 'warning',
         key: 'JWT_SECRET',
-        message: 'Using default/example JWT secret - please change for security'
+        message: 'Using default/example JWT secret - please change for security',
       });
     }
 
@@ -385,7 +383,7 @@ async function validateConfig(options) {
       issues.push({
         type: 'warning',
         key: 'DEBUG',
-        message: 'Debug mode enabled in production environment'
+        message: 'Debug mode enabled in production environment',
       });
     }
 
@@ -395,19 +393,18 @@ async function validateConfig(options) {
       logger.success('✅ Configuration is valid');
     } else {
       console.log(chalk.yellow('\n⚠️  Configuration Issues Found:\n'));
-      
+
       for (const issue of issues) {
         const icon = issue.type === 'error' ? '❌' : '⚠️';
         const color = issue.type === 'error' ? chalk.red : chalk.yellow;
         console.log(color(`${icon} ${issue.key}: ${issue.message}`));
       }
-      
-      const errorCount = issues.filter(i => i.type === 'error').length;
-      const warningCount = issues.filter(i => i.type === 'warning').length;
-      
+
+      const errorCount = issues.filter((i) => i.type === 'error').length;
+      const warningCount = issues.filter((i) => i.type === 'warning').length;
+
       console.log(chalk.gray(`\nFound ${errorCount} error(s) and ${warningCount} warning(s)\n`));
     }
-
   } catch (error) {
     spinner.fail('Validation failed');
     throw error;
@@ -453,7 +450,6 @@ async function backupConfig(options) {
     spinner.succeed(`Configuration backup created`);
     console.log(chalk.green(`   Location: ${backupPath}`));
     console.log(chalk.gray(`   Files backed up: ${backedUpFiles}`));
-
   } catch (error) {
     spinner.fail('Backup failed');
     throw error;
@@ -480,8 +476,8 @@ async function restoreConfig(backup, options) {
           type: 'confirm',
           name: 'confirm',
           message: 'This will overwrite existing configuration files. Continue?',
-          default: false
-        }
+          default: false,
+        },
       ]);
 
       if (!confirm) {
@@ -514,7 +510,6 @@ async function restoreConfig(backup, options) {
     spinner.succeed(`Configuration restored`);
     console.log(chalk.green(`   Files restored: ${restoredFiles}`));
     console.log(chalk.yellow('   Please restart services to apply changes'));
-
   } catch (error) {
     spinner.fail('Restore failed');
     throw error;
@@ -532,8 +527,8 @@ async function editConfig(filename) {
         type: 'confirm',
         name: 'create',
         message: `File ${filename} doesn't exist. Create it?`,
-        default: true
-      }
+        default: true,
+      },
     ]);
 
     if (create) {
@@ -544,9 +539,9 @@ async function editConfig(filename) {
   }
 
   const editor = process.env.EDITOR || process.env.VISUAL || 'nano';
-  
+
   console.log(chalk.cyan(`Opening ${filename} in ${editor}...`));
-  
+
   try {
     await runCommand(editor, [filePath], { stdio: 'inherit' });
     logger.success('Configuration file saved');
@@ -558,7 +553,7 @@ async function editConfig(filename) {
 // Configuration wizard
 async function configWizard() {
   console.log(chalk.cyan('🧙 Nova Universe Configuration Wizard\n'));
-  
+
   const answers = await inquirer.prompt([
     {
       type: 'list',
@@ -567,28 +562,28 @@ async function configWizard() {
       choices: [
         { name: 'Development', value: 'development' },
         { name: 'Production', value: 'production' },
-        { name: 'Testing', value: 'test' }
-      ]
+        { name: 'Testing', value: 'test' },
+      ],
     },
     {
       type: 'input',
       name: 'databaseUrl',
       message: 'Database connection URL:',
       default: 'postgresql://user:password@localhost:5432/nova',
-      validate: (input) => input.includes('://') || 'Please enter a valid database URL'
+      validate: (input) => input.includes('://') || 'Please enter a valid database URL',
     },
     {
       type: 'input',
       name: 'jwtSecret',
       message: 'JWT Secret (leave blank to generate):',
-      filter: (input) => input || require('crypto').randomBytes(32).toString('hex')
+      filter: (input) => input || require('crypto').randomBytes(32).toString('hex'),
     },
     {
       type: 'number',
       name: 'port',
       message: 'API Server Port:',
       default: 3000,
-      validate: (input) => (input > 0 && input <= 65535) || 'Port must be between 1 and 65535'
+      validate: (input) => (input > 0 && input <= 65535) || 'Port must be between 1 and 65535',
     },
     {
       type: 'input',
@@ -597,8 +592,8 @@ async function configWizard() {
       validate: (input) => {
         if (!input) return true;
         return validateEmail(input) || 'Please enter a valid email address';
-      }
-    }
+      },
+    },
   ]);
 
   const spinner = createSpinner('Creating configuration...');
@@ -614,7 +609,7 @@ async function configWizard() {
       DATABASE_URL: answers.databaseUrl,
       JWT_SECRET: answers.jwtSecret,
       PORT: answers.port.toString(),
-      ...(answers.adminEmail && { ADMIN_EMAIL: answers.adminEmail })
+      ...(answers.adminEmail && { ADMIN_EMAIL: answers.adminEmail }),
     };
 
     const envContent = Object.entries(config)
@@ -624,13 +619,12 @@ async function configWizard() {
     writeFileSync(envPath, envContent + '\n');
 
     spinner.succeed('Configuration created successfully');
-    
+
     console.log(chalk.green(`\n✅ Configuration saved to ${envFile}`));
     console.log(chalk.yellow('💡 Next steps:'));
     console.log(chalk.gray('   1. Review the configuration file'));
     console.log(chalk.gray('   2. Run database migrations'));
     console.log(chalk.gray('   3. Start the services'));
-
   } catch (error) {
     spinner.fail('Failed to create configuration');
     throw error;
@@ -641,15 +635,17 @@ async function configWizard() {
 function displayConfigTable(config, filename) {
   const table = new Table({
     head: ['Key', 'Value'],
-    colWidths: [30, 50]
+    colWidths: [30, 50],
   });
 
   for (const [key, value] of Object.entries(config)) {
     // Mask sensitive values
     let displayValue = value;
-    if (key.toLowerCase().includes('secret') || 
-        key.toLowerCase().includes('password') || 
-        key.toLowerCase().includes('key')) {
+    if (
+      key.toLowerCase().includes('secret') ||
+      key.toLowerCase().includes('password') ||
+      key.toLowerCase().includes('key')
+    ) {
       displayValue = '*'.repeat(Math.min(value.length, 8));
     }
 
@@ -670,7 +666,7 @@ function displayConfigFilesTable(files) {
 
   const table = new Table({
     head: ['File', 'Keys', 'Size', 'Modified'],
-    colWidths: [25, 8, 10, 20]
+    colWidths: [25, 8, 10, 20],
   });
 
   for (const file of files) {
@@ -678,7 +674,7 @@ function displayConfigFilesTable(files) {
       file.file,
       file.keys.toString(),
       `${Math.round(file.size / 1024)}KB`,
-      file.modified.toLocaleDateString()
+      file.modified.toLocaleDateString(),
     ]);
   }
 

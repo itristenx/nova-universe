@@ -28,7 +28,7 @@ const router = express.Router();
  *           type: object
  *         metadata:
  *           type: object
- *     
+ *
  *     SearchResponse:
  *       type: object
  *       properties:
@@ -141,7 +141,8 @@ const router = express.Router();
  *       500:
  *         description: Search service error
  */
-router.get('/tickets', 
+router.get(
+  '/tickets',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100), // 100 requests per 15 minutes
   [
@@ -153,10 +154,7 @@ router.get('/tickets',
       .optional()
       .isInt({ min: 1, max: 100 })
       .withMessage('Size must be between 1 and 100'),
-    query('from')
-      .optional()
-      .isInt({ min: 0 })
-      .withMessage('From must be a non-negative integer'),
+    query('from').optional().isInt({ min: 0 }).withMessage('From must be a non-negative integer'),
     query('status')
       .optional()
       .isIn(['open', 'closed', 'in_progress', 'resolved'])
@@ -168,7 +166,7 @@ router.get('/tickets',
     query('sort')
       .optional()
       .isIn(['relevance', 'date_desc', 'date_asc', 'priority'])
-      .withMessage('Invalid sort value')
+      .withMessage('Invalid sort value'),
   ],
   async (req, res) => {
     try {
@@ -178,7 +176,7 @@ router.get('/tickets',
           success: false,
           error: 'Invalid search parameters',
           details: errors.array(),
-          errorCode: 'INVALID_SEARCH_PARAMS'
+          errorCode: 'INVALID_SEARCH_PARAMS',
         });
       }
 
@@ -204,22 +202,16 @@ router.get('/tickets',
           sortOptions = [{ updatedAt: { order: 'asc' } }];
           break;
         case 'priority':
-          sortOptions = [
-            { priority: { order: 'desc' } },
-            { _score: { order: 'desc' } }
-          ];
+          sortOptions = [{ priority: { order: 'desc' } }, { _score: { order: 'desc' } }];
           break;
         default: // relevance
-          sortOptions = [
-            { _score: { order: 'desc' } },
-            { updatedAt: { order: 'desc' } }
-          ];
+          sortOptions = [{ _score: { order: 'desc' } }, { updatedAt: { order: 'desc' } }];
       }
 
       const options = {
         size: parseInt(size),
         from: parseInt(from),
-        sort: sortOptions
+        sort: sortOptions,
       };
 
       const results = await elasticManager.searchTickets(q, filters, options);
@@ -231,7 +223,7 @@ router.get('/tickets',
         resultsCount: results.hits.length,
         responseTime,
         filters,
-        sort
+        sort,
       });
 
       res.json({
@@ -242,18 +234,17 @@ router.get('/tickets',
         searchType: 'lexical',
         responseTime,
         filters,
-        sort
+        sort,
       });
-
     } catch (error) {
       logger.error('Ticket search failed:', error);
       res.status(500).json({
         success: false,
         error: 'Ticket search failed',
-        errorCode: 'TICKET_SEARCH_ERROR'
+        errorCode: 'TICKET_SEARCH_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -322,7 +313,8 @@ router.get('/tickets',
  *       500:
  *         description: Search failed
  */
-router.get('/knowledge-base',
+router.get(
+  '/knowledge-base',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 60), // 60 requests per 15 minutes
   [
@@ -334,10 +326,7 @@ router.get('/knowledge-base',
       .optional()
       .isInt({ min: 1, max: 50 })
       .withMessage('Size must be between 1 and 50'),
-    query('from')
-      .optional()
-      .isInt({ min: 0 })
-      .withMessage('From must be a non-negative integer'),
+    query('from').optional().isInt({ min: 0 }).withMessage('From must be a non-negative integer'),
     query('visibility')
       .optional()
       .isIn(['public', 'private', 'internal'])
@@ -345,7 +334,7 @@ router.get('/knowledge-base',
     query('type')
       .optional()
       .isIn(['lexical', 'semantic', 'hybrid'])
-      .withMessage('Invalid search type')
+      .withMessage('Invalid search type'),
   ],
   async (req, res) => {
     try {
@@ -355,11 +344,18 @@ router.get('/knowledge-base',
           success: false,
           error: 'Invalid search parameters',
           details: errors.array(),
-          errorCode: 'INVALID_SEARCH_PARAMS'
+          errorCode: 'INVALID_SEARCH_PARAMS',
         });
       }
 
-      const { q, category, visibility = 'public', size = 10, from = 0, type = 'hybrid' } = req.query;
+      const {
+        q,
+        category,
+        visibility = 'public',
+        size = 10,
+        from = 0,
+        type = 'hybrid',
+      } = req.query;
       const userId = req.user?.id;
 
       const startTime = Date.now();
@@ -372,7 +368,7 @@ router.get('/knowledge-base',
       const options = {
         size: parseInt(size),
         from: parseInt(from),
-        searchType: type
+        searchType: type,
       };
 
       let results;
@@ -392,7 +388,7 @@ router.get('/knowledge-base',
         searchType: type,
         resultsCount: results.hits.length,
         responseTime,
-        filters
+        filters,
       });
 
       res.json({
@@ -402,18 +398,17 @@ router.get('/knowledge-base',
         maxScore: results.maxScore,
         searchType: type,
         responseTime,
-        filters
+        filters,
       });
-
     } catch (error) {
       logger.error('Knowledge base search failed:', error);
       res.status(500).json({
         success: false,
         error: 'Knowledge base search failed',
-        errorCode: 'KB_SEARCH_ERROR'
+        errorCode: 'KB_SEARCH_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -474,7 +469,8 @@ router.get('/knowledge-base',
  *       500:
  *         description: Search failed
  */
-router.get('/global',
+router.get(
+  '/global',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 50), // 50 requests per 15 minutes
   [
@@ -490,10 +486,10 @@ router.get('/global',
       .optional()
       .custom((value) => {
         const validTypes = ['tickets', 'knowledge_base', 'logs'];
-        const types = value.split(',').map(t => t.trim());
-        return types.every(type => validTypes.includes(type));
+        const types = value.split(',').map((t) => t.trim());
+        return types.every((type) => validTypes.includes(type));
       })
-      .withMessage('Invalid content types')
+      .withMessage('Invalid content types'),
   ],
   async (req, res) => {
     try {
@@ -503,13 +499,13 @@ router.get('/global',
           success: false,
           error: 'Invalid search parameters',
           details: errors.array(),
-          errorCode: 'INVALID_SEARCH_PARAMS'
+          errorCode: 'INVALID_SEARCH_PARAMS',
         });
       }
 
       const { q, types = 'tickets,knowledge_base', size = 20 } = req.query;
       const userId = req.user?.id;
-      const contentTypes = types.split(',').map(t => t.trim());
+      const contentTypes = types.split(',').map((t) => t.trim());
 
       const startTime = Date.now();
       const results = {};
@@ -519,30 +515,33 @@ router.get('/global',
 
       if (contentTypes.includes('tickets')) {
         searchPromises.push(
-          elasticManager.searchTickets(q, { userId }, { size: parseInt(size) })
-            .then(result => ({ type: 'tickets', result }))
-            .catch(error => ({ type: 'tickets', error: error.message }))
+          elasticManager
+            .searchTickets(q, { userId }, { size: parseInt(size) })
+            .then((result) => ({ type: 'tickets', result }))
+            .catch((error) => ({ type: 'tickets', error: error.message })),
         );
       }
 
       if (contentTypes.includes('knowledge_base')) {
         searchPromises.push(
-          elasticManager.hybridSearchKnowledgeBase(q, { visibility: 'public' }, { size: parseInt(size) })
-            .then(result => ({ type: 'knowledge_base', result }))
-            .catch(error => ({ type: 'knowledge_base', error: error.message }))
+          elasticManager
+            .hybridSearchKnowledgeBase(q, { visibility: 'public' }, { size: parseInt(size) })
+            .then((result) => ({ type: 'knowledge_base', result }))
+            .catch((error) => ({ type: 'knowledge_base', error: error.message })),
         );
       }
 
       if (contentTypes.includes('logs')) {
         searchPromises.push(
-          elasticManager.searchLogs(q, { userId }, { size: parseInt(size) })
-            .then(result => ({ type: 'logs', result }))
-            .catch(error => ({ type: 'logs', error: error.message }))
+          elasticManager
+            .searchLogs(q, { userId }, { size: parseInt(size) })
+            .then((result) => ({ type: 'logs', result }))
+            .catch((error) => ({ type: 'logs', error: error.message })),
         );
       }
 
       const searchResults = await Promise.allSettled(searchPromises);
-      
+
       // Process results
       searchResults.forEach(({ status, value }) => {
         if (status === 'fulfilled' && value) {
@@ -552,7 +551,7 @@ router.get('/global',
             results[value.type] = {
               hits: value.result.hits,
               total: value.result.total,
-              maxScore: value.result.maxScore
+              maxScore: value.result.maxScore,
             };
           }
         }
@@ -565,25 +564,24 @@ router.get('/global',
         userId,
         contentTypes,
         responseTime,
-        resultsCount: Object.keys(results).length
+        resultsCount: Object.keys(results).length,
       });
 
       res.json({
         success: true,
         results,
         responseTime,
-        searchTypes: contentTypes
+        searchTypes: contentTypes,
       });
-
     } catch (error) {
       logger.error('Global search failed:', error);
       res.status(500).json({
         success: false,
         error: 'Global search failed',
-        errorCode: 'GLOBAL_SEARCH_ERROR'
+        errorCode: 'GLOBAL_SEARCH_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -647,7 +645,8 @@ router.get('/global',
  *       500:
  *         description: Suggestions failed
  */
-router.get('/suggestions',
+router.get(
+  '/suggestions',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 200), // 200 requests per 15 minutes
   [
@@ -662,7 +661,7 @@ router.get('/suggestions',
     query('type')
       .optional()
       .isIn(['tickets', 'knowledge_base', 'all'])
-      .withMessage('Invalid suggestion type')
+      .withMessage('Invalid suggestion type'),
   ],
   async (req, res) => {
     try {
@@ -672,7 +671,7 @@ router.get('/suggestions',
           success: false,
           error: 'Invalid parameters',
           details: errors.array(),
-          errorCode: 'INVALID_SUGGESTION_PARAMS'
+          errorCode: 'INVALID_SUGGESTION_PARAMS',
         });
       }
 
@@ -682,25 +681,24 @@ router.get('/suggestions',
       const suggestions = await elasticManager.getSearchSuggestions(q, {
         type,
         limit: parseInt(limit),
-        userId
+        userId,
       });
 
       res.json({
         success: true,
         suggestions,
         query: q,
-        type
+        type,
       });
-
     } catch (error) {
       logger.error('Search suggestions failed:', error);
       res.status(500).json({
         success: false,
         error: 'Suggestions failed',
-        errorCode: 'SUGGESTIONS_ERROR'
+        errorCode: 'SUGGESTIONS_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -739,7 +737,8 @@ router.get('/suggestions',
  *       500:
  *         description: Analytics failed
  */
-router.get('/analytics',
+router.get(
+  '/analytics',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 30), // 30 requests per 15 minutes
   async (req, res) => {
@@ -750,7 +749,7 @@ router.get('/analytics',
         return res.status(403).json({
           success: false,
           error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED'
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
         });
       }
 
@@ -761,18 +760,17 @@ router.get('/analytics',
       res.json({
         success: true,
         analytics,
-        timeRange
+        timeRange,
       });
-
     } catch (error) {
       logger.error('Search analytics failed:', error);
       res.status(500).json({
         success: false,
         error: 'Analytics failed',
-        errorCode: 'ANALYTICS_ERROR'
+        errorCode: 'ANALYTICS_ERROR',
       });
     }
-  }
+  },
 );
 
 export default router;

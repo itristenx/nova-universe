@@ -4,7 +4,12 @@ export interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputEleme
   endAdornment?: React.ReactNode;
   InputProps?: React.InputHTMLAttributes<HTMLInputElement>;
 }
-export const TextField: React.FC<TextFieldProps> = ({ label, endAdornment, InputProps, ...props }) => (
+export const TextField: React.FC<TextFieldProps> = ({
+  label,
+  endAdornment,
+  InputProps,
+  ...props
+}) => (
   <div className={props.className || 'text-field-wrapper'}>
     {label && <label className="text-field-label">{label}</label>}
     <input {...props} {...InputProps} className="text-field-input" />

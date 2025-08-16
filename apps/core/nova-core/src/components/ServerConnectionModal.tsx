@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input } from '@/components/ui';
-import { 
-  ServerIcon, 
-  CheckCircleIcon, 
+import {
+  ServerIcon,
+  CheckCircleIcon,
   ExclamationTriangleIcon,
   ArrowPathIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { useApiHealth } from '@/hooks/useApiHealth';
 import { useToastStore } from '@/stores/toast';
@@ -25,13 +25,13 @@ interface ServerInfo {
 
 export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
   isOpen,
-  onClose
+  onClose,
 }) => {
   const [serverUrl, setServerUrl] = useState('');
   const [savedUrl, setSavedUrl] = useState('');
   const [serverInfo, setServerInfo] = useState<ServerInfo>({
     url: '',
-    status: 'checking'
+    status: 'checking',
   });
   const [testing, setTesting] = useState(false);
   const { isConnected } = useApiHealth();
@@ -39,22 +39,23 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
 
   useEffect(() => {
     // Load current server URL from environment or localStorage
-    const currentUrl = localStorage.getItem('api_server_url') || 
-                       import.meta.env.VITE_API_URL || 
-                       (import.meta.env.DEV ? 'http://localhost:3000' : '');
+    const currentUrl =
+      localStorage.getItem('api_server_url') ||
+      import.meta.env.VITE_API_URL ||
+      (import.meta.env.DEV ? 'http://localhost:3000' : '');
     setServerUrl(currentUrl);
     setSavedUrl(currentUrl);
-    
+
     setServerInfo({
       url: currentUrl,
       status: isConnected ? 'connected' : 'disconnected',
-      lastChecked: new Date().toLocaleTimeString()
+      lastChecked: new Date().toLocaleTimeString(),
     });
   }, [isConnected]);
 
   const testConnection = async (url: string = serverUrl) => {
     setTesting(true);
-    setServerInfo(prev => ({ ...prev, status: 'checking' }));
+    setServerInfo((prev) => ({ ...prev, status: 'checking' }));
 
     try {
       // Test the connection by making a simple request
@@ -63,7 +64,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: AbortSignal.timeout(5000) // 5 second timeout
+        signal: AbortSignal.timeout(5000), // 5 second timeout
       });
 
       if (response.ok) {
@@ -73,9 +74,9 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
           status: 'connected',
           version: data.version || 'Unknown',
           uptime: data.uptime || 'Unknown',
-          lastChecked: new Date().toLocaleTimeString()
+          lastChecked: new Date().toLocaleTimeString(),
         });
-        
+
         addToast({
           type: 'success',
           title: 'Connection Successful',
@@ -89,9 +90,9 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
       setServerInfo({
         url,
         status: 'disconnected',
-        lastChecked: new Date().toLocaleTimeString()
+        lastChecked: new Date().toLocaleTimeString(),
       });
-      
+
       addToast({
         type: 'error',
         title: 'Connection Failed',
@@ -106,19 +107,20 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
     // Save to localStorage
     localStorage.setItem('api_server_url', serverUrl);
     setSavedUrl(serverUrl);
-    
+
     addToast({
       type: 'info',
       title: 'Server URL Updated',
       description: 'Server URL has been saved. Please refresh the page to apply changes.',
     });
-    
+
     // Test the new connection
     testConnection(serverUrl);
   };
 
   const resetToDefault = () => {
-    const defaultUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '');
+    const defaultUrl =
+      import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '');
     setServerUrl(defaultUrl);
     localStorage.removeItem('api_server_url');
     testConnection(defaultUrl);
@@ -144,32 +146,27 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
       case 'disconnected':
         return <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />;
       case 'checking':
-        return <ArrowPathIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400 animate-spin" />;
+        return (
+          <ArrowPathIcon className="h-5 w-5 animate-spin text-yellow-600 dark:text-yellow-400" />
+        );
       default:
         return <ServerIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />;
     }
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Server Connection Settings"
-      size="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Server Connection Settings" size="lg">
       <div className="space-y-6">
         {/* Current Status */}
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center space-x-3 mb-3">
+        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+          <div className="mb-3 flex items-center space-x-3">
             <ServerIcon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-              Server Status
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Server Status</h3>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <div className="flex items-center space-x-2 mb-2">
+              <div className="mb-2 flex items-center space-x-2">
                 {getStatusIcon(serverInfo.status)}
                 <span className={`text-sm font-medium ${getStatusColor(serverInfo.status)}`}>
                   {serverInfo.status === 'connected' && 'Connected'}
@@ -181,7 +178,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
                 Last checked: {serverInfo.lastChecked || 'Never'}
               </p>
             </div>
-            
+
             {serverInfo.status === 'connected' && (
               <div className="space-y-1">
                 {serverInfo.version && (
@@ -207,7 +204,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
               Server Configuration
             </h3>
           </div>
-          
+
           <Input
             label="Server URL"
             type="url"
@@ -216,7 +213,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
             placeholder="http://localhost:3000"
             helperText="Enter the full URL of your Nova Universe API server"
           />
-          
+
           <div className="flex items-center space-x-3">
             <Button
               variant="primary"
@@ -226,7 +223,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
             >
               {testing ? 'Testing...' : 'Test Connection'}
             </Button>
-            
+
             <Button
               variant="secondary"
               onClick={saveServerUrl}
@@ -234,19 +231,16 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
             >
               Save URL
             </Button>
-            
-            <Button
-              variant="default"
-              onClick={resetToDefault}
-            >
+
+            <Button variant="default" onClick={resetToDefault}>
               Reset to Default
             </Button>
           </div>
         </div>
 
         {/* Connection Information */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+        <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+          <h4 className="mb-2 text-sm font-medium text-blue-900 dark:text-blue-100">
             Connection Information
           </h4>
           <div className="space-y-1 text-xs text-blue-800 dark:text-blue-200">

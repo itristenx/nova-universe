@@ -10,7 +10,10 @@ const KnowledgeEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const userRoles = user?.roles || [];
-  const isEditor = userRoles.includes('admin') || userRoles.includes('superadmin') || userRoles.includes('kb_editor');
+  const isEditor =
+    userRoles.includes('admin') ||
+    userRoles.includes('superadmin') ||
+    userRoles.includes('kb_editor');
 
   const [article, setArticle] = useState<KnowledgeArticle | null>(null);
   const [title, setTitle] = useState('');
@@ -22,7 +25,7 @@ const KnowledgeEditPage: React.FC = () => {
 
   useEffect(() => {
     if (isEdit && slug) {
-      api.getKnowledgeArticle(slug).then(a => {
+      api.getKnowledgeArticle(slug).then((a) => {
         setArticle(a);
         setTitle(a.title);
         setContent(a.content);
@@ -43,7 +46,14 @@ const KnowledgeEditPage: React.FC = () => {
         await api.createKnowledgeVersion(article.id, { content });
         navigate(`/knowledge/${slug}`);
       } else {
-        const newArticle = await api.createKnowledgeArticle({ title, content, tags: tags.split(',').map(t => t.trim()).filter(Boolean) });
+        const newArticle = await api.createKnowledgeArticle({
+          title,
+          content,
+          tags: tags
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean),
+        });
         navigate(`/knowledge/${newArticle.slug}`);
       }
     } finally {
@@ -53,14 +63,31 @@ const KnowledgeEditPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">{isEdit ? 'Edit Article' : 'New Article'}</h1>
+      <h1 className="text-2xl font-bold text-gray-900">
+        {isEdit ? 'Edit Article' : 'New Article'}
+      </h1>
       <Card className="p-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isEdit && (
-            <Input label="Title" value={title} onChange={e => setTitle(e.target.value)} required />
+            <Input
+              label="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
           )}
-          <Textarea label="Content" value={content} onChange={e => setContent(e.target.value)} rows={10} required />
-          <Input label="Tags (comma separated)" value={tags} onChange={e => setTags(e.target.value)} />
+          <Textarea
+            label="Content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={10}
+            required
+          />
+          <Input
+            label="Tags (comma separated)"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+          />
           <div className="pt-2">
             <Button variant="primary" type="submit" isLoading={loading}>
               {isEdit ? 'Save Version' : 'Create Article'}

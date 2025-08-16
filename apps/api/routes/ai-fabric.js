@@ -1,6 +1,6 @@
 /**
  * Nova AI Fabric API Routes
- * 
+ *
  * Provides REST API endpoints for interacting with the AI Fabric system.
  * Includes routes for AI processing, monitoring, RAG queries, and MCP integration.
  */
@@ -34,9 +34,9 @@ router.get('/status', authenticateJWT, async (req, res) => {
       mcpServer: {
         isRunning: novaMCPServer.isServerRunning,
         port: novaMCPServer.serverPort,
-        info: novaMCPServer.getServerInfo()
+        info: novaMCPServer.getServerInfo(),
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     res.json(status);
@@ -71,15 +71,15 @@ router.post('/process', authenticateJWT, async (req, res) => {
         userId: req.user.id,
         tenantId: req.user.tenant_id,
         module: 'api',
-        sessionId: req.sessionID
+        sessionId: req.sessionID,
       },
       preferences,
       metadata: {
         ...metadata,
         userAgent: req.get('User-Agent'),
-        ip: req.ip
+        ip: req.ip,
       },
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     const response = await aiFabric.processRequest(aiRequest);
@@ -92,7 +92,7 @@ router.post('/process', authenticateJWT, async (req, res) => {
       value: response.processingTime,
       unit: 'milliseconds',
       metadata: { userId: req.user.id },
-      tags: ['api_request']
+      tags: ['api_request'],
     });
 
     res.json({
@@ -101,11 +101,11 @@ router.post('/process', authenticateJWT, async (req, res) => {
       confidence: response.confidence,
       processingTime: response.processingTime,
       provider: response.provider,
-      metadata: response.metadata
+      metadata: response.metadata,
     });
   } catch (error) {
     logger.error('AI processing error:', error);
-    
+
     // Record error event
     await aiMonitoringSystem.recordAuditEvent({
       eventType: 'error',
@@ -113,10 +113,10 @@ router.post('/process', authenticateJWT, async (req, res) => {
       userId: req.user.id,
       metadata: {
         error: error.message,
-        requestBody: req.body
+        requestBody: req.body,
       },
       complianceFlags: [],
-      riskScore: 0.5
+      riskScore: 0.5,
     });
 
     res.status(500).json({ error: 'AI processing failed' });
@@ -146,16 +146,16 @@ router.post('/rag/query', authenticateJWT, async (req, res) => {
       context: {
         userId: req.user.id,
         tenantId: req.user.tenant_id,
-        module: 'api'
+        module: 'api',
       },
       filters,
       options: {
         maxResults: 10,
         hybridSearch: true,
         rerank: true,
-        ...options
+        ...options,
       },
-      metadata: {}
+      metadata: {},
     };
 
     const result = await ragEngine.query(ragQuery);
@@ -166,7 +166,7 @@ router.post('/rag/query', authenticateJWT, async (req, res) => {
       summary: result.summary,
       confidence: result.confidence,
       retrievalTime: result.retrievalTime,
-      totalResults: result.totalResults
+      totalResults: result.totalResults,
     });
   } catch (error) {
     logger.error('RAG query error:', error);
@@ -203,7 +203,7 @@ router.post('/rag/documents', authenticateJWT, async (req, res) => {
 
     res.json({
       message: `Successfully added ${documents.length} documents`,
-      count: documents.length
+      count: documents.length,
     });
   } catch (error) {
     logger.error('Document addition error:', error);
@@ -229,7 +229,7 @@ router.get('/monitoring/metrics', authenticateJWT, async (req, res) => {
     res.json({
       timeframe,
       data: dashboardData,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Monitoring metrics error:', error);
@@ -252,16 +252,12 @@ router.post('/monitoring/bias', authenticateJWT, async (req, res) => {
     const { model, testData, protectedAttribute } = req.body;
 
     if (!model || !testData || !protectedAttribute) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: model, testData, protectedAttribute' 
+      return res.status(400).json({
+        error: 'Missing required fields: model, testData, protectedAttribute',
       });
     }
 
-    const biasMetric = await aiMonitoringSystem.assessBias(
-      model,
-      testData,
-      protectedAttribute
-    );
+    const biasMetric = await aiMonitoringSystem.assessBias(model, testData, protectedAttribute);
 
     res.json(biasMetric);
   } catch (error) {
@@ -286,7 +282,7 @@ router.get('/monitoring/compliance', authenticateJWT, async (req, res) => {
 
     const period = {
       start: startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      end: endDate ? new Date(endDate) : new Date()
+      end: endDate ? new Date(endDate) : new Date(),
     };
 
     const report = await aiMonitoringSystem.generateComplianceReport(reportType, period);
@@ -313,8 +309,8 @@ router.post('/monitoring/explain', authenticateJWT, async (req, res) => {
     const { requestId, model, prediction, inputData } = req.body;
 
     if (!requestId || !model || !prediction) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: requestId, model, prediction' 
+      return res.status(400).json({
+        error: 'Missing required fields: requestId, model, prediction',
       });
     }
 
@@ -322,7 +318,7 @@ router.post('/monitoring/explain', authenticateJWT, async (req, res) => {
       requestId,
       model,
       prediction,
-      inputData || {}
+      inputData || {},
     );
 
     res.json(explanation);
@@ -348,17 +344,17 @@ router.get('/providers', authenticateJWT, async (req, res) => {
     const providers = status.providers || [];
 
     res.json({
-      providers: providers.map(provider => ({
+      providers: providers.map((provider) => ({
         id: provider.id,
         name: provider.name,
         type: provider.type,
         capabilities: provider.capabilities,
         healthStatus: provider.healthStatus,
         lastHealthCheck: provider.lastHealthCheck,
-        isActive: provider.isActive
+        isActive: provider.isActive,
       })),
       total: providers.length,
-      healthy: providers.filter(p => p.healthStatus === 'healthy').length
+      healthy: providers.filter((p) => p.healthStatus === 'healthy').length,
     });
   } catch (error) {
     logger.error('Provider list error:', error);
@@ -379,7 +375,7 @@ router.get('/providers', authenticateJWT, async (req, res) => {
 router.post('/providers/:providerId/health', authenticateJWT, async (req, res) => {
   try {
     const { providerId } = req.params;
-    
+
     // Trigger a provider health check via AI Monitoring system if available
     try {
       const { aiMonitoringSystem } = await import('../lib/ai-monitoring.js');
@@ -412,8 +408,8 @@ router.post('/learning/feedback', authenticateJWT, async (req, res) => {
     const { requestId, rating, feedback, type = 'user_feedback' } = req.body;
 
     if (!requestId || rating === undefined) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: requestId, rating' 
+      return res.status(400).json({
+        error: 'Missing required fields: requestId, rating',
       });
     }
 
@@ -423,22 +419,22 @@ router.post('/learning/feedback', authenticateJWT, async (req, res) => {
         requestId,
         rating,
         feedback,
-        userId: req.user.id
+        userId: req.user.id,
       },
       context: {
         userId: req.user.id,
         tenantId: req.user.tenant_id,
-        module: 'api'
+        module: 'api',
       },
       timestamp: new Date(),
-      quality: Math.max(0, Math.min(1, rating / 5)) // Normalize to 0-1
+      quality: Math.max(0, Math.min(1, rating / 5)), // Normalize to 0-1
     };
 
     await aiFabric.recordLearningEvent(learningEvent);
 
     res.json({
       message: 'Feedback recorded successfully',
-      eventId: learningEvent.data.requestId
+      eventId: learningEvent.data.requestId,
     });
   } catch (error) {
     logger.error('Learning feedback error:', error);
@@ -470,7 +466,7 @@ router.post('/initialize', authenticateJWT, async (req, res) => {
       aiFabric: false,
       ragEngine: false,
       monitoring: false,
-      mcpServer: false
+      mcpServer: false,
     };
 
     try {
@@ -514,10 +510,10 @@ router.post('/initialize', authenticateJWT, async (req, res) => {
       userId: req.user.id,
       metadata: {
         action: 'ai_fabric_initialization',
-        results
+        results,
       },
       complianceFlags: [],
-      riskScore: 0.2
+      riskScore: 0.2,
     });
 
     const successCount = Object.values(results).filter(Boolean).length;
@@ -527,7 +523,7 @@ router.post('/initialize', authenticateJWT, async (req, res) => {
       message: `AI Fabric initialization completed: ${successCount}/${totalCount} components initialized`,
       results,
       success: successCount === totalCount,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('AI Fabric initialization error:', error);

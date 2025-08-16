@@ -1,6 +1,6 @@
 /**
  * Nova Universal Notification Platform Test Suite
- * 
+ *
  * Comprehensive test coverage for the notification system including
  * unit tests, integration tests, and end-to-end scenarios
  */
@@ -27,14 +27,14 @@ const testUser = {
   id: 'test-user-1',
   email: 'test@nova-universe.com',
   roles: ['user'],
-  permissions: ['notifications:send', 'notifications:read']
+  permissions: ['notifications:send', 'notifications:read'],
 };
 
 const testAdmin = {
   id: 'test-admin-1',
   email: 'admin@nova-universe.com',
   roles: ['admin'],
-  permissions: ['*']
+  permissions: ['*'],
 };
 
 // JWT token for testing
@@ -61,7 +61,7 @@ jest.mock('../apps/api/middleware/auth.js', () => ({
       res.status(403).json({ error: 'Forbidden' });
     }
   },
-  createRateLimit: () => (req, res, next) => next()
+  createRateLimit: () => (req, res, next) => next(),
 }));
 
 // ============================================================================
@@ -73,22 +73,24 @@ describe('NovaUniversalNotificationPlatform', () => {
 
   beforeAll(async () => {
     notificationPlatform = new NovaUniversalNotificationPlatform();
-    
+
     // Mock database operations
     jest.spyOn(notificationClient.notificationEvent, 'create').mockImplementation(async (data) => ({
       id: 'event-123',
       ...data.data,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     }));
 
-    jest.spyOn(notificationClient.notificationDelivery, 'createMany').mockImplementation(async (data) => ({
-      count: data.data.length
-    }));
+    jest
+      .spyOn(notificationClient.notificationDelivery, 'createMany')
+      .mockImplementation(async (data) => ({
+        count: data.data.length,
+      }));
 
     jest.spyOn(coreClient.user, 'findMany').mockImplementation(async () => [
       { id: 'user-1', email: 'user1@test.com', active: true },
-      { id: 'user-2', email: 'user2@test.com', active: true }
+      { id: 'user-2', email: 'user2@test.com', active: true },
     ]);
   });
 
@@ -105,11 +107,11 @@ describe('NovaUniversalNotificationPlatform', () => {
         message: 'Ticket #12345 has breached SLA',
         priority: 'HIGH',
         recipientRoles: ['admin'],
-        createdBy: testUser.id
+        createdBy: testUser.id,
       };
 
       const eventId = await notificationPlatform.sendNotification(payload);
-      
+
       expect(eventId).toBe('event-123');
       expect(notificationClient.notificationEvent.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -118,8 +120,8 @@ describe('NovaUniversalNotificationPlatform', () => {
           title: payload.title,
           message: payload.message,
           priority: payload.priority,
-          createdBy: payload.createdBy
-        })
+          createdBy: payload.createdBy,
+        }),
       });
     });
 
@@ -131,21 +133,21 @@ describe('NovaUniversalNotificationPlatform', () => {
         message: 'High CPU usage detected',
         priority: 'CRITICAL',
         recipientRoles: ['ops', 'admin'],
-        createdBy: testUser.id
+        createdBy: testUser.id,
       };
 
       await notificationPlatform.sendNotification(payload);
-      
+
       expect(coreClient.user.findMany).toHaveBeenCalledWith({
         where: {
           roles: {
             some: {
-              name: { in: ['ops', 'admin'] }
-            }
+              name: { in: ['ops', 'admin'] },
+            },
           },
-          active: true
+          active: true,
         },
-        include: { roles: true }
+        include: { roles: true },
       });
     });
 
@@ -155,8 +157,7 @@ describe('NovaUniversalNotificationPlatform', () => {
         // Missing required fields
       };
 
-      await expect(notificationPlatform.sendNotification(invalidPayload))
-        .rejects.toThrow();
+      await expect(notificationPlatform.sendNotification(invalidPayload)).rejects.toThrow();
     });
 
     test('should handle scheduled notifications', async () => {
@@ -169,53 +170,57 @@ describe('NovaUniversalNotificationPlatform', () => {
         priority: 'NORMAL',
         recipientUsers: ['user-1'],
         scheduledFor,
-        createdBy: testUser.id
+        createdBy: testUser.id,
       };
 
       const eventId = await notificationPlatform.sendNotification(payload);
-      
+
       expect(notificationClient.notificationEvent.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           scheduledFor,
-          status: 'SCHEDULED'
-        })
+          status: 'SCHEDULED',
+        }),
       });
     });
   });
 
   describe('getUserPreferences', () => {
     beforeEach(() => {
-      jest.spyOn(notificationClient.notificationPreference, 'findMany').mockImplementation(async () => [
-        {
-          id: 'pref-1',
-          userId: testUser.id,
-          module: 'pulse.tickets',
-          eventType: 'sla_breach',
-          channels: ['EMAIL', 'IN_APP'],
-          enabled: true
-        }
-      ]);
+      jest
+        .spyOn(notificationClient.notificationPreference, 'findMany')
+        .mockImplementation(async () => [
+          {
+            id: 'pref-1',
+            userId: testUser.id,
+            module: 'pulse.tickets',
+            eventType: 'sla_breach',
+            channels: ['EMAIL', 'IN_APP'],
+            enabled: true,
+          },
+        ]);
     });
 
     test('should retrieve user preferences', async () => {
       const preferences = await notificationPlatform.getUserPreferences(testUser.id);
-      
+
       expect(preferences).toHaveLength(1);
       expect(preferences[0]).toMatchObject({
         module: 'pulse.tickets',
         eventType: 'sla_breach',
         channels: ['EMAIL', 'IN_APP'],
-        enabled: true
+        enabled: true,
       });
     });
   });
 
   describe('updateUserPreferences', () => {
     beforeEach(() => {
-      jest.spyOn(notificationClient.notificationPreference, 'upsert').mockImplementation(async (data) => ({
-        id: 'pref-updated',
-        ...data.create
-      }));
+      jest
+        .spyOn(notificationClient.notificationPreference, 'upsert')
+        .mockImplementation(async (data) => ({
+          id: 'pref-updated',
+          ...data.create,
+        }));
     });
 
     test('should update user preferences', async () => {
@@ -225,24 +230,24 @@ describe('NovaUniversalNotificationPlatform', () => {
           eventType: 'system_alert',
           channels: ['EMAIL', 'SMS'],
           enabled: true,
-          priority: 'CRITICAL'
-        }
+          priority: 'CRITICAL',
+        },
       ];
 
       await notificationPlatform.updateUserPreferences(testUser.id, preferences);
-      
+
       expect(notificationClient.notificationPreference.upsert).toHaveBeenCalledWith({
         where: {
           userId_module_eventType: {
             userId: testUser.id,
             module: 'sentinel',
-            eventType: 'system_alert'
-          }
+            eventType: 'system_alert',
+          },
         },
         update: expect.objectContaining({
           channels: ['EMAIL', 'SMS'],
           enabled: true,
-          priority: 'CRITICAL'
+          priority: 'CRITICAL',
         }),
         create: expect.objectContaining({
           userId: testUser.id,
@@ -250,8 +255,8 @@ describe('NovaUniversalNotificationPlatform', () => {
           eventType: 'system_alert',
           channels: ['EMAIL', 'SMS'],
           enabled: true,
-          priority: 'CRITICAL'
-        })
+          priority: 'CRITICAL',
+        }),
       });
     });
   });
@@ -264,19 +269,19 @@ describe('NovaUniversalNotificationPlatform', () => {
           eventType: 'created',
           title: 'Ticket Created',
           message: 'New ticket #1',
-          recipientUsers: ['user-1']
+          recipientUsers: ['user-1'],
         },
         {
           module: 'pulse.tickets',
           eventType: 'created',
           title: 'Ticket Created',
           message: 'New ticket #2',
-          recipientUsers: ['user-2']
-        }
+          recipientUsers: ['user-2'],
+        },
       ];
 
       const eventIds = await notificationPlatform.sendBatch(notifications);
-      
+
       expect(eventIds).toHaveLength(2);
       expect(notificationClient.notificationEvent.create).toHaveBeenCalledTimes(2);
     });
@@ -285,7 +290,9 @@ describe('NovaUniversalNotificationPlatform', () => {
       // Mock one success and one failure
       notificationClient.notificationEvent.create
         .mockImplementationOnce(async () => ({ id: 'event-1' }))
-        .mockImplementationOnce(async () => { throw new Error('Database error'); });
+        .mockImplementationOnce(async () => {
+          throw new Error('Database error');
+        });
 
       const notifications = [
         {
@@ -293,19 +300,19 @@ describe('NovaUniversalNotificationPlatform', () => {
           eventType: 'success',
           title: 'Success',
           message: 'This will succeed',
-          recipientUsers: ['user-1']
+          recipientUsers: ['user-1'],
         },
         {
           module: 'test',
           eventType: 'failure',
           title: 'Failure',
           message: 'This will fail',
-          recipientUsers: ['user-2']
-        }
+          recipientUsers: ['user-2'],
+        },
       ];
 
       const eventIds = await notificationPlatform.sendBatch(notifications);
-      
+
       // Should return only successful event IDs
       expect(eventIds).toHaveLength(1);
       expect(eventIds[0]).toBe('event-1');
@@ -326,7 +333,7 @@ describe('Notification API Routes', () => {
         title: 'SLA Breach Alert',
         message: 'Ticket #12345 has breached SLA',
         priority: 'HIGH',
-        recipientRoles: ['admin']
+        recipientRoles: ['admin'],
       };
 
       const response = await request(app)
@@ -338,13 +345,13 @@ describe('Notification API Routes', () => {
       expect(response.body).toMatchObject({
         success: true,
         eventId: expect.any(String),
-        timestamp: expect.any(String)
+        timestamp: expect.any(String),
       });
     });
 
     test('should reject invalid payload', async () => {
       const invalidPayload = {
-        module: 'test'
+        module: 'test',
         // Missing required fields
       };
 
@@ -356,7 +363,7 @@ describe('Notification API Routes', () => {
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Validation failed'
+        error: 'Validation failed',
       });
     });
 
@@ -366,13 +373,10 @@ describe('Notification API Routes', () => {
         eventType: 'test',
         title: 'Test',
         message: 'Test message',
-        recipientUsers: ['user-1']
+        recipientUsers: ['user-1'],
       };
 
-      await request(app)
-        .post('/api/v2/notifications/send')
-        .send(payload)
-        .expect(401);
+      await request(app).post('/api/v2/notifications/send').send(payload).expect(401);
     });
   });
 
@@ -385,16 +389,16 @@ describe('Notification API Routes', () => {
             eventType: 'created',
             title: 'Ticket Created',
             message: 'New ticket #1',
-            recipientUsers: ['user-1']
+            recipientUsers: ['user-1'],
           },
           {
             module: 'pulse.tickets',
             eventType: 'created',
             title: 'Ticket Created',
             message: 'New ticket #2',
-            recipientUsers: ['user-2']
-          }
-        ]
+            recipientUsers: ['user-2'],
+          },
+        ],
       };
 
       const response = await request(app)
@@ -407,7 +411,7 @@ describe('Notification API Routes', () => {
         success: true,
         eventIds: expect.any(Array),
         successCount: expect.any(Number),
-        failureCount: expect.any(Number)
+        failureCount: expect.any(Number),
       });
     });
 
@@ -417,7 +421,7 @@ describe('Notification API Routes', () => {
         eventType: 'test',
         title: 'Test',
         message: 'Test message',
-        recipientUsers: ['user-1']
+        recipientUsers: ['user-1'],
       });
 
       const response = await request(app)
@@ -428,7 +432,7 @@ describe('Notification API Routes', () => {
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Validation failed'
+        error: 'Validation failed',
       });
     });
   });
@@ -443,7 +447,7 @@ describe('Notification API Routes', () => {
       expect(response.body).toMatchObject({
         success: true,
         preferences: expect.any(Array),
-        timestamp: expect.any(String)
+        timestamp: expect.any(String),
       });
     });
   });
@@ -456,8 +460,8 @@ describe('Notification API Routes', () => {
           eventType: 'system_alert',
           channels: ['EMAIL', 'SMS'],
           enabled: true,
-          priority: 'CRITICAL'
-        }
+          priority: 'CRITICAL',
+        },
       ];
 
       const response = await request(app)
@@ -468,21 +472,19 @@ describe('Notification API Routes', () => {
 
       expect(response.body).toMatchObject({
         success: true,
-        message: 'Preferences updated successfully'
+        message: 'Preferences updated successfully',
       });
     });
   });
 
   describe('GET /api/v2/notifications/health', () => {
     test('should return health status', async () => {
-      const response = await request(app)
-        .get('/api/v2/notifications/health')
-        .expect(200);
+      const response = await request(app).get('/api/v2/notifications/health').expect(200);
 
       expect(response.body).toMatchObject({
         status: 'healthy',
         timestamp: expect.any(String),
-        services: expect.any(Object)
+        services: expect.any(Object),
       });
     });
   });
@@ -508,9 +510,9 @@ describe('Notification System Integration', () => {
             id: 'view_ticket',
             label: 'View Ticket',
             url: '/tickets/12345',
-            style: 'primary'
-          }
-        ]
+            style: 'primary',
+          },
+        ],
       };
 
       const sendResponse = await request(app)
@@ -543,7 +545,7 @@ describe('Notification System Integration', () => {
 
     test('should handle scheduled notification workflow', async () => {
       const scheduledFor = new Date(Date.now() + 3600000); // 1 hour from now
-      
+
       const payload = {
         module: 'pulse.tickets',
         eventType: 'reminder',
@@ -551,7 +553,7 @@ describe('Notification System Integration', () => {
         message: 'This is a scheduled notification',
         priority: 'NORMAL',
         recipientUsers: [testUser.id],
-        scheduledFor: scheduledFor.toISOString()
+        scheduledFor: scheduledFor.toISOString(),
       };
 
       const response = await request(app)
@@ -563,7 +565,7 @@ describe('Notification System Integration', () => {
       expect(response.body).toMatchObject({
         success: true,
         eventId: expect.any(String),
-        scheduledFor: scheduledFor.toISOString()
+        scheduledFor: scheduledFor.toISOString(),
       });
 
       // Cancel the scheduled notification
@@ -583,27 +585,27 @@ describe('Notification System Integration', () => {
           module: 'pulse.tickets',
           eventType: 'sla_breach',
           title: 'Pulse SLA Breach',
-          message: 'Ticket SLA breached'
+          message: 'Ticket SLA breached',
         },
         {
           module: 'sentinel.monitoring',
           eventType: 'system_alert',
           title: 'Sentinel Alert',
-          message: 'System alert triggered'
+          message: 'System alert triggered',
         },
         {
           module: 'goalert.oncall',
           eventType: 'escalation',
           title: 'GoAlert Escalation',
-          message: 'Alert escalated to next level'
-        }
+          message: 'Alert escalated to next level',
+        },
       ];
 
       for (const moduleNotification of modules) {
         const payload = {
           ...moduleNotification,
           priority: 'HIGH',
-          recipientUsers: [testUser.id]
+          recipientUsers: [testUser.id],
         };
 
         const response = await request(app)
@@ -625,14 +627,16 @@ describe('Notification System Integration', () => {
 describe('Notification System Performance', () => {
   test('should handle high volume batch notifications', async () => {
     const batchSize = 50;
-    const notifications = Array(batchSize).fill().map((_, index) => ({
-      module: 'performance.test',
-      eventType: 'load_test',
-      title: `Load Test Notification ${index + 1}`,
-      message: `This is load test notification number ${index + 1}`,
-      priority: 'NORMAL',
-      recipientUsers: [testUser.id]
-    }));
+    const notifications = Array(batchSize)
+      .fill()
+      .map((_, index) => ({
+        module: 'performance.test',
+        eventType: 'load_test',
+        title: `Load Test Notification ${index + 1}`,
+        message: `This is load test notification number ${index + 1}`,
+        priority: 'NORMAL',
+        recipientUsers: [testUser.id],
+      }));
 
     const startTime = Date.now();
 
@@ -660,20 +664,20 @@ describe('Notification System Performance', () => {
         title: `Concurrent Test ${i + 1}`,
         message: `Concurrent notification ${i + 1}`,
         priority: 'NORMAL',
-        recipientUsers: [testUser.id]
+        recipientUsers: [testUser.id],
       };
 
       promises.push(
         request(app)
           .post('/api/v2/notifications/send')
           .set('Authorization', `Bearer ${testToken}`)
-          .send(payload)
+          .send(payload),
       );
     }
 
     const responses = await Promise.all(promises);
 
-    responses.forEach(response => {
+    responses.forEach((response) => {
       expect(response.status).toBe(201);
       expect(response.body.success).toBe(true);
     });
@@ -688,7 +692,7 @@ describe('Notification System Error Handling', () => {
   test('should handle database connection errors gracefully', async () => {
     // Mock database error
     notificationClient.notificationEvent.create.mockRejectedValueOnce(
-      new Error('Database connection failed')
+      new Error('Database connection failed'),
     );
 
     const payload = {
@@ -697,7 +701,7 @@ describe('Notification System Error Handling', () => {
       title: 'Database Error Test',
       message: 'This should fail due to database error',
       priority: 'NORMAL',
-      recipientUsers: [testUser.id]
+      recipientUsers: [testUser.id],
     };
 
     const response = await request(app)
@@ -708,7 +712,7 @@ describe('Notification System Error Handling', () => {
 
     expect(response.body).toMatchObject({
       success: false,
-      error: 'Failed to send notification'
+      error: 'Failed to send notification',
     });
 
     // Restore mock
@@ -748,14 +752,11 @@ describe('Notification System Security', () => {
       eventType: 'unauthorized',
       title: 'Security Test',
       message: 'This should be blocked',
-      recipientUsers: [testUser.id]
+      recipientUsers: [testUser.id],
     };
 
     // No authorization header
-    await request(app)
-      .post('/api/v2/notifications/send')
-      .send(payload)
-      .expect(401);
+    await request(app).post('/api/v2/notifications/send').send(payload).expect(401);
 
     // Invalid token
     await request(app)
@@ -771,7 +772,7 @@ describe('Notification System Security', () => {
       id: 'limited-user',
       email: 'limited@test.com',
       roles: ['viewer'],
-      permissions: ['notifications:read'] // Missing notifications:send
+      permissions: ['notifications:read'], // Missing notifications:send
     };
 
     const payload = {
@@ -779,7 +780,7 @@ describe('Notification System Security', () => {
       eventType: 'permission_test',
       title: 'Permission Test',
       message: 'This should be blocked due to insufficient permissions',
-      recipientUsers: [testUser.id]
+      recipientUsers: [testUser.id],
     };
 
     // This would need a separate test token for the limited user
@@ -793,7 +794,7 @@ describe('Notification System Security', () => {
       title: '<script>alert("XSS")</script>',
       message: '<img src=x onerror=alert("XSS")>',
       details: '<iframe src="javascript:alert(\'XSS\')"></iframe>',
-      recipientUsers: [testUser.id]
+      recipientUsers: [testUser.id],
     };
 
     const response = await request(app)
@@ -803,7 +804,7 @@ describe('Notification System Security', () => {
       .expect(201);
 
     expect(response.body.success).toBe(true);
-    
+
     // The platform should sanitize the content before storing
     // This would need to be verified in the actual stored data
   });

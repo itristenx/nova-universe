@@ -14,7 +14,8 @@ export const useAuthStatus = () => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '');
+        const baseURL =
+          import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '');
         const response = await axios.get<AuthStatusResponse>(`${baseURL}/api/auth/status`, {
           timeout: 4000,
         });

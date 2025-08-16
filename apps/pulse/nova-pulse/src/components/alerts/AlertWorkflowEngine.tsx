@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-
   PlayIcon,
   PauseIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
-  BoltIcon
+  BoltIcon,
 } from '@heroicons/react/24/outline';
 import { AlertWorkflowRule } from '../../types/alerts';
 import { useAlertCosmo } from '../../hooks/useAlertCosmo';
@@ -50,7 +49,7 @@ interface WorkflowExecution {
 const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
   ticketData,
   onWorkflowTriggered,
-  className = ''
+  className = '',
 }) => {
   const queryClient = useQueryClient();
   const [activeExecutions, setActiveExecutions] = useState<WorkflowExecution[]>([]);
@@ -62,7 +61,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     },
     onAlertEscalated: (escalation) => {
       console.log('Workflow escalated alert:', escalation);
-    }
+    },
   });
 
   // Fetch workflow rules
@@ -70,13 +69,13 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     queryKey: ['workflow-rules'],
     queryFn: async (): Promise<AlertWorkflowRule[]> => {
       const response = await fetch('/api/v2/alerts/workflow-rules', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
       if (!response.ok) throw new Error('Failed to fetch workflow rules');
       const data = await response.json();
       return data.rules;
-    }
+    },
   });
 
   // Execute workflow mutation
@@ -85,13 +84,13 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
       const response = await fetch('/api/v2/alerts/workflow-execute', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           ruleId,
-          ticketData: ticket
-        })
+          ticketData: ticket,
+        }),
       });
 
       if (!response.ok) throw new Error('Failed to execute workflow');
@@ -100,7 +99,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['recent-alerts'] });
       onWorkflowTriggered?.(result.ruleId, result.action);
-    }
+    },
   });
 
   // Evaluate if ticket matches workflow rule conditions
@@ -113,8 +112,11 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     }
 
     // Customer tier check
-    if (conditions.customerType && ticket.customerTier && 
-        !conditions.customerType.includes(ticket.customerTier)) {
+    if (
+      conditions.customerType &&
+      ticket.customerTier &&
+      !conditions.customerType.includes(ticket.customerTier)
+    ) {
       return false;
     }
 
@@ -126,8 +128,8 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     // Keyword check
     if (conditions.keywords && conditions.keywords.length > 0) {
       const text = `${ticket.title} ${ticket.description}`.toLowerCase();
-      const hasKeyword = conditions.keywords.some((keyword: string) => 
-        text.includes(keyword.toLowerCase())
+      const hasKeyword = conditions.keywords.some((keyword: string) =>
+        text.includes(keyword.toLowerCase()),
       );
       if (!hasKeyword) {
         return false;
@@ -144,8 +146,10 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     }
 
     // Affected users threshold
-    if (conditions.affectedUsersThreshold && 
-        (!ticket.affectedUsers || ticket.affectedUsers < conditions.affectedUsersThreshold)) {
+    if (
+      conditions.affectedUsersThreshold &&
+      (!ticket.affectedUsers || ticket.affectedUsers < conditions.affectedUsersThreshold)
+    ) {
       return false;
     }
 
@@ -158,16 +162,17 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
 
     const evaluateWorkflows = async () => {
       const matchingRules = workflowRules
-        .filter(rule => rule.enabled)
-        .filter(rule => evaluateRule(rule, ticketData))
+        .filter((rule) => rule.enabled)
+        .filter((rule) => evaluateRule(rule, ticketData))
         .sort((a, b) => a.priority - b.priority); // Lower priority number = higher priority
 
       for (const rule of matchingRules) {
         // Check if we've already executed this rule for this ticket recently
-        const recentExecution = activeExecutions.find(exec => 
-          exec.ruleId === rule.id && 
-          exec.ticketId === ticketData.id &&
-          Date.now() - new Date(exec.triggeredAt).getTime() < 60 * 60 * 1000 // 1 hour
+        const recentExecution = activeExecutions.find(
+          (exec) =>
+            exec.ruleId === rule.id &&
+            exec.ticketId === ticketData.id &&
+            Date.now() - new Date(exec.triggeredAt).getTime() < 60 * 60 * 1000, // 1 hour
         );
 
         if (recentExecution) {
@@ -175,7 +180,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
         }
 
         console.log(`Workflow rule "${rule.ruleName}" matches ticket ${ticketData.id}`);
-        
+
         // Create execution record
         const execution: WorkflowExecution = {
           id: `exec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -186,12 +191,12 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
           triggeredAt: new Date().toISOString(),
           actions: Object.entries(rule.actions).map(([type, config]) => ({
             type,
-            status: 'pending'
+            status: 'pending',
           })),
-          logs: [`Workflow "${rule.ruleName}" triggered for ticket ${ticketData.id}`]
+          logs: [`Workflow "${rule.ruleName}" triggered for ticket ${ticketData.id}`],
         };
 
-        setActiveExecutions(prev => [...prev, execution]);
+        setActiveExecutions((prev) => [...prev, execution]);
 
         // Execute the workflow
         try {
@@ -210,9 +215,9 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
 
   // Execute workflow actions
   const executeWorkflow = async (
-    execution: WorkflowExecution, 
-    rule: AlertWorkflowRule, 
-    ticket: any
+    execution: WorkflowExecution,
+    rule: AlertWorkflowRule,
+    ticket: any,
   ) => {
     updateExecutionStatus(execution.id, 'running');
     addExecutionLog(execution.id, 'Starting workflow execution...');
@@ -227,7 +232,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
 
         const result = await executeWorkflowMutation.mutateAsync({
           ruleId: rule.id,
-          ticketData: ticket
+          ticketData: ticket,
         });
 
         updateActionStatus(execution.id, 'create_alert', 'completed', result);
@@ -247,7 +252,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
 
         const escalationResult = await executeWorkflowMutation.mutateAsync({
           ruleId: rule.id,
-          ticketData: { ...ticket, escalateTo: actions.escalate_to }
+          ticketData: { ...ticket, escalateTo: actions.escalate_to },
         });
 
         updateActionStatus(execution.id, 'escalate', 'completed', escalationResult);
@@ -262,7 +267,10 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     // Handle notification
     if (actions.notify) {
       try {
-        addExecutionLog(execution.id, `Sending notifications to ${JSON.stringify(actions.notify)}...`);
+        addExecutionLog(
+          execution.id,
+          `Sending notifications to ${JSON.stringify(actions.notify)}...`,
+        );
         updateActionStatus(execution.id, 'notify', 'running');
 
         // This would integrate with Nova Comms
@@ -298,53 +306,61 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
 
   // Helper functions for execution tracking
   const updateExecutionStatus = (execId: string, status: WorkflowExecution['status']) => {
-    setActiveExecutions(prev => prev.map(exec => 
-      exec.id === execId 
-        ? { ...exec, status, ...(status === 'completed' && { completedAt: new Date().toISOString() }) }
-        : exec
-    ));
+    setActiveExecutions((prev) =>
+      prev.map((exec) =>
+        exec.id === execId
+          ? {
+              ...exec,
+              status,
+              ...(status === 'completed' && { completedAt: new Date().toISOString() }),
+            }
+          : exec,
+      ),
+    );
   };
 
   const updateActionStatus = (
-    execId: string, 
-    actionType: string, 
-    status: any, 
-    result?: any, 
-    error?: string
+    execId: string,
+    actionType: string,
+    status: any,
+    result?: any,
+    error?: string,
   ) => {
-    setActiveExecutions(prev => prev.map(exec => 
-      exec.id === execId 
-        ? {
-            ...exec,
-            actions: exec.actions.map(action =>
-              action.type === actionType
-                ? { ...action, status, result, error }
-                : action
-            )
-          }
-        : exec
-    ));
+    setActiveExecutions((prev) =>
+      prev.map((exec) =>
+        exec.id === execId
+          ? {
+              ...exec,
+              actions: exec.actions.map((action) =>
+                action.type === actionType ? { ...action, status, result, error } : action,
+              ),
+            }
+          : exec,
+      ),
+    );
   };
 
   const addExecutionLog = (execId: string, message: string) => {
     const timestamp = new Date().toLocaleTimeString();
-    setActiveExecutions(prev => prev.map(exec => 
-      exec.id === execId 
-        ? { ...exec, logs: [...exec.logs, `[${timestamp}] ${message}`] }
-        : exec
-    ));
+    setActiveExecutions((prev) =>
+      prev.map((exec) =>
+        exec.id === execId ? { ...exec, logs: [...exec.logs, `[${timestamp}] ${message}`] } : exec,
+      ),
+    );
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'running':
-        return <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />;
+        return (
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        );
       case 'completed':
-        return <CheckCircleIcon className="w-4 h-4 text-green-600" />;
+        return <CheckCircleIcon className="h-4 w-4 text-green-600" />;
       case 'failed':
-        return <ExclamationTriangleIcon className="w-4 h-4 text-red-600" />;
+        return <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />;
       default:
-        return <ClockIcon className="w-4 h-4 text-gray-400" />;
+        return <ClockIcon className="h-4 w-4 text-gray-400" />;
     }
   };
 
@@ -368,10 +384,10 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Engine Status */}
-      <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl">
+      <div className="flex items-center justify-between rounded-xl border border-gray-200/50 bg-white/80 p-4 backdrop-blur-xl">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-purple-100 rounded-lg">
-            <BoltIcon className="w-5 h-5 text-purple-600" />
+          <div className="rounded-lg bg-purple-100 p-2">
+            <BoltIcon className="h-5 w-5 text-purple-600" />
           </div>
           <div>
             <h3 className="font-medium text-gray-900">Alert Workflow Engine</h3>
@@ -385,23 +401,20 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsEngineEnabled(!isEngineEnabled)}
-          className={`
-            px-3 py-2 rounded-lg font-medium text-sm transition-colors duration-200
-            flex items-center space-x-2
-            ${isEngineEnabled 
-              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+          className={`flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ${
+            isEngineEnabled
+              ? 'bg-green-100 text-green-700 hover:bg-green-200'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }
-          `}
+          } `}
         >
           {isEngineEnabled ? (
             <>
-              <PauseIcon className="w-4 h-4" />
+              <PauseIcon className="h-4 w-4" />
               <span>Enabled</span>
             </>
           ) : (
             <>
-              <PlayIcon className="w-4 h-4" />
+              <PlayIcon className="h-4 w-4" />
               <span>Disabled</span>
             </>
           )}
@@ -417,12 +430,9 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
               key={execution.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`
-                p-4 border rounded-xl transition-all duration-200
-                ${getStatusColor(execution.status)}
-              `}
+              className={`rounded-xl border p-4 transition-all duration-200 ${getStatusColor(execution.status)} `}
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   {getStatusIcon(execution.status)}
                   <div>
@@ -432,20 +442,23 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
                     </p>
                   </div>
                 </div>
-                <span className={`
-                  px-2 py-1 text-xs rounded-full font-medium
-                  ${execution.status === 'completed' ? 'bg-green-100 text-green-700' :
-                    execution.status === 'failed' ? 'bg-red-100 text-red-700' :
-                    execution.status === 'running' ? 'bg-blue-100 text-blue-700' :
-                    'bg-gray-100 text-gray-700'
-                  }
-                `}>
+                <span
+                  className={`rounded-full px-2 py-1 text-xs font-medium ${
+                    execution.status === 'completed'
+                      ? 'bg-green-100 text-green-700'
+                      : execution.status === 'failed'
+                        ? 'bg-red-100 text-red-700'
+                        : execution.status === 'running'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-gray-100 text-gray-700'
+                  } `}
+                >
                   {execution.status.toUpperCase()}
                 </span>
               </div>
 
               {/* Actions Status */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+              <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 {execution.actions.map((action, index) => (
                   <div key={index} className="flex items-center space-x-2 text-sm">
                     {getStatusIcon(action.status)}
@@ -459,12 +472,12 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
               {/* Execution Logs */}
               {execution.logs.length > 0 && (
                 <details className="mt-3">
-                  <summary className="text-sm font-medium text-gray-700 cursor-pointer hover:text-gray-900">
+                  <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
                     View Logs ({execution.logs.length})
                   </summary>
-                  <div className="mt-2 p-3 bg-gray-50 rounded-lg max-h-32 overflow-y-auto">
+                  <div className="mt-2 max-h-32 overflow-y-auto rounded-lg bg-gray-50 p-3">
                     {execution.logs.map((log, index) => (
-                      <div key={index} className="text-xs text-gray-600 font-mono">
+                      <div key={index} className="font-mono text-xs text-gray-600">
                         {log}
                       </div>
                     ))}
@@ -478,11 +491,11 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
 
       {/* Matching Rules Preview */}
       {isEngineEnabled && workflowRules.length > 0 && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
-          <h4 className="font-medium text-blue-900 mb-2">Applicable Workflow Rules</h4>
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+          <h4 className="mb-2 font-medium text-blue-900">Applicable Workflow Rules</h4>
           <div className="space-y-2">
             {workflowRules
-              .filter(rule => rule.enabled && evaluateRule(rule, ticketData))
+              .filter((rule) => rule.enabled && evaluateRule(rule, ticketData))
               .map((rule) => (
                 <div key={rule.id} className="flex items-center justify-between text-sm">
                   <span className="text-blue-800">{rule.ruleName}</span>
@@ -490,7 +503,8 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
                 </div>
               ))}
           </div>
-          {workflowRules.filter(rule => rule.enabled && evaluateRule(rule, ticketData)).length === 0 && (
+          {workflowRules.filter((rule) => rule.enabled && evaluateRule(rule, ticketData)).length ===
+            0 && (
             <p className="text-sm text-blue-700">No workflow rules match this ticket currently.</p>
           )}
         </div>

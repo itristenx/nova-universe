@@ -47,12 +47,12 @@ class NovaMCPServer {
       options,
       createdAt: new Date().toISOString(),
       messages: [],
-      metadata: {}
+      metadata: {},
     };
 
     this.contexts.set(contextId, context);
     logger.info('MCP context created', { contextId });
-    
+
     return context;
   }
 
@@ -74,7 +74,7 @@ class NovaMCPServer {
 
     Object.assign(context, updates);
     context.updatedAt = new Date().toISOString();
-    
+
     logger.info('MCP context updated', { contextId });
     return context;
   }
@@ -90,7 +90,7 @@ class NovaMCPServer {
 
     context.messages.push({
       ...message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     logger.debug('Message added to MCP context', { contextId, messageId: message.id });
@@ -124,7 +124,7 @@ class NovaMCPServer {
       contextCount: this.contexts.size,
       modelCount: this.models.size,
       uptime: process.uptime(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }
@@ -134,7 +134,7 @@ export const novaMCPServer = new NovaMCPServer();
 
 // Initialize on module load
 if (process.env.NODE_ENV !== 'test') {
-  novaMCPServer.initialize().catch(err => {
+  novaMCPServer.initialize().catch((err) => {
     logger.error('Nova MCP Server initialization failed', { error: err.message });
   });
 }

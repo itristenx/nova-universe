@@ -2,69 +2,122 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authenticateToken } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
-import { 
-  createMonitor, 
-  updateMonitor, 
-  deleteMonitor, 
+import {
+  createMonitor,
+  updateMonitor,
+  deleteMonitor,
   getMonitors,
   getMonitorById,
-  updateMonitorStatus
+  updateMonitorStatus,
 } from '../controllers/monitoring/monitors';
 import {
   createIncident,
   updateIncident,
   getIncidents,
   getIncidentById,
-  resolveIncident
+  resolveIncident,
 } from '../controllers/monitoring/incidents';
 import {
   createNotificationProvider,
   updateNotificationProvider,
   getNotificationProviders,
-  testNotificationProvider
+  testNotificationProvider,
 } from '../controllers/monitoring/notifications';
 import {
   createStatusPage,
   updateStatusPage,
   getStatusPages,
   getStatusPageBySlug,
-  getPublicStatusPage
+  getPublicStatusPage,
 } from '../controllers/monitoring/status-pages';
 import {
   createMaintenanceWindow,
   updateMaintenanceWindow,
   getMaintenanceWindows,
-  deleteMaintenanceWindow
+  deleteMaintenanceWindow,
 } from '../controllers/monitoring/maintenance';
-import {
-  createTag,
-  updateTag,
-  getTags,
-  deleteTag
-} from '../controllers/monitoring/tags';
+import { createTag, updateTag, getTags, deleteTag } from '../controllers/monitoring/tags';
 
 const router = Router();
 
 // Enhanced Monitor Type definitions (matching frontend)
 const MonitorTypes = [
-  'http', 'https', 'tcp', 'ping', 'dns', 'docker', 'websocket',
-  'keyword', 'port', 'grpc', 'mqtt', 'rabbitmq', 'redis',
-  'mysql', 'postgres', 'mongodb', 'steam', 'gamedig'
+  'http',
+  'https',
+  'tcp',
+  'ping',
+  'dns',
+  'docker',
+  'websocket',
+  'keyword',
+  'port',
+  'grpc',
+  'mqtt',
+  'rabbitmq',
+  'redis',
+  'mysql',
+  'postgres',
+  'mongodb',
+  'steam',
+  'gamedig',
 ] as const;
 
 const NotificationProviders = [
-  'email', 'discord', 'slack', 'teams', 'telegram', 'webhook',
-  'pushover', 'gotify', 'apprise', 'matrix', 'rocket.chat',
-  'mattermost', 'pushbullet', 'line', 'lunasea', 'feishu',
-  'alerta', 'smseagle', 'clicksendsms', 'google-chat',
-  'pagerduty', 'pagertree', 'twilio', 'octopush', 'promosms',
-  'smsmanager', 'squadcast', 'signal', 'serwerysms',
-  'stackfield', 'ntfy', 'opsgenie', 'wecom', 'goalert',
-  'smsc', 'cellsynt', 'whapi', 'homeassistant', 'onebot',
-  'notion', 'zoho-cliq', 'splunk', 'bark', 'smspartner',
-  'gigachat', 'clickup', 'kook', 'high-mobil', 'dingding',
-  'techulus-push', 'ntfy-sh', 'callmebot', 'pushdeer',
-  'send-grid', 'nodemailer'
+  'email',
+  'discord',
+  'slack',
+  'teams',
+  'telegram',
+  'webhook',
+  'pushover',
+  'gotify',
+  'apprise',
+  'matrix',
+  'rocket.chat',
+  'mattermost',
+  'pushbullet',
+  'line',
+  'lunasea',
+  'feishu',
+  'alerta',
+  'smseagle',
+  'clicksendsms',
+  'google-chat',
+  'pagerduty',
+  'pagertree',
+  'twilio',
+  'octopush',
+  'promosms',
+  'smsmanager',
+  'squadcast',
+  'signal',
+  'serwerysms',
+  'stackfield',
+  'ntfy',
+  'opsgenie',
+  'wecom',
+  'goalert',
+  'smsc',
+  'cellsynt',
+  'whapi',
+  'homeassistant',
+  'onebot',
+  'notion',
+  'zoho-cliq',
+  'splunk',
+  'bark',
+  'smspartner',
+  'gigachat',
+  'clickup',
+  'kook',
+  'high-mobil',
+  'dingding',
+  'techulus-push',
+  'ntfy-sh',
+  'callmebot',
+  'pushdeer',
+  'send-grid',
+  'nodemailer',
 ] as const;
 
 // Validation schemas
@@ -107,7 +160,7 @@ const createMonitorSchema = z.object({
   radius_username: z.string().optional(),
   radius_password: z.string().optional(),
   radius_calling_station_id: z.string().optional(),
-  game_server_id: z.string().optional()
+  game_server_id: z.string().optional(),
 });
 
 const updateMonitorSchema = createMonitorSchema.partial();
@@ -115,10 +168,12 @@ const updateMonitorSchema = createMonitorSchema.partial();
 const createIncidentSchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().optional(),
-  status: z.enum(['investigating', 'identified', 'monitoring', 'resolved']).default('investigating'),
+  status: z
+    .enum(['investigating', 'identified', 'monitoring', 'resolved'])
+    .default('investigating'),
   severity: z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
   affected_monitors: z.array(z.string()).default([]),
-  notify_subscribers: z.boolean().default(true)
+  notify_subscribers: z.boolean().default(true),
 });
 
 const updateIncidentSchema = createIncidentSchema.partial();
@@ -128,22 +183,30 @@ const createNotificationProviderSchema = z.object({
   type: z.enum(NotificationProviders),
   is_default: z.boolean().default(false),
   apply_existing: z.boolean().default(false),
-  config: z.record(z.any())
+  config: z.record(z.any()),
 });
 
 const createStatusPageSchema = z.object({
   name: z.string().min(1).max(255),
-  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9-]+$/),
   description: z.string().optional(),
   is_public: z.boolean().default(true),
   theme: z.enum(['light', 'dark', 'auto']).default('light'),
   incident_history_days: z.number().min(1).max(365).default(90),
   custom_domain: z.string().optional(),
   monitors: z.array(z.string()).default([]),
-  groups: z.array(z.object({
-    name: z.string(),
-    monitors: z.array(z.string())
-  })).default([])
+  groups: z
+    .array(
+      z.object({
+        name: z.string(),
+        monitors: z.array(z.string()),
+      }),
+    )
+    .default([]),
 });
 
 const createMaintenanceWindowSchema = z.object({
@@ -154,12 +217,15 @@ const createMaintenanceWindowSchema = z.object({
   affected_monitors: z.array(z.string()).default([]),
   notify_affected_monitors: z.boolean().default(true),
   recurring: z.boolean().default(false),
-  recurring_interval: z.enum(['daily', 'weekly', 'monthly']).optional()
+  recurring_interval: z.enum(['daily', 'weekly', 'monthly']).optional(),
 });
 
 const createTagSchema = z.object({
   name: z.string().min(1).max(100),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#007bff')
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .default('#007bff'),
 });
 
 // ===== MONITORS =====
@@ -190,26 +256,28 @@ router.get('/monitors/:id', authenticateToken, async (req, res) => {
 });
 
 // POST /api/enhanced-monitoring/monitors
-router.post('/monitors', 
-  authenticateToken, 
+router.post(
+  '/monitors',
+  authenticateToken,
   validateRequest(createMonitorSchema),
   async (req, res) => {
     try {
       const monitor = await createMonitor({
         ...req.body,
-        user_id: req.user.id
+        user_id: req.user.id,
       });
       res.status(201).json({ monitor });
     } catch (error) {
       console.error('Failed to create monitor:', error);
       res.status(500).json({ error: 'Failed to create monitor' });
     }
-  }
+  },
 );
 
 // PUT /api/enhanced-monitoring/monitors/:id
-router.put('/monitors/:id', 
-  authenticateToken, 
+router.put(
+  '/monitors/:id',
+  authenticateToken,
   validateRequest(updateMonitorSchema),
   async (req, res) => {
     try {
@@ -222,7 +290,7 @@ router.put('/monitors/:id',
       console.error('Failed to update monitor:', error);
       res.status(500).json({ error: 'Failed to update monitor' });
     }
-  }
+  },
 );
 
 // DELETE /api/enhanced-monitoring/monitors/:id
@@ -279,26 +347,28 @@ router.get('/incidents/:id', authenticateToken, async (req, res) => {
 });
 
 // POST /api/enhanced-monitoring/incidents
-router.post('/incidents', 
-  authenticateToken, 
+router.post(
+  '/incidents',
+  authenticateToken,
   validateRequest(createIncidentSchema),
   async (req, res) => {
     try {
       const incident = await createIncident({
         ...req.body,
-        user_id: req.user.id
+        user_id: req.user.id,
       });
       res.status(201).json({ incident });
     } catch (error) {
       console.error('Failed to create incident:', error);
       res.status(500).json({ error: 'Failed to create incident' });
     }
-  }
+  },
 );
 
 // PATCH /api/enhanced-monitoring/incidents/:id
-router.patch('/incidents/:id', 
-  authenticateToken, 
+router.patch(
+  '/incidents/:id',
+  authenticateToken,
   validateRequest(updateIncidentSchema),
   async (req, res) => {
     try {
@@ -311,7 +381,7 @@ router.patch('/incidents/:id',
       console.error('Failed to update incident:', error);
       res.status(500).json({ error: 'Failed to update incident' });
     }
-  }
+  },
 );
 
 // POST /api/enhanced-monitoring/incidents/:id/resolve
@@ -342,26 +412,28 @@ router.get('/notification-providers', authenticateToken, async (req, res) => {
 });
 
 // POST /api/enhanced-monitoring/notification-providers
-router.post('/notification-providers', 
-  authenticateToken, 
+router.post(
+  '/notification-providers',
+  authenticateToken,
   validateRequest(createNotificationProviderSchema),
   async (req, res) => {
     try {
       const provider = await createNotificationProvider({
         ...req.body,
-        user_id: req.user.id
+        user_id: req.user.id,
       });
       res.status(201).json({ notification_provider: provider });
     } catch (error) {
       console.error('Failed to create notification provider:', error);
       res.status(500).json({ error: 'Failed to create notification provider' });
     }
-  }
+  },
 );
 
 // PUT /api/enhanced-monitoring/notification-providers/:id
-router.put('/notification-providers/:id', 
-  authenticateToken, 
+router.put(
+  '/notification-providers/:id',
+  authenticateToken,
   validateRequest(createNotificationProviderSchema.partial()),
   async (req, res) => {
     try {
@@ -374,7 +446,7 @@ router.put('/notification-providers/:id',
       console.error('Failed to update notification provider:', error);
       res.status(500).json({ error: 'Failed to update notification provider' });
     }
-  }
+  },
 );
 
 // POST /api/enhanced-monitoring/notification-providers/:id/test
@@ -416,26 +488,28 @@ router.get('/status-pages/:slug', async (req, res) => {
 });
 
 // POST /api/enhanced-monitoring/status-pages
-router.post('/status-pages', 
-  authenticateToken, 
+router.post(
+  '/status-pages',
+  authenticateToken,
   validateRequest(createStatusPageSchema),
   async (req, res) => {
     try {
       const statusPage = await createStatusPage({
         ...req.body,
-        user_id: req.user.id
+        user_id: req.user.id,
       });
       res.status(201).json({ status_page: statusPage });
     } catch (error) {
       console.error('Failed to create status page:', error);
       res.status(500).json({ error: 'Failed to create status page' });
     }
-  }
+  },
 );
 
 // PUT /api/enhanced-monitoring/status-pages/:id
-router.put('/status-pages/:id', 
-  authenticateToken, 
+router.put(
+  '/status-pages/:id',
+  authenticateToken,
   validateRequest(createStatusPageSchema.partial()),
   async (req, res) => {
     try {
@@ -448,7 +522,7 @@ router.put('/status-pages/:id',
       console.error('Failed to update status page:', error);
       res.status(500).json({ error: 'Failed to update status page' });
     }
-  }
+  },
 );
 
 // ===== MAINTENANCE WINDOWS =====
@@ -465,26 +539,28 @@ router.get('/maintenance-windows', authenticateToken, async (req, res) => {
 });
 
 // POST /api/enhanced-monitoring/maintenance-windows
-router.post('/maintenance-windows', 
-  authenticateToken, 
+router.post(
+  '/maintenance-windows',
+  authenticateToken,
   validateRequest(createMaintenanceWindowSchema),
   async (req, res) => {
     try {
       const maintenanceWindow = await createMaintenanceWindow({
         ...req.body,
-        user_id: req.user.id
+        user_id: req.user.id,
       });
       res.status(201).json({ maintenance_window: maintenanceWindow });
     } catch (error) {
       console.error('Failed to create maintenance window:', error);
       res.status(500).json({ error: 'Failed to create maintenance window' });
     }
-  }
+  },
 );
 
 // PUT /api/enhanced-monitoring/maintenance-windows/:id
-router.put('/maintenance-windows/:id', 
-  authenticateToken, 
+router.put(
+  '/maintenance-windows/:id',
+  authenticateToken,
   validateRequest(createMaintenanceWindowSchema.partial()),
   async (req, res) => {
     try {
@@ -497,7 +573,7 @@ router.put('/maintenance-windows/:id',
       console.error('Failed to update maintenance window:', error);
       res.status(500).json({ error: 'Failed to update maintenance window' });
     }
-  }
+  },
 );
 
 // DELETE /api/enhanced-monitoring/maintenance-windows/:id
@@ -525,26 +601,23 @@ router.get('/tags', authenticateToken, async (req, res) => {
 });
 
 // POST /api/enhanced-monitoring/tags
-router.post('/tags', 
-  authenticateToken, 
-  validateRequest(createTagSchema),
-  async (req, res) => {
-    try {
-      const tag = await createTag({
-        ...req.body,
-        user_id: req.user.id
-      });
-      res.status(201).json({ tag });
-    } catch (error) {
-      console.error('Failed to create tag:', error);
-      res.status(500).json({ error: 'Failed to create tag' });
-    }
+router.post('/tags', authenticateToken, validateRequest(createTagSchema), async (req, res) => {
+  try {
+    const tag = await createTag({
+      ...req.body,
+      user_id: req.user.id,
+    });
+    res.status(201).json({ tag });
+  } catch (error) {
+    console.error('Failed to create tag:', error);
+    res.status(500).json({ error: 'Failed to create tag' });
   }
-);
+});
 
 // PUT /api/enhanced-monitoring/tags/:id
-router.put('/tags/:id', 
-  authenticateToken, 
+router.put(
+  '/tags/:id',
+  authenticateToken,
   validateRequest(createTagSchema.partial()),
   async (req, res) => {
     try {
@@ -557,7 +630,7 @@ router.put('/tags/:id',
       console.error('Failed to update tag:', error);
       res.status(500).json({ error: 'Failed to update tag' });
     }
-  }
+  },
 );
 
 // DELETE /api/enhanced-monitoring/tags/:id

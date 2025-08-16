@@ -1,10 +1,10 @@
 /**
  * Nova Universal Notification Platform (UNP) - Core Service
- * 
+ *
  * Industry-standard notification system that unifies all notification capabilities
  * across Sentinel, GoAlert, and all Nova modules. Built with modern architecture
  * patterns including event-driven design, RBAC, multi-channel delivery, and AI enhancement.
- * 
+ *
  * Features:
  * - Multi-channel delivery (Email, SMS, Push, In-App, Slack, Teams, etc.)
  * - Role-based access control and user preferences
@@ -26,12 +26,12 @@ const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.json()
+    winston.format.json(),
   ),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/notification-service.log' })
-  ]
+    new winston.transports.File({ filename: 'logs/notification-service.log' }),
+  ],
 });
 
 // ============================================================================
@@ -103,14 +103,14 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     queueProcessInterval: 1000,
     enableAnalytics: true,
     enableAi: true,
-    maxConcurrentDeliveries: 50
+    maxConcurrentDeliveries: 50,
   };
 
   constructor() {
     super();
     this.notificationClient = new NotificationClient();
     this.coreClient = new CoreClient();
-    
+
     logger.info('Nova Universal Notification Platform initialized');
   }
 
@@ -156,7 +156,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
       // Load providers from database
       const providers = await this.notificationClient.notificationProvider.findMany({
         where: { isActive: true },
-        orderBy: { priority: 'desc' }
+        orderBy: { priority: 'desc' },
       });
 
       for (const provider of providers) {
@@ -176,7 +176,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
   private async loadProvider(providerConfig: any): Promise<void> {
     try {
       const { type, config, credentials } = providerConfig;
-      
+
       let provider;
       switch (type) {
         case 'EMAIL':
@@ -204,7 +204,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
 
       this.providers.set(`${type}_${providerConfig.id}`, {
         ...providerConfig,
-        instance: provider
+        instance: provider,
       });
 
       logger.info(`Provider loaded: ${type} (${providerConfig.name})`);
@@ -228,7 +228,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     try {
       // Generate unique event ID if not provided
       const eventId = payload.eventId || crypto.randomUUID();
-      
+
       // Validate payload
       this.validateNotificationPayload(payload);
 
@@ -250,8 +250,8 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
           metadata: payload.metadata ? JSON.stringify(payload.metadata) : null,
           scheduledFor: payload.scheduledFor,
           expiresAt: payload.expiresAt,
-          status: 'PENDING'
-        }
+          status: 'PENDING',
+        },
       });
 
       // Add to processing queue
@@ -260,12 +260,11 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
       logger.info(`Notification event created: ${eventId}`, {
         module: payload.module,
         eventType: payload.eventType,
-        priority: payload.priority
+        priority: payload.priority,
       });
 
       this.emit('eventCreated', event);
       return eventId;
-
     } catch (error) {
       logger.error('Failed to send notification:', error);
       throw error;
@@ -277,7 +276,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
    */
   async sendBatch(notifications: NotificationEventPayload[]): Promise<string[]> {
     const eventIds: string[] = [];
-    
+
     for (const notification of notifications) {
       try {
         const eventId = await this.sendNotification(notification);
@@ -294,10 +293,13 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
   /**
    * Schedule a notification for future delivery
    */
-  async scheduleNotification(payload: NotificationEventPayload, scheduledFor: Date): Promise<string> {
+  async scheduleNotification(
+    payload: NotificationEventPayload,
+    scheduledFor: Date,
+  ): Promise<string> {
     return this.sendNotification({
       ...payload,
-      scheduledFor
+      scheduledFor,
     });
   }
 
@@ -308,7 +310,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     try {
       await this.notificationClient.notificationEvent.update({
         where: { eventId },
-        data: { status: 'CANCELLED' }
+        data: { status: 'CANCELLED' },
       });
 
       logger.info(`Notification cancelled: ${eventId}`);
@@ -330,10 +332,10 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
   async getUserPreferences(userId: string): Promise<UserNotificationPreferences[]> {
     try {
       const preferences = await this.notificationClient.notificationPreference.findMany({
-        where: { userId }
+        where: { userId },
       });
 
-      return preferences.map(pref => ({
+      return preferences.map((pref) => ({
         userId: pref.userId,
         module: pref.module,
         eventType: pref.eventType,
@@ -341,7 +343,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
         priority: pref.priority,
         digestEnabled: pref.digestEnabled,
         dndEnabled: pref.dndEnabled,
-        aiEnabled: pref.aiSummaryEnabled
+        aiEnabled: pref.aiSummaryEnabled,
       }));
     } catch (error) {
       logger.error(`Failed to get user preferences for ${userId}:`, error);
@@ -352,7 +354,10 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
   /**
    * Update user notification preferences
    */
-  async updateUserPreferences(userId: string, preferences: Partial<UserNotificationPreferences>[]): Promise<void> {
+  async updateUserPreferences(
+    userId: string,
+    preferences: Partial<UserNotificationPreferences>[],
+  ): Promise<void> {
     try {
       for (const pref of preferences) {
         await this.notificationClient.notificationPreference.upsert({
@@ -360,8 +365,8 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
             userId_module_eventType: {
               userId,
               module: pref.module!,
-              eventType: pref.eventType!
-            }
+              eventType: pref.eventType!,
+            },
           },
           create: {
             userId,
@@ -371,15 +376,15 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
             priority: pref.priority || 'NORMAL',
             digestEnabled: pref.digestEnabled || false,
             dndEnabled: pref.dndEnabled || false,
-            aiSummaryEnabled: pref.aiEnabled || true
+            aiSummaryEnabled: pref.aiEnabled || true,
           },
           update: {
             channels: pref.channels,
             priority: pref.priority,
             digestEnabled: pref.digestEnabled,
             dndEnabled: pref.dndEnabled,
-            aiSummaryEnabled: pref.aiEnabled
-          }
+            aiSummaryEnabled: pref.aiEnabled,
+          },
         });
       }
 
@@ -400,9 +405,9 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
         where: { userId },
         create: {
           userId,
-          ...profile
+          ...profile,
         },
-        update: profile
+        update: profile,
       });
 
       logger.info(`Helix profile created/updated for user ${userId}`);
@@ -436,11 +441,11 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     if (this.processingQueue) return;
 
     this.processingQueue = true;
-    
+
     try {
       // Take a batch from the queue
       const batch = this.messageQueue.splice(0, this.config.batchSize);
-      
+
       if (batch.length === 0) {
         this.processingQueue = false;
         return;
@@ -449,8 +454,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
       logger.info(`Processing notification batch: ${batch.length} events`);
 
       // Process each event in the batch
-      await Promise.all(batch.map(event => this.processNotificationEvent(event)));
-
+      await Promise.all(batch.map((event) => this.processNotificationEvent(event)));
     } catch (error) {
       logger.error('Failed to process message queue:', error);
     } finally {
@@ -468,7 +472,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
       // Update event status
       await this.notificationClient.notificationEvent.update({
         where: { eventId },
-        data: { status: 'PROCESSING', processedAt: new Date() }
+        data: { status: 'PROCESSING', processedAt: new Date() },
       });
 
       // Resolve recipients
@@ -483,23 +487,22 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
       // Update event status
       await this.notificationClient.notificationEvent.update({
         where: { eventId },
-        data: { status: 'COMPLETED' }
+        data: { status: 'COMPLETED' },
       });
 
       logger.info(`Notification event processed: ${eventId}`);
       this.emit('eventProcessed', { eventId, recipientCount: recipients.length });
-
     } catch (error) {
       logger.error(`Failed to process notification event ${payload.eventId}:`, error);
-      
+
       // Update event status to failed
       if (payload.eventId) {
         await this.notificationClient.notificationEvent.update({
           where: { eventId: payload.eventId },
-          data: { status: 'FAILED' }
+          data: { status: 'FAILED' },
         });
       }
-      
+
       this.emit('eventFailed', { eventId: payload.eventId, error });
     }
   }
@@ -512,7 +515,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
 
     // Add direct user recipients
     if (payload.recipientUsers) {
-      payload.recipientUsers.forEach(userId => recipients.add(userId));
+      payload.recipientUsers.forEach((userId) => recipients.add(userId));
     }
 
     // Resolve role-based recipients
@@ -522,13 +525,13 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
         const usersWithRoles = await this.coreClient.userRole.findMany({
           where: {
             role: {
-              name: { in: payload.recipientRoles }
-            }
+              name: { in: payload.recipientRoles },
+            },
           },
-          include: { user: true }
+          include: { user: true },
         });
 
-        usersWithRoles.forEach(userRole => {
+        usersWithRoles.forEach((userRole) => {
           recipients.add(userRole.userId);
         });
       } catch (error) {
@@ -542,14 +545,21 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
   /**
    * Create individual notifications for each recipient
    */
-  private async createIndividualNotifications(payload: NotificationEventPayload, recipients: string[]): Promise<any[]> {
+  private async createIndividualNotifications(
+    payload: NotificationEventPayload,
+    recipients: string[],
+  ): Promise<any[]> {
     const notifications = [];
 
     for (const userId of recipients) {
       try {
         // Get user preferences
-        const userPrefs = await this.getUserPreferencesForEvent(userId, payload.module, payload.eventType);
-        
+        const userPrefs = await this.getUserPreferencesForEvent(
+          userId,
+          payload.module,
+          payload.eventType,
+        );
+
         // Check if user wants to receive this notification
         if (!this.shouldReceiveNotification(userPrefs, payload)) {
           continue;
@@ -568,8 +578,8 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
               actions: payload.actions ? JSON.stringify(payload.actions) : null,
               priority: userPrefs.priority || payload.priority || 'NORMAL',
               scheduledFor: payload.scheduledFor,
-              status: 'PENDING'
-            }
+              status: 'PENDING',
+            },
           });
 
           notifications.push(notification);
@@ -585,11 +595,15 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
   /**
    * Get user preferences for a specific event
    */
-  private async getUserPreferencesForEvent(userId: string, module: string, eventType: string): Promise<any> {
+  private async getUserPreferencesForEvent(
+    userId: string,
+    module: string,
+    eventType: string,
+  ): Promise<any> {
     try {
       // Try to get specific preferences
       const pref = await this.notificationClient.notificationPreference.findFirst({
-        where: { userId, module, eventType }
+        where: { userId, module, eventType },
       });
 
       if (pref) {
@@ -598,7 +612,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
 
       // Get user's Helix profile for defaults
       const profile = await this.notificationClient.helixUserNotificationProfile.findUnique({
-        where: { userId }
+        where: { userId },
       });
 
       if (profile) {
@@ -607,7 +621,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
           priority: 'NORMAL',
           digestEnabled: profile.digestEnabled,
           dndEnabled: profile.dndEnabled,
-          aiSummaryEnabled: profile.synthEnabled
+          aiSummaryEnabled: profile.synthEnabled,
         };
       }
 
@@ -617,7 +631,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
         priority: 'NORMAL',
         digestEnabled: false,
         dndEnabled: false,
-        aiSummaryEnabled: true
+        aiSummaryEnabled: true,
       };
     } catch (error) {
       logger.error(`Failed to get preferences for user ${userId}:`, error);
@@ -627,7 +641,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
         priority: 'NORMAL',
         digestEnabled: false,
         dndEnabled: false,
-        aiSummaryEnabled: false
+        aiSummaryEnabled: false,
       };
     }
   }
@@ -683,20 +697,23 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
    */
   private async deliverNotifications(notifications: any[]): Promise<void> {
     // Group notifications by channel for batch processing
-    const channelGroups = notifications.reduce((groups, notification) => {
-      const channel = notification.channel;
-      if (!groups[channel]) {
-        groups[channel] = [];
-      }
-      groups[channel].push(notification);
-      return groups;
-    }, {} as Record<string, any[]>);
+    const channelGroups = notifications.reduce(
+      (groups, notification) => {
+        const channel = notification.channel;
+        if (!groups[channel]) {
+          groups[channel] = [];
+        }
+        groups[channel].push(notification);
+        return groups;
+      },
+      {} as Record<string, any[]>,
+    );
 
     // Process each channel group
     await Promise.all(
       Object.entries(channelGroups).map(([channel, channelNotifications]) =>
-        this.deliverChannelNotifications(channel, channelNotifications)
-      )
+        this.deliverChannelNotifications(channel, channelNotifications),
+      ),
     );
   }
 
@@ -707,7 +724,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     for (const notification of notifications) {
       try {
         const startTime = Date.now();
-        
+
         // Create delivery record
         const delivery = await this.notificationClient.notificationDelivery.create({
           data: {
@@ -715,8 +732,8 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
             eventId: notification.eventId,
             userId: notification.userId,
             channel: notification.channel,
-            status: 'PENDING'
-          }
+            status: 'PENDING',
+          },
         });
 
         // Attempt delivery
@@ -734,8 +751,10 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
             messageId: result.messageId,
             provider: result.provider,
             responseTime,
-            providerResponse: result.success ? JSON.stringify({ success: true }) : JSON.stringify({ error: result.error })
-          }
+            providerResponse: result.success
+              ? JSON.stringify({ success: true })
+              : JSON.stringify({ error: result.error }),
+          },
         });
 
         // Update notification status
@@ -743,18 +762,20 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
           where: { id: notification.id },
           data: {
             status: result.success ? 'DELIVERED' : 'FAILED',
-            deliveredAt: result.success ? new Date() : null
-          }
+            deliveredAt: result.success ? new Date() : null,
+          },
         });
 
         if (result.success) {
           logger.info(`Notification delivered: ${notification.id} via ${channel}`);
           this.emit('notificationDelivered', { notification, result });
         } else {
-          logger.error(`Notification delivery failed: ${notification.id} via ${channel}:`, result.error);
+          logger.error(
+            `Notification delivery failed: ${notification.id} via ${channel}:`,
+            result.error,
+          );
           this.emit('notificationFailed', { notification, error: result.error });
         }
-
       } catch (error) {
         logger.error(`Failed to deliver notification ${notification.id}:`, error);
       }
@@ -766,13 +787,15 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
    */
   private async deliverNotification(notification: any): Promise<DeliveryResult> {
     const channel = notification.channel;
-    const providers = Array.from(this.providers.values()).filter(p => p.type === channel && p.isActive);
+    const providers = Array.from(this.providers.values()).filter(
+      (p) => p.type === channel && p.isActive,
+    );
 
     if (providers.length === 0) {
       return {
         success: false,
         error: `No active providers for channel ${channel}`,
-        responseTime: 0
+        responseTime: 0,
       };
     }
 
@@ -792,7 +815,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     return {
       success: false,
       error: 'All providers failed',
-      responseTime: 0
+      responseTime: 0,
     };
   }
 
@@ -804,7 +827,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
 
     try {
       let result;
-      
+
       switch (provider.type) {
         case 'EMAIL':
           result = await this.deliverEmail(provider, notification);
@@ -834,15 +857,14 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
       return {
         ...result,
         provider: provider.name,
-        responseTime: Date.now() - startTime
+        responseTime: Date.now() - startTime,
       };
-
     } catch (error) {
       return {
         success: false,
         error: error.message,
         provider: provider.name,
-        responseTime: Date.now() - startTime
+        responseTime: Date.now() - startTime,
       };
     }
   }
@@ -854,15 +876,15 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
   private async createEmailProvider(config: any, credentials: any): Promise<any> {
     // Implementation will depend on the email service (SMTP, SendGrid, etc.)
     const nodemailer = require('nodemailer');
-    
+
     return nodemailer.createTransporter({
       host: config.host,
       port: config.port,
       secure: config.secure,
       auth: {
         user: credentials.username,
-        pass: credentials.password
-      }
+        pass: credentials.password,
+      },
     });
   }
 
@@ -871,7 +893,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     return {
       config,
       credentials,
-      type: 'SMS'
+      type: 'SMS',
     };
   }
 
@@ -880,7 +902,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     return {
       config,
       credentials,
-      type: 'PUSH'
+      type: 'PUSH',
     };
   }
 
@@ -889,7 +911,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     return {
       config,
       credentials,
-      type: 'SLACK'
+      type: 'SLACK',
     };
   }
 
@@ -898,7 +920,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     return {
       config,
       credentials,
-      type: 'TEAMS'
+      type: 'TEAMS',
     };
   }
 
@@ -907,7 +929,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     return {
       config,
       credentials,
-      type: 'WEBHOOK'
+      type: 'WEBHOOK',
     };
   }
 
@@ -920,7 +942,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
       // Get user email from Core database
       const user = await this.coreClient.user.findUnique({
         where: { id: notification.userId },
-        select: { email: true }
+        select: { email: true },
       });
 
       if (!user?.email) {
@@ -932,19 +954,19 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
         to: user.email,
         subject: notification.title,
         html: this.generateEmailTemplate(notification),
-        text: notification.message
+        text: notification.message,
       };
 
       const result = await provider.instance.sendMail(mailOptions);
 
       return {
         success: true,
-        messageId: result.messageId
+        messageId: result.messageId,
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -953,7 +975,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     // SMS delivery implementation
     return {
       success: false,
-      error: 'SMS delivery not implemented yet'
+      error: 'SMS delivery not implemented yet',
     };
   }
 
@@ -961,7 +983,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     // Push notification delivery implementation
     return {
       success: false,
-      error: 'Push delivery not implemented yet'
+      error: 'Push delivery not implemented yet',
     };
   }
 
@@ -978,18 +1000,18 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
           details: notification.details,
           actions: notification.actions ? JSON.parse(notification.actions) : [],
           priority: notification.priority,
-          createdAt: notification.createdAt
-        }
+          createdAt: notification.createdAt,
+        },
       });
 
       return {
         success: true,
-        messageId: notification.id
+        messageId: notification.id,
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -998,7 +1020,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     // Slack delivery implementation
     return {
       success: false,
-      error: 'Slack delivery not implemented yet'
+      error: 'Slack delivery not implemented yet',
     };
   }
 
@@ -1006,7 +1028,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     // Teams delivery implementation
     return {
       success: false,
-      error: 'Teams delivery not implemented yet'
+      error: 'Teams delivery not implemented yet',
     };
   }
 
@@ -1014,7 +1036,7 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     // Webhook delivery implementation
     return {
       success: false,
-      error: 'Webhook delivery not implemented yet'
+      error: 'Webhook delivery not implemented yet',
     };
   }
 
@@ -1061,9 +1083,12 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     const actions = JSON.parse(notification.actions);
     return `
       <div class="actions">
-        ${actions.map((action: NotificationAction) => 
-          `<a href="${action.url || '#'}" class="button">${action.label}</a>`
-        ).join(' ')}
+        ${actions
+          .map(
+            (action: NotificationAction) =>
+              `<a href="${action.url || '#'}" class="button">${action.label}</a>`,
+          )
+          .join(' ')}
       </div>
     `;
   }
@@ -1074,9 +1099,12 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
 
   private startAnalyticsProcessor(): void {
     // Process analytics every hour
-    setInterval(async () => {
-      await this.processAnalytics();
-    }, 60 * 60 * 1000);
+    setInterval(
+      async () => {
+        await this.processAnalytics();
+      },
+      60 * 60 * 1000,
+    );
 
     logger.info('Analytics processor started');
   }
@@ -1084,7 +1112,12 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
   private async processAnalytics(): Promise<void> {
     try {
       const now = new Date();
-      const startOfHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+      const startOfHour = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        now.getHours(),
+      );
       const endOfHour = new Date(startOfHour.getTime() + 60 * 60 * 1000);
 
       // Aggregate data for this hour
@@ -1100,11 +1133,11 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
               module: analytic.module || '',
               eventType: analytic.eventType || '',
               channel: analytic.channel || null,
-              userId: analytic.userId || ''
-            }
+              userId: analytic.userId || '',
+            },
           },
           create: analytic,
-          update: analytic
+          update: analytic,
         });
       }
 
@@ -1149,7 +1182,9 @@ export class NovaUniversalNotificationPlatform extends EventEmitter {
     try {
       // Process remaining queue items
       if (this.messageQueue.length > 0) {
-        logger.info(`Processing ${this.messageQueue.length} remaining notifications before shutdown`);
+        logger.info(
+          `Processing ${this.messageQueue.length} remaining notifications before shutdown`,
+        );
         await this.processMessageQueue();
       }
 

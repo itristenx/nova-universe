@@ -33,20 +33,20 @@ export class MigrationManager {
    */
   async runMigrations() {
     await this.initialize();
-    
+
     try {
       logger.info('Running database migrations...');
-      
+
       // Create migrations table if it doesn't exist
       await this.createMigrationsTable();
-      
+
       // Get list of migration files
       const migrationFiles = await this.getMigrationFiles();
-      
+
       // Get applied migrations
       const appliedMigrations = await this.getAppliedMigrations();
-      const appliedSet = new Set(appliedMigrations.map(m => m.filename));
-      
+      const appliedSet = new Set(appliedMigrations.map((m) => m.filename));
+
       // Run pending migrations
       for (const file of migrationFiles) {
         if (!appliedSet.has(file)) {
@@ -55,7 +55,7 @@ export class MigrationManager {
           logger.debug(`Migration already applied: ${file}`);
         }
       }
-      
+
       logger.info('Database migrations completed successfully');
     } catch (error) {
       logger.error('Migration failed:', error);
@@ -75,7 +75,7 @@ export class MigrationManager {
         applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    
+
     await this.postgresql.query(sql);
     logger.debug('Migrations table ready');
   }
@@ -86,9 +86,7 @@ export class MigrationManager {
   async getMigrationFiles() {
     try {
       const files = await fs.readdir(this.migrationsPath);
-      return files
-        .filter(file => file.endsWith('.sql'))
-        .sort();
+      return files.filter((file) => file.endsWith('.sql')).sort();
     } catch (error) {
       if (error.code === 'ENOENT') {
         logger.warn('Migrations directory not found, creating default migrations...');
@@ -105,7 +103,7 @@ export class MigrationManager {
   async getAppliedMigrations() {
     try {
       const result = await this.postgresql.query(
-        'SELECT filename, checksum, applied_at FROM _migrations ORDER BY applied_at'
+        'SELECT filename, checksum, applied_at FROM _migrations ORDER BY applied_at',
       );
       return result.rows;
     } catch (error) {
@@ -119,35 +117,35 @@ export class MigrationManager {
    */
   async runMigration(filename) {
     const filePath = path.join(this.migrationsPath, filename);
-    
+
     try {
       logger.info(`Running migration: ${filename}`);
-      
+
       // Read migration file
       const sql = await fs.readFile(filePath, 'utf8');
-      
+
       // Calculate checksum
       const checksum = crypto.createHash('sha256').update(sql).digest('hex');
-      
+
       // Execute migration in transaction
       await this.postgresql.transaction(async (client) => {
         // Split SQL into statements and execute each
         const statements = sql
           .split(';')
-          .map(stmt => stmt.trim())
-          .filter(stmt => stmt.length > 0);
-        
+          .map((stmt) => stmt.trim())
+          .filter((stmt) => stmt.length > 0);
+
         for (const statement of statements) {
           await client.query(statement);
         }
-        
+
         // Record migration as applied
-        await client.query(
-          'INSERT INTO _migrations (filename, checksum) VALUES ($1, $2)',
-          [filename, checksum]
-        );
+        await client.query('INSERT INTO _migrations (filename, checksum) VALUES ($1, $2)', [
+          filename,
+          checksum,
+        ]);
       });
-      
+
       logger.info(`Migration completed: ${filename}`);
     } catch (error) {
       logger.error(`Migration failed: ${filename}`, error);
@@ -162,7 +160,7 @@ export class MigrationManager {
     const timestamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
     const filename = `${timestamp}_${name}.sql`;
     const filePath = path.join(this.migrationsPath, filename);
-    
+
     const template = `-- Migration: ${name}
 -- Created: ${new Date().toISOString()}
 
@@ -180,7 +178,7 @@ export class MigrationManager {
 -- Don't forget to add rollback instructions in comments
 -- Rollback: DROP TABLE IF EXISTS example;
 `;
-    
+
     try {
       await fs.mkdir(this.migrationsPath, { recursive: true });
       await fs.writeFile(filePath, template);
@@ -197,7 +195,7 @@ export class MigrationManager {
    */
   async createDefaultMigrations() {
     await fs.mkdir(this.migrationsPath, { recursive: true });
-    
+
     // Main schema migration
     const initMigration = `-- Initial Nova Universe Schema
 -- Created: ${new Date().toISOString()}
@@ -402,7 +400,7 @@ CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXE
 
     const timestamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
     const initPath = path.join(this.migrationsPath, `${timestamp}_init_schema.sql`);
-    
+
     await fs.writeFile(initPath, initMigration);
     logger.info('Default migration created: init_schema.sql');
   }
@@ -412,46 +410,61 @@ CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXE
    */
   async migrateFromSQLite(sqlitePath, options = {}) {
     const { targetDatabases = ['postgresql', 'mongodb'], dryRun = false, force = false } = options;
-    
+
     return new Promise((resolve, reject) => {
       const db = new sqlite3.Database(sqlitePath);
       const results = {};
-      
-      Promise.resolve().then(async () => {
-        await this.initialize();
-        
-        // Tables to migrate to PostgreSQL
-        const pgTables = [
-          'users', 'roles', 'permissions', 'user_roles', 'role_permissions',
-          'passkeys', 'logs', 'config', 'kiosks', 'feedback', 'notifications',
-          'directory_integrations', 'assets', 'kiosk_activations',
-          'sso_configurations', 'admin_pins'
-        ];
-        
-        if (targetDatabases.includes('postgresql')) {
-          results.postgresql = {};
-          
-          for (const table of pgTables) {
-            try {
-              results.postgresql[table] = await this.migrateSQLiteTable(
-                db, table, 'postgresql', { dryRun, force }
-              );
-            } catch (error) {
-              results.postgresql[table] = { error: error.message, recordsProcessed: 0 };
+
+      Promise.resolve()
+        .then(async () => {
+          await this.initialize();
+
+          // Tables to migrate to PostgreSQL
+          const pgTables = [
+            'users',
+            'roles',
+            'permissions',
+            'user_roles',
+            'role_permissions',
+            'passkeys',
+            'logs',
+            'config',
+            'kiosks',
+            'feedback',
+            'notifications',
+            'directory_integrations',
+            'assets',
+            'kiosk_activations',
+            'sso_configurations',
+            'admin_pins',
+          ];
+
+          if (targetDatabases.includes('postgresql')) {
+            results.postgresql = {};
+
+            for (const table of pgTables) {
+              try {
+                results.postgresql[table] = await this.migrateSQLiteTable(db, table, 'postgresql', {
+                  dryRun,
+                  force,
+                });
+              } catch (error) {
+                results.postgresql[table] = { error: error.message, recordsProcessed: 0 };
+              }
             }
           }
-        }
-        
-        if (targetDatabases.includes('mongodb')) {
-          results.mongodb = {};
-          // MongoDB migration would handle preferences, analytics, etc.
-          // For now, we'll just note it's available
-          results.mongodb.info = { message: 'MongoDB migration structure ready' };
-        }
-        
-        db.close();
-        resolve(results);
-      }).catch(reject);
+
+          if (targetDatabases.includes('mongodb')) {
+            results.mongodb = {};
+            // MongoDB migration would handle preferences, analytics, etc.
+            // For now, we'll just note it's available
+            results.mongodb.info = { message: 'MongoDB migration structure ready' };
+          }
+
+          db.close();
+          resolve(results);
+        })
+        .catch(reject);
     });
   }
 
@@ -460,7 +473,7 @@ CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXE
    */
   async migrateSQLiteTable(sqliteDb, tableName, target, options = {}) {
     const { dryRun = false, force = false } = options;
-    
+
     return new Promise((resolve, reject) => {
       // Check if table exists in SQLite
       sqliteDb.get(
@@ -471,55 +484,55 @@ CREATE TRIGGER update_config_updated_at BEFORE UPDATE ON config FOR EACH ROW EXE
             reject(err);
             return;
           }
-          
+
           if (!row) {
             resolve({ recordsProcessed: 0, warnings: [`Table ${tableName} not found in SQLite`] });
             return;
           }
-          
+
           // Get all records from SQLite table
           sqliteDb.all(`SELECT * FROM ${tableName}`, async (err, rows) => {
             if (err) {
               reject(err);
               return;
             }
-            
+
             try {
               if (dryRun) {
                 resolve({ recordsProcessed: rows.length, dryRun: true });
                 return;
               }
-              
+
               if (target === 'postgresql' && rows.length > 0) {
                 // Clear existing data if force flag is set
                 if (force) {
                   await this.postgresql.query(`DELETE FROM ${tableName}`);
                 }
-                
+
                 // Get column information
                 const firstRow = rows[0];
                 const columns = Object.keys(firstRow);
                 const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
                 const columnNames = columns.join(', ');
-                
+
                 // Insert data in batches
                 await this.postgresql.transaction(async (client) => {
                   for (const row of rows) {
-                    const values = columns.map(col => row[col]);
+                    const values = columns.map((col) => row[col]);
                     await client.query(
                       `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`,
-                      values
+                      values,
                     );
                   }
                 });
               }
-              
+
               resolve({ recordsProcessed: rows.length });
             } catch (error) {
               reject(error);
             }
           });
-        }
+        },
       );
     });
   }

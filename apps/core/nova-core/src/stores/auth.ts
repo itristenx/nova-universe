@@ -37,10 +37,10 @@ export const useAuthStore = create<AuthState>()(
       {
         name: 'auth-storage',
         partialize: (state) => ({ token: state.token }),
-      }
+      },
     ),
     {
       name: 'auth-store',
-    }
-  )
+    },
+  ),
 );

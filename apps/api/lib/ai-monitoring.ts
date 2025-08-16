@@ -1,9 +1,9 @@
 /**
  * Nova AI Monitoring & Compliance System
- * 
+ *
  * Comprehensive monitoring, auditing, and compliance system for AI operations
  * following industry standards for AI governance, risk management, and regulatory compliance.
- * 
+ *
  * Features:
  * - Real-time AI performance monitoring
  * - Comprehensive audit trails
@@ -59,7 +59,11 @@ export interface BiasMetric {
   id: string;
   timestamp: Date;
   model: string;
-  testType: 'demographic_parity' | 'equal_opportunity' | 'fairness_through_unawareness' | 'individual_fairness';
+  testType:
+    | 'demographic_parity'
+    | 'equal_opportunity'
+    | 'fairness_through_unawareness'
+    | 'individual_fairness';
   protectedAttribute: string;
   biasScore: number;
   threshold: number;
@@ -122,7 +126,12 @@ export interface ModelDriftMetric {
 export interface SecurityAlert {
   id: string;
   timestamp: Date;
-  alertType: 'anomalous_usage' | 'potential_attack' | 'data_exfiltration' | 'model_inversion' | 'prompt_injection';
+  alertType:
+    | 'anomalous_usage'
+    | 'potential_attack'
+    | 'data_exfiltration'
+    | 'model_inversion'
+    | 'prompt_injection';
   severity: 'low' | 'medium' | 'high' | 'critical';
   description: string;
   userId?: string;
@@ -163,11 +172,11 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   private driftMetrics: Map<string, ModelDriftMetric> = new Map();
   private securityAlerts: Map<string, SecurityAlert> = new Map();
   private explainabilityReports: Map<string, ExplainabilityReport> = new Map();
-  
+
   private isInitialized = false;
   private monitoringInterval: NodeJS.Timeout | null = null;
   private alertingEnabled = true;
-  
+
   // Configuration
   private config = {
     retentionPeriod: 365 * 24 * 60 * 60 * 1000, // 1 year
@@ -177,25 +186,25 @@ export class NovaAIMonitoringSystem extends EventEmitter {
       biasScore: 0.2,
       driftScore: 0.3,
       riskScore: 0.8,
-      costPerRequest: 1.0 // $1
+      costPerRequest: 1.0, // $1
     },
     complianceStandards: ['gdpr', 'ccpa', 'ai_act'],
     privacyControls: {
       dataMinimization: true,
       purposeLimitation: true,
       retentionLimits: true,
-      encryptionRequired: true
+      encryptionRequired: true,
     },
     biasDetection: {
       enabled: true,
       protectedAttributes: ['gender', 'race', 'age', 'religion', 'disability'],
-      testFrequency: 'daily'
+      testFrequency: 'daily',
     },
     driftDetection: {
       enabled: true,
       checkInterval: 3600000, // 1 hour
-      methods: ['psi', 'ks_test', 'jensen_shannon']
-    }
+      methods: ['psi', 'ks_test', 'jensen_shannon'],
+    },
   };
 
   constructor() {
@@ -238,7 +247,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     const fullMetric: AIMetric = {
       ...metric,
       id: crypto.randomUUID(),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     this.metrics.set(fullMetric.id, fullMetric);
@@ -259,7 +268,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     const fullEvent: AIAuditEvent = {
       ...event,
       id: crypto.randomUUID(),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     // Enrich event with additional metadata
@@ -281,7 +290,11 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   /**
    * Assess bias in AI model
    */
-  async assessBias(model: string, testData: any[], protectedAttribute: string): Promise<BiasMetric> {
+  async assessBias(
+    model: string,
+    testData: any[],
+    protectedAttribute: string,
+  ): Promise<BiasMetric> {
     const biasMetric: BiasMetric = {
       id: crypto.randomUUID(),
       timestamp: new Date(),
@@ -292,7 +305,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
       threshold: this.config.alertThresholds.biasScore,
       passed: false,
       sampleSize: testData.length,
-      metadata: {}
+      metadata: {},
     };
 
     // Calculate bias score
@@ -314,11 +327,13 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   /**
    * Conduct privacy assessment
    */
-  async assessPrivacy(assessment: Omit<PrivacyAssessment, 'id' | 'timestamp'>): Promise<PrivacyAssessment> {
+  async assessPrivacy(
+    assessment: Omit<PrivacyAssessment, 'id' | 'timestamp'>,
+  ): Promise<PrivacyAssessment> {
     const fullAssessment: PrivacyAssessment = {
       ...assessment,
       id: crypto.randomUUID(),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     // Evaluate compliance status
@@ -334,7 +349,11 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   /**
    * Detect model drift
    */
-  async detectDrift(model: string, currentData: any[], baselineData: any[]): Promise<ModelDriftMetric> {
+  async detectDrift(
+    model: string,
+    currentData: any[],
+    baselineData: any[],
+  ): Promise<ModelDriftMetric> {
     const driftMetric: ModelDriftMetric = {
       id: crypto.randomUUID(),
       timestamp: new Date(),
@@ -344,7 +363,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
       threshold: this.config.alertThresholds.driftScore,
       alertTriggered: false,
       baselineDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-      detectionMethod: 'psi'
+      detectionMethod: 'psi',
     };
 
     // Calculate drift score
@@ -366,7 +385,12 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   /**
    * Generate explainability report
    */
-  async generateExplanation(requestId: string, model: string, prediction: any, inputData: any): Promise<ExplainabilityReport> {
+  async generateExplanation(
+    requestId: string,
+    model: string,
+    prediction: any,
+    inputData: any,
+  ): Promise<ExplainabilityReport> {
     const explanation: ExplainabilityReport = {
       id: crypto.randomUUID(),
       timestamp: new Date(),
@@ -377,14 +401,16 @@ export class NovaAIMonitoringSystem extends EventEmitter {
         method: 'shap',
         featureImportances: [],
         confidence: 0,
-        reasoning: ''
+        reasoning: '',
       },
-      humanReadable: ''
+      humanReadable: '',
     };
 
     // Generate explanation based on model type
     explanation.explanation = await this.generateModelExplanation(model, prediction, inputData);
-    explanation.humanReadable = await this.generateHumanReadableExplanation(explanation.explanation);
+    explanation.humanReadable = await this.generateHumanReadableExplanation(
+      explanation.explanation,
+    );
 
     this.explainabilityReports.set(explanation.id, explanation);
 
@@ -396,7 +422,10 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   /**
    * Generate compliance report
    */
-  async generateComplianceReport(reportType: ComplianceReport['reportType'], period: { start: Date; end: Date }): Promise<ComplianceReport> {
+  async generateComplianceReport(
+    reportType: ComplianceReport['reportType'],
+    period: { start: Date; end: Date },
+  ): Promise<ComplianceReport> {
     const report: ComplianceReport = {
       id: crypto.randomUUID(),
       timestamp: new Date(),
@@ -407,10 +436,10 @@ export class NovaAIMonitoringSystem extends EventEmitter {
         violationCount: 0,
         dataSubjectRequests: 0,
         breachIncidents: 0,
-        averageRiskScore: 0
+        averageRiskScore: 0,
       },
       findings: [],
-      status: 'compliant'
+      status: 'compliant',
     };
 
     // Calculate metrics for the period
@@ -434,64 +463,70 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     // Recent metrics
-    const recentMetrics = Array.from(this.metrics.values())
-      .filter(m => m.timestamp >= oneHourAgo);
+    const recentMetrics = Array.from(this.metrics.values()).filter(
+      (m) => m.timestamp >= oneHourAgo,
+    );
 
-    const recentAuditEvents = Array.from(this.auditEvents.values())
-      .filter(e => e.timestamp >= oneHourAgo);
+    const recentAuditEvents = Array.from(this.auditEvents.values()).filter(
+      (e) => e.timestamp >= oneHourAgo,
+    );
 
     // Performance metrics
-    const performanceMetrics = recentMetrics.filter(m => m.metricType === 'performance');
-    const avgResponseTime = performanceMetrics.length > 0 
-      ? performanceMetrics.reduce((sum, m) => sum + m.value, 0) / performanceMetrics.length 
-      : 0;
+    const performanceMetrics = recentMetrics.filter((m) => m.metricType === 'performance');
+    const avgResponseTime =
+      performanceMetrics.length > 0
+        ? performanceMetrics.reduce((sum, m) => sum + m.value, 0) / performanceMetrics.length
+        : 0;
 
     // Error rate
-    const errorEvents = recentAuditEvents.filter(e => e.eventType === 'error');
-    const errorRate = recentAuditEvents.length > 0 
-      ? errorEvents.length / recentAuditEvents.length 
-      : 0;
+    const errorEvents = recentAuditEvents.filter((e) => e.eventType === 'error');
+    const errorRate =
+      recentAuditEvents.length > 0 ? errorEvents.length / recentAuditEvents.length : 0;
 
     // Recent alerts
-    const recentAlerts = Array.from(this.securityAlerts.values())
-      .filter(a => a.timestamp >= oneDayAgo && a.status === 'open');
+    const recentAlerts = Array.from(this.securityAlerts.values()).filter(
+      (a) => a.timestamp >= oneDayAgo && a.status === 'open',
+    );
 
     // Bias metrics
-    const recentBiasMetrics = Array.from(this.biasMetrics.values())
-      .filter(b => b.timestamp >= oneDayAgo);
+    const recentBiasMetrics = Array.from(this.biasMetrics.values()).filter(
+      (b) => b.timestamp >= oneDayAgo,
+    );
 
     // Drift alerts
-    const recentDriftAlerts = Array.from(this.driftMetrics.values())
-      .filter(d => d.timestamp >= oneDayAgo && d.alertTriggered);
+    const recentDriftAlerts = Array.from(this.driftMetrics.values()).filter(
+      (d) => d.timestamp >= oneDayAgo && d.alertTriggered,
+    );
 
     return {
       overview: {
         totalRequests: recentAuditEvents.length,
         avgResponseTime,
         errorRate,
-        activeAlerts: recentAlerts.length
+        activeAlerts: recentAlerts.length,
       },
       performance: {
         responseTime: avgResponseTime,
         errorRate,
-        throughput: recentAuditEvents.length
+        throughput: recentAuditEvents.length,
       },
       security: {
         alerts: recentAlerts.length,
-        riskScore: recentAuditEvents.length > 0 
-          ? recentAuditEvents.reduce((sum, e) => sum + e.riskScore, 0) / recentAuditEvents.length 
-          : 0
+        riskScore:
+          recentAuditEvents.length > 0
+            ? recentAuditEvents.reduce((sum, e) => sum + e.riskScore, 0) / recentAuditEvents.length
+            : 0,
       },
       compliance: {
         biasMetrics: recentBiasMetrics.length,
         driftAlerts: recentDriftAlerts.length,
-        privacyAssessments: Array.from(this.privacyAssessments.values()).length
+        privacyAssessments: Array.from(this.privacyAssessments.values()).length,
       },
       costs: {
         totalCost: recentMetrics
-          .filter(m => m.metricType === 'cost')
-          .reduce((sum, m) => sum + m.value, 0)
-      }
+          .filter((m) => m.metricType === 'cost')
+          .reduce((sum, m) => sum + m.value, 0),
+      },
     };
   }
 
@@ -551,7 +586,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
 
   private async initializeComplianceFrameworks(): Promise<void> {
     logger.info('Initializing compliance frameworks...');
-    
+
     for (const standard of this.config.complianceStandards) {
       await this.initializeComplianceStandard(standard);
     }
@@ -588,13 +623,13 @@ export class NovaAIMonitoringSystem extends EventEmitter {
 
   private async initializeAlertingSystem(): Promise<void> {
     // Set up alerting channels (email, Slack, etc.)
-    
+
     // Initialize integrations
     try {
       // Import integrations dynamically to avoid circular dependencies
       const { sentinelIntegration } = await import('./sentinel-integration.js');
       const { goAlertIntegration } = await import('./goalert-integration.js');
-      
+
       // Register event listeners for external alerting
       this.on('securityAlert', async (alert) => {
         try {
@@ -605,12 +640,12 @@ export class NovaAIMonitoringSystem extends EventEmitter {
             status: 'open',
             summary: `Security Alert: ${alert.alertType}`,
             description: alert.description,
-            startedAt: alert.timestamp
+            startedAt: alert.timestamp,
           });
         } catch (error) {
-          logger.warn('Failed to create Sentinel incident for security alert', { 
-            alertId: alert.id, 
-            error: error.message 
+          logger.warn('Failed to create Sentinel incident for security alert', {
+            alertId: alert.id,
+            error: error.message,
           });
         }
       });
@@ -629,13 +664,13 @@ export class NovaAIMonitoringSystem extends EventEmitter {
                 model: biasMetric.model,
                 biasScore: biasMetric.biasScore,
                 threshold: biasMetric.threshold,
-                protectedAttribute: biasMetric.protectedAttribute
-              }
+                protectedAttribute: biasMetric.protectedAttribute,
+              },
             });
           } catch (error) {
-            logger.warn('Failed to create GoAlert for bias detection', { 
-              model: biasMetric.model, 
-              error: error.message 
+            logger.warn('Failed to create GoAlert for bias detection', {
+              model: biasMetric.model,
+              error: error.message,
             });
           }
         }
@@ -655,13 +690,13 @@ export class NovaAIMonitoringSystem extends EventEmitter {
                 model: driftMetric.model,
                 driftScore: driftMetric.driftScore,
                 threshold: driftMetric.threshold,
-                driftType: driftMetric.driftType
-              }
+                driftType: driftMetric.driftType,
+              },
             });
           } catch (error) {
-            logger.warn('Failed to create GoAlert for model drift', { 
-              model: driftMetric.model, 
-              error: error.message 
+            logger.warn('Failed to create GoAlert for model drift', {
+              model: driftMetric.model,
+              error: error.message,
             });
           }
         }
@@ -669,23 +704,25 @@ export class NovaAIMonitoringSystem extends EventEmitter {
 
       this.on('metricRecorded', async (metric) => {
         // Alert on performance thresholds
-        if (metric.metricType === 'performance' && metric.value > 15000) { // 15 second threshold
+        if (metric.metricType === 'performance' && metric.value > 15000) {
+          // 15 second threshold
           try {
             await sentinelIntegration.updateMonitorStatus(
               `performance-${metric.providerId}`,
               'down',
-              { responseTime: metric.value }
+              { responseTime: metric.value },
             );
           } catch (error) {
-            logger.warn('Failed to update Sentinel monitor status', { 
-              providerId: metric.providerId, 
-              error: error.message 
+            logger.warn('Failed to update Sentinel monitor status', {
+              providerId: metric.providerId,
+              error: error.message,
             });
           }
         }
 
         // Alert on high error rates
-        if (metric.metricType === 'quality' && metric.value < 0.9) { // Below 90% success rate
+        if (metric.metricType === 'quality' && metric.value < 0.9) {
+          // Below 90% success rate
           try {
             await goAlertIntegration.createAlert({
               serviceId: 'ai-performance',
@@ -698,19 +735,20 @@ export class NovaAIMonitoringSystem extends EventEmitter {
                 metricType: metric.metricType,
                 value: metric.value,
                 unit: metric.unit,
-                providerId: metric.providerId
-              }
+                providerId: metric.providerId,
+              },
             });
           } catch (error) {
-            logger.warn('Failed to create GoAlert for quality metric', { 
-              providerId: metric.providerId, 
-              error: error.message 
+            logger.warn('Failed to create GoAlert for quality metric', {
+              providerId: metric.providerId,
+              error: error.message,
             });
           }
         }
 
         // Alert on cost thresholds
-        if (metric.metricType === 'cost' && metric.value > 100) { // $100 threshold
+        if (metric.metricType === 'cost' && metric.value > 100) {
+          // $100 threshold
           try {
             await goAlertIntegration.createAlert({
               serviceId: 'ai-fabric-core',
@@ -723,13 +761,13 @@ export class NovaAIMonitoringSystem extends EventEmitter {
                 metricType: metric.metricType,
                 value: metric.value,
                 unit: metric.unit,
-                providerId: metric.providerId
-              }
+                providerId: metric.providerId,
+              },
             });
           } catch (error) {
-            logger.warn('Failed to create GoAlert for cost threshold', { 
-              providerId: metric.providerId, 
-              error: error.message 
+            logger.warn('Failed to create GoAlert for cost threshold', {
+              providerId: metric.providerId,
+              error: error.message,
             });
           }
         }
@@ -739,7 +777,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     } catch (error) {
       logger.warn('Failed to initialize external alerting integrations', { error: error.message });
     }
-    
+
     logger.info('Initialized alerting system');
   }
 
@@ -763,12 +801,14 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     event.riskScore = await this.calculateRiskScore(event);
   }
 
-  private async getLocationFromIP(ip: string): Promise<{ country: string; region: string; ip: string }> {
+  private async getLocationFromIP(
+    ip: string,
+  ): Promise<{ country: string; region: string; ip: string }> {
     // IP geolocation logic
     return {
       country: 'US',
       region: 'California',
-      ip
+      ip,
     };
   }
 
@@ -804,8 +844,9 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   }
 
   private async checkMetricThresholds(metric: AIMetric): Promise<void> {
-    const threshold = this.config.alertThresholds[metric.metricType as keyof typeof this.config.alertThresholds];
-    
+    const threshold =
+      this.config.alertThresholds[metric.metricType as keyof typeof this.config.alertThresholds];
+
     if (threshold && metric.value > threshold) {
       await this.triggerThresholdAlert(metric);
     }
@@ -833,7 +874,8 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     const securityIndicators = [];
 
     // Detect potential attacks
-    if (event.metadata.requestSize > 1000000) { // Large request
+    if (event.metadata.requestSize > 1000000) {
+      // Large request
       securityIndicators.push('large_request');
     }
 
@@ -857,7 +899,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
       if (row.prediction === 1 || row.prediction === true) bucket.positives += 1;
       groups.set(group, bucket);
     }
-    const rates = Array.from(groups.values()).map(g => (g.total ? g.positives / g.total : 0));
+    const rates = Array.from(groups.values()).map((g) => (g.total ? g.positives / g.total : 0));
     const max = Math.max(...rates);
     const min = Math.min(...rates);
     return Math.abs(max - min); // 0..1 (0 is best)
@@ -865,13 +907,20 @@ export class NovaAIMonitoringSystem extends EventEmitter {
 
   private async calculateDriftScore(currentData: any[], baselineData: any[]): Promise<number> {
     // Population Stability Index (PSI) for a single numeric feature if available
-    if (!Array.isArray(currentData) || !Array.isArray(baselineData) || currentData.length === 0 || baselineData.length === 0) {
+    if (
+      !Array.isArray(currentData) ||
+      !Array.isArray(baselineData) ||
+      currentData.length === 0 ||
+      baselineData.length === 0
+    ) {
       return 0;
     }
-    const feature = Object.keys(currentData[0]).find(k => typeof currentData[0][k] === 'number');
+    const feature = Object.keys(currentData[0]).find((k) => typeof currentData[0][k] === 'number');
     if (!feature) return 0;
     const bins = 10;
-    const all = [...currentData, ...baselineData].map(r => r[feature] as number).filter(n => Number.isFinite(n));
+    const all = [...currentData, ...baselineData]
+      .map((r) => r[feature] as number)
+      .filter((n) => Number.isFinite(n));
     if (all.length === 0) return 0;
     const min = Math.min(...all);
     const max = Math.max(...all);
@@ -883,10 +932,10 @@ export class NovaAIMonitoringSystem extends EventEmitter {
         counts[idx] += 1;
       }
       const total = counts.reduce((a, b) => a + b, 0) || 1;
-      return counts.map(c => c / total);
+      return counts.map((c) => c / total);
     };
-    const p = dist(baselineData.map(r => r[feature] as number).filter(n => Number.isFinite(n)));
-    const q = dist(currentData.map(r => r[feature] as number).filter(n => Number.isFinite(n)));
+    const p = dist(baselineData.map((r) => r[feature] as number).filter((n) => Number.isFinite(n)));
+    const q = dist(currentData.map((r) => r[feature] as number).filter((n) => Number.isFinite(n)));
     let psi = 0;
     for (let i = 0; i < bins; i++) {
       const pi = Math.max(p[i], 1e-6);
@@ -896,57 +945,73 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     return Math.abs(psi); // Typical thresholds: <0.1 small, 0.1-0.25 moderate, >0.25 major drift
   }
 
-  private async generateModelExplanation(model: string, prediction: any, inputData: any): Promise<ExplainabilityReport['explanation']> {
+  private async generateModelExplanation(
+    model: string,
+    prediction: any,
+    inputData: any,
+  ): Promise<ExplainabilityReport['explanation']> {
     // Generate explanation based on model architecture
     return {
       method: 'shap',
       featureImportances: [
         { feature: 'feature1', importance: 0.5, direction: 'positive' },
-        { feature: 'feature2', importance: 0.3, direction: 'negative' }
+        { feature: 'feature2', importance: 0.3, direction: 'negative' },
       ],
       confidence: 0.85,
-      reasoning: 'The model prediction is primarily driven by feature1 and feature2'
+      reasoning: 'The model prediction is primarily driven by feature1 and feature2',
     };
   }
 
-  private async generateHumanReadableExplanation(explanation: ExplainabilityReport['explanation']): Promise<string> {
+  private async generateHumanReadableExplanation(
+    explanation: ExplainabilityReport['explanation'],
+  ): Promise<string> {
     const topFeatures = explanation.featureImportances
       .sort((a, b) => b.importance - a.importance)
       .slice(0, 3);
 
-    return `This prediction (confidence: ${Math.round(explanation.confidence * 100)}%) is primarily based on: ${
-      topFeatures.map(f => `${f.feature} (${f.direction} impact)`).join(', ')
-    }.`;
+    return `This prediction (confidence: ${Math.round(explanation.confidence * 100)}%) is primarily based on: ${topFeatures
+      .map((f) => `${f.feature} (${f.direction} impact)`)
+      .join(', ')}.`;
   }
 
-  private async calculateComplianceMetrics(period: { start: Date; end: Date }): Promise<ComplianceReport['metrics']> {
-    const periodEvents = Array.from(this.auditEvents.values())
-      .filter(e => e.timestamp >= period.start && e.timestamp <= period.end);
+  private async calculateComplianceMetrics(period: {
+    start: Date;
+    end: Date;
+  }): Promise<ComplianceReport['metrics']> {
+    const periodEvents = Array.from(this.auditEvents.values()).filter(
+      (e) => e.timestamp >= period.start && e.timestamp <= period.end,
+    );
 
     return {
       totalRequests: periodEvents.length,
-      violationCount: periodEvents.filter(e => e.complianceFlags.length > 0).length,
-      dataSubjectRequests: periodEvents.filter(e => e.metadata.isDataSubjectRequest).length,
-      breachIncidents: periodEvents.filter(e => e.severity === 'critical').length,
-      averageRiskScore: periodEvents.length > 0 
-        ? periodEvents.reduce((sum, e) => sum + e.riskScore, 0) / periodEvents.length 
-        : 0
+      violationCount: periodEvents.filter((e) => e.complianceFlags.length > 0).length,
+      dataSubjectRequests: periodEvents.filter((e) => e.metadata.isDataSubjectRequest).length,
+      breachIncidents: periodEvents.filter((e) => e.severity === 'critical').length,
+      averageRiskScore:
+        periodEvents.length > 0
+          ? periodEvents.reduce((sum, e) => sum + e.riskScore, 0) / periodEvents.length
+          : 0,
     };
   }
 
-  private async generateComplianceFindings(reportType: string, period: { start: Date; end: Date }): Promise<ComplianceReport['findings']> {
+  private async generateComplianceFindings(
+    reportType: string,
+    period: { start: Date; end: Date },
+  ): Promise<ComplianceReport['findings']> {
     const findings: ComplianceReport['findings'] = [];
 
     // Analyze compliance violations
-    const violations = Array.from(this.auditEvents.values())
-      .filter(e => e.timestamp >= period.start && e.timestamp <= period.end && e.complianceFlags.length > 0);
+    const violations = Array.from(this.auditEvents.values()).filter(
+      (e) =>
+        e.timestamp >= period.start && e.timestamp <= period.end && e.complianceFlags.length > 0,
+    );
 
     if (violations.length > 0) {
       findings.push({
         type: 'compliance_violation',
         severity: 'high',
         description: `${violations.length} compliance violations detected`,
-        recommendation: 'Review and address compliance gaps'
+        recommendation: 'Review and address compliance gaps',
       });
     }
 
@@ -954,33 +1019,41 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   }
 
   private determineComplianceStatus(report: ComplianceReport): ComplianceReport['status'] {
-    if (report.findings.some(f => f.severity === 'critical')) {
+    if (report.findings.some((f) => f.severity === 'critical')) {
       return 'non_compliant';
     }
-    if (report.findings.some(f => f.severity === 'high')) {
+    if (report.findings.some((f) => f.severity === 'high')) {
       return 'partial_compliance';
     }
     return 'compliant';
   }
 
-  private async evaluatePrivacyCompliance(assessment: PrivacyAssessment): Promise<Record<string, boolean>> {
+  private async evaluatePrivacyCompliance(
+    assessment: PrivacyAssessment,
+  ): Promise<Record<string, boolean>> {
     return {
       gdpr: assessment.encryptionStatus && assessment.legalBasis !== '',
       ccpa: assessment.retentionPeriod > 0,
-      hipaa: assessment.dataType !== 'health' || assessment.encryptionStatus
+      hipaa: assessment.dataType !== 'health' || assessment.encryptionStatus,
     };
   }
 
   private async triggerThresholdAlert(metric: AIMetric): Promise<void> {
-    logger.warn(`Threshold exceeded for ${metric.metricType}: ${metric.value} > ${this.config.alertThresholds[metric.metricType as keyof typeof this.config.alertThresholds]}`);
+    logger.warn(
+      `Threshold exceeded for ${metric.metricType}: ${metric.value} > ${this.config.alertThresholds[metric.metricType as keyof typeof this.config.alertThresholds]}`,
+    );
   }
 
   private async triggerBiasAlert(biasMetric: BiasMetric): Promise<void> {
-    logger.warn(`Bias detected in model ${biasMetric.model}: score ${biasMetric.biasScore} > ${biasMetric.threshold}`);
+    logger.warn(
+      `Bias detected in model ${biasMetric.model}: score ${biasMetric.biasScore} > ${biasMetric.threshold}`,
+    );
   }
 
   private async triggerDriftAlert(driftMetric: ModelDriftMetric): Promise<void> {
-    logger.warn(`Model drift detected in ${driftMetric.model}: score ${driftMetric.driftScore} > ${driftMetric.threshold}`);
+    logger.warn(
+      `Model drift detected in ${driftMetric.model}: score ${driftMetric.driftScore} > ${driftMetric.threshold}`,
+    );
   }
 
   private async triggerComplianceAlert(event: AIAuditEvent, violations: string[]): Promise<void> {
@@ -999,7 +1072,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
       model: event.metadata.model,
       indicators,
       mitigationActions: ['rate_limiting', 'additional_monitoring'],
-      status: 'open'
+      status: 'open',
     };
 
     this.securityAlerts.set(alert.id, alert);
@@ -1008,7 +1081,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
 
   async shutdown(): Promise<void> {
     logger.info('Shutting down AI Monitoring System...');
-    
+
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
     }

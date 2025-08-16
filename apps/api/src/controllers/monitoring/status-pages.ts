@@ -1,5 +1,7 @@
 import { PrismaClient } from '../../../../prisma/generated/core/index.js';
-const prisma = new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+const prisma = new PrismaClient({
+  datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+});
 
 export interface StatusPageData {
   name: string;
@@ -29,11 +31,11 @@ export const createStatusPage = async (data: StatusPageData) => {
         ${data.user_id}, NOW(), NOW()
       ) RETURNING id
     `;
-    
+
     const statusPage = await prisma.$queryRaw`
       SELECT * FROM nova_status_pages WHERE id = ${(result as any)[0].id}
     `;
-    
+
     return (statusPage as any)[0];
   } catch (error) {
     console.error('Database error creating status page:', error);
@@ -58,10 +60,10 @@ export const getStatusPages = async (userId: string) => {
 
 export const getStatusPageBySlug = async (slug: string, userId?: string) => {
   try {
-    const whereClause = userId 
+    const whereClause = userId
       ? `WHERE slug = ${slug} AND tenant_id = ${userId}`
       : `WHERE slug = ${slug} AND published = true`;
-      
+
     const result = await prisma.$queryRawUnsafe(`
       SELECT * FROM nova_status_pages ${whereClause}
     `);
@@ -106,26 +108,41 @@ export const updateStatusPage = async (id: string, data: UpdateStatusPageData, u
   try {
     const fields: string[] = [];
     const values: any[] = [];
-    
-    if (data.name !== undefined) { fields.push('title = $' + (fields.length + 1)); values.push(data.name); }
-    if (data.slug !== undefined) { fields.push('slug = $' + (fields.length + 1)); values.push(data.slug); }
-    if (data.description !== undefined) { fields.push('description = $' + (fields.length + 1)); values.push(data.description); }
-    if (data.theme !== undefined) { fields.push('theme = $' + (fields.length + 1)); values.push(data.theme); }
-    if (data.is_public !== undefined) { fields.push('published = $' + (fields.length + 1)); values.push(data.is_public); }
-    
+
+    if (data.name !== undefined) {
+      fields.push('title = $' + (fields.length + 1));
+      values.push(data.name);
+    }
+    if (data.slug !== undefined) {
+      fields.push('slug = $' + (fields.length + 1));
+      values.push(data.slug);
+    }
+    if (data.description !== undefined) {
+      fields.push('description = $' + (fields.length + 1));
+      values.push(data.description);
+    }
+    if (data.theme !== undefined) {
+      fields.push('theme = $' + (fields.length + 1));
+      values.push(data.theme);
+    }
+    if (data.is_public !== undefined) {
+      fields.push('published = $' + (fields.length + 1));
+      values.push(data.is_public);
+    }
+
     if (fields.length === 0) {
       return await getStatusPageById(id, userId);
     }
-    
+
     fields.push('updated_at = NOW()');
     values.push(id, userId);
-    
+
     const query = `
       UPDATE nova_status_pages 
       SET ${fields.join(', ')}
       WHERE id = $${values.length - 1} AND tenant_id = $${values.length}
     `;
-    
+
     await prisma.$executeRawUnsafe(query, ...values);
     return await getStatusPageById(id, userId);
   } catch (error) {

@@ -14,7 +14,8 @@ async function backfillBatch(limit = 200) {
   const rows = await db.all(
     `SELECT id, ticket_id, category FROM tickets 
      WHERE ticket_id IS NULL OR ticket_id LIKE 'TKT-%' 
-     ORDER BY created_at ASC LIMIT $1`, [limit]
+     ORDER BY created_at ASC LIMIT $1`,
+    [limit],
   );
   if (!rows || rows.length === 0) return 0;
 
@@ -26,7 +27,7 @@ async function backfillBatch(limit = 200) {
         `UPDATE tickets 
          SET legacy_ticket_id = ticket_id, ticket_id = $1, type_code = COALESCE(type_code, $2), updated_at = CURRENT_TIMESTAMP 
          WHERE id = $3`,
-        [newTicketId, typeCode, r.id]
+        [newTicketId, typeCode, r.id],
       );
       logger.info('Backfilled ticket', { id: r.id, newTicketId, typeCode });
     } catch (e) {
@@ -51,5 +52,3 @@ async function backfillBatch(limit = 200) {
     process.exit(1);
   }
 })();
-
-

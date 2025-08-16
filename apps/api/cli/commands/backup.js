@@ -8,18 +8,17 @@ import inquirer from 'inquirer';
 import { existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import path from 'path';
 import Table from 'cli-table3';
-import { 
-  logger, 
-  createSpinner, 
+import {
+  logger,
+  createSpinner,
   runCommand,
   getProjectRoot,
   connectDatabase,
   formatDate,
-  formatFileSize
+  formatFileSize,
 } from '../utils/index.js';
 
-export const backupCommand = new Command('backup')
-  .description('Manage Nova Universe backups');
+export const backupCommand = new Command('backup').description('Manage Nova Universe backups');
 
 // Backup create command
 backupCommand
@@ -169,21 +168,21 @@ async function createBackup(options) {
   if (includeDatabase) {
     tasks.push({
       name: 'Database',
-      handler: () => backupDatabase(backupPath)
+      handler: () => backupDatabase(backupPath),
     });
   }
 
   if (includeFiles) {
     tasks.push({
       name: 'Files',
-      handler: () => backupFiles(backupPath, projectRoot)
+      handler: () => backupFiles(backupPath, projectRoot),
     });
   }
 
   if (includeConfig) {
     tasks.push({
       name: 'Configuration',
-      handler: () => backupConfig(backupPath, projectRoot)
+      handler: () => backupConfig(backupPath, projectRoot),
     });
   }
 
@@ -208,8 +207,8 @@ async function createBackup(options) {
     includes: {
       database: includeDatabase,
       files: includeFiles,
-      config: includeConfig
-    }
+      config: includeConfig,
+    },
   });
 
   // Compress if requested
@@ -221,9 +220,9 @@ async function createBackup(options) {
       const archivePath = `${backupPath}.tar.gz`;
       await runCommand('tar', ['-czf', archivePath, '-C', backupDir, backupName]);
       await runCommand('rm', ['-rf', backupPath]);
-      
+
       spinner.succeed('Backup compressed');
-      
+
       const stats = statSync(archivePath);
       logger.success(`\n✅ Backup created successfully`);
       console.log(chalk.green(`   Location: ${archivePath}`));
@@ -268,7 +267,7 @@ async function backupDatabase(backupPath) {
       const db = await connectDatabase();
       const collections = ['users', 'sessions', 'logs'];
       const dbBackupPath = path.join(backupPath, 'database.json');
-      
+
       const data = {};
       for (const collection of collections) {
         try {
@@ -278,7 +277,7 @@ async function backupDatabase(backupPath) {
           data[collection] = [];
         }
       }
-      
+
       require('fs').writeFileSync(dbBackupPath, JSON.stringify(data, null, 2));
     } catch {
       throw new Error(`Database backup failed: ${error.message}`);
@@ -294,7 +293,7 @@ async function backupFiles(backupPath, projectRoot) {
     'nova-api/uploads',
     'nova-api/logs',
     'nova-core/dist',
-    'nova-comms/logs'
+    'nova-comms/logs',
   ];
 
   const filesBackupPath = path.join(backupPath, 'files');
@@ -324,7 +323,7 @@ async function backupConfig(backupPath, projectRoot) {
     'nova-core/.env',
     'nova-core/package.json',
     'nova-comms/.env',
-    'nova-comms/package.json'
+    'nova-comms/package.json',
   ];
 
   const configBackupPath = path.join(backupPath, 'config');
@@ -343,15 +342,15 @@ async function backupConfig(backupPath, projectRoot) {
 // Create backup manifest
 async function createBackupManifest(backupPath, metadata) {
   const manifestPath = path.join(backupPath, 'manifest.json');
-  
+
   const manifest = {
     ...metadata,
     version: '1.0',
     system: {
       platform: process.platform,
       node: process.version,
-      pwd: process.cwd()
-    }
+      pwd: process.cwd(),
+    },
   };
 
   require('fs').writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
@@ -383,7 +382,7 @@ async function listBackups(options) {
         path: itemPath,
         date: stats.mtime,
         size: stats.size,
-        type: stats.isDirectory() ? 'directory' : 'archive'
+        type: stats.isDirectory() ? 'directory' : 'archive',
       };
 
       // Try to read manifest if it exists
@@ -430,7 +429,6 @@ async function listBackups(options) {
     } else {
       displayBackupsTable(backups);
     }
-
   } catch (error) {
     spinner.fail('Failed to scan backups');
     throw error;
@@ -460,8 +458,8 @@ async function restoreBackup(backupName, options) {
         type: 'confirm',
         name: 'confirm',
         message: `This will restore from backup ${chalk.yellow(backupName)}. This may overwrite existing data. Continue?`,
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     if (!confirm) {
@@ -482,11 +480,11 @@ async function restoreBackup(backupName, options) {
       const extractDir = path.join(path.dirname(backupPath), 'temp-restore');
       await runCommand('mkdir', ['-p', extractDir]);
       await runCommand('tar', ['-xzf', backupPath, '-C', extractDir]);
-      
+
       // Find the extracted directory
       const extracted = readdirSync(extractDir)[0];
       workingPath = path.join(extractDir, extracted);
-      
+
       spinner.succeed('Backup extracted');
     }
   }
@@ -569,7 +567,7 @@ async function restoreDatabase(backupPath, dryRun = false) {
       // JSON restore
       const data = JSON.parse(require('fs').readFileSync(dbJsonPath, 'utf8'));
       const db = await connectDatabase();
-      
+
       for (const [collection, documents] of Object.entries(data)) {
         if (documents.length > 0) {
           await db.collection(collection).deleteMany({});
@@ -588,7 +586,7 @@ async function restoreDatabase(backupPath, dryRun = false) {
 // Restore files
 async function restoreFiles(backupPath, projectRoot, dryRun = false) {
   const filesPath = path.join(backupPath, 'files');
-  
+
   if (!existsSync(filesPath)) {
     return;
   }
@@ -603,17 +601,17 @@ async function restoreFiles(backupPath, projectRoot, dryRun = false) {
 
   try {
     const files = readdirSync(filesPath);
-    
+
     for (const file of files) {
       const sourcePath = path.join(filesPath, file);
       const destPath = path.join(projectRoot, file.replace('-', '/'));
-      
+
       // Create destination directory if needed
       const destDir = path.dirname(destPath);
       if (!existsSync(destDir)) {
         mkdirSync(destDir, { recursive: true });
       }
-      
+
       await runCommand('cp', ['-r', sourcePath, destPath], { silent: true });
     }
 
@@ -627,7 +625,7 @@ async function restoreFiles(backupPath, projectRoot, dryRun = false) {
 // Restore configuration
 async function restoreConfig(backupPath, projectRoot, dryRun = false) {
   const configPath = path.join(backupPath, 'config');
-  
+
   if (!existsSync(configPath)) {
     return;
   }
@@ -642,17 +640,17 @@ async function restoreConfig(backupPath, projectRoot, dryRun = false) {
 
   try {
     const files = readdirSync(configPath);
-    
+
     for (const file of files) {
       const sourcePath = path.join(configPath, file);
       const destPath = path.join(projectRoot, file.replace('-', '/'));
-      
+
       // Create destination directory if needed
       const destDir = path.dirname(destPath);
       if (!existsSync(destDir)) {
         mkdirSync(destDir, { recursive: true });
       }
-      
+
       await runCommand('cp', [sourcePath, destPath], { silent: true });
     }
 
@@ -680,14 +678,14 @@ async function showBackupInfo(backupName, options) {
 
   const stats = statSync(backupPath);
   const isArchive = backupPath.endsWith('.tar.gz');
-  
+
   const info = {
     name: path.basename(backupPath),
     path: backupPath,
     type: isArchive ? 'archive' : 'directory',
     size: isArchive ? stats.size : await getFolderSize(backupPath),
     created: stats.mtime,
-    modified: stats.mtime
+    modified: stats.mtime,
   };
 
   // Try to read manifest
@@ -730,8 +728,8 @@ async function deleteBackup(backupName, options) {
         type: 'confirm',
         name: 'confirm',
         message: `Are you sure you want to delete backup ${chalk.yellow(backupName)}?`,
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     if (!confirm) {
@@ -768,10 +766,10 @@ async function cleanupBackups(options) {
   try {
     const items = readdirSync(backupDir);
     const backups = items
-      .map(item => ({
+      .map((item) => ({
         name: item,
         path: path.join(backupDir, item),
-        stats: statSync(path.join(backupDir, item))
+        stats: statSync(path.join(backupDir, item)),
       }))
       .sort((a, b) => b.stats.mtime.getTime() - a.stats.mtime.getTime());
 
@@ -818,8 +816,8 @@ async function cleanupBackups(options) {
           type: 'confirm',
           name: 'confirm',
           message: `Delete ${toDelete.length} backup(s)?`,
-          default: false
-        }
+          default: false,
+        },
       ]);
 
       if (!confirm) {
@@ -834,7 +832,6 @@ async function cleanupBackups(options) {
     }
 
     logger.success(`✅ Cleaned up ${toDelete.length} backup(s)`);
-
   } catch (error) {
     spinner.fail('Cleanup failed');
     throw error;
@@ -845,7 +842,7 @@ async function cleanupBackups(options) {
 async function manageSchedule(options) {
   // This would integrate with cron or a task scheduler
   // For now, just show the concept
-  
+
   if (options.show) {
     console.log(chalk.cyan('📅 Backup Schedule Status\n'));
     console.log(chalk.gray('Scheduled backups are not currently configured.'));
@@ -855,16 +852,16 @@ async function manageSchedule(options) {
 
   if (options.enable) {
     const cron = options.cron || '0 2 * * *'; // Default: daily at 2 AM
-    
+
     console.log(chalk.cyan('⏰ Setting up backup schedule...\n'));
     console.log(chalk.green(`Schedule: ${cron}`));
     console.log(chalk.gray('This would set up a cron job for automatic backups.'));
-    
+
     // In a real implementation, this would:
     // 1. Create a cron job
     // 2. Save schedule configuration
     // 3. Set up monitoring
-    
+
     logger.success('Backup schedule configured');
   }
 
@@ -893,17 +890,17 @@ function displayBackupsTable(backups) {
 
   const table = new Table({
     head: ['Name', 'Type', 'Size', 'Date'],
-    colWidths: [25, 10, 12, 20]
+    colWidths: [25, 10, 12, 20],
   });
 
   for (const backup of backups) {
     const typeColor = backup.type === 'archive' ? chalk.blue : chalk.green;
-    
+
     table.push([
       backup.name,
       typeColor(backup.type),
       formatFileSize(backup.size),
-      formatDate(backup.date)
+      formatDate(backup.date),
     ]);
   }
 
@@ -915,12 +912,24 @@ function displayBackupsTable(backups) {
 // Display backup info
 function displayBackupInfo(info) {
   console.log(chalk.cyan('\n📦 Backup Information\n'));
-  
+
   const table = new Table({
-    chars: { 'top': '' , 'top-mid': '' , 'top-left': '' , 'top-right': ''
-            , 'bottom': '' , 'bottom-mid': '' , 'bottom-left': '' , 'bottom-right': ''
-            , 'left': '' , 'left-mid': '' , 'mid': '' , 'mid-mid': ''
-            , 'right': '' , 'right-mid': '' }
+    chars: {
+      top: '',
+      'top-mid': '',
+      'top-left': '',
+      'top-right': '',
+      bottom: '',
+      'bottom-mid': '',
+      'bottom-left': '',
+      'bottom-right': '',
+      left: '',
+      'left-mid': '',
+      mid: '',
+      'mid-mid': '',
+      right: '',
+      'right-mid': '',
+    },
   });
 
   const typeColor = info.type === 'archive' ? chalk.blue : chalk.green;
@@ -930,7 +939,7 @@ function displayBackupInfo(info) {
     ['Type:', typeColor(info.type)],
     ['Size:', formatFileSize(info.size)],
     ['Created:', formatDate(info.created)],
-    ['Path:', info.path]
+    ['Path:', info.path],
   );
 
   if (info.manifest) {

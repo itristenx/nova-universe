@@ -1,6 +1,6 @@
 import React from 'react';
 interface DirectorySSOConfigProps {
-    onConfigChange?: () => void;
+  onConfigChange?: () => void;
 }
 export declare const DirectorySSOConfig: React.FC<DirectorySSOConfigProps>;
 export {};

@@ -14,7 +14,7 @@ router.post('/send', authenticateJWT, async (req, res) => {
     if (!sender && queue) {
       const account = await db.oneOrNone(
         'SELECT address FROM email_accounts WHERE queue=$1 AND enabled=TRUE',
-        [queue]
+        [queue],
       );
       if (!account) {
         return res.status(400).json({ error: 'Unknown queue' });

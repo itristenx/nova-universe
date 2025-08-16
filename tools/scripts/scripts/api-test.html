@@ -1,113 +1,128 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>Nova Universe API Test</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
-        .success { background-color: #d4edda; }
-        .error { background-color: #f8d7da; }
-        pre { background: #f8f9fa; padding: 10px; overflow-x: auto; }
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .test {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+      }
+      .success {
+        background-color: #d4edda;
+      }
+      .error {
+        background-color: #f8d7da;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        overflow-x: auto;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Nova Universe API Connectivity Test</h1>
-    
+
     <div id="tests"></div>
-    
+
     <div>
-        <h3>Manual Login Test</h3>
-        <form id="loginForm">
-            <input type="email" id="email" value="admin@example.com" placeholder="Email" required>
-            <input type="password" id="password" value="admin" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
-        <div id="loginResult"></div>
+      <h3>Manual Login Test</h3>
+      <form id="loginForm">
+        <input type="email" id="email" value="admin@example.com" placeholder="Email" required />
+        <input type="password" id="password" value="admin" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
+      <div id="loginResult"></div>
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3000';
-        const testsDiv = document.getElementById('tests');
+      const API_URL = 'http://localhost:3000';
+      const testsDiv = document.getElementById('tests');
 
-        async function runTest(name, testFunc) {
-            const testDiv = document.createElement('div');
-            testDiv.className = 'test';
-            testDiv.innerHTML = `<h3>${name}</h3><div>Running...</div>`;
-            testsDiv.appendChild(testDiv);
+      async function runTest(name, testFunc) {
+        const testDiv = document.createElement('div');
+        testDiv.className = 'test';
+        testDiv.innerHTML = `<h3>${name}</h3><div>Running...</div>`;
+        testsDiv.appendChild(testDiv);
 
-            try {
-                const result = await testFunc();
-                testDiv.className = 'test success';
-                testDiv.innerHTML = `<h3>✅ ${name}</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
-            } catch (error) {
-                testDiv.className = 'test error';
-                testDiv.innerHTML = `<h3>❌ ${name}</h3><pre>${error.message}</pre>`;
-            }
+        try {
+          const result = await testFunc();
+          testDiv.className = 'test success';
+          testDiv.innerHTML = `<h3>✅ ${name}</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+        } catch (error) {
+          testDiv.className = 'test error';
+          testDiv.innerHTML = `<h3>❌ ${name}</h3><pre>${error.message}</pre>`;
         }
+      }
 
-        async function testHealth() {
-            const response = await fetch(`${API_URL}/api/health`);
-            return await response.json();
-        }
+      async function testHealth() {
+        const response = await fetch(`${API_URL}/api/health`);
+        return await response.json();
+      }
 
-        async function testAuthStatus() {
-            const response = await fetch(`${API_URL}/api/auth/status`);
-            return await response.json();
-        }
+      async function testAuthStatus() {
+        const response = await fetch(`${API_URL}/api/auth/status`);
+        return await response.json();
+      }
 
-        async function testLogin() {
-            const response = await fetch(`${API_URL}/api/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    email: 'admin@example.com',
-                    password: 'admin'
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Login failed: ${response.status} ${response.statusText}`);
-            }
-            
-            return await response.json();
-        }
-
-        // Run tests automatically
-        window.addEventListener('load', async () => {
-            await runTest('Health Check', testHealth);
-            await runTest('Auth Status', testAuthStatus);
-            await runTest('Login Test', testLogin);
+      async function testLogin() {
+        const response = await fetch(`${API_URL}/api/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: 'admin@example.com',
+            password: 'admin',
+          }),
         });
 
-        // Manual login form
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const resultDiv = document.getElementById('loginResult');
+        if (!response.ok) {
+          throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+        }
 
-            try {
-                const response = await fetch(`${API_URL}/api/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
+        return await response.json();
+      }
 
-                const result = await response.json();
-                
-                if (response.ok) {
-                    resultDiv.innerHTML = `<div class="test success">✅ Login successful!<pre>${JSON.stringify(result, null, 2)}</pre></div>`;
-                } else {
-                    resultDiv.innerHTML = `<div class="test error">❌ Login failed: ${response.status}<pre>${JSON.stringify(result, null, 2)}</pre></div>`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<div class="test error">❌ Error: ${error.message}</div>`;
-            }
-        });
+      // Run tests automatically
+      window.addEventListener('load', async () => {
+        await runTest('Health Check', testHealth);
+        await runTest('Auth Status', testAuthStatus);
+        await runTest('Login Test', testLogin);
+      });
+
+      // Manual login form
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const resultDiv = document.getElementById('loginResult');
+
+        try {
+          const response = await fetch(`${API_URL}/api/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            resultDiv.innerHTML = `<div class="test success">✅ Login successful!<pre>${JSON.stringify(result, null, 2)}</pre></div>`;
+          } else {
+            resultDiv.innerHTML = `<div class="test error">❌ Login failed: ${response.status}<pre>${JSON.stringify(result, null, 2)}</pre></div>`;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<div class="test error">❌ Error: ${error.message}</div>`;
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

@@ -4,11 +4,19 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, CardHeader, CardBody, CardTitle, CardText, CardActions,
-  Button, PrimaryButton, OutlineButton,
-  Progress, Spinner,
-  useTheme
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardTitle,
+  CardText,
+  CardActions,
+  Button,
+  PrimaryButton,
+  OutlineButton,
+  Progress,
+  Spinner,
+  useTheme,
 } from '../../packages/design-system';
 
 // Import CSS for design system
@@ -321,50 +329,50 @@ export default function AdminDashboard() {
   useEffect(() => {
     const loadDashboardData = async () => {
       setLoading(true);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       setStats({
         totalTickets: 2847,
         openTickets: 89,
         resolvedToday: 23,
         avgResponseTime: '3.7h',
         activeKiosks: 9,
-        totalUsers: 287
+        totalUsers: 287,
       });
-      
+
       setActivities([
         {
           id: 1,
           type: 'success',
           title: 'Ticket NOV-2024-005 resolved',
           time: '2 minutes ago',
-          icon: '✓'
+          icon: '✓',
         },
         {
           id: 2,
           type: 'warning',
           title: 'Kiosk offline - Engineering Floor',
           time: '15 minutes ago',
-          icon: '⚠'
+          icon: '⚠',
         },
         {
           id: 3,
           type: 'success',
           title: 'New user registered - Emily Johnson',
           time: '1 hour ago',
-          icon: '👤'
+          icon: '👤',
         },
         {
           id: 4,
           type: 'error',
           title: 'Integration sync failed - ServiceNow',
           time: '2 hours ago',
-          icon: '✗'
-        }
+          icon: '✗',
+        },
       ]);
-      
+
       setLoading(false);
     };
 
@@ -387,7 +395,9 @@ export default function AdminDashboard() {
       {/* Dashboard Header */}
       <div className="dashboard-header">
         <h1 className="dashboard-title">Nova Universe Admin Dashboard</h1>
-        <p className="dashboard-subtitle">Welcome back! Here's what's happening with your support system.</p>
+        <p className="dashboard-subtitle">
+          Welcome back! Here's what's happening with your support system.
+        </p>
       </div>
 
       {/* Key Statistics */}
@@ -399,7 +409,7 @@ export default function AdminDashboard() {
             <span>↗</span> +12% from last month
           </div>
         </div>
-        
+
         <div className="stat-card">
           <h3 className="stat-value">{stats.openTickets}</h3>
           <p className="stat-label">Open Tickets</p>
@@ -407,7 +417,7 @@ export default function AdminDashboard() {
             <span>↘</span> -8% from yesterday
           </div>
         </div>
-        
+
         <div className="stat-card">
           <h3 className="stat-value">{stats.resolvedToday}</h3>
           <p className="stat-label">Resolved Today</p>
@@ -415,7 +425,7 @@ export default function AdminDashboard() {
             <span>↗</span> +15% from average
           </div>
         </div>
-        
+
         <div className="stat-card">
           <h3 className="stat-value">{stats.avgResponseTime}</h3>
           <p className="stat-label">Avg Response Time</p>
@@ -437,19 +447,19 @@ export default function AdminDashboard() {
               <h4 className="action-title">View Reports</h4>
               <p className="action-description">Generate comprehensive system reports</p>
             </div>
-            
+
             <div className="action-card">
               <div className="action-icon">🎫</div>
               <h4 className="action-title">Manage Tickets</h4>
               <p className="action-description">View and assign support tickets</p>
             </div>
-            
+
             <div className="action-card">
               <div className="action-icon">👥</div>
               <h4 className="action-title">User Management</h4>
               <p className="action-description">Add or modify user accounts</p>
             </div>
-            
+
             <div className="action-card">
               <div className="action-icon">🖥️</div>
               <h4 className="action-title">Kiosk Management</h4>
@@ -500,7 +510,7 @@ export default function AdminDashboard() {
                 </div>
                 <Progress value={95} variant="success" />
               </div>
-              
+
               <div className="health-metric">
                 <div className="health-header">
                   <h4 className="health-title">API Performance</h4>
@@ -508,7 +518,7 @@ export default function AdminDashboard() {
                 </div>
                 <Progress value={87} variant="info" />
               </div>
-              
+
               <div className="health-metric">
                 <div className="health-header">
                   <h4 className="health-title">Disk Usage</h4>
@@ -516,7 +526,7 @@ export default function AdminDashboard() {
                 </div>
                 <Progress value={67} variant="warning" />
               </div>
-              
+
               <div className="health-metric">
                 <div className="health-header">
                   <h4 className="health-title">Memory Usage</h4>

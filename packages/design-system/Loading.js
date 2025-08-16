@@ -292,70 +292,54 @@ if (typeof document !== 'undefined') {
 }
 
 // Spinner component
-export function Spinner({ 
-  size = 'md', 
-  variant = 'primary', 
-  className = '' 
-}) {
+export function Spinner({ size = 'md', variant = 'primary', className = '' }) {
   const spinnerClasses = [
     'nova-spinner',
     `nova-spinner--${size}`,
     `nova-spinner--${variant}`,
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return <div className={spinnerClasses} role="status" aria-label="Loading" />;
 }
 
 // Skeleton component
-export function Skeleton({ 
-  variant = 'text',
-  width,
-  height,
-  className = '',
-  ...props 
-}) {
-  const skeletonClasses = [
-    'nova-skeleton',
-    `nova-skeleton--${variant}`,
-    className
-  ].filter(Boolean).join(' ');
+export function Skeleton({ variant = 'text', width, height, className = '', ...props }) {
+  const skeletonClasses = ['nova-skeleton', `nova-skeleton--${variant}`, className]
+    .filter(Boolean)
+    .join(' ');
 
   const style = {};
   if (width) style.width = width;
   if (height) style.height = height;
 
-  return (
-    <div 
-      className={skeletonClasses}
-      style={style}
-      aria-hidden="true"
-      {...props}
-    />
-  );
+  return <div className={skeletonClasses} style={style} aria-hidden="true" {...props} />;
 }
 
 // Loading overlay component
-export function LoadingOverlay({ 
+export function LoadingOverlay({
   isLoading = true,
   text,
   variant = 'light',
   minimal = false,
   children,
-  className = ''
+  className = '',
 }) {
   if (!isLoading) return children;
 
   const overlayClasses = [
     'nova-loading-overlay',
     variant === 'dark' ? 'nova-loading-overlay--dark' : '',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
-  const contentClasses = [
-    'nova-loading-content',
-    minimal ? 'nova-loading-content--minimal' : ''
-  ].filter(Boolean).join(' ');
+  const contentClasses = ['nova-loading-content', minimal ? 'nova-loading-content--minimal' : '']
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div style={{ position: 'relative' }}>
@@ -371,27 +355,29 @@ export function LoadingOverlay({
 }
 
 // Progress bar component
-export function Progress({ 
-  value = 0, 
+export function Progress({
+  value = 0,
   max = 100,
   size = 'md',
   variant = 'primary',
   indeterminate = false,
   className = '',
-  ...props 
+  ...props
 }) {
   const progressClasses = [
     'nova-progress',
     `nova-progress--${size}`,
     `nova-progress--${variant}`,
     indeterminate ? 'nova-progress--indeterminate' : '',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const percentage = indeterminate ? 100 : Math.min(100, Math.max(0, (value / max) * 100));
 
   return (
-    <div 
+    <div
       className={progressClasses}
       role="progressbar"
       aria-valuenow={indeterminate ? undefined : value}
@@ -399,10 +385,7 @@ export function Progress({
       aria-valuemax={max}
       {...props}
     >
-      <div 
-        className="nova-progress__bar"
-        style={{ width: `${percentage}%` }}
-      />
+      <div className="nova-progress__bar" style={{ width: `${percentage}%` }} />
     </div>
   );
 }
@@ -410,7 +393,7 @@ export function Progress({
 // Dots loader component
 export function DotsLoader({ variant = 'primary', className = '' }) {
   const dotClasses = `nova-dots__dot`;
-  
+
   return (
     <div className={`nova-dots ${className}`} role="status" aria-label="Loading">
       <div className={dotClasses} />
@@ -422,13 +405,7 @@ export function DotsLoader({ variant = 'primary', className = '' }) {
 
 // Pulse loader component
 export function PulseLoader({ className = '' }) {
-  return (
-    <div 
-      className={`nova-pulse ${className}`} 
-      role="status" 
-      aria-label="Loading"
-    />
-  );
+  return <div className={`nova-pulse ${className}`} role="status" aria-label="Loading" />;
 }
 
 // Default export

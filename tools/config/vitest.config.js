@@ -12,6 +12,6 @@ export default defineConfig({
       'scripts/test/**/*.test.mjs',
     ],
     globals: true,
-    threads: false // for DB tests, run serially
+    threads: false, // for DB tests, run serially
   },
 });

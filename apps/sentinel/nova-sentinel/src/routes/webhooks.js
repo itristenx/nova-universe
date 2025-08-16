@@ -26,7 +26,7 @@ router.post('/uptime-kuma', async (req, res) => {
     if (!monitorID || status === undefined) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required webhook data'
+        error: 'Missing required webhook data',
       });
     }
 
@@ -36,19 +36,18 @@ router.post('/uptime-kuma', async (req, res) => {
       status: parseInt(status),
       time: time || new Date().toISOString(),
       ping,
-      msg
+      msg,
     });
 
     res.json({
       success: true,
-      message: 'Webhook processed successfully'
+      message: 'Webhook processed successfully',
     });
-
   } catch (error) {
     console.error('Uptime Kuma webhook error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to process webhook'
+      error: 'Failed to process webhook',
     });
   }
 });
@@ -68,20 +67,19 @@ router.post('/external', async (req, res) => {
       metadata: {
         headers: req.headers,
         body: req.body,
-        source: req.headers['user-agent'] || 'unknown'
-      }
+        source: req.headers['user-agent'] || 'unknown',
+      },
     });
 
     res.json({
       success: true,
-      message: 'Webhook received'
+      message: 'Webhook received',
     });
-
   } catch (error) {
     console.error('External webhook error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to process webhook'
+      error: 'Failed to process webhook',
     });
   }
 });

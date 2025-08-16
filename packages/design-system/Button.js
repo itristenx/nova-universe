@@ -193,35 +193,30 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleElement);
 }
 
-export default function Button({ 
-  children, 
-  variant = 'primary', 
-  size = 'md', 
+export default function Button({
+  children,
+  variant = 'primary',
+  size = 'md',
   disabled = false,
   loading = false,
   iconOnly = false,
   onClick,
   type = 'button',
   className = '',
-  ...props 
+  ...props
 }) {
   const baseClasses = 'nova-button';
   const variantClass = `nova-button--${variant}`;
   const sizeClass = `nova-button--${size}`;
   const loadingClass = loading ? 'nova-button--loading' : '';
   const iconOnlyClass = iconOnly ? 'nova-button--icon-only' : '';
-  
-  const allClasses = [
-    baseClasses,
-    variantClass,
-    sizeClass,
-    loadingClass,
-    iconOnlyClass,
-    className
-  ].filter(Boolean).join(' ');
+
+  const allClasses = [baseClasses, variantClass, sizeClass, loadingClass, iconOnlyClass, className]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <button 
+    <button
       type={type}
       className={allClasses}
       disabled={disabled || loading}

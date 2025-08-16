@@ -4,14 +4,29 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, CardHeader, CardBody, CardTitle, CardText, CardActions,
-  Button, PrimaryButton, OutlineButton, GhostButton, DangerButton,
-  Input, Label,
-  Modal, ModalHeader, ModalBody, ModalFooter,
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardTitle,
+  CardText,
+  CardActions,
+  Button,
+  PrimaryButton,
+  OutlineButton,
+  GhostButton,
+  DangerButton,
+  Input,
+  Label,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
   Toast,
-  Progress, Spinner, Skeleton,
-  useTheme
+  Progress,
+  Spinner,
+  Skeleton,
+  useTheme,
 } from '../../packages/design-system';
 
 const userStyles = `
@@ -339,7 +354,7 @@ const mockUsers = [
     status: 'active',
     department: 'IT',
     lastActive: '2024-01-20T10:30:00Z',
-    createdAt: '2023-06-15T09:00:00Z'
+    createdAt: '2023-06-15T09:00:00Z',
   },
   {
     id: 2,
@@ -349,7 +364,7 @@ const mockUsers = [
     status: 'active',
     department: 'Operations',
     lastActive: '2024-01-19T16:45:00Z',
-    createdAt: '2023-08-20T14:30:00Z'
+    createdAt: '2023-08-20T14:30:00Z',
   },
   {
     id: 3,
@@ -359,7 +374,7 @@ const mockUsers = [
     status: 'active',
     department: 'Support',
     lastActive: '2024-01-20T09:15:00Z',
-    createdAt: '2023-09-10T11:00:00Z'
+    createdAt: '2023-09-10T11:00:00Z',
   },
   {
     id: 4,
@@ -369,7 +384,7 @@ const mockUsers = [
     status: 'inactive',
     department: 'HR',
     lastActive: '2024-01-15T13:20:00Z',
-    createdAt: '2023-07-05T10:15:00Z'
+    createdAt: '2023-07-05T10:15:00Z',
   },
   {
     id: 5,
@@ -379,7 +394,7 @@ const mockUsers = [
     status: 'active',
     department: 'Finance',
     lastActive: '2024-01-20T11:45:00Z',
-    createdAt: '2023-05-25T16:20:00Z'
+    createdAt: '2023-05-25T16:20:00Z',
   },
   {
     id: 6,
@@ -389,8 +404,8 @@ const mockUsers = [
     status: 'pending',
     department: 'Marketing',
     lastActive: null,
-    createdAt: '2024-01-18T09:30:00Z'
-  }
+    createdAt: '2024-01-18T09:30:00Z',
+  },
 ];
 
 export default function UserManagement() {
@@ -403,17 +418,17 @@ export default function UserManagement() {
   const [filters, setFilters] = useState({
     role: 'all',
     status: 'all',
-    search: ''
+    search: '',
   });
 
   // Load users
   useEffect(() => {
     const loadUsers = async () => {
       setLoading(true);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       setUsers(mockUsers);
       setLoading(false);
     };
@@ -422,31 +437,33 @@ export default function UserManagement() {
   }, []);
 
   // Filter users
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = users.filter((user) => {
     if (filters.role !== 'all' && user.role !== filters.role) {
       return false;
     }
-    
+
     if (filters.status !== 'all' && user.status !== filters.status) {
       return false;
     }
-    
-    if (filters.search && 
-        !user.name.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !user.email.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !user.department.toLowerCase().includes(filters.search.toLowerCase())) {
+
+    if (
+      filters.search &&
+      !user.name.toLowerCase().includes(filters.search.toLowerCase()) &&
+      !user.email.toLowerCase().includes(filters.search.toLowerCase()) &&
+      !user.department.toLowerCase().includes(filters.search.toLowerCase())
+    ) {
       return false;
     }
-    
+
     return true;
   });
 
   // Calculate stats
   const stats = {
     total: users.length,
-    active: users.filter(u => u.status === 'active').length,
-    pending: users.filter(u => u.status === 'pending').length,
-    inactive: users.filter(u => u.status === 'inactive').length
+    active: users.filter((u) => u.status === 'active').length,
+    pending: users.filter((u) => u.status === 'pending').length,
+    inactive: users.filter((u) => u.status === 'inactive').length,
   };
 
   const handleUserClick = (user, mode = 'view') => {
@@ -462,13 +479,17 @@ export default function UserManagement() {
   };
 
   const handleStatusUpdate = (userId, newStatus) => {
-    setUsers(prev => prev.map(user => 
-      user.id === userId ? { ...user, status: newStatus } : user
-    ));
+    setUsers((prev) =>
+      prev.map((user) => (user.id === userId ? { ...user, status: newStatus } : user)),
+    );
   };
 
   const getInitials = (name) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
   };
 
   const formatTimestamp = (timestamp) => {
@@ -477,26 +498,35 @@ export default function UserManagement() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'admin': return 'admin';
-      case 'manager': return 'manager';
-      case 'employee': return 'employee';
-      case 'guest': return 'guest';
-      default: return 'employee';
+      case 'admin':
+        return 'admin';
+      case 'manager':
+        return 'manager';
+      case 'employee':
+        return 'employee';
+      case 'guest':
+        return 'guest';
+      default:
+        return 'employee';
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'active';
-      case 'inactive': return 'inactive';
-      case 'pending': return 'pending';
-      default: return 'inactive';
+      case 'active':
+        return 'active';
+      case 'inactive':
+        return 'inactive';
+      case 'pending':
+        return 'pending';
+      default:
+        return 'inactive';
     }
   };
 
@@ -507,7 +537,7 @@ export default function UserManagement() {
           <Skeleton variant="title" width="300px" />
           <Skeleton variant="button" />
         </div>
-        
+
         <div className="user-stats">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
@@ -518,7 +548,7 @@ export default function UserManagement() {
             </Card>
           ))}
         </div>
-        
+
         <Card>
           <CardBody>
             {[...Array(6)].map((_, i) => (
@@ -549,7 +579,7 @@ export default function UserManagement() {
             <div className="stat-change stat-change--positive">+12% this month</div>
           </CardBody>
         </Card>
-        
+
         <Card className="stat-card">
           <CardBody>
             <div className="stat-number">{stats.active}</div>
@@ -557,7 +587,7 @@ export default function UserManagement() {
             <div className="stat-change stat-change--positive">+5% this week</div>
           </CardBody>
         </Card>
-        
+
         <Card className="stat-card">
           <CardBody>
             <div className="stat-number">{stats.pending}</div>
@@ -565,7 +595,7 @@ export default function UserManagement() {
             <div className="stat-change stat-change--negative">2 new requests</div>
           </CardBody>
         </Card>
-        
+
         <Card className="stat-card">
           <CardBody>
             <div className="stat-number">{stats.inactive}</div>
@@ -582,21 +612,21 @@ export default function UserManagement() {
           <Input
             placeholder="Search users..."
             value={filters.search}
-            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
           />
         </div>
-        
+
         <div className="filter-group">
           <label className="filter-label">Role</label>
-          <select 
+          <select
             value={filters.role}
-            onChange={(e) => setFilters(prev => ({ ...prev, role: e.target.value }))}
+            onChange={(e) => setFilters((prev) => ({ ...prev, role: e.target.value }))}
             style={{
               padding: 'var(--space-2) var(--space-3)',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-muted)40',
               backgroundColor: 'var(--color-background)',
-              color: 'var(--color-content)'
+              color: 'var(--color-content)',
             }}
           >
             <option value="all">All Roles</option>
@@ -606,18 +636,18 @@ export default function UserManagement() {
             <option value="guest">Guest</option>
           </select>
         </div>
-        
+
         <div className="filter-group">
           <label className="filter-label">Status</label>
-          <select 
+          <select
             value={filters.status}
-            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
             style={{
               padding: 'var(--space-2) var(--space-3)',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-muted)40',
               backgroundColor: 'var(--color-background)',
-              color: 'var(--color-content)'
+              color: 'var(--color-content)',
             }}
           >
             <option value="all">All Status</option>
@@ -636,7 +666,7 @@ export default function UserManagement() {
               <div className="empty-state-icon">👥</div>
               <h3 className="empty-state-title">No users found</h3>
               <p className="empty-state-description">
-                {filters.search || filters.role !== 'all' || filters.status !== 'all' 
+                {filters.search || filters.role !== 'all' || filters.status !== 'all'
                   ? 'Try adjusting your filters to see more users.'
                   : 'No users have been created yet.'}
               </p>
@@ -662,9 +692,7 @@ export default function UserManagement() {
                 <tr key={user.id}>
                   <td>
                     <div className="user-info">
-                      <div className="user-avatar">
-                        {getInitials(user.name)}
-                      </div>
+                      <div className="user-avatar">{getInitials(user.name)}</div>
                       <div className="user-details">
                         <div className="user-name">{user.name}</div>
                         <div className="user-email">{user.email}</div>
@@ -679,27 +707,21 @@ export default function UserManagement() {
                   <td>{user.department}</td>
                   <td>
                     <div className="user-status">
-                      <span className={`status-indicator status-indicator--${getStatusColor(user.status)}`}></span>
+                      <span
+                        className={`status-indicator status-indicator--${getStatusColor(user.status)}`}
+                      ></span>
                       {user.status}
                     </div>
                   </td>
                   <td>
-                    <div className="user-last-active">
-                      {formatTimestamp(user.lastActive)}
-                    </div>
+                    <div className="user-last-active">{formatTimestamp(user.lastActive)}</div>
                   </td>
                   <td>
                     <div className="user-actions">
-                      <GhostButton
-                        size="sm"
-                        onClick={() => handleUserClick(user, 'view')}
-                      >
+                      <GhostButton size="sm" onClick={() => handleUserClick(user, 'view')}>
                         View
                       </GhostButton>
-                      <GhostButton
-                        size="sm"
-                        onClick={() => handleUserClick(user, 'edit')}
-                      >
+                      <GhostButton size="sm" onClick={() => handleUserClick(user, 'edit')}>
                         Edit
                       </GhostButton>
                       {user.status === 'pending' && (
@@ -724,28 +746,31 @@ export default function UserManagement() {
               ))}
             </tbody>
           </table>
-          
+
           <div className="pagination">
             <div className="pagination-info">
               Showing {filteredUsers.length} of {users.length} users
             </div>
             <div className="pagination-controls">
-              <OutlineButton size="sm" disabled>Previous</OutlineButton>
-              <OutlineButton size="sm" disabled>Next</OutlineButton>
+              <OutlineButton size="sm" disabled>
+                Previous
+              </OutlineButton>
+              <OutlineButton size="sm" disabled>
+                Next
+              </OutlineButton>
             </div>
           </div>
         </div>
       )}
 
       {/* User Detail/Edit Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        size="lg"
-      >
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="lg">
         <ModalHeader onClose={() => setShowModal(false)}>
-          {modalMode === 'create' ? 'Create New User' : 
-           modalMode === 'edit' ? 'Edit User' : 'User Details'}
+          {modalMode === 'create'
+            ? 'Create New User'
+            : modalMode === 'edit'
+              ? 'Edit User'
+              : 'User Details'}
         </ModalHeader>
         <ModalBody>
           {selectedUser ? (
@@ -768,7 +793,7 @@ export default function UserManagement() {
                   )}
                 </div>
               </div>
-              
+
               <div className="form-row">
                 <div className="form-group">
                   <Label>Role</Label>
@@ -779,7 +804,7 @@ export default function UserManagement() {
                       </span>
                     </div>
                   ) : (
-                    <select 
+                    <select
                       defaultValue={selectedUser.role}
                       style={{
                         padding: 'var(--space-2) var(--space-3)',
@@ -787,7 +812,7 @@ export default function UserManagement() {
                         border: '1px solid var(--color-muted)40',
                         backgroundColor: 'var(--color-background)',
                         color: 'var(--color-content)',
-                        width: '100%'
+                        width: '100%',
                       }}
                     >
                       <option value="admin">Admin</option>
@@ -806,13 +831,15 @@ export default function UserManagement() {
                   )}
                 </div>
               </div>
-              
+
               <div className="form-row">
                 <div className="form-group">
                   <Label>Status</Label>
                   <div style={{ padding: 'var(--space-2) 0' }}>
                     <div className="user-status">
-                      <span className={`status-indicator status-indicator--${getStatusColor(selectedUser.status)}`}></span>
+                      <span
+                        className={`status-indicator status-indicator--${getStatusColor(selectedUser.status)}`}
+                      ></span>
                       {selectedUser.status}
                     </div>
                   </div>
@@ -824,7 +851,7 @@ export default function UserManagement() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="form-group">
                 <Label>Last Active</Label>
                 <div style={{ padding: 'var(--space-2) 0' }}>
@@ -845,18 +872,18 @@ export default function UserManagement() {
                   <Input type="email" placeholder="user@company.com" />
                 </div>
               </div>
-              
+
               <div className="form-row">
                 <div className="form-group">
                   <Label>Role</Label>
-                  <select 
+                  <select
                     style={{
                       padding: 'var(--space-2) var(--space-3)',
                       borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--color-muted)40',
                       backgroundColor: 'var(--color-background)',
                       color: 'var(--color-content)',
-                      width: '100%'
+                      width: '100%',
                     }}
                   >
                     <option value="">Select role</option>
@@ -871,7 +898,7 @@ export default function UserManagement() {
                   <Input placeholder="Enter department" />
                 </div>
               </div>
-              
+
               <div className="form-group">
                 <Label>Initial Password</Label>
                 <Input type="password" placeholder="Temporary password" />
@@ -880,13 +907,9 @@ export default function UserManagement() {
           )}
         </ModalBody>
         <ModalFooter>
-          <OutlineButton onClick={() => setShowModal(false)}>
-            Cancel
-          </OutlineButton>
+          <OutlineButton onClick={() => setShowModal(false)}>Cancel</OutlineButton>
           {modalMode === 'view' ? (
-            <PrimaryButton onClick={() => setModalMode('edit')}>
-              Edit User
-            </PrimaryButton>
+            <PrimaryButton onClick={() => setModalMode('edit')}>Edit User</PrimaryButton>
           ) : modalMode === 'edit' ? (
             <PrimaryButton>Save Changes</PrimaryButton>
           ) : (

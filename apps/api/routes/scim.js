@@ -20,22 +20,22 @@ const router = express.Router();
  */
 function authenticateSCIM(req, res, next) {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
       detail: 'Authorization header missing or invalid',
-      status: '401'
+      status: '401',
     });
   }
 
   const token = authHeader.split(' ')[1];
-  
+
   if (token !== process.env.SCIM_BEARER_TOKEN) {
     return res.status(401).json({
       schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
       detail: 'Invalid SCIM token',
-      status: '401'
+      status: '401',
     });
   }
 
@@ -95,7 +95,7 @@ function authenticateSCIM(req, res, next) {
 router.get('/Users', authenticateSCIM, async (req, res) => {
   try {
     const { filter, startIndex = 1, count = 50 } = req.query;
-    
+
     let query = `
       SELECT u.*, u.is_vip, u.vip_level,
              string_agg(r.name, ',') as roles
@@ -113,7 +113,7 @@ router.get('/Users', authenticateSCIM, async (req, res) => {
       if (filterMatch) {
         const [, field, operator, value] = filterMatch;
         const dbField = mapSCIMFieldToDBField(field);
-        
+
         switch (operator) {
           case 'eq':
             query += ` AND ${dbField} = $${paramIndex}`;
@@ -142,12 +142,15 @@ router.get('/Users', authenticateSCIM, async (req, res) => {
     query += ` GROUP BY u.id ORDER BY u.created_at DESC`;
 
     // Get total count
-    const countQuery = query.replace(/SELECT.*GROUP BY u\.id/, 'SELECT COUNT(DISTINCT u.id) as total');
-    
+    const countQuery = query.replace(
+      /SELECT.*GROUP BY u\.id/,
+      'SELECT COUNT(DISTINCT u.id) as total',
+    );
+
     // Use async/await with PostgreSQL client
     const countResult = await db.oneOrNone(countQuery, params);
     const totalResults = countResult?.total || 0;
-    
+
     // Add pagination
     const offset = Math.max(0, parseInt(startIndex) - 1);
     const limit = Math.min(parseInt(count), 200); // Max 200 results
@@ -155,21 +158,21 @@ router.get('/Users', authenticateSCIM, async (req, res) => {
     params.push(limit, offset);
 
     const rows = await db.any(query, params);
-    const resources = (rows || []).map(row => formatUserForSCIM(row));
+    const resources = (rows || []).map((row) => formatUserForSCIM(row));
 
     res.json({
       schemas: ['urn:ietf:params:scim:schemas:core:2.0:ListResponse'],
       totalResults,
       startIndex: parseInt(startIndex),
       itemsPerPage: resources.length,
-      Resources: resources
+      Resources: resources,
     });
   } catch (error) {
     logger.error('Error in SCIM Users GET:', error);
     res.status(500).json({
       schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
       detail: 'Internal server error',
-      status: '500'
+      status: '500',
     });
   }
 });
@@ -216,7 +219,7 @@ router.get('/Users/:id', authenticateSCIM, async (req, res) => {
       return res.status(404).json({
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
         detail: 'User not found',
-        status: '404'
+        status: '404',
       });
     }
 
@@ -226,7 +229,7 @@ router.get('/Users/:id', authenticateSCIM, async (req, res) => {
     res.status(500).json({
       schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
       detail: 'Internal server error',
-      status: '500'
+      status: '500',
     });
   }
 });
@@ -279,14 +282,15 @@ router.get('/Users/:id', authenticateSCIM, async (req, res) => {
  *       409:
  *         description: User already exists
  */
-router.post('/Users', 
+router.post(
+  '/Users',
   authenticateSCIM,
   [
     body('userName').isEmail().withMessage('userName must be a valid email'),
     body('name.givenName').optional().isString(),
     body('name.familyName').optional().isString(),
     body('emails').isArray().withMessage('emails must be an array'),
-    body('active').optional().isBoolean()
+    body('active').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
@@ -296,7 +300,7 @@ router.post('/Users',
           schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
           detail: 'Invalid request data',
           status: '400',
-          scimType: 'invalidValue'
+          scimType: 'invalidValue',
         });
       }
 
@@ -304,20 +308,25 @@ router.post('/Users',
       const vipExt = req.body['urn:nova:vip:1.0:User'] || {};
       const isVip = !!vipExt.isVip;
       const vipLevel = vipExt.vipLevel || null;
-      const primaryEmail = emails?.find(e => e.primary)?.value || userName;
-      const displayName = name ? `${name.givenName || ''} ${name.familyName || ''}`.trim() : userName;
+      const primaryEmail = emails?.find((e) => e.primary)?.value || userName;
+      const displayName = name
+        ? `${name.givenName || ''} ${name.familyName || ''}`.trim()
+        : userName;
       const now = new Date().toISOString();
       const userId = (await import('uuid')).v4();
 
       try {
         // Check if user already exists
-        const existingUser = await db.oneOrNone('SELECT id FROM users WHERE email = $1 AND disabled = false', [primaryEmail]);
+        const existingUser = await db.oneOrNone(
+          'SELECT id FROM users WHERE email = $1 AND disabled = false',
+          [primaryEmail],
+        );
         if (existingUser) {
           return res.status(409).json({
             schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
             detail: 'User already exists',
             status: '409',
-            scimType: 'uniqueness'
+            scimType: 'uniqueness',
           });
         }
 
@@ -338,7 +347,7 @@ router.post('/Users',
           isVip ? 1 : 0,
           vipLevel,
           now,
-          now
+          now,
         ]);
 
         // Get created user for response
@@ -352,7 +361,7 @@ router.post('/Users',
           detail: 'Internal server error',
           error: error?.message,
           stack: error?.stack,
-          status: '500'
+          status: '500',
         });
       }
     } catch (error) {
@@ -360,10 +369,10 @@ router.post('/Users',
       res.status(500).json({
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
         detail: 'Internal server error',
-        status: '500'
+        status: '500',
       });
     }
-  }
+  },
 );
 
 /**
@@ -398,12 +407,15 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
     const now = new Date().toISOString();
 
     // Check if user exists
-    const existingUser = await db.oneOrNone('SELECT * FROM users WHERE id = $1 AND disabled = false', [id]);
+    const existingUser = await db.oneOrNone(
+      'SELECT * FROM users WHERE id = $1 AND disabled = false',
+      [id],
+    );
     if (!existingUser) {
       return res.status(404).json({
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
         detail: 'User not found',
-        status: '404'
+        status: '404',
       });
     }
 
@@ -439,7 +451,7 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
       return res.status(400).json({
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
         detail: 'No fields to update',
-        status: '400'
+        status: '400',
       });
     }
     const updateQuery = `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}`;
@@ -455,7 +467,7 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
       detail: 'Internal server error',
       error: error?.message,
       stack: error?.stack,
-      status: '500'
+      status: '500',
     });
   }
 });
@@ -486,16 +498,22 @@ router.delete('/Users/:id', authenticateSCIM, async (req, res) => {
   try {
     const { id } = req.params;
     // Check if user exists
-    const existingUser = await db.oneOrNone('SELECT id FROM users WHERE id = $1 AND disabled = false', [id]);
+    const existingUser = await db.oneOrNone(
+      'SELECT id FROM users WHERE id = $1 AND disabled = false',
+      [id],
+    );
     if (!existingUser) {
       return res.status(404).json({
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
         detail: 'User not found',
-        status: '404'
+        status: '404',
       });
     }
     // Soft delete user
-    await db.none('UPDATE users SET disabled = 1, updated_at = $1 WHERE id = $2', [new Date().toISOString(), id]);
+    await db.none('UPDATE users SET disabled = 1, updated_at = $1 WHERE id = $2', [
+      new Date().toISOString(),
+      id,
+    ]);
     logger.info('SCIM user deleted successfully', { userId: id });
     res.status(204).send();
   } catch (error) {
@@ -503,7 +521,7 @@ router.delete('/Users/:id', authenticateSCIM, async (req, res) => {
     res.status(500).json({
       schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
       detail: 'Internal server error',
-      status: '500'
+      status: '500',
     });
   }
 });
@@ -519,7 +537,7 @@ router.get('/Groups', authenticateSCIM, async (req, res) => {
        FROM roles r
        LEFT JOIN user_roles ur ON r.id = ur.role_id
        LEFT JOIN users u ON u.id = ur.user_id
-       ORDER BY r.id`
+       ORDER BY r.id`,
     );
     const map = new Map();
     for (const row of rows) {
@@ -536,7 +554,7 @@ router.get('/Groups', authenticateSCIM, async (req, res) => {
       Resources: resources,
       totalResults: resources.length,
       startIndex: 1,
-      itemsPerPage: resources.length
+      itemsPerPage: resources.length,
     });
   } catch (err) {
     logger.error('Error fetching SCIM groups:', err);
@@ -552,7 +570,7 @@ router.post('/Groups', authenticateSCIM, async (req, res) => {
     }
     const { id } = await db.one(
       'INSERT INTO roles (name, created_at, updated_at) VALUES ($1, NOW(), NOW()) RETURNING id',
-      [name]
+      [name],
     );
     const role = await db.one('SELECT id, name FROM roles WHERE id=$1', [id]);
     res.status(201).json(formatGroupForSCIM({ ...role, members: [] }));
@@ -569,7 +587,7 @@ router.get('/Groups/:id', authenticateSCIM, async (req, res) => {
     if (!role) return res.status(404).json({ detail: 'Group not found' });
     const members = await db.any(
       `SELECT u.id, u.name FROM users u JOIN user_roles ur ON u.id=ur.user_id WHERE ur.role_id=$1`,
-      [id]
+      [id],
     );
     res.json(formatGroupForSCIM({ ...role, members }));
   } catch (err) {
@@ -589,7 +607,7 @@ router.put('/Groups/:id', authenticateSCIM, async (req, res) => {
     const role = await db.one('SELECT id, name FROM roles WHERE id=$1', [id]);
     const members = await db.any(
       `SELECT u.id, u.name FROM users u JOIN user_roles ur ON u.id=ur.user_id WHERE ur.role_id=$1`,
-      [id]
+      [id],
     );
     res.json(formatGroupForSCIM({ ...role, members }));
   } catch (err) {
@@ -601,7 +619,7 @@ router.put('/Groups/:id', authenticateSCIM, async (req, res) => {
 router.delete('/Groups/:id', authenticateSCIM, async (req, res) => {
   try {
     const { id } = req.params;
-    await db.tx(async t => {
+    await db.tx(async (t) => {
       await t.none('DELETE FROM user_roles WHERE role_id=$1', [id]);
       await t.none('DELETE FROM role_permissions WHERE role_id=$1', [id]);
       await t.none('DELETE FROM roles WHERE id=$1', [id]);
@@ -628,23 +646,25 @@ function formatUserForSCIM(user) {
     name: {
       givenName,
       familyName,
-      formatted: user.name
+      formatted: user.name,
     },
-    emails: [{
-      value: user.email,
-      primary: true
-    }],
+    emails: [
+      {
+        value: user.email,
+        primary: true,
+      },
+    ],
     active: user.active === 1,
     'urn:nova:vip:1.0:User': {
       isVip: !!user.is_vip,
-      vipLevel: user.vip_level || null
+      vipLevel: user.vip_level || null,
     },
     meta: {
       resourceType: 'User',
       created: user.created_at,
       lastModified: user.updated_at,
-      location: `/api/v1/scim/Users/${user.id}`
-    }
+      location: `/api/v1/scim/Users/${user.id}`,
+    },
   };
 }
 
@@ -656,13 +676,13 @@ function formatGroupForSCIM(group) {
     schemas: ['urn:ietf:params:scim:schemas:core:2.0:Group'],
     id: String(group.id),
     displayName: group.name,
-    members: (group.members || []).map(m => ({
+    members: (group.members || []).map((m) => ({
       value: m.id,
-      display: m.name
+      display: m.name,
     })),
     meta: {
-      resourceType: 'Group'
-    }
+      resourceType: 'Group',
+    },
   };
 }
 
@@ -671,11 +691,11 @@ function formatGroupForSCIM(group) {
  */
 function mapSCIMFieldToDBField(scimField) {
   const fieldMap = {
-    'userName': 'u.email',
+    userName: 'u.email',
     'name.givenName': 'u.name',
     'name.familyName': 'u.name',
     'emails.value': 'u.email',
-    'active': 'u.active'
+    active: 'u.active',
   };
 
   return fieldMap[scimField] || 'u.email';

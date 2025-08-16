@@ -3,4 +3,3 @@ describe('Integrations Smoke', () => {
     expect(true).toBe(true);
   });
 });
-

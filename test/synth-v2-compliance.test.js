@@ -1,6 +1,6 @@
 /**
  * Nova Synth v2 API Integration Tests
- * 
+ *
  * Tests for the complete Synth v2 API specification compliance
  */
 
@@ -16,10 +16,10 @@ class SynthV2Client {
 
   async request(method, endpoint, body = null) {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     // Mock response - in real tests this would make actual HTTP requests
     const response = await this.mockRequest(method, endpoint, body);
-    
+
     return response;
   }
 
@@ -32,8 +32,8 @@ class SynthV2Client {
         sessionId: `session_${Date.now()}`,
         context: body?.context || {},
         availableTools: ['nova.tickets.create', 'nova.lore.search'],
-        message: 'Hello! I\'m Cosmo, your Nova AI assistant. How can I help you today?',
-        timestamp: new Date().toISOString()
+        message: "Hello! I'm Cosmo, your Nova AI assistant. How can I help you today?",
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -43,15 +43,23 @@ class SynthV2Client {
         messageId: `msg_${Date.now()}`,
         response: `I understand you said: "${body?.message}". How can I help you with that?`,
         toolsUsed: [],
-        suggestions: ['Would you like me to create a ticket?', 'Should I search the knowledge base?'],
-        timestamp: new Date().toISOString()
+        suggestions: [
+          'Would you like me to create a ticket?',
+          'Should I search the knowledge base?',
+        ],
+        timestamp: new Date().toISOString(),
       };
     }
 
     if (endpoint.startsWith('/intent/classify')) {
       const input = body?.input || '';
       let intent = 'query';
-      if (input.includes('create a ticket') || input.includes('broken') || input.includes('issue') || input.includes('not working')) {
+      if (
+        input.includes('create a ticket') ||
+        input.includes('broken') ||
+        input.includes('issue') ||
+        input.includes('not working')
+      ) {
         intent = 'ticket';
       } else if (input.includes('help') || input.includes('how to')) {
         intent = 'query';
@@ -65,9 +73,9 @@ class SynthV2Client {
           category: 'general',
           priority: 'medium',
           entities: [],
-          suggestedActions: intent === 'ticket' ? ['create_ticket'] : ['search_knowledge_base']
+          suggestedActions: intent === 'ticket' ? ['create_ticket'] : ['search_knowledge_base'],
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -82,13 +90,13 @@ class SynthV2Client {
           priority: 'medium',
           status: 'open',
           assignedTo: null,
-          estimatedResolution: '4 hours'
+          estimatedResolution: '4 hours',
         },
         aiAnalysis: {
           classification: { category: 'general', confidence: 0.8 },
-          suggestions: ['assign_to_specialist']
+          suggestions: ['assign_to_specialist'],
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -100,13 +108,13 @@ class SynthV2Client {
             id: 'KB-001',
             title: 'Password Reset Guide',
             content: 'How to reset passwords...',
-            relevance: 0.95
-          }
+            relevance: 0.95,
+          },
         ],
         totalResults: 1,
         searchTime: 45,
         suggestions: [],
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -119,13 +127,13 @@ class SynthV2Client {
           status: body?.dryRun ? 'dry_run_complete' : 'completed',
           steps: [
             { step: 'validate', status: 'completed', duration: 50 },
-            { step: 'execute', status: 'completed', duration: 200 }
+            { step: 'execute', status: 'completed', duration: 200 },
           ],
           duration: 250,
           output: { message: 'Workflow completed successfully' },
-          dryRun: body?.dryRun || false
+          dryRun: body?.dryRun || false,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -139,9 +147,9 @@ class SynthV2Client {
           levelUp: false,
           newLevel: 5,
           badgesEarned: [],
-          reason: body?.reason || 'Test XP award'
+          reason: body?.reason || 'Test XP award',
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -156,9 +164,9 @@ class SynthV2Client {
           achievements: [],
           leaderboardRank: 15,
           streaks: { daily: 3 },
-          stats: { ticketsResolved: 12 }
+          stats: { ticketsResolved: 12 },
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -170,9 +178,9 @@ class SynthV2Client {
           availableTools: body?.tools || ['nova.tickets.create'],
           context: body?.context || {},
           status: 'active',
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -183,7 +191,7 @@ class SynthV2Client {
         tool: toolName,
         result: `Tool ${toolName} executed successfully with parameters: ${JSON.stringify(body?.parameters)}`,
         executionTime: 150,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -191,7 +199,7 @@ class SynthV2Client {
     return {
       success: true,
       message: 'Mock response',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -251,7 +259,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       const context = {
         module: 'pulse',
         userRole: 'technician',
-        department: 'IT'
+        department: 'IT',
       };
 
       const result = await client.startConversation(context, 'Hello, I need help');
@@ -280,29 +288,39 @@ describe('Nova Synth v2 API Specification Compliance', () => {
   describe('2. Intent & Ticket Classification', () => {
     test('should classify ticket creation intent', async () => {
       const input = 'I need to create a ticket for a broken printer in office 204';
-      
+
       const result = await client.classifyIntent(input);
 
       assert.ok(result.success, 'Should return success');
-      assert.strictEqual(result.classification.intent, 'ticket', 'Should classify as ticket intent');
+      assert.strictEqual(
+        result.classification.intent,
+        'ticket',
+        'Should classify as ticket intent',
+      );
       assert.ok(result.classification.confidence > 0.5, 'Should have reasonable confidence');
-      assert.ok(Array.isArray(result.classification.suggestedActions), 'Should return suggested actions');
+      assert.ok(
+        Array.isArray(result.classification.suggestedActions),
+        'Should return suggested actions',
+      );
     });
 
     test('should classify help query intent', async () => {
       const input = 'How do I reset my password?';
-      
+
       const result = await client.classifyIntent(input);
 
       assert.ok(result.success, 'Should return success');
       assert.strictEqual(result.classification.intent, 'query', 'Should classify as query intent');
-      assert.ok(result.classification.suggestedActions.includes('search_knowledge_base'), 'Should suggest KB search');
+      assert.ok(
+        result.classification.suggestedActions.includes('search_knowledge_base'),
+        'Should suggest KB search',
+      );
     });
 
     test('should auto-create ticket from input', async () => {
       const input = 'The printer in office 204 is jammed and not working properly';
       const classification = { intent: 'ticket', category: 'hardware', priority: 'medium' };
-      
+
       const result = await client.autoCreateTicket(input, classification);
 
       assert.ok(result.success, 'Should return success');
@@ -315,14 +333,14 @@ describe('Nova Synth v2 API Specification Compliance', () => {
   describe('3. Knowledge Retrieval (Lore)', () => {
     test('should search knowledge base', async () => {
       const query = 'password reset procedures';
-      
+
       const result = await client.queryKnowledge(query);
 
       assert.ok(result.success, 'Should return success');
       assert.ok(Array.isArray(result.results), 'Should return results array');
       assert.ok(typeof result.totalResults === 'number', 'Should return total count');
       assert.ok(typeof result.searchTime === 'number', 'Should return search time');
-      
+
       if (result.results.length > 0) {
         const article = result.results[0];
         assert.ok(article.id, 'Article should have ID');
@@ -336,7 +354,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
     test('should execute predefined workflow', async () => {
       const workflowId = 'wf-password-reset';
       const parameters = { userId: 'test-user', newPassword: 'temp123' };
-      
+
       const result = await client.executeWorkflow(workflowId, parameters);
 
       assert.ok(result.success, 'Should return success');
@@ -348,7 +366,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
 
     test('should support dry run mode', async () => {
       const workflowId = 'wf-risky-operation';
-      
+
       const result = await client.executeWorkflow(workflowId, {}, true);
 
       assert.ok(result.success, 'Should return success');
@@ -362,7 +380,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       const userId = 'test-user-123';
       const amount = 25;
       const reason = 'Resolved complex ticket';
-      
+
       const result = await client.grantXP(userId, amount, reason, 'ticket_resolved');
 
       assert.ok(result.success, 'Should return success');
@@ -388,7 +406,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
     test('should create MCP session', async () => {
       const tools = ['nova.tickets.create', 'nova.lore.search'];
       const context = { userId: 'test-user', module: 'pulse' };
-      
+
       const result = await client.createMCPSession(tools, context, 'Test Session');
 
       assert.ok(result.success, 'Should return success');
@@ -399,12 +417,12 @@ describe('Nova Synth v2 API Specification Compliance', () => {
 
     test('should execute MCP tool', async () => {
       const toolName = 'nova.tickets.create';
-      const parameters = { 
-        title: 'Test ticket', 
+      const parameters = {
+        title: 'Test ticket',
         description: 'Test description',
-        category: 'hardware'
+        category: 'hardware',
       };
-      
+
       const result = await client.executeMCPTool(toolName, 'session-123', parameters);
 
       assert.ok(result.success, 'Should return success');
@@ -420,16 +438,16 @@ describe('Nova Synth v2 API Specification Compliance', () => {
         () => client.startConversation(),
         () => client.classifyIntent('test input'),
         () => client.queryKnowledge('test query'),
-        () => client.grantXP('user', 10)
+        () => client.grantXP('user', 10),
       ];
 
       for (const endpointCall of endpoints) {
         const result = await endpointCall();
-        
+
         assert.ok(typeof result.success === 'boolean', 'Should have success field');
         assert.ok(result.timestamp, 'Should have timestamp');
         assert.ok(typeof result.timestamp === 'string', 'Timestamp should be string');
-        
+
         // Validate timestamp format (ISO 8601)
         const isValidDate = !isNaN(Date.parse(result.timestamp));
         assert.ok(isValidDate, 'Timestamp should be valid ISO 8601 date');
@@ -439,10 +457,10 @@ describe('Nova Synth v2 API Specification Compliance', () => {
     test('should handle rate limiting appropriately', async () => {
       // Test that the API design includes rate limiting
       // In actual implementation, this would test real rate limits
-      
+
       const result = await client.classifyIntent('test');
       assert.ok(result.success, 'Should handle normal requests');
-      
+
       // Rate limiting is implemented in the route handlers via createRateLimit middleware
       // This test confirms the structure supports it
     });
@@ -454,11 +472,11 @@ describe('Nova Synth v2 API Specification Compliance', () => {
         module: 'pulse',
         userRole: 'technician',
         department: 'IT',
-        location: 'Building A'
+        location: 'Building A',
       };
 
       const result = await client.startConversation(context);
-      
+
       assert.ok(result.success, 'Should return success');
       assert.ok(result.context, 'Should return context');
       // Context should be preserved and enhanced with security info
@@ -480,7 +498,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
 console.log('✅ Nova Synth v2 API specification compliance tests completed');
 console.log('📋 Test Summary:');
 console.log('  - Conversation Management: ✅');
-console.log('  - Intent Classification: ✅'); 
+console.log('  - Intent Classification: ✅');
 console.log('  - Knowledge Retrieval: ✅');
 console.log('  - Workflow Automation: ✅');
 console.log('  - Gamification: ✅');

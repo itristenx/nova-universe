@@ -1,26 +1,68 @@
 /* Enhanced Deep Work Page Styles */
 
-.progress-bar[data-progress="0"] { width: 0%; }
-.progress-bar[data-progress="5"] { width: 5%; }
-.progress-bar[data-progress="10"] { width: 10%; }
-.progress-bar[data-progress="15"] { width: 15%; }
-.progress-bar[data-progress="20"] { width: 20%; }
-.progress-bar[data-progress="25"] { width: 25%; }
-.progress-bar[data-progress="30"] { width: 30%; }
-.progress-bar[data-progress="35"] { width: 35%; }
-.progress-bar[data-progress="40"] { width: 40%; }
-.progress-bar[data-progress="45"] { width: 45%; }
-.progress-bar[data-progress="50"] { width: 50%; }
-.progress-bar[data-progress="55"] { width: 55%; }
-.progress-bar[data-progress="60"] { width: 60%; }
-.progress-bar[data-progress="65"] { width: 65%; }
-.progress-bar[data-progress="70"] { width: 70%; }
-.progress-bar[data-progress="75"] { width: 75%; }
-.progress-bar[data-progress="80"] { width: 80%; }
-.progress-bar[data-progress="85"] { width: 85%; }
-.progress-bar[data-progress="90"] { width: 90%; }
-.progress-bar[data-progress="95"] { width: 95%; }
-.progress-bar[data-progress="100"] { width: 100%; }
+.progress-bar[data-progress='0'] {
+  width: 0%;
+}
+.progress-bar[data-progress='5'] {
+  width: 5%;
+}
+.progress-bar[data-progress='10'] {
+  width: 10%;
+}
+.progress-bar[data-progress='15'] {
+  width: 15%;
+}
+.progress-bar[data-progress='20'] {
+  width: 20%;
+}
+.progress-bar[data-progress='25'] {
+  width: 25%;
+}
+.progress-bar[data-progress='30'] {
+  width: 30%;
+}
+.progress-bar[data-progress='35'] {
+  width: 35%;
+}
+.progress-bar[data-progress='40'] {
+  width: 40%;
+}
+.progress-bar[data-progress='45'] {
+  width: 45%;
+}
+.progress-bar[data-progress='50'] {
+  width: 50%;
+}
+.progress-bar[data-progress='55'] {
+  width: 55%;
+}
+.progress-bar[data-progress='60'] {
+  width: 60%;
+}
+.progress-bar[data-progress='65'] {
+  width: 65%;
+}
+.progress-bar[data-progress='70'] {
+  width: 70%;
+}
+.progress-bar[data-progress='75'] {
+  width: 75%;
+}
+.progress-bar[data-progress='80'] {
+  width: 80%;
+}
+.progress-bar[data-progress='85'] {
+  width: 85%;
+}
+.progress-bar[data-progress='90'] {
+  width: 90%;
+}
+.progress-bar[data-progress='95'] {
+  width: 95%;
+}
+.progress-bar[data-progress='100'] {
+  width: 100%;
+}
 
 /* Focus mode enhancements */
 .focus-mode-container {
@@ -51,7 +93,8 @@
   background: #f3f4f6;
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family:
+    'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
 .rich-text-editor .preview-content pre {
@@ -139,39 +182,39 @@
     max-height: 300px;
     overflow-y: auto;
   }
-  
+
   .ticket-tabs {
     overflow-x: auto;
   }
-  
+
   /* For browsers that support scrollbar-width (Firefox) */
   @supports (scrollbar-width: thin) {
     .ticket-tabs {
       scrollbar-width: thin;
     }
   }
-  
+
   /* For webkit browsers (Chrome, Safari, Edge) that support webkit scrollbar styling */
   @supports selector(::-webkit-scrollbar) {
     .ticket-tabs::-webkit-scrollbar {
       height: 8px;
     }
-    
+
     .ticket-tabs::-webkit-scrollbar-track {
       background: #f1f5f9;
       border-radius: 4px;
     }
-    
+
     .ticket-tabs::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 4px;
     }
-    
+
     .ticket-tabs::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
   }
-  
+
   .rich-text-editor .toolbar {
     flex-wrap: wrap;
     gap: 0.25rem;
@@ -185,7 +228,7 @@
   .action-buttons {
     display: none !important;
   }
-  
+
   .main-content {
     width: 100% !important;
     max-width: none !important;

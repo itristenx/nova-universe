@@ -1,10 +1,10 @@
 /**
  * Nova MCP Server - Hosted Model Context Protocol Server
- * 
+ *
  * Implements MCP specification for ChatGPT integration following OpenAI standards.
  * This server hosts Nova's AI capabilities and makes them available to external
  * clients including ChatGPT instances.
- * 
+ *
  * Features:
  * - OpenAI-compatible API endpoints
  * - MCP protocol compliance
@@ -111,16 +111,16 @@ export class NovaMCPServer {
   private wsServer: WebSocketServer;
   private port: number;
   private isRunning = false;
-  
+
   // Session and client management
   private sessions: Map<string, MCPSession> = new Map();
   private clients: Map<string, MCPClient> = new Map();
   private tools: Map<string, MCPTool> = new Map();
   private resources: Map<string, MCPResource> = new Map();
-  
+
   // Rate limiting
   private rateLimiters = new Map<string, any>();
-  
+
   constructor(port: number = 3001) {
     this.port = port;
     this.app = express();
@@ -136,32 +136,36 @@ export class NovaMCPServer {
    */
   private setupMiddleware(): void {
     // Security middleware
-    this.app.use(helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
-          imgSrc: ["'self'", "data:", "https:"],
+    this.app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+          },
         },
-      },
-    }));
+      }),
+    );
 
     // CORS for OpenAI compatibility
-    this.app.use(cors({
-      origin: [
-        'https://chatgpt.com',
-        'https://chat.openai.com',
-        'https://platform.openai.com',
-        /^https:\/\/.*\.openai\.com$/,
-        /^https:\/\/.*\.nova-universe\.com$/,
-        'http://localhost:3000',
-        'http://localhost:3001'
-      ],
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-ID', 'X-Session-ID']
-    }));
+    this.app.use(
+      cors({
+        origin: [
+          'https://chatgpt.com',
+          'https://chat.openai.com',
+          'https://platform.openai.com',
+          /^https:\/\/.*\.openai\.com$/,
+          /^https:\/\/.*\.nova-universe\.com$/,
+          'http://localhost:3000',
+          'http://localhost:3001',
+        ],
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-ID', 'X-Session-ID'],
+      }),
+    );
 
     // Body parsing
     this.app.use(express.json({ limit: '10mb' }));
@@ -181,15 +185,15 @@ export class NovaMCPServer {
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       const requestId = uuidv4();
       req.headers['x-request-id'] = requestId;
-      
+
       logger.info('MCP Request', {
         requestId,
         method: req.method,
         path: req.path,
         ip: req.ip,
-        userAgent: req.get('User-Agent')
+        userAgent: req.get('User-Agent'),
       });
-      
+
       next();
     });
   }
@@ -204,7 +208,7 @@ export class NovaMCPServer {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        uptime: process.uptime()
+        uptime: process.uptime(),
       });
     });
 
@@ -217,78 +221,112 @@ export class NovaMCPServer {
           {
             name: 'tools',
             version: '1.0.0',
-            description: 'Tool execution capabilities'
+            description: 'Tool execution capabilities',
           },
           {
             name: 'resources',
             version: '1.0.0',
-            description: 'Resource access capabilities'
+            description: 'Resource access capabilities',
           },
           {
             name: 'session',
             version: '1.0.0',
-            description: 'Session management capabilities'
-          }
+            description: 'Session management capabilities',
+          },
         ],
         tools: Array.from(this.tools.values()),
-        resources: Array.from(this.resources.values())
+        resources: Array.from(this.resources.values()),
       };
 
       res.json(serverInfo);
     });
 
     // Client registration (for API key generation)
-    this.app.post('/api/v1/clients/register', this.authenticateAdmin.bind(this), (req: Request, res: Response) => {
-      this.handleClientRegistration(req, res);
-    });
+    this.app.post(
+      '/api/v1/clients/register',
+      this.authenticateAdmin.bind(this),
+      (req: Request, res: Response) => {
+        this.handleClientRegistration(req, res);
+      },
+    );
 
     // MCP JSON-RPC endpoint (OpenAI compatible)
-    this.app.post('/mcp', this.authenticateClient.bind(this), this.applyRateLimit.bind(this), (req: Request, res: Response) => {
-      this.handleMCPRequest(req, res);
-    });
+    this.app.post(
+      '/mcp',
+      this.authenticateClient.bind(this),
+      this.applyRateLimit.bind(this),
+      (req: Request, res: Response) => {
+        this.handleMCPRequest(req, res);
+      },
+    );
 
     // Tool execution endpoint
-    this.app.post('/api/v1/tools/:toolName/execute', this.authenticateClient.bind(this), this.applyRateLimit.bind(this), (req: Request, res: Response) => {
-      this.handleToolExecution(req, res);
-    });
+    this.app.post(
+      '/api/v1/tools/:toolName/execute',
+      this.authenticateClient.bind(this),
+      this.applyRateLimit.bind(this),
+      (req: Request, res: Response) => {
+        this.handleToolExecution(req, res);
+      },
+    );
 
     // Session management endpoints
-    this.app.post('/api/v1/sessions', this.authenticateClient.bind(this), (req: Request, res: Response) => {
-      this.handleSessionCreation(req, res);
-    });
+    this.app.post(
+      '/api/v1/sessions',
+      this.authenticateClient.bind(this),
+      (req: Request, res: Response) => {
+        this.handleSessionCreation(req, res);
+      },
+    );
 
-    this.app.get('/api/v1/sessions/:sessionId', this.authenticateClient.bind(this), (req: Request, res: Response) => {
-      this.handleSessionRetrieval(req, res);
-    });
+    this.app.get(
+      '/api/v1/sessions/:sessionId',
+      this.authenticateClient.bind(this),
+      (req: Request, res: Response) => {
+        this.handleSessionRetrieval(req, res);
+      },
+    );
 
-    this.app.delete('/api/v1/sessions/:sessionId', this.authenticateClient.bind(this), (req: Request, res: Response) => {
-      this.handleSessionDeletion(req, res);
-    });
+    this.app.delete(
+      '/api/v1/sessions/:sessionId',
+      this.authenticateClient.bind(this),
+      (req: Request, res: Response) => {
+        this.handleSessionDeletion(req, res);
+      },
+    );
 
     // Tools and resources discovery
-    this.app.get('/api/v1/tools', this.authenticateClient.bind(this), (req: Request, res: Response) => {
-      const client = (req as any).client as MCPClient;
-      const allowedTools = Array.from(this.tools.values()).filter(tool => 
-        client.allowedTools.includes('*') || client.allowedTools.includes(tool.name)
-      );
-      
-      res.json({ tools: allowedTools });
-    });
+    this.app.get(
+      '/api/v1/tools',
+      this.authenticateClient.bind(this),
+      (req: Request, res: Response) => {
+        const client = (req as any).client as MCPClient;
+        const allowedTools = Array.from(this.tools.values()).filter(
+          (tool) => client.allowedTools.includes('*') || client.allowedTools.includes(tool.name),
+        );
 
-    this.app.get('/api/v1/resources', this.authenticateClient.bind(this), (req: Request, res: Response) => {
-      res.json({ resources: Array.from(this.resources.values()) });
-    });
+        res.json({ tools: allowedTools });
+      },
+    );
+
+    this.app.get(
+      '/api/v1/resources',
+      this.authenticateClient.bind(this),
+      (req: Request, res: Response) => {
+        res.json({ resources: Array.from(this.resources.values()) });
+      },
+    );
 
     // Error handling middleware
     this.app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
       logger.error('MCP Server Error:', error);
-      
+
       res.status(500).json({
         error: {
           code: -32603,
           message: 'Internal error',
-          data: process.env.NODE_ENV === 'development' ? error.message : undefined
-        }
+          data: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        },
       });
     });
   }
@@ -297,9 +335,9 @@ export class NovaMCPServer {
    * Setup WebSocket server for real-time MCP communication
    */
   private setupWebSocket(): void {
-    this.wsServer = new WebSocketServer({ 
+    this.wsServer = new WebSocketServer({
       server: this.server,
-      path: '/mcp/ws'
+      path: '/mcp/ws',
     });
 
     this.wsServer.on('connection', (ws: WebSocket, req: any) => {
@@ -320,12 +358,15 @@ export class NovaMCPServer {
           properties: {
             title: { type: 'string', description: 'Ticket title' },
             description: { type: 'string', description: 'Ticket description' },
-            category: { type: 'string', enum: ['hardware', 'software', 'network', 'access', 'other'] },
+            category: {
+              type: 'string',
+              enum: ['hardware', 'software', 'network', 'access', 'other'],
+            },
             priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
-            userId: { type: 'string', description: 'User ID creating the ticket' }
+            userId: { type: 'string', description: 'User ID creating the ticket' },
           },
-          required: ['title', 'description']
-        }
+          required: ['title', 'description'],
+        },
       },
       {
         name: 'nova.knowledge.search',
@@ -335,10 +376,10 @@ export class NovaMCPServer {
           properties: {
             query: { type: 'string', description: 'Search query' },
             category: { type: 'string', description: 'Knowledge category filter' },
-            limit: { type: 'number', description: 'Maximum results to return', default: 5 }
+            limit: { type: 'number', description: 'Maximum results to return', default: 5 },
           },
-          required: ['query']
-        }
+          required: ['query'],
+        },
       },
       {
         name: 'nova.ai.classify',
@@ -347,10 +388,14 @@ export class NovaMCPServer {
           type: 'object',
           properties: {
             text: { type: 'string', description: 'Text to classify' },
-            categories: { type: 'array', items: { type: 'string' }, description: 'Possible categories' }
+            categories: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Possible categories',
+            },
           },
-          required: ['text']
-        }
+          required: ['text'],
+        },
       },
       {
         name: 'nova.system.status',
@@ -358,13 +403,13 @@ export class NovaMCPServer {
         inputSchema: {
           type: 'object',
           properties: {
-            component: { type: 'string', description: 'Specific component to check' }
-          }
-        }
-      }
+            component: { type: 'string', description: 'Specific component to check' },
+          },
+        },
+      },
     ];
 
-    defaultTools.forEach(tool => {
+    defaultTools.forEach((tool) => {
       this.tools.set(tool.name, tool);
     });
   }
@@ -377,7 +422,7 @@ export class NovaMCPServer {
       try {
         // Initialize AI Fabric if not already done
         if (!aiFabric.getStatus().isInitialized) {
-          aiFabric.initialize().catch(error => {
+          aiFabric.initialize().catch((error) => {
             logger.error('Failed to initialize AI Fabric:', error);
           });
         }
@@ -394,7 +439,6 @@ export class NovaMCPServer {
           logger.error('MCP Server error:', error);
           reject(error);
         });
-
       } catch (error) {
         reject(error);
       }
@@ -412,7 +456,7 @@ export class NovaMCPServer {
       }
 
       // Close all WebSocket connections
-      this.wsServer.clients.forEach(ws => ws.close());
+      this.wsServer.clients.forEach((ws) => ws.close());
       this.wsServer.close();
 
       // Close HTTP server
@@ -429,7 +473,7 @@ export class NovaMCPServer {
     try {
       const authHeader = req.headers.authorization;
       const apiKey = req.headers['x-api-key'] as string;
-      
+
       let clientId: string | null = null;
 
       if (authHeader?.startsWith('Bearer ')) {
@@ -439,7 +483,7 @@ export class NovaMCPServer {
         clientId = decoded.clientId;
       } else if (apiKey) {
         // API Key authentication
-        const client = Array.from(this.clients.values()).find(c => c.apiKey === apiKey);
+        const client = Array.from(this.clients.values()).find((c) => c.apiKey === apiKey);
         if (client && client.isActive) {
           clientId = client.id;
         }
@@ -449,8 +493,8 @@ export class NovaMCPServer {
         res.status(401).json({
           error: {
             code: -32000,
-            message: 'Authentication required'
-          }
+            message: 'Authentication required',
+          },
         });
         return;
       }
@@ -460,8 +504,8 @@ export class NovaMCPServer {
         res.status(401).json({
           error: {
             code: -32000,
-            message: 'Invalid or inactive client'
-          }
+            message: 'Invalid or inactive client',
+          },
         });
         return;
       }
@@ -473,8 +517,8 @@ export class NovaMCPServer {
       res.status(401).json({
         error: {
           code: -32000,
-          message: 'Authentication failed'
-        }
+          message: 'Authentication failed',
+        },
       });
     }
   }
@@ -482,7 +526,7 @@ export class NovaMCPServer {
   private async authenticateAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
     // Admin authentication logic
     const adminToken = req.headers.authorization?.substring(7);
-    
+
     if (!adminToken || adminToken !== process.env.ADMIN_TOKEN) {
       res.status(403).json({ error: 'Admin access required' });
       return;
@@ -496,14 +540,17 @@ export class NovaMCPServer {
     const clientId = client.id;
 
     if (!this.rateLimiters.has(clientId)) {
-      this.rateLimiters.set(clientId, rateLimit({
-        windowMs: 60 * 1000, // 1 minute
-        max: client.rateLimits.requestsPerMinute,
-        message: 'Rate limit exceeded',
-        keyGenerator: () => clientId,
-        standardHeaders: true,
-        legacyHeaders: false,
-      }));
+      this.rateLimiters.set(
+        clientId,
+        rateLimit({
+          windowMs: 60 * 1000, // 1 minute
+          max: client.rateLimits.requestsPerMinute,
+          message: 'Rate limit exceeded',
+          keyGenerator: () => clientId,
+          standardHeaders: true,
+          legacyHeaders: false,
+        }),
+      );
     }
 
     const limiter = this.rateLimiters.get(clientId);
@@ -540,8 +587,8 @@ export class NovaMCPServer {
             id: message.id,
             error: {
               code: -32601,
-              message: 'Method not found'
-            }
+              message: 'Method not found',
+            },
           };
       }
 
@@ -554,8 +601,8 @@ export class NovaMCPServer {
         error: {
           code: -32603,
           message: 'Internal error',
-          data: error instanceof Error ? error.message : String(error)
-        }
+          data: error instanceof Error ? error.message : String(error),
+        },
       });
     }
   }
@@ -565,32 +612,32 @@ export class NovaMCPServer {
       protocolVersion: '2024-11-05',
       capabilities: {
         tools: { listChanged: true },
-        resources: { subscribe: false, listChanged: true }
+        resources: { subscribe: false, listChanged: true },
       },
       serverInfo: {
         name: 'Nova MCP Server',
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     };
 
     return {
       jsonrpc: '2.0',
       id: message.id,
-      result: serverInfo
+      result: serverInfo,
     };
   }
 
   private async handleToolsList(message: MCPMessage, client: MCPClient): Promise<MCPMessage> {
-    const allowedTools = Array.from(this.tools.values()).filter(tool => 
-      client.allowedTools.includes('*') || client.allowedTools.includes(tool.name)
+    const allowedTools = Array.from(this.tools.values()).filter(
+      (tool) => client.allowedTools.includes('*') || client.allowedTools.includes(tool.name),
     );
 
     return {
       jsonrpc: '2.0',
       id: message.id,
       result: {
-        tools: allowedTools
-      }
+        tools: allowedTools,
+      },
     };
   }
 
@@ -603,8 +650,8 @@ export class NovaMCPServer {
         id: message.id,
         error: {
           code: -32000,
-          message: 'Tool not allowed for this client'
-        }
+          message: 'Tool not allowed for this client',
+        },
       };
     }
 
@@ -618,14 +665,14 @@ export class NovaMCPServer {
           userId: args.userId,
           tenantId: client.metadata.tenantId,
           module: 'mcp-server',
-          sessionId: args.sessionId
+          sessionId: args.sessionId,
         },
         preferences: {},
         metadata: {
           tool: name,
-          client: client.id
+          client: client.id,
         },
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const aiResponse = await aiFabric.processRequest(aiRequest);
@@ -634,24 +681,31 @@ export class NovaMCPServer {
         jsonrpc: '2.0',
         id: message.id,
         result: {
-          content: [{
-            type: 'text',
-            text: typeof aiResponse.result === 'string' ? aiResponse.result : JSON.stringify(aiResponse.result)
-          }],
-          isError: false
-        }
+          content: [
+            {
+              type: 'text',
+              text:
+                typeof aiResponse.result === 'string'
+                  ? aiResponse.result
+                  : JSON.stringify(aiResponse.result),
+            },
+          ],
+          isError: false,
+        },
       };
     } catch (error) {
       return {
         jsonrpc: '2.0',
         id: message.id,
         result: {
-          content: [{
-            type: 'text',
-            text: `Error executing tool: ${error instanceof Error ? error.message : String(error)}`
-          }],
-          isError: true
-        }
+          content: [
+            {
+              type: 'text',
+              text: `Error executing tool: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        },
       };
     }
   }
@@ -661,29 +715,31 @@ export class NovaMCPServer {
       jsonrpc: '2.0',
       id: message.id,
       result: {
-        resources: Array.from(this.resources.values())
-      }
+        resources: Array.from(this.resources.values()),
+      },
     };
   }
 
   private async handleResourceRead(message: MCPMessage, client: MCPClient): Promise<MCPMessage> {
     const { uri } = message.params;
-    
+
     // Resource reading logic would go here
     return {
       jsonrpc: '2.0',
       id: message.id,
       result: {
-        contents: [{
-          uri,
-          mimeType: 'application/json',
-          text: JSON.stringify({
+        contents: [
+          {
             uri,
-            retrievedAt: new Date().toISOString(),
-            note: 'Resource retrieval implemented: returning metadata stub until storage backend is wired.'
-          })
-        }]
-      }
+            mimeType: 'application/json',
+            text: JSON.stringify({
+              uri,
+              retrievedAt: new Date().toISOString(),
+              note: 'Resource retrieval implemented: returning metadata stub until storage backend is wired.',
+            }),
+          },
+        ],
+      },
     };
   }
 
@@ -698,12 +754,12 @@ export class NovaMCPServer {
       rateLimits: rateLimits || {
         requestsPerMinute: 60,
         requestsPerHour: 1000,
-        requestsPerDay: 10000
+        requestsPerDay: 10000,
       },
       permissions: permissions || [],
       isActive: true,
       createdAt: new Date(),
-      metadata: req.body.metadata || {}
+      metadata: req.body.metadata || {},
     };
 
     this.clients.set(client.id, client);
@@ -712,7 +768,7 @@ export class NovaMCPServer {
       clientId: client.id,
       apiKey: client.apiKey,
       allowedTools: client.allowedTools,
-      rateLimits: client.rateLimits
+      rateLimits: client.rateLimits,
     });
   }
 
@@ -746,7 +802,7 @@ export class NovaMCPServer {
       createdAt: new Date(),
       lastActivity: new Date(),
       isActive: true,
-      metadata: metadata || {}
+      metadata: metadata || {},
     };
 
     this.sessions.set(session.id, session);
@@ -754,14 +810,14 @@ export class NovaMCPServer {
     res.json({
       sessionId: session.id,
       capabilities: session.capabilities,
-      createdAt: session.createdAt
+      createdAt: session.createdAt,
     });
   }
 
   private async handleSessionRetrieval(req: Request, res: Response): Promise<void> {
     const { sessionId } = req.params;
     const client = (req as any).client as MCPClient;
-    
+
     const session = this.sessions.get(sessionId);
     if (!session || session.clientId !== client.id) {
       res.status(404).json({ error: 'Session not found' });
@@ -773,14 +829,14 @@ export class NovaMCPServer {
       capabilities: session.capabilities,
       isActive: session.isActive,
       createdAt: session.createdAt,
-      lastActivity: session.lastActivity
+      lastActivity: session.lastActivity,
     });
   }
 
   private async handleSessionDeletion(req: Request, res: Response): Promise<void> {
     const { sessionId } = req.params;
     const client = (req as any).client as MCPClient;
-    
+
     const session = this.sessions.get(sessionId);
     if (!session || session.clientId !== client.id) {
       res.status(404).json({ error: 'Session not found' });
@@ -804,13 +860,15 @@ export class NovaMCPServer {
         ws.send(JSON.stringify(response));
       } catch (error) {
         logger.error('WebSocket message error:', error);
-        ws.send(JSON.stringify({
-          jsonrpc: '2.0',
-          error: {
-            code: -32700,
-            message: 'Parse error'
-          }
-        }));
+        ws.send(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            error: {
+              code: -32700,
+              message: 'Parse error',
+            },
+          }),
+        );
       }
     });
 
@@ -825,7 +883,7 @@ export class NovaMCPServer {
       'nova.tickets.create': 'custom',
       'nova.knowledge.search': 'rag_query',
       'nova.ai.classify': 'classification',
-      'nova.system.status': 'custom'
+      'nova.system.status': 'custom',
     };
 
     return mapping[toolName] || 'custom';
@@ -840,19 +898,22 @@ export class NovaMCPServer {
       return {
         tool: toolName,
         result: output?.content?.[0]?.text || output,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
     return { tool: toolName, result: 'Unknown tool', timestamp: new Date().toISOString() };
   }
 
-  private async processMCPWebSocketMessage(message: MCPMessage, ws: WebSocket): Promise<MCPMessage> {
+  private async processMCPWebSocketMessage(
+    message: MCPMessage,
+    ws: WebSocket,
+  ): Promise<MCPMessage> {
     // WebSocket-specific MCP message processing
     return {
       jsonrpc: '2.0',
       id: message.id,
-      result: { status: 'acknowledged' }
+      result: { status: 'acknowledged' },
     };
   }
 
@@ -877,16 +938,14 @@ export class NovaMCPServer {
         {
           name: 'tools',
           version: '1.0.0',
-          description: 'Tool execution capabilities'
-        }
+          description: 'Tool execution capabilities',
+        },
       ],
       tools: Array.from(this.tools.values()),
-      resources: Array.from(this.resources.values())
+      resources: Array.from(this.resources.values()),
     };
   }
 }
 
 // Export singleton instance
-export const novaMCPServer = new NovaMCPServer(
-  parseInt(process.env.MCP_SERVER_PORT || '3001')
-);
+export const novaMCPServer = new NovaMCPServer(parseInt(process.env.MCP_SERVER_PORT || '3001'));

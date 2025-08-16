@@ -23,14 +23,36 @@
 .progress-bar--muted .progress-bar-fill {
   background: var(--color-muted);
 }
-.progress-bar-fill--0 { width: 0%; }
-.progress-bar-fill--10 { width: 10%; }
-.progress-bar-fill--20 { width: 20%; }
-.progress-bar-fill--30 { width: 30%; }
-.progress-bar-fill--40 { width: 40%; }
-.progress-bar-fill--50 { width: 50%; }
-.progress-bar-fill--60 { width: 60%; }
-.progress-bar-fill--70 { width: 70%; }
-.progress-bar-fill--80 { width: 80%; }
-.progress-bar-fill--90 { width: 90%; }
-.progress-bar-fill--100 { width: 100%; }
+.progress-bar-fill--0 {
+  width: 0%;
+}
+.progress-bar-fill--10 {
+  width: 10%;
+}
+.progress-bar-fill--20 {
+  width: 20%;
+}
+.progress-bar-fill--30 {
+  width: 30%;
+}
+.progress-bar-fill--40 {
+  width: 40%;
+}
+.progress-bar-fill--50 {
+  width: 50%;
+}
+.progress-bar-fill--60 {
+  width: 60%;
+}
+.progress-bar-fill--70 {
+  width: 70%;
+}
+.progress-bar-fill--80 {
+  width: 80%;
+}
+.progress-bar-fill--90 {
+  width: 90%;
+}
+.progress-bar-fill--100 {
+  width: 100%;
+}

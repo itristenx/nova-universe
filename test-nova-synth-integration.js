@@ -10,28 +10,29 @@ const testConfig = {
   tenantId: 'test-tenant',
   userId: 'test-user',
   database: {
-    url: 'sqlite://memory'
+    url: 'sqlite://memory',
   },
   security: {
     encryptionKey: 'test-key',
-    jwtSecret: 'test-secret'
-  }
+    jwtSecret: 'test-secret',
+  },
 };
 
 async function testNovaSynthIntegration() {
   console.log('🧪 Testing Nova Synth Data Intelligence Integration...\n');
-  
+
   try {
     // Initialize NIL
     const nil = new NovaIntegrationLayer(testConfig);
-    
+
     console.log('✅ NIL initialized successfully');
 
     // Test 1: Check if DATA_INTELLIGENCE connector type exists
     console.log('\n📋 Test 1: Checking DATA_INTELLIGENCE connector type...');
-    const connectorTypes = nil.constructor.ConnectorType || 
+    const connectorTypes =
+      nil.constructor.ConnectorType ||
       (await import('./apps/lib/integration/nova-integration-layer.js')).ConnectorType;
-    
+
     if (connectorTypes.DATA_INTELLIGENCE) {
       console.log('✅ DATA_INTELLIGENCE connector type found');
     } else {
@@ -47,21 +48,24 @@ async function testNovaSynthIntegration() {
         name: 'Nova Synth Data Intelligence Engine',
         type: 'DATA_INTELLIGENCE',
         credentials: {
-          apiToken: 'test-token-12345'
+          apiToken: 'test-token-12345',
         },
         endpoints: {
-          synthUrl: 'http://localhost:3000/api/v2/data-intelligence'
+          synthUrl: 'http://localhost:3000/api/v2/data-intelligence',
         },
         config: {
           timeout: 30000,
           enableTransformation: true,
           enableMatching: true,
-          enableDeduplication: true
-        }
+          enableDeduplication: true,
+        },
       });
       console.log('✅ Nova Synth connector registered successfully');
     } catch (error) {
-      console.log('⚠️  Nova Synth connector registration failed (expected if not running):', error.message);
+      console.log(
+        '⚠️  Nova Synth connector registration failed (expected if not running):',
+        error.message,
+      );
     }
 
     // Test 3: Verify Nova Synth integration methods exist
@@ -73,7 +77,7 @@ async function testNovaSynthIntegration() {
       'validateProfileWithSynth',
       'calculateMergeConfidenceWithSynth',
       'normalizeUserAttributesWithSynth',
-      'mergeProfilesWithSynth'
+      'mergeProfilesWithSynth',
     ];
 
     let methodsFound = 0;
@@ -113,9 +117,11 @@ async function testNovaSynthIntegration() {
     const deviceRules = nil.getNormalizationRulesForSystem('DEVICE_MANAGEMENT');
     const securityRules = nil.getNormalizationRulesForSystem('SECURITY_PLATFORM');
 
-    if (Object.keys(identityRules).length > 0 && 
-        Object.keys(deviceRules).length > 0 && 
-        Object.keys(securityRules).length > 0) {
+    if (
+      Object.keys(identityRules).length > 0 &&
+      Object.keys(deviceRules).length > 0 &&
+      Object.keys(securityRules).length > 0
+    ) {
       console.log('✅ Normalization rules configured for all system types');
       console.log(`  - Identity Provider: ${Object.keys(identityRules).length} rules`);
       console.log(`  - Device Management: ${Object.keys(deviceRules).length} rules`);
@@ -127,36 +133,37 @@ async function testNovaSynthIntegration() {
     // Test 6: Test Nova Synth connector capabilities
     console.log('\n📋 Test 6: Testing Nova Synth connector...');
     try {
-      const NovaSynthConnector = (await import('./apps/lib/integration/connectors/nova-synth-connector.js')).NovaSynthConnector;
+      const NovaSynthConnector = (
+        await import('./apps/lib/integration/connectors/nova-synth-connector.js')
+      ).NovaSynthConnector;
       const synthConnector = new NovaSynthConnector();
-      
+
       const capabilities = synthConnector.getCapabilities();
       const schema = synthConnector.getSchema();
-      
+
       console.log('✅ Nova Synth connector capabilities:');
       console.log(`  - Data Types: ${capabilities.dataTypes.join(', ')}`);
       console.log(`  - Actions: ${capabilities.actions.join(', ')}`);
       console.log(`  - Categories: ${capabilities.dataIntelligenceCategories.join(', ')}`);
-      
+
       console.log('✅ Nova Synth connector schema configured');
       console.log(`  - Input Types: ${Object.keys(schema.input).join(', ')}`);
       console.log(`  - Output Types: ${Object.keys(schema.output).join(', ')}`);
-      
     } catch (error) {
       console.log('❌ Nova Synth connector test failed:', error.message);
     }
 
     // Test 7: Test mock data operations
     console.log('\n📋 Test 7: Testing mock data operations...');
-    
+
     const mockProfile = {
       userId: 'test-user-123',
       email: 'test@example.com',
       identity: { okta: 'okta-123', jamf: 'jamf-456' },
       devices: [
         { deviceId: 'device-1', hostname: 'laptop-1', source: 'jamf' },
-        { deviceId: 'device-1', hostname: 'LAPTOP-1', source: 'crowdstrike' } // Duplicate with different case
-      ]
+        { deviceId: 'device-1', hostname: 'LAPTOP-1', source: 'crowdstrike' }, // Duplicate with different case
+      ],
     };
 
     // Test transformation (will fail gracefully if Synth not available)
@@ -170,7 +177,10 @@ async function testNovaSynthIntegration() {
     // Test validation (will fall back to default if Synth not available)
     try {
       const validationResult = await nil.validateProfileWithSynth(mockProfile);
-      console.log('✅ Profile validation test completed:', validationResult.isValid ? 'Valid' : 'Invalid');
+      console.log(
+        '✅ Profile validation test completed:',
+        validationResult.isValid ? 'Valid' : 'Invalid',
+      );
     } catch (error) {
       console.log('⚠️  Profile validation test failed (expected if Synth not running)');
     }
@@ -194,7 +204,6 @@ async function testNovaSynthIntegration() {
     console.log('2. Configure API endpoints and authentication');
     console.log('3. Train Nova Synth with organization-specific data patterns');
     console.log('4. Monitor data matching and transformation quality');
-
   } catch (error) {
     console.error('❌ Nova Synth integration test failed:', error);
     console.error(error.stack);

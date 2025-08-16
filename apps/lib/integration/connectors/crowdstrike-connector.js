@@ -1,7 +1,7 @@
 /**
  * CrowdStrike Falcon Connector
  * Implements CrowdStrike Falcon API for endpoint security integration
- * 
+ *
  * @author Nova Team
  * @version 1.0.0
  */
@@ -29,26 +29,26 @@ export class CrowdStrikeConnector extends IConnector {
   async initialize(config) {
     try {
       this.config = config;
-      
+
       // Validate CrowdStrike-specific configuration
       this.validateCrowdStrikeConfig(config);
-      
+
       // Initialize CrowdStrike API client
       this.client = axios.create({
         baseURL: config.endpoints.falconUrl || 'https://api.crowdstrike.com',
         timeout: config.timeout || 30000,
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
       });
 
       // Authenticate and get bearer token
       await this.authenticate();
-      
+
       // Test the connection
       await this.testConnection();
-      
+
       console.log('CrowdStrike connector initialized successfully');
     } catch (error) {
       console.error('Failed to initialize CrowdStrike connector:', error);
@@ -62,34 +62,35 @@ export class CrowdStrikeConnector extends IConnector {
   async health() {
     try {
       const startTime = Date.now();
-      
+
       // Ensure we have a valid token
       await this.ensureValidToken();
-      
+
       // Test CrowdStrike API endpoints
       const hostsResponse = await this.client.get('/devices/queries/devices/v1?limit=1', {
-        headers: { 'Authorization': `Bearer ${this.accessToken}` }
+        headers: { Authorization: `Bearer ${this.accessToken}` },
       });
-      
+
       const apiLatency = Date.now() - startTime;
 
       // Test detections access
       let detectionsStatus = 'healthy';
       let detectionsLatency = 0;
-      
+
       try {
         const detectionsStartTime = Date.now();
         await this.client.get('/detects/queries/detects/v1?limit=1', {
-          headers: { 'Authorization': `Bearer ${this.accessToken}` }
+          headers: { Authorization: `Bearer ${this.accessToken}` },
         });
         detectionsLatency = Date.now() - detectionsStartTime;
       } catch (error) {
         detectionsStatus = 'degraded';
       }
 
-      const overallStatus = hostsResponse.status === 200 && detectionsStatus === 'healthy'
-        ? HealthStatus.HEALTHY 
-        : HealthStatus.DEGRADED;
+      const overallStatus =
+        hostsResponse.status === 200 && detectionsStatus === 'healthy'
+          ? HealthStatus.HEALTHY
+          : HealthStatus.DEGRADED;
 
       return {
         status: overallStatus,
@@ -98,27 +99,27 @@ export class CrowdStrikeConnector extends IConnector {
           {
             name: 'api_latency',
             value: apiLatency,
-            unit: 'ms'
+            unit: 'ms',
           },
           {
             name: 'detections_latency',
             value: detectionsLatency,
-            unit: 'ms'
+            unit: 'ms',
           },
           {
             name: 'auth_status',
             value: this.accessToken ? 1 : 0,
-            unit: 'boolean'
-          }
+            unit: 'boolean',
+          },
         ],
-        issues: overallStatus !== HealthStatus.HEALTHY ? ['Detections API access issues'] : []
+        issues: overallStatus !== HealthStatus.HEALTHY ? ['Detections API access issues'] : [],
       };
     } catch (error) {
       return {
         status: HealthStatus.UNHEALTHY,
         lastCheck: new Date(),
         metrics: [],
-        issues: [error.message]
+        issues: [error.message],
       };
     }
   }
@@ -153,8 +154,7 @@ export class CrowdStrikeConnector extends IConnector {
       errorCount += detectionsResult.errorCount;
       errors.push(...detectionsResult.errors);
 
-      const status = errorCount === 0 ? 'success' : 
-        successCount > 0 ? 'partial' : 'failed';
+      const status = errorCount === 0 ? 'success' : successCount > 0 ? 'partial' : 'failed';
 
       return {
         jobId: crypto.randomUUID(),
@@ -162,12 +162,11 @@ export class CrowdStrikeConnector extends IConnector {
         metrics: {
           totalRecords,
           successCount,
-          errorCount
+          errorCount,
         },
         errors: errors.slice(0, 10), // Limit error details
-        data: null
+        data: null,
       };
-
     } catch (error) {
       return {
         jobId: crypto.randomUUID(),
@@ -175,11 +174,13 @@ export class CrowdStrikeConnector extends IConnector {
         metrics: {
           totalRecords: 0,
           successCount: 0,
-          errorCount: 1
+          errorCount: 1,
         },
-        errors: [{
-          message: error.message
-        }]
+        errors: [
+          {
+            message: error.message,
+          },
+        ],
       };
     }
   }
@@ -190,30 +191,37 @@ export class CrowdStrikeConnector extends IConnector {
   async poll() {
     try {
       const since = new Date(Date.now() - 5 * 60 * 1000); // Last 5 minutes
-      
+
       await this.ensureValidToken();
-      
+
       // Get recent detections
       const filter = `created_timestamp:>'${since.toISOString()}'`;
-      const detectionsResponse = await this.client.get(`/detects/queries/detects/v1?filter=${encodeURIComponent(filter)}&limit=100`, {
-        headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      const detectionsResponse = await this.client.get(
+        `/detects/queries/detects/v1?filter=${encodeURIComponent(filter)}&limit=100`,
+        {
+          headers: { Authorization: `Bearer ${this.accessToken}` },
+        },
+      );
 
       const detectionIds = detectionsResponse.data.resources || [];
-      
+
       if (detectionIds.length === 0) {
         return [];
       }
 
       // Get detailed detection information
-      const detailsResponse = await this.client.post('/detects/entities/summaries/GET/v1', {
-        ids: detectionIds
-      }, {
-        headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      const detailsResponse = await this.client.post(
+        '/detects/entities/summaries/GET/v1',
+        {
+          ids: detectionIds,
+        },
+        {
+          headers: { Authorization: `Bearer ${this.accessToken}` },
+        },
+      );
 
       const events = [];
-      
+
       for (const detection of detailsResponse.data.resources || []) {
         events.push({
           id: detection.detection_id,
@@ -227,14 +235,13 @@ export class CrowdStrikeConnector extends IConnector {
             status: detection.status,
             description: detection.detection_description,
             tactic: detection.tactic,
-            technique: detection.technique
+            technique: detection.technique,
           },
-          source: 'crowdstrike'
+          source: 'crowdstrike',
         });
       }
 
       return events;
-
     } catch (error) {
       console.error('Failed to poll CrowdStrike events:', error);
       return [];
@@ -253,28 +260,27 @@ export class CrowdStrikeConnector extends IConnector {
       switch (actionType) {
         case 'quarantine':
           return await this.quarantineHost(target);
-        
+
         case 'release':
           return await this.releaseHost(target);
-        
+
         case 'contain':
           return await this.containHost(target);
-        
+
         case 'lift_containment':
           return await this.liftContainment(target);
-        
+
         case 'update_detection':
           return await this.updateDetection(target, parameters);
-        
+
         default:
           throw new Error(`Unsupported action: ${actionType}`);
       }
-
     } catch (error) {
       return {
         success: false,
         message: error.message,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -295,7 +301,7 @@ export class CrowdStrikeConnector extends IConnector {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -308,21 +314,9 @@ export class CrowdStrikeConnector extends IConnector {
       supportsPush: true,
       supportsPoll: true,
       rateLimit: 300, // CrowdStrike rate limit
-      dataTypes: [
-        'hosts',
-        'detections',
-        'incidents',
-        'iocs',
-        'policies'
-      ],
-      actions: [
-        'quarantine',
-        'release',
-        'contain',
-        'lift_containment',
-        'update_detection'
-      ],
-      securityCategories: ['endpoint_protection', 'threat_detection', 'incident_response']
+      dataTypes: ['hosts', 'detections', 'incidents', 'iocs', 'policies'],
+      actions: ['quarantine', 'release', 'contain', 'lift_containment', 'update_detection'],
+      securityCategories: ['endpoint_protection', 'threat_detection', 'incident_response'],
     };
   }
 
@@ -337,15 +331,15 @@ export class CrowdStrikeConnector extends IConnector {
           hostname: 'string',
           platform_name: 'string',
           os_version: 'string',
-          status: 'string'
+          status: 'string',
         },
         detection: {
           detection_id: 'string',
           device: 'object',
           severity: 'number',
           status: 'string',
-          behaviors: 'array'
-        }
+          behaviors: 'array',
+        },
       },
       output: {
         nova_device: {
@@ -353,16 +347,16 @@ export class CrowdStrikeConnector extends IConnector {
           hostname: 'string',
           platform: 'string',
           securityStatus: 'string',
-          lastSync: 'date'
+          lastSync: 'date',
         },
         nova_alert: {
           alertId: 'string',
           deviceId: 'string',
           severity: 'string',
           status: 'string',
-          description: 'string'
-        }
-      }
+          description: 'string',
+        },
+      },
     };
   }
 
@@ -395,13 +389,13 @@ export class CrowdStrikeConnector extends IConnector {
 
       const response = await this.client.post('/oauth2/token', params, {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       });
 
       this.accessToken = response.data.access_token;
-      this.tokenExpiry = new Date(Date.now() + (response.data.expires_in * 1000));
-      
+      this.tokenExpiry = new Date(Date.now() + response.data.expires_in * 1000);
+
       console.log('CrowdStrike authentication successful');
     } catch (error) {
       throw new Error(`CrowdStrike authentication failed: ${error.message}`);
@@ -417,9 +411,9 @@ export class CrowdStrikeConnector extends IConnector {
   async testConnection() {
     try {
       const response = await this.client.get('/devices/queries/devices/v1?limit=1', {
-        headers: { 'Authorization': `Bearer ${this.accessToken}` }
+        headers: { Authorization: `Bearer ${this.accessToken}` },
       });
-      
+
       if (response.status !== 200) {
         throw new Error('Failed to connect to CrowdStrike API');
       }
@@ -441,9 +435,12 @@ export class CrowdStrikeConnector extends IConnector {
 
       while (hasMore) {
         // Get host IDs
-        const hostsResponse = await this.client.get(`/devices/queries/devices/v1?limit=${limit}&offset=${offset}`, {
-          headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        const hostsResponse = await this.client.get(
+          `/devices/queries/devices/v1?limit=${limit}&offset=${offset}`,
+          {
+            headers: { Authorization: `Bearer ${this.accessToken}` },
+          },
+        );
 
         const hostIds = hostsResponse.data.resources || [];
         totalRecords += hostIds.length;
@@ -453,11 +450,15 @@ export class CrowdStrikeConnector extends IConnector {
         }
 
         // Get detailed host information
-        const detailsResponse = await this.client.post('/devices/entities/devices/v1', {
-          ids: hostIds
-        }, {
-          headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        const detailsResponse = await this.client.post(
+          '/devices/entities/devices/v1',
+          {
+            ids: hostIds,
+          },
+          {
+            headers: { Authorization: `Bearer ${this.accessToken}` },
+          },
+        );
 
         // Process each host
         for (const host of detailsResponse.data.resources || []) {
@@ -468,7 +469,7 @@ export class CrowdStrikeConnector extends IConnector {
             errorCount++;
             errors.push({
               hostId: host.device_id,
-              message: error.message
+              message: error.message,
             });
           }
         }
@@ -477,22 +478,21 @@ export class CrowdStrikeConnector extends IConnector {
         offset += limit;
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       return {
         totalRecords,
         successCount,
         errorCount,
-        errors
+        errors,
       };
-
     } catch (error) {
       return {
         totalRecords,
         successCount: 0,
         errorCount: 1,
-        errors: [{ message: error.message }]
+        errors: [{ message: error.message }],
       };
     }
   }
@@ -517,9 +517,11 @@ export class CrowdStrikeConnector extends IConnector {
       while (hasMore) {
         // Get detection IDs
         const detectionsResponse = await this.client.get(
-          `/detects/queries/detects/v1?limit=${limit}&offset=${offset}${filter ? `&filter=${encodeURIComponent(filter)}` : ''}`, {
-          headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+          `/detects/queries/detects/v1?limit=${limit}&offset=${offset}${filter ? `&filter=${encodeURIComponent(filter)}` : ''}`,
+          {
+            headers: { Authorization: `Bearer ${this.accessToken}` },
+          },
+        );
 
         const detectionIds = detectionsResponse.data.resources || [];
         totalRecords += detectionIds.length;
@@ -529,11 +531,15 @@ export class CrowdStrikeConnector extends IConnector {
         }
 
         // Get detailed detection information
-        const detailsResponse = await this.client.post('/detects/entities/summaries/GET/v1', {
-          ids: detectionIds
-        }, {
-          headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        const detailsResponse = await this.client.post(
+          '/detects/entities/summaries/GET/v1',
+          {
+            ids: detectionIds,
+          },
+          {
+            headers: { Authorization: `Bearer ${this.accessToken}` },
+          },
+        );
 
         // Process each detection
         for (const detection of detailsResponse.data.resources || []) {
@@ -544,7 +550,7 @@ export class CrowdStrikeConnector extends IConnector {
             errorCount++;
             errors.push({
               detectionId: detection.detection_id,
-              message: error.message
+              message: error.message,
             });
           }
         }
@@ -553,22 +559,21 @@ export class CrowdStrikeConnector extends IConnector {
         offset += limit;
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       return {
         totalRecords,
         successCount,
         errorCount,
-        errors
+        errors,
       };
-
     } catch (error) {
       return {
         totalRecords,
         successCount: 0,
         errorCount: 1,
-        errors: [{ message: error.message }]
+        errors: [{ message: error.message }],
       };
     }
   }
@@ -587,12 +592,12 @@ export class CrowdStrikeConnector extends IConnector {
       lastSeen: new Date(host.last_seen),
       source: 'crowdstrike',
       crowdStrikeId: host.device_id,
-      policies: host.policies || []
+      policies: host.policies || [],
     };
 
     // Here you would save to Nova database or send to message queue
     console.log(`Processed CrowdStrike host: ${novaDevice.hostname}`);
-    
+
     return novaDevice;
   }
 
@@ -611,28 +616,32 @@ export class CrowdStrikeConnector extends IConnector {
       updatedAt: new Date(detection.last_behavior),
       source: 'crowdstrike',
       crowdStrikeDetectionId: detection.detection_id,
-      behaviors: detection.behaviors || []
+      behaviors: detection.behaviors || [],
     };
 
     // Here you would save to Nova database or send to message queue
     console.log(`Processed CrowdStrike detection: ${novaAlert.alertId}`);
-    
+
     return novaAlert;
   }
 
   async quarantineHost(hostId) {
     try {
-      await this.client.post('/devices/entities/devices-actions/v2', {
-        action_name: 'quarantine',
-        ids: [hostId]
-      }, {
-        headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      await this.client.post(
+        '/devices/entities/devices-actions/v2',
+        {
+          action_name: 'quarantine',
+          ids: [hostId],
+        },
+        {
+          headers: { Authorization: `Bearer ${this.accessToken}` },
+        },
+      );
 
       return {
         success: true,
         message: 'Host quarantined successfully',
-        data: { hostId, action: 'quarantine' }
+        data: { hostId, action: 'quarantine' },
       };
     } catch (error) {
       throw new Error(`Failed to quarantine host: ${error.message}`);
@@ -641,17 +650,21 @@ export class CrowdStrikeConnector extends IConnector {
 
   async releaseHost(hostId) {
     try {
-      await this.client.post('/devices/entities/devices-actions/v2', {
-        action_name: 'unquarantine',
-        ids: [hostId]
-      }, {
-        headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      await this.client.post(
+        '/devices/entities/devices-actions/v2',
+        {
+          action_name: 'unquarantine',
+          ids: [hostId],
+        },
+        {
+          headers: { Authorization: `Bearer ${this.accessToken}` },
+        },
+      );
 
       return {
         success: true,
         message: 'Host released from quarantine successfully',
-        data: { hostId, action: 'release' }
+        data: { hostId, action: 'release' },
       };
     } catch (error) {
       throw new Error(`Failed to release host: ${error.message}`);
@@ -660,17 +673,21 @@ export class CrowdStrikeConnector extends IConnector {
 
   async containHost(hostId) {
     try {
-      await this.client.post('/devices/entities/devices-actions/v2', {
-        action_name: 'contain',
-        ids: [hostId]
-      }, {
-        headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      await this.client.post(
+        '/devices/entities/devices-actions/v2',
+        {
+          action_name: 'contain',
+          ids: [hostId],
+        },
+        {
+          headers: { Authorization: `Bearer ${this.accessToken}` },
+        },
+      );
 
       return {
         success: true,
         message: 'Host contained successfully',
-        data: { hostId, action: 'contain' }
+        data: { hostId, action: 'contain' },
       };
     } catch (error) {
       throw new Error(`Failed to contain host: ${error.message}`);
@@ -679,17 +696,21 @@ export class CrowdStrikeConnector extends IConnector {
 
   async liftContainment(hostId) {
     try {
-      await this.client.post('/devices/entities/devices-actions/v2', {
-        action_name: 'lift_containment',
-        ids: [hostId]
-      }, {
-        headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      await this.client.post(
+        '/devices/entities/devices-actions/v2',
+        {
+          action_name: 'lift_containment',
+          ids: [hostId],
+        },
+        {
+          headers: { Authorization: `Bearer ${this.accessToken}` },
+        },
+      );
 
       return {
         success: true,
         message: 'Containment lifted successfully',
-        data: { hostId, action: 'lift_containment' }
+        data: { hostId, action: 'lift_containment' },
       };
     } catch (error) {
       throw new Error(`Failed to lift containment: ${error.message}`);
@@ -699,19 +720,23 @@ export class CrowdStrikeConnector extends IConnector {
   async updateDetection(detectionId, parameters) {
     try {
       const { status, comment } = parameters;
-      
-      await this.client.patch('/detects/entities/detects/v2', {
-        ids: [detectionId],
-        status: status || 'in_progress',
-        comment: comment || 'Updated via Nova Integration Layer'
-      }, {
-        headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+
+      await this.client.patch(
+        '/detects/entities/detects/v2',
+        {
+          ids: [detectionId],
+          status: status || 'in_progress',
+          comment: comment || 'Updated via Nova Integration Layer',
+        },
+        {
+          headers: { Authorization: `Bearer ${this.accessToken}` },
+        },
+      );
 
       return {
         success: true,
         message: 'Detection updated successfully',
-        data: { detectionId, action: 'update_detection', status }
+        data: { detectionId, action: 'update_detection', status },
       };
     } catch (error) {
       throw new Error(`Failed to update detection: ${error.message}`);

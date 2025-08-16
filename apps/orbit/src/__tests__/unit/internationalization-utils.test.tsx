@@ -28,14 +28,20 @@ const formatDate = (date: Date, locale: string, options?: Intl.DateTimeFormatOpt
   }
 };
 
-const formatNumber = (value: number, locale: string, options?: Intl.NumberFormatOptions): string => {
+const formatNumber = (
+  value: number,
+  locale: string,
+  options?: Intl.NumberFormatOptions,
+): string => {
   return new Intl.NumberFormat(locale, options).format(value);
 };
 
 const detectUserLanguage = (supportedLanguages?: string[]): string => {
   const browserLanguage = window.navigator.language || 'en-US';
-  const browserLanguages = (window.navigator as unknown as { languages?: string[] }).languages || [browserLanguage];
-  
+  const browserLanguages = (window.navigator as unknown as { languages?: string[] }).languages || [
+    browserLanguage,
+  ];
+
   if (supportedLanguages) {
     for (const lang of browserLanguages) {
       if (supportedLanguages.includes(lang)) {
@@ -44,7 +50,7 @@ const detectUserLanguage = (supportedLanguages?: string[]): string => {
     }
     return supportedLanguages[0] || 'en-US';
   }
-  
+
   return browserLanguage;
 };
 
@@ -68,16 +74,16 @@ const validateMessage = (message: string | null | undefined): boolean => {
   if (!message || typeof message !== 'string' || message.trim() === '') {
     return false;
   }
-  
+
   // Check for potential XSS
   if (/<script|javascript:|data:/i.test(message)) {
     return false;
   }
-  
+
   // Check for unmatched brackets
   const openBrackets = (message.match(/\{/g) || []).length;
   const closeBrackets = (message.match(/\}/g) || []).length;
-  
+
   return openBrackets === closeBrackets;
 };
 
@@ -85,13 +91,13 @@ const sanitizeMessage = (message: string | null | undefined): string => {
   if (!message || typeof message !== 'string') {
     return '';
   }
-  
+
   // Remove script tags and event handlers
   let sanitized = message.replace(/<script[^>]*>.*?<\/script>/gi, '');
   sanitized = sanitized.replace(/<[^>]*>/g, '');
   sanitized = sanitized.replace(/javascript:/gi, '');
   sanitized = sanitized.replace(/data:text\/html[^,]*,/gi, '');
-  
+
   return sanitized;
 };
 
@@ -186,10 +192,10 @@ describe('Internationalization Utilities', () => {
       });
 
       it('formats percentages', () => {
-        const result = formatNumber(0.1234, 'en-US', { 
+        const result = formatNumber(0.1234, 'en-US', {
           style: 'percent',
           minimumFractionDigits: 2,
-          maximumFractionDigits: 2 
+          maximumFractionDigits: 2,
         });
         expect(result).toBe('12.34%');
       });
@@ -241,10 +247,10 @@ describe('Internationalization Utilities', () => {
           writable: true,
           value: undefined,
         });
-        
+
         const result = detectUserLanguage();
         expect(result).toBe('en-US'); // Should fallback to default
-        
+
         // Restore original value
         Object.defineProperty(window.navigator, 'language', {
           writable: true,
@@ -286,7 +292,7 @@ describe('Internationalization Utilities', () => {
         localStorageMock.setItem.mockImplementation(() => {
           throw new Error('localStorage not available');
         });
-        
+
         // Should not throw
         expect(() => setStoredLanguage('de-DE')).not.toThrow();
       });
@@ -359,7 +365,9 @@ describe('Internationalization Utilities', () => {
 
       it('preserves legitimate URLs', () => {
         expect(sanitizeMessage('Visit https://example.com')).toBe('Visit https://example.com');
-        expect(sanitizeMessage('Email: mailto:user@example.com')).toBe('Email: mailto:user@example.com');
+        expect(sanitizeMessage('Email: mailto:user@example.com')).toBe(
+          'Email: mailto:user@example.com',
+        );
       });
 
       it('handles null and undefined input', () => {
@@ -393,9 +401,7 @@ describe('Internationalization Utilities', () => {
       const TestComponentWithButton = () => {
         return (
           <div>
-            <button onClick={() => setStoredLanguage('de-DE')}>
-              Change to German
-            </button>
+            <button onClick={() => setStoredLanguage('de-DE')}>Change to German</button>
             <span data-testid="currency">{formatCurrency(1234.56, 'EUR', 'de-DE')}</span>
           </div>
         );

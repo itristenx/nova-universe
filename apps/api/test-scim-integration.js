@@ -25,8 +25,8 @@ async function runIntegrationTests() {
     // Clean up any existing test data
     await prisma.scimLog.deleteMany({
       where: {
-        entityId: { startsWith: 'test-' }
-      }
+        entityId: { startsWith: 'test-' },
+      },
     });
 
     // Create test data
@@ -41,7 +41,7 @@ async function runIntegrationTests() {
           message: 'User created',
           userAgent: 'Test-Agent/1.0',
           ipAddress: '127.0.0.1',
-          duration: 100
+          duration: 100,
         },
         {
           operation: 'update',
@@ -51,7 +51,7 @@ async function runIntegrationTests() {
           message: 'User updated',
           userAgent: 'Test-Agent/1.0',
           ipAddress: '127.0.0.1',
-          duration: 150
+          duration: 150,
         },
         {
           operation: 'delete',
@@ -61,22 +61,22 @@ async function runIntegrationTests() {
           message: 'User deletion failed',
           userAgent: 'Test-Agent/1.0',
           ipAddress: '127.0.0.1',
-          duration: 50
-        }
-      ]
+          duration: 50,
+        },
+      ],
     });
 
     console.log('✅ Test data created');
 
     // Test 2: Test /api/scim/monitor/logs endpoint
     console.log('\n2. Testing GET /api/scim/monitor/logs...');
-    
-    const logsResponse = await request(app)
-      .get('/api/scim/monitor/logs')
-      .expect(200);
+
+    const logsResponse = await request(app).get('/api/scim/monitor/logs').expect(200);
 
     console.log(`✅ Logs endpoint returned ${logsResponse.body.logs.length} logs`);
-    console.log(`✅ Pagination: page ${logsResponse.body.pagination.page}, total ${logsResponse.body.pagination.total}`);
+    console.log(
+      `✅ Pagination: page ${logsResponse.body.pagination.page}, total ${logsResponse.body.pagination.total}`,
+    );
 
     // Test filtering
     const filteredResponse = await request(app)
@@ -87,10 +87,8 @@ async function runIntegrationTests() {
 
     // Test 3: Test /api/scim/monitor/status endpoint
     console.log('\n3. Testing GET /api/scim/monitor/status...');
-    
-    const statusResponse = await request(app)
-      .get('/api/scim/monitor/status')
-      .expect(200);
+
+    const statusResponse = await request(app).get('/api/scim/monitor/status').expect(200);
 
     console.log(`✅ Status endpoint returned status: ${statusResponse.body.status}`);
     console.log(`✅ Total operations: ${statusResponse.body.statistics.totalOperations}`);
@@ -102,11 +100,13 @@ async function runIntegrationTests() {
       .get('/api/scim/monitor/status?timeframe=1h')
       .expect(200);
 
-    console.log(`✅ 1-hour timeframe: ${statusHourResponse.body.statistics.totalOperations} operations`);
+    console.log(
+      `✅ 1-hour timeframe: ${statusHourResponse.body.statistics.totalOperations} operations`,
+    );
 
     // Test 4: Test error handling
     console.log('\n4. Testing error handling...');
-    
+
     // Test with invalid timeframe
     const invalidTimeframeResponse = await request(app)
       .get('/api/scim/monitor/status?timeframe=invalid')
@@ -122,7 +122,6 @@ async function runIntegrationTests() {
     console.log('✅ Invalid pagination handled gracefully');
 
     console.log('\n🎉 All integration tests passed! SCIM Monitor API is working correctly.');
-
   } catch (error) {
     console.error('❌ Integration test failed:', error);
     throw error;
@@ -130,8 +129,8 @@ async function runIntegrationTests() {
     // Clean up test data
     await prisma.scimLog.deleteMany({
       where: {
-        entityId: { startsWith: 'test-' }
-      }
+        entityId: { startsWith: 'test-' },
+      },
     });
     await prisma.$disconnect();
   }

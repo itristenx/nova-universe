@@ -11,9 +11,18 @@ function NewTicketPage() {
     <main>
       <h1>Create Ticket</h1>
       {!submitted ? (
-        <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSubmitted(true);
+          }}
+        >
           <input aria-label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <textarea aria-label="Description" value={desc} onChange={(e) => setDesc(e.target.value)} />
+          <textarea
+            aria-label="Description"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+          />
           <button type="submit">Submit</button>
         </form>
       ) : (
@@ -32,5 +41,3 @@ describe('Tickets user flow (smoke)', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Submitted');
   });
 });
-
-

@@ -9,7 +9,8 @@ process.env.POSTGRES_HOST = 'x';
 process.env.POSTGRES_USER = 'x';
 process.env.POSTGRES_PASSWORD = 'x';
 process.env.POSTGRES_DB = 'x';
-process.env.ASSET_ENCRYPTION_KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+process.env.ASSET_ENCRYPTION_KEY =
+  '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
 const { encrypt, decrypt } = await import('../apps/api/utils/encryption.js');
 

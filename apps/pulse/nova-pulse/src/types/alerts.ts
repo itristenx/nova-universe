@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 // Nova Alert System Type Definitions
 // Complete 1:1 feature parity with GoAlert backend
 
@@ -199,7 +199,12 @@ export interface AlertHistory {
 
 // Event types for real-time updates
 export interface AlertEvent {
-  type: 'alert.created' | 'alert.acknowledged' | 'alert.resolved' | 'alert.escalated' | 'schedule.updated';
+  type:
+    | 'alert.created'
+    | 'alert.acknowledged'
+    | 'alert.resolved'
+    | 'alert.escalated'
+    | 'schedule.updated';
   alertId?: string;
   scheduleId?: string;
   userId?: string;

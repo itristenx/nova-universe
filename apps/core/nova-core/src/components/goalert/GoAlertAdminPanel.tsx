@@ -18,7 +18,7 @@ import {
   LinkIcon,
   ArrowPathIcon,
   ChartBarIcon,
-  ClockIcon
+  ClockIcon,
 } from '@heroicons/react/24/outline';
 
 interface GoAlertService {
@@ -73,7 +73,9 @@ interface CreateEscalationPolicyFormData {
 
 const GoAlertAdminPanel: React.FC = () => {
   const queryClient = useQueryClient();
-  const [activeSection, setActiveSection] = useState<'overview' | 'services' | 'policies' | 'schedules' | 'users'>('overview');
+  const [activeSection, setActiveSection] = useState<
+    'overview' | 'services' | 'policies' | 'schedules' | 'users'
+  >('overview');
   const [showCreateService, setShowCreateService] = useState(false);
   const [showCreatePolicy, setShowCreatePolicy] = useState(false);
   const [editingService, setEditingService] = useState<GoAlertService | null>(null);
@@ -82,14 +84,14 @@ const GoAlertAdminPanel: React.FC = () => {
   const [serviceForm, setServiceForm] = useState<CreateServiceFormData>({
     name: '',
     description: '',
-    escalationPolicyID: ''
+    escalationPolicyID: '',
   });
 
   const [policyForm, setPolicyForm] = useState<CreateEscalationPolicyFormData>({
     name: '',
     description: '',
     repeat: 0,
-    steps: [{ delayMinutes: 0, targets: [] }]
+    steps: [{ delayMinutes: 0, targets: [] }],
   });
 
   // Fetch system overview
@@ -98,27 +100,27 @@ const GoAlertAdminPanel: React.FC = () => {
     queryFn: async () => {
       const [services, policies, schedules, alerts] = await Promise.all([
         fetch('/api/v2/goalert/services', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }).then(r => r.json()),
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }).then((r) => r.json()),
         fetch('/api/v2/goalert/escalation-policies', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }).then(r => r.json()),
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }).then((r) => r.json()),
         fetch('/api/v2/goalert/schedules', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }).then(r => r.json()),
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }).then((r) => r.json()),
         fetch('/api/v2/goalert/alerts?status=active', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }).then(r => r.json())
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }).then((r) => r.json()),
       ]);
 
       return {
         services: services.services || [],
         escalationPolicies: policies.escalationPolicies || [],
         schedules: schedules.schedules || [],
-        activeAlerts: alerts.alerts || []
+        activeAlerts: alerts.alerts || [],
       };
     },
-    refetchInterval: 60000
+    refetchInterval: 60000,
   });
 
   // Fetch users
@@ -126,13 +128,13 @@ const GoAlertAdminPanel: React.FC = () => {
     queryKey: ['goalert-users'],
     queryFn: async (): Promise<GoAlertUser[]> => {
       const response = await fetch('/api/v2/goalert/users', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
       return data.users;
     },
-    enabled: activeSection === 'users'
+    enabled: activeSection === 'users',
   });
 
   // Create service mutation
@@ -141,10 +143,10 @@ const GoAlertAdminPanel: React.FC = () => {
       const response = await fetch('/api/v2/goalert/services', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(serviceData)
+        body: JSON.stringify(serviceData),
       });
       if (!response.ok) throw new Error('Failed to create service');
       return response.json();
@@ -153,7 +155,7 @@ const GoAlertAdminPanel: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['goalert-overview'] });
       setShowCreateService(false);
       setServiceForm({ name: '', description: '', escalationPolicyID: '' });
-    }
+    },
   });
 
   // Create escalation policy mutation
@@ -162,10 +164,10 @@ const GoAlertAdminPanel: React.FC = () => {
       const response = await fetch('/api/v2/goalert/escalation-policies', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(policyData)
+        body: JSON.stringify(policyData),
       });
       if (!response.ok) throw new Error('Failed to create escalation policy');
       return response.json();
@@ -173,8 +175,13 @@ const GoAlertAdminPanel: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goalert-overview'] });
       setShowCreatePolicy(false);
-      setPolicyForm({ name: '', description: '', repeat: 0, steps: [{ delayMinutes: 0, targets: [] }] });
-    }
+      setPolicyForm({
+        name: '',
+        description: '',
+        repeat: 0,
+        steps: [{ delayMinutes: 0, targets: [] }],
+      });
+    },
   });
 
   // Delete service mutation
@@ -182,14 +189,14 @@ const GoAlertAdminPanel: React.FC = () => {
     mutationFn: async (serviceId: string) => {
       const response = await fetch(`/api/v2/goalert/services/${serviceId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (!response.ok) throw new Error('Failed to delete service');
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goalert-overview'] });
-    }
+    },
   });
 
   const sections = [
@@ -197,92 +204,138 @@ const GoAlertAdminPanel: React.FC = () => {
     { id: 'services', name: 'Services', icon: ServerIcon },
     { id: 'policies', name: 'Escalation Policies', icon: UserGroupIcon },
     { id: 'schedules', name: 'Schedules', icon: CalendarIcon },
-    { id: 'users', name: 'Users', icon: UserGroupIcon }
+    { id: 'users', name: 'Users', icon: UserGroupIcon },
   ];
 
   // Escalation policies
   const { data: policies = [] } = useQuery({
     queryKey: ['goalert-escalation-policies'],
     queryFn: async () => {
-      const r = await fetch('/api/v2/alerts/escalation-policies', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      const r = await fetch('/api/v2/alerts/escalation-policies', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
       if (!r.ok) throw new Error('Failed to fetch policies');
       const d = await r.json();
       return d.escalationPolicies || [];
     },
-    enabled: activeSection === 'policies'
+    enabled: activeSection === 'policies',
   });
 
   const createEscalationPolicyMutation = useMutation({
     mutationFn: async (payload: any) => {
       const r = await fetch('/api/v2/alerts/escalation-policies', {
-        method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
       if (!r.ok) throw new Error('Failed to create policy');
       return r.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-escalation-policies'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-escalation-policies'] }),
   });
 
   const updateEscalationPolicyMutation = useMutation({
     mutationFn: async ({ id, ...payload }: any) => {
       const r = await fetch(`/api/v2/alerts/escalation-policies/${id}`, {
-        method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
       if (!r.ok) throw new Error('Failed to update policy');
       return r.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-escalation-policies'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-escalation-policies'] }),
   });
 
   const deleteEscalationPolicyMutation = useMutation({
     mutationFn: async (id: string) => {
-      const r = await fetch(`/api/v2/alerts/escalation-policies/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      const r = await fetch(`/api/v2/alerts/escalation-policies/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
       if (!r.ok) throw new Error('Failed to delete policy');
       return r.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-escalation-policies'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-escalation-policies'] }),
   });
 
   // Schedules
   const { data: schedules = [] } = useQuery({
     queryKey: ['goalert-schedules-admin'],
     queryFn: async () => {
-      const r = await fetch('/api/v2/alerts/schedules', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      const r = await fetch('/api/v2/alerts/schedules', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
       if (!r.ok) throw new Error('Failed to fetch schedules');
       const d = await r.json();
       return d.schedules || [];
     },
-    enabled: activeSection === 'schedules'
+    enabled: activeSection === 'schedules',
   });
 
   const createScheduleMutation = useMutation({
     mutationFn: async (payload: any) => {
-      const r = await fetch('/api/v2/goalert/schedules', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const r = await fetch('/api/v2/goalert/schedules', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
       if (!r.ok) throw new Error('Failed to create schedule');
       return r.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-schedules-admin'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-schedules-admin'] }),
   });
 
   const renderPolicies = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Escalation Policies</h2>
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowCreatePolicy(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          <PlusIcon className="w-4 h-4 inline mr-2" /> Create Policy
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowCreatePolicy(true)}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          <PlusIcon className="mr-2 inline h-4 w-4" /> Create Policy
         </motion.button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {policies.map((p: any) => (
-          <motion.div key={p.id} className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
-            <div className="flex items-start justify-between mb-3">
+          <motion.div
+            key={p.id}
+            className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl"
+          >
+            <div className="mb-3 flex items-start justify-between">
               <div>
                 <h3 className="font-semibold text-gray-900">{p.name}</h3>
                 <p className="text-sm text-gray-600">{p.description}</p>
               </div>
               <div className="flex items-center space-x-2">
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => updateEscalationPolicyMutation.mutate({ id: p.id, name: p.name })} className="p-1 text-gray-400 hover:text-blue-600"><PencilIcon className="w-4 h-4" /></motion.button>
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => deleteEscalationPolicyMutation.mutate(p.id)} className="p-1 text-gray-400 hover:text-red-600"><TrashIcon className="w-4 h-4" /></motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => updateEscalationPolicyMutation.mutate({ id: p.id, name: p.name })}
+                  className="p-1 text-gray-400 hover:text-blue-600"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => deleteEscalationPolicyMutation.mutate(p.id)}
+                  className="p-1 text-gray-400 hover:text-red-600"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </motion.button>
               </div>
             </div>
             <div className="mt-2 text-sm text-gray-600">Steps: {p.stepCount}</div>
@@ -296,14 +349,24 @@ const GoAlertAdminPanel: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Schedules</h2>
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => createScheduleMutation.mutate({ name: `Schedule ${Date.now()}`, timeZone: 'UTC' })} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          <PlusIcon className="w-4 h-4 inline mr-2" /> Create Schedule
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() =>
+            createScheduleMutation.mutate({ name: `Schedule ${Date.now()}`, timeZone: 'UTC' })
+          }
+          className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          <PlusIcon className="mr-2 inline h-4 w-4" /> Create Schedule
         </motion.button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {schedules.map((s: any) => (
-          <motion.div key={s.id} className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
-            <div className="flex items-start justify-between mb-3">
+          <motion.div
+            key={s.id}
+            className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl"
+          >
+            <div className="mb-3 flex items-start justify-between">
               <div>
                 <h3 className="font-semibold text-gray-900">{s.name}</h3>
                 <p className="text-sm text-gray-600">{s.description}</p>
@@ -319,13 +382,13 @@ const GoAlertAdminPanel: React.FC = () => {
   const renderOverview = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">GoAlert System Overview</h2>
-      
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <BellIcon className="w-6 h-6 text-red-600" />
+            <div className="rounded-lg bg-red-100 p-2">
+              <BellIcon className="h-6 w-6 text-red-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
@@ -336,24 +399,22 @@ const GoAlertAdminPanel: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+        <div className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <ServerIcon className="w-6 h-6 text-blue-600" />
+            <div className="rounded-lg bg-blue-100 p-2">
+              <ServerIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {overview?.services.length || 0}
-              </p>
+              <p className="text-2xl font-bold text-gray-900">{overview?.services.length || 0}</p>
               <p className="text-sm text-gray-600">Services</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+        <div className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <UserGroupIcon className="w-6 h-6 text-purple-600" />
+            <div className="rounded-lg bg-purple-100 p-2">
+              <UserGroupIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
@@ -364,15 +425,13 @@ const GoAlertAdminPanel: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+        <div className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CalendarIcon className="w-6 h-6 text-green-600" />
+            <div className="rounded-lg bg-green-100 p-2">
+              <CalendarIcon className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {overview?.schedules.length || 0}
-              </p>
+              <p className="text-2xl font-bold text-gray-900">{overview?.schedules.length || 0}</p>
               <p className="text-sm text-gray-600">Schedules</p>
             </div>
           </div>
@@ -380,13 +439,16 @@ const GoAlertAdminPanel: React.FC = () => {
       </div>
 
       {/* Recent Alerts */}
-      <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Active Alerts</h3>
+      <div className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
+        <h3 className="mb-4 text-lg font-semibold text-gray-900">Recent Active Alerts</h3>
         <div className="space-y-3">
           {overview?.activeAlerts.slice(0, 5).map((alert: any) => (
-            <div key={alert.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+            <div
+              key={alert.id}
+              className="flex items-center justify-between rounded-lg bg-red-50 p-3"
+            >
               <div className="flex items-center space-x-3">
-                <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
+                <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
                 <div>
                   <p className="font-medium text-gray-900">{alert.summary}</p>
                   <p className="text-sm text-gray-600">{alert.serviceName}</p>
@@ -396,7 +458,7 @@ const GoAlertAdminPanel: React.FC = () => {
                 {new Date(alert.createdAt).toLocaleTimeString()}
               </span>
             </div>
-          )) || <p className="text-gray-500 text-center py-4">No active alerts</p>}
+          )) || <p className="py-4 text-center text-gray-500">No active alerts</p>}
         </div>
       </div>
     </div>
@@ -410,31 +472,31 @@ const GoAlertAdminPanel: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowCreateService(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
-          <PlusIcon className="w-4 h-4 inline mr-2" />
+          <PlusIcon className="mr-2 inline h-4 w-4" />
           Create Service
         </motion.button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {overview?.services.map((service: GoAlertService) => (
           <motion.div
             key={service.id}
             layout
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6"
+            className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl"
           >
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4 flex items-start justify-between">
               <div className="flex items-center space-x-3">
-                <ServerIcon className="w-6 h-6 text-blue-600" />
+                <ServerIcon className="h-6 w-6 text-blue-600" />
                 <div>
                   <h3 className="font-semibold text-gray-900">{service.name}</h3>
                   <p className="text-sm text-gray-600">{service.description}</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -442,7 +504,7 @@ const GoAlertAdminPanel: React.FC = () => {
                   onClick={() => setEditingService(service)}
                   className="p-1 text-gray-400 hover:text-blue-600"
                 >
-                  <PencilIcon className="w-4 h-4" />
+                  <PencilIcon className="h-4 w-4" />
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -450,30 +512,30 @@ const GoAlertAdminPanel: React.FC = () => {
                   onClick={() => deleteServiceMutation.mutate(service.id)}
                   className="p-1 text-gray-400 hover:text-red-600"
                 >
-                  <TrashIcon className="w-4 h-4" />
+                  <TrashIcon className="h-4 w-4" />
                 </motion.button>
               </div>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-sm">
-                <UserGroupIcon className="w-4 h-4 text-gray-400" />
+                <UserGroupIcon className="h-4 w-4 text-gray-400" />
                 <span className="text-gray-600">Policy: {service.escalationPolicyID}</span>
               </div>
-              
+
               <div className="flex items-center space-x-2 text-sm">
-                <KeyIcon className="w-4 h-4 text-gray-400" />
+                <KeyIcon className="h-4 w-4 text-gray-400" />
                 <span className="text-gray-600">
                   {service.integrationKeys?.length || 0} integration keys
                 </span>
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="mt-4 border-t border-gray-200 pt-4">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+                className="w-full rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
               >
                 Manage Integration Keys
               </motion.button>
@@ -489,7 +551,7 @@ const GoAlertAdminPanel: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
             onClick={() => setShowCreateService(false)}
           >
             <motion.div
@@ -497,45 +559,50 @@ const GoAlertAdminPanel: React.FC = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl p-6 w-full max-w-md"
+              className="w-full max-w-md rounded-2xl bg-white p-6"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New Service</h3>
-              
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Create New Service</h3>
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
                     Service Name
                   </label>
                   <input
                     type="text"
                     value={serviceForm.name}
                     onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter service name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
                     Description
                   </label>
                   <textarea
                     value={serviceForm.description}
-                    onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setServiceForm({ ...serviceForm, description: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     rows={3}
                     placeholder="Enter service description"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
                     Escalation Policy
                   </label>
-                  <select aria-label="Escalation policy"
+                  <select
+                    aria-label="Escalation policy"
                     value={serviceForm.escalationPolicyID}
-                    onChange={(e) => setServiceForm({ ...serviceForm, escalationPolicyID: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setServiceForm({ ...serviceForm, escalationPolicyID: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select escalation policy</option>
                     {overview?.escalationPolicies.map((policy: any) => (
@@ -547,12 +614,12 @@ const GoAlertAdminPanel: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end space-x-3 mt-6">
+              <div className="mt-6 flex items-center justify-end space-x-3">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowCreateService(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-gray-600 hover:bg-gray-50"
                 >
                   Cancel
                 </motion.button>
@@ -560,8 +627,12 @@ const GoAlertAdminPanel: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => createServiceMutation.mutate(serviceForm)}
-                  disabled={!serviceForm.name || !serviceForm.escalationPolicyID || createServiceMutation.isPending}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  disabled={
+                    !serviceForm.name ||
+                    !serviceForm.escalationPolicyID ||
+                    createServiceMutation.isPending
+                  }
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
                 >
                   {createServiceMutation.isPending ? 'Creating...' : 'Create Service'}
                 </motion.button>
@@ -576,7 +647,7 @@ const GoAlertAdminPanel: React.FC = () => {
   const renderUsers = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-      
+
       <div className="space-y-4">
         {users.map((user) => (
           <motion.div
@@ -584,12 +655,12 @@ const GoAlertAdminPanel: React.FC = () => {
             layout
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6"
+            className="rounded-xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-medium">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                  <span className="font-medium text-blue-600">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -597,26 +668,26 @@ const GoAlertAdminPanel: React.FC = () => {
                   <h3 className="font-semibold text-gray-900">{user.name}</h3>
                   <p className="text-sm text-gray-600">{user.email}</p>
                   <p className="text-sm text-gray-500">Role: {user.role}</p>
-                  
+
                   <div className="mt-3 space-y-2">
                     <div>
                       <p className="text-sm font-medium text-gray-700">Contact Methods:</p>
-                      <div className="flex flex-wrap gap-2 mt-1">
+                      <div className="mt-1 flex flex-wrap gap-2">
                         {user.contactMethods.map((method) => (
                           <span
                             key={method.id}
-                            className="inline-flex items-center space-x-1 px-2 py-1 bg-gray-100 rounded text-xs"
+                            className="inline-flex items-center space-x-1 rounded bg-gray-100 px-2 py-1 text-xs"
                           >
-                            {method.type === 'EMAIL' && <EnvelopeIcon className="w-3 h-3" />}
-                            {method.type === 'SMS' && <PhoneIcon className="w-3 h-3" />}
-                            {method.type === 'VOICE' && <PhoneIcon className="w-3 h-3" />}
-                            {method.type === 'WEBHOOK' && <LinkIcon className="w-3 h-3" />}
+                            {method.type === 'EMAIL' && <EnvelopeIcon className="h-3 w-3" />}
+                            {method.type === 'SMS' && <PhoneIcon className="h-3 w-3" />}
+                            {method.type === 'VOICE' && <PhoneIcon className="h-3 w-3" />}
+                            {method.type === 'WEBHOOK' && <LinkIcon className="h-3 w-3" />}
                             <span>{method.name}</span>
                           </span>
                         ))}
                       </div>
                     </div>
-                    
+
                     <div>
                       <p className="text-sm font-medium text-gray-700">
                         Notification Rules: {user.notificationRules.length}
@@ -629,7 +700,7 @@ const GoAlertAdminPanel: React.FC = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+                className="rounded-lg bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
               >
                 Configure
               </motion.button>
@@ -646,9 +717,7 @@ const GoAlertAdminPanel: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">GoAlert Administration</h1>
-          <p className="text-gray-600 mt-1">
-            Complete GoAlert system management through Nova Core
-          </p>
+          <p className="mt-1 text-gray-600">Complete GoAlert system management through Nova Core</p>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -656,16 +725,16 @@ const GoAlertAdminPanel: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => queryClient.invalidateQueries()}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="rounded-lg p-2 text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700"
             title="Refresh all data"
           >
-            <ArrowPathIcon className="w-5 h-5" />
+            <ArrowPathIcon className="h-5 w-5" />
           </motion.button>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-1">
+      <div className="rounded-xl border border-gray-200/50 bg-white/80 p-1 backdrop-blur-xl">
         <div className="flex space-x-1">
           {sections.map((section) => {
             const Icon = section.icon;
@@ -675,13 +744,13 @@ const GoAlertAdminPanel: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveSection(section.id as any)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all duration-200 ${
+                className={`flex items-center space-x-2 rounded-lg px-4 py-3 transition-all duration-200 ${
                   activeSection === section.id
                     ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="h-5 w-5" />
                 <span className="font-medium">{section.name}</span>
               </motion.button>
             );
@@ -725,10 +794,24 @@ const GoAlertAdminPanel: React.FC = () => {
         )}
 
         {activeSection === 'policies' && (
-          <motion.div key="policies" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>{renderPolicies()}</motion.div>
+          <motion.div
+            key="policies"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            {renderPolicies()}
+          </motion.div>
         )}
         {activeSection === 'schedules' && (
-          <motion.div key="schedules" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>{renderSchedules()}</motion.div>
+          <motion.div
+            key="schedules"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            {renderSchedules()}
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Input, Card, CardBody, Spinner, Avatar, Link, Divider, Chip } from '@heroui/react';
-import { 
-  KeyIcon, 
-  EnvelopeIcon, 
-  EyeIcon, 
+import {
+  KeyIcon,
+  EnvelopeIcon,
+  EyeIcon,
   EyeSlashIcon,
   ShieldCheckIcon,
   DevicePhoneMobileIcon,
@@ -12,7 +12,7 @@ import {
   FingerPrintIcon,
   ExclamationTriangleIcon,
   ArrowRightIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
@@ -93,7 +93,7 @@ export const UniversalLoginPage: React.FC = () => {
         root.style.setProperty('--background-image', `url(${backgroundImage})`);
       }
     }
-    
+
     return () => {
       // Cleanup CSS custom properties
       const root = document.documentElement;
@@ -117,13 +117,13 @@ export const UniversalLoginPage: React.FC = () => {
       setIsLoading(true);
       const user = await api.me(token);
       login(token, user);
-      
+
       addToast({
         type: 'success',
         title: 'Login successful',
         description: `Welcome back, ${user.name}!`,
       });
-      
+
       navigate(redirectUrl);
     } catch (error) {
       console.error('SSO callback error:', error);
@@ -146,9 +146,9 @@ export const UniversalLoginPage: React.FC = () => {
       const response = await fetch('/api/v1/helix/login/tenant/discover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: email.trim(),
-          redirectUrl 
+          redirectUrl,
         }),
       });
 
@@ -158,11 +158,11 @@ export const UniversalLoginPage: React.FC = () => {
 
       const data: TenantDiscovery = await response.json();
       setTenantData(data);
-      
+
       // Auto-select primary auth method
-      const primaryMethod = data.authMethods.find(m => m.primary) || data.authMethods[0];
+      const primaryMethod = data.authMethods.find((m) => m.primary) || data.authMethods[0];
       setSelectedAuthMethod(primaryMethod);
-      
+
       setCurrentStep('auth');
     } catch (error) {
       console.error('Discovery error:', error);
@@ -219,13 +219,13 @@ export const UniversalLoginPage: React.FC = () => {
         // Authentication complete
         const user = data.user;
         login(data.token, user);
-        
+
         addToast({
           type: 'success',
           title: 'Login successful',
           description: `Welcome back, ${user.name}!`,
         });
-        
+
         navigate(data.redirectUrl || redirectUrl);
       }
     } catch (error) {
@@ -295,13 +295,13 @@ export const UniversalLoginPage: React.FC = () => {
       const data = await response.json();
       const user = data.user;
       login(data.token, user);
-      
+
       addToast({
         type: 'success',
         title: 'Login successful',
         description: `Welcome back, ${user.name}!`,
       });
-      
+
       navigate(redirectUrl);
     } catch (error) {
       console.error('MFA verification error:', error);
@@ -342,26 +342,26 @@ export const UniversalLoginPage: React.FC = () => {
   const getAuthMethodIcon = (type: string) => {
     switch (type) {
       case 'password':
-        return <KeyIcon className="w-5 h-5" />;
+        return <KeyIcon className="h-5 w-5" />;
       case 'sso':
-        return <ShieldCheckIcon className="w-5 h-5" />;
+        return <ShieldCheckIcon className="h-5 w-5" />;
       case 'passkey':
-        return <FingerPrintIcon className="w-5 h-5" />;
+        return <FingerPrintIcon className="h-5 w-5" />;
       default:
-        return <KeyIcon className="w-5 h-5" />;
+        return <KeyIcon className="h-5 w-5" />;
     }
   };
 
   const getMfaMethodIcon = (type: string) => {
     switch (type) {
       case 'totp':
-        return <DevicePhoneMobileIcon className="w-5 h-5" />;
+        return <DevicePhoneMobileIcon className="h-5 w-5" />;
       case 'sms':
-        return <DevicePhoneMobileIcon className="w-5 h-5" />;
+        return <DevicePhoneMobileIcon className="h-5 w-5" />;
       case 'email':
-        return <EnvelopeIcon className="w-5 h-5" />;
+        return <EnvelopeIcon className="h-5 w-5" />;
       default:
-        return <ShieldCheckIcon className="w-5 h-5" />;
+        return <ShieldCheckIcon className="h-5 w-5" />;
     }
   };
 
@@ -372,51 +372,43 @@ export const UniversalLoginPage: React.FC = () => {
   }, [selectedMfaMethod]);
 
   return (
-    <div 
-      className={`${styles.loginContainer} ${backgroundClass}`}
-    >
+    <div className={`${styles.loginContainer} ${backgroundClass}`}>
       {/* Animated background elements */}
       <div className={styles.backgroundOverlay}>
-        <div 
-          className={`${styles.backgroundElement1} ${styles.primaryBg}`}
-        />
-        <div 
-          className={`${styles.backgroundElement2} ${styles.primaryBg}`}
-        />
+        <div className={`${styles.backgroundElement1} ${styles.primaryBg}`} />
+        <div className={`${styles.backgroundElement2} ${styles.primaryBg}`} />
       </div>
 
-      <Card className="w-full max-w-md mx-auto shadow-2xl border-0 backdrop-blur-lg bg-white/95 dark:bg-gray-900/95">
+      <Card className="mx-auto w-full max-w-md border-0 bg-white/95 shadow-2xl backdrop-blur-lg dark:bg-gray-900/95">
         <CardBody className="p-8">
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="mb-8 text-center">
             {tenantData?.branding?.logo ? (
-              <Avatar 
-                src={tenantData.branding.logo} 
-                className="w-16 h-16 mx-auto mb-4"
+              <Avatar
+                src={tenantData.branding.logo}
+                className="mx-auto mb-4 h-16 w-16"
                 alt={tenantData.branding.organizationName}
               />
             ) : (
-              <div 
-                className={`${styles.logoPlaceholder} ${styles.primaryBg}`}
-              >
+              <div className={`${styles.logoPlaceholder} ${styles.primaryBg}`}>
                 {tenantData?.branding?.organizationName?.charAt(0) || 'N'}
               </div>
             )}
-            
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+
+            <h1 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">
               {currentStep === 'discovery' && 'Sign in to Nova'}
               {currentStep === 'auth' && `Welcome${tenantData?.userExists ? ' back' : ''}`}
               {currentStep === 'mfa' && 'Verify your identity'}
             </h1>
-            
+
             {tenantData?.branding?.organizationName && (
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {tenantData.branding.organizationName}
               </p>
             )}
-            
+
             {tenantData?.branding?.loginMessage && (
-              <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                 {tenantData.branding.loginMessage}
               </p>
             )}
@@ -432,7 +424,7 @@ export const UniversalLoginPage: React.FC = () => {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  startContent={<EnvelopeIcon className="w-4 h-4 text-gray-400" />}
+                  startContent={<EnvelopeIcon className="h-4 w-4 text-gray-400" />}
                   variant="bordered"
                   size="lg"
                   isRequired
@@ -442,11 +434,11 @@ export const UniversalLoginPage: React.FC = () => {
 
               <Button
                 type="submit"
-                className={`w-full text-white font-medium ${styles.primaryBg}`}
+                className={`w-full font-medium text-white ${styles.primaryBg}`}
                 size="lg"
                 isLoading={isLoading}
                 isDisabled={!email.trim()}
-                endContent={!isLoading && <ArrowRightIcon className="w-4 h-4" />}
+                endContent={!isLoading && <ArrowRightIcon className="h-4 w-4" />}
               >
                 {isLoading ? 'Finding your organization...' : 'Continue'}
               </Button>
@@ -466,7 +458,7 @@ export const UniversalLoginPage: React.FC = () => {
               <Button
                 variant="light"
                 size="sm"
-                startContent={<ArrowLeftIcon className="w-4 h-4" />}
+                startContent={<ArrowLeftIcon className="h-4 w-4" />}
                 onClick={handleBack}
                 className="mb-4"
               >
@@ -474,7 +466,7 @@ export const UniversalLoginPage: React.FC = () => {
               </Button>
 
               {/* User info */}
-              <div className="text-center mb-6">
+              <div className="mb-6 text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Signing in as <span className="font-medium">{email}</span>
                 </p>
@@ -482,7 +474,7 @@ export const UniversalLoginPage: React.FC = () => {
 
               {/* Auth method selector */}
               {tenantData.authMethods.length > 1 && (
-                <div className="space-y-2 mb-6">
+                <div className="mb-6 space-y-2">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Choose your sign-in method:
                   </p>
@@ -491,12 +483,20 @@ export const UniversalLoginPage: React.FC = () => {
                       <Button
                         key={`${method.type}-${method.provider || ''}`}
                         variant={selectedAuthMethod === method ? 'solid' : 'bordered'}
-                        className={selectedAuthMethod === method ? styles.authMethodButtonActive : styles.authMethodButton}
+                        className={
+                          selectedAuthMethod === method
+                            ? styles.authMethodButtonActive
+                            : styles.authMethodButton
+                        }
                         startContent={getAuthMethodIcon(method.type)}
                         onClick={() => handleAuthMethodSwitch(method)}
                       >
                         {method.name}
-                        {method.primary && <Chip size="sm" variant="light" className="ml-auto">Primary</Chip>}
+                        {method.primary && (
+                          <Chip size="sm" variant="light" className="ml-auto">
+                            Primary
+                          </Chip>
+                        )}
                       </Button>
                     ))}
                   </div>
@@ -513,7 +513,7 @@ export const UniversalLoginPage: React.FC = () => {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      startContent={<KeyIcon className="w-4 h-4 text-gray-400" />}
+                      startContent={<KeyIcon className="h-4 w-4 text-gray-400" />}
                       endContent={
                         <button
                           type="button"
@@ -521,9 +521,9 @@ export const UniversalLoginPage: React.FC = () => {
                           className="focus:outline-none"
                         >
                           {showPassword ? (
-                            <EyeSlashIcon className="w-4 h-4 text-gray-400" />
+                            <EyeSlashIcon className="h-4 w-4 text-gray-400" />
                           ) : (
-                            <EyeIcon className="w-4 h-4 text-gray-400" />
+                            <EyeIcon className="h-4 w-4 text-gray-400" />
                           )}
                         </button>
                       }
@@ -536,7 +536,7 @@ export const UniversalLoginPage: React.FC = () => {
 
                 <Button
                   type="submit"
-                  className={`w-full text-white font-medium ${styles.primaryBg}`}
+                  className={`w-full font-medium text-white ${styles.primaryBg}`}
                   size="lg"
                   isLoading={isLoading}
                   isDisabled={
@@ -565,7 +565,7 @@ export const UniversalLoginPage: React.FC = () => {
               <Button
                 variant="light"
                 size="sm"
-                startContent={<ArrowLeftIcon className="w-4 h-4" />}
+                startContent={<ArrowLeftIcon className="h-4 w-4" />}
                 onClick={handleBack}
                 className="mb-4"
               >
@@ -574,7 +574,7 @@ export const UniversalLoginPage: React.FC = () => {
 
               {/* MFA method selector */}
               {availableMfaMethods.length > 1 && (
-                <div className="space-y-2 mb-6">
+                <div className="mb-6 space-y-2">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Choose verification method:
                   </p>
@@ -583,12 +583,20 @@ export const UniversalLoginPage: React.FC = () => {
                       <Button
                         key={method.type}
                         variant={selectedMfaMethod === method ? 'solid' : 'bordered'}
-                        className={selectedMfaMethod === method ? styles.mfaMethodButtonActive : styles.mfaMethodButton}
+                        className={
+                          selectedMfaMethod === method
+                            ? styles.mfaMethodButtonActive
+                            : styles.mfaMethodButton
+                        }
                         startContent={getMfaMethodIcon(method.type)}
                         onClick={() => handleMfaMethodSwitch(method)}
                       >
                         {method.name}
-                        {method.primary && <Chip size="sm" variant="light" className="ml-auto">Primary</Chip>}
+                        {method.primary && (
+                          <Chip size="sm" variant="light" className="ml-auto">
+                            Primary
+                          </Chip>
+                        )}
                       </Button>
                     ))}
                   </div>
@@ -597,10 +605,8 @@ export const UniversalLoginPage: React.FC = () => {
 
               {/* Challenge message */}
               {mfaChallengeMessage && (
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    {mfaChallengeMessage}
-                  </p>
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">{mfaChallengeMessage}</p>
                 </div>
               )}
 
@@ -624,7 +630,7 @@ export const UniversalLoginPage: React.FC = () => {
 
                 <Button
                   type="submit"
-                  className={`w-full text-white font-medium ${styles.primaryBg}`}
+                  className={`w-full font-medium text-white ${styles.primaryBg}`}
                   size="lg"
                   isLoading={isLoading}
                   isDisabled={!mfaCode.trim()}
@@ -650,11 +656,12 @@ export const UniversalLoginPage: React.FC = () => {
           )}
 
           {/* Security notice */}
-          <div className="mt-8 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="mt-8 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
             <div className="flex items-start space-x-2">
-              <ShieldCheckIcon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+              <ShieldCheckIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                Your privacy and security are protected by enterprise-grade encryption and authentication.
+                Your privacy and security are protected by enterprise-grade encryption and
+                authentication.
               </p>
             </div>
           </div>

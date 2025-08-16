@@ -3,7 +3,7 @@
  * Extends HeroUI with Nova Universe design tokens
  */
 
-import { colors, spacing, borderRadius, shadows, typography } from './tokens'
+import { colors, spacing, borderRadius, shadows, typography } from './tokens';
 
 export const heroUITheme = {
   extend: {
@@ -20,7 +20,7 @@ export const heroUITheme = {
         800: colors.primary[800],
         900: colors.primary[900],
         DEFAULT: colors.primary[500],
-        foreground: '#ffffff'
+        foreground: '#ffffff',
       },
       secondary: {
         50: colors.secondary[50],
@@ -34,7 +34,7 @@ export const heroUITheme = {
         800: colors.secondary[800],
         900: colors.secondary[900],
         DEFAULT: colors.secondary[500],
-        foreground: '#ffffff'
+        foreground: '#ffffff',
       },
       success: {
         50: colors.semantic.success[50],
@@ -48,7 +48,7 @@ export const heroUITheme = {
         800: colors.semantic.success[800],
         900: colors.semantic.success[900],
         DEFAULT: colors.semantic.success[500],
-        foreground: '#ffffff'
+        foreground: '#ffffff',
       },
       warning: {
         50: colors.semantic.warning[50],
@@ -62,7 +62,7 @@ export const heroUITheme = {
         800: colors.semantic.warning[800],
         900: colors.semantic.warning[900],
         DEFAULT: colors.semantic.warning[500],
-        foreground: '#000000'
+        foreground: '#000000',
       },
       danger: {
         50: colors.semantic.error[50],
@@ -76,7 +76,7 @@ export const heroUITheme = {
         800: colors.semantic.error[800],
         900: colors.semantic.error[900],
         DEFAULT: colors.semantic.error[500],
-        foreground: '#ffffff'
+        foreground: '#ffffff',
       },
       default: {
         50: colors.neutral[50],
@@ -90,8 +90,8 @@ export const heroUITheme = {
         800: colors.neutral[800],
         900: colors.neutral[900],
         DEFAULT: colors.neutral[500],
-        foreground: '#ffffff'
-      }
+        foreground: '#ffffff',
+      },
     },
     spacing,
     borderRadius,
@@ -99,8 +99,8 @@ export const heroUITheme = {
     fontFamily: typography.fontFamily,
     fontSize: typography.fontSize,
     fontWeight: typography.fontWeight,
-    letterSpacing: typography.letterSpacing
-  }
-}
+    letterSpacing: typography.letterSpacing,
+  },
+};
 
-export default heroUITheme
+export default heroUITheme;

@@ -18,6 +18,6 @@ export function validateEnv() {
     serviceUserEmail: process.env.COMMS_SERVICE_USER_EMAIL || 'comms@nova.local',
     serviceUserName: process.env.COMMS_SERVICE_USER_NAME || 'Nova Comms Bot',
     serviceUserRole: process.env.COMMS_SERVICE_USER_ROLE || 'technician',
-    tenantId: process.env.COMMS_TENANT_ID || 'default'
+    tenantId: process.env.COMMS_TENANT_ID || 'default',
   };
 }

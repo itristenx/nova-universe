@@ -2,5 +2,3 @@
   transform: translateY(var(--pull-translate));
   transition: transform 150ms ease-out;
 }
-
-

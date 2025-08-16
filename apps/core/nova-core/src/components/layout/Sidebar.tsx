@@ -52,22 +52,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-          onClick={onClose}
-        />
+        <div className="bg-opacity-75 fixed inset-0 z-40 bg-gray-600 lg:hidden" onClick={onClose} />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 ease-in-out lg:static lg:inset-0 lg:translate-x-0 dark:bg-gray-800 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex flex-col items-center px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex-shrink-0 mb-3">
+          <div className="flex flex-col items-center border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+            <div className="mb-3 flex-shrink-0">
               <img
                 className="h-12 w-auto max-w-[160px]"
                 src={isDark ? '/logo-dark.png' : '/logo.png'}
@@ -83,51 +80,54 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               />
             </div>
             <div className="w-full text-center">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Nova Universe Portal</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                Nova Universe Portal
+              </h1>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1">
+          <nav className="flex-1 space-y-1 px-4 py-6">
             {navigation.map((item) => (
               <NavLink
                 key={item.name}
                 to={item.href}
                 className={({ isActive }) =>
-                  `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
+                  `group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-primary-100 dark:bg-primary-900 text-primary-900 dark:text-primary-100'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100'
                   }`
                 }
                 onClick={() => onClose()}
               >
-                <item.icon
-                  className="mr-3 h-5 w-5 flex-shrink-0"
-                  aria-hidden="true"
-                />
+                <item.icon className="mr-3 h-5 w-5 flex-shrink-0" aria-hidden="true" />
                 {item.name}
               </NavLink>
             ))}
           </nav>
 
           {/* User menu */}
-          <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex-shrink-0 border-t border-gray-200 p-4 dark:border-gray-700">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 bg-primary-600 dark:bg-primary-500 rounded-full flex items-center justify-center">
+                <div className="bg-primary-600 dark:bg-primary-500 flex h-8 w-8 items-center justify-center rounded-full">
                   <span className="text-sm font-medium text-white">
                     {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                   </span>
                 </div>
               </div>
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{user?.name || 'Admin'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{user?.roles?.[0] || 'Administrator'}</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {user?.name || 'Admin'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {user?.roles?.[0] || 'Administrator'}
+                </p>
               </div>
               <button
                 onClick={handleLogout}
-                className="ml-3 flex-shrink-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                className="ml-3 flex-shrink-0 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                 title="Logout"
                 aria-label="Logout"
               >

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { 
+import {
   Eye,
   Keyboard,
   CheckCircle,
@@ -13,7 +13,7 @@ import {
   Type,
   Contrast,
   Focus,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,7 +70,7 @@ const MOCK_AUDIT_RESULTS: AccessibilityAuditResult[] = [
     status: 'pass',
     impact: 'high',
     suggestion: 'Continue providing meaningful alt text for all images',
-    wcagCriteria: '1.1.1 Non-text Content'
+    wcagCriteria: '1.1.1 Non-text Content',
   },
   {
     category: 'Forms',
@@ -80,7 +80,7 @@ const MOCK_AUDIT_RESULTS: AccessibilityAuditResult[] = [
     impact: 'medium',
     element: 'input[type="search"]',
     suggestion: 'Add aria-label or label element for search inputs',
-    wcagCriteria: '1.3.1 Info and Relationships'
+    wcagCriteria: '1.3.1 Info and Relationships',
   },
   {
     category: 'Navigation',
@@ -89,7 +89,7 @@ const MOCK_AUDIT_RESULTS: AccessibilityAuditResult[] = [
     status: 'fail',
     impact: 'medium',
     suggestion: 'Add skip link to bypass navigation for keyboard users',
-    wcagCriteria: '2.4.1 Bypass Blocks'
+    wcagCriteria: '2.4.1 Bypass Blocks',
   },
   {
     category: 'Color',
@@ -99,7 +99,7 @@ const MOCK_AUDIT_RESULTS: AccessibilityAuditResult[] = [
     impact: 'high',
     element: '.text-muted-foreground',
     suggestion: 'Increase contrast ratio for muted text elements',
-    wcagCriteria: '1.4.3 Contrast (Minimum)'
+    wcagCriteria: '1.4.3 Contrast (Minimum)',
   },
   {
     category: 'Interactive',
@@ -108,7 +108,7 @@ const MOCK_AUDIT_RESULTS: AccessibilityAuditResult[] = [
     status: 'pass',
     impact: 'high',
     suggestion: 'Continue maintaining clear focus indicators',
-    wcagCriteria: '2.4.7 Focus Visible'
+    wcagCriteria: '2.4.7 Focus Visible',
   },
   {
     category: 'Structure',
@@ -117,7 +117,7 @@ const MOCK_AUDIT_RESULTS: AccessibilityAuditResult[] = [
     status: 'pass',
     impact: 'medium',
     suggestion: 'Maintain proper heading structure',
-    wcagCriteria: '1.3.1 Info and Relationships'
+    wcagCriteria: '1.3.1 Info and Relationships',
   },
   {
     category: 'Interactive',
@@ -127,7 +127,7 @@ const MOCK_AUDIT_RESULTS: AccessibilityAuditResult[] = [
     impact: 'medium',
     element: 'button[aria-label=""]',
     suggestion: 'Provide descriptive aria-labels for icon-only buttons',
-    wcagCriteria: '4.1.2 Name, Role, Value'
+    wcagCriteria: '4.1.2 Name, Role, Value',
   },
   {
     category: 'Media',
@@ -136,8 +136,8 @@ const MOCK_AUDIT_RESULTS: AccessibilityAuditResult[] = [
     status: 'pass',
     impact: 'critical',
     suggestion: 'Continue providing captions for video content',
-    wcagCriteria: '1.2.2 Captions (Prerecorded)'
-  }
+    wcagCriteria: '1.2.2 Captions (Prerecorded)',
+  },
 ];
 
 const MOCK_CONTRAST_RESULTS: ColorContrastResult[] = [
@@ -147,7 +147,7 @@ const MOCK_CONTRAST_RESULTS: ColorContrastResult[] = [
     ratio: 21,
     aaPass: true,
     aaaPass: true,
-    element: 'body text'
+    element: 'body text',
   },
   {
     foreground: '#6b7280',
@@ -155,7 +155,7 @@ const MOCK_CONTRAST_RESULTS: ColorContrastResult[] = [
     ratio: 4.5,
     aaPass: true,
     aaaPass: false,
-    element: '.text-muted-foreground'
+    element: '.text-muted-foreground',
   },
   {
     foreground: '#3b82f6',
@@ -163,7 +163,7 @@ const MOCK_CONTRAST_RESULTS: ColorContrastResult[] = [
     ratio: 3.1,
     aaPass: false,
     aaaPass: false,
-    element: 'button primary'
+    element: 'button primary',
   },
   {
     foreground: '#ffffff',
@@ -171,8 +171,8 @@ const MOCK_CONTRAST_RESULTS: ColorContrastResult[] = [
     ratio: 6.8,
     aaPass: true,
     aaaPass: true,
-    element: 'button primary text'
-  }
+    element: 'button primary text',
+  },
 ];
 
 const MOCK_KEYBOARD_TESTS: KeyboardNavigationTest[] = [
@@ -181,36 +181,36 @@ const MOCK_KEYBOARD_TESTS: KeyboardNavigationTest[] = [
     accessible: true,
     tabIndex: 0,
     hasVisibleFocus: true,
-    description: 'Can navigate through all menu items with Tab/Arrow keys'
+    description: 'Can navigate through all menu items with Tab/Arrow keys',
   },
   {
     element: 'Search Input',
     accessible: true,
     tabIndex: 0,
     hasVisibleFocus: true,
-    description: 'Focus visible and searchable via keyboard'
+    description: 'Focus visible and searchable via keyboard',
   },
   {
     element: 'Modal Dialogs',
     accessible: false,
     tabIndex: -1,
     hasVisibleFocus: false,
-    description: 'Focus not properly trapped within modal'
+    description: 'Focus not properly trapped within modal',
   },
   {
     element: 'Data Tables',
     accessible: true,
     tabIndex: 0,
     hasVisibleFocus: true,
-    description: 'Table navigation works with arrow keys'
+    description: 'Table navigation works with arrow keys',
   },
   {
     element: 'Form Controls',
     accessible: true,
     tabIndex: 0,
     hasVisibleFocus: true,
-    description: 'All form inputs accessible via keyboard'
-  }
+    description: 'All form inputs accessible via keyboard',
+  },
 ];
 
 export default function AccessibilityAuditDashboard() {
@@ -223,7 +223,7 @@ export default function AccessibilityAuditDashboard() {
     reducedMotion: false,
     screenReaderOptimized: false,
     keyboardNavigation: true,
-    focusIndicators: true
+    focusIndicators: true,
   });
   const [overallScore, setOverallScore] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -233,16 +233,16 @@ export default function AccessibilityAuditDashboard() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      
+
       // Simulate audit process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       setAuditResults(MOCK_AUDIT_RESULTS);
       setContrastResults(MOCK_CONTRAST_RESULTS);
       setKeyboardTests(MOCK_KEYBOARD_TESTS);
 
       // Calculate overall score
-      const passCount = MOCK_AUDIT_RESULTS.filter(r => r.status === 'pass').length;
+      const passCount = MOCK_AUDIT_RESULTS.filter((r) => r.status === 'pass').length;
       const totalCount = MOCK_AUDIT_RESULTS.length;
       setOverallScore(Math.round((passCount / totalCount) * 100));
 
@@ -255,20 +255,20 @@ export default function AccessibilityAuditDashboard() {
   const runFullAudit = async () => {
     setIsAuditing(true);
     // Simulate audit process
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsAuditing(false);
   };
 
   const updateAccessibilitySetting = (setting: keyof AccessibilitySettings, value: boolean) => {
-    setAccessibilitySettings(prev => ({
+    setAccessibilitySettings((prev) => ({
       ...prev,
-      [setting]: value
+      [setting]: value,
     }));
 
     // Apply accessibility settings to document
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
-      
+
       switch (setting) {
         case 'highContrast':
           root.classList.toggle('high-contrast', value);
@@ -289,11 +289,11 @@ export default function AccessibilityAuditDashboard() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pass':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
       case 'fail':
-        return <XCircle className="w-4 h-4 text-red-600" />;
+        return <XCircle className="h-4 w-4 text-red-600" />;
       default:
         return null;
     }
@@ -322,9 +322,9 @@ export default function AccessibilityAuditDashboard() {
 
   if (loading && !isAuditing) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <Eye className="w-8 h-8 animate-pulse mx-auto mb-4 text-blue-600" />
+          <Eye className="mx-auto mb-4 h-8 w-8 animate-pulse text-blue-600" />
           <p className="text-muted-foreground">Loading accessibility audit...</p>
         </div>
       </div>
@@ -332,34 +332,34 @@ export default function AccessibilityAuditDashboard() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg text-white">
-                <Eye className="w-6 h-6" />
+              <div className="rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 p-2 text-white">
+                <Eye className="h-6 w-6" />
               </div>
               <div>
                 <CardTitle className="flex items-center gap-2">
                   Accessibility Audit Dashboard
-                  <Badge variant="outline" className="text-blue-600 border-blue-600">
+                  <Badge variant="outline" className="border-blue-600 text-blue-600">
                     WCAG 2.1 AA
                   </Badge>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Comprehensive accessibility compliance testing and remediation tools
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={runFullAudit} disabled={isAuditing}>
-                <RefreshCw className={`w-4 h-4 mr-2 ${isAuditing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`mr-2 h-4 w-4 ${isAuditing ? 'animate-spin' : ''}`} />
                 {isAuditing ? 'Auditing...' : 'Run Audit'}
               </Button>
               <Button size="sm">
-                <Settings className="w-4 h-4 mr-2" />
+                <Settings className="mr-2 h-4 w-4" />
                 Configure
               </Button>
             </div>
@@ -368,14 +368,14 @@ export default function AccessibilityAuditDashboard() {
       </Card>
 
       {/* Overall Score */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
               <div className={`text-3xl font-bold ${getScoreColor(overallScore)}`}>
                 {overallScore}%
               </div>
-              <p className="text-sm text-muted-foreground">Overall Score</p>
+              <p className="text-muted-foreground text-sm">Overall Score</p>
               <Progress value={overallScore} className="mt-2 h-2" />
             </div>
           </CardContent>
@@ -385,12 +385,12 @@ export default function AccessibilityAuditDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Passed Tests</p>
+                <p className="text-muted-foreground text-sm">Passed Tests</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {auditResults.filter(r => r.status === 'pass').length}
+                  {auditResults.filter((r) => r.status === 'pass').length}
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -399,12 +399,12 @@ export default function AccessibilityAuditDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Warnings</p>
+                <p className="text-muted-foreground text-sm">Warnings</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {auditResults.filter(r => r.status === 'warning').length}
+                  {auditResults.filter((r) => r.status === 'warning').length}
                 </p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-yellow-600" />
+              <AlertTriangle className="h-8 w-8 text-yellow-600" />
             </div>
           </CardContent>
         </Card>
@@ -413,12 +413,12 @@ export default function AccessibilityAuditDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Failed Tests</p>
+                <p className="text-muted-foreground text-sm">Failed Tests</p>
                 <p className="text-2xl font-bold text-red-600">
-                  {auditResults.filter(r => r.status === 'fail').length}
+                  {auditResults.filter((r) => r.status === 'fail').length}
                 </p>
               </div>
-              <XCircle className="w-8 h-8 text-red-600" />
+              <XCircle className="h-8 w-8 text-red-600" />
             </div>
           </CardContent>
         </Card>
@@ -440,7 +440,7 @@ export default function AccessibilityAuditDashboard() {
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="mb-2 flex items-center gap-3">
                         {getStatusIcon(result.status)}
                         <h4 className="font-medium">{result.rule}</h4>
                         <Badge className={getImpactColor(result.impact)}>
@@ -448,23 +448,25 @@ export default function AccessibilityAuditDashboard() {
                         </Badge>
                         <Badge variant="outline">{result.category}</Badge>
                       </div>
-                      
-                      <p className="text-sm text-muted-foreground mb-2">{result.description}</p>
-                      
+
+                      <p className="text-muted-foreground mb-2 text-sm">{result.description}</p>
+
                       {result.element && (
                         <div className="mb-2">
-                          <span className="text-xs text-muted-foreground">Element: </span>
-                          <code className="text-xs bg-muted px-1 py-0.5 rounded">{result.element}</code>
+                          <span className="text-muted-foreground text-xs">Element: </span>
+                          <code className="bg-muted rounded px-1 py-0.5 text-xs">
+                            {result.element}
+                          </code>
                         </div>
                       )}
-                      
-                      <p className="text-sm mb-2">{result.suggestion}</p>
-                      
-                      <div className="text-xs text-muted-foreground">
+
+                      <p className="mb-2 text-sm">{result.suggestion}</p>
+
+                      <div className="text-muted-foreground text-xs">
                         WCAG Criteria: {result.wcagCriteria}
                       </div>
                     </div>
-                    
+
                     <Button variant="outline" size="sm">
                       Fix Issue
                     </Button>
@@ -482,19 +484,19 @@ export default function AccessibilityAuditDashboard() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div 
-                          className="w-6 h-6 rounded border bg-gray-300"
+                      <div className="mb-2 flex items-center gap-3">
+                        <div
+                          className="h-6 w-6 rounded border bg-gray-300"
                           aria-label={`Foreground color: ${result.foreground}`}
                         />
                         <span className="text-sm">on</span>
-                        <div 
-                          className="w-6 h-6 rounded border bg-white"
+                        <div
+                          className="h-6 w-6 rounded border bg-white"
                           aria-label={`Background color: ${result.background}`}
                         />
                         <span className="font-medium">{result.element}</span>
                       </div>
-                      
+
                       <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
                           <span className="text-muted-foreground">Ratio: </span>
@@ -514,7 +516,7 @@ export default function AccessibilityAuditDashboard() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {!result.aaPass && (
                       <Button variant="outline" size="sm">
                         Improve Contrast
@@ -534,26 +536,26 @@ export default function AccessibilityAuditDashboard() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="mb-2 flex items-center gap-3">
                         {test.accessible ? (
-                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <CheckCircle className="h-4 w-4 text-green-600" />
                         ) : (
-                          <XCircle className="w-4 h-4 text-red-600" />
+                          <XCircle className="h-4 w-4 text-red-600" />
                         )}
                         <h4 className="font-medium">{test.element}</h4>
                         <Badge variant={test.accessible ? 'default' : 'destructive'}>
                           {test.accessible ? 'Accessible' : 'Needs Attention'}
                         </Badge>
                       </div>
-                      
-                      <p className="text-sm text-muted-foreground mb-2">{test.description}</p>
-                      
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+
+                      <p className="text-muted-foreground mb-2 text-sm">{test.description}</p>
+
+                      <div className="text-muted-foreground flex items-center gap-4 text-xs">
                         <span>Tab Index: {test.tabIndex}</span>
                         <span>Visible Focus: {test.hasVisibleFocus ? 'Yes' : 'No'}</span>
                       </div>
                     </div>
-                    
+
                     {!test.accessible && (
                       <Button variant="outline" size="sm">
                         Fix Navigation
@@ -570,52 +572,64 @@ export default function AccessibilityAuditDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Accessibility Preferences</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Configure accessibility features for enhanced user experience
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Contrast className="w-5 h-5" />
+                      <Contrast className="h-5 w-5" />
                       <div>
                         <p className="font-medium">High Contrast Mode</p>
-                        <p className="text-sm text-muted-foreground">Enhanced color contrast for better visibility</p>
+                        <p className="text-muted-foreground text-sm">
+                          Enhanced color contrast for better visibility
+                        </p>
                       </div>
                     </div>
                     <Switch
                       checked={accessibilitySettings.highContrast}
-                      onCheckedChange={(checked) => updateAccessibilitySetting('highContrast', checked)}
+                      onCheckedChange={(checked) =>
+                        updateAccessibilitySetting('highContrast', checked)
+                      }
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Type className="w-5 h-5" />
+                      <Type className="h-5 w-5" />
                       <div>
                         <p className="font-medium">Large Text</p>
-                        <p className="text-sm text-muted-foreground">Increase font size for better readability</p>
+                        <p className="text-muted-foreground text-sm">
+                          Increase font size for better readability
+                        </p>
                       </div>
                     </div>
                     <Switch
                       checked={accessibilitySettings.largeText}
-                      onCheckedChange={(checked) => updateAccessibilitySetting('largeText', checked)}
+                      onCheckedChange={(checked) =>
+                        updateAccessibilitySetting('largeText', checked)
+                      }
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Monitor className="w-5 h-5" />
+                      <Monitor className="h-5 w-5" />
                       <div>
                         <p className="font-medium">Reduced Motion</p>
-                        <p className="text-sm text-muted-foreground">Minimize animations and transitions</p>
+                        <p className="text-muted-foreground text-sm">
+                          Minimize animations and transitions
+                        </p>
                       </div>
                     </div>
                     <Switch
                       checked={accessibilitySettings.reducedMotion}
-                      onCheckedChange={(checked) => updateAccessibilitySetting('reducedMotion', checked)}
+                      onCheckedChange={(checked) =>
+                        updateAccessibilitySetting('reducedMotion', checked)
+                      }
                     />
                   </div>
                 </div>
@@ -623,43 +637,55 @@ export default function AccessibilityAuditDashboard() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Volume2 className="w-5 h-5" />
+                      <Volume2 className="h-5 w-5" />
                       <div>
                         <p className="font-medium">Screen Reader Optimized</p>
-                        <p className="text-sm text-muted-foreground">Enhanced compatibility with screen readers</p>
+                        <p className="text-muted-foreground text-sm">
+                          Enhanced compatibility with screen readers
+                        </p>
                       </div>
                     </div>
                     <Switch
                       checked={accessibilitySettings.screenReaderOptimized}
-                      onCheckedChange={(checked) => updateAccessibilitySetting('screenReaderOptimized', checked)}
+                      onCheckedChange={(checked) =>
+                        updateAccessibilitySetting('screenReaderOptimized', checked)
+                      }
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Keyboard className="w-5 h-5" />
+                      <Keyboard className="h-5 w-5" />
                       <div>
                         <p className="font-medium">Enhanced Keyboard Navigation</p>
-                        <p className="text-sm text-muted-foreground">Improved keyboard shortcuts and navigation</p>
+                        <p className="text-muted-foreground text-sm">
+                          Improved keyboard shortcuts and navigation
+                        </p>
                       </div>
                     </div>
                     <Switch
                       checked={accessibilitySettings.keyboardNavigation}
-                      onCheckedChange={(checked) => updateAccessibilitySetting('keyboardNavigation', checked)}
+                      onCheckedChange={(checked) =>
+                        updateAccessibilitySetting('keyboardNavigation', checked)
+                      }
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Focus className="w-5 h-5" />
+                      <Focus className="h-5 w-5" />
                       <div>
                         <p className="font-medium">Enhanced Focus Indicators</p>
-                        <p className="text-sm text-muted-foreground">More visible focus outlines and indicators</p>
+                        <p className="text-muted-foreground text-sm">
+                          More visible focus outlines and indicators
+                        </p>
                       </div>
                     </div>
                     <Switch
                       checked={accessibilitySettings.focusIndicators}
-                      onCheckedChange={(checked) => updateAccessibilitySetting('focusIndicators', checked)}
+                      onCheckedChange={(checked) =>
+                        updateAccessibilitySetting('focusIndicators', checked)
+                      }
                     />
                   </div>
                 </div>

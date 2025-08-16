@@ -28,7 +28,13 @@ export interface NotificationSubscription {
 }
 
 export interface NotificationEvent {
-  type: 'incident_created' | 'incident_updated' | 'incident_resolved' | 'monitor_down' | 'monitor_up' | 'maintenance_scheduled';
+  type:
+    | 'incident_created'
+    | 'incident_updated'
+    | 'incident_resolved'
+    | 'monitor_down'
+    | 'monitor_up'
+    | 'maintenance_scheduled';
   monitor_id?: string;
   incident_id?: string;
   tenant_id: string;
@@ -56,10 +62,10 @@ class NotificationService {
           secure: process.env.SMTP_PORT === '465',
           auth: {
             user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-          }
+            pass: process.env.SMTP_PASS,
+          },
         });
-        
+
         logger.info('Email transporter initialized');
       } else {
         logger.warn('Email configuration not found, email notifications disabled');
@@ -88,12 +94,14 @@ class NotificationService {
   async sendNotification(event: NotificationEvent): Promise<void> {
     try {
       const subscriptions = await this.getRelevantSubscriptions(event);
-      
+
       for (const subscription of subscriptions) {
         await this.sendToSubscription(subscription, event);
       }
-      
-      logger.info(`Notifications sent for event: ${event.type} to ${subscriptions.length} subscribers`);
+
+      logger.info(
+        `Notifications sent for event: ${event.type} to ${subscriptions.length} subscribers`,
+      );
     } catch (error: any) {
       logger.error(`Failed to send notifications: ${error.message} for event: ${event.type}`);
     }
@@ -102,7 +110,9 @@ class NotificationService {
   /**
    * Get subscriptions that should receive this notification
    */
-  private async getRelevantSubscriptions(event: NotificationEvent): Promise<NotificationSubscription[]> {
+  private async getRelevantSubscriptions(
+    event: NotificationEvent,
+  ): Promise<NotificationSubscription[]> {
     try {
       const { default: db } = await import('../db.js');
       const conditions: string[] = ['tenant_id = $1', 'verified = true'];
@@ -137,7 +147,7 @@ class NotificationService {
         monitors: row.monitors || [],
         incident_types: row.incident_types || [],
         maintenance_notifications: row.maintenance_notifications || false,
-        verified: row.verified
+        verified: row.verified,
       }));
     } catch (error: any) {
       logger.warn(`Failed to load subscriptions: ${error.message}`);
@@ -148,7 +158,10 @@ class NotificationService {
   /**
    * Send notification to a specific subscription
    */
-  private async sendToSubscription(subscription: NotificationSubscription, event: NotificationEvent): Promise<void> {
+  private async sendToSubscription(
+    subscription: NotificationSubscription,
+    event: NotificationEvent,
+  ): Promise<void> {
     for (const channel of subscription.channels) {
       if (!channel.enabled) continue;
 
@@ -171,7 +184,9 @@ class NotificationService {
             break;
         }
       } catch (error: any) {
-        logger.error(`Failed to send notification via channel: ${channel.type} error: ${error.message}`);
+        logger.error(
+          `Failed to send notification via channel: ${channel.type} error: ${error.message}`,
+        );
       }
     }
   }
@@ -179,19 +194,23 @@ class NotificationService {
   /**
    * Send email notification
    */
-  private async sendEmail(email: string, event: NotificationEvent, channel: NotificationChannel): Promise<void> {
+  private async sendEmail(
+    email: string,
+    event: NotificationEvent,
+    channel: NotificationChannel,
+  ): Promise<void> {
     if (!this.emailTransporter) {
       throw new Error('Email transporter not initialized');
     }
 
     const template = this.getEmailTemplate(event);
-    
+
     await this.emailTransporter.sendMail({
       from: process.env.SMTP_FROM || 'Nova Sentinel <notifications@nova.local>',
       to: email,
       subject: template.subject,
       html: template.html,
-      text: template.text
+      text: template.text,
     });
 
     logger.info(`Email notification sent to: ${email} for event: ${event.type}`);
@@ -200,17 +219,21 @@ class NotificationService {
   /**
    * Send SMS notification
    */
-  private async sendSMS(phone: string, event: NotificationEvent, channel: NotificationChannel): Promise<void> {
+  private async sendSMS(
+    phone: string,
+    event: NotificationEvent,
+    channel: NotificationChannel,
+  ): Promise<void> {
     if (!this.twilioClient) {
       throw new Error('Twilio client not initialized');
     }
 
     const message = this.getSMSMessage(event);
-    
+
     await this.twilioClient.messages.create({
       body: message,
       from: process.env.TWILIO_PHONE_NUMBER,
-      to: phone
+      to: phone,
     });
 
     logger.info(`SMS notification sent to: ${phone} for event: ${event.type}`);
@@ -219,19 +242,23 @@ class NotificationService {
   /**
    * Send webhook notification
    */
-  private async sendWebhook(url: string, event: NotificationEvent, channel: NotificationChannel): Promise<void> {
+  private async sendWebhook(
+    url: string,
+    event: NotificationEvent,
+    channel: NotificationChannel,
+  ): Promise<void> {
     const payload = {
       event_type: event.type,
       timestamp: new Date().toISOString(),
       severity: event.severity,
       title: event.title,
       message: event.message,
-      data: event.data
+      data: event.data,
     };
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'User-Agent': 'Nova-Sentinel/1.0'
+      'User-Agent': 'Nova-Sentinel/1.0',
     };
 
     // Add authentication if configured
@@ -241,7 +268,7 @@ class NotificationService {
 
     await axios.post(url, payload, {
       headers,
-      timeout: 10000
+      timeout: 10000,
     });
 
     logger.info(`Webhook notification sent to: ${url} for event: ${event.type}`);
@@ -250,29 +277,35 @@ class NotificationService {
   /**
    * Send Slack notification
    */
-  private async sendSlack(webhookUrl: string, event: NotificationEvent, channel: NotificationChannel): Promise<void> {
+  private async sendSlack(
+    webhookUrl: string,
+    event: NotificationEvent,
+    channel: NotificationChannel,
+  ): Promise<void> {
     const color = this.getSeverityColor(event.severity);
-    
+
     const payload = {
-      attachments: [{
-        color,
-        title: event.title,
-        text: event.message,
-        fields: [
-          {
-            title: 'Severity',
-            value: event.severity.toUpperCase(),
-            short: true
-          },
-          {
-            title: 'Time',
-            value: new Date().toLocaleString(),
-            short: true
-          }
-        ],
-        footer: 'Nova Sentinel',
-        footer_icon: 'https://nova.local/icon.png'
-      }]
+      attachments: [
+        {
+          color,
+          title: event.title,
+          text: event.message,
+          fields: [
+            {
+              title: 'Severity',
+              value: event.severity.toUpperCase(),
+              short: true,
+            },
+            {
+              title: 'Time',
+              value: new Date().toLocaleString(),
+              short: true,
+            },
+          ],
+          footer: 'Nova Sentinel',
+          footer_icon: 'https://nova.local/icon.png',
+        },
+      ],
     };
 
     await axios.post(webhookUrl, payload);
@@ -282,31 +315,37 @@ class NotificationService {
   /**
    * Send Discord notification
    */
-  private async sendDiscord(webhookUrl: string, event: NotificationEvent, channel: NotificationChannel): Promise<void> {
+  private async sendDiscord(
+    webhookUrl: string,
+    event: NotificationEvent,
+    channel: NotificationChannel,
+  ): Promise<void> {
     const color = this.getSeverityColorHex(event.severity);
-    
+
     const payload = {
-      embeds: [{
-        title: event.title,
-        description: event.message,
-        color: parseInt(color.replace('#', ''), 16),
-        fields: [
-          {
-            name: 'Severity',
-            value: event.severity.toUpperCase(),
-            inline: true
+      embeds: [
+        {
+          title: event.title,
+          description: event.message,
+          color: parseInt(color.replace('#', ''), 16),
+          fields: [
+            {
+              name: 'Severity',
+              value: event.severity.toUpperCase(),
+              inline: true,
+            },
+            {
+              name: 'Time',
+              value: new Date().toLocaleString(),
+              inline: true,
+            },
+          ],
+          footer: {
+            text: 'Nova Sentinel',
           },
-          {
-            name: 'Time',
-            value: new Date().toLocaleString(),
-            inline: true
-          }
-        ],
-        footer: {
-          text: 'Nova Sentinel'
+          timestamp: new Date().toISOString(),
         },
-        timestamp: new Date().toISOString()
-      }]
+      ],
     };
 
     await axios.post(webhookUrl, payload);
@@ -316,9 +355,13 @@ class NotificationService {
   /**
    * Generate email template based on event
    */
-  private getEmailTemplate(event: NotificationEvent): { subject: string; html: string; text: string } {
+  private getEmailTemplate(event: NotificationEvent): {
+    subject: string;
+    html: string;
+    text: string;
+  } {
     const subject = `[${event.severity.toUpperCase()}] ${event.title}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -356,7 +399,7 @@ class NotificationService {
         </body>
       </html>
     `;
-    
+
     const text = `
 ${subject}
 
@@ -387,7 +430,7 @@ This notification was sent by Nova Sentinel.
       critical: 'danger',
       high: 'warning',
       medium: 'warning',
-      low: 'good'
+      low: 'good',
     };
     return colors[severity] || 'good';
   }
@@ -398,9 +441,9 @@ This notification was sent by Nova Sentinel.
   private getSeverityColorHex(severity: string): string {
     const colors = {
       critical: '#dc3545',
-      high: '#fd7e14', 
+      high: '#fd7e14',
       medium: '#ffc107',
-      low: '#20c997'
+      low: '#20c997',
     };
     return colors[severity] || '#20c997';
   }
@@ -423,8 +466,9 @@ This notification was sent by Nova Sentinel.
       tenant_id: 'test',
       severity: 'low',
       title: 'Test Notification',
-      message: 'This is a test notification from Nova Sentinel to verify your notification channel is working correctly.',
-      data: {}
+      message:
+        'This is a test notification from Nova Sentinel to verify your notification channel is working correctly.',
+      data: {},
     };
 
     try {
@@ -461,7 +505,10 @@ export const notificationService = new NotificationService();
 /**
  * Send incident notification
  */
-export async function sendIncidentNotification(incident: any, type: 'created' | 'updated' | 'resolved'): Promise<void> {
+export async function sendIncidentNotification(
+  incident: any,
+  type: 'created' | 'updated' | 'resolved',
+): Promise<void> {
   const event: NotificationEvent = {
     type: `incident_${type}` as any,
     incident_id: incident.id,
@@ -475,8 +522,8 @@ export async function sendIncidentNotification(incident: any, type: 'created' | 
       monitor_name: incident.monitor_name,
       status: incident.status,
       started_at: incident.started_at,
-      resolved_at: incident.resolved_at
-    }
+      resolved_at: incident.resolved_at,
+    },
   };
 
   await notificationService.sendNotification(event);
@@ -492,16 +539,17 @@ export async function sendMonitorNotification(monitor: any, status: 'up' | 'down
     tenant_id: monitor.tenant_id,
     severity: status === 'down' ? 'high' : 'low',
     title: `Monitor ${status === 'down' ? 'Down' : 'Recovered'}: ${monitor.name}`,
-    message: status === 'down' 
-      ? `${monitor.name} is currently unreachable and may be experiencing issues.`
-      : `${monitor.name} has recovered and is now responding normally.`,
+    message:
+      status === 'down'
+        ? `${monitor.name} is currently unreachable and may be experiencing issues.`
+        : `${monitor.name} has recovered and is now responding normally.`,
     data: {
       monitor_id: monitor.id,
       monitor_name: monitor.name,
       url: monitor.url,
       type: monitor.type,
-      status: status
-    }
+      status: status,
+    },
   };
 
   await notificationService.sendNotification(event);

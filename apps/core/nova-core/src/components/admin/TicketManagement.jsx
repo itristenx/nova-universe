@@ -4,14 +4,28 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, CardHeader, CardBody, CardTitle, CardText, CardActions,
-  Button, PrimaryButton, OutlineButton, GhostButton,
-  Input, Label,
-  Modal, ModalHeader, ModalBody, ModalFooter,
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardTitle,
+  CardText,
+  CardActions,
+  Button,
+  PrimaryButton,
+  OutlineButton,
+  GhostButton,
+  Input,
+  Label,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
   Toast,
-  Progress, Spinner, Skeleton,
-  useTheme
+  Progress,
+  Spinner,
+  Skeleton,
+  useTheme,
 } from '../../packages/design-system';
 
 // Import mock data
@@ -286,17 +300,17 @@ export default function TicketManagement() {
   const [filters, setFilters] = useState({
     status: 'all',
     urgency: 'all',
-    search: ''
+    search: '',
   });
 
   // Load tickets
   useEffect(() => {
     const loadTickets = async () => {
       setLoading(true);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       setTickets(mockLogs);
       setLoading(false);
     };
@@ -305,21 +319,27 @@ export default function TicketManagement() {
   }, []);
 
   // Filter tickets
-  const filteredTickets = tickets.filter(ticket => {
-    if (filters.status !== 'all' && ticket.status.toLowerCase().replace(' ', '-') !== filters.status) {
+  const filteredTickets = tickets.filter((ticket) => {
+    if (
+      filters.status !== 'all' &&
+      ticket.status.toLowerCase().replace(' ', '-') !== filters.status
+    ) {
       return false;
     }
-    
+
     if (filters.urgency !== 'all' && ticket.urgency.toLowerCase() !== filters.urgency) {
       return false;
     }
-    
-    if (filters.search && !ticket.title.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !ticket.name.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !ticket.ticketId.toLowerCase().includes(filters.search.toLowerCase())) {
+
+    if (
+      filters.search &&
+      !ticket.title.toLowerCase().includes(filters.search.toLowerCase()) &&
+      !ticket.name.toLowerCase().includes(filters.search.toLowerCase()) &&
+      !ticket.ticketId.toLowerCase().includes(filters.search.toLowerCase())
+    ) {
       return false;
     }
-    
+
     return true;
   });
 
@@ -329,28 +349,38 @@ export default function TicketManagement() {
   };
 
   const handleStatusUpdate = (ticketId, newStatus) => {
-    setTickets(prev => prev.map(ticket => 
-      ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
-    ));
+    setTickets((prev) =>
+      prev.map((ticket) => (ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket)),
+    );
   };
 
   const getPriorityColor = (urgency) => {
     switch (urgency.toLowerCase()) {
-      case 'critical': return 'critical';
-      case 'high': return 'high';
-      case 'medium': return 'medium';
-      case 'low': return 'low';
-      default: return 'medium';
+      case 'critical':
+        return 'critical';
+      case 'high':
+        return 'high';
+      case 'medium':
+        return 'medium';
+      case 'low':
+        return 'low';
+      default:
+        return 'medium';
     }
   };
 
   const getStatusColor = (status) => {
     switch (status.toLowerCase().replace(' ', '-')) {
-      case 'open': return 'open';
-      case 'in-progress': return 'in-progress';
-      case 'resolved': return 'resolved';
-      case 'closed': return 'closed';
-      default: return 'open';
+      case 'open':
+        return 'open';
+      case 'in-progress':
+        return 'in-progress';
+      case 'resolved':
+        return 'resolved';
+      case 'closed':
+        return 'closed';
+      default:
+        return 'open';
     }
   };
 
@@ -359,7 +389,7 @@ export default function TicketManagement() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -370,7 +400,7 @@ export default function TicketManagement() {
           <Skeleton variant="title" width="300px" />
           <Skeleton variant="button" />
         </div>
-        
+
         <div className="loading-grid">
           {[...Array(6)].map((_, i) => (
             <Card key={i}>
@@ -401,21 +431,21 @@ export default function TicketManagement() {
           <Input
             placeholder="Search tickets..."
             value={filters.search}
-            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
           />
         </div>
-        
+
         <div className="filter-group">
           <label className="filter-label">Status</label>
-          <select 
+          <select
             value={filters.status}
-            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
             style={{
               padding: 'var(--space-2) var(--space-3)',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-muted)40',
               backgroundColor: 'var(--color-background)',
-              color: 'var(--color-content)'
+              color: 'var(--color-content)',
             }}
           >
             <option value="all">All Status</option>
@@ -425,18 +455,18 @@ export default function TicketManagement() {
             <option value="closed">Closed</option>
           </select>
         </div>
-        
+
         <div className="filter-group">
           <label className="filter-label">Priority</label>
-          <select 
+          <select
             value={filters.urgency}
-            onChange={(e) => setFilters(prev => ({ ...prev, urgency: e.target.value }))}
+            onChange={(e) => setFilters((prev) => ({ ...prev, urgency: e.target.value }))}
             style={{
               padding: 'var(--space-2) var(--space-3)',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-muted)40',
               backgroundColor: 'var(--color-background)',
-              color: 'var(--color-content)'
+              color: 'var(--color-content)',
             }}
           >
             <option value="all">All Priority</option>
@@ -456,7 +486,7 @@ export default function TicketManagement() {
               <div className="empty-state-icon">🎫</div>
               <h3 className="empty-state-title">No tickets found</h3>
               <p className="empty-state-description">
-                {filters.search || filters.status !== 'all' || filters.urgency !== 'all' 
+                {filters.search || filters.status !== 'all' || filters.urgency !== 'all'
                   ? 'Try adjusting your filters to see more tickets.'
                   : 'No tickets have been created yet.'}
               </p>
@@ -480,37 +510,35 @@ export default function TicketManagement() {
                     {ticket.status}
                   </div>
                 </div>
-                
+
                 <h3 className="ticket-title-text">{ticket.title}</h3>
-                
+
                 <div className="ticket-meta">
                   <div className="ticket-meta-item">
-                    <span className={`priority-indicator priority-indicator--${getPriorityColor(ticket.urgency)}`}></span>
+                    <span
+                      className={`priority-indicator priority-indicator--${getPriorityColor(ticket.urgency)}`}
+                    ></span>
                     {ticket.urgency}
                   </div>
-                  <div className="ticket-meta-item">
-                    👤 {ticket.name}
-                  </div>
-                  <div className="ticket-meta-item">
-                    🏢 {ticket.department}
-                  </div>
-                  <div className="ticket-meta-item">
-                    🕒 {formatTimestamp(ticket.timestamp)}
-                  </div>
+                  <div className="ticket-meta-item">👤 {ticket.name}</div>
+                  <div className="ticket-meta-item">🏢 {ticket.department}</div>
+                  <div className="ticket-meta-item">🕒 {formatTimestamp(ticket.timestamp)}</div>
                 </div>
-                
+
                 <div className="ticket-description">
                   {ticket.system} issue reported via {ticket.kioskId}
                 </div>
-                
+
                 {ticket.tags && (
                   <div className="ticket-tags">
                     {ticket.tags.map((tag, index) => (
-                      <span key={index} className="ticket-tag">#{tag}</span>
+                      <span key={index} className="ticket-tag">
+                        #{tag}
+                      </span>
                     ))}
                   </div>
                 )}
-                
+
                 <div className="ticket-actions">
                   <GhostButton
                     size="sm"
@@ -547,21 +575,19 @@ export default function TicketManagement() {
       )}
 
       {/* Ticket Detail Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        size="lg"
-      >
-        <ModalHeader onClose={() => setShowModal(false)}>
-          Ticket Details
-        </ModalHeader>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="lg">
+        <ModalHeader onClose={() => setShowModal(false)}>Ticket Details</ModalHeader>
         <ModalBody>
           {selectedTicket && (
             <div>
               <div style={{ marginBottom: 'var(--space-4)' }}>
-                <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                <div
+                  style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}
+                >
                   <span className="ticket-id">{selectedTicket.ticketId}</span>
-                  <span className={`ticket-status ticket-status--${getStatusColor(selectedTicket.status)}`}>
+                  <span
+                    className={`ticket-status ticket-status--${getStatusColor(selectedTicket.status)}`}
+                  >
                     {selectedTicket.status}
                   </span>
                 </div>
@@ -569,55 +595,82 @@ export default function TicketManagement() {
                   {selectedTicket.title}
                 </h3>
               </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: 'var(--space-4)',
+                  marginBottom: 'var(--space-6)',
+                }}
+              >
                 <div>
-                  <strong>Requester:</strong><br />
-                  {selectedTicket.name}<br />
+                  <strong>Requester:</strong>
+                  <br />
+                  {selectedTicket.name}
+                  <br />
                   {selectedTicket.email}
                 </div>
                 <div>
-                  <strong>Department:</strong><br />
+                  <strong>Department:</strong>
+                  <br />
                   {selectedTicket.department}
                 </div>
                 <div>
-                  <strong>Priority:</strong><br />
+                  <strong>Priority:</strong>
+                  <br />
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <span className={`priority-indicator priority-indicator--${getPriorityColor(selectedTicket.urgency)}`}></span>
+                    <span
+                      className={`priority-indicator priority-indicator--${getPriorityColor(selectedTicket.urgency)}`}
+                    ></span>
                     {selectedTicket.urgency}
                   </span>
                 </div>
                 <div>
-                  <strong>Created:</strong><br />
+                  <strong>Created:</strong>
+                  <br />
                   {formatTimestamp(selectedTicket.timestamp)}
                 </div>
               </div>
-              
+
               {selectedTicket.assignedTo && (
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                   <strong>Assigned to:</strong> {selectedTicket.assignedTo}
                 </div>
               )}
-              
+
               <div style={{ marginBottom: 'var(--space-4)' }}>
                 <strong>System:</strong> {selectedTicket.system}
               </div>
-              
+
               {selectedTicket.resolution && (
                 <div style={{ marginBottom: 'var(--space-4)' }}>
-                  <strong>Resolution:</strong><br />
-                  <div style={{ padding: 'var(--space-3)', backgroundColor: 'var(--color-success)10', borderRadius: 'var(--radius-md)', marginTop: 'var(--space-2)' }}>
+                  <strong>Resolution:</strong>
+                  <br />
+                  <div
+                    style={{
+                      padding: 'var(--space-3)',
+                      backgroundColor: 'var(--color-success)10',
+                      borderRadius: 'var(--radius-md)',
+                      marginTop: 'var(--space-2)',
+                    }}
+                  >
                     {selectedTicket.resolution}
                   </div>
                 </div>
               )}
-              
+
               {selectedTicket.tags && (
                 <div style={{ marginBottom: 'var(--space-4)' }}>
-                  <strong>Tags:</strong><br />
-                  <div style={{ display: 'flex', gap: 'var(--space-1)', marginTop: 'var(--space-2)' }}>
+                  <strong>Tags:</strong>
+                  <br />
+                  <div
+                    style={{ display: 'flex', gap: 'var(--space-1)', marginTop: 'var(--space-2)' }}
+                  >
                     {selectedTicket.tags.map((tag, index) => (
-                      <span key={index} className="ticket-tag">#{tag}</span>
+                      <span key={index} className="ticket-tag">
+                        #{tag}
+                      </span>
                     ))}
                   </div>
                 </div>

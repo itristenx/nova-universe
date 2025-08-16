@@ -11,8 +11,10 @@ export const ListItem: React.FC<ListItemProps> = ({ children, dense, divider, ..
     className={[
       props.className || 'list-item',
       dense ? 'list-item--dense' : '',
-      divider ? 'list-item--divider' : ''
-    ].filter(Boolean).join(' ')}
+      divider ? 'list-item--divider' : '',
+    ]
+      .filter(Boolean)
+      .join(' ')}
   >
     {children}
   </li>

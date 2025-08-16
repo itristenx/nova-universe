@@ -1,17 +1,21 @@
 // This is the updated Sequelize model for the User, with isDefault in camelCase
 
 module.exports = (sequelize, DataTypes) => {
-  const User = sequelize.define('User', {
-    // ... other fields ...
-    isDefault: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
+  const User = sequelize.define(
+    'User',
+    {
+      // ... other fields ...
+      isDefault: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      // ... other fields ...
     },
-    // ... other fields ...
-  }, {
-    // options
-  });
+    {
+      // options
+    },
+  );
 
   return User;
 };

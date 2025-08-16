@@ -19,10 +19,7 @@ export const Input: React.FC<InputProps> = ({
   return (
     <div className="space-y-1">
       {label && (
-        <label
-          htmlFor={inputId}
-          className="block text-sm font-medium input-label"
-        >
+        <label htmlFor={inputId} className="input-label block text-sm font-medium">
           {label}
         </label>
       )}
@@ -31,12 +28,8 @@ export const Input: React.FC<InputProps> = ({
         className={`input ${error ? 'border-red-500 focus-visible:ring-red-500' : ''} ${className}`}
         {...props}
       />
-      {error && (
-        <p className="text-sm input-error">{error}</p>
-      )}
-      {helperText && !error && (
-        <p className="text-sm input-helper">{helperText}</p>
-      )}
+      {error && <p className="input-error text-sm">{error}</p>}
+      {helperText && !error && <p className="input-helper text-sm">{helperText}</p>}
     </div>
   );
 };

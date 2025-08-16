@@ -9,7 +9,7 @@ import {
   ChartBarIcon,
   BellIcon,
   InformationCircleIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
 interface ServiceStatus {
@@ -59,14 +59,16 @@ interface ServiceStatusPageProps {
   className?: string;
 }
 
-const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({ 
-  tenantId,
-  className = '' 
-}) => {
+const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({ tenantId, className = '' }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState<'24h' | '7d' | '30d'>('24h');
 
   // Fetch status page data
-  const { data: statusData, isLoading, error, refetch } = useQuery({
+  const {
+    data: statusData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['status-page', tenantId],
     queryFn: async () => {
       const response = await fetch(`/api/v2/monitoring/status/${tenantId}`);
@@ -74,7 +76,7 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
       return response.json();
     },
     refetchInterval: 30000, // Refresh every 30 seconds
-    staleTime: 15000 // Consider data stale after 15 seconds
+    staleTime: 15000, // Consider data stale after 15 seconds
   });
 
   const config: StatusPageConfig = statusData?.config || {
@@ -82,7 +84,7 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
     description: 'Current status of our services',
     show_uptime_percentages: true,
     show_incident_history_days: 30,
-    show_maintenance_windows: true
+    show_maintenance_windows: true,
   };
 
   const services: ServiceStatus[] = statusData?.services || [];
@@ -98,7 +100,7 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
           color: 'text-green-600',
           bgColor: 'bg-green-50',
           borderColor: 'border-green-200',
-          icon: CheckCircleIcon
+          icon: CheckCircleIcon,
         };
       case 'degraded':
         return {
@@ -106,7 +108,7 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
           color: 'text-yellow-600',
           bgColor: 'bg-yellow-50',
           borderColor: 'border-yellow-200',
-          icon: ExclamationTriangleIcon
+          icon: ExclamationTriangleIcon,
         };
       case 'major_outage':
         return {
@@ -114,7 +116,7 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
           color: 'text-red-600',
           bgColor: 'bg-red-50',
           borderColor: 'border-red-200',
-          icon: ExclamationTriangleIcon
+          icon: ExclamationTriangleIcon,
         };
       case 'maintenance':
         return {
@@ -122,7 +124,7 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
           borderColor: 'border-blue-200',
-          icon: Cog6ToothIcon
+          icon: Cog6ToothIcon,
         };
       default:
         return {
@@ -130,7 +132,7 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
           color: 'text-gray-600',
           bgColor: 'bg-gray-50',
           borderColor: 'border-gray-200',
-          icon: InformationCircleIcon
+          icon: InformationCircleIcon,
         };
     }
   };
@@ -142,35 +144,35 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
           text: 'Operational',
           color: 'text-green-600',
           bgColor: 'bg-green-100',
-          icon: CheckCircleIcon
+          icon: CheckCircleIcon,
         };
       case 'degraded':
         return {
           text: 'Degraded',
           color: 'text-yellow-600',
           bgColor: 'bg-yellow-100',
-          icon: ExclamationTriangleIcon
+          icon: ExclamationTriangleIcon,
         };
       case 'major_outage':
         return {
           text: 'Outage',
           color: 'text-red-600',
           bgColor: 'bg-red-100',
-          icon: ExclamationTriangleIcon
+          icon: ExclamationTriangleIcon,
         };
       case 'maintenance':
         return {
           text: 'Maintenance',
           color: 'text-blue-600',
           bgColor: 'bg-blue-100',
-          icon: Cog6ToothIcon
+          icon: Cog6ToothIcon,
         };
       default:
         return {
           text: 'Unknown',
           color: 'text-gray-600',
           bgColor: 'bg-gray-100',
-          icon: ClockIcon
+          icon: ClockIcon,
         };
     }
   };
@@ -180,9 +182,17 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
       case 'critical':
         return { color: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-300' };
       case 'high':
-        return { color: 'text-orange-700', bgColor: 'bg-orange-100', borderColor: 'border-orange-300' };
+        return {
+          color: 'text-orange-700',
+          bgColor: 'bg-orange-100',
+          borderColor: 'border-orange-300',
+        };
       case 'medium':
-        return { color: 'text-yellow-700', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-300' };
+        return {
+          color: 'text-yellow-700',
+          bgColor: 'bg-yellow-100',
+          borderColor: 'border-yellow-300',
+        };
       case 'low':
         return { color: 'text-blue-700', bgColor: 'bg-blue-100', borderColor: 'border-blue-300' };
       default:
@@ -192,10 +202,14 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
 
   const getUptimeForTimeframe = (service: ServiceStatus) => {
     switch (selectedTimeframe) {
-      case '24h': return service.uptime_24h;
-      case '7d': return service.uptime_7d;
-      case '30d': return service.uptime_30d;
-      default: return service.uptime_24h;
+      case '24h':
+        return service.uptime_24h;
+      case '7d':
+        return service.uptime_7d;
+      case '30d':
+        return service.uptime_30d;
+      default:
+        return service.uptime_24h;
     }
   };
 
@@ -217,13 +231,13 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
   if (isLoading) {
     return (
       <div className={`${className} animate-pulse`}>
-        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-8">
+        <div className="rounded-2xl border border-gray-200/50 bg-white/80 p-8 backdrop-blur-xl">
           <div className="space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="h-8 w-1/3 rounded bg-gray-200"></div>
+            <div className="h-4 w-2/3 rounded bg-gray-200"></div>
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-200 rounded"></div>
+                <div key={i} className="h-16 rounded bg-gray-200"></div>
               ))}
             </div>
           </div>
@@ -235,16 +249,16 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
   if (error) {
     return (
       <div className={`${className}`}>
-        <div className="bg-white/80 backdrop-blur-xl border border-red-200/50 rounded-2xl p-8">
+        <div className="rounded-2xl border border-red-200/50 bg-white/80 p-8 backdrop-blur-xl">
           <div className="text-center">
-            <ExclamationTriangleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Status</h3>
-            <p className="text-gray-600 mb-4">Unable to fetch current service status.</p>
+            <ExclamationTriangleIcon className="mx-auto mb-4 h-12 w-12 text-red-500" />
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">Failed to Load Status</h3>
+            <p className="mb-4 text-gray-600">Unable to fetch current service status.</p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => refetch()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
             >
               Try Again
             </motion.button>
@@ -257,21 +271,21 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-8">
-        <div className="flex items-center justify-between mb-6">
+      <div className="rounded-2xl border border-gray-200/50 bg-white/80 p-8 backdrop-blur-xl">
+        <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{config.title}</h1>
-            <p className="text-gray-600 mt-2">{config.description}</p>
+            <p className="mt-2 text-gray-600">{config.description}</p>
           </div>
-          
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => refetch()}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="rounded-lg p-2 text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700"
             title="Refresh status"
           >
-            <ArrowPathIcon className="w-5 h-5" />
+            <ArrowPathIcon className="h-5 w-5" />
           </motion.button>
         </div>
 
@@ -279,14 +293,14 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`flex items-center space-x-4 p-6 rounded-xl border ${overallStatusConfig.bgColor} ${overallStatusConfig.borderColor}`}
+          className={`flex items-center space-x-4 rounded-xl border p-6 ${overallStatusConfig.bgColor} ${overallStatusConfig.borderColor}`}
         >
-          <OverallStatusIcon className={`w-8 h-8 ${overallStatusConfig.color}`} />
+          <OverallStatusIcon className={`h-8 w-8 ${overallStatusConfig.color}`} />
           <div>
             <h2 className={`text-xl font-semibold ${overallStatusConfig.color}`}>
               {overallStatusConfig.text}
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="mt-1 text-sm text-gray-600">
               Last updated: {formatDate(statusData?.last_updated || new Date().toISOString())}
             </p>
           </div>
@@ -300,10 +314,10 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white/80 backdrop-blur-xl border border-orange-200/50 rounded-2xl p-6"
+            className="rounded-2xl border border-orange-200/50 bg-white/80 p-6 backdrop-blur-xl"
           >
-            <div className="flex items-center space-x-3 mb-4">
-              <BellIcon className="w-6 h-6 text-orange-600" />
+            <div className="mb-4 flex items-center space-x-3">
+              <BellIcon className="h-6 w-6 text-orange-600" />
               <h3 className="text-lg font-semibold text-gray-900">Active Incidents</h3>
             </div>
 
@@ -316,14 +330,14 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className={`p-4 border rounded-lg ${severityConfig.bgColor} ${severityConfig.borderColor}`}
+                    className={`rounded-lg border p-4 ${severityConfig.bgColor} ${severityConfig.borderColor}`}
                   >
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className={`font-medium ${severityConfig.color}`}>
                           {incident.monitor_name} - {incident.summary}
                         </h4>
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="mt-1 text-sm text-gray-600">
                           Started: {formatDate(incident.started_at)}
                         </p>
                         {incident.acknowledged_at && (
@@ -332,7 +346,9 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
                           </p>
                         )}
                       </div>
-                      <span className={`px-2 py-1 text-xs font-medium rounded ${severityConfig.bgColor} ${severityConfig.color}`}>
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-medium ${severityConfig.bgColor} ${severityConfig.color}`}
+                      >
                         {incident.severity.toUpperCase()}
                       </span>
                     </div>
@@ -351,10 +367,10 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white/80 backdrop-blur-xl border border-blue-200/50 rounded-2xl p-6"
+            className="rounded-2xl border border-blue-200/50 bg-white/80 p-6 backdrop-blur-xl"
           >
-            <div className="flex items-center space-x-3 mb-4">
-              <Cog6ToothIcon className="w-6 h-6 text-blue-600" />
+            <div className="mb-4 flex items-center space-x-3">
+              <Cog6ToothIcon className="h-6 w-6 text-blue-600" />
               <h3 className="text-lg font-semibold text-gray-900">Scheduled Maintenance</h3>
             </div>
 
@@ -365,17 +381,18 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="p-4 border border-blue-200 bg-blue-50 rounded-lg"
+                  className="rounded-lg border border-blue-200 bg-blue-50 p-4"
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-medium text-blue-900">{maintenance.title}</h4>
-                      <p className="text-sm text-blue-700 mt-1">{maintenance.description}</p>
-                      <p className="text-sm text-blue-600 mt-2">
-                        Scheduled: {formatDate(maintenance.scheduled_start)} - {formatDate(maintenance.scheduled_end)}
+                      <p className="mt-1 text-sm text-blue-700">{maintenance.description}</p>
+                      <p className="mt-2 text-sm text-blue-600">
+                        Scheduled: {formatDate(maintenance.scheduled_start)} -{' '}
+                        {formatDate(maintenance.scheduled_end)}
                       </p>
                     </div>
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                    <span className="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
                       {maintenance.status.toUpperCase()}
                     </span>
                   </div>
@@ -387,21 +404,21 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
       </AnimatePresence>
 
       {/* Services Status */}
-      <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="rounded-2xl border border-gray-200/50 bg-white/80 p-6 backdrop-blur-xl">
+        <div className="mb-6 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Service Status</h3>
-          
+
           {config.show_uptime_percentages && (
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center rounded-lg bg-gray-100 p-1">
               {(['24h', '7d', '30d'] as const).map((timeframe) => (
                 <motion.button
                   key={timeframe}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedTimeframe(timeframe)}
-                  className={`px-3 py-1 text-sm rounded-md transition-colors duration-200 ${
-                    selectedTimeframe === timeframe 
-                      ? 'bg-white shadow-sm text-gray-900' 
+                  className={`rounded-md px-3 py-1 text-sm transition-colors duration-200 ${
+                    selectedTimeframe === timeframe
+                      ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -424,11 +441,11 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200"
+                className="flex items-center justify-between rounded-lg border border-gray-200 p-4 transition-all duration-200 hover:shadow-md"
               >
                 <div className="flex items-center space-x-4">
-                  <div className={`p-2 rounded-lg ${statusConfig.bgColor}`}>
-                    <StatusIcon className={`w-5 h-5 ${statusConfig.color}`} />
+                  <div className={`rounded-lg p-2 ${statusConfig.bgColor}`}>
+                    <StatusIcon className={`h-5 w-5 ${statusConfig.color}`} />
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900">{service.name}</h4>
@@ -441,13 +458,11 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
                 <div className="flex items-center space-x-6">
                   {config.show_uptime_percentages && (
                     <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">
-                        {formatUptime(uptime)}
-                      </p>
+                      <p className="text-sm font-medium text-gray-900">{formatUptime(uptime)}</p>
                       <p className="text-xs text-gray-600">uptime</p>
                     </div>
                   )}
-                  
+
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900">
                       {formatResponseTime(service.avg_response_time)}
@@ -455,7 +470,9 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
                     <p className="text-xs text-gray-600">response</p>
                   </div>
 
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${statusConfig.bgColor} ${statusConfig.color}`}>
+                  <div
+                    className={`rounded-full px-3 py-1 text-sm font-medium ${statusConfig.bgColor} ${statusConfig.color}`}
+                  >
                     {statusConfig.text}
                   </div>
                 </div>
@@ -465,18 +482,18 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
         </div>
 
         {services.length === 0 && (
-          <div className="text-center py-12">
-            <ChartBarIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <div className="py-12 text-center">
+            <ChartBarIcon className="mx-auto mb-4 h-12 w-12 text-gray-300" />
             <p className="text-gray-500">No services configured for monitoring</p>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="text-center text-sm text-gray-500 py-4">
+      <div className="py-4 text-center text-sm text-gray-500">
         <p>
-          Status page powered by Nova Sentinel • 
-          Last updated: {formatDate(statusData?.last_updated || new Date().toISOString())}
+          Status page powered by Nova Sentinel • Last updated:{' '}
+          {formatDate(statusData?.last_updated || new Date().toISOString())}
         </p>
       </div>
     </div>

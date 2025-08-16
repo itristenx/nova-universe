@@ -29,9 +29,9 @@ if (!global._mongoClientPromise) {
     Object.assign(options, {
       auth: {
         username: process.env.MONGO_USER,
-        password: process.env.MONGO_PASSWORD
+        password: process.env.MONGO_PASSWORD,
       },
-      authSource: process.env.MONGO_AUTH_SOURCE || 'admin'
+      authSource: process.env.MONGO_AUTH_SOURCE || 'admin',
     });
   }
 
@@ -50,7 +50,7 @@ class EnhancedMongoClient {
     if (!this.db) {
       const client = await clientPromise;
       this.db = client.db(dbName);
-      
+
       if (!this.isInitialized) {
         await this.setupCollections();
         this.isInitialized = true;
@@ -68,8 +68,8 @@ class EnhancedMongoClient {
       // Audit logs collection with TTL index
       await this.createCollectionIfNotExists('audit_logs');
       await this.db.collection('audit_logs').createIndex(
-        { timestamp: 1 }, 
-        { expireAfterSeconds: 7776000 } // 90 days
+        { timestamp: 1 },
+        { expireAfterSeconds: 7776000 }, // 90 days
       );
       await this.db.collection('audit_logs').createIndex({ userId: 1 });
       await this.db.collection('audit_logs').createIndex({ action: 1 });
@@ -77,8 +77,8 @@ class EnhancedMongoClient {
       // System logs collection with TTL index
       await this.createCollectionIfNotExists('system_logs');
       await this.db.collection('system_logs').createIndex(
-        { timestamp: 1 }, 
-        { expireAfterSeconds: 2592000 } // 30 days
+        { timestamp: 1 },
+        { expireAfterSeconds: 2592000 }, // 30 days
       );
       await this.db.collection('system_logs').createIndex({ level: 1 });
       await this.db.collection('system_logs').createIndex({ source: 1 });
@@ -86,8 +86,8 @@ class EnhancedMongoClient {
       // User activity logs
       await this.createCollectionIfNotExists('user_activity');
       await this.db.collection('user_activity').createIndex(
-        { timestamp: 1 }, 
-        { expireAfterSeconds: 15552000 } // 180 days
+        { timestamp: 1 },
+        { expireAfterSeconds: 15552000 }, // 180 days
       );
       await this.db.collection('user_activity').createIndex({ userId: 1 });
       await this.db.collection('user_activity').createIndex({ action: 1 });
@@ -95,8 +95,8 @@ class EnhancedMongoClient {
       // Performance metrics
       await this.createCollectionIfNotExists('performance_metrics');
       await this.db.collection('performance_metrics').createIndex(
-        { timestamp: 1 }, 
-        { expireAfterSeconds: 604800 } // 7 days
+        { timestamp: 1 },
+        { expireAfterSeconds: 604800 }, // 7 days
       );
       await this.db.collection('performance_metrics').createIndex({ service: 1 });
       await this.db.collection('performance_metrics').createIndex({ endpoint: 1 });
@@ -104,8 +104,8 @@ class EnhancedMongoClient {
       // Error logs
       await this.createCollectionIfNotExists('error_logs');
       await this.db.collection('error_logs').createIndex(
-        { timestamp: 1 }, 
-        { expireAfterSeconds: 7776000 } // 90 days
+        { timestamp: 1 },
+        { expireAfterSeconds: 7776000 }, // 90 days
       );
       await this.db.collection('error_logs').createIndex({ level: 1 });
       await this.db.collection('error_logs').createIndex({ source: 1 });
@@ -113,8 +113,8 @@ class EnhancedMongoClient {
       // API usage telemetry
       await this.createCollectionIfNotExists('api_usage');
       await this.db.collection('api_usage').createIndex(
-        { timestamp: 1 }, 
-        { expireAfterSeconds: 2592000 } // 30 days
+        { timestamp: 1 },
+        { expireAfterSeconds: 2592000 }, // 30 days
       );
       await this.db.collection('api_usage').createIndex({ endpoint: 1 });
       await this.db.collection('api_usage').createIndex({ userId: 1 });
@@ -126,15 +126,18 @@ class EnhancedMongoClient {
       // Search analytics
       await this.createCollectionIfNotExists('search_analytics');
       await this.db.collection('search_analytics').createIndex(
-        { timestamp: 1 }, 
-        { expireAfterSeconds: 7776000 } // 90 days
+        { timestamp: 1 },
+        { expireAfterSeconds: 7776000 }, // 90 days
       );
       await this.db.collection('search_analytics').createIndex({ userId: 1 });
       await this.db.collection('search_analytics').createIndex({ query: 'text' });
 
       logger.info('MongoDB collections and indexes setup completed');
     } catch (error) {
-      logger.error('Error setting up MongoDB collections: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error setting up MongoDB collections: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
 
@@ -164,16 +167,18 @@ class EnhancedMongoClient {
         details,
         ip: ip || 'unknown',
         timestamp: new Date(),
-        source: 'nova-universe'
+        source: 'nova-universe',
       };
 
       await db.collection('audit_logs').insertOne(auditEntry);
-      
+
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Audit log created: ${action} by ${userId}`);
       }
     } catch (error) {
-      logger.error('Error creating audit log: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error creating audit log: ' + (error instanceof Error ? error.message : String(error)),
+      );
       // Don't throw - audit logging failures shouldn't break main operations
     }
   }
@@ -187,12 +192,14 @@ class EnhancedMongoClient {
         message,
         source,
         details,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       await db.collection('system_logs').insertOne(logEntry);
     } catch (error) {
-      logger.error('Error creating system log: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error creating system log: ' + (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
 
@@ -205,12 +212,14 @@ class EnhancedMongoClient {
         action,
         details,
         timestamp: new Date(),
-        source: 'nova-universe'
+        source: 'nova-universe',
       };
 
       await db.collection('user_activity').insertOne(activityEntry);
     } catch (error) {
-      logger.error('Error logging user activity: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error logging user activity: ' + (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
 
@@ -223,12 +232,15 @@ class EnhancedMongoClient {
         endpoint,
         duration,
         details,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       await db.collection('performance_metrics').insertOne(metricsEntry);
     } catch (error) {
-      logger.error('Error logging performance metrics: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error logging performance metrics: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
 
@@ -243,20 +255,28 @@ class EnhancedMongoClient {
         error: {
           name: error?.name,
           message: error?.message,
-          stack: error?.stack
+          stack: error?.stack,
         },
         details,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       await db.collection('error_logs').insertOne(errorEntry);
     } catch (logError) {
-      logger.error('Error logging error: ' + (logError instanceof Error ? logError.message : String(logError)));
+      logger.error(
+        'Error logging error: ' + (logError instanceof Error ? logError.message : String(logError)),
+      );
     }
   }
 
   // API usage tracking
-  async logApiUsage(endpoint: string, method: string, userId?: string, duration?: number, details: any = {}) {
+  async logApiUsage(
+    endpoint: string,
+    method: string,
+    userId?: string,
+    duration?: number,
+    details: any = {},
+  ) {
     try {
       const db = await this.getDb();
       const usageEntry = {
@@ -265,17 +285,25 @@ class EnhancedMongoClient {
         userId,
         duration,
         details,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       await db.collection('api_usage').insertOne(usageEntry);
     } catch (error) {
-      logger.error('Error logging API usage: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error logging API usage: ' + (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
 
   // Search analytics
-  async logSearch(query: string, userId?: string, results?: number, duration?: number, details: any = {}) {
+  async logSearch(
+    query: string,
+    userId?: string,
+    results?: number,
+    duration?: number,
+    details: any = {},
+  ) {
     try {
       const db = await this.getDb();
       const searchEntry = {
@@ -284,12 +312,15 @@ class EnhancedMongoClient {
         results,
         duration,
         details,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       await db.collection('search_analytics').insertOne(searchEntry);
     } catch (error) {
-      logger.error('Error logging search analytics: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error logging search analytics: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
 
@@ -299,7 +330,10 @@ class EnhancedMongoClient {
       const db = await this.getDb();
       return await db.collection('user_preferences').findOne({ userId });
     } catch (error) {
-      logger.error('Error getting user preferences: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error getting user preferences: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       return null;
     }
   }
@@ -307,13 +341,18 @@ class EnhancedMongoClient {
   async setUserPreferences(userId: string, preferences: any) {
     try {
       const db = await this.getDb();
-      await db.collection('user_preferences').replaceOne(
-        { userId },
-        { userId, ...preferences, updatedAt: new Date() },
-        { upsert: true }
-      );
+      await db
+        .collection('user_preferences')
+        .replaceOne(
+          { userId },
+          { userId, ...preferences, updatedAt: new Date() },
+          { upsert: true },
+        );
     } catch (error) {
-      logger.error('Error setting user preferences: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error setting user preferences: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -321,24 +360,24 @@ class EnhancedMongoClient {
   // Health check
   async healthCheck() {
     const start = Date.now();
-    
+
     try {
       const db = await this.getDb();
       await db.admin().ping();
       const responseTime = Date.now() - start;
-      
+
       return {
         healthy: true,
         responseTime,
         database: 'mongodb',
-        dbName
+        dbName,
       };
     } catch (error: any) {
       return {
         healthy: false,
         error: error.message,
         responseTime: Date.now() - start,
-        database: 'mongodb'
+        database: 'mongodb',
       };
     }
   }
@@ -350,7 +389,10 @@ class EnhancedMongoClient {
       await client.close();
       logger.info('MongoDB connection closed');
     } catch (error) {
-      logger.error('Error closing MongoDB connection: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error closing MongoDB connection: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
 }
@@ -373,7 +415,7 @@ export const {
   logApiUsage,
   logSearch,
   getUserPreferences,
-  setUserPreferences
+  setUserPreferences,
 } = mongoClient;
 
 export default mongoClient;

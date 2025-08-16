@@ -1,37 +1,37 @@
-"use client";
+'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '../../../components/ui/select';
 import { Label } from '../../../components/ui/label';
 import { Badge } from '../../../components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
-import { 
-  AlertCircle, 
-  CheckCircle2, 
-  Upload, 
-  X, 
-  FileText, 
-  Image as ImageIcon, 
+import {
+  AlertCircle,
+  CheckCircle2,
+  Upload,
+  X,
+  FileText,
+  Image as ImageIcon,
   Paperclip,
   Lightbulb,
   Clock,
@@ -39,16 +39,18 @@ import {
   Mail,
   Phone,
   Building,
-  Zap
+  Zap,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 
 // Enhanced validation schema
 const ticketSchema = z.object({
-  title: z.string()
+  title: z
+    .string()
     .min(10, 'Title must be at least 10 characters')
     .max(100, 'Title must be less than 100 characters'),
-  description: z.string()
+  description: z
+    .string()
     .min(20, 'Description must be at least 20 characters')
     .max(2000, 'Description must be less than 2000 characters'),
   category: z.string().min(1, 'Please select a category'),
@@ -141,10 +143,15 @@ export default function EnhancedTicketSubmissionForm() {
       impact: 'medium',
       contactMethod: 'email',
     },
-    mode: 'onChange'
+    mode: 'onChange',
   });
 
-  const { watch, setValue, trigger, formState: { errors, isValid } } = form;
+  const {
+    watch,
+    setValue,
+    trigger,
+    formState: { errors, isValid },
+  } = form;
 
   // Define form steps
   const steps: FormStep[] = [
@@ -153,14 +160,14 @@ export default function EnhancedTicketSubmissionForm() {
       title: 'Issue Details',
       description: 'Tell us about your issue',
       fields: ['title', 'description', 'category'],
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 'classification',
       title: 'Classification',
       description: 'Help us categorize and prioritize',
       fields: ['subcategory', 'priority', 'urgency', 'impact'],
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 'contact-info',
@@ -168,7 +175,7 @@ export default function EnhancedTicketSubmissionForm() {
       description: 'How and when should we reach you?',
       fields: ['contactMethod', 'preferredResolutionDate'],
       isComplete: false,
-      isOptional: true
+      isOptional: true,
     },
     {
       id: 'attachments',
@@ -176,8 +183,8 @@ export default function EnhancedTicketSubmissionForm() {
       description: 'Add supporting files or screenshots',
       fields: [],
       isComplete: false,
-      isOptional: true
-    }
+      isOptional: true,
+    },
   ];
 
   // Mock categories data
@@ -203,7 +210,7 @@ export default function EnhancedTicketSubmissionForm() {
                 type: 'select',
                 label: 'Device Type',
                 required: true,
-                options: ['Desktop', 'Laptop', 'Tablet', 'Monitor']
+                options: ['Desktop', 'Laptop', 'Tablet', 'Monitor'],
               },
               {
                 id: 'asset-tag',
@@ -211,8 +218,8 @@ export default function EnhancedTicketSubmissionForm() {
                 type: 'text',
                 label: 'Asset Tag Number',
                 placeholder: 'e.g., COMP-001234',
-                required: false
-              }
+                required: false,
+              },
             ],
             knowledgeArticles: [
               {
@@ -220,11 +227,11 @@ export default function EnhancedTicketSubmissionForm() {
                 title: 'Troubleshooting Computer Startup Issues',
                 summary: 'Step-by-step guide for common startup problems',
                 url: '/knowledge/computer-startup-issues',
-                relevanceScore: 0.95
-              }
-            ]
-          }
-        ]
+                relevanceScore: 0.95,
+              },
+            ],
+          },
+        ],
       },
       {
         id: 'software',
@@ -245,7 +252,7 @@ export default function EnhancedTicketSubmissionForm() {
                 name: 'applicationName',
                 type: 'text',
                 label: 'Application Name',
-                required: true
+                required: true,
               },
               {
                 id: 'error-message',
@@ -253,8 +260,8 @@ export default function EnhancedTicketSubmissionForm() {
                 type: 'textarea',
                 label: 'Error Message (if any)',
                 placeholder: 'Copy and paste any error messages you see',
-                required: false
-              }
+                required: false,
+              },
             ],
             knowledgeArticles: [
               {
@@ -262,11 +269,11 @@ export default function EnhancedTicketSubmissionForm() {
                 title: 'Common Software Error Solutions',
                 summary: 'Quick fixes for frequently reported software issues',
                 url: '/knowledge/software-errors',
-                relevanceScore: 0.88
-              }
-            ]
-          }
-        ]
+                relevanceScore: 0.88,
+              },
+            ],
+          },
+        ],
       },
       {
         id: 'access',
@@ -288,8 +295,8 @@ export default function EnhancedTicketSubmissionForm() {
                 type: 'select',
                 label: 'Account Type',
                 required: true,
-                options: ['Windows/AD', 'Email', 'VPN', 'Application Specific']
-              }
+                options: ['Windows/AD', 'Email', 'VPN', 'Application Specific'],
+              },
             ],
             knowledgeArticles: [
               {
@@ -297,12 +304,12 @@ export default function EnhancedTicketSubmissionForm() {
                 title: 'Self-Service Password Reset Guide',
                 summary: 'Reset your password without creating a ticket',
                 url: '/knowledge/password-reset-self-service',
-                relevanceScore: 0.92
-              }
-            ]
-          }
-        ]
-      }
+                relevanceScore: 0.92,
+              },
+            ],
+          },
+        ],
+      },
     ];
     setCategories(mockCategories);
   }, []);
@@ -318,7 +325,7 @@ export default function EnhancedTicketSubmissionForm() {
       // Mock AI-powered suggestions based on title and description
       const suggestions = generateIntelligentSuggestions(watchedTitle, watchedDescription);
       setSuggestedArticles(suggestions);
-      
+
       // Auto-suggest priority based on keywords
       const suggestedPriority = detectPriorityFromText(watchedTitle + ' ' + watchedDescription);
       if (suggestedPriority && suggestedPriority !== watch('priority')) {
@@ -331,9 +338,9 @@ export default function EnhancedTicketSubmissionForm() {
   // Update selected category and subcategory
   useEffect(() => {
     if (watchedCategory) {
-      const category = categories.find(c => c.id === watchedCategory);
+      const category = categories.find((c) => c.id === watchedCategory);
       setSelectedCategory(category || null);
-      
+
       if (category) {
         setValue('priority', category.suggestedPriority);
         setValue('urgency', category.suggestedPriority);
@@ -341,80 +348,101 @@ export default function EnhancedTicketSubmissionForm() {
     }
   }, [watchedCategory, categories, setValue]);
 
-  const generateIntelligentSuggestions = (title: string, description: string): KnowledgeArticle[] => {
+  const generateIntelligentSuggestions = (
+    title: string,
+    description: string,
+  ): KnowledgeArticle[] => {
     const text = (title + ' ' + description).toLowerCase();
     const suggestions: KnowledgeArticle[] = [];
-    
+
     if (text.includes('password') || text.includes('login') || text.includes('access')) {
       suggestions.push({
         id: 'kb-password',
         title: 'Password and Access Issues Guide',
         summary: 'Comprehensive guide for resolving access problems',
         url: '/knowledge/access-guide',
-        relevanceScore: 0.95
+        relevanceScore: 0.95,
       });
     }
-    
+
     if (text.includes('slow') || text.includes('performance') || text.includes('crash')) {
       suggestions.push({
         id: 'kb-performance',
         title: 'Computer Performance Troubleshooting',
         summary: 'Steps to improve system performance',
         url: '/knowledge/performance-guide',
-        relevanceScore: 0.87
+        relevanceScore: 0.87,
       });
     }
-    
+
     return suggestions;
   };
 
   const detectPriorityFromText = (text: string): 'low' | 'medium' | 'high' | 'critical' | null => {
     const lowerText = text.toLowerCase();
-    
-    if (lowerText.includes('urgent') || lowerText.includes('critical') || lowerText.includes('emergency')) {
+
+    if (
+      lowerText.includes('urgent') ||
+      lowerText.includes('critical') ||
+      lowerText.includes('emergency')
+    ) {
       return 'critical';
     }
-    if (lowerText.includes('asap') || lowerText.includes('important') || lowerText.includes('blocking')) {
+    if (
+      lowerText.includes('asap') ||
+      lowerText.includes('important') ||
+      lowerText.includes('blocking')
+    ) {
       return 'high';
     }
-    if (lowerText.includes('minor') || lowerText.includes('cosmetic') || lowerText.includes('enhancement')) {
+    if (
+      lowerText.includes('minor') ||
+      lowerText.includes('cosmetic') ||
+      lowerText.includes('enhancement')
+    ) {
       return 'low';
     }
-    
+
     return null;
   };
 
   // File handling function
   const handleFiles = useCallback((files: File[]) => {
-    files.forEach(file => {
+    files.forEach((file) => {
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         alert(`File ${file.name} is too large. Maximum size is 10MB.`);
         return;
       }
-      
+
       // Validate file type
-      const allowedTypes = ['image/', 'application/pdf', 'text/', 'application/msword', 'application/vnd.openxmlformats'];
-      if (!allowedTypes.some(type => file.type.startsWith(type))) {
+      const allowedTypes = [
+        'image/',
+        'application/pdf',
+        'text/',
+        'application/msword',
+        'application/vnd.openxmlformats',
+      ];
+      if (!allowedTypes.some((type) => file.type.startsWith(type))) {
         alert(`File type ${file.type} is not allowed.`);
         return;
       }
-      
+
       const fileId = Date.now() + Math.random().toString(36);
       const uploadedFile: UploadedFile = {
         id: fileId,
         name: file.name,
         size: file.size,
         type: file.type,
-        url: URL.createObjectURL(file)
+        url: URL.createObjectURL(file),
       };
-      
+
       // Generate preview for images
       if (file.type.startsWith('image/')) {
         uploadedFile.preview = uploadedFile.url;
       }
-      
-      setUploadedFiles(prev => [...prev, uploadedFile]);
+
+      setUploadedFiles((prev) => [...prev, uploadedFile]);
     });
   }, []);
 
@@ -429,37 +457,43 @@ export default function EnhancedTicketSubmissionForm() {
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    handleFiles(files);
-  }, [handleFiles]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
 
-  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
+      const files = Array.from(e.dataTransfer.files);
       handleFiles(files);
-    }
-  }, [handleFiles]);
+    },
+    [handleFiles],
+  );
+
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        const files = Array.from(e.target.files);
+        handleFiles(files);
+      }
+    },
+    [handleFiles],
+  );
 
   const removeFile = useCallback((fileId: string) => {
-    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
   }, []);
 
   // Step navigation
   const goToNextStep = async () => {
     const currentStepData = steps[currentStep];
     const fieldsToValidate = currentStepData.fields;
-    
+
     if (fieldsToValidate.length > 0) {
       const isStepValid = await trigger(fieldsToValidate as (keyof TicketFormData)[]);
       if (!isStepValid && !currentStepData.isOptional) {
         return;
       }
     }
-    
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -475,11 +509,11 @@ export default function EnhancedTicketSubmissionForm() {
   const onSubmit = async (data: TicketFormData) => {
     setIsSubmitting(true);
     setSubmitProgress(0);
-    
+
     try {
       // Simulate submission progress
       const progressInterval = setInterval(() => {
-        setSubmitProgress(prev => {
+        setSubmitProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return prev;
@@ -487,27 +521,26 @@ export default function EnhancedTicketSubmissionForm() {
           return prev + 10;
         });
       }, 200);
-      
+
       // Mock API call
       const formData = {
         ...data,
         ...dynamicFieldValues,
-        attachments: uploadedFiles.map(f => ({ name: f.name, size: f.size, type: f.type })),
-        submittedAt: new Date().toISOString()
+        attachments: uploadedFiles.map((f) => ({ name: f.name, size: f.size, type: f.type })),
+        submittedAt: new Date().toISOString(),
       };
-      
+
       console.log('Submitting ticket:', formData);
-      
+
       // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       setSubmitProgress(100);
-      
+
       // Redirect to success page or ticket view
       setTimeout(() => {
         router.push('/tickets?success=true');
       }, 1000);
-      
     } catch (error) {
       console.error('Error submitting ticket:', error);
       setIsSubmitting(false);
@@ -524,60 +557,66 @@ export default function EnhancedTicketSubmissionForm() {
   };
 
   const getFileIcon = (fileType: string) => {
-    if (fileType.startsWith('image/')) return <ImageIcon className="w-4 h-4" />;
-    if (fileType.includes('pdf')) return <FileText className="w-4 h-4" />;
-    return <Paperclip className="w-4 h-4" />;
+    if (fileType.startsWith('image/')) return <ImageIcon className="h-4 w-4" />;
+    if (fileType.includes('pdf')) return <FileText className="h-4 w-4" />;
+    return <Paperclip className="h-4 w-4" />;
   };
 
   const renderDynamicFields = () => {
     if (!selectedSubcategory?.dynamicFields) return null;
-    
-    return selectedSubcategory.dynamicFields.map(field => (
+
+    return selectedSubcategory.dynamicFields.map((field) => (
       <div key={field.id} className="space-y-2">
         <Label htmlFor={field.name}>
           {field.label}
-          {field.required && <span className="text-red-500 ml-1">*</span>}
+          {field.required && <span className="ml-1 text-red-500">*</span>}
         </Label>
-        
+
         {field.type === 'text' && (
           <Input
             id={field.name}
             placeholder={field.placeholder}
             value={String(dynamicFieldValues[field.name] || '')}
-            onChange={(e) => setDynamicFieldValues(prev => ({
-              ...prev,
-              [field.name]: e.target.value
-            }))}
+            onChange={(e) =>
+              setDynamicFieldValues((prev) => ({
+                ...prev,
+                [field.name]: e.target.value,
+              }))
+            }
             required={field.required}
           />
         )}
-        
+
         {field.type === 'textarea' && (
           <Textarea
             id={field.name}
             placeholder={field.placeholder}
             value={String(dynamicFieldValues[field.name] || '')}
-            onChange={(e) => setDynamicFieldValues(prev => ({
-              ...prev,
-              [field.name]: e.target.value
-            }))}
+            onChange={(e) =>
+              setDynamicFieldValues((prev) => ({
+                ...prev,
+                [field.name]: e.target.value,
+              }))
+            }
             required={field.required}
           />
         )}
-        
+
         {field.type === 'select' && field.options && (
           <Select
             value={String(dynamicFieldValues[field.name] || '')}
-            onValueChange={(value) => setDynamicFieldValues(prev => ({
-              ...prev,
-              [field.name]: value
-            }))}
+            onValueChange={(value) =>
+              setDynamicFieldValues((prev) => ({
+                ...prev,
+                [field.name]: value,
+              }))
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
-              {field.options.map(option => (
+              {field.options.map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -592,9 +631,9 @@ export default function EnhancedTicketSubmissionForm() {
   const progressPercentage = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 p-6">
       {/* Header */}
-      <div className="text-center space-y-2">
+      <div className="space-y-2 text-center">
         <h1 className="text-3xl font-bold">Submit a Support Request</h1>
         <p className="text-gray-600">
           We&apos;re here to help! Follow the steps below to submit your request.
@@ -605,14 +644,14 @@ export default function EnhancedTicketSubmissionForm() {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Progress</span>
               <span className="text-sm text-gray-500">
                 Step {currentStep + 1} of {steps.length}
               </span>
             </div>
             <Progress value={progressPercentage} className="w-full" />
-            
+
             {/* Step indicators */}
             <div className="flex justify-between">
               {steps.map((step, index) => (
@@ -623,21 +662,21 @@ export default function EnhancedTicketSubmissionForm() {
                   }`}
                 >
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
+                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
                       index < currentStep
-                        ? 'bg-blue-600 border-blue-600 text-white'
+                        ? 'border-blue-600 bg-blue-600 text-white'
                         : index === currentStep
-                        ? 'border-blue-600 bg-white text-blue-600'
-                        : 'border-gray-300 bg-white text-gray-400'
+                          ? 'border-blue-600 bg-white text-blue-600'
+                          : 'border-gray-300 bg-white text-gray-400'
                     }`}
                   >
                     {index < currentStep ? (
-                      <CheckCircle2 className="w-5 h-5" />
+                      <CheckCircle2 className="h-5 w-5" />
                     ) : (
                       <span className="text-sm font-medium">{index + 1}</span>
                     )}
                   </div>
-                  <span className="text-xs text-center max-w-20">{step.title}</span>
+                  <span className="max-w-20 text-center text-xs">{step.title}</span>
                 </div>
               ))}
             </div>
@@ -652,7 +691,7 @@ export default function EnhancedTicketSubmissionForm() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5" />
+                <AlertCircle className="h-5 w-5" />
                 {steps[0].title}
               </CardTitle>
               <CardDescription>{steps[0].description}</CardDescription>
@@ -669,9 +708,7 @@ export default function EnhancedTicketSubmissionForm() {
                   {...form.register('title')}
                   className={errors.title ? 'border-red-500' : ''}
                 />
-                {errors.title && (
-                  <p className="text-sm text-red-500">{errors.title.message}</p>
-                )}
+                {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
               </div>
 
               {/* Issue Description */}
@@ -702,14 +739,12 @@ export default function EnhancedTicketSubmissionForm() {
                 <Label htmlFor="category">
                   Category <span className="text-red-500">*</span>
                 </Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {categories.map(category => (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {categories.map((category) => (
                     <Card
                       key={category.id}
                       className={`cursor-pointer transition-all hover:shadow-md ${
-                        watch('category') === category.id
-                          ? 'ring-2 ring-blue-500 bg-blue-50'
-                          : ''
+                        watch('category') === category.id ? 'bg-blue-50 ring-2 ring-blue-500' : ''
                       }`}
                       onClick={() => {
                         setValue('category', category.id);
@@ -717,12 +752,12 @@ export default function EnhancedTicketSubmissionForm() {
                       }}
                     >
                       <CardContent className="pt-6">
-                        <div className="text-center space-y-2">
-                          <div className="text-3xl mb-2">{category.icon}</div>
+                        <div className="space-y-2 text-center">
+                          <div className="mb-2 text-3xl">{category.icon}</div>
                           <h3 className="font-semibold">{category.name}</h3>
                           <p className="text-sm text-gray-600">{category.description}</p>
                           <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
-                            <Clock className="w-3 h-3" />
+                            <Clock className="h-3 w-3" />
                             {category.estimatedResolutionTime}
                           </div>
                         </div>
@@ -744,15 +779,15 @@ export default function EnhancedTicketSubmissionForm() {
                       <p className="font-medium">
                         We found some articles that might help solve your issue:
                       </p>
-                      {suggestedArticles.map(article => (
-                        <div key={article.id} className="p-2 bg-white rounded border">
-                          <h4 className="font-medium text-sm">{article.title}</h4>
+                      {suggestedArticles.map((article) => (
+                        <div key={article.id} className="rounded border bg-white p-2">
+                          <h4 className="text-sm font-medium">{article.title}</h4>
                           <p className="text-xs text-gray-600">{article.summary}</p>
                           <Button
                             type="button"
                             variant="link"
                             size="sm"
-                            className="p-0 h-auto text-xs"
+                            className="h-auto p-0 text-xs"
                             onClick={() => window.open(article.url, '_blank')}
                           >
                             Read Article →
@@ -772,7 +807,7 @@ export default function EnhancedTicketSubmissionForm() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Zap className="w-5 h-5" />
+                <Zap className="h-5 w-5" />
                 {steps[1].title}
               </CardTitle>
               <CardDescription>{steps[1].description}</CardDescription>
@@ -786,7 +821,9 @@ export default function EnhancedTicketSubmissionForm() {
                     value={watch('subcategory') || ''}
                     onValueChange={(value) => {
                       setValue('subcategory', value);
-                      const subcategory = selectedCategory.subcategories.find(s => s.id === value);
+                      const subcategory = selectedCategory.subcategories.find(
+                        (s) => s.id === value,
+                      );
                       setSelectedSubcategory(subcategory || null);
                     }}
                   >
@@ -794,7 +831,7 @@ export default function EnhancedTicketSubmissionForm() {
                       <SelectValue placeholder="Select a subcategory" />
                     </SelectTrigger>
                     <SelectContent>
-                      {selectedCategory.subcategories.map(sub => (
+                      {selectedCategory.subcategories.map((sub) => (
                         <SelectItem key={sub.id} value={sub.id}>
                           <div className="text-left">
                             <div className="font-medium">{sub.name}</div>
@@ -811,12 +848,14 @@ export default function EnhancedTicketSubmissionForm() {
               {renderDynamicFields()}
 
               {/* Priority, Urgency, Impact Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="priority">Priority</Label>
                   <Select
                     value={watch('priority')}
-                    onValueChange={(value) => setValue('priority', value as 'low' | 'medium' | 'high' | 'critical')}
+                    onValueChange={(value) =>
+                      setValue('priority', value as 'low' | 'medium' | 'high' | 'critical')
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -824,25 +863,33 @@ export default function EnhancedTicketSubmissionForm() {
                     <SelectContent>
                       <SelectItem value="low">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-green-100 text-green-800">Low</Badge>
+                          <Badge variant="outline" className="bg-green-100 text-green-800">
+                            Low
+                          </Badge>
                           <span className="text-sm">Minor impact</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="medium">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Medium</Badge>
+                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+                            Medium
+                          </Badge>
                           <span className="text-sm">Normal priority</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="high">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-orange-100 text-orange-800">High</Badge>
+                          <Badge variant="outline" className="bg-orange-100 text-orange-800">
+                            High
+                          </Badge>
                           <span className="text-sm">Important issue</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="critical">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-red-100 text-red-800">Critical</Badge>
+                          <Badge variant="outline" className="bg-red-100 text-red-800">
+                            Critical
+                          </Badge>
                           <span className="text-sm">Business critical</span>
                         </div>
                       </SelectItem>
@@ -854,7 +901,9 @@ export default function EnhancedTicketSubmissionForm() {
                   <Label htmlFor="urgency">Urgency</Label>
                   <Select
                     value={watch('urgency')}
-                    onValueChange={(value) => setValue('urgency', value as 'low' | 'medium' | 'high' | 'critical')}
+                    onValueChange={(value) =>
+                      setValue('urgency', value as 'low' | 'medium' | 'high' | 'critical')
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -872,7 +921,9 @@ export default function EnhancedTicketSubmissionForm() {
                   <Label htmlFor="impact">Impact</Label>
                   <Select
                     value={watch('impact')}
-                    onValueChange={(value) => setValue('impact', value as 'low' | 'medium' | 'high' | 'critical')}
+                    onValueChange={(value) =>
+                      setValue('impact', value as 'low' | 'medium' | 'high' | 'critical')
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -913,7 +964,7 @@ export default function EnhancedTicketSubmissionForm() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
+                <User className="h-5 w-5" />
                 {steps[2].title}
               </CardTitle>
               <CardDescription>{steps[2].description}</CardDescription>
@@ -922,24 +973,41 @@ export default function EnhancedTicketSubmissionForm() {
               {/* Contact Method */}
               <div className="space-y-2">
                 <Label htmlFor="contactMethod">Preferred Contact Method</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   {[
-                    { value: 'email', label: 'Email', icon: Mail, description: 'Updates via email' },
-                    { value: 'phone', label: 'Phone', icon: Phone, description: 'Call for urgent updates' },
-                    { value: 'portal', label: 'Portal Only', icon: Building, description: 'Check status online' }
-                  ].map(method => (
+                    {
+                      value: 'email',
+                      label: 'Email',
+                      icon: Mail,
+                      description: 'Updates via email',
+                    },
+                    {
+                      value: 'phone',
+                      label: 'Phone',
+                      icon: Phone,
+                      description: 'Call for urgent updates',
+                    },
+                    {
+                      value: 'portal',
+                      label: 'Portal Only',
+                      icon: Building,
+                      description: 'Check status online',
+                    },
+                  ].map((method) => (
                     <Card
                       key={method.value}
                       className={`cursor-pointer transition-all hover:shadow-md ${
                         watch('contactMethod') === method.value
-                          ? 'ring-2 ring-blue-500 bg-blue-50'
+                          ? 'bg-blue-50 ring-2 ring-blue-500'
                           : ''
                       }`}
-                      onClick={() => setValue('contactMethod', method.value as 'email' | 'phone' | 'portal')}
+                      onClick={() =>
+                        setValue('contactMethod', method.value as 'email' | 'phone' | 'portal')
+                      }
                     >
                       <CardContent className="pt-6">
-                        <div className="text-center space-y-2">
-                          <method.icon className="w-8 h-8 mx-auto text-blue-600" />
+                        <div className="space-y-2 text-center">
+                          <method.icon className="mx-auto h-8 w-8 text-blue-600" />
                           <h3 className="font-semibold">{method.label}</h3>
                           <p className="text-sm text-gray-600">{method.description}</p>
                         </div>
@@ -964,7 +1032,9 @@ export default function EnhancedTicketSubmissionForm() {
 
               {/* Preferred Resolution Date */}
               <div className="space-y-2">
-                <Label htmlFor="preferredResolutionDate">Preferred Resolution Date (Optional)</Label>
+                <Label htmlFor="preferredResolutionDate">
+                  Preferred Resolution Date (Optional)
+                </Label>
                 <Input
                   id="preferredResolutionDate"
                   type="date"
@@ -984,7 +1054,7 @@ export default function EnhancedTicketSubmissionForm() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Paperclip className="w-5 h-5" />
+                <Paperclip className="h-5 w-5" />
                 {steps[3].title}
               </CardTitle>
               <CardDescription>{steps[3].description}</CardDescription>
@@ -992,7 +1062,7 @@ export default function EnhancedTicketSubmissionForm() {
             <CardContent className="space-y-6">
               {/* File Upload Area */}
               <div
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                className={`rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
                   isDragOver
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-300 hover:border-gray-400'
@@ -1001,11 +1071,11 @@ export default function EnhancedTicketSubmissionForm() {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
-                <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <Upload className="mx-auto mb-4 h-12 w-12 text-gray-400" />
                 <div className="space-y-2">
                   <p className="text-lg font-medium">
                     Drag and drop files here, or{' '}
-                    <label className="text-blue-600 hover:text-blue-500 cursor-pointer">
+                    <label className="cursor-pointer text-blue-600 hover:text-blue-500">
                       browse
                       <input
                         type="file"
@@ -1019,9 +1089,7 @@ export default function EnhancedTicketSubmissionForm() {
                   <p className="text-sm text-gray-500">
                     Supported formats: Images, PDF, Word, Excel, Text files
                   </p>
-                  <p className="text-xs text-gray-400">
-                    Maximum file size: 10MB per file
-                  </p>
+                  <p className="text-xs text-gray-400">Maximum file size: 10MB per file</p>
                 </div>
               </div>
 
@@ -1030,39 +1098,34 @@ export default function EnhancedTicketSubmissionForm() {
                 <div className="space-y-4">
                   <h3 className="font-semibold">Attached Files ({uploadedFiles.length})</h3>
                   <div className="grid gap-3">
-                    {uploadedFiles.map(file => (
-                      <div
-                        key={file.id}
-                        className="flex items-center gap-3 p-3 border rounded-lg"
-                      >
+                    {uploadedFiles.map((file) => (
+                      <div key={file.id} className="flex items-center gap-3 rounded-lg border p-3">
                         {file.preview ? (
                           <Image
                             src={file.preview}
                             alt={file.name}
                             width={48}
                             height={48}
-                            className="w-12 h-12 rounded object-cover"
+                            className="h-12 w-12 rounded object-cover"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                          <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100">
                             {getFileIcon(file.type)}
                           </div>
                         )}
-                        
+
                         <div className="flex-1">
-                          <p className="font-medium text-sm">{file.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {formatFileSize(file.size)}
-                          </p>
+                          <p className="text-sm font-medium">{file.name}</p>
+                          <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
                         </div>
-                        
+
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFile(file.id)}
                         >
-                          <X className="w-4 h-4" />
+                          <X className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
@@ -1083,7 +1146,7 @@ export default function EnhancedTicketSubmissionForm() {
           >
             Previous
           </Button>
-          
+
           <div className="flex gap-2">
             {currentStep < steps.length - 1 ? (
               <Button type="button" onClick={goToNextStep} disabled={isSubmitting}>

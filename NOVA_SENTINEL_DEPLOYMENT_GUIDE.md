@@ -18,17 +18,20 @@ Nova Sentinel has been **fully implemented** with Apple-inspired design across a
 ## 🏗️ Architecture Components
 
 ### Backend Services
+
 - **Nova API**: Enhanced with monitoring endpoints and Kuma integration
 - **Uptime Kuma**: Headless monitoring backend (port 3001)
 - **Redis**: Caching layer for monitoring data (port 6379)
 - **Grafana**: Advanced visualization and dashboards (port 3002)
 
 ### Frontend Applications
+
 - **Nova Core**: Administrator monitoring dashboard with full system control
 - **Nova Pulse**: Technician interface for incident response and monitoring oversight
 - **Nova Orbit**: Public status page for end-user service transparency
 
 ### Database Schema
+
 ```
 monitors                  - Core monitoring configurations
 monitor_incidents         - Incident tracking and management
@@ -45,11 +48,13 @@ status_page_configs      - Public status page customization
 ### 1. Environment Setup
 
 Copy the monitoring environment template:
+
 ```bash
 cp .env.monitoring .env.local
 ```
 
 Configure the following required variables:
+
 ```env
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/nova_universe
@@ -77,6 +82,7 @@ FRONTEND_URL=http://localhost:3000
 ### 2. Database Migration
 
 Run the monitoring system migration:
+
 ```bash
 cd apps/api
 npm run db:migrate
@@ -87,11 +93,13 @@ This creates all 7 monitoring tables with proper relationships and indexes.
 ### 3. Start Monitoring Stack
 
 Deploy the complete monitoring infrastructure:
+
 ```bash
 docker-compose -f docker-compose.monitoring.yml up -d
 ```
 
 This starts:
+
 - Uptime Kuma (localhost:3001)
 - Redis cache (localhost:6379)
 - Grafana dashboards (localhost:3002)
@@ -107,6 +115,7 @@ This starts:
 ### 5. Start Nova Universe Applications
 
 Start all three applications:
+
 ```bash
 # Terminal 1 - API
 cd apps/api && npm run dev
@@ -178,6 +187,7 @@ Configure notification channels in Nova Core:
 ### Public Status Page
 
 Configure the public status page in Nova Core:
+
 - Custom branding and logos
 - Service group organization
 - Incident history display
@@ -189,6 +199,7 @@ Configure the public status page in Nova Core:
 All interfaces follow Apple's design principles:
 
 ### Design System Features
+
 - **SF Pro Typography**: System font stack with proper weights
 - **Semantic Colors**: Blue (primary), green (success), orange (warning), red (critical)
 - **Spatial Consistency**: 8pt grid system with consistent spacing
@@ -196,6 +207,7 @@ All interfaces follow Apple's design principles:
 - **Accessibility**: WCAG compliant with proper focus states and screen reader support
 
 ### Component Library
+
 - Glass morphism effects with backdrop blur
 - Smooth animations and micro-interactions
 - Consistent button styles and form elements
@@ -205,6 +217,7 @@ All interfaces follow Apple's design principles:
 ## 📊 Monitoring Dashboard Features
 
 ### Nova Core (Administrator)
+
 - **System Overview**: Real-time statistics and health indicators
 - **Monitor Management**: Full CRUD operations for monitoring configurations
 - **Incident Response**: Complete incident lifecycle management
@@ -212,12 +225,14 @@ All interfaces follow Apple's design principles:
 - **Analytics**: Uptime trends and performance metrics
 
 ### Nova Pulse (Technician)
+
 - **Incident Dashboard**: Active incident prioritization and response
 - **Monitor Status Grid**: Real-time status across all monitors
 - **Quick Actions**: Rapid incident acknowledgment and resolution
 - **Performance Insights**: Response time trends and availability metrics
 
 ### Nova Orbit (End User)
+
 - **Service Status**: Current operational status display
 - **Incident History**: Public incident timeline and updates
 - **Maintenance Schedule**: Upcoming and current maintenance windows
@@ -241,11 +256,13 @@ All interfaces follow Apple's design principles:
 ## 🧪 Testing
 
 Run the validation script to ensure proper deployment:
+
 ```bash
 ./validate-implementation.sh
 ```
 
 For comprehensive testing including Docker services:
+
 ```bash
 ./test-monitoring-stack.sh
 ```
@@ -253,6 +270,7 @@ For comprehensive testing including Docker services:
 ## 📚 API Documentation
 
 Comprehensive API documentation is available at:
+
 - Swagger UI: `http://localhost:3000/api-docs`
 - Monitor endpoints: `/api/monitoring/monitors`
 - Incident endpoints: `/api/monitoring/incidents`
@@ -286,6 +304,7 @@ Comprehensive API documentation is available at:
 ### Support
 
 For additional support or feature requests:
+
 - Review logs in `apps/api/error.log`
 - Check browser console for frontend issues
 - Validate environment configuration
@@ -294,6 +313,7 @@ For additional support or feature requests:
 ## 🎉 Deployment Complete!
 
 Nova Sentinel is now fully operational with:
+
 - ✅ Complete monitoring infrastructure
 - ✅ Apple-inspired user interfaces
 - ✅ Multi-channel notification system

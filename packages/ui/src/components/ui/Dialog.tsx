@@ -5,17 +5,27 @@ export interface DialogProps extends React.HTMLAttributes<HTMLDivElement> {
   maxWidth?: string;
   fullWidth?: boolean;
 }
-export const Dialog: React.FC<DialogProps> = ({ open, onClose, maxWidth, fullWidth, children, ...props }) => {
+export const Dialog: React.FC<DialogProps> = ({
+  open,
+  onClose,
+  maxWidth,
+  fullWidth,
+  children,
+  ...props
+}) => {
   if (!open) return null;
   return (
-    <div {...props} className={[props.className || 'dialog-backdrop'].filter(Boolean).join(' ')} onClick={onClose}>
+    <div
+      {...props}
+      className={[props.className || 'dialog-backdrop'].filter(Boolean).join(' ')}
+      onClick={onClose}
+    >
       <div
-        className={[
-          'dialog-content',
-          fullWidth ? 'dialog-content--fullWidth' : ''
-        ].filter(Boolean).join(' ')}
+        className={['dialog-content', fullWidth ? 'dialog-content--fullWidth' : '']
+          .filter(Boolean)
+          .join(' ')}
         style={{ maxWidth: maxWidth || undefined, ...props.style }}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {children}
       </div>

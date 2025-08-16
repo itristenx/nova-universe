@@ -11,5 +11,7 @@ export interface ToastStoreState {
   removeToast: (id: string) => void;
   clear: () => void;
 }
-export declare const useToastStore: import('zustand').UseBoundStore<import('zustand').StoreApi<ToastStoreState>>;
+export declare const useToastStore: import('zustand').UseBoundStore<
+  import('zustand').StoreApi<ToastStoreState>
+>;
 //# sourceMappingURL=toast.d.ts.map

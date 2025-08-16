@@ -10,6 +10,8 @@ import ConfigurationManager from '../config/app-settings.js';
  * Configure comprehensive security headers using Helmet
  */
 export function configureSecurityHeaders() {
+  // Development flag available for future conditional logic
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isDevelopment = process.env.NODE_ENV === 'development';
 
   return helmet({
@@ -17,9 +19,9 @@ export function configureSecurityHeaders() {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'https:'],
         scriptSrc: ["'self'", "'unsafe-inline'"],
         connectSrc: ["'self'"],
         frameSrc: ["'none'"],
@@ -35,11 +37,11 @@ export function configureSecurityHeaders() {
     // Cross-Origin Embedder Policy
     crossOriginEmbedderPolicy: false, // Disable for API compatibility
 
-    // Cross-Origin Opener Policy  
-    crossOriginOpenerPolicy: { policy: "same-origin" },
+    // Cross-Origin Opener Policy
+    crossOriginOpenerPolicy: { policy: 'same-origin' },
 
     // Cross-Origin Resource Policy
-    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
 
     // DNS Prefetch Control
     dnsPrefetchControl: { allow: false },
@@ -54,7 +56,7 @@ export function configureSecurityHeaders() {
     hsts: {
       maxAge: 31536000, // 1 year
       includeSubDomains: true,
-      preload: true
+      preload: true,
     },
 
     // IE No Open
@@ -64,7 +66,7 @@ export function configureSecurityHeaders() {
     noSniff: true,
 
     // Referrer Policy
-    referrerPolicy: { policy: "no-referrer" },
+    referrerPolicy: { policy: 'no-referrer' },
 
     // X-XSS-Protection
     xssFilter: true,
@@ -78,8 +80,8 @@ export function configureSecurityHeaders() {
  * Configure CORS with security-focused settings
  */
 export function configureCORS() {
-  const allowedOrigins = process.env.CORS_ORIGINS 
-    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+  const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
     : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:4173'];
 
   // Add production URLs if specified
@@ -91,49 +93,49 @@ export function configureCORS() {
     origin: function (origin, callback) {
       // Allow requests with no origin (mobile apps, postman, etc.)
       if (!origin) return callback(null, true);
-      
+
       // Check if origin is in allowed list
       if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
         return callback(null, true);
       }
-      
+
       // In development, allow localhost with any port
       if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
         return callback(null, true);
       }
-      
+
       logger.warn('CORS blocked origin', { origin, allowedOrigins });
       const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
       return callback(new Error(msg), false);
     },
-    
+
     credentials: true,
-    
+
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    
+
     allowedHeaders: [
       'Origin',
-      'X-Requested-With', 
+      'X-Requested-With',
       'Content-Type',
       'Accept',
       'Authorization',
       'X-API-Key',
       'X-Client-Version',
-      'X-Request-ID'
+      'X-Request-ID',
     ],
-    
+
     exposedHeaders: [
       'X-Total-Count',
       'X-Rate-Limit-Limit',
       'X-Rate-Limit-Remaining',
-      'X-Rate-Limit-Reset'
+      'X-Rate-Limit-Reset',
     ],
-    
+
     maxAge: 86400, // 24 hours
-    
+
     optionsSuccessStatus: 200, // For legacy browser support
-    
-    preflightContinue: false
+
+    preflightContinue: false,
   });
 }
 
@@ -146,18 +148,18 @@ export function sanitizeInput(req, res, next) {
     if (req.body && typeof req.body === 'object') {
       req.body = sanitizeObject(req.body);
     }
-    
+
     // Sanitize query parameters
     if (req.query && typeof req.query === 'object') {
       req.query = sanitizeObject(req.query);
     }
-    
+
     next();
   } catch (error) {
     logger.error('Input sanitization error:', error);
     res.status(400).json({
       error: 'Invalid input data',
-      errorCode: 'INVALID_INPUT'
+      errorCode: 'INVALID_INPUT',
     });
   }
 }
@@ -169,18 +171,18 @@ function sanitizeObject(obj) {
   if (obj === null || typeof obj !== 'object') {
     return sanitizeValue(obj);
   }
-  
+
   if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeObject(item));
+    return obj.map((item) => sanitizeObject(item));
   }
-  
+
   const sanitized = {};
   for (const [key, value] of Object.entries(obj)) {
     // Sanitize the key
     const cleanKey = sanitizeValue(key);
     sanitized[cleanKey] = sanitizeObject(value);
   }
-  
+
   return sanitized;
 }
 
@@ -191,7 +193,7 @@ function sanitizeValue(value) {
   if (typeof value !== 'string') {
     return value;
   }
-  
+
   // Remove potential XSS vectors
   return value
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
@@ -206,22 +208,22 @@ function sanitizeValue(value) {
  */
 export function validateApiKey(req, res, next) {
   const apiKey = req.headers['x-api-key'];
-  
+
   if (!apiKey) {
     return res.status(401).json({
       error: 'API key required',
-      errorCode: 'API_KEY_REQUIRED'
+      errorCode: 'API_KEY_REQUIRED',
     });
   }
-  
+
   // Basic API key format validation
   if (!/^[a-zA-Z0-9_-]{32,}$/.test(apiKey)) {
     return res.status(401).json({
       error: 'Invalid API key format',
-      errorCode: 'INVALID_API_KEY_FORMAT'
+      errorCode: 'INVALID_API_KEY_FORMAT',
     });
   }
-  
+
   (async () => {
     try {
       // Prefer DB-backed keys stored via ConfigurationManager under 'apiKeys'
@@ -237,22 +239,24 @@ export function validateApiKey(req, res, next) {
           providedKey: apiKey.substring(0, 8) + '...',
           ip: req.ip,
           userAgent: req.get('User-Agent'),
-          url: req.originalUrl
+          url: req.originalUrl,
         });
-        
+
         // Add slight delay to slow down brute force attempts
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         return res.status(401).json({
           error: 'Invalid API key',
-          errorCode: 'INVALID_API_KEY'
+          errorCode: 'INVALID_API_KEY',
         });
       }
 
       return next();
     } catch (e) {
       logger.error('API key validation error', { error: e.message });
-      return res.status(500).json({ error: 'API key validation failed', errorCode: 'API_KEY_VALIDATION_ERROR' });
+      return res
+        .status(500)
+        .json({ error: 'API key validation failed', errorCode: 'API_KEY_VALIDATION_ERROR' });
     }
   })();
 }
@@ -262,7 +266,7 @@ export function validateApiKey(req, res, next) {
  */
 export function securityLogging(req, res, next) {
   const startTime = Date.now();
-  
+
   // Log request
   logger.info('Request', {
     method: req.method,
@@ -270,14 +274,14 @@ export function securityLogging(req, res, next) {
     ip: req.ip,
     userAgent: req.get('User-Agent'),
     userId: req.user?.id || null,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
-  
+
   // Capture response
   const originalSend = res.send;
-  res.send = function(data) {
+  res.send = function (data) {
     const duration = Date.now() - startTime;
-    
+
     // Log response
     logger.info('Response', {
       method: req.method,
@@ -285,9 +289,9 @@ export function securityLogging(req, res, next) {
       statusCode: res.statusCode,
       duration: `${duration}ms`,
       ip: req.ip,
-      userId: req.user?.id || null
+      userId: req.user?.id || null,
     });
-    
+
     // Log security events
     if (res.statusCode === 401 || res.statusCode === 403) {
       logger.warn('Security event', {
@@ -297,13 +301,13 @@ export function securityLogging(req, res, next) {
         statusCode: res.statusCode,
         ip: req.ip,
         userAgent: req.get('User-Agent'),
-        userId: req.user?.id || null
+        userId: req.user?.id || null,
       });
     }
-    
+
     originalSend.call(this, data);
   };
-  
+
   next();
 }
 
@@ -313,16 +317,16 @@ export function securityLogging(req, res, next) {
 export function requestLogger(req, res, next) {
   const start = Date.now();
   const requestId = req.id || req.headers['x-request-id'] || undefined;
-  
+
   // Log request
   logger.info('HTTP Request', {
     method: req.method,
     url: req.url,
     userAgent: req.get('User-Agent'),
     ip: req.ip,
-    requestId
+    requestId,
   });
-  
+
   // Log response when finished
   res.on('finish', () => {
     const duration = Date.now() - start;
@@ -331,10 +335,10 @@ export function requestLogger(req, res, next) {
       url: req.url,
       statusCode: res.statusCode,
       duration: `${duration}ms`,
-      requestId
+      requestId,
     });
   });
-  
+
   next();
 }
 
@@ -350,5 +354,5 @@ export default {
   validateApiKey,
   securityLogging,
   requestLogger,
-  securityHeaders
+  securityHeaders,
 };

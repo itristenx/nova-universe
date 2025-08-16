@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
+import {
   Bell,
   CheckCircle2,
   Clock,
@@ -20,7 +20,7 @@ import {
   Brain,
   Heart,
   Eye,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,7 +80,7 @@ export default function EnhancedUserDashboard() {
     totalTickets: 0,
     openTickets: 0,
     completedTickets: 0,
-    avgResolutionTime: '0 days'
+    avgResolutionTime: '0 days',
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -94,44 +94,45 @@ export default function EnhancedUserDashboard() {
       title: 'Submit Ticket',
       description: 'Report an issue or request help',
       href: '/tickets/new-enhanced',
-      icon: <Plus className="w-6 h-6" />,
+      icon: <Plus className="h-6 w-6" />,
       color: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
-      popular: true
+      popular: true,
     },
     {
       id: 'track-tickets',
       title: 'Track Tickets',
       description: 'View status and updates',
       href: '/tickets/track',
-      icon: <Eye className="w-6 h-6" />,
+      icon: <Eye className="h-6 w-6" />,
       color: 'bg-green-100 text-green-700 hover:bg-green-200',
-      popular: true
+      popular: true,
     },
     {
       id: 'request-service',
       title: 'Request Service',
       description: 'Browse service catalog',
       href: '/catalog/enhanced',
-      icon: <ShoppingCart className="w-6 h-6" />,
+      icon: <ShoppingCart className="h-6 w-6" />,
       color: 'bg-purple-100 text-purple-700 hover:bg-purple-200',
-      popular: true
+      popular: true,
     },
     {
       id: 'search-knowledge',
       title: 'Knowledge Base',
       description: 'Find answers and guides',
       href: '/knowledge/enhanced',
-      icon: <Brain className="w-6 h-6" />,
-      color: 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+      icon: <Brain className="h-6 w-6" />,
+      color: 'bg-orange-100 text-orange-700 hover:bg-orange-200',
     },
     {
       id: 'knowledge-community',
       title: 'Knowledge Community',
       description: 'Expert network & peer recognition',
       href: '/knowledge-community',
-      icon: <Star className="w-6 h-6" />,
-      color: 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 hover:from-purple-200 hover:to-pink-200',
-      popular: true
+      icon: <Star className="h-6 w-6" />,
+      color:
+        'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 hover:from-purple-200 hover:to-pink-200',
+      popular: true,
     },
 
     {
@@ -139,24 +140,24 @@ export default function EnhancedUserDashboard() {
       title: 'Cosmo Assistant',
       description: 'Chat with AI assistant',
       href: '/cosmo',
-      icon: <MessageSquare className="w-6 h-6" />,
-      color: 'bg-pink-100 text-pink-700 hover:bg-pink-200'
+      icon: <MessageSquare className="h-6 w-6" />,
+      color: 'bg-pink-100 text-pink-700 hover:bg-pink-200',
     },
     {
       id: 'service-status',
       title: 'Service Status',
       description: 'Check system health',
       href: '/status',
-      icon: <Activity className="w-6 h-6" />,
-      color: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-    }
+      icon: <Activity className="h-6 w-6" />,
+      color: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
+    },
   ];
 
   // Load dashboard data
   useEffect(() => {
     const loadDashboardData = async () => {
       setLoading(true);
-      
+
       try {
         // Try to fetch from API first, fallback to mock data
         const response = await fetch('/api/dashboard/stats');
@@ -173,7 +174,7 @@ export default function EnhancedUserDashboard() {
           totalTickets: 12,
           openTickets: 3,
           completedTickets: 9,
-          avgResolutionTime: '2.5 days'
+          avgResolutionTime: '2.5 days',
         });
       }
 
@@ -186,7 +187,7 @@ export default function EnhancedUserDashboard() {
           description: 'New ticket created - Laptop login issues',
           timestamp: '2 hours ago',
           status: 'open',
-          icon: <Ticket className="w-4 h-4" />
+          icon: <Ticket className="h-4 w-4" />,
         },
         {
           id: '2',
@@ -195,7 +196,7 @@ export default function EnhancedUserDashboard() {
           description: 'Service request approved and provisioned',
           timestamp: '1 day ago',
           status: 'completed',
-          icon: <ShoppingCart className="w-4 h-4" />
+          icon: <ShoppingCart className="h-4 w-4" />,
         },
         {
           id: '3',
@@ -203,7 +204,7 @@ export default function EnhancedUserDashboard() {
           title: 'VPN Setup Guide',
           description: 'Viewed knowledge article',
           timestamp: '2 days ago',
-          icon: <FileText className="w-4 h-4" />
+          icon: <FileText className="h-4 w-4" />,
         },
         {
           id: '4',
@@ -212,8 +213,8 @@ export default function EnhancedUserDashboard() {
           description: 'Ticket status changed to In Progress',
           timestamp: '3 days ago',
           status: 'in_progress',
-          icon: <RefreshCw className="w-4 h-4" />
-        }
+          icon: <RefreshCw className="h-4 w-4" />,
+        },
       ]);
 
       // Mock notifications
@@ -224,7 +225,7 @@ export default function EnhancedUserDashboard() {
           message: 'Your password reset request has been resolved',
           type: 'success',
           timestamp: '1 hour ago',
-          read: false
+          read: false,
         },
         {
           id: '2',
@@ -232,7 +233,7 @@ export default function EnhancedUserDashboard() {
           message: 'Email service will be unavailable tonight 11 PM - 2 AM',
           type: 'warning',
           timestamp: '3 hours ago',
-          read: false
+          read: false,
         },
         {
           id: '3',
@@ -240,8 +241,8 @@ export default function EnhancedUserDashboard() {
           message: 'Enhanced ticket tracking is now available',
           type: 'info',
           timestamp: '1 day ago',
-          read: true
-        }
+          read: true,
+        },
       ]);
 
       // Mock personalized recommendations
@@ -253,7 +254,7 @@ export default function EnhancedUserDashboard() {
           type: 'service',
           href: '/catalog/enhanced?service=vpn',
           reason: 'Based on your role and recent activity',
-          icon: <ShoppingCart className="w-4 h-4" />
+          icon: <ShoppingCart className="h-4 w-4" />,
         },
         {
           id: '2',
@@ -262,7 +263,7 @@ export default function EnhancedUserDashboard() {
           type: 'knowledge',
           href: '/knowledge/enhanced?category=security',
           reason: 'Related to your recent password reset',
-          icon: <FileText className="w-4 h-4" />
+          icon: <FileText className="h-4 w-4" />,
         },
         {
           id: '3',
@@ -271,8 +272,8 @@ export default function EnhancedUserDashboard() {
           type: 'service',
           href: '/catalog/enhanced?service=mobile',
           reason: 'Popular among your department',
-          icon: <ShoppingCart className="w-4 h-4" />
-        }
+          icon: <ShoppingCart className="h-4 w-4" />,
+        },
       ]);
 
       setLoading(false);
@@ -297,21 +298,21 @@ export default function EnhancedUserDashboard() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'success':
-        return <CheckCircle2 className="w-4 h-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case 'warning':
-        return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
-        return <Bell className="w-4 h-4 text-blue-500" />;
+        return <Bell className="h-4 w-4 text-blue-500" />;
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <RefreshCw className="mx-auto mb-4 h-8 w-8 animate-spin text-blue-600" />
           <p className="text-muted-foreground">Loading your dashboard...</p>
         </div>
       </div>
@@ -321,24 +322,20 @@ export default function EnhancedUserDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="border-b bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">
-                Welcome to Nova Orbit
-              </h1>
-              <p className="text-muted-foreground">
-                Your personal IT service portal
-              </p>
+              <h1 className="text-2xl font-bold">Welcome to Nova Orbit</h1>
+              <p className="text-muted-foreground">Your personal IT service portal</p>
             </div>
             <div className="flex items-center gap-4">
               <Button variant="outline" size="sm">
-                <Bell className="w-4 h-4 mr-2" />
-                {notifications.filter(n => !n.read).length} new
+                <Bell className="mr-2 h-4 w-4" />
+                {notifications.filter((n) => !n.read).length} new
               </Button>
               <Button variant="outline" size="sm">
-                <User className="w-4 h-4 mr-2" />
+                <User className="mr-2 h-4 w-4" />
                 Profile
               </Button>
             </div>
@@ -346,17 +343,17 @@ export default function EnhancedUserDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="mx-auto max-w-7xl space-y-6 p-6">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Tickets</p>
+                  <p className="text-muted-foreground text-sm font-medium">Total Tickets</p>
                   <p className="text-2xl font-bold">{stats.totalTickets}</p>
                 </div>
-                <Ticket className="w-8 h-8 text-blue-600" />
+                <Ticket className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
@@ -365,10 +362,10 @@ export default function EnhancedUserDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Open Tickets</p>
+                  <p className="text-muted-foreground text-sm font-medium">Open Tickets</p>
                   <p className="text-2xl font-bold text-orange-600">{stats.openTickets}</p>
                 </div>
-                <Clock className="w-8 h-8 text-orange-600" />
+                <Clock className="h-8 w-8 text-orange-600" />
               </div>
             </CardContent>
           </Card>
@@ -377,10 +374,10 @@ export default function EnhancedUserDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Completed</p>
+                  <p className="text-muted-foreground text-sm font-medium">Completed</p>
                   <p className="text-2xl font-bold text-green-600">{stats.completedTickets}</p>
                 </div>
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
+                <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
@@ -389,10 +386,10 @@ export default function EnhancedUserDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Avg Resolution</p>
+                  <p className="text-muted-foreground text-sm font-medium">Avg Resolution</p>
                   <p className="text-2xl font-bold text-purple-600">{stats.avgResolutionTime}</p>
                 </div>
-                <BarChart3 className="w-8 h-8 text-purple-600" />
+                <BarChart3 className="h-8 w-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>
@@ -402,22 +399,20 @@ export default function EnhancedUserDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5" />
+              <Zap className="h-5 w-5" />
               Quick Actions
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {quickActions.map((action) => (
                 <Link key={action.id} href={action.href}>
                   <Card className={`cursor-pointer transition-all hover:shadow-lg ${action.color}`}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-white/20 rounded-lg">
-                          {action.icon}
-                        </div>
+                        <div className="rounded-lg bg-white/20 p-2">{action.icon}</div>
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <h3 className="font-semibold">{action.title}</h3>
                             {action.popular && (
                               <Badge variant="secondary" className="text-xs">
@@ -427,7 +422,7 @@ export default function EnhancedUserDashboard() {
                           </div>
                           <p className="text-sm opacity-80">{action.description}</p>
                         </div>
-                        <ArrowRight className="w-4 h-4 opacity-60" />
+                        <ArrowRight className="h-4 w-4 opacity-60" />
                       </div>
                     </CardContent>
                   </Card>
@@ -437,42 +432,46 @@ export default function EnhancedUserDashboard() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Recent Activity */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Activity className="w-5 h-5" />
+                <Activity className="h-5 w-5" />
                 Recent Activity
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="p-2 bg-muted rounded-lg">
-                      {activity.icon}
-                    </div>
+                  <div
+                    key={activity.id}
+                    className="hover:bg-muted/50 flex items-start gap-3 rounded-lg p-3 transition-colors"
+                  >
+                    <div className="bg-muted rounded-lg p-2">{activity.icon}</div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="mb-1 flex items-center gap-2">
                         <h4 className="font-medium">{activity.title}</h4>
                         {activity.status && (
-                          <Badge className={getActivityStatusColor(activity.status)} variant="secondary">
+                          <Badge
+                            className={getActivityStatusColor(activity.status)}
+                            variant="secondary"
+                          >
                             {activity.status.replace('_', ' ')}
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground mb-1">{activity.description}</p>
-                      <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
+                      <p className="text-muted-foreground mb-1 text-sm">{activity.description}</p>
+                      <p className="text-muted-foreground text-xs">{activity.timestamp}</p>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t">
+              <div className="mt-4 border-t pt-4">
                 <Link href="/tickets">
                   <Button variant="outline" size="sm" className="w-full">
                     View All Activity
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </div>
@@ -485,11 +484,11 @@ export default function EnhancedUserDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Bell className="w-5 h-5" />
+                  <Bell className="h-5 w-5" />
                   Notifications
-                  {notifications.filter(n => !n.read).length > 0 && (
+                  {notifications.filter((n) => !n.read).length > 0 && (
                     <Badge variant="default" className="ml-auto">
-                      {notifications.filter(n => !n.read).length}
+                      {notifications.filter((n) => !n.read).length}
                     </Badge>
                   )}
                 </CardTitle>
@@ -497,22 +496,26 @@ export default function EnhancedUserDashboard() {
               <CardContent>
                 <div className="space-y-3">
                   {notifications.slice(0, 3).map((notification) => (
-                    <div 
-                      key={notification.id} 
-                      className={`p-3 rounded-lg border ${notification.read ? 'opacity-60' : 'bg-blue-50 border-blue-200'}`}
+                    <div
+                      key={notification.id}
+                      className={`rounded-lg border p-3 ${notification.read ? 'opacity-60' : 'border-blue-200 bg-blue-50'}`}
                     >
                       <div className="flex items-start gap-2">
                         {getNotificationIcon(notification.type)}
                         <div className="flex-1">
-                          <h5 className="font-medium text-sm">{notification.title}</h5>
-                          <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
-                          <p className="text-xs text-muted-foreground mt-2">{notification.timestamp}</p>
+                          <h5 className="text-sm font-medium">{notification.title}</h5>
+                          <p className="text-muted-foreground mt-1 text-xs">
+                            {notification.message}
+                          </p>
+                          <p className="text-muted-foreground mt-2 text-xs">
+                            {notification.timestamp}
+                          </p>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-4">
+                <Button variant="outline" size="sm" className="mt-4 w-full">
                   View All Notifications
                 </Button>
               </CardContent>
@@ -522,7 +525,7 @@ export default function EnhancedUserDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Star className="w-5 h-5" />
+                  <Star className="h-5 w-5" />
                   Recommended for You
                 </CardTitle>
               </CardHeader>
@@ -530,15 +533,15 @@ export default function EnhancedUserDashboard() {
                 <div className="space-y-3">
                   {recommendations.map((rec) => (
                     <Link key={rec.id} href={rec.href}>
-                      <div className="p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer">
+                      <div className="hover:bg-muted/50 cursor-pointer rounded-lg border p-3 transition-colors">
                         <div className="flex items-start gap-2">
                           {rec.icon}
                           <div className="flex-1">
-                            <h5 className="font-medium text-sm">{rec.title}</h5>
-                            <p className="text-xs text-muted-foreground mt-1">{rec.description}</p>
-                            <p className="text-xs text-blue-600 mt-2">{rec.reason}</p>
+                            <h5 className="text-sm font-medium">{rec.title}</h5>
+                            <p className="text-muted-foreground mt-1 text-xs">{rec.description}</p>
+                            <p className="mt-2 text-xs text-blue-600">{rec.reason}</p>
                           </div>
-                          <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                          <ArrowRight className="text-muted-foreground h-3 w-3" />
                         </div>
                       </div>
                     </Link>
@@ -553,36 +556,36 @@ export default function EnhancedUserDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Heart className="w-5 h-5" />
+              <Heart className="h-5 w-5" />
               Your Experience
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-medium">Ticket Resolution</span>
-                  <span className="text-sm text-muted-foreground">85%</span>
+                  <span className="text-muted-foreground text-sm">85%</span>
                 </div>
                 <Progress value={85} className="h-2" />
               </div>
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-medium">Service Quality</span>
-                  <span className="text-sm text-muted-foreground">92%</span>
+                  <span className="text-muted-foreground text-sm">92%</span>
                 </div>
                 <Progress value={92} className="h-2" />
               </div>
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-medium">Response Time</span>
-                  <span className="text-sm text-muted-foreground">78%</span>
+                  <span className="text-muted-foreground text-sm">78%</span>
                 </div>
                 <Progress value={78} className="h-2" />
               </div>
             </div>
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800 mb-2">
+            <div className="mt-4 rounded-lg bg-blue-50 p-4">
+              <p className="mb-2 text-sm text-blue-800">
                 <strong>Overall Satisfaction: 4.2/5</strong>
               </p>
               <p className="text-xs text-blue-600">

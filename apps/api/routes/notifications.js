@@ -1,6 +1,6 @@
 /**
  * Nova Universal Notification Platform API Routes
- * 
+ *
  * RESTful API endpoints for managing notifications, preferences, and analytics
  * across all Nova modules with industry-standard patterns and security
  */
@@ -16,22 +16,35 @@ import db from '../db.js';
 const router = express.Router();
 // Rate limiting for notification endpoints
 const notificationRateLimit = createRateLimit(60 * 1000, 100); // 100 requests per minute
-const bulkRateLimit = createRateLimit(60 * 1000, 10);         // 10 bulk requests per minute
-const adminRateLimit = createRateLimit(60 * 1000, 200);      // 200 admin requests per minute
+const bulkRateLimit = createRateLimit(60 * 1000, 10); // 10 bulk requests per minute
+const adminRateLimit = createRateLimit(60 * 1000, 200); // 200 admin requests per minute
 
 // Validation helpers
 const validateNotificationPayload = [
   body('module').isString().isLength({ min: 1 }).withMessage('Module is required'),
   body('eventType').isString().isLength({ min: 1 }).withMessage('Event type is required'),
-  body('title').isString().isLength({ min: 1, max: 255 }).withMessage('Title is required and must be under 255 characters'),
-  body('message').isString().isLength({ min: 1, max: 2000 }).withMessage('Message is required and must be under 2000 characters'),
-  body('details').optional().isString().isLength({ max: 10000 }).withMessage('Details must be under 10000 characters'),
-  body('priority').optional().isIn(['CRITICAL', 'HIGH', 'NORMAL', 'LOW']).withMessage('Invalid priority'),
+  body('title')
+    .isString()
+    .isLength({ min: 1, max: 255 })
+    .withMessage('Title is required and must be under 255 characters'),
+  body('message')
+    .isString()
+    .isLength({ min: 1, max: 2000 })
+    .withMessage('Message is required and must be under 2000 characters'),
+  body('details')
+    .optional()
+    .isString()
+    .isLength({ max: 10000 })
+    .withMessage('Details must be under 10000 characters'),
+  body('priority')
+    .optional()
+    .isIn(['CRITICAL', 'HIGH', 'NORMAL', 'LOW'])
+    .withMessage('Invalid priority'),
   body('recipientRoles').optional().isArray().withMessage('Recipient roles must be an array'),
   body('recipientUsers').optional().isArray().withMessage('Recipient users must be an array'),
   body('tenantId').optional().isString().withMessage('Tenant ID must be a string'),
   body('scheduledFor').optional().isISO8601().withMessage('Scheduled time must be a valid date'),
-  body('expiresAt').optional().isISO8601().withMessage('Expiry time must be a valid date')
+  body('expiresAt').optional().isISO8601().withMessage('Expiry time must be a valid date'),
 ];
 
 // ============================================================================
@@ -142,7 +155,8 @@ const validateNotificationPayload = [
  *       500:
  *         description: Internal server error
  */
-router.post('/send',
+router.post(
+  '/send',
   authenticateJWT,
   notificationRateLimit,
   validateNotificationPayload,
@@ -154,21 +168,21 @@ router.post('/send',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
       // Extract payload
       const payload = {
         ...req.body,
-        createdBy: req.user.id
+        createdBy: req.user.id,
       };
 
       // Validate recipients
       if (!payload.recipientRoles && !payload.recipientUsers) {
         return res.status(400).json({
           success: false,
-          error: 'At least one recipient (role or user) is required'
+          error: 'At least one recipient (role or user) is required',
         });
       }
 
@@ -179,24 +193,23 @@ router.post('/send',
         eventId,
         module: payload.module,
         eventType: payload.eventType,
-        priority: payload.priority
+        priority: payload.priority,
       });
 
       res.status(201).json({
         success: true,
         eventId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Failed to send notification:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to send notification',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -241,12 +254,15 @@ router.post('/send',
  *                 failureCount:
  *                   type: integer
  */
-router.post('/send/batch',
+router.post(
+  '/send/batch',
   authenticateJWT,
   requirePermission('notifications:bulk_send'),
   bulkRateLimit,
   [
-    body('notifications').isArray({ min: 1, max: 100 }).withMessage('Notifications array must contain 1-100 items')
+    body('notifications')
+      .isArray({ min: 1, max: 100 })
+      .withMessage('Notifications array must contain 1-100 items'),
   ],
   async (req, res) => {
     try {
@@ -255,16 +271,16 @@ router.post('/send/batch',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
       const { notifications } = req.body;
-      
+
       // Add created by to each notification
-      const enrichedNotifications = notifications.map(notification => ({
+      const enrichedNotifications = notifications.map((notification) => ({
         ...notification,
-        createdBy: req.user.id
+        createdBy: req.user.id,
       }));
 
       // Send batch
@@ -273,7 +289,7 @@ router.post('/send/batch',
       logger.info(`Batch notifications sent by user ${req.user.id}:`, {
         count: notifications.length,
         successCount: eventIds.length,
-        failureCount: notifications.length - eventIds.length
+        failureCount: notifications.length - eventIds.length,
       });
 
       res.status(201).json({
@@ -281,18 +297,17 @@ router.post('/send/batch',
         eventIds,
         successCount: eventIds.length,
         failureCount: notifications.length - eventIds.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Failed to send batch notifications:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to send batch notifications',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -303,13 +318,14 @@ router.post('/send/batch',
  *     summary: Schedule a notification for future delivery
  *     description: Schedule a notification to be sent at a specific time
  */
-router.post('/schedule',
+router.post(
+  '/schedule',
   authenticateJWT,
   requirePermission('notifications:schedule'),
   notificationRateLimit,
   [
     ...validateNotificationPayload,
-    body('scheduledFor').isISO8601().withMessage('Valid scheduled time is required')
+    body('scheduledFor').isISO8601().withMessage('Valid scheduled time is required'),
   ],
   async (req, res) => {
     try {
@@ -318,48 +334,47 @@ router.post('/schedule',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
       const scheduledFor = new Date(req.body.scheduledFor);
-      
+
       // Validate scheduled time is in the future
       if (scheduledFor <= new Date()) {
         return res.status(400).json({
           success: false,
-          error: 'Scheduled time must be in the future'
+          error: 'Scheduled time must be in the future',
         });
       }
 
       const payload = {
         ...req.body,
-        createdBy: req.user.id
+        createdBy: req.user.id,
       };
 
       const eventId = await novaNotificationPlatform.scheduleNotification(payload, scheduledFor);
 
       logger.info(`Notification scheduled by user ${req.user.id}:`, {
         eventId,
-        scheduledFor: scheduledFor.toISOString()
+        scheduledFor: scheduledFor.toISOString(),
       });
 
       res.status(201).json({
         success: true,
         eventId,
         scheduledFor: scheduledFor.toISOString(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Failed to schedule notification:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to schedule notification',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -370,13 +385,12 @@ router.post('/schedule',
  *     summary: Cancel a scheduled notification
  *     description: Cancel a notification that hasn't been sent yet
  */
-router.post('/:eventId/cancel',
+router.post(
+  '/:eventId/cancel',
   authenticateJWT,
   requirePermission('notifications:cancel'),
   notificationRateLimit,
-  [
-    param('eventId').isUUID().withMessage('Valid event ID is required')
-  ],
+  [param('eventId').isUUID().withMessage('Valid event ID is required')],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -384,7 +398,7 @@ router.post('/:eventId/cancel',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -396,24 +410,23 @@ router.post('/:eventId/cancel',
         res.json({
           success: true,
           message: 'Notification cancelled successfully',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       } else {
         res.status(404).json({
           success: false,
-          error: 'Notification not found or cannot be cancelled'
+          error: 'Notification not found or cannot be cancelled',
         });
       }
-
     } catch (error) {
       logger.error('Failed to cancel notification:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to cancel notification',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ============================================================================
@@ -428,28 +441,24 @@ router.post('/:eventId/cancel',
  *     summary: Get user notification preferences
  *     description: Retrieve the current user's notification preferences
  */
-router.get('/preferences',
-  authenticateJWT,
-  async (req, res) => {
-    try {
-      const preferences = await novaNotificationPlatform.getUserPreferences(req.user.id);
+router.get('/preferences', authenticateJWT, async (req, res) => {
+  try {
+    const preferences = await novaNotificationPlatform.getUserPreferences(req.user.id);
 
-      res.json({
-        success: true,
-        preferences,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      logger.error(`Failed to get preferences for user ${req.user.id}:`, error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to retrieve preferences',
-        details: error.message
-      });
-    }
+    res.json({
+      success: true,
+      preferences,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error(`Failed to get preferences for user ${req.user.id}:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve preferences',
+      details: error.message,
+    });
   }
-);
+});
 
 /**
  * @swagger
@@ -459,7 +468,8 @@ router.get('/preferences',
  *     summary: Update user notification preferences
  *     description: Update the current user's notification preferences
  */
-router.put('/preferences',
+router.put(
+  '/preferences',
   authenticateJWT,
   notificationRateLimit,
   [
@@ -467,7 +477,10 @@ router.put('/preferences',
     body('preferences.*.module').isString().withMessage('Module is required'),
     body('preferences.*.eventType').isString().withMessage('Event type is required'),
     body('preferences.*.channels').isArray().withMessage('Channels must be an array'),
-    body('preferences.*.priority').optional().isIn(['CRITICAL', 'HIGH', 'NORMAL', 'LOW']).withMessage('Invalid priority')
+    body('preferences.*.priority')
+      .optional()
+      .isIn(['CRITICAL', 'HIGH', 'NORMAL', 'LOW'])
+      .withMessage('Invalid priority'),
   ],
   async (req, res) => {
     try {
@@ -476,7 +489,7 @@ router.put('/preferences',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -484,24 +497,23 @@ router.put('/preferences',
       await novaNotificationPlatform.updateUserPreferences(req.user.id, preferences);
 
       logger.info(`Preferences updated for user ${req.user.id}:`, {
-        preferencesCount: preferences.length
+        preferencesCount: preferences.length,
       });
 
       res.json({
         success: true,
         message: 'Preferences updated successfully',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error(`Failed to update preferences for user ${req.user.id}:`, error);
       res.status(500).json({
         success: false,
         error: 'Failed to update preferences',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -512,36 +524,32 @@ router.put('/preferences',
  *     summary: Get Helix user notification profile
  *     description: Retrieve the user's comprehensive notification profile including GoAlert, Synth, and Sentinel settings
  */
-router.get('/preferences/helix',
-  authenticateJWT,
-  async (req, res) => {
-    try {
-      // This would fetch from the Helix notification profile
-      const profile = {
-        userId: req.user.id,
-        globalEnabled: true,
-        defaultChannels: ['EMAIL', 'IN_APP'],
-        timezone: 'UTC',
-        digestEnabled: false,
-        // ... other profile data
-      };
+router.get('/preferences/helix', authenticateJWT, async (req, res) => {
+  try {
+    // This would fetch from the Helix notification profile
+    const profile = {
+      userId: req.user.id,
+      globalEnabled: true,
+      defaultChannels: ['EMAIL', 'IN_APP'],
+      timezone: 'UTC',
+      digestEnabled: false,
+      // ... other profile data
+    };
 
-      res.json({
-        success: true,
-        profile,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      logger.error(`Failed to get Helix profile for user ${req.user.id}:`, error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to retrieve Helix profile',
-        details: error.message
-      });
-    }
+    res.json({
+      success: true,
+      profile,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error(`Failed to get Helix profile for user ${req.user.id}:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve Helix profile',
+      details: error.message,
+    });
   }
-);
+});
 
 /**
  * @swagger
@@ -551,7 +559,8 @@ router.get('/preferences/helix',
  *     summary: Update Helix user notification profile
  *     description: Update the user's comprehensive notification profile
  */
-router.put('/preferences/helix',
+router.put(
+  '/preferences/helix',
   authenticateJWT,
   notificationRateLimit,
   [
@@ -561,7 +570,7 @@ router.put('/preferences/helix',
     body('digestEnabled').optional().isBoolean(),
     body('goalertEnabled').optional().isBoolean(),
     body('synthEnabled').optional().isBoolean(),
-    body('sentinelEnabled').optional().isBoolean()
+    body('sentinelEnabled').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
@@ -570,7 +579,7 @@ router.put('/preferences/helix',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -581,18 +590,17 @@ router.put('/preferences/helix',
       res.json({
         success: true,
         message: 'Helix profile updated successfully',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error(`Failed to update Helix profile for user ${req.user.id}:`, error);
       res.status(500).json({
         success: false,
         error: 'Failed to update Helix profile',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ============================================================================
@@ -607,14 +615,24 @@ router.put('/preferences/helix',
  *     summary: Get user notifications
  *     description: Retrieve notifications for the current user with pagination and filtering
  */
-router.get('/',
+router.get(
+  '/',
   authenticateJWT,
   [
     query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
-    query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
-    query('status').optional().isIn(['PENDING', 'DELIVERED', 'READ', 'FAILED']).withMessage('Invalid status'),
+    query('limit')
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Limit must be between 1 and 100'),
+    query('status')
+      .optional()
+      .isIn(['PENDING', 'DELIVERED', 'READ', 'FAILED'])
+      .withMessage('Invalid status'),
     query('channel').optional().isString().withMessage('Channel must be a string'),
-    query('priority').optional().isIn(['CRITICAL', 'HIGH', 'NORMAL', 'LOW']).withMessage('Invalid priority')
+    query('priority')
+      .optional()
+      .isIn(['CRITICAL', 'HIGH', 'NORMAL', 'LOW'])
+      .withMessage('Invalid priority'),
   ],
   async (req, res) => {
     try {
@@ -623,7 +641,7 @@ router.get('/',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -633,7 +651,7 @@ router.get('/',
 
       // Build filters
       const where = {
-        userId: req.user.id
+        userId: req.user.id,
       };
 
       if (req.query.status) {
@@ -657,12 +675,22 @@ router.get('/',
         filters.push('(target_user_id = $' + idx++ + ' OR target_user_id IS NULL)');
         params.push(req.user.id);
 
-        if (where.status) { filters.push('status = $' + idx); params.push(where.status); idx++; }
-        if (where.channel) { filters.push('type = $' + idx); params.push(where.channel); idx++; }
-        if (where.priority) { /* schema has level not priority; ignore */ }
+        if (where.status) {
+          filters.push('status = $' + idx);
+          params.push(where.status);
+          idx++;
+        }
+        if (where.channel) {
+          filters.push('type = $' + idx);
+          params.push(where.channel);
+          idx++;
+        }
+        if (where.priority) {
+          /* schema has level not priority; ignore */
+        }
 
         const whereSql = filters.length ? 'WHERE ' + filters.join(' AND ') : '';
-        const listSql = `SELECT id, uuid, message, level, type, created_at FROM notifications ${whereSql} ORDER BY created_at DESC LIMIT $${idx} OFFSET $${idx+1}`;
+        const listSql = `SELECT id, uuid, message, level, type, created_at FROM notifications ${whereSql} ORDER BY created_at DESC LIMIT $${idx} OFFSET $${idx + 1}`;
         params.push(limit, offset);
         const listRes = await db.query(listSql, params);
         notifications = listRes.rows || [];
@@ -681,20 +709,19 @@ router.get('/',
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit)
+          pages: Math.ceil(total / limit),
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error(`Failed to get notifications for user ${req.user.id}:`, error);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve notifications',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -705,11 +732,10 @@ router.get('/',
  *     summary: Mark notification as read
  *     description: Mark a specific notification as read by the current user
  */
-router.post('/:notificationId/read',
+router.post(
+  '/:notificationId/read',
   authenticateJWT,
-  [
-    param('notificationId').isUUID().withMessage('Valid notification ID is required')
-  ],
+  [param('notificationId').isUUID().withMessage('Valid notification ID is required')],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -717,33 +743,32 @@ router.post('/:notificationId/read',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
       const { notificationId } = req.params;
-      
+
       // Mark as read - implementation would go in the notification platform
       logger.info(`Notification marked as read:`, {
         notificationId,
-        userId: req.user.id
+        userId: req.user.id,
       });
 
       res.json({
         success: true,
         message: 'Notification marked as read',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Failed to mark notification as read:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to mark notification as read',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ============================================================================
@@ -758,7 +783,8 @@ router.post('/:notificationId/read',
  *     summary: Get notification analytics
  *     description: Retrieve notification analytics and metrics (admin only)
  */
-router.get('/admin/analytics',
+router.get(
+  '/admin/analytics',
   authenticateJWT,
   requirePermission('notifications:admin'),
   adminRateLimit,
@@ -766,7 +792,10 @@ router.get('/admin/analytics',
     query('startDate').optional().isISO8601().withMessage('Start date must be valid'),
     query('endDate').optional().isISO8601().withMessage('End date must be valid'),
     query('module').optional().isString().withMessage('Module must be a string'),
-    query('granularity').optional().isIn(['hour', 'day', 'week']).withMessage('Invalid granularity')
+    query('granularity')
+      .optional()
+      .isIn(['hour', 'day', 'week'])
+      .withMessage('Invalid granularity'),
   ],
   async (req, res) => {
     try {
@@ -775,11 +804,13 @@ router.get('/admin/analytics',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
-      const start = req.query.startDate ? new Date(req.query.startDate) : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const start = req.query.startDate
+        ? new Date(req.query.startDate)
+        : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const end = req.query.endDate ? new Date(req.query.endDate) : new Date();
       const moduleFilter = req.query.module;
 
@@ -789,23 +820,42 @@ router.get('/admin/analytics',
         deliveryRate: 0,
         channelBreakdown: {},
         moduleBreakdown: {},
-        timeline: []
+        timeline: [],
       };
       try {
         const baseWhere = 'created_at BETWEEN $1 AND $2';
         const params = [start.toISOString(), end.toISOString()];
-        const totalRes = await db.query(`SELECT COUNT(*) AS cnt FROM notifications WHERE ${baseWhere}`, params);
+        const totalRes = await db.query(
+          `SELECT COUNT(*) AS cnt FROM notifications WHERE ${baseWhere}`,
+          params,
+        );
         const total = parseInt(totalRes.rows?.[0]?.cnt || 0);
-        const byType = await db.query(`SELECT type, COUNT(*) AS cnt FROM notifications WHERE ${baseWhere} GROUP BY type`, params);
-        const byLevel = await db.query(`SELECT level, COUNT(*) AS cnt FROM notifications WHERE ${baseWhere} GROUP BY level`, params);
-        const timeline = await db.query(`SELECT DATE_TRUNC('day', created_at) AS day, COUNT(*) AS cnt FROM notifications WHERE ${baseWhere} GROUP BY day ORDER BY day`, params);
+        const byType = await db.query(
+          `SELECT type, COUNT(*) AS cnt FROM notifications WHERE ${baseWhere} GROUP BY type`,
+          params,
+        );
+        const byLevel = await db.query(
+          `SELECT level, COUNT(*) AS cnt FROM notifications WHERE ${baseWhere} GROUP BY level`,
+          params,
+        );
+        const timeline = await db.query(
+          `SELECT DATE_TRUNC('day', created_at) AS day, COUNT(*) AS cnt FROM notifications WHERE ${baseWhere} GROUP BY day ORDER BY day`,
+          params,
+        );
         analytics = {
           totalEvents: total,
           totalNotifications: total,
           deliveryRate: 100, // assume delivered; platform-specific status not tracked here
-          channelBreakdown: Object.fromEntries((byType.rows || []).map(r => [r.type, parseInt(r.cnt)])),
-          moduleBreakdown: Object.fromEntries((byLevel.rows || []).map(r => [r.level, parseInt(r.cnt)])),
-          timeline: (timeline.rows || []).map(r => ({ timestamp: r.day, count: parseInt(r.cnt) }))
+          channelBreakdown: Object.fromEntries(
+            (byType.rows || []).map((r) => [r.type, parseInt(r.cnt)]),
+          ),
+          moduleBreakdown: Object.fromEntries(
+            (byLevel.rows || []).map((r) => [r.level, parseInt(r.cnt)]),
+          ),
+          timeline: (timeline.rows || []).map((r) => ({
+            timestamp: r.day,
+            count: parseInt(r.cnt),
+          })),
         };
       } catch (e) {
         logger.warn('Notifications analytics fallback (DB unavailable)', { error: e.message });
@@ -814,18 +864,17 @@ router.get('/admin/analytics',
       res.json({
         success: true,
         analytics,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Failed to get analytics:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve analytics',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -836,7 +885,8 @@ router.get('/admin/analytics',
  *     summary: Get notification providers
  *     description: Retrieve configured notification providers (admin only)
  */
-router.get('/admin/providers',
+router.get(
+  '/admin/providers',
   authenticateJWT,
   requirePermission('notifications:admin'),
   adminRateLimit,
@@ -844,8 +894,14 @@ router.get('/admin/providers',
     try {
       let providers = [];
       try {
-        const result = await db.query('SELECT id, provider, config FROM alert_notification_channels ORDER BY id LIMIT 100');
-        providers = (result.rows || []).map(r => ({ id: r.id, provider: r.provider, config: r.config || {} }));
+        const result = await db.query(
+          'SELECT id, provider, config FROM alert_notification_channels ORDER BY id LIMIT 100',
+        );
+        providers = (result.rows || []).map((r) => ({
+          id: r.id,
+          provider: r.provider,
+          config: r.config || {},
+        }));
       } catch (e) {
         logger.warn('Providers list fallback (table missing)', { error: e.message });
       }
@@ -853,18 +909,17 @@ router.get('/admin/providers',
       res.json({
         success: true,
         providers,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Failed to get providers:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve providers',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ============================================================================
@@ -879,30 +934,27 @@ router.get('/admin/providers',
  *     summary: Health check
  *     description: Check the health of the notification system
  */
-router.get('/health',
-  async (req, res) => {
-    try {
-      const health = {
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        services: {
-          database: 'healthy',
-          queue: 'healthy',
-          providers: 'healthy'
-        }
-      };
+router.get('/health', async (req, res) => {
+  try {
+    const health = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      services: {
+        database: 'healthy',
+        queue: 'healthy',
+        providers: 'healthy',
+      },
+    };
 
-      res.json(health);
-
-    } catch (error) {
-      logger.error('Health check failed:', error);
-      res.status(500).json({
-        status: 'unhealthy',
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-    }
+    res.json(health);
+  } catch (error) {
+    logger.error('Health check failed:', error);
+    res.status(500).json({
+      status: 'unhealthy',
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
   }
-);
+});
 
 export default router;

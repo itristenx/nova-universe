@@ -40,7 +40,6 @@ router.get('/config', async (req, res) => {
 // Update directory config (stub, implement as needed)
 // router.put('/config', ...)
 
-
 /**
  * @swagger
  * /api/v1/directory/search:
@@ -82,7 +81,6 @@ router.get('/search', async (req, res) => {
     res.status(500).json({ error: 'Directory search failed', errorCode: 'DIRECTORY_SEARCH_ERROR' });
   }
 });
-
 
 /**
  * @swagger
@@ -143,7 +141,9 @@ router.get('/search', async (req, res) => {
 router.post('/user', async (req, res) => {
   const { name, email } = req.body;
   if (!name || !email) {
-    return res.status(400).json({ error: 'Name and email are required', errorCode: 'NAME_EMAIL_REQUIRED' });
+    return res
+      .status(400)
+      .json({ error: 'Name and email are required', errorCode: 'NAME_EMAIL_REQUIRED' });
   }
   try {
     const id = await createUser(name, email);

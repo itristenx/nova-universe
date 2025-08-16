@@ -10,7 +10,9 @@ async function getIntegrationLayer() {
     const mod = await import('../../lib/integration/nova-integration-layer.js');
     return mod.novaIntegrationLayer;
   } catch (e) {
-    logger.warn('Integration layer unavailable; skipping NIL-dependent route', { error: e?.message });
+    logger.warn('Integration layer unavailable; skipping NIL-dependent route', {
+      error: e?.message,
+    });
     return null;
   }
 }
@@ -56,41 +58,44 @@ async function getIntegrationLayer() {
  *                   type: string
  */
 router.get('/', (req, res) => {
-  db.all('SELECT key, value FROM config WHERE key LIKE $1', ['integration_%'], (err, configRows) => {
-    if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-    // Parse stored configs if needed
-    const storedConfigs = {};
-    for (const row of configRows) {
-      try {
-        storedConfigs[row.key.replace('integration_', '')] = JSON.parse(row.value);
-      } catch {
-        storedConfigs[row.key.replace('integration_', '')] = {};
+  db.all(
+    'SELECT key, value FROM config WHERE key LIKE $1',
+    ['integration_%'],
+    (err, configRows) => {
+      if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+      // Parse stored configs if needed
+      const storedConfigs = {};
+      for (const row of configRows) {
+        try {
+          storedConfigs[row.key.replace('integration_', '')] = JSON.parse(row.value);
+        } catch {
+          storedConfigs[row.key.replace('integration_', '')] = {};
+        }
       }
-    }
-    const integrations = [
-      {
-        id: 4,
-        name: 'Slack',
-        description: 'Slack integration for Nova Universe',
-        status: 'active',
-      },
-      {
-        id: 5,
-        name: 'Microsoft Teams',
-        description: 'Teams integration for Nova Universe',
-        status: 'planned',
-      },
-      {
-        id: 6,
-        name: 'Discord',
-        description: 'Discord integration for Nova Universe',
-        status: 'beta',
-      },
-    ];
-    res.json({ integrations, storedConfigs });
-  });
+      const integrations = [
+        {
+          id: 4,
+          name: 'Slack',
+          description: 'Slack integration for Nova Universe',
+          status: 'active',
+        },
+        {
+          id: 5,
+          name: 'Microsoft Teams',
+          description: 'Teams integration for Nova Universe',
+          status: 'planned',
+        },
+        {
+          id: 6,
+          name: 'Discord',
+          description: 'Discord integration for Nova Universe',
+          status: 'beta',
+        },
+      ];
+      res.json({ integrations, storedConfigs });
+    },
+  );
 });
-
 
 /**
  * @swagger
@@ -171,7 +176,8 @@ router.put('/:id', (req, res) => {
     return res.status(400).json({ error: 'Invalid request body', errorCode: 'INVALID_BODY' });
   }
 
-  const query = 'UPDATE integrations SET name = $1, type = $2, config = $3, enabled = $4 WHERE id = $5';
+  const query =
+    'UPDATE integrations SET name = $1, type = $2, config = $3, enabled = $4 WHERE id = $5';
   const params = [name, type, JSON.stringify(config), enabled, id];
 
   db.run(query, params, function (err) {
@@ -187,7 +193,6 @@ router.put('/:id', (req, res) => {
     res.status(200).json({ message: 'Integration updated successfully' });
   });
 });
-
 
 /**
  * @swagger
@@ -255,7 +260,6 @@ router.delete('/:id', async (req, res) => {
     return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
   }
 });
-
 
 /**
  * @swagger
@@ -360,20 +364,23 @@ router.post('/:id/test', async (req, res, next) => {
 router.get('/connectors/health', async (req, res) => {
   try {
     const layer = await getIntegrationLayer();
-    if (!layer) return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+    if (!layer)
+      return res
+        .status(503)
+        .json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
 
     const healthStatuses = await layer.getConnectorHealth();
-    
+
     res.json({
       connectors: healthStatuses,
-      overall: healthStatuses.every(h => h.status === 'healthy') ? 'healthy' : 'degraded',
-      timestamp: new Date().toISOString()
+      overall: healthStatuses.every((h) => h.status === 'healthy') ? 'healthy' : 'degraded',
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error(`Failed to get connector health: ${error.message}`);
-    res.status(500).json({ 
-      error: 'Failed to get connector health', 
-      code: 'HEALTH_CHECK_FAILED' 
+    res.status(500).json({
+      error: 'Failed to get connector health',
+      code: 'HEALTH_CHECK_FAILED',
     });
   }
 });
@@ -396,21 +403,24 @@ router.post('/connectors/:id/sync', async (req, res) => {
     const { type = 'incremental', dryRun = false } = req.body;
 
     const layer = await getIntegrationLayer();
-    if (!layer) return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+    if (!layer)
+      return res
+        .status(503)
+        .json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
 
     const result = await layer.executeSync(id, { type, dryRun });
-    
+
     res.json({
       success: true,
       jobId: result.jobId,
       status: result.status,
-      metrics: result.metrics
+      metrics: result.metrics,
     });
   } catch (error) {
     logger.error(`Failed to trigger sync for connector ${req.params.id}: ${error.message}`);
-    res.status(500).json({ 
-      error: 'Failed to trigger sync', 
-      code: 'SYNC_FAILED' 
+    res.status(500).json({
+      error: 'Failed to trigger sync',
+      code: 'SYNC_FAILED',
     });
   }
 });
@@ -443,35 +453,38 @@ router.post('/connectors/:id/sync', async (req, res) => {
 router.post('/actions', async (req, res) => {
   try {
     const { connectorId, action, target, parameters = {} } = req.body;
-    
+
     if (!connectorId || !action || !target) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: connectorId, action, target', 
-        code: 'MISSING_FIELDS' 
+      return res.status(400).json({
+        error: 'Missing required fields: connectorId, action, target',
+        code: 'MISSING_FIELDS',
       });
     }
 
     const layer = await getIntegrationLayer();
-    if (!layer) return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
-    
+    if (!layer)
+      return res
+        .status(503)
+        .json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
+
     const result = await layer.executeAction({
       connectorId,
       action,
       target,
       parameters,
-      requestedBy: req.user?.id || 'api'
+      requestedBy: req.user?.id || 'api',
     });
-    
+
     res.json({
       success: result.success,
       message: result.message,
-      data: result.data
+      data: result.data,
     });
   } catch (error) {
     logger.error(`Failed to execute action: ${error.message}`);
-    res.status(500).json({ 
-      error: 'Failed to execute action', 
-      code: 'ACTION_FAILED' 
+    res.status(500).json({
+      error: 'Failed to execute action',
+      code: 'ACTION_FAILED',
     });
   }
 });

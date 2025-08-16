@@ -9,19 +9,24 @@ const validateElasticConfig = () => {
     node: process.env.ELASTIC_URL || 'http://localhost:9200',
     auth: {
       username: process.env.ELASTIC_USERNAME || 'elastic',
-      password: process.env.ELASTIC_PASSWORD || 'changeme'
+      password: process.env.ELASTIC_PASSWORD || 'changeme',
     },
     requestTimeout: parseInt(process.env.ELASTIC_REQUEST_TIMEOUT || '30000'),
     pingTimeout: parseInt(process.env.ELASTIC_PING_TIMEOUT || '3000'),
     sniffOnStart: process.env.ELASTIC_SNIFF_ON_START === 'true',
-    sniffInterval: process.env.ELASTIC_SNIFF_INTERVAL ? parseInt(process.env.ELASTIC_SNIFF_INTERVAL) : false,
+    sniffInterval: process.env.ELASTIC_SNIFF_INTERVAL
+      ? parseInt(process.env.ELASTIC_SNIFF_INTERVAL)
+      : false,
     sniffOnConnectionFault: process.env.ELASTIC_SNIFF_ON_CONNECTION_FAULT === 'true',
     maxRetries: parseInt(process.env.ELASTIC_MAX_RETRIES || '3'),
     resurrectStrategy: 'ping' as const,
     compression: process.env.ELASTIC_COMPRESSION === 'true',
-    ssl: process.env.ELASTIC_SSL_VERIFY === 'false' ? {
-      rejectUnauthorized: false
-    } : undefined
+    ssl:
+      process.env.ELASTIC_SSL_VERIFY === 'false'
+        ? {
+            rejectUnauthorized: false,
+          }
+        : undefined,
   };
 
   // Validate configuration
@@ -30,7 +35,9 @@ const validateElasticConfig = () => {
   }
 
   if (config.requestTimeout < 1000 || config.requestTimeout > 300000) {
-    logger.warn('ELASTIC_REQUEST_TIMEOUT should be between 1000ms and 300000ms, using default 30000ms');
+    logger.warn(
+      'ELASTIC_REQUEST_TIMEOUT should be between 1000ms and 300000ms, using default 30000ms',
+    );
     config.requestTimeout = 30000;
   }
 
@@ -40,14 +47,17 @@ const validateElasticConfig = () => {
   }
 
   // Log configuration (without sensitive data)
-  logger.info('Elasticsearch configuration loaded: ' + JSON.stringify({
-    node: config.node,
-    requestTimeout: config.requestTimeout,
-    pingTimeout: config.pingTimeout,
-    maxRetries: config.maxRetries,
-    compression: config.compression,
-    ssl: !!config.ssl
-  }));
+  logger.info(
+    'Elasticsearch configuration loaded: ' +
+      JSON.stringify({
+        node: config.node,
+        requestTimeout: config.requestTimeout,
+        pingTimeout: config.pingTimeout,
+        maxRetries: config.maxRetries,
+        compression: config.compression,
+        ssl: !!config.ssl,
+      }),
+  );
 
   return config;
 };
@@ -71,18 +81,21 @@ class ElasticsearchManager {
 
     try {
       logger.info('Initializing Elasticsearch connection...');
-      
+
       // Test connection
       const health = await this.client.cluster.health();
       logger.info(`Elasticsearch cluster status: ${health.status}`);
-      
+
       // Setup index templates and mappings
       await this.setupIndexTemplates();
-      
+
       this.isInitialized = true;
       logger.info('Elasticsearch initialization completed');
     } catch (error) {
-      logger.error('Failed to initialize Elasticsearch: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Failed to initialize Elasticsearch: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -101,24 +114,24 @@ class ElasticsearchManager {
                 nova_analyzer: {
                   type: 'custom',
                   tokenizer: 'standard',
-                  filter: ['lowercase', 'stop', 'snowball']
-                }
-              }
-            }
+                  filter: ['lowercase', 'stop', 'snowball'],
+                },
+              },
+            },
           },
           mappings: {
             properties: {
               id: { type: 'keyword' },
-              title: { 
-                type: 'text', 
+              title: {
+                type: 'text',
                 analyzer: 'nova_analyzer',
                 fields: {
-                  keyword: { type: 'keyword' }
-                }
+                  keyword: { type: 'keyword' },
+                },
               },
-              description: { 
-                type: 'text', 
-                analyzer: 'nova_analyzer' 
+              description: {
+                type: 'text',
+                analyzer: 'nova_analyzer',
               },
               status: { type: 'keyword' },
               priority: { type: 'keyword' },
@@ -129,10 +142,10 @@ class ElasticsearchManager {
               createdAt: { type: 'date' },
               updatedAt: { type: 'date' },
               resolvedAt: { type: 'date' },
-              metadata: { type: 'object' }
-            }
-          }
-        }
+              metadata: { type: 'object' },
+            },
+          },
+        },
       });
 
       // Nova logs index template
@@ -145,17 +158,17 @@ class ElasticsearchManager {
             index: {
               lifecycle: {
                 name: 'nova_logs_policy',
-                rollover_alias: 'nova_logs'
-              }
-            }
+                rollover_alias: 'nova_logs',
+              },
+            },
           },
           mappings: {
             properties: {
               timestamp: { type: 'date' },
               level: { type: 'keyword' },
-              message: { 
+              message: {
                 type: 'text',
-                analyzer: 'nova_analyzer'
+                analyzer: 'nova_analyzer',
               },
               source: { type: 'keyword' },
               userId: { type: 'keyword' },
@@ -168,12 +181,12 @@ class ElasticsearchManager {
                 properties: {
                   name: { type: 'keyword' },
                   message: { type: 'text' },
-                  stack: { type: 'text' }
-                }
-              }
-            }
-          }
-        }
+                  stack: { type: 'text' },
+                },
+              },
+            },
+          },
+        },
       });
 
       // Nova knowledge base index template
@@ -188,29 +201,29 @@ class ElasticsearchManager {
                 kb_analyzer: {
                   type: 'custom',
                   tokenizer: 'standard',
-                  filter: ['lowercase', 'stop', 'snowball', 'stemmer']
-                }
-              }
-            }
+                  filter: ['lowercase', 'stop', 'snowball', 'stemmer'],
+                },
+              },
+            },
           },
           mappings: {
             properties: {
               id: { type: 'keyword' },
-              title: { 
-                type: 'text', 
+              title: {
+                type: 'text',
                 analyzer: 'kb_analyzer',
                 boost: 2.0,
                 fields: {
-                  keyword: { type: 'keyword' }
-                }
+                  keyword: { type: 'keyword' },
+                },
               },
-              content: { 
-                type: 'text', 
-                analyzer: 'kb_analyzer' 
+              content: {
+                type: 'text',
+                analyzer: 'kb_analyzer',
               },
-              summary: { 
-                type: 'text', 
-                analyzer: 'kb_analyzer' 
+              summary: {
+                type: 'text',
+                analyzer: 'kb_analyzer',
               },
               category: { type: 'keyword' },
               tags: { type: 'keyword' },
@@ -227,12 +240,12 @@ class ElasticsearchManager {
                 properties: {
                   name: { type: 'text' },
                   url: { type: 'keyword' },
-                  type: { type: 'keyword' }
-                }
-              }
-            }
-          }
-        }
+                  type: { type: 'keyword' },
+                },
+              },
+            },
+          },
+        },
       });
 
       // Nova AI context index template (for embeddings and semantic search)
@@ -241,29 +254,32 @@ class ElasticsearchManager {
         template: {
           settings: {
             number_of_shards: 1,
-            number_of_replicas: 0
+            number_of_replicas: 0,
           },
           mappings: {
             properties: {
               id: { type: 'keyword' },
               content: { type: 'text' },
-              embedding: { 
-                type: 'dense_vector', 
-                dims: 384 // Adjust based on your embedding model
+              embedding: {
+                type: 'dense_vector',
+                dims: 384, // Adjust based on your embedding model
               },
               contentType: { type: 'keyword' },
               sourceId: { type: 'keyword' },
               sourceType: { type: 'keyword' },
               metadata: { type: 'object' },
-              createdAt: { type: 'date' }
-            }
-          }
-        }
+              createdAt: { type: 'date' },
+            },
+          },
+        },
       });
 
       logger.info('Elasticsearch index templates created');
     } catch (error) {
-      logger.error('Error setting up Elasticsearch index templates: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error setting up Elasticsearch index templates: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
 
@@ -271,12 +287,15 @@ class ElasticsearchManager {
     try {
       await this.client.indices.putIndexTemplate({
         name,
-        ...template
+        ...template,
       });
       logger.debug(`Created Elasticsearch index template: ${name}`);
     } catch (error: any) {
       if (!error.message.includes('already exists')) {
-        logger.error(`Error creating index template ${name}: ` + (error instanceof Error ? error.message : String(error)));
+        logger.error(
+          `Error creating index template ${name}: ` +
+            (error instanceof Error ? error.message : String(error)),
+        );
       }
     }
   }
@@ -285,14 +304,14 @@ class ElasticsearchManager {
   async indexTicket(ticket: any) {
     try {
       await this.ensureInitialized();
-      
+
       const response = await this.client.index({
         index: 'nova_tickets',
         id: ticket.id,
         document: {
           ...ticket,
-          indexedAt: new Date()
-        }
+          indexedAt: new Date(),
+        },
       });
 
       if (process.env.DEBUG_SQL === 'true') {
@@ -301,7 +320,9 @@ class ElasticsearchManager {
 
       return response;
     } catch (error) {
-      logger.error('Error indexing ticket: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error indexing ticket: ' + (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -310,14 +331,14 @@ class ElasticsearchManager {
   async indexKbArticle(article: any) {
     try {
       await this.ensureInitialized();
-      
+
       const response = await this.client.index({
         index: 'nova_kb',
         id: article.id,
         document: {
           ...article,
-          indexedAt: new Date()
-        }
+          indexedAt: new Date(),
+        },
       });
 
       if (process.env.DEBUG_SQL === 'true') {
@@ -326,7 +347,9 @@ class ElasticsearchManager {
 
       return response;
     } catch (error) {
-      logger.error('Error indexing KB article: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error indexing KB article: ' + (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -335,15 +358,17 @@ class ElasticsearchManager {
   async indexLog(logEntry: any) {
     try {
       await this.ensureInitialized();
-      
+
       const response = await this.client.index({
         index: `nova_logs-${new Date().toISOString().slice(0, 7)}`, // Monthly indexes
-        document: logEntry
+        document: logEntry,
       });
 
       return response;
     } catch (error) {
-      logger.error('Error indexing log entry: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error indexing log entry: ' + (error instanceof Error ? error.message : String(error)),
+      );
       // Don't throw for logging errors
     }
   }
@@ -352,7 +377,7 @@ class ElasticsearchManager {
   async searchTickets(query: string, filters: any = {}, options: any = {}) {
     try {
       await this.ensureInitialized();
-      
+
       const searchBody: any = {
         query: {
           bool: {
@@ -362,25 +387,22 @@ class ElasticsearchManager {
                   query,
                   fields: ['title^2', 'description', 'tags'],
                   type: 'best_fields',
-                  fuzziness: 'AUTO'
-                }
-              }
+                  fuzziness: 'AUTO',
+                },
+              },
             ],
-            filter: []
-          }
+            filter: [],
+          },
         },
         highlight: {
           fields: {
             title: {},
-            description: {}
-          }
+            description: {},
+          },
         },
-        sort: options.sort || [
-          { _score: { order: 'desc' } },
-          { updatedAt: { order: 'desc' } }
-        ],
+        sort: options.sort || [{ _score: { order: 'desc' } }, { updatedAt: { order: 'desc' } }],
         size: options.size || 20,
-        from: options.from || 0
+        from: options.from || 0,
       };
 
       // Add filters
@@ -400,20 +422,22 @@ class ElasticsearchManager {
         highlight: searchBody.highlight,
         sort: searchBody.sort,
         size: searchBody.size,
-        from: searchBody.from
+        from: searchBody.from,
       });
 
       return {
         hits: response.hits.hits.map((hit: any) => ({
           ...hit._source,
           score: hit._score,
-          highlight: hit.highlight
+          highlight: hit.highlight,
         })),
         total: response.hits.total,
-        maxScore: response.hits.max_score
+        maxScore: response.hits.max_score,
       };
     } catch (error) {
-      logger.error('Error searching tickets: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error searching tickets: ' + (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -422,7 +446,7 @@ class ElasticsearchManager {
   async searchKnowledgeBase(query: string, filters: any = {}, options: any = {}) {
     try {
       await this.ensureInitialized();
-      
+
       const searchBody: any = {
         query: {
           bool: {
@@ -432,29 +456,27 @@ class ElasticsearchManager {
                   query,
                   fields: ['title^3', 'content^2', 'summary^1.5', 'tags'],
                   type: 'best_fields',
-                  fuzziness: 'AUTO'
-                }
-              }
+                  fuzziness: 'AUTO',
+                },
+              },
             ],
-            filter: [
-              { term: { status: 'published' } }
-            ]
-          }
+            filter: [{ term: { status: 'published' } }],
+          },
         },
         highlight: {
           fields: {
             title: {},
             content: { fragment_size: 150, number_of_fragments: 3 },
-            summary: {}
-          }
+            summary: {},
+          },
         },
         sort: options.sort || [
           { _score: { order: 'desc' } },
           { rating: { order: 'desc' } },
-          { updatedAt: { order: 'desc' } }
+          { updatedAt: { order: 'desc' } },
         ],
         size: options.size || 10,
-        from: options.from || 0
+        from: options.from || 0,
       };
 
       // Add filters
@@ -471,20 +493,23 @@ class ElasticsearchManager {
         highlight: searchBody.highlight,
         sort: searchBody.sort,
         size: searchBody.size,
-        from: searchBody.from
+        from: searchBody.from,
       });
 
       return {
         hits: response.hits.hits.map((hit: any) => ({
           ...hit._source,
           score: hit._score,
-          highlight: hit.highlight
+          highlight: hit.highlight,
         })),
         total: response.hits.total,
-        maxScore: response.hits.max_score
+        maxScore: response.hits.max_score,
       };
     } catch (error) {
-      logger.error('Error searching knowledge base: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error searching knowledge base: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -493,7 +518,7 @@ class ElasticsearchManager {
   async semanticSearchKnowledgeBase(query: string, filters: any = {}, options: any = {}) {
     try {
       await this.ensureInitialized();
-      
+
       const searchBody: any = {
         query: {
           bool: {
@@ -501,24 +526,22 @@ class ElasticsearchManager {
               {
                 semantic: {
                   field: 'semantic_field',
-                  query: query
-                }
-              }
+                  query: query,
+                },
+              },
             ],
-            filter: [
-              { term: { status: 'published' } }
-            ]
-          }
+            filter: [{ term: { status: 'published' } }],
+          },
         },
         highlight: {
           fields: {
             title: {},
             content: { fragment_size: 150, number_of_fragments: 3 },
-            summary: {}
-          }
+            summary: {},
+          },
         },
         size: options.size || 10,
-        from: options.from || 0
+        from: options.from || 0,
       };
 
       // Add filters
@@ -531,20 +554,23 @@ class ElasticsearchManager {
 
       const response = await this.client.search({
         index: 'nova_kb',
-        body: searchBody
+        body: searchBody,
       });
 
       return {
         hits: response.hits.hits.map((hit: any) => ({
           ...hit._source,
           score: hit._score,
-          highlight: hit.highlight
+          highlight: hit.highlight,
         })),
         total: response.hits.total,
-        maxScore: response.hits.max_score
+        maxScore: response.hits.max_score,
       };
     } catch (error) {
-      logger.error('Error performing semantic search on knowledge base: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error performing semantic search on knowledge base: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -553,7 +579,7 @@ class ElasticsearchManager {
   async hybridSearchKnowledgeBase(query: string, filters: any = {}, options: any = {}) {
     try {
       await this.ensureInitialized();
-      
+
       const searchBody: any = {
         retriever: {
           rrf: {
@@ -567,15 +593,13 @@ class ElasticsearchManager {
                           query,
                           fields: ['title^3', 'content^2', 'summary^1.5', 'tags'],
                           type: 'best_fields',
-                          fuzziness: 'AUTO'
-                        }
+                          fuzziness: 'AUTO',
+                        },
                       },
-                      filter: [
-                        { term: { status: 'published' } }
-                      ]
-                    }
-                  }
-                }
+                      filter: [{ term: { status: 'published' } }],
+                    },
+                  },
+                },
               },
               {
                 standard: {
@@ -584,36 +608,35 @@ class ElasticsearchManager {
                       must: {
                         semantic: {
                           field: 'semantic_field',
-                          query: query
-                        }
+                          query: query,
+                        },
                       },
-                      filter: [
-                        { term: { status: 'published' } }
-                      ]
-                    }
-                  }
-                }
-              }
-            ]
-          }
+                      filter: [{ term: { status: 'published' } }],
+                    },
+                  },
+                },
+              },
+            ],
+          },
         },
         highlight: {
           fields: {
             title: {},
             content: { fragment_size: 150, number_of_fragments: 3 },
-            summary: {}
-          }
+            summary: {},
+          },
         },
         size: options.size || 10,
-        from: options.from || 0
+        from: options.from || 0,
       };
 
       // Add additional filters to both retrievers
       if (filters.category || filters.visibility) {
         const additionalFilters: any[] = [];
         if (filters.category) additionalFilters.push({ term: { category: filters.category } });
-        if (filters.visibility) additionalFilters.push({ term: { visibility: filters.visibility } });
-        
+        if (filters.visibility)
+          additionalFilters.push({ term: { visibility: filters.visibility } });
+
         searchBody.retriever.rrf.retrievers.forEach((retriever: any) => {
           retriever.standard.query.bool.filter.push(...additionalFilters);
         });
@@ -621,20 +644,23 @@ class ElasticsearchManager {
 
       const response = await this.client.search({
         index: 'nova_kb',
-        ...searchBody
+        ...searchBody,
       });
 
       return {
         hits: response.hits.hits.map((hit: any) => ({
           ...hit._source,
           score: hit._score,
-          highlight: hit.highlight
+          highlight: hit.highlight,
         })),
         total: response.hits.total,
-        maxScore: response.hits.max_score
+        maxScore: response.hits.max_score,
       };
     } catch (error) {
-      logger.error('Error performing hybrid search on knowledge base: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error performing hybrid search on knowledge base: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -643,7 +669,7 @@ class ElasticsearchManager {
   async searchLogs(query: string, filters: any = {}, options: any = {}) {
     try {
       await this.ensureInitialized();
-      
+
       const searchBody: any = {
         query: {
           bool: {
@@ -653,24 +679,22 @@ class ElasticsearchManager {
                   query,
                   fields: ['message^2', 'source', 'action', 'details.error.message'],
                   type: 'best_fields',
-                  fuzziness: 'AUTO'
-                }
-              }
+                  fuzziness: 'AUTO',
+                },
+              },
             ],
-            filter: []
-          }
+            filter: [],
+          },
         },
         highlight: {
           fields: {
             message: {},
-            'details.error.message': {}
-          }
+            'details.error.message': {},
+          },
         },
-        sort: options.sort || [
-          { timestamp: { order: 'desc' } }
-        ],
+        sort: options.sort || [{ timestamp: { order: 'desc' } }],
         size: options.size || 20,
-        from: options.from || 0
+        from: options.from || 0,
       };
 
       // Add filters
@@ -687,28 +711,30 @@ class ElasticsearchManager {
         searchBody.query.bool.filter.push({
           range: {
             timestamp: {
-              gte: `now-${filters.timeRange}`
-            }
-          }
+              gte: `now-${filters.timeRange}`,
+            },
+          },
         });
       }
 
       const response = await this.client.search({
         index: 'nova_logs*',
-        ...searchBody
+        ...searchBody,
       });
 
       return {
         hits: response.hits.hits.map((hit: any) => ({
           ...hit._source,
           score: hit._score,
-          highlight: hit.highlight
+          highlight: hit.highlight,
         })),
         total: response.hits.total,
-        maxScore: response.hits.max_score
+        maxScore: response.hits.max_score,
       };
     } catch (error) {
-      logger.error('Error searching logs: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error searching logs: ' + (error instanceof Error ? error.message : String(error)),
+      );
       throw error;
     }
   }
@@ -717,7 +743,7 @@ class ElasticsearchManager {
   async getSearchSuggestions(query: string, options: any = {}) {
     try {
       await this.ensureInitialized();
-      
+
       const suggestions: any[] = [];
       const { type = 'all', limit = 10 } = options;
 
@@ -726,69 +752,73 @@ class ElasticsearchManager {
 
       if (type === 'all' || type === 'tickets') {
         searchPromises.push(
-          this.client.search({
-            index: 'nova_tickets',
-            suggest: {
-              title_suggest: {
-                prefix: query,
-                completion: {
-                  field: 'title.suggest',
-                  size: limit
-                }
-              }
-            },
-            _source: false,
-            size: 0
-          }).then(response => ({
-            type: 'tickets',
-            suggestions: (response as any).suggest?.title_suggest?.[0]?.options || []
-          }))
+          this.client
+            .search({
+              index: 'nova_tickets',
+              suggest: {
+                title_suggest: {
+                  prefix: query,
+                  completion: {
+                    field: 'title.suggest',
+                    size: limit,
+                  },
+                },
+              },
+              _source: false,
+              size: 0,
+            })
+            .then((response) => ({
+              type: 'tickets',
+              suggestions: (response as any).suggest?.title_suggest?.[0]?.options || [],
+            })),
         );
       }
 
       if (type === 'all' || type === 'knowledge_base') {
         searchPromises.push(
-          this.client.search({
-            index: 'nova_kb',
-            suggest: {
-              title_suggest: {
-                prefix: query,
-                completion: {
-                  field: 'title.suggest',
-                  size: limit
-                }
-              }
-            },
-            _source: false,
-            size: 0
-          }).then(response => ({
-            type: 'knowledge_base',
-            suggestions: (response as any).suggest?.title_suggest?.[0]?.options || []
-          }))
+          this.client
+            .search({
+              index: 'nova_kb',
+              suggest: {
+                title_suggest: {
+                  prefix: query,
+                  completion: {
+                    field: 'title.suggest',
+                    size: limit,
+                  },
+                },
+              },
+              _source: false,
+              size: 0,
+            })
+            .then((response) => ({
+              type: 'knowledge_base',
+              suggestions: (response as any).suggest?.title_suggest?.[0]?.options || [],
+            })),
         );
       }
 
       const results = await Promise.allSettled(searchPromises);
-      
-      results.forEach(result => {
+
+      results.forEach((result) => {
         if (result.status === 'fulfilled' && result.value) {
           result.value.suggestions.forEach((suggestion: any) => {
             suggestions.push({
               text: suggestion.text,
               score: suggestion._score,
-              type: result.value.type
+              type: result.value.type,
             });
           });
         }
       });
 
       // Sort by score and limit results
-      return suggestions
-        .sort((a, b) => (b.score || 0) - (a.score || 0))
-        .slice(0, limit);
-
+      return suggestions.sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, limit);
     } catch (error) {
-      logger.error('Error getting search suggestions: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error getting search suggestions: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       // Return fallback suggestions based on query
       return this.getFallbackSuggestions(query, options);
     }
@@ -798,18 +828,32 @@ class ElasticsearchManager {
   private getFallbackSuggestions(query: string, options: any = {}) {
     const { limit = 10 } = options;
     const commonTerms = [
-      'installation', 'setup', 'configuration', 'troubleshooting', 'error',
-      'login', 'password', 'account', 'permissions', 'network', 'connection',
-      'update', 'upgrade', 'backup', 'restore', 'performance', 'security'
+      'installation',
+      'setup',
+      'configuration',
+      'troubleshooting',
+      'error',
+      'login',
+      'password',
+      'account',
+      'permissions',
+      'network',
+      'connection',
+      'update',
+      'upgrade',
+      'backup',
+      'restore',
+      'performance',
+      'security',
     ];
 
     return commonTerms
-      .filter(term => term.toLowerCase().includes(query.toLowerCase()))
+      .filter((term) => term.toLowerCase().includes(query.toLowerCase()))
       .slice(0, limit)
-      .map(term => ({
+      .map((term) => ({
         text: term,
         score: 1.0,
-        type: 'fallback'
+        type: 'fallback',
       }));
   }
 
@@ -817,7 +861,7 @@ class ElasticsearchManager {
   async getSearchAnalytics(timeRange: string = '7d') {
     try {
       await this.ensureInitialized();
-      
+
       const response = await this.client.search({
         index: 'nova_logs*',
         query: {
@@ -827,38 +871,41 @@ class ElasticsearchManager {
               {
                 range: {
                   timestamp: {
-                    gte: `now-${timeRange}`
-                  }
-                }
-              }
-            ]
-          }
+                    gte: `now-${timeRange}`,
+                  },
+                },
+              },
+            ],
+          },
         },
         aggs: {
           popular_queries: {
             terms: {
               field: 'details.query.keyword',
-              size: 10
-            }
+              size: 10,
+            },
           },
           searches_over_time: {
             date_histogram: {
               field: 'timestamp',
-              fixed_interval: '1h'
-            }
+              fixed_interval: '1h',
+            },
           },
           users_searching: {
             cardinality: {
-              field: 'userId'
-            }
-          }
+              field: 'userId',
+            },
+          },
         },
-        size: 0
+        size: 0,
       });
 
       return response.aggregations;
     } catch (error) {
-      logger.error('Error getting search analytics: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error getting search analytics: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
       return null;
     }
   }
@@ -866,11 +913,11 @@ class ElasticsearchManager {
   // Health check
   async healthCheck() {
     const start = Date.now();
-    
+
     try {
       const health = await this.client.cluster.health();
       const responseTime = Date.now() - start;
-      
+
       return {
         healthy: health.status !== 'red',
         responseTime,
@@ -878,13 +925,13 @@ class ElasticsearchManager {
         numberOfNodes: health.number_of_nodes,
         numberOfDataNodes: health.number_of_data_nodes,
         activePrimaryShards: health.active_primary_shards,
-        activeShards: health.active_shards
+        activeShards: health.active_shards,
       };
     } catch (error: any) {
       return {
         healthy: false,
         error: error.message,
-        responseTime: Date.now() - start
+        responseTime: Date.now() - start,
       };
     }
   }
@@ -901,7 +948,10 @@ class ElasticsearchManager {
       await this.client.close();
       logger.info('Elasticsearch connection closed');
     } catch (error) {
-      logger.error('Error closing Elasticsearch connection: ' + (error instanceof Error ? error.message : String(error)));
+      logger.error(
+        'Error closing Elasticsearch connection: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
 }
@@ -920,7 +970,7 @@ export const {
   hybridSearchKnowledgeBase,
   searchLogs,
   getSearchSuggestions,
-  getSearchAnalytics
+  getSearchAnalytics,
 } = elasticManager;
 
 export default elasticManager;

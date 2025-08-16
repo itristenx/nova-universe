@@ -9,7 +9,7 @@ export class NovaNotificationPlatform {
       retryAttempts: 3,
       retryDelay: 1000,
       batchSize: 100,
-      ...config
+      ...config,
     };
   }
 
@@ -19,23 +19,23 @@ export class NovaNotificationPlatform {
   async sendNotification(notification) {
     try {
       const results = [];
-      
+
       for (const channel of notification.channels) {
         const result = await this.sendToChannel(channel, notification);
         results.push(result);
       }
-      
+
       return {
         success: true,
         results,
-        notificationId: notification.id
+        notificationId: notification.id,
       };
     } catch (error) {
       console.error('Notification send failed:', error);
       return {
         success: false,
         error: error.message,
-        notificationId: notification.id
+        notificationId: notification.id,
       };
     }
   }
@@ -83,15 +83,15 @@ export class NovaNotificationPlatform {
    */
   async sendBatch(notifications) {
     const results = [];
-    
+
     for (let i = 0; i < notifications.length; i += this.config.batchSize) {
       const batch = notifications.slice(i, i + this.config.batchSize);
       const batchResults = await Promise.allSettled(
-        batch.map(notification => this.sendNotification(notification))
+        batch.map((notification) => this.sendNotification(notification)),
       );
       results.push(...batchResults);
     }
-    
+
     return results;
   }
 }

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Input, Modal, Checkbox } from '@/components/ui';
-import { 
-  UsersIcon, 
-  PlusIcon, 
-  TrashIcon, 
+import {
+  UsersIcon,
+  PlusIcon,
+  TrashIcon,
   PencilIcon,
   UserGroupIcon,
   MagnifyingGlassIcon,
-  PowerIcon
+  PowerIcon,
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
@@ -116,13 +116,19 @@ export const UsersPage: React.FC = () => {
         ...(formData.password && { password: formData.password }),
       });
 
-      setUsers(users.map(u => u.id === editingUser.id ? { 
-        ...u, 
-        name: formData.name, 
-        email: formData.email,
-        roles: formData.roles 
-      } : u));
-      
+      setUsers(
+        users.map((u) =>
+          u.id === editingUser.id
+            ? {
+                ...u,
+                name: formData.name,
+                email: formData.email,
+                roles: formData.roles,
+              }
+            : u,
+        ),
+      );
+
       setEditingUser(null);
       resetForm();
       addToast({
@@ -144,7 +150,7 @@ export const UsersPage: React.FC = () => {
     if (confirm('Are you sure you want to delete this user?')) {
       try {
         await api.deleteUser(id);
-        setUsers(users.filter(u => u.id !== id));
+        setUsers(users.filter((u) => u.id !== id));
         addToast({
           type: 'success',
           title: 'Success',
@@ -166,9 +172,9 @@ export const UsersPage: React.FC = () => {
     if (confirm(`Are you sure you want to ${action} this user?`)) {
       try {
         await api.updateUser(user.id, {
-          disabled: !user.disabled
+          disabled: !user.disabled,
         });
-        setUsers(users.map(u => u.id === user.id ? { ...u, disabled: !user.disabled } : u));
+        setUsers(users.map((u) => (u.id === user.id ? { ...u, disabled: !user.disabled } : u)));
         addToast({
           type: 'success',
           title: 'Success',
@@ -202,26 +208,22 @@ export const UsersPage: React.FC = () => {
     resetForm();
   };
 
-  const filteredUsers = users.filter(user =>
-    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Manage user accounts, roles, and permissions
-          </p>
+          <p className="mt-1 text-sm text-gray-600">Manage user accounts, roles, and permissions</p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setShowCreateModal(true)}
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
+        <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+          <PlusIcon className="mr-2 h-4 w-4" />
           Add User
         </Button>
       </div>
@@ -230,7 +232,7 @@ export const UsersPage: React.FC = () => {
       <Card>
         <div className="p-4">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <Input
               placeholder="Search users by name or email..."
               value={searchTerm}
@@ -242,10 +244,10 @@ export const UsersPage: React.FC = () => {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-blue-500">
+            <div className="rounded-lg bg-blue-500 p-3">
               <UsersIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
@@ -256,26 +258,26 @@ export const UsersPage: React.FC = () => {
         </Card>
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-green-500">
+            <div className="rounded-lg bg-green-500 p-3">
               <UserGroupIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Admins</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {users.filter(u => u.roles?.includes('admin')).length}
+                {users.filter((u) => u.roles?.includes('admin')).length}
               </p>
             </div>
           </div>
         </Card>
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-purple-500">
+            <div className="rounded-lg bg-purple-500 p-3">
               <UsersIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Regular Users</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {users.filter(u => !u.roles?.includes('admin')).length}
+                {users.filter((u) => !u.roles?.includes('admin')).length}
               </p>
             </div>
           </div>
@@ -286,27 +288,23 @@ export const UsersPage: React.FC = () => {
       <Card>
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <div className="border-primary-600 h-8 w-8 animate-spin rounded-full border-b-2"></div>
           </div>
         ) : filteredUsers.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="py-12 text-center">
             <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">
               {searchTerm ? 'No users found' : 'No users found'}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchTerm 
-                ? 'Try adjusting your search criteria.' 
-                : 'Get started by creating your first user account.'
-              }
+              {searchTerm
+                ? 'Try adjusting your search criteria.'
+                : 'Get started by creating your first user account.'}
             </p>
             {!searchTerm && (
               <div className="mt-6">
-                <Button
-                  variant="primary"
-                  onClick={() => setShowCreateModal(true)}
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
+                <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+                  <PlusIcon className="mr-2 h-4 w-4" />
                   Add User
                 </Button>
               </div>
@@ -317,19 +315,19 @@ export const UsersPage: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     Roles
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     Permissions
                   </th>
                   <th className="relative px-6 py-3">
@@ -337,12 +335,17 @@ export const UsersPage: React.FC = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 bg-white">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className={`hover:bg-gray-50 ${user.disabled ? 'opacity-60' : ''}`}>
+                  <tr
+                    key={user.id}
+                    className={`hover:bg-gray-50 ${user.disabled ? 'opacity-60' : ''}`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${user.disabled ? 'bg-gray-400' : 'bg-primary-600'}`}>
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-full ${user.disabled ? 'bg-gray-400' : 'bg-primary-600'}`}
+                        >
                           <span className="text-sm font-medium text-white">
                             {user.name?.charAt(0)?.toUpperCase() || 'U'}
                           </span>
@@ -351,7 +354,7 @@ export const UsersPage: React.FC = () => {
                           <div className="text-sm font-medium text-gray-900">
                             {user.name}
                             {user.isDefault && (
-                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <span className="ml-2 inline-flex items-center rounded bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
                                 Default
                               </span>
                             )}
@@ -359,15 +362,15 @@ export const UsersPage: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.disabled 
-                          ? 'bg-red-100 text-red-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          user.disabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                        }`}
+                      >
                         {user.disabled ? 'Disabled' : 'Active'}
                       </span>
                     </td>
@@ -376,13 +379,11 @@ export const UsersPage: React.FC = () => {
                         {user.roles?.map((role) => (
                           <span
                             key={role}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                            className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
                           >
                             {role}
                           </span>
-                        )) || (
-                          <span className="text-sm text-gray-500">No roles assigned</span>
-                        )}
+                        )) || <span className="text-sm text-gray-500">No roles assigned</span>}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -390,7 +391,7 @@ export const UsersPage: React.FC = () => {
                         {user.permissions?.length || 0} permissions
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    <td className="space-x-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                       <Button
                         variant="default"
                         size="sm"
@@ -399,20 +400,24 @@ export const UsersPage: React.FC = () => {
                       >
                         <PencilIcon className="h-4 w-4" />
                       </Button>
-                      
+
                       {/* Disable/Enable button - only show if not default user */}
                       {!user.isDefault && (
                         <Button
                           variant="default"
                           size="sm"
                           onClick={() => toggleUserStatus(user)}
-                          className={user.disabled ? "text-green-600 hover:text-green-900" : "text-orange-600 hover:text-orange-900"}
-                          title={user.disabled ? "Enable user" : "Disable user"}
+                          className={
+                            user.disabled
+                              ? 'text-green-600 hover:text-green-900'
+                              : 'text-orange-600 hover:text-orange-900'
+                          }
+                          title={user.disabled ? 'Enable user' : 'Disable user'}
                         >
                           <PowerIcon className="h-4 w-4" />
                         </Button>
                       )}
-                      
+
                       {/* Delete button - only show if not default user */}
                       {!user.isDefault && (
                         <Button
@@ -434,12 +439,7 @@ export const UsersPage: React.FC = () => {
       </Card>
 
       {/* Create User Modal */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={closeModals}
-        title="Create New User"
-        size="md"
-      >
+      <Modal isOpen={showCreateModal} onClose={closeModals} title="Create New User" size="md">
         <div className="space-y-4">
           <Input
             label="Name"
@@ -476,7 +476,10 @@ export const UsersPage: React.FC = () => {
                     if (checked) {
                       setFormData({ ...formData, roles: [...formData.roles, role.name] });
                     } else {
-                      setFormData({ ...formData, roles: formData.roles.filter(r => r !== role.name) });
+                      setFormData({
+                        ...formData,
+                        roles: formData.roles.filter((r) => r !== role.name),
+                      });
                     }
                   }}
                 />
@@ -484,12 +487,12 @@ export const UsersPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="flex justify-end space-x-3 mt-6">
+        <div className="mt-6 flex justify-end space-x-3">
           <Button variant="secondary" onClick={closeModals}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleCreateUser}
             disabled={!formData.name || !formData.email || !formData.password}
           >
@@ -538,7 +541,10 @@ export const UsersPage: React.FC = () => {
                     if (checked) {
                       setFormData({ ...formData, roles: [...formData.roles, role.name] });
                     } else {
-                      setFormData({ ...formData, roles: formData.roles.filter(r => r !== role.name) });
+                      setFormData({
+                        ...formData,
+                        roles: formData.roles.filter((r) => r !== role.name),
+                      });
                     }
                   }}
                 />
@@ -546,12 +552,12 @@ export const UsersPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="flex justify-end space-x-3 mt-6">
+        <div className="mt-6 flex justify-end space-x-3">
           <Button variant="secondary" onClick={closeModals}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleUpdateUser}
             disabled={!formData.name || !formData.email}
           >

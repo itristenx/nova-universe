@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { 
-  Search, 
+import {
+  Search,
   Star,
   MessageCircle,
   ThumbsUp,
@@ -22,7 +22,7 @@ import {
   Grid,
   List,
   Bookmark,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,7 +30,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 // Types
 interface KnowledgeArticle {
@@ -87,7 +93,7 @@ export default function EnhancedKnowledgeBase() {
     difficulty: '',
     type: '',
     sortBy: 'relevance',
-    sortOrder: 'desc'
+    sortOrder: 'desc',
   });
   const [personalizedSections, setPersonalizedSections] = useState<PersonalizedSection[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -99,7 +105,7 @@ export default function EnhancedKnowledgeBase() {
     resolver: zodResolver(searchSchema),
     defaultValues: {
       query: '',
-    }
+    },
   });
 
   const watchedQuery = watch('query');
@@ -124,7 +130,7 @@ export default function EnhancedKnowledgeBase() {
         estimatedReadTime: 3,
         type: 'article',
         isBookmarked: false,
-        relevanceScore: 0.95
+        relevanceScore: 0.95,
       },
       {
         id: '2',
@@ -143,7 +149,7 @@ export default function EnhancedKnowledgeBase() {
         estimatedReadTime: 8,
         type: 'tutorial',
         isBookmarked: true,
-        relevanceScore: 0.87
+        relevanceScore: 0.87,
       },
       {
         id: '3',
@@ -162,7 +168,7 @@ export default function EnhancedKnowledgeBase() {
         estimatedReadTime: 12,
         type: 'video',
         isBookmarked: false,
-        relevanceScore: 0.78
+        relevanceScore: 0.78,
       },
       {
         id: '4',
@@ -181,8 +187,8 @@ export default function EnhancedKnowledgeBase() {
         estimatedReadTime: 25,
         type: 'tutorial',
         isBookmarked: true,
-        relevanceScore: 0.72
-      }
+        relevanceScore: 0.72,
+      },
     ];
 
     setArticles(mockArticles);
@@ -193,27 +199,27 @@ export default function EnhancedKnowledgeBase() {
       {
         id: 'bookmarks',
         title: 'Your Bookmarks',
-        articles: mockArticles.filter(a => a.isBookmarked),
-        icon: <Bookmark className="w-4 h-4" />
+        articles: mockArticles.filter((a) => a.isBookmarked),
+        icon: <Bookmark className="h-4 w-4" />,
       },
       {
         id: 'recent',
         title: 'Recently Viewed',
         articles: mockArticles.slice(0, 3),
-        icon: <History className="w-4 h-4" />
+        icon: <History className="h-4 w-4" />,
       },
       {
         id: 'trending',
         title: 'Trending This Week',
         articles: mockArticles.sort((a, b) => b.views - a.views).slice(0, 3),
-        icon: <TrendingUp className="w-4 h-4" />
+        icon: <TrendingUp className="h-4 w-4" />,
       },
       {
         id: 'recommended',
         title: 'Recommended for You',
         articles: mockArticles.slice(1, 4),
-        icon: <Sparkles className="w-4 h-4" />
-      }
+        icon: <Sparkles className="h-4 w-4" />,
+      },
     ]);
 
     // Mock search suggestions
@@ -222,7 +228,7 @@ export default function EnhancedKnowledgeBase() {
       'vpn connection',
       'email setup',
       'printer troubleshooting',
-      'software installation'
+      'software installation',
     ]);
   }, []);
 
@@ -241,26 +247,27 @@ export default function EnhancedKnowledgeBase() {
 
     // If there's an active search, start with search results
     if (activeSearch) {
-      result = articles.filter(article =>
-        article.title.toLowerCase().includes(activeSearch.toLowerCase()) ||
-        article.summary.toLowerCase().includes(activeSearch.toLowerCase()) ||
-        article.tags.some(tag => tag.toLowerCase().includes(activeSearch.toLowerCase()))
+      result = articles.filter(
+        (article) =>
+          article.title.toLowerCase().includes(activeSearch.toLowerCase()) ||
+          article.summary.toLowerCase().includes(activeSearch.toLowerCase()) ||
+          article.tags.some((tag) => tag.toLowerCase().includes(activeSearch.toLowerCase())),
       );
     }
 
     // Apply category filter
     if (filters.category) {
-      result = result.filter(a => a.category === filters.category);
+      result = result.filter((a) => a.category === filters.category);
     }
 
     // Apply difficulty filter
     if (filters.difficulty) {
-      result = result.filter(a => a.difficulty === filters.difficulty);
+      result = result.filter((a) => a.difficulty === filters.difficulty);
     }
 
     // Apply type filter
     if (filters.type) {
-      result = result.filter(a => a.type === filters.type);
+      result = result.filter((a) => a.type === filters.type);
     }
 
     // Apply sorting
@@ -291,11 +298,11 @@ export default function EnhancedKnowledgeBase() {
   };
 
   const toggleBookmark = (articleId: string) => {
-    setArticles(prev => prev.map(article =>
-      article.id === articleId
-        ? { ...article, isBookmarked: !article.isBookmarked }
-        : article
-    ));
+    setArticles((prev) =>
+      prev.map((article) =>
+        article.id === articleId ? { ...article, isBookmarked: !article.isBookmarked } : article,
+      ),
+    );
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -314,15 +321,15 @@ export default function EnhancedKnowledgeBase() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'article':
-        return <FileText className="w-4 h-4" />;
+        return <FileText className="h-4 w-4" />;
       case 'video':
-        return <Video className="w-4 h-4" />;
+        return <Video className="h-4 w-4" />;
       case 'tutorial':
-        return <BookOpen className="w-4 h-4" />;
+        return <BookOpen className="h-4 w-4" />;
       case 'faq':
-        return <MessageCircle className="w-4 h-4" />;
+        return <MessageCircle className="h-4 w-4" />;
       default:
-        return <FileText className="w-4 h-4" />;
+        return <FileText className="h-4 w-4" />;
     }
   };
 
@@ -330,20 +337,20 @@ export default function EnhancedKnowledgeBase() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-3 h-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+        className={`h-3 w-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
       />
     ));
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
-          <Brain className="w-8 h-8 text-blue-600" />
+      <div className="mb-8 text-center">
+        <h1 className="mb-2 flex items-center justify-center gap-2 text-3xl font-bold">
+          <Brain className="h-8 w-8 text-blue-600" />
           Intelligent Knowledge Base
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
           Find answers quickly with our AI-powered search and personalized recommendations
         </p>
       </div>
@@ -353,63 +360,71 @@ export default function EnhancedKnowledgeBase() {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit(handleSearch)} className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
               <Input
                 {...register('query')}
                 placeholder="Search articles, guides, tutorials..."
-                className="pl-10 pr-4 py-3 text-lg"
+                className="py-3 pr-4 pl-10 text-lg"
               />
               {watchedQuery.length > 0 && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border rounded-md shadow-lg z-10 mt-1">
+                <div className="absolute top-full right-0 left-0 z-10 mt-1 rounded-md border bg-white shadow-lg">
                   {searchSuggestions
-                    .filter(s => s.toLowerCase().includes(watchedQuery.toLowerCase()))
+                    .filter((s) => s.toLowerCase().includes(watchedQuery.toLowerCase()))
                     .slice(0, 5)
                     .map((suggestion, index) => (
                       <button
                         key={index}
                         type="button"
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100"
                         onClick={() => setValue('query', suggestion)}
                       >
-                        <Search className="w-3 h-3 text-muted-foreground" />
+                        <Search className="text-muted-foreground h-3 w-3" />
                         {suggestion}
                       </button>
-                    ))
-                  }
+                    ))}
                 </div>
               )}
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
-                variant={showFilters ? "default" : "outline"}
+                variant={showFilters ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
               >
-                <Filter className="w-4 h-4 mr-2" />
+                <Filter className="mr-2 h-4 w-4" />
                 Filters
               </Button>
-              
-              <div className="flex items-center gap-2 ml-auto">
-                <Label htmlFor="view-mode" className="text-sm">View:</Label>
+
+              <div className="ml-auto flex items-center gap-2">
+                <Label htmlFor="view-mode" className="text-sm">
+                  View:
+                </Label>
                 <Button
                   type="button"
-                  variant={viewMode === 'grid' ? "default" : "outline"}
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                 >
-                  {viewMode === 'grid' ? <Grid className="w-4 h-4" /> : <List className="w-4 h-4" />}
+                  {viewMode === 'grid' ? (
+                    <Grid className="h-4 w-4" />
+                  ) : (
+                    <List className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
 
             {/* Filters Panel */}
             {showFilters && (
-              <div className="border-t pt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 gap-4 border-t pt-4 md:grid-cols-4">
                 <div>
                   <Label className="text-sm font-medium">Category</Label>
-                  <Select value={filters.category} onValueChange={(value) => setFilters(f => ({ ...f, category: value }))}>
+                  <Select
+                    value={filters.category}
+                    onValueChange={(value) => setFilters((f) => ({ ...f, category: value }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
@@ -425,7 +440,10 @@ export default function EnhancedKnowledgeBase() {
 
                 <div>
                   <Label className="text-sm font-medium">Difficulty</Label>
-                  <Select value={filters.difficulty} onValueChange={(value) => setFilters(f => ({ ...f, difficulty: value }))}>
+                  <Select
+                    value={filters.difficulty}
+                    onValueChange={(value) => setFilters((f) => ({ ...f, difficulty: value }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All Levels" />
                     </SelectTrigger>
@@ -440,7 +458,10 @@ export default function EnhancedKnowledgeBase() {
 
                 <div>
                   <Label className="text-sm font-medium">Content Type</Label>
-                  <Select value={filters.type} onValueChange={(value) => setFilters(f => ({ ...f, type: value }))}>
+                  <Select
+                    value={filters.type}
+                    onValueChange={(value) => setFilters((f) => ({ ...f, type: value }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
@@ -456,7 +477,12 @@ export default function EnhancedKnowledgeBase() {
 
                 <div>
                   <Label className="text-sm font-medium">Sort By</Label>
-                  <Select value={filters.sortBy} onValueChange={(value: 'relevance' | 'recent' | 'popular' | 'rating') => setFilters(f => ({ ...f, sortBy: value }))}>
+                  <Select
+                    value={filters.sortBy}
+                    onValueChange={(value: 'relevance' | 'recent' | 'popular' | 'rating') =>
+                      setFilters((f) => ({ ...f, sortBy: value }))
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -486,11 +512,11 @@ export default function EnhancedKnowledgeBase() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {section.articles.map((article) => (
-                    <Card key={article.id} className="hover:shadow-md transition-shadow">
+                    <Card key={article.id} className="transition-shadow hover:shadow-md">
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="mb-2 flex items-start justify-between">
                           <div className="flex items-center gap-2">
                             {getTypeIcon(article.type)}
                             <Badge className={getDifficultyColor(article.difficulty)}>
@@ -503,31 +529,35 @@ export default function EnhancedKnowledgeBase() {
                             onClick={() => toggleBookmark(article.id)}
                             className="h-8 w-8 p-0"
                           >
-                            <Bookmark className={`w-4 h-4 ${article.isBookmarked ? 'fill-current' : ''}`} />
+                            <Bookmark
+                              className={`h-4 w-4 ${article.isBookmarked ? 'fill-current' : ''}`}
+                            />
                           </Button>
                         </div>
-                        
-                        <h3 className="font-semibold mb-2 line-clamp-2">{article.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{article.summary}</p>
-                        
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+
+                        <h3 className="mb-2 line-clamp-2 font-semibold">{article.title}</h3>
+                        <p className="text-muted-foreground mb-3 line-clamp-2 text-sm">
+                          {article.summary}
+                        </p>
+
+                        <div className="text-muted-foreground mb-3 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-1">
                             {renderStars(article.rating)}
                             <span className="ml-1">{article.rating}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Eye className="w-3 h-3" />
+                            <Eye className="h-3 w-3" />
                             <span>{article.views}</span>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="w-3 h-3" />
+                          <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                            <Clock className="h-3 w-3" />
                             <span>{article.estimatedReadTime} min read</span>
                           </div>
                           <Button size="sm" variant="outline">
-                            Read <ArrowRight className="w-3 h-3 ml-1" />
+                            Read <ArrowRight className="ml-1 h-3 w-3" />
                           </Button>
                         </div>
                       </CardContent>
@@ -553,88 +583,99 @@ export default function EnhancedKnowledgeBase() {
           </CardHeader>
           <CardContent>
             {filteredArticles.length === 0 ? (
-              <div className="text-center py-8">
+              <div className="py-8 text-center">
                 <div className="text-muted-foreground mb-4">
-                  <Search className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <Search className="mx-auto mb-2 h-12 w-12 opacity-50" />
                   No articles found matching your search.
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Try different keywords or browse our categories below.
                 </p>
               </div>
             ) : (
-              <div className={viewMode === 'grid' 
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
-                : "space-y-4"
-              }>
+              <div
+                className={
+                  viewMode === 'grid'
+                    ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
+                    : 'space-y-4'
+                }
+              >
                 {filteredArticles.map((article) => (
-                  <Card key={article.id} className={`hover:shadow-md transition-shadow ${viewMode === 'list' ? 'flex' : ''}`}>
-                    <CardContent className={viewMode === 'list' ? "flex items-center p-4 space-x-4 flex-1" : "p-4"}>
+                  <Card
+                    key={article.id}
+                    className={`transition-shadow hover:shadow-md ${viewMode === 'list' ? 'flex' : ''}`}
+                  >
+                    <CardContent
+                      className={
+                        viewMode === 'list' ? 'flex flex-1 items-center space-x-4 p-4' : 'p-4'
+                      }
+                    >
                       {viewMode === 'list' && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="text-muted-foreground flex items-center gap-2">
                           {getTypeIcon(article.type)}
                         </div>
                       )}
-                      
+
                       <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="mb-2 flex items-start justify-between">
                           <div className="flex items-center gap-2">
                             {viewMode === 'grid' && getTypeIcon(article.type)}
                             <Badge className={getDifficultyColor(article.difficulty)}>
                               {article.difficulty}
                             </Badge>
-                            <Badge variant="outline">
-                              {article.category}
-                            </Badge>
+                            <Badge variant="outline">{article.category}</Badge>
                           </div>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => toggleBookmark(article.id)}
-                            className="h-8 w-8 p-0 shrink-0"
+                            className="h-8 w-8 shrink-0 p-0"
                           >
-                            <Bookmark className={`w-4 h-4 ${article.isBookmarked ? 'fill-current' : ''}`} />
+                            <Bookmark
+                              className={`h-4 w-4 ${article.isBookmarked ? 'fill-current' : ''}`}
+                            />
                           </Button>
                         </div>
-                        
-                        <h3 className="font-semibold mb-2">{article.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-3">{article.summary}</p>
-                        
-                        <div className="flex flex-wrap items-center gap-2 mb-3">
+
+                        <h3 className="mb-2 font-semibold">{article.title}</h3>
+                        <p className="text-muted-foreground mb-3 text-sm">{article.summary}</p>
+
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
                           {article.tags.map((tag) => (
                             <Badge key={tag} variant="secondary" className="text-xs">
                               {tag}
                             </Badge>
                           ))}
                         </div>
-                        
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+
+                        <div className="text-muted-foreground mb-3 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-4">
                             <div className="flex items-center gap-1">
                               {renderStars(article.rating)}
                               <span className="ml-1">{article.rating}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Eye className="w-3 h-3" />
+                              <Eye className="h-3 w-3" />
                               <span>{article.views}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <ThumbsUp className="w-3 h-3" />
+                              <ThumbsUp className="h-3 w-3" />
                               <span>{article.likes}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
+                            <Clock className="h-3 w-3" />
                             <span>{article.estimatedReadTime} min read</span>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
-                          <div className="text-xs text-muted-foreground">
-                            By {article.author.name} • Updated {new Date(article.updatedAt).toLocaleDateString()}
+                          <div className="text-muted-foreground text-xs">
+                            By {article.author.name} • Updated{' '}
+                            {new Date(article.updatedAt).toLocaleDateString()}
                           </div>
                           <Button size="sm" variant="outline">
-                            Read <ArrowRight className="w-3 h-3 ml-1" />
+                            Read <ArrowRight className="ml-1 h-3 w-3" />
                           </Button>
                         </div>
                       </div>

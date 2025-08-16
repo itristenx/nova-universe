@@ -17,7 +17,9 @@ interface UseWebSocketOptions {
   onError?: (error: Error) => void;
 }
 
-export const useWebSocket = (options: UseWebSocketOptions = {}): {
+export const useWebSocket = (
+  options: UseWebSocketOptions = {},
+): {
   isConnected: boolean;
   connectionError: string | null;
   lastMessage: WebSocketMessage | null;
@@ -32,7 +34,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     onMessage,
     onConnect,
     onDisconnect,
-    onError
+    onError,
   } = options;
 
   const [isConnected, setIsConnected] = useState(false);
@@ -45,7 +47,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
 
     const { apiUrl } = getEnv();
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
       setConnectionError('No authentication token available');
       return;
@@ -54,11 +56,11 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     // Initialize WebSocket connection
     const socket = io(apiUrl, {
       auth: {
-        token
+        token,
       },
       transports: ['websocket', 'polling'],
       timeout: 20000,
-      retries: 3
+      retries: 3,
     });
 
     socketRef.current = socket;
@@ -71,7 +73,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
       onConnect?.();
 
       // Subscribe to requested data types
-      subscriptions.forEach(subscription => {
+      subscriptions.forEach((subscription) => {
         socket.emit('subscribe', subscription);
         console.log(`🔔 Subscribed to: ${subscription}`);
       });
@@ -151,7 +153,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     subscribe,
     unsubscribe,
     sendMessage,
-    socket: socketRef.current
+    socket: socketRef.current,
   };
 };
 
@@ -166,34 +168,29 @@ class WebSocketService {
     if (this.socket?.connected) return;
 
     const { apiUrl } = getEnv();
-    
+
     this.socket = io(apiUrl, {
       auth: { token },
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
     });
 
     this.socket.on('connect', () => {
       console.log('✅ Global WebSocket connected');
-      this.connectionHandlers.forEach(handler => handler());
+      this.connectionHandlers.forEach((handler) => handler());
     });
 
     this.socket.on('disconnect', (reason) => {
       console.log('❌ Global WebSocket disconnected:', reason);
-      this.disconnectionHandlers.forEach(handler => handler(reason));
+      this.disconnectionHandlers.forEach((handler) => handler(reason));
     });
 
     // Handle all message types
-    const messageTypes = [
-      'data_update',
-      'realtime_update', 
-      'user_update',
-      'admin_broadcast'
-    ];
+    const messageTypes = ['data_update', 'realtime_update', 'user_update', 'admin_broadcast'];
 
-    messageTypes.forEach(type => {
+    messageTypes.forEach((type) => {
       this.socket?.on(type, (message: WebSocketMessage) => {
         const handlers = this.messageHandlers.get(message.type);
-        handlers?.forEach(handler => handler(message.data));
+        handlers?.forEach((handler) => handler(message.data));
       });
     });
   }

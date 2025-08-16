@@ -7,30 +7,30 @@ export default function SettingsPage(): React.ReactElement {
   const t = useTranslations('Navigation');
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-2">{t('settings')}</h1>
-      <p className="text-muted-foreground mb-6">Manage your profile, preferences, and notifications.</p>
+    <div className="mx-auto max-w-5xl px-4 py-8">
+      <h1 className="mb-2 text-2xl font-bold">{t('settings')}</h1>
+      <p className="text-muted-foreground mb-6">
+        Manage your profile, preferences, and notifications.
+      </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <section className="rounded-lg border p-4">
-          <h2 className="font-semibold mb-2">Profile</h2>
-          <p className="text-sm text-muted-foreground">Name, email, and password</p>
+          <h2 className="mb-2 font-semibold">Profile</h2>
+          <p className="text-muted-foreground text-sm">Name, email, and password</p>
         </section>
         <section className="rounded-lg border p-4">
-          <h2 className="font-semibold mb-2">Preferences</h2>
-          <p className="text-sm text-muted-foreground">Language, theme, and layout</p>
+          <h2 className="mb-2 font-semibold">Preferences</h2>
+          <p className="text-muted-foreground text-sm">Language, theme, and layout</p>
         </section>
         <section className="rounded-lg border p-4">
-          <h2 className="font-semibold mb-2">Notifications</h2>
-          <p className="text-sm text-muted-foreground">Email and in-app alerts</p>
+          <h2 className="mb-2 font-semibold">Notifications</h2>
+          <p className="text-muted-foreground text-sm">Email and in-app alerts</p>
         </section>
         <section className="rounded-lg border p-4">
-          <h2 className="font-semibold mb-2">Security</h2>
-          <p className="text-sm text-muted-foreground">MFA and sessions</p>
+          <h2 className="mb-2 font-semibold">Security</h2>
+          <p className="text-muted-foreground text-sm">MFA and sessions</p>
         </section>
       </div>
     </div>
   );
 }
-
-

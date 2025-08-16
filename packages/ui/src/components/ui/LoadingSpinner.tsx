@@ -3,7 +3,11 @@ export interface LoadingSpinnerProps extends React.HTMLAttributes<HTMLDivElement
   size?: number;
   color?: string;
 }
-export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 32, color = '#1976d2', ...props }) => (
+export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+  size = 32,
+  color = '#1976d2',
+  ...props
+}) => (
   <div {...props} className={props.className || 'loading-spinner'}>
     <svg width={size} height={size} viewBox="0 0 50 50">
       <circle

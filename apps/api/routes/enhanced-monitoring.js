@@ -30,7 +30,7 @@ router.use(authenticateJWT);
 router.get('/monitors', async (req, res) => {
   try {
     const { type, status, tag, group, search, in_maintenance } = req.query;
-    
+
     let query = `
       SELECT m.*, 
              array_agg(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL) as tag_names,
@@ -56,7 +56,7 @@ router.get('/monitors', async (req, res) => {
         AND NOW() BETWEEN mw.start_time AND mw.end_time
       WHERE m.tenant_id = $1
     `;
-    
+
     const params = [req.user.tenantId];
     let paramIndex = 2;
 
@@ -99,17 +99,28 @@ router.get('/monitors', async (req, res) => {
     query += ` GROUP BY m.id, ci.days_remaining, ci.is_expired, ci.issuer, mw.id, ms.uptime_24h, ms.avg_response_time_24h, ms.total_checks_24h, ms.failed_checks_24h, ms.last_check_time, ms.is_up ORDER BY m.name`;
 
     const result = await database.query(query, params);
-    
+
     res.json({
       success: true,
       monitors: result.rows,
       total: result.rows.length,
       metadata: {
         supportedTypes: [
-          'http', 'tcp', 'ping', 'dns', 'ssl', 'keyword', 'json-query', 
-          'docker', 'steam', 'grpc', 'mqtt', 'radius', 'push'
-        ]
-      }
+          'http',
+          'tcp',
+          'ping',
+          'dns',
+          'ssl',
+          'keyword',
+          'json-query',
+          'docker',
+          'steam',
+          'grpc',
+          'mqtt',
+          'radius',
+          'push',
+        ],
+      },
     });
   } catch (error) {
     logger.error('Failed to fetch enhanced monitors:', error);
@@ -128,16 +139,27 @@ router.get('/monitors', async (req, res) => {
 router.post('/monitors', async (req, res) => {
   try {
     const monitorData = req.body;
-    
+
     // Validate monitor type
     const supportedTypes = [
-      'http', 'tcp', 'ping', 'dns', 'ssl', 'keyword', 'json-query', 
-      'docker', 'steam', 'grpc', 'mqtt', 'radius', 'push'
+      'http',
+      'tcp',
+      'ping',
+      'dns',
+      'ssl',
+      'keyword',
+      'json-query',
+      'docker',
+      'steam',
+      'grpc',
+      'mqtt',
+      'radius',
+      'push',
     ];
-    
+
     if (!supportedTypes.includes(monitorData.type)) {
-      return res.status(400).json({ 
-        error: `Unsupported monitor type: ${monitorData.type}. Supported types: ${supportedTypes.join(', ')}` 
+      return res.status(400).json({
+        error: `Unsupported monitor type: ${monitorData.type}. Supported types: ${supportedTypes.join(', ')}`,
       });
     }
 
@@ -160,20 +182,20 @@ router.post('/monitors', async (req, res) => {
       grpc: ['hostname', 'port'],
       mqtt: ['hostname', 'port'],
       radius: ['hostname', 'port'],
-      push: [] // No additional requirements
+      push: [], // No additional requirements
     };
 
     const requiredFields = typeValidations[monitorData.type] || [];
     for (const field of requiredFields) {
       if (!monitorData[field]) {
-        return res.status(400).json({ 
-          error: `Field '${field}' is required for ${monitorData.type} monitors` 
+        return res.status(400).json({
+          error: `Field '${field}' is required for ${monitorData.type} monitors`,
         });
       }
     }
 
     const id = crypto.randomUUID();
-    
+
     const query = `
       INSERT INTO nova_monitors (
         id, name, type, url, hostname, port, tenant_id, interval_seconds, 
@@ -192,23 +214,42 @@ router.post('/monitors', async (req, res) => {
     `;
 
     const values = [
-      id, monitorData.name, monitorData.type, monitorData.url, 
-      monitorData.hostname, monitorData.port, req.user.tenantId,
-      monitorData.interval_seconds || 60, monitorData.timeout_seconds || 30,
-      monitorData.retry_interval_seconds || 60, monitorData.max_retries || 3,
-      'active', monitorData.http_method || 'GET', 
+      id,
+      monitorData.name,
+      monitorData.type,
+      monitorData.url,
+      monitorData.hostname,
+      monitorData.port,
+      req.user.tenantId,
+      monitorData.interval_seconds || 60,
+      monitorData.timeout_seconds || 30,
+      monitorData.retry_interval_seconds || 60,
+      monitorData.max_retries || 3,
+      'active',
+      monitorData.http_method || 'GET',
       JSON.stringify(monitorData.http_headers || {}),
-      monitorData.http_body, JSON.stringify(monitorData.accepted_status_codes || [200]),
-      monitorData.follow_redirects !== false, monitorData.ignore_ssl || false,
-      monitorData.keyword, monitorData.keyword_inverted || false,
-      monitorData.json_path, monitorData.expected_value,
-      monitorData.docker_container, monitorData.docker_host,
-      monitorData.steam_id, monitorData.ssl_days_remaining || 30,
-      monitorData.auth_method, monitorData.auth_username,
-      monitorData.auth_password, monitorData.auth_token,
-      monitorData.auth_domain, monitorData.proxy_id,
-      monitorData.description, monitorData.group_name,
-      monitorData.weight || 1000, req.user.id
+      monitorData.http_body,
+      JSON.stringify(monitorData.accepted_status_codes || [200]),
+      monitorData.follow_redirects !== false,
+      monitorData.ignore_ssl || false,
+      monitorData.keyword,
+      monitorData.keyword_inverted || false,
+      monitorData.json_path,
+      monitorData.expected_value,
+      monitorData.docker_container,
+      monitorData.docker_host,
+      monitorData.steam_id,
+      monitorData.ssl_days_remaining || 30,
+      monitorData.auth_method,
+      monitorData.auth_username,
+      monitorData.auth_password,
+      monitorData.auth_token,
+      monitorData.auth_domain,
+      monitorData.proxy_id,
+      monitorData.description,
+      monitorData.group_name,
+      monitorData.weight || 1000,
+      req.user.id,
     ];
 
     const result = await database.query(query, values);
@@ -219,7 +260,7 @@ router.post('/monitors', async (req, res) => {
       for (const tagId of monitorData.tags) {
         await database.query(
           'INSERT INTO nova_monitor_tags (monitor_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-          [monitor.id, tagId]
+          [monitor.id, tagId],
         );
       }
     }
@@ -227,19 +268,19 @@ router.post('/monitors', async (req, res) => {
     // Generate push token for push monitors
     if (monitorData.type === 'push') {
       const pushToken = crypto.randomBytes(32).toString('hex');
-      await database.query(
-        'UPDATE nova_monitors SET push_token = $1 WHERE id = $2',
-        [pushToken, monitor.id]
-      );
+      await database.query('UPDATE nova_monitors SET push_token = $1 WHERE id = $2', [
+        pushToken,
+        monitor.id,
+      ]);
       monitor.push_token = pushToken;
       monitor.push_url = `${req.protocol}://${req.get('host')}/api/enhanced-monitoring/push/${pushToken}`;
     }
 
     logger.info(`Created enhanced monitor: ${monitor.name} (${monitor.type})`);
-    
+
     res.status(201).json({
       success: true,
-      monitor
+      monitor,
     });
   } catch (error) {
     logger.error('Failed to create enhanced monitor:', error);
@@ -258,10 +299,10 @@ router.post('/monitors', async (req, res) => {
 router.post('/monitors/:id/check', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const monitorResult = await database.query(
       'SELECT * FROM nova_monitors WHERE id = $1 AND tenant_id = $2',
-      [id, req.user.tenantId]
+      [id, req.user.tenantId],
     );
 
     if (monitorResult.rows.length === 0) {
@@ -279,8 +320,8 @@ router.post('/monitors/:id/check', async (req, res) => {
           success: true,
           responseTime: 0,
           message: 'Monitor is in maintenance window',
-          data: { maintenance: true }
-        }
+          data: { maintenance: true },
+        },
       });
     }
 
@@ -310,9 +351,9 @@ router.post('/monitors/:id/check', async (req, res) => {
           auth_method: monitor.auth_method,
           auth_username: monitor.auth_username,
           auth_password: monitor.auth_password,
-          auth_token: monitor.auth_token
+          auth_token: monitor.auth_token,
         },
-        timeout: monitor.timeout_seconds
+        timeout: monitor.timeout_seconds,
       };
 
       result = await extendedMonitorService.runMonitorCheck(check);
@@ -322,16 +363,27 @@ router.post('/monitors/:id/check', async (req, res) => {
     }
 
     // Store result in partitioned table
-    await database.query(`
+    await database.query(
+      `
       INSERT INTO nova_monitor_results_${new Date().getFullYear()}_${String(new Date().getMonth() + 1).padStart(2, '0')} 
       (monitor_id, success, response_time, status_code, message, data)
       VALUES ($1, $2, $3, $4, $5, $6)
-    `, [id, result.success, result.responseTime, result.statusCode, result.message, JSON.stringify(result.data)]);
+    `,
+      [
+        id,
+        result.success,
+        result.responseTime,
+        result.statusCode,
+        result.message,
+        JSON.stringify(result.data),
+      ],
+    );
 
     // Update certificate info for SSL monitors
     if (monitor.type === 'ssl' && result.data && result.data.certificate_info) {
       const certInfo = result.data.certificate_info;
-      await database.query(`
+      await database.query(
+        `
         INSERT INTO nova_certificate_info (
           monitor_id, hostname, port, issuer, subject, serial_number,
           valid_from, valid_to, days_remaining, fingerprint, fingerprint256,
@@ -348,13 +400,24 @@ router.post('/monitors/:id/check', async (req, res) => {
           is_expired = EXCLUDED.is_expired,
           is_valid = EXCLUDED.is_valid,
           last_checked = NOW()
-      `, [
-        id, monitor.hostname, monitor.port,
-        certInfo.issuer, certInfo.subject, certInfo.serial_number,
-        certInfo.valid_from, certInfo.valid_to, certInfo.days_remaining,
-        certInfo.fingerprint, certInfo.fingerprint256,
-        certInfo.is_self_signed, certInfo.is_expired, certInfo.is_valid
-      ]);
+      `,
+        [
+          id,
+          monitor.hostname,
+          monitor.port,
+          certInfo.issuer,
+          certInfo.subject,
+          certInfo.serial_number,
+          certInfo.valid_from,
+          certInfo.valid_to,
+          certInfo.days_remaining,
+          certInfo.fingerprint,
+          certInfo.fingerprint256,
+          certInfo.is_self_signed,
+          certInfo.is_expired,
+          certInfo.is_valid,
+        ],
+      );
     }
 
     // Update monitor summary for performance
@@ -362,7 +425,7 @@ router.post('/monitors/:id/check', async (req, res) => {
 
     res.json({
       success: true,
-      result
+      result,
     });
   } catch (error) {
     logger.error('Failed to check enhanced monitor:', error);
@@ -378,7 +441,7 @@ router.post('/push/:token', async (req, res) => {
 
     const monitorResult = await database.query(
       'SELECT * FROM nova_monitors WHERE push_token = $1 AND type = $2',
-      [token, 'push']
+      [token, 'push'],
     );
 
     if (monitorResult.rows.length === 0) {
@@ -388,37 +451,36 @@ router.post('/push/:token', async (req, res) => {
     const monitor = monitorResult.rows[0];
 
     // Store heartbeat
-    await database.query(`
+    await database.query(
+      `
       INSERT INTO nova_heartbeats (monitor_id, source_ip, user_agent, payload, status, message)
       VALUES ($1, $2, $3, $4, $5, $6)
-    `, [
-      monitor.id,
-      req.ip,
-      req.get('User-Agent'),
-      JSON.stringify(req.body),
-      status,
-      message
-    ]);
+    `,
+      [monitor.id, req.ip, req.get('User-Agent'), JSON.stringify(req.body), status, message],
+    );
 
     // Store as monitor result
-    await database.query(`
+    await database.query(
+      `
       INSERT INTO nova_monitor_results_${new Date().getFullYear()}_${String(new Date().getMonth() + 1).padStart(2, '0')}
       (monitor_id, success, response_time, message, data)
       VALUES ($1, $2, $3, $4, $5)
-    `, [
-      monitor.id,
-      status === 'ok',
-      ping || 0,
-      message || 'Push notification received',
-      JSON.stringify({ push: true, status, ...data })
-    ]);
+    `,
+      [
+        monitor.id,
+        status === 'ok',
+        ping || 0,
+        message || 'Push notification received',
+        JSON.stringify({ push: true, status, ...data }),
+      ],
+    );
 
     // Update monitor summary
     await updateMonitorSummary(monitor.id);
 
     res.json({
       success: true,
-      message: 'Heartbeat received'
+      message: 'Heartbeat received',
     });
   } catch (error) {
     logger.error('Failed to process push notification:', error);
@@ -436,7 +498,8 @@ router.post('/push/:token', async (req, res) => {
  */
 router.get('/notification-providers', async (req, res) => {
   try {
-    const result = await database.query(`
+    const result = await database.query(
+      `
       SELECT nc.*, 
              ncr.last_success_at,
              ncr.last_failure_at,
@@ -446,7 +509,9 @@ router.get('/notification-providers', async (req, res) => {
       LEFT JOIN nova_notification_channel_results ncr ON nc.id = ncr.channel_id
       WHERE nc.tenant_id = $1 
       ORDER BY nc.name
-    `, [req.user.tenantId]);
+    `,
+      [req.user.tenantId],
+    );
 
     // Get supported provider types
     const supportedProviders = notificationProviderService.getSupportedProviders();
@@ -455,7 +520,7 @@ router.get('/notification-providers', async (req, res) => {
       success: true,
       providers: result.rows,
       supported_types: supportedProviders,
-      total_supported: supportedProviders.length
+      total_supported: supportedProviders.length,
     });
   } catch (error) {
     logger.error('Failed to fetch notification providers:', error);
@@ -469,18 +534,18 @@ router.post('/notification-providers', async (req, res) => {
 
     // Validate provider type
     const supportedTypes = notificationProviderService.getSupportedProviders();
-    
+
     if (!supportedTypes.includes(type)) {
-      return res.status(400).json({ 
-        error: `Unsupported provider type: ${type}. Supported types: ${supportedTypes.join(', ')}` 
+      return res.status(400).json({
+        error: `Unsupported provider type: ${type}. Supported types: ${supportedTypes.join(', ')}`,
       });
     }
 
     // Validate configuration based on provider type
     const validation = notificationProviderService.validateProviderConfig(type, config);
     if (!validation.valid) {
-      return res.status(400).json({ 
-        error: `Invalid configuration: ${validation.errors.join(', ')}` 
+      return res.status(400).json({
+        error: `Invalid configuration: ${validation.errors.join(', ')}`,
       });
     }
 
@@ -494,12 +559,19 @@ router.post('/notification-providers', async (req, res) => {
     `;
 
     const result = await database.query(query, [
-      id, name, type, JSON.stringify(config), req.user.tenantId, is_active, is_default, req.user.id
+      id,
+      name,
+      type,
+      JSON.stringify(config),
+      req.user.tenantId,
+      is_active,
+      is_default,
+      req.user.id,
     ]);
 
     res.status(201).json({
       success: true,
-      provider: result.rows[0]
+      provider: result.rows[0],
     });
   } catch (error) {
     logger.error('Failed to create notification provider:', error);
@@ -514,7 +586,7 @@ router.post('/notification-providers/:id/test', async (req, res) => {
 
     const providerResult = await database.query(
       'SELECT * FROM nova_notification_channels WHERE id = $1 AND tenant_id = $2',
-      [id, req.user.tenantId]
+      [id, req.user.tenantId],
     );
 
     if (providerResult.rows.length === 0) {
@@ -525,63 +597,79 @@ router.post('/notification-providers/:id/test', async (req, res) => {
 
     const testMessage = {
       title: 'Test Notification - Nova Sentinel',
-      message: 'This is a test notification from Nova Sentinel to verify your notification provider is working correctly.',
+      message:
+        'This is a test notification from Nova Sentinel to verify your notification provider is working correctly.',
       severity: 'low',
       monitor: 'Test Monitor',
       timestamp: new Date().toISOString(),
-      status: 'test'
+      status: 'test',
     };
 
     try {
-      await notificationProviderService.sendNotification({
-        id: provider.id,
-        name: provider.name,
-        type: provider.type,
-        config: JSON.parse(provider.config)
-      }, testMessage);
+      await notificationProviderService.sendNotification(
+        {
+          id: provider.id,
+          name: provider.name,
+          type: provider.type,
+          config: JSON.parse(provider.config),
+        },
+        testMessage,
+      );
 
       // Update test success
-      await database.query(`
+      await database.query(
+        `
         UPDATE nova_notification_channels 
         SET test_success = true, last_test_at = NOW() 
         WHERE id = $1
-      `, [id]);
+      `,
+        [id],
+      );
 
       // Record successful test
-      await database.query(`
+      await database.query(
+        `
         INSERT INTO nova_notification_channel_results (
           channel_id, success, message, last_success_at, total_sent
         ) VALUES ($1, true, 'Test notification sent successfully', NOW(), 1)
         ON CONFLICT (channel_id) DO UPDATE SET
           last_success_at = NOW(),
           total_sent = nova_notification_channel_results.total_sent + 1
-      `, [id]);
+      `,
+        [id],
+      );
 
       res.json({
         success: true,
-        message: 'Test notification sent successfully'
+        message: 'Test notification sent successfully',
       });
     } catch (testError) {
       // Update test failure
-      await database.query(`
+      await database.query(
+        `
         UPDATE nova_notification_channels 
         SET test_success = false, last_test_at = NOW(), failure_count = failure_count + 1 
         WHERE id = $1
-      `, [id]);
+      `,
+        [id],
+      );
 
       // Record failed test
-      await database.query(`
+      await database.query(
+        `
         INSERT INTO nova_notification_channel_results (
           channel_id, success, message, last_failure_at, failure_count
         ) VALUES ($1, false, $2, NOW(), 1)
         ON CONFLICT (channel_id) DO UPDATE SET
           last_failure_at = NOW(),
           failure_count = nova_notification_channel_results.failure_count + 1
-      `, [id, testError.message]);
+      `,
+        [id, testError.message],
+      );
 
       res.status(400).json({
         success: false,
-        error: `Test notification failed: ${testError.message}`
+        error: `Test notification failed: ${testError.message}`,
       });
     }
   } catch (error) {
@@ -600,7 +688,8 @@ router.post('/notification-providers/:id/test', async (req, res) => {
  */
 router.get('/tags', async (req, res) => {
   try {
-    const result = await database.query(`
+    const result = await database.query(
+      `
       SELECT t.*, 
              COUNT(mt.monitor_id) as monitor_count
       FROM nova_tags t
@@ -608,11 +697,13 @@ router.get('/tags', async (req, res) => {
       WHERE t.tenant_id = $1 OR t.tenant_id IS NULL 
       GROUP BY t.id
       ORDER BY t.name
-    `, [req.user.tenantId]);
+    `,
+      [req.user.tenantId],
+    );
 
     res.json({
       success: true,
-      tags: result.rows
+      tags: result.rows,
     });
   } catch (error) {
     logger.error('Failed to fetch tags:', error);
@@ -632,12 +723,12 @@ router.post('/tags', async (req, res) => {
       name,
       color: color || '#3B82F6',
       description,
-      tenant_id: req.user.tenantId
+      tenant_id: req.user.tenantId,
     });
 
     res.status(201).json({
       success: true,
-      tag
+      tag,
     });
   } catch (error) {
     logger.error('Failed to create tag:', error);
@@ -692,7 +783,7 @@ router.get('/maintenance-windows', async (req, res) => {
 
     res.json({
       success: true,
-      maintenance_windows: result.rows
+      maintenance_windows: result.rows,
     });
   } catch (error) {
     logger.error('Failed to fetch maintenance windows:', error);
@@ -705,12 +796,12 @@ router.post('/maintenance-windows', async (req, res) => {
     const maintenanceWindow = await advancedFeaturesService.createMaintenanceWindow({
       ...req.body,
       tenant_id: req.user.tenantId,
-      created_by: req.user.id
+      created_by: req.user.id,
     });
 
     res.status(201).json({
       success: true,
-      maintenance_window: maintenanceWindow
+      maintenance_window: maintenanceWindow,
     });
   } catch (error) {
     logger.error('Failed to create maintenance window:', error);
@@ -728,7 +819,8 @@ router.post('/maintenance-windows', async (req, res) => {
  */
 router.get('/status-pages', async (req, res) => {
   try {
-    const result = await database.query(`
+    const result = await database.query(
+      `
       SELECT sp.*,
              COUNT(DISTINCT spm.monitor_id) as monitor_count,
              COUNT(DISTINCT sps.email) as subscriber_count
@@ -738,11 +830,13 @@ router.get('/status-pages', async (req, res) => {
       WHERE sp.tenant_id = $1 
       GROUP BY sp.id
       ORDER BY sp.title
-    `, [req.user.tenantId]);
+    `,
+      [req.user.tenantId],
+    );
 
     res.json({
       success: true,
-      status_pages: result.rows
+      status_pages: result.rows,
     });
   } catch (error) {
     logger.error('Failed to fetch status pages:', error);
@@ -755,12 +849,12 @@ router.post('/status-pages', async (req, res) => {
     const statusPage = await statusPageService.createStatusPage({
       ...req.body,
       tenant_id: req.user.tenantId,
-      created_by: req.user.id
+      created_by: req.user.id,
     });
 
     res.status(201).json({
       success: true,
-      status_page: statusPage
+      status_page: statusPage,
     });
   } catch (error) {
     logger.error('Failed to create status page:', error);
@@ -772,15 +866,16 @@ router.post('/status-pages', async (req, res) => {
 router.get('/status/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
-    
+
     const statusPage = await statusPageService.getStatusPage(slug);
-    
+
     if (!statusPage || !statusPage.published) {
       return res.status(404).json({ error: 'Status page not found' });
     }
 
     // Get monitors for this status page
-    const monitorsResult = await database.query(`
+    const monitorsResult = await database.query(
+      `
       SELECT m.*, 
              spm.display_name, 
              spm.order_index,
@@ -792,20 +887,25 @@ router.get('/status/:slug', async (req, res) => {
       LEFT JOIN nova_monitor_summary ms ON m.id = ms.id
       WHERE spm.status_page_id = $1
       ORDER BY spm.order_index, m.name
-    `, [statusPage.id]);
+    `,
+      [statusPage.id],
+    );
 
     // Get recent incidents
-    const incidentsResult = await database.query(`
+    const incidentsResult = await database.query(
+      `
       SELECT * FROM nova_status_page_incidents
       WHERE status_page_id = $1
       AND created_at >= NOW() - INTERVAL '${statusPage.incident_history_days} days'
       ORDER BY created_at DESC
-    `, [statusPage.id]);
+    `,
+      [statusPage.id],
+    );
 
     const html = await statusPageService.generateStatusPageHTML(
       statusPage,
       monitorsResult.rows,
-      incidentsResult.rows
+      incidentsResult.rows,
     );
 
     res.type('html').send(html);
@@ -827,7 +927,7 @@ router.post('/status/:slug/subscribe', async (req, res) => {
 
     const statusPageResult = await database.query(
       'SELECT id FROM nova_status_pages WHERE slug = $1 AND published = true',
-      [slug]
+      [slug],
     );
 
     if (statusPageResult.rows.length === 0) {
@@ -837,13 +937,16 @@ router.post('/status/:slug/subscribe', async (req, res) => {
     const statusPageId = statusPageResult.rows[0].id;
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    await database.query(`
+    await database.query(
+      `
       INSERT INTO nova_status_page_subscriptions (status_page_id, email, verification_token)
       VALUES ($1, $2, $3)
       ON CONFLICT (status_page_id, email) DO UPDATE SET
         verification_token = EXCLUDED.verification_token,
         verified = false
-    `, [statusPageId, email, verificationToken]);
+    `,
+      [statusPageId, email, verificationToken],
+    );
 
     // Send verification email (non-blocking)
     try {
@@ -851,10 +954,13 @@ router.post('/status/:slug/subscribe', async (req, res) => {
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || '587', 10),
         secure: process.env.SMTP_SECURE === 'true',
-        auth: process.env.SMTP_USER && process.env.SMTP_PASS ? {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        } : undefined
+        auth:
+          process.env.SMTP_USER && process.env.SMTP_PASS
+            ? {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+              }
+            : undefined,
       });
 
       const publicUrl = process.env.PUBLIC_URL || 'http://localhost:3000';
@@ -865,7 +971,7 @@ router.post('/status/:slug/subscribe', async (req, res) => {
         to: email,
         subject: 'Verify your Nova Status Page subscription',
         text: `Please verify your subscription by visiting: ${verifyUrl}`,
-        html: `<p>Please verify your subscription by clicking the link below:</p><p><a href="${verifyUrl}">Verify Subscription</a></p>`
+        html: `<p>Please verify your subscription by clicking the link below:</p><p><a href="${verifyUrl}">Verify Subscription</a></p>`,
       });
     } catch (mailErr) {
       logger.warn('Subscription verification email failed to send', { error: mailErr.message });
@@ -874,7 +980,7 @@ router.post('/status/:slug/subscribe', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Subscription created. Please check your email to verify.'
+      message: 'Subscription created. Please check your email to verify.',
     });
   } catch (error) {
     logger.error('Failed to create subscription:', error);
@@ -889,12 +995,15 @@ router.get('/badge/:statusPageId/:monitorId?', async (req, res) => {
     const { style = 'shield', type = 'status' } = req.query;
 
     // Get badge configuration
-    const badgeResult = await database.query(`
+    const badgeResult = await database.query(
+      `
       SELECT * FROM nova_status_page_badges
       WHERE status_page_id = $1 AND (monitor_id = $2 OR monitor_id IS NULL)
       ORDER BY monitor_id DESC NULLS LAST
       LIMIT 1
-    `, [statusPageId, monitorId]);
+    `,
+      [statusPageId, monitorId],
+    );
 
     let badge = { type: style, style: type };
     if (badgeResult.rows.length > 0) {
@@ -908,9 +1017,9 @@ router.get('/badge/:statusPageId/:monitorId?', async (req, res) => {
     if (monitorId) {
       const monitorResult = await database.query(
         'SELECT * FROM nova_monitor_summary WHERE id = $1',
-        [monitorId]
+        [monitorId],
       );
-      
+
       if (monitorResult.rows.length > 0) {
         const monitor = monitorResult.rows[0];
         monitorStatus = monitor.is_up ? 'up' : 'down';
@@ -935,7 +1044,7 @@ async function runBasicMonitorCheck(monitor) {
     success: true,
     responseTime: 100,
     message: 'Monitor check completed',
-    data: {}
+    data: {},
   };
 }
 
@@ -967,7 +1076,7 @@ async function updateMonitorSummary(monitorId) {
         last_check_time = EXCLUDED.last_check_time,
         is_up = EXCLUDED.is_up
     `;
-    
+
     await database.query(summaryQuery, [monitorId]);
   } catch (error) {
     logger.error('Failed to update monitor summary:', error);

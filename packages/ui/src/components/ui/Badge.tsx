@@ -7,8 +7,16 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   children?: React.ReactNode;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ badgeContent, color = 'primary', children, ...props }) => (
-  <span {...props} className={[props.className || 'badge', `badge--${color}`].filter(Boolean).join(' ')}>
+export const Badge: React.FC<BadgeProps> = ({
+  badgeContent,
+  color = 'primary',
+  children,
+  ...props
+}) => (
+  <span
+    {...props}
+    className={[props.className || 'badge', `badge--${color}`].filter(Boolean).join(' ')}
+  >
     {children}
     <span className="badge-content">{badgeContent}</span>
   </span>

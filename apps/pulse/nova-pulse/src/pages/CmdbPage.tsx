@@ -3,7 +3,26 @@ import { motion } from 'framer-motion';
 import styles from '../components/TicketGrid.module.css';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { MagnifyingGlassIcon as Search, PlusIcon as Plus, ServerIcon as Server, ComputerDesktopIcon as Monitor, CircleStackIcon as Database, CloudIcon as Cloud, CubeIcon as Box, GlobeAltIcon as Globe, BuildingOffice2Icon as Building, DocumentTextIcon as FileText, EyeIcon as Eye, PencilSquareIcon as Edit, TrashIcon as Trash2, BoltIcon as Activity, ExclamationTriangleIcon as AlertTriangle, CheckCircleIcon as CheckCircle, UsersIcon as Users, ShareIcon as Network } from '@heroicons/react/24/outline';
+import {
+  MagnifyingGlassIcon as Search,
+  PlusIcon as Plus,
+  ServerIcon as Server,
+  ComputerDesktopIcon as Monitor,
+  CircleStackIcon as Database,
+  CloudIcon as Cloud,
+  CubeIcon as Box,
+  GlobeAltIcon as Globe,
+  BuildingOffice2Icon as Building,
+  DocumentTextIcon as FileText,
+  EyeIcon as Eye,
+  PencilSquareIcon as Edit,
+  TrashIcon as Trash2,
+  BoltIcon as Activity,
+  ExclamationTriangleIcon as AlertTriangle,
+  CheckCircleIcon as CheckCircle,
+  UsersIcon as Users,
+  ShareIcon as Network,
+} from '@heroicons/react/24/outline';
 import { Button } from '../components/ui/button';
 import { getCmdbItems, getCiTypes, getCmdbHealth } from '../lib/api';
 
@@ -48,14 +67,14 @@ interface CiType {
 // Icon mapping for CI types
 const getIconForCiType = (category: string) => {
   const iconMap: Record<string, React.ReactNode> = {
-    'Hardware': <Server className="h-4 w-4" />,
-    'Software': <Box className="h-4 w-4" />,
-    'Service': <Globe className="h-4 w-4" />,
-    'Virtual': <Cloud className="h-4 w-4" />,
-    'Network': <Network className="h-4 w-4" />,
-    'Database': <Database className="h-4 w-4" />,
-    'Facility': <Building className="h-4 w-4" />,
-    'Documentation': <FileText className="h-4 w-4" />
+    Hardware: <Server className="h-4 w-4" />,
+    Software: <Box className="h-4 w-4" />,
+    Service: <Globe className="h-4 w-4" />,
+    Virtual: <Cloud className="h-4 w-4" />,
+    Network: <Network className="h-4 w-4" />,
+    Database: <Database className="h-4 w-4" />,
+    Facility: <Building className="h-4 w-4" />,
+    Documentation: <FileText className="h-4 w-4" />,
   };
 
   return iconMap[category] || <Monitor className="h-4 w-4" />;
@@ -64,26 +83,26 @@ const getIconForCiType = (category: string) => {
 // Status badge colors
 const getStatusColor = (status: string) => {
   const statusColors: Record<string, string> = {
-    'Active': 'text-green-700 bg-green-100',
-    'Inactive': 'text-gray-700 bg-gray-100',
-    'Retired': 'text-red-700 bg-red-100',
+    Active: 'text-green-700 bg-green-100',
+    Inactive: 'text-gray-700 bg-gray-100',
+    Retired: 'text-red-700 bg-red-100',
     'Under Maintenance': 'text-yellow-700 bg-yellow-100',
-    'Development': 'text-blue-700 bg-blue-100',
-    'Testing': 'text-purple-700 bg-purple-100'
+    Development: 'text-blue-700 bg-blue-100',
+    Testing: 'text-purple-700 bg-purple-100',
   };
-  
+
   return statusColors[status] || 'text-gray-700 bg-gray-100';
 };
 
 // Criticality badge colors
 const getCriticalityColor = (criticality: string) => {
   const criticalityColors: Record<string, string> = {
-    'Critical': 'text-red-700 bg-red-100',
-    'High': 'text-orange-700 bg-orange-100',
-    'Medium': 'text-yellow-700 bg-yellow-100',
-    'Low': 'text-green-700 bg-green-100'
+    Critical: 'text-red-700 bg-red-100',
+    High: 'text-orange-700 bg-orange-100',
+    Medium: 'text-yellow-700 bg-yellow-100',
+    Low: 'text-green-700 bg-green-100',
   };
-  
+
   return criticalityColors[criticality] || 'text-gray-700 bg-gray-100';
 };
 
@@ -94,32 +113,40 @@ export const CmdbPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch CMDB data
-  const { data: cmdbData, isLoading, error } = useQuery({
-    queryKey: ['cmdb-items', { 
-      search: searchTerm, 
-      ciType: selectedCiType, 
-      status: selectedStatus,
-      page: currentPage 
-    }],
-    queryFn: () => getCmdbItems({
-      search: searchTerm,
-      ciType: selectedCiType,
-      status: selectedStatus,
-      page: currentPage,
-      limit: 20
-    })
+  const {
+    data: cmdbData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: [
+      'cmdb-items',
+      {
+        search: searchTerm,
+        ciType: selectedCiType,
+        status: selectedStatus,
+        page: currentPage,
+      },
+    ],
+    queryFn: () =>
+      getCmdbItems({
+        search: searchTerm,
+        ciType: selectedCiType,
+        status: selectedStatus,
+        page: currentPage,
+        limit: 20,
+      }),
   });
 
   // Fetch CI types
   const { data: ciTypes = [] } = useQuery({
     queryKey: ['ci-types'],
-    queryFn: getCiTypes
+    queryFn: getCiTypes,
   });
 
   // Fetch CMDB health
   const { data: cmdbHealth } = useQuery({
     queryKey: ['cmdb-health'],
-    queryFn: getCmdbHealth
+    queryFn: getCmdbHealth,
   });
 
   const cis = cmdbData?.data || [];
@@ -149,16 +176,16 @@ export const CmdbPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+      <div className="py-8 text-center">
+        <AlertTriangle className="mx-auto mb-2 h-8 w-8 text-red-500" />
         <p className="text-red-600">Failed to load CMDB data</p>
       </div>
     );
@@ -167,14 +194,18 @@ export const CmdbPage: React.FC = () => {
   React.useEffect(() => {
     const handler = () => {
       // no pagination reset; refetch through useQuery by invalidating key via state change
-      setCurrentPage((p) => p) // noop to satisfy linter; useQuery refetches on same key by filter changes
-    }
-    window.addEventListener('pulse:pull_to_refresh', handler)
-    return () => window.removeEventListener('pulse:pull_to_refresh', handler)
-  }, [])
+      setCurrentPage((p) => p); // noop to satisfy linter; useQuery refetches on same key by filter changes
+    };
+    window.addEventListener('pulse:pull_to_refresh', handler);
+    return () => window.removeEventListener('pulse:pull_to_refresh', handler);
+  }, []);
 
   return (
-    <motion.div className={`space-y-6 ${styles.pullContainer}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div
+      className={`space-y-6 ${styles.pullContainer}`}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -184,12 +215,12 @@ export const CmdbPage: React.FC = () => {
         <div className="flex gap-2">
           <Link to="/support-groups">
             <Button variant="outline">
-              <Users className="h-4 w-4 mr-2" />
+              <Users className="mr-2 h-4 w-4" />
               Support Groups
             </Button>
           </Link>
           <Button>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Add Configuration Item
           </Button>
         </div>
@@ -197,8 +228,8 @@ export const CmdbPage: React.FC = () => {
 
       {/* CMDB Health Dashboard */}
       {cmdbHealth && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border bg-white p-4 shadow">
             <div className="flex items-center space-x-2">
               <Database className="h-5 w-5 text-blue-500" />
               <div>
@@ -207,8 +238,8 @@ export const CmdbPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
-          <div className="bg-white p-4 rounded-lg shadow border">
+
+          <div className="rounded-lg border bg-white p-4 shadow">
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <div>
@@ -218,7 +249,7 @@ export const CmdbPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="rounded-lg border bg-white p-4 shadow">
             <div className="flex items-center space-x-2">
               <Network className="h-5 w-5 text-purple-500" />
               <div>
@@ -228,7 +259,7 @@ export const CmdbPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="rounded-lg border bg-white p-4 shadow">
             <div className="flex items-center space-x-2">
               <Activity className="h-5 w-5 text-orange-500" />
               <div>
@@ -241,27 +272,27 @@ export const CmdbPage: React.FC = () => {
       )}
 
       {/* Search and Filters */}
-      <div className="bg-white p-6 rounded-lg shadow border">
-        <h3 className="text-lg font-medium mb-4">Search & Filter</h3>
+      <div className="rounded-lg border bg-white p-6 shadow">
+        <h3 className="mb-4 text-lg font-medium">Search & Filter</h3>
         <div className="space-y-4">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <input
               type="text"
               placeholder="Search CIs by name, description, serial number, or asset tag..."
               value={searchTerm}
               onChange={handleSearch}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full rounded-md border border-gray-300 py-2 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Filter Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <select
               value={selectedCiType}
               onChange={handleCiTypeFilter}
-              className="border border-gray-300 rounded-md px-3 py-2"
+              className="rounded-md border border-gray-300 px-3 py-2"
               aria-label="Filter by CI Type"
             >
               <option value="">All CI Types</option>
@@ -275,7 +306,7 @@ export const CmdbPage: React.FC = () => {
             <select
               value={selectedStatus}
               onChange={handleStatusFilter}
-              className="border border-gray-300 rounded-md px-3 py-2"
+              className="rounded-md border border-gray-300 px-3 py-2"
               aria-label="Filter by Status"
             >
               <option value="">All Statuses</option>
@@ -298,14 +329,14 @@ export const CmdbPage: React.FC = () => {
       </div>
 
       {/* Configuration Items List */}
-      <div className="bg-white rounded-lg shadow border">
-        <div className="p-6 border-b">
+      <div className="rounded-lg border bg-white shadow">
+        <div className="border-b p-6">
           <h3 className="text-lg font-medium">Configuration Items</h3>
         </div>
         <div className="p-6">
           {cis.length === 0 ? (
-            <div className="text-center py-8">
-              <Database className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <div className="py-8 text-center">
+              <Database className="mx-auto mb-4 h-12 w-12 text-gray-400" />
               <p className="text-gray-500">No configuration items found</p>
             </div>
           ) : (
@@ -315,21 +346,21 @@ export const CmdbPage: React.FC = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2">CI Number</th>
-                      <th className="text-left py-2">Name</th>
-                      <th className="text-left py-2">Type</th>
-                      <th className="text-left py-2">Status</th>
-                      <th className="text-left py-2">Environment</th>
-                      <th className="text-left py-2">Criticality</th>
-                      <th className="text-left py-2">Owner</th>
-                      <th className="text-left py-2">Actions</th>
+                      <th className="py-2 text-left">CI Number</th>
+                      <th className="py-2 text-left">Name</th>
+                      <th className="py-2 text-left">Type</th>
+                      <th className="py-2 text-left">Status</th>
+                      <th className="py-2 text-left">Environment</th>
+                      <th className="py-2 text-left">Criticality</th>
+                      <th className="py-2 text-left">Owner</th>
+                      <th className="py-2 text-left">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {cis.map((ci: ConfigurationItem) => (
                       <tr key={ci.id} className="border-b hover:bg-gray-50">
                         <td className="py-3">
-                          <code className="text-sm font-mono text-blue-600">{ci.ciId}</code>
+                          <code className="font-mono text-sm text-blue-600">{ci.ciId}</code>
                         </td>
                         <td className="py-3">
                           <div className="flex items-center space-x-2">
@@ -343,28 +374,32 @@ export const CmdbPage: React.FC = () => {
                           </div>
                         </td>
                         <td className="py-3">
-                          <span 
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                          <span
+                            className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium"
                             data-color={ci.ciType_rel.color}
                           >
                             {ci.ciType_rel.displayName}
                           </span>
                         </td>
                         <td className="py-3">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(ci.ciStatus)}`}>
+                          <span
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(ci.ciStatus)}`}
+                          >
                             {ci.ciStatus}
                           </span>
                         </td>
                         <td className="py-3">
                           {ci.environment && (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-300">
+                            <span className="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
                               {ci.environment}
                             </span>
                           )}
                         </td>
                         <td className="py-3">
                           {ci.criticality && (
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCriticalityColor(ci.criticality)}`}>
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getCriticalityColor(ci.criticality)}`}
+                            >
                               {ci.criticality}
                             </span>
                           )}
@@ -383,7 +418,11 @@ export const CmdbPage: React.FC = () => {
                             <Button variant="ghost" size="sm">
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -398,11 +437,13 @@ export const CmdbPage: React.FC = () => {
               {pagination && pagination.totalPages > 1 && (
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-600">
-                    Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} items
+                    Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
+                    {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+                    {pagination.total} items
                   </p>
                   <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       disabled={!pagination.hasPrev}
                       onClick={() => setCurrentPage(currentPage - 1)}
@@ -412,8 +453,8 @@ export const CmdbPage: React.FC = () => {
                     <span className="text-sm">
                       Page {pagination.page} of {pagination.totalPages}
                     </span>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       disabled={!pagination.hasNext}
                       onClick={() => setCurrentPage(currentPage + 1)}

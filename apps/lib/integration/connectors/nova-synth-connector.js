@@ -1,7 +1,7 @@
 /**
  * Nova Synth Data Matching Connector
  * Implements Nova Synth AI for intelligent data matching, correlation, and transformation
- * 
+ *
  * @author Nova Team
  * @version 1.0.0
  */
@@ -16,7 +16,12 @@ import crypto from 'crypto';
  */
 export class NovaSynthConnector extends IConnector {
   constructor(config = null) {
-    super('nova-synth-connector', 'Nova Synth Data Intelligence Engine', '1.0.0', ConnectorType.DATA_INTELLIGENCE);
+    super(
+      'nova-synth-connector',
+      'Nova Synth Data Intelligence Engine',
+      '1.0.0',
+      ConnectorType.DATA_INTELLIGENCE,
+    );
     this.client = null;
     this.config = config;
     this.matchingCache = new Map();
@@ -33,26 +38,26 @@ export class NovaSynthConnector extends IConnector {
       if (!config) {
         throw new Error('Configuration is required for Nova Synth connector');
       }
-      
+
       this.config = config;
-      
+
       // Validate Nova Synth-specific configuration
       this.validateNovaSynthConfig(config);
-      
+
       // Setup authentication strategy
       const authHeaders = await this.setupAuthentication(config);
-      
+
       // Initialize Nova Synth Data Intelligence API client
       this.client = axios.create({
         baseURL: config.endpoints?.synthUrl || 'https://api.novasynth.ai',
         timeout: 30000,
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'User-Agent': 'Nova-Universe/1.0.0',
           'X-Organization-ID': config.organization?.id,
-          ...authHeaders
-        }
+          ...authHeaders,
+        },
       });
 
       // Add mock response interceptors for testing
@@ -62,16 +67,16 @@ export class NovaSynthConnector extends IConnector {
         // Setup request/response interceptors for monitoring
         this.setupInterceptors(config);
       }
-      
+
       // Initialize transformation rules
       await this.loadTransformationRules();
-      
+
       // Initialize organization-specific patterns
       await this.loadOrganizationPatterns(config);
-      
+
       // Test the connection
       await this.testConnection();
-      
+
       console.log('Nova Synth Data Intelligence connector initialized successfully');
     } catch (error) {
       console.error('Failed to initialize Nova Synth connector:', error);
@@ -85,23 +90,23 @@ export class NovaSynthConnector extends IConnector {
   async health() {
     try {
       const startTime = Date.now();
-      
+
       // Test core matching endpoints
       const matchResponse = await this.client.get('/matching/health', {
-        timeout: 5000
+        timeout: 5000,
       });
-      
+
       const apiLatency = Date.now() - startTime;
 
       // Test transformation engine
       let transformationStatus = 'healthy';
       let transformationLatency = 0;
-      
+
       try {
         const transformationStartTime = Date.now();
         await this.client.post('/transform/test', {
           data: { test: 'value' },
-          rules: []
+          rules: [],
         });
         transformationLatency = Date.now() - transformationStartTime;
       } catch (error) {
@@ -111,22 +116,23 @@ export class NovaSynthConnector extends IConnector {
       // Test correlation engine
       let correlationStatus = 'healthy';
       let correlationLatency = 0;
-      
+
       try {
         const correlationStartTime = Date.now();
         await this.client.post('/correlate/test', {
-          profiles: [{ id: 'test', attributes: {} }]
+          profiles: [{ id: 'test', attributes: {} }],
         });
         correlationLatency = Date.now() - correlationStartTime;
       } catch (error) {
         correlationStatus = 'degraded';
       }
 
-      const overallStatus = matchResponse.status === 200 && 
-                          transformationStatus === 'healthy' && 
-                          correlationStatus === 'healthy'
-        ? HealthStatus.HEALTHY 
-        : HealthStatus.DEGRADED;
+      const overallStatus =
+        matchResponse.status === 200 &&
+        transformationStatus === 'healthy' &&
+        correlationStatus === 'healthy'
+          ? HealthStatus.HEALTHY
+          : HealthStatus.DEGRADED;
 
       return {
         status: overallStatus,
@@ -135,38 +141,43 @@ export class NovaSynthConnector extends IConnector {
           {
             name: 'api_latency',
             value: apiLatency,
-            unit: 'ms'
+            unit: 'ms',
           },
           {
             name: 'transformation_latency',
             value: transformationLatency,
-            unit: 'ms'
+            unit: 'ms',
           },
           {
             name: 'correlation_latency',
             value: correlationLatency,
-            unit: 'ms'
+            unit: 'ms',
           },
           {
             name: 'cached_matches',
             value: this.matchingCache.size,
-            unit: 'count'
+            unit: 'count',
           },
           {
             name: 'transformation_rules',
             value: this.transformationRules.size,
-            unit: 'count'
-          }
+            unit: 'count',
+          },
         ],
-        issues: overallStatus !== HealthStatus.HEALTHY ? 
-          [`Transformation status: ${transformationStatus}`, `Correlation status: ${correlationStatus}`] : []
+        issues:
+          overallStatus !== HealthStatus.HEALTHY
+            ? [
+                `Transformation status: ${transformationStatus}`,
+                `Correlation status: ${correlationStatus}`,
+              ]
+            : [],
       };
     } catch (error) {
       return {
         status: HealthStatus.UNHEALTHY,
         lastCheck: new Date(),
         metrics: [],
-        issues: [error.message]
+        issues: [error.message],
       };
     }
   }
@@ -205,8 +216,7 @@ export class NovaSynthConnector extends IConnector {
       errorCount += correlationResult.errorCount;
       errors.push(...correlationResult.errors);
 
-      const status = errorCount === 0 ? 'success' : 
-        successCount > 0 ? 'partial' : 'failed';
+      const status = errorCount === 0 ? 'success' : successCount > 0 ? 'partial' : 'failed';
 
       return {
         jobId: crypto.randomUUID(),
@@ -214,12 +224,11 @@ export class NovaSynthConnector extends IConnector {
         metrics: {
           totalRecords,
           successCount,
-          errorCount
+          errorCount,
         },
         errors: errors.slice(0, 10), // Limit error details
-        data: null
+        data: null,
       };
-
     } catch (error) {
       return {
         jobId: crypto.randomUUID(),
@@ -227,11 +236,13 @@ export class NovaSynthConnector extends IConnector {
         metrics: {
           totalRecords: 0,
           successCount: 0,
-          errorCount: 1
+          errorCount: 1,
         },
-        errors: [{
-          message: error.message
-        }]
+        errors: [
+          {
+            message: error.message,
+          },
+        ],
       };
     }
   }
@@ -242,11 +253,13 @@ export class NovaSynthConnector extends IConnector {
   async poll() {
     try {
       const since = new Date(Date.now() - 5 * 60 * 1000); // Last 5 minutes
-      
+
       // Get recent data intelligence events
-      const eventsResponse = await this.client.get(`/events?since=${since.toISOString()}&limit=100`);
+      const eventsResponse = await this.client.get(
+        `/events?since=${since.toISOString()}&limit=100`,
+      );
       const events = [];
-      
+
       for (const event of eventsResponse.data.events || []) {
         events.push({
           id: event.id,
@@ -258,15 +271,17 @@ export class NovaSynthConnector extends IConnector {
             matchingScore: event.matchingScore,
             transformationApplied: event.transformationApplied,
             correlations: event.correlations,
-            metadata: event.metadata
+            metadata: event.metadata,
           },
-          source: 'nova-synth-data-intelligence'
+          source: 'nova-synth-data-intelligence',
         });
       }
 
       // Get potential matching candidates
-      const matchingCandidates = await this.client.get(`/matching/candidates?since=${since.toISOString()}`);
-      
+      const matchingCandidates = await this.client.get(
+        `/matching/candidates?since=${since.toISOString()}`,
+      );
+
       for (const candidate of matchingCandidates.data.candidates || []) {
         events.push({
           id: `match-${candidate.id}-${candidate.timestamp}`,
@@ -278,14 +293,13 @@ export class NovaSynthConnector extends IConnector {
             targetEntity: candidate.targetEntity,
             matchingScore: candidate.matchingScore,
             confidence: candidate.confidence,
-            suggestedMerge: candidate.suggestedMerge
+            suggestedMerge: candidate.suggestedMerge,
           },
-          source: 'nova-synth-data-intelligence'
+          source: 'nova-synth-data-intelligence',
         });
       }
 
       return events;
-
     } catch (error) {
       console.error('Failed to poll Nova Synth data intelligence events:', error);
       return [];
@@ -302,37 +316,36 @@ export class NovaSynthConnector extends IConnector {
       switch (actionType) {
         case 'match_profiles':
           return await this.matchProfiles(target, parameters);
-        
+
         case 'transform_data':
           return await this.transformData(target, parameters);
-        
+
         case 'correlate_entities':
           return await this.correlateEntities(target, parameters);
-        
+
         case 'merge_profiles':
           return await this.mergeProfiles(target, parameters);
-        
+
         case 'deduplicate_data':
           return await this.deduplicateData(target, parameters);
-        
+
         case 'validate_profile':
           return await this.validateProfile(target, parameters);
-        
+
         case 'normalize_attributes':
           return await this.normalizeAttributes(target, parameters);
-        
+
         case 'calculate_confidence':
           return await this.calculateConfidence(target, parameters);
-        
+
         default:
           throw new Error(`Unsupported action: ${actionType}`);
       }
-
     } catch (error) {
       return {
         success: false,
         message: error.message,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -353,7 +366,7 @@ export class NovaSynthConnector extends IConnector {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -372,7 +385,7 @@ export class NovaSynthConnector extends IConnector {
         'entity_correlation',
         'profile_deduplication',
         'attribute_normalization',
-        'confidence_scoring'
+        'confidence_scoring',
       ],
       actions: [
         'match_profiles',
@@ -382,9 +395,14 @@ export class NovaSynthConnector extends IConnector {
         'deduplicate_data',
         'validate_profile',
         'normalize_attributes',
-        'calculate_confidence'
+        'calculate_confidence',
       ],
-      dataIntelligenceCategories: ['profile_matching', 'data_transformation', 'entity_correlation', 'deduplication']
+      dataIntelligenceCategories: [
+        'profile_matching',
+        'data_transformation',
+        'entity_correlation',
+        'deduplication',
+      ],
     };
   }
 
@@ -398,18 +416,18 @@ export class NovaSynthConnector extends IConnector {
           sourceProfile: 'object',
           targetProfiles: 'array',
           matchingCriteria: 'object',
-          confidenceThreshold: 'number'
+          confidenceThreshold: 'number',
         },
         data_transformation: {
           sourceData: 'object',
           transformationRules: 'array',
-          outputFormat: 'string'
+          outputFormat: 'string',
         },
         entity_correlation: {
           entities: 'array',
           correlationRules: 'object',
-          context: 'object'
-        }
+          context: 'object',
+        },
       },
       output: {
         nova_match_result: {
@@ -418,22 +436,22 @@ export class NovaSynthConnector extends IConnector {
           targetId: 'string',
           matchingScore: 'number',
           confidence: 'number',
-          matchedAttributes: 'array'
+          matchedAttributes: 'array',
         },
         nova_transformation_result: {
           transformationId: 'string',
           sourceData: 'object',
           transformedData: 'object',
           rulesApplied: 'array',
-          success: 'boolean'
+          success: 'boolean',
         },
         nova_correlation_result: {
           correlationId: 'string',
           entities: 'array',
           relationships: 'array',
-          confidence: 'number'
-        }
-      }
+          confidence: 'number',
+        },
+      },
     };
   }
 
@@ -502,39 +520,39 @@ export class NovaSynthConnector extends IConnector {
     if (config.mockMode) {
       console.log('Mock mode - using mock authentication headers');
       return {
-        'Authorization': 'Bearer mock-token',
-        'X-API-Key': 'mock-api-key'
+        Authorization: 'Bearer mock-token',
+        'X-API-Key': 'mock-api-key',
       };
     }
 
     const strategy = config.authentication?.strategy || 'bearer';
-    
+
     switch (strategy) {
       case 'bearer':
         const bearerToken = config.credentials.token || config.credentials.apiToken;
         return {
-          'Authorization': `Bearer ${bearerToken}`
+          Authorization: `Bearer ${bearerToken}`,
         };
-      
+
       case 'oauth2':
         const accessToken = await this.getOAuth2Token(config);
         return {
-          'Authorization': `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`,
         };
-      
+
       case 'jwt':
         const jwtToken = await this.generateJWTToken(config);
         return {
-          'Authorization': `Bearer ${jwtToken}`
+          Authorization: `Bearer ${jwtToken}`,
         };
-      
+
       case 'api_key':
         const apiKey = config.credentials.apiKey;
         const headerName = config.credentials.apiKeyHeader || 'X-API-Key';
         return {
-          [headerName]: apiKey
+          [headerName]: apiKey,
         };
-      
+
       default:
         throw new Error(`Unsupported authentication strategy: ${strategy}`);
     }
@@ -544,10 +562,10 @@ export class NovaSynthConnector extends IConnector {
     // Mock request interceptor
     this.client.interceptors.request.use((config) => {
       console.log(`[Mock Nova Synth API] ${config.method?.toUpperCase()} ${config.url}`);
-      
+
       // Generate mock responses based on URL patterns
       const mockResponse = this.generateMockResponse(config);
-      
+
       // Return a rejected promise that will be caught by response interceptor
       // This prevents actual HTTP requests in mock mode
       return Promise.reject({
@@ -556,7 +574,7 @@ export class NovaSynthConnector extends IConnector {
         data: mockResponse.data,
         status: mockResponse.status,
         statusText: 'OK',
-        headers: {}
+        headers: {},
       });
     });
 
@@ -571,11 +589,11 @@ export class NovaSynthConnector extends IConnector {
             status: error.status,
             statusText: error.statusText,
             headers: error.headers,
-            config: error.config
+            config: error.config,
           });
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -595,21 +613,21 @@ export class NovaSynthConnector extends IConnector {
                 id: 'match_1',
                 profiles: [
                   { name: 'John Doe', email: 'john@company.com' },
-                  { name: 'J. Doe', email: 'j.doe@company.com' }
+                  { name: 'J. Doe', email: 'j.doe@company.com' },
                 ],
                 confidence: 0.89,
-                matchType: 'high_confidence'
-              }
-            ]
-          }
-        }
+                matchType: 'high_confidence',
+              },
+            ],
+          },
+        },
       };
     }
 
     if (url.includes('/data/transform') || url.includes('/transformation/apply')) {
       // Create a mock transformed result based on input data
       const inputData = config.data?.data || [];
-      const transformedData = inputData.map(item => {
+      const transformedData = inputData.map((item) => {
         const transformed = { ...item };
         // Apply mock transformations based on the input
         if (transformed.name) {
@@ -621,14 +639,14 @@ export class NovaSynthConnector extends IConnector {
         // Preserve other fields (like ssn) so redaction can be applied later
         return transformed;
       });
-      
+
       return {
         status: 200,
         data: {
           success: true,
           result: transformedData,
-          transformedData: transformedData
-        }
+          transformedData: transformedData,
+        },
       };
     }
 
@@ -643,11 +661,11 @@ export class NovaSynthConnector extends IConnector {
                 entity1: { id: 1, type: 'user' },
                 entity2: { id: 1, type: 'device' },
                 relationship: 'owns',
-                confidence: 0.95
-              }
-            ]
-          }
-        }
+                confidence: 0.95,
+              },
+            ],
+          },
+        },
       };
     }
 
@@ -662,13 +680,13 @@ export class NovaSynthConnector extends IConnector {
                 id: 'dup_1',
                 records: [
                   { name: 'John Doe', email: 'john@company.com' },
-                  { name: 'John Doe', email: 'john@company.com' }
+                  { name: 'John Doe', email: 'john@company.com' },
                 ],
-                confidence: 1.0
-              }
-            ]
-          }
-        }
+                confidence: 1.0,
+              },
+            ],
+          },
+        },
       };
     }
 
@@ -680,8 +698,8 @@ export class NovaSynthConnector extends IConnector {
           trainingId: 'train_123',
           patternsLearned: 15,
           modelVersion: '2.1.0',
-          accuracy: 0.94
-        }
+          accuracy: 0.94,
+        },
       };
     }
 
@@ -695,8 +713,8 @@ export class NovaSynthConnector extends IConnector {
           transformationSuccess: 0.92,
           deduplicationEfficiency: 0.84,
           confidenceDistribution: { high: 0.6, medium: 0.3, low: 0.1 },
-          errorRates: { total: 0.03 }
-        }
+          errorRates: { total: 0.03 },
+        },
       };
     }
 
@@ -705,8 +723,8 @@ export class NovaSynthConnector extends IConnector {
         status: 200,
         data: [
           { type: 'name_matching', reason: 'fuzzy match failed', count: 5 },
-          { type: 'email_matching', reason: 'domain mismatch', count: 3 }
-        ]
+          { type: 'email_matching', reason: 'domain mismatch', count: 3 },
+        ],
       };
     }
 
@@ -715,8 +733,8 @@ export class NovaSynthConnector extends IConnector {
         status: 200,
         data: [
           { message: 'auth token expired', status: 401, timestamp: new Date() },
-          { message: 'validation failed', status: 400, timestamp: new Date() }
-        ]
+          { message: 'validation failed', status: 400, timestamp: new Date() },
+        ],
       };
     }
 
@@ -726,8 +744,8 @@ export class NovaSynthConnector extends IConnector {
       data: {
         success: true,
         message: 'Mock response',
-        data: {}
-      }
+        data: {},
+      },
     };
   }
 
@@ -738,16 +756,16 @@ export class NovaSynthConnector extends IConnector {
         // Add correlation ID for request tracking
         config.headers['X-Correlation-ID'] = crypto.randomUUID();
         config.headers['X-Organization-ID'] = this.config.organization?.id;
-        
+
         // Log request for monitoring
         this.logAPIRequest(config);
-        
+
         return config;
       },
       (error) => {
         this.logAPIError('request', error);
         return Promise.reject(error);
-      }
+      },
     );
 
     // Response interceptor for monitoring and error handling
@@ -755,10 +773,10 @@ export class NovaSynthConnector extends IConnector {
       (response) => {
         // Log successful response
         this.logAPIResponse(response);
-        
+
         // Update quality metrics
         this.updateQualityMetrics(response);
-        
+
         return response;
       },
       async (error) => {
@@ -772,10 +790,10 @@ export class NovaSynthConnector extends IConnector {
             this.logAPIError('auth_refresh', refreshError);
           }
         }
-        
+
         this.logAPIError('response', error);
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -786,11 +804,11 @@ export class NovaSynthConnector extends IConnector {
         this.organizationPatterns = {
           namePatterns: [/^[A-Z][a-z]+ [A-Z][a-z]+$/],
           emailDomains: ['company.com', 'test.org'],
-          departmentMappings: { 'IT': ['Information Technology'] },
+          departmentMappings: { IT: ['Information Technology'] },
           deviceNamingConventions: [/^[A-Z]{2}-\d{3}$/],
-          customAttributes: { employeeIdPattern: /^EMP\d{6}$/ }
+          customAttributes: { employeeIdPattern: /^EMP\d{6}$/ },
         };
-        
+
         console.log('Loaded mock organization patterns');
         return;
       }
@@ -808,7 +826,7 @@ export class NovaSynthConnector extends IConnector {
         emailDomains: patterns.emailDomains || [],
         departmentMappings: patterns.departmentMappings || {},
         deviceNamingConventions: patterns.deviceNamingConventions || [],
-        customAttributes: patterns.customAttributes || {}
+        customAttributes: patterns.customAttributes || {},
       };
 
       console.log(`Loaded ${Object.keys(patterns).length} organization-specific patterns`);
@@ -827,7 +845,7 @@ export class NovaSynthConnector extends IConnector {
       }
 
       const response = await this.client.get('/health');
-      
+
       if (response.status !== 200) {
         throw new Error('Failed to connect to Nova Synth Data Intelligence API');
       }
@@ -842,24 +860,24 @@ export class NovaSynthConnector extends IConnector {
       if (this.config?.mockMode) {
         const mockRules = [
           { id: 'name-normalize', type: 'normalize', field: 'name' },
-          { id: 'email-lowercase', type: 'transform', field: 'email' }
+          { id: 'email-lowercase', type: 'transform', field: 'email' },
         ];
-        
+
         for (const rule of mockRules) {
           this.transformationRules.set(rule.id, rule);
         }
-        
+
         console.log(`Loaded ${mockRules.length} mock transformation rules`);
         return;
       }
 
       const response = await this.client.get('/transformation/rules');
       const rules = response.data.rules || [];
-      
+
       for (const rule of rules) {
         this.transformationRules.set(rule.id, rule);
       }
-      
+
       console.log(`Loaded ${rules.length} transformation rules`);
     } catch (error) {
       console.warn('Failed to load transformation rules:', error.message);
@@ -885,7 +903,7 @@ export class NovaSynthConnector extends IConnector {
           errorCount++;
           errors.push({
             ruleId: rule.id,
-            message: error.message
+            message: error.message,
           });
         }
       }
@@ -894,15 +912,14 @@ export class NovaSynthConnector extends IConnector {
         totalRecords,
         successCount,
         errorCount,
-        errors
+        errors,
       };
-
     } catch (error) {
       return {
         totalRecords,
         successCount: 0,
         errorCount: 1,
-        errors: [{ message: error.message }]
+        errors: [{ message: error.message }],
       };
     }
   }
@@ -926,7 +943,7 @@ export class NovaSynthConnector extends IConnector {
           errorCount++;
           errors.push({
             algorithmId: algorithm.id,
-            message: error.message
+            message: error.message,
           });
         }
       }
@@ -935,15 +952,14 @@ export class NovaSynthConnector extends IConnector {
         totalRecords,
         successCount,
         errorCount,
-        errors
+        errors,
       };
-
     } catch (error) {
       return {
         totalRecords,
         successCount: 0,
         errorCount: 1,
-        errors: [{ message: error.message }]
+        errors: [{ message: error.message }],
       };
     }
   }
@@ -967,7 +983,7 @@ export class NovaSynthConnector extends IConnector {
           errorCount++;
           errors.push({
             modelId: model.id,
-            message: error.message
+            message: error.message,
           });
         }
       }
@@ -976,15 +992,14 @@ export class NovaSynthConnector extends IConnector {
         totalRecords,
         successCount,
         errorCount,
-        errors
+        errors,
       };
-
     } catch (error) {
       return {
         totalRecords,
         successCount: 0,
         errorCount: 1,
-        errors: [{ message: error.message }]
+        errors: [{ message: error.message }],
       };
     }
   }
@@ -1006,12 +1021,12 @@ export class NovaSynthConnector extends IConnector {
   async matchProfiles(sourceProfile, parameters) {
     try {
       const { targetProfiles, matchingCriteria, confidenceThreshold } = parameters;
-      
+
       const response = await this.client.post('/matching/profiles', {
         sourceProfile,
         targetProfiles: targetProfiles || [],
         criteria: matchingCriteria || {},
-        threshold: confidenceThreshold || 0.8
+        threshold: confidenceThreshold || 0.8,
       });
 
       return {
@@ -1020,8 +1035,8 @@ export class NovaSynthConnector extends IConnector {
         data: {
           matches: response.data.result?.matches || response.data.matches,
           totalCandidates: response.data.totalCandidates,
-          bestMatch: response.data.bestMatch
-        }
+          bestMatch: response.data.bestMatch,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to match profiles: ${error.message}`);
@@ -1034,21 +1049,21 @@ export class NovaSynthConnector extends IConnector {
       let transformationRules = parameters?.transformationRules || parameters;
       const outputFormat = parameters?.outputFormat;
       const redact = parameters?.redact !== false; // Default to true unless explicitly false
-      
+
       // Apply data redaction if specified
       let processedData = sourceData;
       if (redact && transformationRules) {
         processedData = this.applyDataRedaction(sourceData, transformationRules);
       }
-      
+
       const response = await this.client.post('/transformation/apply', {
         data: processedData,
         rules: transformationRules || [],
-        format: outputFormat || 'nova_standard'
+        format: outputFormat || 'nova_standard',
       });
 
       let transformedData = response.data.result || response.data.transformedData || [];
-      
+
       // Apply redaction to the final result if needed
       if (redact && transformationRules) {
         transformedData = this.applyDataRedaction(transformedData, transformationRules);
@@ -1060,12 +1075,13 @@ export class NovaSynthConnector extends IConnector {
         data: {
           transformedData: transformedData,
           rulesApplied: response.data.rulesApplied,
-          transformationId: response.data.id
+          transformationId: response.data.id,
         },
         transformedData: transformedData,
         transformedRecords: transformedData,
         appliedRules: response.data.rulesApplied || [],
-        redactionApplied: redact && transformationRules && Object.keys(transformationRules).length > 0
+        redactionApplied:
+          redact && transformationRules && Object.keys(transformationRules).length > 0,
       };
     } catch (error) {
       throw new Error(`Failed to transform data: ${error.message}`);
@@ -1077,40 +1093,40 @@ export class NovaSynthConnector extends IConnector {
    */
   applyDataRedaction(data, rules = {}) {
     const sensitiveFields = ['ssn', 'credit_card', 'password', 'social_security', 'email', 'phone'];
-    
+
     const redactValue = (obj) => {
       if (Array.isArray(obj)) {
-        return obj.map(item => redactValue(item));
+        return obj.map((item) => redactValue(item));
       }
-      
+
       if (obj && typeof obj === 'object') {
         const redactedObj = { ...obj };
-        
-        Object.keys(redactedObj).forEach(key => {
+
+        Object.keys(redactedObj).forEach((key) => {
           if (sensitiveFields.includes(key.toLowerCase()) || rules[key]?.redact) {
             redactedObj[key] = '[REDACTED]';
           } else if (typeof redactedObj[key] === 'object') {
             redactedObj[key] = redactValue(redactedObj[key]);
           }
         });
-        
+
         return redactedObj;
       }
-      
+
       return obj;
     };
-    
+
     return redactValue(data);
   }
 
   async correlateEntities(entities, parameters) {
     try {
       const { correlationRules, context } = parameters;
-      
+
       const response = await this.client.post('/correlation/analyze', {
         entities: entities || [],
         rules: correlationRules || {},
-        context: context || {}
+        context: context || {},
       });
 
       return {
@@ -1119,8 +1135,8 @@ export class NovaSynthConnector extends IConnector {
         data: {
           correlations: response.data.result?.correlations || response.data.correlations,
           relationships: response.data.relationships,
-          confidence: response.data.confidence
-        }
+          confidence: response.data.confidence,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to correlate entities: ${error.message}`);
@@ -1130,12 +1146,12 @@ export class NovaSynthConnector extends IConnector {
   async mergeProfiles(primaryProfile, parameters) {
     try {
       const { secondaryProfile, mergeStrategy, preserveConflicts } = parameters;
-      
+
       const response = await this.client.post('/profiles/merge', {
         primary: primaryProfile,
         secondary: secondaryProfile,
         strategy: mergeStrategy || 'intelligent',
-        preserveConflicts: preserveConflicts !== false
+        preserveConflicts: preserveConflicts !== false,
       });
 
       return {
@@ -1144,8 +1160,8 @@ export class NovaSynthConnector extends IConnector {
         data: {
           mergedProfile: response.data.mergedProfile,
           conflicts: response.data.conflicts,
-          mergeId: response.data.mergeId
-        }
+          mergeId: response.data.mergeId,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to merge profiles: ${error.message}`);
@@ -1155,11 +1171,11 @@ export class NovaSynthConnector extends IConnector {
   async deduplicateData(dataset, parameters) {
     try {
       const { deduplicationRules, similarityThreshold } = parameters;
-      
+
       const response = await this.client.post('/deduplication/analyze', {
         data: dataset,
         rules: deduplicationRules || {},
-        threshold: similarityThreshold || 0.9
+        threshold: similarityThreshold || 0.9,
       });
 
       return {
@@ -1168,8 +1184,8 @@ export class NovaSynthConnector extends IConnector {
         data: {
           uniqueRecords: response.data.uniqueRecords || response.data.result?.uniqueRecords,
           duplicates: response.data.duplicates || response.data.result?.duplicates,
-          deduplicationReport: response.data.report || response.data.result?.report
-        }
+          deduplicationReport: response.data.report || response.data.result?.report,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to deduplicate data: ${error.message}`);
@@ -1179,11 +1195,11 @@ export class NovaSynthConnector extends IConnector {
   async validateProfile(profile, parameters) {
     try {
       const { validationRules, strictMode } = parameters;
-      
+
       const response = await this.client.post('/validation/profile', {
         profile,
         rules: validationRules || {},
-        strict: strictMode !== false
+        strict: strictMode !== false,
       });
 
       return {
@@ -1193,8 +1209,8 @@ export class NovaSynthConnector extends IConnector {
           isValid: response.data.valid,
           errors: response.data.errors,
           warnings: response.data.warnings,
-          validationScore: response.data.score
-        }
+          validationScore: response.data.score,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to validate profile: ${error.message}`);
@@ -1204,11 +1220,11 @@ export class NovaSynthConnector extends IConnector {
   async normalizeAttributes(attributes, parameters) {
     try {
       const { normalizationRules, targetFormat } = parameters;
-      
+
       const response = await this.client.post('/normalization/attributes', {
         attributes,
         rules: normalizationRules || {},
-        format: targetFormat || 'nova_standard'
+        format: targetFormat || 'nova_standard',
       });
 
       return {
@@ -1216,8 +1232,8 @@ export class NovaSynthConnector extends IConnector {
         message: 'Attribute normalization completed successfully',
         data: {
           normalizedAttributes: response.data.normalized,
-          normalizationReport: response.data.report
-        }
+          normalizationReport: response.data.report,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to normalize attributes: ${error.message}`);
@@ -1227,11 +1243,11 @@ export class NovaSynthConnector extends IConnector {
   async calculateConfidence(data, parameters) {
     try {
       const { confidenceModel, context } = parameters;
-      
+
       const response = await this.client.post('/confidence/calculate', {
         data,
         model: confidenceModel || 'default',
-        context: context || {}
+        context: context || {},
       });
 
       return {
@@ -1240,8 +1256,8 @@ export class NovaSynthConnector extends IConnector {
         data: {
           confidenceScore: response.data.score,
           factors: response.data.factors,
-          recommendation: response.data.recommendation
-        }
+          recommendation: response.data.recommendation,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to calculate confidence: ${error.message}`);
@@ -1258,14 +1274,14 @@ export class NovaSynthConnector extends IConnector {
   async matchUserProfiles(profiles, options = {}) {
     const result = await this.matchProfiles(profiles[0], {
       targetProfiles: profiles.slice(1),
-      ...options
+      ...options,
     });
     // Return data in expected format for tests
     return {
       ...result,
       matches: result.data?.matches || [],
       totalCandidates: result.data?.totalCandidates,
-      bestMatch: result.data?.bestMatch
+      bestMatch: result.data?.bestMatch,
     };
   }
 
@@ -1279,7 +1295,7 @@ export class NovaSynthConnector extends IConnector {
       ...result,
       correlations: result.data?.correlations || [],
       relationships: result.data?.relationships,
-      confidence: result.data?.confidence
+      confidence: result.data?.confidence,
     };
   }
 
@@ -1293,7 +1309,7 @@ export class NovaSynthConnector extends IConnector {
       ...result,
       duplicates: result.data?.duplicates || result.data?.result?.duplicates || [],
       uniqueRecords: result.data?.uniqueRecords || result.data?.result?.uniqueRecords,
-      deduplicationStats: result.data?.deduplicationStats || result.data?.deduplicationReport
+      deduplicationStats: result.data?.deduplicationStats || result.data?.deduplicationReport,
     };
   }
 
@@ -1313,13 +1329,13 @@ export class NovaSynthConnector extends IConnector {
           devicePatterns: trainingData.devicePatterns || [],
           namingConventions: trainingData.namingConventions || {},
           departmentStructure: trainingData.departmentStructure || {},
-          customMappings: trainingData.customMappings || {}
+          customMappings: trainingData.customMappings || {},
         },
         trainingOptions: {
           mode: 'incremental',
           validateBefore: true,
-          createBackup: true
-        }
+          createBackup: true,
+        },
       });
 
       return {
@@ -1329,8 +1345,8 @@ export class NovaSynthConnector extends IConnector {
           trainingId: response.data.trainingId,
           patternsLearned: response.data.patternsLearned,
           modelVersion: response.data.modelVersion,
-          accuracy: response.data.accuracy
-        }
+          accuracy: response.data.accuracy,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to train with organization data: ${error.message}`);
@@ -1342,29 +1358,32 @@ export class NovaSynthConnector extends IConnector {
    */
   async updateOrganizationPatterns(patterns) {
     try {
-      const response = await this.client.put(`/organization/${this.config.organization?.id}/patterns`, {
-        patterns: {
-          namePatterns: patterns.namePatterns || [],
-          emailDomains: patterns.emailDomains || [],
-          departmentMappings: patterns.departmentMappings || {},
-          deviceNamingConventions: patterns.deviceNamingConventions || [],
-          customAttributes: patterns.customAttributes || {},
-          validationRules: patterns.validationRules || {},
-          transformationRules: patterns.transformationRules || {}
+      const response = await this.client.put(
+        `/organization/${this.config.organization?.id}/patterns`,
+        {
+          patterns: {
+            namePatterns: patterns.namePatterns || [],
+            emailDomains: patterns.emailDomains || [],
+            departmentMappings: patterns.departmentMappings || {},
+            deviceNamingConventions: patterns.deviceNamingConventions || [],
+            customAttributes: patterns.customAttributes || {},
+            validationRules: patterns.validationRules || {},
+            transformationRules: patterns.transformationRules || {},
+          },
+          updateMode: 'merge', // 'replace' or 'merge'
         },
-        updateMode: 'merge' // 'replace' or 'merge'
-      });
+      );
 
       // Update local patterns cache
       this.organizationPatterns = {
         ...this.organizationPatterns,
-        ...patterns
+        ...patterns,
       };
 
       return {
         success: true,
         message: 'Organization patterns updated successfully',
-        data: response.data
+        data: response.data,
       };
     } catch (error) {
       throw new Error(`Failed to update organization patterns: ${error.message}`);
@@ -1384,9 +1403,9 @@ export class NovaSynthConnector extends IConnector {
           incorrectMatches: validationData.incorrectMatches || [],
           missedMatches: validationData.missedMatches || [],
           transformationAccuracy: validationData.transformationAccuracy || {},
-          userFeedback: validationData.userFeedback || []
+          userFeedback: validationData.userFeedback || [],
         },
-        improvementSuggestions: validationData.improvementSuggestions || []
+        improvementSuggestions: validationData.improvementSuggestions || [],
       });
 
       return {
@@ -1395,8 +1414,8 @@ export class NovaSynthConnector extends IConnector {
         data: {
           feedbackId: response.data.feedbackId,
           improvementsImplemented: response.data.improvementsImplemented,
-          nextTrainingScheduled: response.data.nextTrainingScheduled
-        }
+          nextTrainingScheduled: response.data.nextTrainingScheduled,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to provide feedback: ${error.message}`);
@@ -1412,8 +1431,10 @@ export class NovaSynthConnector extends IConnector {
    */
   async getQualityMetrics(timeRange = '24h') {
     try {
-      const response = await this.client.get(`/metrics/quality?range=${timeRange}&org=${this.config.organization?.id}`);
-      
+      const response = await this.client.get(
+        `/metrics/quality?range=${timeRange}&org=${this.config.organization?.id}`,
+      );
+
       return {
         success: true,
         data: {
@@ -1423,8 +1444,8 @@ export class NovaSynthConnector extends IConnector {
           deduplicationEfficiency: response.data.deduplicationEfficiency,
           confidenceDistribution: response.data.confidenceDistribution,
           errorRates: response.data.errorRates,
-          performanceMetrics: response.data.performanceMetrics
-        }
+          performanceMetrics: response.data.performanceMetrics,
+        },
       };
     } catch (error) {
       throw new Error(`Failed to get quality metrics: ${error.message}`);
@@ -1439,29 +1460,29 @@ export class NovaSynthConnector extends IConnector {
       // In mock mode, simulate real-time monitoring
       if (this.config?.mockMode) {
         console.log('Mock mode - simulating quality monitoring');
-        
+
         // Simulate periodic quality updates
         const mockEventSource = {
-          close: () => console.log('Mock quality monitoring stopped')
+          close: () => console.log('Mock quality monitoring stopped'),
         };
-        
+
         const simulateUpdate = () => {
           const mockQualityData = {
             timestamp: new Date().toISOString(),
             overallQuality: 0.85 + Math.random() * 0.1,
             matchingAccuracy: 0.9 + Math.random() * 0.05,
-            alerts: []
+            alerts: [],
           };
           callback(null, mockQualityData);
         };
-        
+
         // Send initial update
         setTimeout(simulateUpdate, 100);
-        
+
         return {
           success: true,
           message: 'Mock quality monitoring started',
-          eventSource: mockEventSource
+          eventSource: mockEventSource,
         };
       }
 
@@ -1469,8 +1490,8 @@ export class NovaSynthConnector extends IConnector {
       const eventSource = new EventSource(
         `${this.config.endpoints.synthUrl}/stream/quality?org=${this.config.organization?.id}`,
         {
-          headers: await this.setupAuthentication(this.config)
-        }
+          headers: await this.setupAuthentication(this.config),
+        },
       );
 
       eventSource.onmessage = (event) => {
@@ -1489,7 +1510,7 @@ export class NovaSynthConnector extends IConnector {
       return {
         success: true,
         message: 'Quality monitoring started',
-        eventSource
+        eventSource,
       };
     } catch (error) {
       throw new Error(`Failed to start quality monitoring: ${error.message}`);
@@ -1506,12 +1527,12 @@ export class NovaSynthConnector extends IConnector {
         grant_type: 'client_credentials',
         client_id: config.credentials.clientId,
         client_secret: config.credentials.clientSecret,
-        scope: config.authentication.scope || 'data-intelligence'
+        scope: config.authentication.scope || 'data-intelligence',
       });
 
       this.accessToken = tokenResponse.data.access_token;
-      this.tokenExpiry = new Date(Date.now() + (tokenResponse.data.expires_in * 1000));
-      
+      this.tokenExpiry = new Date(Date.now() + tokenResponse.data.expires_in * 1000);
+
       return this.accessToken;
     } catch (error) {
       throw new Error(`OAuth2 authentication failed: ${error.message}`);
@@ -1527,11 +1548,13 @@ export class NovaSynthConnector extends IConnector {
         aud: 'nova-synth-api',
         org: config.organization?.id,
         exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour
-        iat: Math.floor(Date.now() / 1000)
+        iat: Math.floor(Date.now() / 1000),
       };
 
       // Simple JWT implementation (in production, use proper JWT library)
-      const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+      const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString(
+        'base64url',
+      );
       const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
       const signature = crypto
         .createHmac('sha256', config.credentials.jwtSecret)
@@ -1557,18 +1580,18 @@ export class NovaSynthConnector extends IConnector {
   logAPIRequest(config) {
     console.log(`[Nova Synth API] ${config.method?.toUpperCase()} ${config.url}`, {
       correlationId: config.headers['X-Correlation-ID'],
-      organizationId: config.headers['X-Organization-ID']
+      organizationId: config.headers['X-Organization-ID'],
     });
   }
 
   logAPIResponse(response) {
-    const duration = response.config.metadata?.startTime 
-      ? Date.now() - response.config.metadata.startTime 
+    const duration = response.config.metadata?.startTime
+      ? Date.now() - response.config.metadata.startTime
       : 0;
-    
+
     console.log(`[Nova Synth API] Response ${response.status} in ${duration}ms`, {
       correlationId: response.config.headers['X-Correlation-ID'],
-      dataSize: JSON.stringify(response.data).length
+      dataSize: JSON.stringify(response.data).length,
     });
   }
 
@@ -1576,7 +1599,7 @@ export class NovaSynthConnector extends IConnector {
     console.error(`[Nova Synth API] ${type} error:`, {
       message: error.message,
       status: error.response?.status,
-      correlationId: error.config?.headers?.['X-Correlation-ID']
+      correlationId: error.config?.headers?.['X-Correlation-ID'],
     });
   }
 
@@ -1586,7 +1609,7 @@ export class NovaSynthConnector extends IConnector {
       this.qualityMetrics = {
         ...this.qualityMetrics,
         lastQualityScore: response.data.qualityScore,
-        lastUpdate: new Date()
+        lastUpdate: new Date(),
       };
     }
   }
@@ -1605,7 +1628,7 @@ export class NovaSynthConnector extends IConnector {
         autoRetraining: options.autoRetraining || true,
         qualityThreshold: options.qualityThreshold || 0.8,
         improvementMetrics: options.improvementMetrics || ['accuracy', 'speed', 'confidence'],
-        alertThreshold: options.alertThreshold || 0.7
+        alertThreshold: options.alertThreshold || 0.7,
       };
 
       // Setup automated quality monitoring
@@ -1637,7 +1660,7 @@ export class NovaSynthConnector extends IConnector {
       return {
         success: true,
         message: 'Feedback loop started successfully',
-        config: feedbackConfig
+        config: feedbackConfig,
       };
     } catch (error) {
       throw new Error(`Failed to start feedback loop: ${error.message}`);
@@ -1672,7 +1695,7 @@ export class NovaSynthConnector extends IConnector {
           type: 'quality_improvement',
           priority: 'high',
           action: 'retrain_model',
-          reason: `Quality score ${metrics.overallQuality} below threshold ${config.qualityThreshold}`
+          reason: `Quality score ${metrics.overallQuality} below threshold ${config.qualityThreshold}`,
         });
       }
 
@@ -1682,17 +1705,17 @@ export class NovaSynthConnector extends IConnector {
           type: 'matching_improvement',
           priority: 'medium',
           action: 'update_matching_rules',
-          reason: `Matching accuracy ${metrics.matchingAccuracy} needs improvement`
+          reason: `Matching accuracy ${metrics.matchingAccuracy} needs improvement`,
         });
       }
 
       // Check error rates
-      if (metrics.errorRates?.total > (1 - config.alertThreshold)) {
+      if (metrics.errorRates?.total > 1 - config.alertThreshold) {
         improvements.push({
           type: 'error_reduction',
           priority: 'high',
           action: 'investigate_errors',
-          reason: `Error rate ${metrics.errorRates.total} exceeds alert threshold`
+          reason: `Error rate ${metrics.errorRates.total} exceeds alert threshold`,
         });
       }
 
@@ -1704,7 +1727,7 @@ export class NovaSynthConnector extends IConnector {
       return {
         success: true,
         improvements: improvements.length,
-        actions: improvements.map(i => i.action)
+        actions: improvements.map((i) => i.action),
       };
     } catch (error) {
       throw new Error(`Failed to evaluate and improve: ${error.message}`);
@@ -1733,7 +1756,7 @@ export class NovaSynthConnector extends IConnector {
       // Log improvement action
       console.log(`[Nova Synth] Implemented improvement: ${improvement.action}`, {
         priority: improvement.priority,
-        reason: improvement.reason
+        reason: improvement.reason,
       });
     } catch (error) {
       throw new Error(`Failed to implement improvement: ${error.message}`);
@@ -1749,13 +1772,13 @@ export class NovaSynthConnector extends IConnector {
         organizationId: this.config.organization?.id,
         trigger: improvement.reason,
         priority: improvement.priority,
-        retrainingType: 'incremental'
+        retrainingType: 'incremental',
       });
 
       return {
         success: true,
         retrainingId: response.data.retrainingId,
-        estimatedDuration: response.data.estimatedDuration
+        estimatedDuration: response.data.estimatedDuration,
       };
     } catch (error) {
       throw new Error(`Failed to trigger retraining: ${error.message}`);
@@ -1769,13 +1792,13 @@ export class NovaSynthConnector extends IConnector {
     try {
       // Analyze recent matching failures and update rules
       const failureAnalysis = await this.client.get('/analysis/matching-failures?days=7');
-      
+
       const updatedRules = this.generateImprovedMatchingRules(failureAnalysis.data);
-      
+
       await this.client.put('/rules/matching', {
         organizationId: this.config.organization?.id,
         rules: updatedRules,
-        reason: improvement.reason
+        reason: improvement.reason,
       });
 
       return { success: true, rulesUpdated: Object.keys(updatedRules).length };
@@ -1790,14 +1813,14 @@ export class NovaSynthConnector extends IConnector {
   async investigateErrors(improvement) {
     try {
       const errorAnalysis = await this.client.get('/analysis/errors?days=1');
-      
+
       const categorizedErrors = this.categorizeErrors(errorAnalysis.data);
-      
+
       // Submit error analysis for automated improvement
       await this.client.post('/improvement/error-analysis', {
         organizationId: this.config.organization?.id,
         errorCategories: categorizedErrors,
-        priority: improvement.priority
+        priority: improvement.priority,
       });
 
       return { success: true, errorsAnalyzed: errorAnalysis.data.length };
@@ -1812,18 +1835,18 @@ export class NovaSynthConnector extends IConnector {
 
   getFrequencyInterval(frequency) {
     const intervals = {
-      'hourly': 60 * 60 * 1000,     // 1 hour
-      'daily': 24 * 60 * 60 * 1000, // 24 hours
-      'weekly': 7 * 24 * 60 * 60 * 1000 // 7 days
+      hourly: 60 * 60 * 1000, // 1 hour
+      daily: 24 * 60 * 60 * 1000, // 24 hours
+      weekly: 7 * 24 * 60 * 60 * 1000, // 7 days
     };
     return intervals[frequency] || intervals.daily;
   }
 
   getRetrainingInterval(frequency) {
     const intervals = {
-      'hourly': 6 * 60 * 60 * 1000,      // 6 hours
-      'daily': 3 * 24 * 60 * 60 * 1000,  // 3 days  
-      'weekly': 2 * 7 * 24 * 60 * 60 * 1000 // 2 weeks
+      hourly: 6 * 60 * 60 * 1000, // 6 hours
+      daily: 3 * 24 * 60 * 60 * 1000, // 3 days
+      weekly: 2 * 7 * 24 * 60 * 60 * 1000, // 2 weeks
     };
     return intervals[frequency] || intervals.daily;
   }
@@ -1831,7 +1854,7 @@ export class NovaSynthConnector extends IConnector {
   generateImprovedMatchingRules(failureData) {
     // Analyze failure patterns and generate improved rules
     const rules = {};
-    
+
     // Group failures by type
     const failuresByType = failureData.reduce((acc, failure) => {
       acc[failure.type] = acc[failure.type] || [];
@@ -1850,10 +1873,10 @@ export class NovaSynthConnector extends IConnector {
   generateRuleForFailureType(type, failures) {
     // Basic rule generation logic (can be enhanced)
     return {
-      confidence_threshold: Math.max(0.5, 1.0 - (failures.length / 100)),
+      confidence_threshold: Math.max(0.5, 1.0 - failures.length / 100),
       similarity_weight: type === 'name_matching' ? 0.8 : 0.6,
       exact_match_priority: true,
-      fuzzy_matching_enabled: failures.length > 10
+      fuzzy_matching_enabled: failures.length > 10,
     };
   }
 
@@ -1864,10 +1887,10 @@ export class NovaSynthConnector extends IConnector {
       matching: [],
       transformation: [],
       network: [],
-      unknown: []
+      unknown: [],
     };
 
-    errorData.forEach(error => {
+    errorData.forEach((error) => {
       if (error.message.includes('auth') || error.status === 401) {
         categories.authentication.push(error);
       } else if (error.message.includes('validation') || error.status === 400) {
@@ -1890,7 +1913,7 @@ export class NovaSynthConnector extends IConnector {
     try {
       // Get recent feedback data
       const feedbackData = await this.client.get('/feedback/recent?days=7');
-      
+
       if (feedbackData.data.length < 10) {
         console.log('Insufficient feedback data for retraining');
         return;
@@ -1898,9 +1921,9 @@ export class NovaSynthConnector extends IConnector {
 
       // Trigger retraining with accumulated feedback
       await this.trainWithOrganizationData({
-        userProfiles: feedbackData.data.filter(f => f.type === 'user_profile'),
-        devicePatterns: feedbackData.data.filter(f => f.type === 'device_pattern'),
-        customMappings: feedbackData.data.filter(f => f.type === 'custom_mapping')
+        userProfiles: feedbackData.data.filter((f) => f.type === 'user_profile'),
+        devicePatterns: feedbackData.data.filter((f) => f.type === 'device_pattern'),
+        customMappings: feedbackData.data.filter((f) => f.type === 'custom_mapping'),
       });
 
       console.log('Automatic retraining completed successfully');

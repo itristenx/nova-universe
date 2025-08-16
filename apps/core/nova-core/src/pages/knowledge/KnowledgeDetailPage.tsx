@@ -11,7 +11,10 @@ const KnowledgeDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const userRoles = user?.roles || [];
-  const isEditor = userRoles.includes('admin') || userRoles.includes('superadmin') || userRoles.includes('kb_editor');
+  const isEditor =
+    userRoles.includes('admin') ||
+    userRoles.includes('superadmin') ||
+    userRoles.includes('kb_editor');
 
   const [article, setArticle] = useState<KnowledgeArticle | null>(null);
   const [versions, setVersions] = useState<KnowledgeArticleVersion[]>([]);
@@ -46,7 +49,6 @@ const KnowledgeDetailPage: React.FC = () => {
     setComment('');
   };
 
-
   if (loading) return <div>Loading...</div>;
   if (!article) return <div>Article not found.</div>;
 
@@ -56,7 +58,7 @@ const KnowledgeDetailPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">
           {article.title}
           {article.verifiedSolution && (
-            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+            <span className="ml-2 inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
               Verified
             </span>
           )}
@@ -68,7 +70,7 @@ const KnowledgeDetailPage: React.FC = () => {
         )}
       </div>
 
-      <Card className="p-4 space-y-4">
+      <Card className="space-y-4 p-4">
         <div
           className="prose max-w-none"
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
@@ -76,10 +78,10 @@ const KnowledgeDetailPage: React.FC = () => {
       </Card>
 
       {versions.length > 0 && (
-        <Card className="p-4 space-y-2">
+        <Card className="space-y-2 p-4">
           <h2 className="text-lg font-semibold">Version History</h2>
           <ul className="list-disc pl-4 text-sm">
-            {versions.map(v => (
+            {versions.map((v) => (
               <li key={v.id}>
                 v{v.version} • {v.author?.name} • {new Date(v.createdAt).toLocaleDateString()}
               </li>
@@ -88,19 +90,25 @@ const KnowledgeDetailPage: React.FC = () => {
         </Card>
       )}
 
-      <Card className="p-4 space-y-4">
+      <Card className="space-y-4 p-4">
         <h2 className="text-lg font-semibold">Comments</h2>
         {comments.length === 0 && <div className="text-sm text-gray-500">No comments yet.</div>}
-        {comments.map(c => (
+        {comments.map((c) => (
           <div key={c.id} className="border-b py-2 text-sm">
-            <div className="text-gray-600 mb-1">{c.user?.name} • {new Date(c.createdAt).toLocaleString()}</div>
+            <div className="mb-1 text-gray-600">
+              {c.user?.name} • {new Date(c.createdAt).toLocaleString()}
+            </div>
             <div>{c.content}</div>
           </div>
         ))}
 
         {user && (
           <div className="space-y-2">
-            <Textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Add a comment" />
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Add a comment"
+            />
             <Button variant="primary" onClick={addComment} disabled={!comment.trim()}>
               Post Comment
             </Button>

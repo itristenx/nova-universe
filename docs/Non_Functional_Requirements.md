@@ -1,6 +1,7 @@
 # Non-Functional Requirements Specification
 
 ## Overview
+
 This document outlines the non-functional requirements for the Nova-Universe platform, including performance, scalability, security, and compliance needs.
 
 ---
@@ -50,5 +51,6 @@ This document outlines the non-functional requirements for the Nova-Universe pla
 ---
 
 ## References
+
 - Legacy SQLite module (formerly `/nova-api/db-legacy.js`, now removed)
 - Documentation: `/docs/IMPLEMENTATION_PROGRESS.md`, `/project_docs/Project_Overview.txt`

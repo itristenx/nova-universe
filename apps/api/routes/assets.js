@@ -17,9 +17,9 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
+  },
 });
 
 const upload = multer({
@@ -37,9 +37,8 @@ const upload = multer({
     } else {
       cb(new Error('Only image files are allowed'));
     }
-  }
+  },
 });
-
 
 /**
  * @swagger
@@ -134,44 +133,47 @@ router.post('/', upload.single('file'), (req, res) => {
 
   const { name, type } = req.body;
   if (!name || !type) {
-    return res.status(400).json({ error: 'Name and type are required', errorCode: 'NAME_TYPE_REQUIRED' });
+    return res
+      .status(400)
+      .json({ error: 'Name and type are required', errorCode: 'NAME_TYPE_REQUIRED' });
   }
 
   const url = `/uploads/${req.file.filename}`;
-  
+
   db.run(
     'INSERT INTO assets (name, type, filename, url) VALUES ($1, $2, $3, $4)',
     [name, type, req.file.filename, url],
-    function(err) {
+    function (err) {
       if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-      
+
       res.json({
         id: this.lastID,
         name,
         type,
         filename: req.file.filename,
         url,
-        uploaded_at: new Date().toISOString()
+        uploaded_at: new Date().toISOString(),
       });
-    }
+    },
   );
 });
 
 // Delete asset
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
-  
+
   // Get asset info first
   db.get('SELECT * FROM assets WHERE id = $1', [id], (err, row) => {
     if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-    if (!row) return res.status(404).json({ error: 'Asset not found', errorCode: 'ASSET_NOT_FOUND' });
-    
+    if (!row)
+      return res.status(404).json({ error: 'Asset not found', errorCode: 'ASSET_NOT_FOUND' });
+
     // Delete file from disk
     const filePath = path.join(uploadsDir, row.filename);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
-    
+
     // Delete from database
     db.run('DELETE FROM assets WHERE id = $1', [id], (err) => {
       if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });

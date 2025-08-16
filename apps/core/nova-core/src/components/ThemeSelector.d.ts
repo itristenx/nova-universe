@@ -1,6 +1,6 @@
 import React from 'react';
 interface ThemeSelectorProps {
-    className?: string;
+  className?: string;
 }
 export declare const ThemeSelector: React.FC<ThemeSelectorProps>;
 export {};

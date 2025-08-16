@@ -1,16 +1,18 @@
-import React from 'react'
+import React from 'react';
 
 export const DebugTest: React.FC = () => {
-  console.log('🧪 DebugTest component rendering')
-  
+  console.log('🧪 DebugTest component rendering');
+
   return (
-    <div style={{ 
-      padding: '20px', 
-      background: '#f0f9ff', 
-      border: '2px solid #0ea5e9',
-      borderRadius: '8px',
-      margin: '20px'
-    }}>
+    <div
+      style={{
+        padding: '20px',
+        background: '#f0f9ff',
+        border: '2px solid #0ea5e9',
+        borderRadius: '8px',
+        margin: '20px',
+      }}
+    >
       <h1 style={{ color: '#0c4a6e', marginBottom: '16px' }}>🎉 Nova Pulse Debug Test</h1>
       <p style={{ color: '#075985', marginBottom: '12px' }}>
         ✅ React is working! This component has successfully rendered.
@@ -30,5 +32,5 @@ export const DebugTest: React.FC = () => {
         </ul>
       </details>
     </div>
-  )
-}
+  );
+};

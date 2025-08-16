@@ -16,7 +16,9 @@ async function getPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
     const mod = await import('../../../prisma/generated/core/index.js');
-    return new mod.PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+    return new mod.PrismaClient({
+      datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+    });
   } catch (e) {
     logger.warn('Prisma unavailable in pulse-inventory routes', { error: e?.message });
     return null;
@@ -80,16 +82,21 @@ let prismaPromise = getPrisma();
  *       200:
  *         description: List of assets with enhanced details
  */
-router.get('/assets',
+router.get(
+  '/assets',
   authenticateJWT,
-  checkQueueAccess(req => req.query.queue),
+  checkQueueAccess((req) => req.query.queue),
   createRateLimit(15 * 60 * 1000, 200), // 200 requests per 15 minutes
   [
-    query('status').optional().isIn(['active', 'inactive', 'maintenance', 'disposed', 'missing', 'retired']),
-    query('warrantyStatus').optional().isIn(['ok', 'warning', 'critical', 'expired', 'no_warranty']),
+    query('status')
+      .optional()
+      .isIn(['active', 'inactive', 'maintenance', 'disposed', 'missing', 'retired']),
+    query('warrantyStatus')
+      .optional()
+      .isIn(['ok', 'warning', 'critical', 'expired', 'no_warranty']),
     query('includeHistory').optional().isBoolean(),
     query('limit').optional().isInt({ min: 1, max: 200 }),
-    query('offset').optional().isInt({ min: 0 })
+    query('offset').optional().isInt({ min: 0 }),
   ],
   async (req, res) => {
     try {
@@ -99,7 +106,7 @@ router.get('/assets',
           success: false,
           error: 'Invalid parameters',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -110,12 +117,12 @@ router.get('/assets',
         warrantyStatus,
         includeHistory = false,
         limit = 50,
-        offset = 0
+        offset = 0,
       } = req.query;
 
       // Build dynamic query using Prisma
       const where = {};
-      
+
       if (status) where.status = status;
       if (assignedTo) where.assigned_to_user_id = assignedTo;
       if (department) where.department = department;
@@ -133,13 +140,13 @@ router.get('/assets',
           case 'critical':
             where.AND = [
               { warranty_expiry: { gt: now } },
-              { warranty_expiry: { lte: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) } }
+              { warranty_expiry: { lte: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) } },
             ];
             break;
           case 'warning':
             where.AND = [
               { warranty_expiry: { gt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) } },
-              { warranty_expiry: { lte: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) } }
+              { warranty_expiry: { lte: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) } },
             ];
             break;
           case 'ok':
@@ -161,8 +168,8 @@ router.get('/assets',
               new_status: true,
               changed_by_user_id: true,
               notes: true,
-              timestamp: true
-            }
+              timestamp: true,
+            },
           },
           assignments: {
             where: { return_date: null },
@@ -171,17 +178,17 @@ router.get('/assets',
               assigned_date: true,
               expected_return: true,
               assigned_by: true,
-              manager_id: true
-            }
-          }
+              manager_id: true,
+            },
+          },
         },
         orderBy: { updated_at: 'desc' },
         take: parseInt(limit),
-        skip: parseInt(offset)
+        skip: parseInt(offset),
       });
 
       // Get warranty alerts for these assets
-      const assetIds = assets.map(a => a.id);
+      const assetIds = assets.map((a) => a.id);
       const warrantyAlerts = await prismaPromise.$queryRaw`
         SELECT 
           asset_id,
@@ -220,46 +227,50 @@ router.get('/assets',
 
       // Group alerts and history by asset_id
       const alertsByAsset = {};
-      warrantyAlerts.forEach(alert => {
+      warrantyAlerts.forEach((alert) => {
         if (!alertsByAsset[alert.asset_id]) alertsByAsset[alert.asset_id] = [];
         alertsByAsset[alert.asset_id].push(alert);
       });
 
       const historyByAsset = {};
-      ticketHistory.forEach(history => {
+      ticketHistory.forEach((history) => {
         if (!historyByAsset[history.asset_id]) historyByAsset[history.asset_id] = [];
         historyByAsset[history.asset_id].push(history);
       });
 
       // Enhance assets with additional data
-      const enhancedAssets = assets.map(asset => {
+      const enhancedAssets = assets.map((asset) => {
         // Decrypt sensitive fields
         const decryptedAsset = {
           ...asset,
-          serial_number: asset.serial_number_enc ? 
-            inventoryService.decryptAssetField(asset.serial_number_enc) : null,
-          warranty_info: asset.warranty_info_enc ? 
-            inventoryService.decryptAssetField(asset.warranty_info_enc) : null,
-          purchase_info: asset.purchase_info_enc ? 
-            inventoryService.decryptAssetField(asset.purchase_info_enc) : null,
-          maintenance_notes: asset.maintenance_notes_enc ? 
-            inventoryService.decryptAssetField(asset.maintenance_notes_enc) : null,
+          serial_number: asset.serial_number_enc
+            ? inventoryService.decryptAssetField(asset.serial_number_enc)
+            : null,
+          warranty_info: asset.warranty_info_enc
+            ? inventoryService.decryptAssetField(asset.warranty_info_enc)
+            : null,
+          purchase_info: asset.purchase_info_enc
+            ? inventoryService.decryptAssetField(asset.purchase_info_enc)
+            : null,
+          maintenance_notes: asset.maintenance_notes_enc
+            ? inventoryService.decryptAssetField(asset.maintenance_notes_enc)
+            : null,
           // Remove encrypted fields from response
           serial_number_enc: undefined,
           warranty_info_enc: undefined,
           purchase_info_enc: undefined,
-          maintenance_notes_enc: undefined
+          maintenance_notes_enc: undefined,
         };
 
         // Calculate warranty status
         let warrantyStatusCalc = 'no_warranty';
         let warrantyDaysRemaining = null;
-        
+
         if (asset.warranty_expiry) {
           const now = new Date();
           const daysRemaining = Math.floor((asset.warranty_expiry - now) / (24 * 60 * 60 * 1000));
           warrantyDaysRemaining = daysRemaining;
-          
+
           if (daysRemaining < 0) {
             warrantyStatusCalc = 'expired';
           } else if (daysRemaining <= 7) {
@@ -278,7 +289,7 @@ router.get('/assets',
           warranty_alerts: alertsByAsset[asset.id] || [],
           active_tickets: historyByAsset[asset.id] || [],
           status_history: asset.statusLogs,
-          current_assignment: asset.assignments[0] || null
+          current_assignment: asset.assignments[0] || null,
         };
       });
 
@@ -292,19 +303,18 @@ router.get('/assets',
           total: totalCount,
           limit: parseInt(limit),
           offset: parseInt(offset),
-          hasMore: parseInt(offset) + parseInt(limit) < totalCount
-        }
+          hasMore: parseInt(offset) + parseInt(limit) < totalCount,
+        },
       });
-
     } catch (error) {
       logger.error('Error fetching enhanced inventory assets:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch inventory assets',
-        errorCode: 'INVENTORY_FETCH_ERROR'
+        errorCode: 'INVENTORY_FETCH_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -314,7 +324,8 @@ router.get('/assets',
  *     summary: Get detailed asset information
  *     description: Returns comprehensive asset details including full history and alerts
  */
-router.get('/assets/:assetId',
+router.get(
+  '/assets/:assetId',
   authenticateJWT,
   [param('assetId').isInt({ min: 1 }).withMessage('Asset ID must be a positive integer')],
   async (req, res) => {
@@ -325,7 +336,7 @@ router.get('/assets/:assetId',
           success: false,
           error: 'Invalid asset ID',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -343,8 +354,8 @@ router.get('/assets/:assetId',
               new_status: true,
               changed_by_user_id: true,
               notes: true,
-              timestamp: true
-            }
+              timestamp: true,
+            },
           },
           assignments: {
             orderBy: { assigned_date: 'desc' },
@@ -357,17 +368,17 @@ router.get('/assets/:assetId',
               assigned_date: true,
               expected_return: true,
               return_date: true,
-              manager_id: true
-            }
-          }
-        }
+              manager_id: true,
+            },
+          },
+        },
       });
 
       if (!asset) {
         return res.status(404).json({
           success: false,
           error: 'Asset not found',
-          errorCode: 'ASSET_NOT_FOUND'
+          errorCode: 'ASSET_NOT_FOUND',
         });
       }
 
@@ -432,30 +443,34 @@ router.get('/assets/:assetId',
       // Decrypt sensitive fields
       const enhancedAsset = {
         ...asset,
-        serial_number: asset.serial_number_enc ? 
-          inventoryService.decryptAssetField(asset.serial_number_enc) : null,
-        warranty_info: asset.warranty_info_enc ? 
-          inventoryService.decryptAssetField(asset.warranty_info_enc) : null,
-        purchase_info: asset.purchase_info_enc ? 
-          inventoryService.decryptAssetField(asset.purchase_info_enc) : null,
-        maintenance_notes: asset.maintenance_notes_enc ? 
-          inventoryService.decryptAssetField(asset.maintenance_notes_enc) : null,
+        serial_number: asset.serial_number_enc
+          ? inventoryService.decryptAssetField(asset.serial_number_enc)
+          : null,
+        warranty_info: asset.warranty_info_enc
+          ? inventoryService.decryptAssetField(asset.warranty_info_enc)
+          : null,
+        purchase_info: asset.purchase_info_enc
+          ? inventoryService.decryptAssetField(asset.purchase_info_enc)
+          : null,
+        maintenance_notes: asset.maintenance_notes_enc
+          ? inventoryService.decryptAssetField(asset.maintenance_notes_enc)
+          : null,
         // Remove encrypted fields
         serial_number_enc: undefined,
         warranty_info_enc: undefined,
         purchase_info_enc: undefined,
-        maintenance_notes_enc: undefined
+        maintenance_notes_enc: undefined,
       };
 
       // Calculate warranty status
       let warrantyStatus = 'no_warranty';
       let warrantyDaysRemaining = null;
-      
+
       if (asset.warranty_expiry) {
         const now = new Date();
         const daysRemaining = Math.floor((asset.warranty_expiry - now) / (24 * 60 * 60 * 1000));
         warrantyDaysRemaining = daysRemaining;
-        
+
         if (daysRemaining < 0) {
           warrantyStatus = 'expired';
         } else if (daysRemaining <= 7) {
@@ -477,19 +492,18 @@ router.get('/assets/:assetId',
           ticket_history: ticketHistory,
           kiosk_registrations: kioskRegistrations,
           assignment_history: asset.assignments,
-          status_history: asset.statusLogs
-        }
+          status_history: asset.statusLogs,
+        },
       });
-
     } catch (error) {
       logger.error('Error fetching asset details:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch asset details',
-        errorCode: 'ASSET_DETAIL_ERROR'
+        errorCode: 'ASSET_DETAIL_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -499,14 +513,16 @@ router.get('/assets/:assetId',
  *     summary: Link ticket to asset
  *     description: Creates a relationship between a ticket and an asset
  */
-router.post('/assets/:assetId/tickets',
+router.post(
+  '/assets/:assetId/tickets',
   authenticateJWT,
   [
     param('assetId').isInt({ min: 1 }),
     body('ticketId').isInt({ min: 1 }).withMessage('Ticket ID is required'),
-    body('relationshipType').isIn(['assigned_to', 'related_to', 'repair_for', 'replacement_for'])
+    body('relationshipType')
+      .isIn(['assigned_to', 'related_to', 'repair_for', 'replacement_for'])
       .withMessage('Invalid relationship type'),
-    body('notes').optional().isString().isLength({ max: 1000 })
+    body('notes').optional().isString().isLength({ max: 1000 }),
   ],
   async (req, res) => {
     try {
@@ -516,7 +532,7 @@ router.post('/assets/:assetId/tickets',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -526,27 +542,27 @@ router.post('/assets/:assetId/tickets',
 
       // Verify asset exists
       const asset = await prismaPromise.inventoryAsset.findUnique({
-        where: { id: parseInt(assetId) }
+        where: { id: parseInt(assetId) },
       });
 
       if (!asset) {
         return res.status(404).json({
           success: false,
           error: 'Asset not found',
-          errorCode: 'ASSET_NOT_FOUND'
+          errorCode: 'ASSET_NOT_FOUND',
         });
       }
 
       // Verify ticket exists
       const ticket = await prismaPromise.supportTicket.findUnique({
-        where: { id: parseInt(ticketId) }
+        where: { id: parseInt(ticketId) },
       });
 
       if (!ticket) {
         return res.status(404).json({
           success: false,
           error: 'Ticket not found',
-          errorCode: 'TICKET_NOT_FOUND'
+          errorCode: 'TICKET_NOT_FOUND',
         });
       }
 
@@ -565,19 +581,18 @@ router.post('/assets/:assetId/tickets',
           assetId: parseInt(assetId),
           ticketId: parseInt(ticketId),
           relationshipType,
-          createdBy: userId
-        }
+          createdBy: userId,
+        },
       });
-
     } catch (error) {
       logger.error('Error linking asset to ticket:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to link asset to ticket',
-        errorCode: 'LINK_ERROR'
+        errorCode: 'LINK_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -587,7 +602,8 @@ router.post('/assets/:assetId/tickets',
  *     summary: Get ticket history for asset
  *     description: Retrieves all tickets associated with an asset
  */
-router.get('/assets/:id/tickets',
+router.get(
+  '/assets/:id/tickets',
   authenticateJWT,
   [param('id').isInt({ min: 1 })],
   async (req, res) => {
@@ -598,7 +614,7 @@ router.get('/assets/:id/tickets',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -608,7 +624,7 @@ router.get('/assets/:id/tickets',
       const ticketHistory = await prismaPromise.assetTicketHistory.findMany({
         where: {
           assetId: parseInt(assetId),
-          endedAt: null // Only active relationships
+          endedAt: null, // Only active relationships
         },
         include: {
           ticket: {
@@ -617,36 +633,35 @@ router.get('/assets/:id/tickets',
               title: true,
               status: true,
               createdAt: true,
-              updatedAt: true
-            }
-          }
+              updatedAt: true,
+            },
+          },
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       });
 
       res.json({
         success: true,
         assetId: parseInt(assetId),
-        ticketHistory: ticketHistory.map(history => ({
+        ticketHistory: ticketHistory.map((history) => ({
           id: history.id,
           ticketId: history.ticketId,
           relationshipType: history.relationshipType,
           createdAt: history.createdAt,
           createdBy: history.createdBy,
           notes: history.notes,
-          ticket: history.ticket
-        }))
+          ticket: history.ticket,
+        })),
       });
-
     } catch (error) {
       logger.error('Error retrieving asset ticket history:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve ticket history',
-        errorCode: 'HISTORY_ERROR'
+        errorCode: 'HISTORY_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -656,13 +671,14 @@ router.get('/assets/:id/tickets',
  *     summary: Get warranty alerts
  *     description: Returns warranty alerts for assets
  */
-router.get('/warranty-alerts',
+router.get(
+  '/warranty-alerts',
   authenticateJWT,
   [
     query('alertType').optional().isIn(['warning', 'critical', 'expired']),
     query('dismissed').optional().isBoolean(),
     query('limit').optional().isInt({ min: 1, max: 200 }),
-    query('offset').optional().isInt({ min: 0 })
+    query('offset').optional().isInt({ min: 0 }),
   ],
   async (req, res) => {
     try {
@@ -672,19 +688,14 @@ router.get('/warranty-alerts',
           success: false,
           error: 'Invalid parameters',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
-      const {
-        alertType,
-        dismissed = false,
-        limit = 50,
-        offset = 0
-      } = req.query;
+      const { alertType, dismissed = false, limit = 50, offset = 0 } = req.query;
 
       let whereClause = `WHERE awa.dismissed = ${dismissed}`;
-      
+
       if (alertType) {
         whereClause += ` AND awa.alert_type = '${alertType}'`;
       }
@@ -726,19 +737,18 @@ router.get('/warranty-alerts',
           total: parseInt(totalCount[0].count),
           limit: parseInt(limit),
           offset: parseInt(offset),
-          hasMore: parseInt(offset) + parseInt(limit) < parseInt(totalCount[0].count)
-        }
+          hasMore: parseInt(offset) + parseInt(limit) < parseInt(totalCount[0].count),
+        },
       });
-
     } catch (error) {
       logger.error('Error fetching warranty alerts:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch warranty alerts',
-        errorCode: 'WARRANTY_ALERTS_ERROR'
+        errorCode: 'WARRANTY_ALERTS_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -748,7 +758,8 @@ router.get('/warranty-alerts',
  *     summary: Dismiss warranty alert
  *     description: Marks a warranty alert as dismissed
  */
-router.post('/warranty-alerts/:alertId/dismiss',
+router.post(
+  '/warranty-alerts/:alertId/dismiss',
   authenticateJWT,
   [param('alertId').isInt({ min: 1 })],
   async (req, res) => {
@@ -759,7 +770,7 @@ router.post('/warranty-alerts/:alertId/dismiss',
           success: false,
           error: 'Invalid alert ID',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -776,18 +787,17 @@ router.post('/warranty-alerts/:alertId/dismiss',
 
       res.json({
         success: true,
-        message: 'Warranty alert dismissed successfully'
+        message: 'Warranty alert dismissed successfully',
       });
-
     } catch (error) {
       logger.error('Error dismissing warranty alert:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to dismiss warranty alert',
-        errorCode: 'DISMISS_ALERT_ERROR'
+        errorCode: 'DISMISS_ALERT_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -797,13 +807,14 @@ router.post('/warranty-alerts/:alertId/dismiss',
  *     summary: Get kiosk-registered assets
  *     description: Returns assets registered with kiosks and their Helix sync status
  */
-router.get('/kiosk-assets',
+router.get(
+  '/kiosk-assets',
   authenticateJWT,
   [
     query('kioskId').optional().isString(),
     query('helixSyncStatus').optional().isIn(['pending', 'synced', 'failed']),
     query('limit').optional().isInt({ min: 1, max: 200 }),
-    query('offset').optional().isInt({ min: 0 })
+    query('offset').optional().isInt({ min: 0 }),
   ],
   async (req, res) => {
     try {
@@ -813,29 +824,24 @@ router.get('/kiosk-assets',
           success: false,
           error: 'Invalid parameters',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
-      const {
-        kioskId,
-        helixSyncStatus,
-        limit = 50,
-        offset = 0
-      } = req.query;
+      const { kioskId, helixSyncStatus, limit = 50, offset = 0 } = req.query;
 
       let whereConditions = [];
-      
+
       if (kioskId) {
         whereConditions.push(`kar.kiosk_id = '${kioskId}'`);
       }
-      
+
       if (helixSyncStatus) {
         whereConditions.push(`kar.helix_sync_status = '${helixSyncStatus}'`);
       }
 
-      const whereClause = whereConditions.length > 0 ? 
-        `WHERE ${whereConditions.join(' AND ')}` : '';
+      const whereClause =
+        whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
       const kioskAssets = await prismaPromise.$queryRaw`
         SELECT 
@@ -875,19 +881,18 @@ router.get('/kiosk-assets',
           total: parseInt(totalCount[0].count),
           limit: parseInt(limit),
           offset: parseInt(offset),
-          hasMore: parseInt(offset) + parseInt(limit) < parseInt(totalCount[0].count)
-        }
+          hasMore: parseInt(offset) + parseInt(limit) < parseInt(totalCount[0].count),
+        },
       });
-
     } catch (error) {
       logger.error('Error fetching kiosk assets:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch kiosk assets',
-        errorCode: 'KIOSK_ASSETS_ERROR'
+        errorCode: 'KIOSK_ASSETS_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -897,13 +902,14 @@ router.get('/kiosk-assets',
  *     summary: Import assets from CSV
  *     description: Bulk import assets with validation and rollback capabilities
  */
-router.post('/import',
+router.post(
+  '/import',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 5), // 5 imports per 15 minutes
   [
     body('csvData').isString().withMessage('CSV data is required'),
     body('filename').isString().withMessage('Filename is required'),
-    body('validateOnly').optional().isBoolean()
+    body('validateOnly').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
@@ -913,7 +919,7 @@ router.post('/import',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -923,8 +929,11 @@ router.post('/import',
       if (validateOnly) {
         // Perform validation only
         const records = inventoryService.parseCsvData(csvData);
-        const validationResults = await inventoryService.validateRecords(records, 'validation-only');
-        
+        const validationResults = await inventoryService.validateRecords(
+          records,
+          'validation-only',
+        );
+
         res.json({
           success: true,
           validationOnly: true,
@@ -932,28 +941,27 @@ router.post('/import',
           validRecords: validationResults.validatedData.length,
           invalidRecords: validationResults.errorCount,
           errors: validationResults.errors,
-          warnings: validationResults.warnings
+          warnings: validationResults.warnings,
         });
       } else {
         // Perform full import
         const importResult = await inventoryService.importAssets(csvData, filename, userId);
-        
+
         res.json({
           success: importResult.success,
-          ...importResult
+          ...importResult,
         });
       }
-
     } catch (error) {
       logger.error('Error importing assets:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to import assets',
         errorCode: 'IMPORT_ERROR',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -963,7 +971,8 @@ router.post('/import',
  *     summary: Rollback import batch
  *     description: Rollback a previously imported batch of assets
  */
-router.post('/import/:batchId/rollback',
+router.post(
+  '/import/:batchId/rollback',
   authenticateJWT,
   [param('batchId').isUUID().withMessage('Valid batch ID is required')],
   async (req, res) => {
@@ -974,7 +983,7 @@ router.post('/import/:batchId/rollback',
           success: false,
           error: 'Invalid batch ID',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -986,19 +995,18 @@ router.post('/import/:batchId/rollback',
       res.json({
         success: rollbackResult.success,
         message: `Rollback completed: ${rollbackResult.deletedCount} assets removed`,
-        deletedAssets: rollbackResult.deletedAssets
+        deletedAssets: rollbackResult.deletedAssets,
       });
-
     } catch (error) {
       logger.error('Error rolling back import:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to rollback import',
         errorCode: 'ROLLBACK_ERROR',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -1008,7 +1016,8 @@ router.post('/import/:batchId/rollback',
  *     summary: Sync assets with Helix APIs
  *     description: Trigger bulk sync of kiosk assets with Helix identity service
  */
-router.post('/helix/sync',
+router.post(
+  '/helix/sync',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 10), // 10 sync operations per 15 minutes
   async (req, res) => {
@@ -1020,19 +1029,18 @@ router.post('/helix/sync',
       res.json({
         success: true,
         message: 'Helix sync completed',
-        results: syncResults
+        results: syncResults,
       });
-
     } catch (error) {
       logger.error('Error syncing with Helix:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to sync with Helix',
         errorCode: 'HELIX_SYNC_ERROR',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -1042,26 +1050,22 @@ router.post('/helix/sync',
  *     summary: Get Helix sync status
  *     description: Returns status of Helix integration and sync operations
  */
-router.get('/helix/status',
-  authenticateJWT,
-  async (req, res) => {
-    try {
-      const syncStatus = await helixKioskIntegration.getHelixSyncStatus();
+router.get('/helix/status', authenticateJWT, async (req, res) => {
+  try {
+    const syncStatus = await helixKioskIntegration.getHelixSyncStatus();
 
-      res.json({
-        success: true,
-        helixSyncStatus: syncStatus
-      });
-
-    } catch (error) {
-      logger.error('Error getting Helix sync status:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to get Helix sync status',
-        errorCode: 'HELIX_STATUS_ERROR'
-      });
-    }
+    res.json({
+      success: true,
+      helixSyncStatus: syncStatus,
+    });
+  } catch (error) {
+    logger.error('Error getting Helix sync status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get Helix sync status',
+      errorCode: 'HELIX_STATUS_ERROR',
+    });
   }
-);
+});
 
 export default router;

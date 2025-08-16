@@ -31,121 +31,127 @@ export function configureSAML() {
     wantAssertionsSigned: true,
     wantAuthnResponseSigned: true,
     signatureAlgorithm: 'sha256',
-    digestAlgorithm: 'sha256'
+    digestAlgorithm: 'sha256',
   };
 
-  passport.use('saml', new SamlStrategy(
-    samlConfig,
-    async (profile, done) => {
+  passport.use(
+    'saml',
+    new SamlStrategy(samlConfig, async (profile, done) => {
       try {
-        logger.info('SAML authentication profile received', { 
+        logger.info('SAML authentication profile received', {
           nameID: profile.nameID,
-          email: profile.email || profile.nameID 
+          email: profile.email || profile.nameID,
         });
 
         // Extract user information from SAML profile
         const email = profile.email || profile.nameID;
-        const name = profile.displayName || profile.name || profile.firstName + ' ' + profile.lastName || email;
+        const name =
+          profile.displayName ||
+          profile.name ||
+          profile.firstName + ' ' + profile.lastName ||
+          email;
         const department = profile.department || null;
         const title = profile.title || null;
 
         // Check if user exists in database
-        db.get('SELECT * FROM users WHERE email = ? AND deleted_at IS NULL', [email], async (err, existingUser) => {
-          if (err) {
-            logger.error('Database error during SAML authentication:', err);
-            return done(err);
-          }
+        db.get(
+          'SELECT * FROM users WHERE email = ? AND deleted_at IS NULL',
+          [email],
+          async (err, existingUser) => {
+            if (err) {
+              logger.error('Database error during SAML authentication:', err);
+              return done(err);
+            }
 
-          let user;
-          if (existingUser) {
-            // Update existing user
-            const updateQuery = `
+            let user;
+            if (existingUser) {
+              // Update existing user
+              const updateQuery = `
               UPDATE users 
               SET name = ?, department = ?, title = ?, last_login_at = ?, updated_at = ?
               WHERE email = ?
             `;
-            
-            db.run(updateQuery, [
-              name,
-              department,
-              title,
-              new Date().toISOString(),
-              new Date().toISOString(),
-              email
-            ], function(updateErr) {
-              if (updateErr) {
-                logger.error('Error updating user during SAML login:', updateErr);
-                return done(updateErr);
-              }
 
-              // Get updated user with roles
-              getUserWithRoles(email, (getUserErr, userWithRoles) => {
-                if (getUserErr) return done(getUserErr);
-                
-                // Log successful authentication
-                logAuthenticationEvent(userWithRoles.id, 'SAML_LOGIN', true);
-                
-                return done(null, userWithRoles);
-              });
-            });
-          } else {
-            // Create new user with default role
-            const userId = require('uuid').v4();
-            const now = new Date().toISOString();
-            
-            const insertQuery = `
+              db.run(
+                updateQuery,
+                [
+                  name,
+                  department,
+                  title,
+                  new Date().toISOString(),
+                  new Date().toISOString(),
+                  email,
+                ],
+                function (updateErr) {
+                  if (updateErr) {
+                    logger.error('Error updating user during SAML login:', updateErr);
+                    return done(updateErr);
+                  }
+
+                  // Get updated user with roles
+                  getUserWithRoles(email, (getUserErr, userWithRoles) => {
+                    if (getUserErr) return done(getUserErr);
+
+                    // Log successful authentication
+                    logAuthenticationEvent(userWithRoles.id, 'SAML_LOGIN', true);
+
+                    return done(null, userWithRoles);
+                  });
+                },
+              );
+            } else {
+              // Create new user with default role
+              const userId = require('uuid').v4();
+              const now = new Date().toISOString();
+
+              const insertQuery = `
               INSERT INTO users (
                 id, email, name, department, title, auth_method, 
                 last_login_at, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
 
-            db.run(insertQuery, [
-              userId,
-              email,
-              name,
-              department,
-              title,
-              'saml',
-              now,
-              now,
-              now
-            ], function(insertErr) {
-              if (insertErr) {
-                logger.error('Error creating user during SAML login:', insertErr);
-                return done(insertErr);
-              }
+              db.run(
+                insertQuery,
+                [userId, email, name, department, title, 'saml', now, now, now],
+                function (insertErr) {
+                  if (insertErr) {
+                    logger.error('Error creating user during SAML login:', insertErr);
+                    return done(insertErr);
+                  }
 
-              // Assign default role (e.g., 'user')
-              assignDefaultRole(userId, (roleErr) => {
-                if (roleErr) {
-                  logger.warn('Error assigning default role to new SAML user:', roleErr);
-                }
+                  // Assign default role (e.g., 'user')
+                  assignDefaultRole(userId, (roleErr) => {
+                    if (roleErr) {
+                      logger.warn('Error assigning default role to new SAML user:', roleErr);
+                    }
 
-                // Get newly created user with roles
-                getUserWithRoles(email, (getUserErr, userWithRoles) => {
-                  if (getUserErr) return done(getUserErr);
-                  
-                  // Log successful authentication
-                  logAuthenticationEvent(userWithRoles.id, 'SAML_FIRST_LOGIN', true);
-                  
-                  logger.info('New user created via SAML authentication', { 
-                    userId: userWithRoles.id, 
-                    email: userWithRoles.email 
+                    // Get newly created user with roles
+                    getUserWithRoles(email, (getUserErr, userWithRoles) => {
+                      if (getUserErr) return done(getUserErr);
+
+                      // Log successful authentication
+                      logAuthenticationEvent(userWithRoles.id, 'SAML_FIRST_LOGIN', true);
+
+                      logger.info('New user created via SAML authentication', {
+                        userId: userWithRoles.id,
+                        email: userWithRoles.email,
+                      });
+
+                      return done(null, userWithRoles);
+                    });
                   });
-                  
-                  return done(null, userWithRoles);
-                });
-              });
-            });
-          }
-        });
+                },
+              );
+            }
+          },
+        );
       } catch (error) {
         logger.error('Error in SAML authentication strategy:', error);
         return done(error);
       }
-    }
-  ));
+    }),
+  );
 
   logger.info('SAML strategy configured successfully');
 }
@@ -166,21 +172,26 @@ export function configureSAMLSecondary(app) {
     return; // Not configured
   }
 
-  const strategy = new SamlStrategy({
-    entryPoint: process.env.SAML_ENTRY_POINT,
-    issuer: process.env.SAML_ISSUER,
-    callbackUrl: process.env.SAML_CALLBACK_URL,
-    cert: process.env.SAML_CERT || undefined,
-    identifierFormat: null,
-    disableRequestedAuthnContext: true
-  }, (profile, done) => {
-    const user = {
-      id: profile.nameID,
-      email: profile.email || profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-      name: profile.displayName || profile.cn || profile.commonName || profile.nameID
-    };
-    done(null, user);
-  });
+  const strategy = new SamlStrategy(
+    {
+      entryPoint: process.env.SAML_ENTRY_POINT,
+      issuer: process.env.SAML_ISSUER,
+      callbackUrl: process.env.SAML_CALLBACK_URL,
+      cert: process.env.SAML_CERT || undefined,
+      identifierFormat: null,
+      disableRequestedAuthnContext: true,
+    },
+    (profile, done) => {
+      const user = {
+        id: profile.nameID,
+        email:
+          profile.email ||
+          profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+        name: profile.displayName || profile.cn || profile.commonName || profile.nameID,
+      };
+      done(null, user);
+    },
+  );
 
   passport.use('saml', strategy);
   app.use(passport.initialize());
@@ -216,7 +227,7 @@ function getUserWithRoles(email, callback) {
       roleIds: row.role_ids ? row.role_ids.split(',') : [],
       lastLoginAt: row.last_login_at,
       createdAt: row.created_at,
-      updatedAt: row.updated_at
+      updatedAt: row.updated_at,
     };
 
     callback(null, user);
@@ -228,18 +239,22 @@ function getUserWithRoles(email, callback) {
  */
 function assignDefaultRole(userId, callback) {
   // Get default role (usually 'user' or 'employee')
-  db.get('SELECT id FROM roles WHERE name = ? OR "isDefault" = 1 LIMIT 1', ['user'], (err, role) => {
-    if (err || !role) {
-      return callback(err || new Error('Default role not found'));
-    }
+  db.get(
+    'SELECT id FROM roles WHERE name = ? OR "isDefault" = 1 LIMIT 1',
+    ['user'],
+    (err, role) => {
+      if (err || !role) {
+        return callback(err || new Error('Default role not found'));
+      }
 
-    const userRoleId = require('uuid').v4();
-    db.run(
-      'INSERT INTO user_roles (id, user_id, role_id, assigned_at, assigned_by_id) VALUES (?, ?, ?, ?, ?)',
-      [userRoleId, userId, role.id, new Date().toISOString(), null],
-      callback
-    );
-  });
+      const userRoleId = require('uuid').v4();
+      db.run(
+        'INSERT INTO user_roles (id, user_id, role_id, assigned_at, assigned_by_id) VALUES (?, ?, ?, ?, ?)',
+        [userRoleId, userId, role.id, new Date().toISOString(), null],
+        callback,
+      );
+    },
+  );
 }
 
 /**
@@ -255,17 +270,26 @@ function logAuthenticationEvent(userId, action, success, details = null) {
     ip_address: null, // Will be set by calling function
     user_agent: null, // Will be set by calling function
     details: details ? JSON.stringify(details) : null,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   db.run(
     'INSERT INTO auth_logs (id, user_id, action, success, ip_address, user_agent, details, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [logEntry.id, logEntry.user_id, logEntry.action, logEntry.success, logEntry.ip_address, logEntry.user_agent, logEntry.details, logEntry.timestamp],
+    [
+      logEntry.id,
+      logEntry.user_id,
+      logEntry.action,
+      logEntry.success,
+      logEntry.ip_address,
+      logEntry.user_agent,
+      logEntry.details,
+      logEntry.timestamp,
+    ],
     (err) => {
       if (err) {
         logger.error('Error logging authentication event:', err);
       }
-    }
+    },
   );
 }
 
@@ -274,7 +298,7 @@ function logAuthenticationEvent(userId, action, success, details = null) {
  */
 export const authenticateSAML = passport.authenticate('saml', {
   session: false,
-  failureRedirect: '/login?error=saml_failed'
+  failureRedirect: '/login?error=saml_failed',
 });
 
 /**
@@ -285,7 +309,8 @@ export function generateSAMLMetadata() {
     throw new Error('SAML_ISSUER environment variable required for metadata generation');
   }
 
-  const callbackUrl = process.env.SAML_CALLBACK_URL || 'http://localhost:3000/api/v1/helix/sso/callback';
+  const callbackUrl =
+    process.env.SAML_CALLBACK_URL || 'http://localhost:3000/api/v1/helix/sso/callback';
   const issuer = process.env.SAML_ISSUER;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -314,7 +339,7 @@ export function generateOIDCMetadata() {
     issuer: process.env.OIDC_ISSUER,
     authorization_endpoint: process.env.OIDC_AUTH_ENDPOINT,
     token_endpoint: process.env.OIDC_TOKEN_ENDPOINT,
-    userinfo_endpoint: process.env.OIDC_USERINFO_ENDPOINT
+    userinfo_endpoint: process.env.OIDC_USERINFO_ENDPOINT,
   };
 }
 
@@ -324,5 +349,5 @@ export default {
   authenticateSAML,
   generateSAMLMetadata,
   generateOIDCMetadata,
-  logAuthenticationEvent
+  logAuthenticationEvent,
 };

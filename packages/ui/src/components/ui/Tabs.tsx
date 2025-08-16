@@ -20,7 +20,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, initialIndex = 0, className = 
         {tabs.map((tab, i) => (
           <button
             key={tab.label}
-            className={`tabs-tab${i === active ? ' tabs-tab--active' : ''}`}
+            className={`tabs-tab${i === active ? 'tabs-tab--active' : ''}`}
             onClick={() => setActive(i)}
           >
             {tab.label}

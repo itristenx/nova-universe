@@ -69,47 +69,53 @@ const relationshipService = new RelationshipService();
  *       200:
  *         description: List of Configuration Items
  */
-router.get('/cis', authenticateJWT, [
-  query('page').optional().isInt({ min: 1 }),
-  query('limit').optional().isInt({ min: 1, max: 100 }),
-  query('ciType').optional().isString(),
-  query('status').optional().isIn(['Active', 'Inactive', 'Retired']),
-  query('environment').optional().isString(),
-  query('criticality').optional().isIn(['Critical', 'High', 'Medium', 'Low']),
-  query('location').optional().isString(),
-  query('search').optional().isString().isLength({ min: 1, max: 100 })
-], validateRequest, async (req, res) => {
-  try {
-    const filters = {
-      ciType: req.query.ciType,
-      status: req.query.status,
-      environment: req.query.environment,
-      criticality: req.query.criticality,
-      location: req.query.location,
-      search: req.query.search
-    };
-    
-    const pagination = {
-      page: parseInt(req.query.page) || 1,
-      limit: parseInt(req.query.limit) || 50
-    };
+router.get(
+  '/cis',
+  authenticateJWT,
+  [
+    query('page').optional().isInt({ min: 1 }),
+    query('limit').optional().isInt({ min: 1, max: 100 }),
+    query('ciType').optional().isString(),
+    query('status').optional().isIn(['Active', 'Inactive', 'Retired']),
+    query('environment').optional().isString(),
+    query('criticality').optional().isIn(['Critical', 'High', 'Medium', 'Low']),
+    query('location').optional().isString(),
+    query('search').optional().isString().isLength({ min: 1, max: 100 }),
+  ],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const filters = {
+        ciType: req.query.ciType,
+        status: req.query.status,
+        environment: req.query.environment,
+        criticality: req.query.criticality,
+        location: req.query.location,
+        search: req.query.search,
+      };
 
-    const result = await cmdbService.getConfigurationItems(filters, pagination);
-    res.json({
-      success: true,
-      data: result.items,
-      pagination: result.pagination,
-      filters: filters
-    });
-  } catch (error) {
-    logger.error('Error fetching CIs:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch Configuration Items',
-      errorCode: 'CMDB_FETCH_ERROR'
-    });
-  }
-});
+      const pagination = {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 50,
+      };
+
+      const result = await cmdbService.getConfigurationItems(filters, pagination);
+      res.json({
+        success: true,
+        data: result.items,
+        pagination: result.pagination,
+        filters: filters,
+      });
+    } catch (error) {
+      logger.error('Error fetching CIs:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch Configuration Items',
+        errorCode: 'CMDB_FETCH_ERROR',
+      });
+    }
+  },
+);
 
 /**
  * @swagger
@@ -142,40 +148,46 @@ router.get('/cis', authenticateJWT, [
  *       404:
  *         description: Configuration Item not found
  */
-router.get('/cis/:id', authenticateJWT, [
-  param('id').isString().notEmpty(),
-  query('includeRelationships').optional().isBoolean(),
-  query('includeHistory').optional().isBoolean()
-], validateRequest, async (req, res) => {
-  try {
-    const options = {
-      includeRelationships: req.query.includeRelationships === 'true',
-      includeHistory: req.query.includeHistory === 'true'
-    };
+router.get(
+  '/cis/:id',
+  authenticateJWT,
+  [
+    param('id').isString().notEmpty(),
+    query('includeRelationships').optional().isBoolean(),
+    query('includeHistory').optional().isBoolean(),
+  ],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const options = {
+        includeRelationships: req.query.includeRelationships === 'true',
+        includeHistory: req.query.includeHistory === 'true',
+      };
 
-    const ci = await cmdbService.getConfigurationItem(req.params.id, options);
-    
-    if (!ci) {
-      return res.status(404).json({
+      const ci = await cmdbService.getConfigurationItem(req.params.id, options);
+
+      if (!ci) {
+        return res.status(404).json({
+          success: false,
+          error: 'Configuration Item not found',
+          errorCode: 'CI_NOT_FOUND',
+        });
+      }
+
+      res.json({
+        success: true,
+        data: ci,
+      });
+    } catch (error) {
+      logger.error('Error fetching CI:', error);
+      res.status(500).json({
         success: false,
-        error: 'Configuration Item not found',
-        errorCode: 'CI_NOT_FOUND'
+        error: 'Failed to fetch Configuration Item',
+        errorCode: 'CMDB_FETCH_ERROR',
       });
     }
-
-    res.json({
-      success: true,
-      data: ci
-    });
-  } catch (error) {
-    logger.error('Error fetching CI:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch Configuration Item',
-      errorCode: 'CMDB_FETCH_ERROR'
-    });
-  }
-});
+  },
+);
 
 /**
  * @swagger
@@ -227,44 +239,50 @@ router.get('/cis/:id', authenticateJWT, [
  *       400:
  *         description: Validation error
  */
-router.post('/cis', authenticateJWT, [
-  body('name').isString().isLength({ min: 1, max: 255 }),
-  body('displayName').optional().isString().isLength({ max: 255 }),
-  body('description').optional().isString().isLength({ max: 1000 }),
-  body('ciType').isString().notEmpty(),
-  body('ciSubType').optional().isString(),
-  body('environment').optional().isIn(['Production', 'Development', 'Test', 'Staging']),
-  body('criticality').optional().isIn(['Critical', 'High', 'Medium', 'Low']),
-  body('location').optional().isString().isLength({ max: 255 }),
-  body('owner').optional().isString().isLength({ max: 255 }),
-  body('technicalOwner').optional().isString().isLength({ max: 255 }),
-  body('serialNumber').optional().isString().isLength({ max: 100 }),
-  body('assetTag').optional().isString().isLength({ max: 100 }),
-  body('customFields').optional().isObject(),
-  body('attributes').optional().isObject()
-], validateRequest, async (req, res) => {
-  try {
-    const ciData = {
-      ...req.body,
-      createdBy: req.user.id
-    };
+router.post(
+  '/cis',
+  authenticateJWT,
+  [
+    body('name').isString().isLength({ min: 1, max: 255 }),
+    body('displayName').optional().isString().isLength({ max: 255 }),
+    body('description').optional().isString().isLength({ max: 1000 }),
+    body('ciType').isString().notEmpty(),
+    body('ciSubType').optional().isString(),
+    body('environment').optional().isIn(['Production', 'Development', 'Test', 'Staging']),
+    body('criticality').optional().isIn(['Critical', 'High', 'Medium', 'Low']),
+    body('location').optional().isString().isLength({ max: 255 }),
+    body('owner').optional().isString().isLength({ max: 255 }),
+    body('technicalOwner').optional().isString().isLength({ max: 255 }),
+    body('serialNumber').optional().isString().isLength({ max: 100 }),
+    body('assetTag').optional().isString().isLength({ max: 100 }),
+    body('customFields').optional().isObject(),
+    body('attributes').optional().isObject(),
+  ],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const ciData = {
+        ...req.body,
+        createdBy: req.user.id,
+      };
 
-    const ci = await cmdbService.createConfigurationItem(ciData);
-    
-    res.status(201).json({
-      success: true,
-      data: ci,
-      message: 'Configuration Item created successfully'
-    });
-  } catch (error) {
-    logger.error('Error creating CI:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create Configuration Item',
-      errorCode: 'CMDB_CREATE_ERROR'
-    });
-  }
-});
+      const ci = await cmdbService.createConfigurationItem(ciData);
+
+      res.status(201).json({
+        success: true,
+        data: ci,
+        message: 'Configuration Item created successfully',
+      });
+    } catch (error) {
+      logger.error('Error creating CI:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create Configuration Item',
+        errorCode: 'CMDB_CREATE_ERROR',
+      });
+    }
+  },
+);
 
 /**
  * @swagger
@@ -290,45 +308,51 @@ router.post('/cis', authenticateJWT, [
  *       404:
  *         description: Configuration Item not found
  */
-router.put('/cis/:id', authenticateJWT, [
-  param('id').isString().notEmpty(),
-  body('name').optional().isString().isLength({ min: 1, max: 255 }),
-  body('description').optional().isString().isLength({ max: 1000 }),
-  body('ciStatus').optional().isIn(['Active', 'Inactive', 'Retired']),
-  body('environment').optional().isIn(['Production', 'Development', 'Test', 'Staging']),
-  body('criticality').optional().isIn(['Critical', 'High', 'Medium', 'Low']),
-  body('changeTicket').optional().isString().isLength({ max: 50 })
-], validateRequest, async (req, res) => {
-  try {
-    const updateData = {
-      ...req.body,
-      updatedBy: req.user.id
-    };
+router.put(
+  '/cis/:id',
+  authenticateJWT,
+  [
+    param('id').isString().notEmpty(),
+    body('name').optional().isString().isLength({ min: 1, max: 255 }),
+    body('description').optional().isString().isLength({ max: 1000 }),
+    body('ciStatus').optional().isIn(['Active', 'Inactive', 'Retired']),
+    body('environment').optional().isIn(['Production', 'Development', 'Test', 'Staging']),
+    body('criticality').optional().isIn(['Critical', 'High', 'Medium', 'Low']),
+    body('changeTicket').optional().isString().isLength({ max: 50 }),
+  ],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const updateData = {
+        ...req.body,
+        updatedBy: req.user.id,
+      };
 
-    const ci = await cmdbService.updateConfigurationItem(req.params.id, updateData);
-    
-    if (!ci) {
-      return res.status(404).json({
+      const ci = await cmdbService.updateConfigurationItem(req.params.id, updateData);
+
+      if (!ci) {
+        return res.status(404).json({
+          success: false,
+          error: 'Configuration Item not found',
+          errorCode: 'CI_NOT_FOUND',
+        });
+      }
+
+      res.json({
+        success: true,
+        data: ci,
+        message: 'Configuration Item updated successfully',
+      });
+    } catch (error) {
+      logger.error('Error updating CI:', error);
+      res.status(500).json({
         success: false,
-        error: 'Configuration Item not found',
-        errorCode: 'CI_NOT_FOUND'
+        error: 'Failed to update Configuration Item',
+        errorCode: 'CMDB_UPDATE_ERROR',
       });
     }
-
-    res.json({
-      success: true,
-      data: ci,
-      message: 'Configuration Item updated successfully'
-    });
-  } catch (error) {
-    logger.error('Error updating CI:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update Configuration Item',
-      errorCode: 'CMDB_UPDATE_ERROR'
-    });
-  }
-});
+  },
+);
 
 /**
  * @swagger
@@ -348,33 +372,37 @@ router.put('/cis/:id', authenticateJWT, [
  *       404:
  *         description: Configuration Item not found
  */
-router.delete('/cis/:id', authenticateJWT, [
-  param('id').isString().notEmpty()
-], validateRequest, async (req, res) => {
-  try {
-    const deleted = await cmdbService.deleteConfigurationItem(req.params.id, req.user.id);
-    
-    if (!deleted) {
-      return res.status(404).json({
+router.delete(
+  '/cis/:id',
+  authenticateJWT,
+  [param('id').isString().notEmpty()],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const deleted = await cmdbService.deleteConfigurationItem(req.params.id, req.user.id);
+
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          error: 'Configuration Item not found',
+          errorCode: 'CI_NOT_FOUND',
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Configuration Item deleted successfully',
+      });
+    } catch (error) {
+      logger.error('Error deleting CI:', error);
+      res.status(500).json({
         success: false,
-        error: 'Configuration Item not found',
-        errorCode: 'CI_NOT_FOUND'
+        error: 'Failed to delete Configuration Item',
+        errorCode: 'CMDB_DELETE_ERROR',
       });
     }
-
-    res.json({
-      success: true,
-      message: 'Configuration Item deleted successfully'
-    });
-  } catch (error) {
-    logger.error('Error deleting CI:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to delete Configuration Item',
-      errorCode: 'CMDB_DELETE_ERROR'
-    });
-  }
-});
+  },
+);
 
 // ============================================================================
 // CI TYPES ENDPOINTS
@@ -395,14 +423,14 @@ router.get('/ci-types', authenticateJWT, async (req, res) => {
     const ciTypes = await cmdbService.getCiTypes();
     res.json({
       success: true,
-      data: ciTypes
+      data: ciTypes,
     });
   } catch (error) {
     logger.error('Error fetching CI types:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch CI Types',
-      errorCode: 'CMDB_FETCH_ERROR'
+      errorCode: 'CMDB_FETCH_ERROR',
     });
   }
 });
@@ -439,30 +467,36 @@ router.get('/ci-types', authenticateJWT, async (req, res) => {
  *       201:
  *         description: CI Type created successfully
  */
-router.post('/ci-types', authenticateJWT, [
-  body('name').isString().isLength({ min: 1, max: 100 }),
-  body('displayName').optional().isString().isLength({ max: 100 }),
-  body('description').optional().isString().isLength({ max: 500 }),
-  body('category').isString().notEmpty(),
-  body('parentTypeId').optional().isUUID(),
-  body('attributeSchema').optional().isObject()
-], validateRequest, async (req, res) => {
-  try {
-    const ciType = await cmdbService.createCiType(req.body);
-    res.status(201).json({
-      success: true,
-      data: ciType,
-      message: 'CI Type created successfully'
-    });
-  } catch (error) {
-    logger.error('Error creating CI type:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create CI Type',
-      errorCode: 'CMDB_CREATE_ERROR'
-    });
-  }
-});
+router.post(
+  '/ci-types',
+  authenticateJWT,
+  [
+    body('name').isString().isLength({ min: 1, max: 100 }),
+    body('displayName').optional().isString().isLength({ max: 100 }),
+    body('description').optional().isString().isLength({ max: 500 }),
+    body('category').isString().notEmpty(),
+    body('parentTypeId').optional().isUUID(),
+    body('attributeSchema').optional().isObject(),
+  ],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const ciType = await cmdbService.createCiType(req.body);
+      res.status(201).json({
+        success: true,
+        data: ciType,
+        message: 'CI Type created successfully',
+      });
+    } catch (error) {
+      logger.error('Error creating CI type:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create CI Type',
+        errorCode: 'CMDB_CREATE_ERROR',
+      });
+    }
+  },
+);
 
 // ============================================================================
 // RELATIONSHIPS ENDPOINTS
@@ -494,31 +528,37 @@ router.post('/ci-types', authenticateJWT, [
  *       200:
  *         description: CI relationships
  */
-router.get('/cis/:id/relationships', authenticateJWT, [
-  param('id').isString().notEmpty(),
-  query('direction').optional().isIn(['incoming', 'outgoing', 'both']),
-  query('relationshipType').optional().isString()
-], validateRequest, async (req, res) => {
-  try {
-    const options = {
-      direction: req.query.direction || 'both',
-      relationshipType: req.query.relationshipType
-    };
+router.get(
+  '/cis/:id/relationships',
+  authenticateJWT,
+  [
+    param('id').isString().notEmpty(),
+    query('direction').optional().isIn(['incoming', 'outgoing', 'both']),
+    query('relationshipType').optional().isString(),
+  ],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const options = {
+        direction: req.query.direction || 'both',
+        relationshipType: req.query.relationshipType,
+      };
 
-    const relationships = await relationshipService.getCiRelationships(req.params.id, options);
-    res.json({
-      success: true,
-      data: relationships
-    });
-  } catch (error) {
-    logger.error('Error fetching CI relationships:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch CI relationships',
-      errorCode: 'CMDB_RELATIONSHIP_ERROR'
-    });
-  }
-});
+      const relationships = await relationshipService.getCiRelationships(req.params.id, options);
+      res.json({
+        success: true,
+        data: relationships,
+      });
+    } catch (error) {
+      logger.error('Error fetching CI relationships:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch CI relationships',
+        errorCode: 'CMDB_RELATIONSHIP_ERROR',
+      });
+    }
+  },
+);
 
 /**
  * @swagger
@@ -551,34 +591,40 @@ router.get('/cis/:id/relationships', authenticateJWT, [
  *       201:
  *         description: Relationship created successfully
  */
-router.post('/relationships', authenticateJWT, [
-  body('sourceCiId').isString().notEmpty(),
-  body('targetCiId').isString().notEmpty(),
-  body('relationshipTypeId').isString().notEmpty(),
-  body('description').optional().isString().isLength({ max: 500 }),
-  body('criticality').optional().isIn(['Critical', 'High', 'Medium', 'Low'])
-], validateRequest, async (req, res) => {
-  try {
-    const relationshipData = {
-      ...req.body,
-      createdBy: req.user.id
-    };
+router.post(
+  '/relationships',
+  authenticateJWT,
+  [
+    body('sourceCiId').isString().notEmpty(),
+    body('targetCiId').isString().notEmpty(),
+    body('relationshipTypeId').isString().notEmpty(),
+    body('description').optional().isString().isLength({ max: 500 }),
+    body('criticality').optional().isIn(['Critical', 'High', 'Medium', 'Low']),
+  ],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const relationshipData = {
+        ...req.body,
+        createdBy: req.user.id,
+      };
 
-    const relationship = await relationshipService.createRelationship(relationshipData);
-    res.status(201).json({
-      success: true,
-      data: relationship,
-      message: 'Relationship created successfully'
-    });
-  } catch (error) {
-    logger.error('Error creating relationship:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create relationship',
-      errorCode: 'CMDB_RELATIONSHIP_ERROR'
-    });
-  }
-});
+      const relationship = await relationshipService.createRelationship(relationshipData);
+      res.status(201).json({
+        success: true,
+        data: relationship,
+        message: 'Relationship created successfully',
+      });
+    } catch (error) {
+      logger.error('Error creating relationship:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create relationship',
+        errorCode: 'CMDB_RELATIONSHIP_ERROR',
+      });
+    }
+  },
+);
 
 // ============================================================================
 // DISCOVERY ENDPOINTS
@@ -608,30 +654,36 @@ router.post('/relationships', authenticateJWT, [
  *       202:
  *         description: Discovery run started
  */
-router.post('/discovery/run', authenticateJWT, [
-  body('discoveryType').isIn(['Network', 'Windows', 'Linux', 'Cloud', 'Database']),
-  body('scopeConfiguration').isObject()
-], validateRequest, async (req, res) => {
-  try {
-    const discoveryRun = await discoveryService.startDiscoveryRun({
-      ...req.body,
-      initiatedBy: req.user.id
-    });
+router.post(
+  '/discovery/run',
+  authenticateJWT,
+  [
+    body('discoveryType').isIn(['Network', 'Windows', 'Linux', 'Cloud', 'Database']),
+    body('scopeConfiguration').isObject(),
+  ],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const discoveryRun = await discoveryService.startDiscoveryRun({
+        ...req.body,
+        initiatedBy: req.user.id,
+      });
 
-    res.status(202).json({
-      success: true,
-      data: discoveryRun,
-      message: 'Discovery run started successfully'
-    });
-  } catch (error) {
-    logger.error('Error starting discovery run:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to start discovery run',
-      errorCode: 'CMDB_DISCOVERY_ERROR'
-    });
-  }
-});
+      res.status(202).json({
+        success: true,
+        data: discoveryRun,
+        message: 'Discovery run started successfully',
+      });
+    } catch (error) {
+      logger.error('Error starting discovery run:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to start discovery run',
+        errorCode: 'CMDB_DISCOVERY_ERROR',
+      });
+    }
+  },
+);
 
 /**
  * @swagger
@@ -648,14 +700,14 @@ router.get('/discovery/runs', authenticateJWT, async (req, res) => {
     const runs = await discoveryService.getDiscoveryRuns();
     res.json({
       success: true,
-      data: runs
+      data: runs,
     });
   } catch (error) {
     logger.error('Error fetching discovery runs:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch discovery runs',
-      errorCode: 'CMDB_DISCOVERY_ERROR'
+      errorCode: 'CMDB_DISCOVERY_ERROR',
     });
   }
 });
@@ -679,14 +731,14 @@ router.get('/business-services', authenticateJWT, async (req, res) => {
     const services = await cmdbService.getBusinessServices();
     res.json({
       success: true,
-      data: services
+      data: services,
     });
   } catch (error) {
     logger.error('Error fetching business services:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch business services',
-      errorCode: 'CMDB_FETCH_ERROR'
+      errorCode: 'CMDB_FETCH_ERROR',
     });
   }
 });
@@ -710,14 +762,14 @@ router.get('/health', authenticateJWT, async (req, res) => {
     const health = await cmdbService.getCmdbHealth();
     res.json({
       success: true,
-      data: health
+      data: health,
     });
   } catch (error) {
     logger.error('Error fetching CMDB health:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch CMDB health metrics',
-      errorCode: 'CMDB_HEALTH_ERROR'
+      errorCode: 'CMDB_HEALTH_ERROR',
     });
   }
 });
@@ -746,26 +798,29 @@ router.get('/health', authenticateJWT, async (req, res) => {
  *       200:
  *         description: Impact analysis results
  */
-router.post('/reports/impact-analysis', authenticateJWT, [
-  body('ciId').isString().notEmpty(),
-  body('depth').optional().isInt({ min: 1, max: 10 })
-], validateRequest, async (req, res) => {
-  try {
-    const { ciId, depth = 3 } = req.body;
-    const impact = await relationshipService.performImpactAnalysis(ciId, depth);
-    
-    res.json({
-      success: true,
-      data: impact
-    });
-  } catch (error) {
-    logger.error('Error performing impact analysis:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to perform impact analysis',
-      errorCode: 'CMDB_IMPACT_ERROR'
-    });
-  }
-});
+router.post(
+  '/reports/impact-analysis',
+  authenticateJWT,
+  [body('ciId').isString().notEmpty(), body('depth').optional().isInt({ min: 1, max: 10 })],
+  validateRequest,
+  async (req, res) => {
+    try {
+      const { ciId, depth = 3 } = req.body;
+      const impact = await relationshipService.performImpactAnalysis(ciId, depth);
+
+      res.json({
+        success: true,
+        data: impact,
+      });
+    } catch (error) {
+      logger.error('Error performing impact analysis:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to perform impact analysis',
+        errorCode: 'CMDB_IMPACT_ERROR',
+      });
+    }
+  },
+);
 
 export default router;

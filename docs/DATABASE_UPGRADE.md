@@ -38,7 +38,8 @@ The Nova Universe database upgrade introduces a modern, scalable database archit
 ### 1. Prerequisites
 
 Ensure you have the following installed:
-- Node.js 18+ 
+
+- Node.js 18+
 - Docker and Docker Compose (for local development)
 - PostgreSQL 15+ (for production)
 - MongoDB 7.0+ (for production)
@@ -46,11 +47,13 @@ Ensure you have the following installed:
 ### 2. Environment Setup
 
 Copy the environment template:
+
 ```bash
 cp .env.example .env
 ```
 
 Configure your database settings in `.env`:
+
 ```env
 # Database Configuration
 PRIMARY_DATABASE=postgresql,mongodb
@@ -71,11 +74,13 @@ MONGO_PASSWORD=your_secure_password
 ### 3. Local Development with Docker
 
 Start the development environment:
+
 ```bash
 docker-compose up -d
 ```
 
 This will start:
+
 - PostgreSQL database on port 5432
 - MongoDB database on port 27017
 - pgAdmin web interface on port 8080
@@ -85,6 +90,7 @@ This will start:
 ### 4. Install Dependencies
 
 Install the required database drivers:
+
 ```bash
 pnpm install
 ```
@@ -92,11 +98,13 @@ pnpm install
 ### 5. Run Migrations
 
 Initialize the database schema:
+
 ```bash
 node migrate-database.js --interactive
 ```
 
 Or for automatic migration:
+
 ```bash
 node migrate-database.js --source ./nova-api/log.sqlite --target both
 ```
@@ -112,6 +120,7 @@ npm start
 ### Automatic Migration
 
 The migration script will automatically:
+
 1. Create database schemas
 2. Migrate data from SQLite
 3. Set up roles and permissions
@@ -143,6 +152,7 @@ node migrate-database.js --no-backup
 If you prefer manual migration:
 
 1. **PostgreSQL Setup**:
+
 ```sql
 -- Connect to PostgreSQL
 psql -h localhost -U postgres
@@ -154,6 +164,7 @@ GRANT ALL PRIVILEGES ON DATABASE nova_universe TO nova_user;
 ```
 
 2. **MongoDB Setup**:
+
 ```bash
 # Connect to MongoDB
 mongo
@@ -168,6 +179,7 @@ db.createUser({
 ```
 
 3. **Run Schema Migrations**:
+
 ```bash
 node -e "
 const { MigrationManager } = require('./database/migrations.js');
@@ -180,21 +192,21 @@ manager.runMigrations().then(() => console.log('Migrations completed'));
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PRIMARY_DATABASE` | Database types to use | `postgresql,mongodb` |
-| `POSTGRES_HOST` | PostgreSQL host | `localhost` |
-| `POSTGRES_PORT` | PostgreSQL port | `5432` |
-| `POSTGRES_DB` | PostgreSQL database name | `nova_universe` |
-| `POSTGRES_USER` | PostgreSQL username | `nova_user` |
-| `POSTGRES_PASSWORD` | PostgreSQL password | *required* |
-| `POSTGRES_MAX_CONNECTIONS` | Connection pool size | `20` |
-| `POSTGRES_SSL` | Enable SSL | `false` |
-| `MONGO_URI` | MongoDB connection URI | `mongodb://localhost:27017/nova_universe` |
-| `MONGO_USER` | MongoDB username | `nova_user` |
-| `MONGO_PASSWORD` | MongoDB password | *required* |
-| `REDIS_HOST` | Redis host | `localhost` |
-| `REDIS_PORT` | Redis port | `6379` |
+| Variable                   | Description              | Default                                   |
+| -------------------------- | ------------------------ | ----------------------------------------- |
+| `PRIMARY_DATABASE`         | Database types to use    | `postgresql,mongodb`                      |
+| `POSTGRES_HOST`            | PostgreSQL host          | `localhost`                               |
+| `POSTGRES_PORT`            | PostgreSQL port          | `5432`                                    |
+| `POSTGRES_DB`              | PostgreSQL database name | `nova_universe`                           |
+| `POSTGRES_USER`            | PostgreSQL username      | `nova_user`                               |
+| `POSTGRES_PASSWORD`        | PostgreSQL password      | _required_                                |
+| `POSTGRES_MAX_CONNECTIONS` | Connection pool size     | `20`                                      |
+| `POSTGRES_SSL`             | Enable SSL               | `false`                                   |
+| `MONGO_URI`                | MongoDB connection URI   | `mongodb://localhost:27017/nova_universe` |
+| `MONGO_USER`               | MongoDB username         | `nova_user`                               |
+| `MONGO_PASSWORD`           | MongoDB password         | _required_                                |
+| `REDIS_HOST`               | Redis host               | `localhost`                               |
+| `REDIS_PORT`               | Redis port               | `6379`                                    |
 
 ### Security Configuration
 
@@ -292,6 +304,7 @@ db.get('SELECT * FROM users WHERE id = ?', [1], (err, row) => {
 ### Connection Pooling
 
 PostgreSQL connection pool configuration:
+
 ```env
 POSTGRES_MAX_CONNECTIONS=20
 POSTGRES_MIN_CONNECTIONS=2
@@ -302,6 +315,7 @@ POSTGRES_CONNECTION_TIMEOUT=5000
 ### MongoDB Indexing
 
 Automatic indexes are created for:
+
 - User lookups (`user_id`)
 - Timestamp queries (`created_at`, `updated_at`)
 - Search operations (`name`, `email`)
@@ -310,6 +324,7 @@ Automatic indexes are created for:
 ### Redis Caching
 
 Session and frequently accessed data is cached in Redis:
+
 ```javascript
 // Automatic caching for user sessions
 // Manual caching for expensive queries
@@ -336,6 +351,7 @@ const health = await db.healthCheck();
 ### Metrics
 
 Key metrics are automatically collected:
+
 - Connection pool utilization
 - Query response times
 - Error rates
@@ -345,6 +361,7 @@ Key metrics are automatically collected:
 ### Alerts
 
 Set up monitoring alerts for:
+
 - Database connection failures
 - High response times (>1000ms)
 - Connection pool exhaustion
@@ -356,12 +373,14 @@ Set up monitoring alerts for:
 ### Automated Backups
 
 Configure automatic backups:
+
 ```env
 BACKUP_RETENTION_DAYS=7
 BACKUP_SCHEDULE="0 2 * * *"  # Daily at 2 AM
 ```
 
 Run manual backup:
+
 ```bash
 ./scripts/backup.sh
 ```
@@ -369,13 +388,14 @@ Run manual backup:
 ### Backup Strategy
 
 - **PostgreSQL**: Full database dumps with compression
-- **MongoDB**: Binary dumps with GridFS support  
+- **MongoDB**: Binary dumps with GridFS support
 - **Retention**: Configurable retention period
 - **Verification**: Automatic backup integrity checks
 
 ### Disaster Recovery
 
 Restore from backup:
+
 ```bash
 # List available backups
 ./scripts/restore.sh --list
@@ -392,6 +412,7 @@ Restore from backup:
 ### Common Issues
 
 **Connection Refused**
+
 ```bash
 # Check if databases are running
 docker-compose ps
@@ -402,6 +423,7 @@ docker-compose logs mongodb
 ```
 
 **Migration Failures**
+
 ```bash
 # Run migration in dry-run mode
 node migrate-database.js --dry-run
@@ -411,6 +433,7 @@ tail -f ./nova-api/server.log
 ```
 
 **Permission Denied**
+
 ```bash
 # Verify database user permissions
 psql -h localhost -U nova_user -d nova_universe -c "\l"
@@ -420,6 +443,7 @@ mongo --host localhost -u nova_user -p
 ### Debug Mode
 
 Enable detailed logging:
+
 ```env
 LOG_LEVEL=debug
 DEBUG_SQL=true
@@ -429,6 +453,7 @@ ENABLE_QUERY_LOGGING=true
 ### Performance Issues
 
 Monitor query performance:
+
 ```sql
 -- PostgreSQL slow query log
 SELECT query, mean_time, calls FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10;
@@ -456,6 +481,7 @@ pnpm test test/integration.test.js
 ### Test Configuration
 
 Tests use separate test databases:
+
 ```env
 POSTGRES_DB=nova_universe_test
 MONGO_URI=mongodb://localhost:27017/nova_universe_test
@@ -464,6 +490,7 @@ MONGO_URI=mongodb://localhost:27017/nova_universe_test
 ### Test Coverage
 
 The test suite covers:
+
 - Database connections and pooling
 - CRUD operations
 - Transaction handling
@@ -495,6 +522,7 @@ The test suite covers:
 ### Deployment Steps
 
 1. **Configure Environment**:
+
 ```bash
 # Production environment
 NODE_ENV=production
@@ -510,11 +538,13 @@ SESSION_SECRET=$(openssl rand -base64 64)
 ```
 
 2. **Run Migrations**:
+
 ```bash
 node migrate-database.js --source ./nova-api/log.sqlite --target both
 ```
 
 3. **Verify Setup**:
+
 ```bash
 # Health check
 curl http://localhost:3000/health
@@ -549,6 +579,7 @@ db.initialize().then(() => db.healthCheck()).then(console.log);
 ### Reporting Issues
 
 When reporting issues, include:
+
 - Environment configuration (redacted)
 - Error messages and stack traces
 - Steps to reproduce
@@ -558,6 +589,7 @@ When reporting issues, include:
 ### Contributing
 
 Contributions are welcome! Please:
+
 1. Run tests: `pnpm test`
 2. Follow code style guidelines
 3. Add tests for new features
@@ -567,18 +599,21 @@ Contributions are welcome! Please:
 ## Migration Timeline
 
 ### Phase 1: Setup (Week 1)
+
 - [ ] Install dependencies
 - [ ] Configure environment
 - [ ] Set up development databases
 - [ ] Run initial migrations
 
 ### Phase 2: Testing (Week 2)
+
 - [ ] Run test suite
 - [ ] Verify data migration
 - [ ] Performance testing
 - [ ] Security audit
 
 ### Phase 3: Production (Week 3)
+
 - [ ] Production database setup
 - [ ] SSL/TLS configuration
 - [ ] Backup implementation
@@ -586,6 +621,7 @@ Contributions are welcome! Please:
 - [ ] Go-live migration
 
 ### Phase 4: Optimization (Week 4)
+
 - [ ] Performance tuning
 - [ ] Index optimization
 - [ ] Cache configuration

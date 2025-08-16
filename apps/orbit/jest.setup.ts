@@ -70,10 +70,16 @@ Object.defineProperty(global, 'IntersectionObserver', {
     unobserve = jest.fn();
     disconnect = jest.fn();
     takeRecords = jest.fn(() => []);
-    
-    get root() { return null; }
-    get rootMargin() { return '0px'; }
-    get thresholds() { return [0]; }
+
+    get root() {
+      return null;
+    }
+    get rootMargin() {
+      return '0px';
+    }
+    get thresholds() {
+      return [0];
+    }
   },
 });
 

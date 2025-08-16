@@ -16,7 +16,9 @@ interface UseWebSocketOptions {
   onError?: (error: Error) => void;
 }
 
-export const useWebSocket = (options: UseWebSocketOptions = {}): {
+export const useWebSocket = (
+  options: UseWebSocketOptions = {},
+): {
   isConnected: boolean;
   connectionError: string | null;
   lastMessage: WebSocketMessage | null;
@@ -31,7 +33,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     onMessage,
     onConnect,
     onDisconnect,
-    onError
+    onError,
   } = options;
 
   const [isConnected, setIsConnected] = useState(false);
@@ -45,7 +47,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     // Get API URL from environment or default to same origin
     const apiUrl = process.env.REACT_APP_API_URL || window.location.origin;
     const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
-    
+
     if (!token) {
       setConnectionError('No authentication token available');
       return;
@@ -54,14 +56,14 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     // Initialize WebSocket connection
     const socket = io(apiUrl, {
       auth: {
-        token
+        token,
       },
       transports: ['websocket', 'polling'],
       timeout: 20000,
       retries: 3,
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 5
+      reconnectionAttempts: 5,
     });
 
     socketRef.current = socket;
@@ -74,7 +76,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
       onConnect?.();
 
       // Subscribe to requested data types for technician portal
-      subscriptions.forEach(subscription => {
+      subscriptions.forEach((subscription) => {
         socket.emit('subscribe', subscription);
         console.log(`🔔 Subscribed to: ${subscription}`);
       });
@@ -105,7 +107,11 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     };
     const toastKiosk = (title: string, body: string) => {
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body, icon: '/assets/icons/icon-192x192.png', tag: 'kiosk-activation' });
+        new Notification(title, {
+          body,
+          icon: '/assets/icons/icon-192x192.png',
+          tag: 'kiosk-activation',
+        });
       }
     };
 
@@ -120,13 +126,13 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
       console.log('📝 Ticket assigned:', message.type);
       setLastMessage(message);
       onMessage?.(message);
-      
+
       // Show notification for new assignments
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('New Ticket Assigned', {
           body: `Ticket #${message.data.id} has been assigned to you`,
           icon: '/assets/icons/icon-192x192.png',
-          tag: 'ticket-assigned'
+          tag: 'ticket-assigned',
         });
       }
     });
@@ -142,13 +148,13 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
       setLastMessage(message);
       onMessage?.(message);
       dispatchNative('pulse:technician_notification', message);
-      
+
       // Show browser notification
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('Nova Pulse', {
           body: message.data.message || 'New notification',
           icon: '/assets/icons/icon-192x192.png',
-          tag: 'pulse-notification'
+          tag: 'pulse-notification',
         });
       }
     });
@@ -172,14 +178,14 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
       console.log('🚨 Kiosk alert received:', message.type);
       setLastMessage(message);
       onMessage?.(message);
-      
+
       // High priority alerts get persistent notifications
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('Kiosk Alert', {
           body: message.data.message || 'Kiosk requires attention',
           icon: '/assets/icons/icon-192x192.png',
           tag: 'kiosk-alert',
-          requireInteraction: true
+          requireInteraction: true,
         });
       }
     });
@@ -226,7 +232,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     subscribe,
     unsubscribe,
     sendMessage,
-    socket: socketRef.current
+    socket: socketRef.current,
   };
 };
 

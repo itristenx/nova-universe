@@ -51,15 +51,11 @@ export function useKeyboardNavigation(items, onSelect) {
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
-        setFocusedIndex(prev => 
-          prev < items.length - 1 ? prev + 1 : 0
-        );
+        setFocusedIndex((prev) => (prev < items.length - 1 ? prev + 1 : 0));
         break;
       case 'ArrowUp':
         event.preventDefault();
-        setFocusedIndex(prev => 
-          prev > 0 ? prev - 1 : items.length - 1
-        );
+        setFocusedIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1));
         break;
       case 'Enter':
       case ' ':
@@ -81,16 +77,8 @@ export function useKeyboardNavigation(items, onSelect) {
  * Hook for managing ARIA attributes
  */
 export function useAriaAttributes(options = {}) {
-  const {
-    role,
-    labelledBy,
-    describedBy,
-    expanded,
-    selected,
-    disabled,
-    invalid,
-    required
-  } = options;
+  const { role, labelledBy, describedBy, expanded, selected, disabled, invalid, required } =
+    options;
 
   const ariaProps = {};
 
@@ -116,9 +104,7 @@ export function useSkipLinks() {
     <a
       ref={skipLinkRef}
       href={href}
-      className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 
-                 bg-primary text-primary-foreground px-4 py-2 rounded-md z-50
-                 focus:outline-none focus:ring-2 focus:ring-ring"
+      className="bg-primary text-primary-foreground focus:ring-ring sr-only z-50 rounded-md px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:ring-2 focus:outline-none"
       onFocus={() => skipLinkRef.current?.scrollIntoView()}
     >
       {children}
@@ -139,25 +125,25 @@ export function useColorContrast() {
       const r = (rgb >> 16) & 0xff;
       const g = (rgb >> 8) & 0xff;
       const b = (rgb >> 0) & 0xff;
-      
-      const sRGB = [r, g, b].map(c => {
+
+      const sRGB = [r, g, b].map((c) => {
         c = c / 255;
         return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
       });
-      
+
       return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
     };
 
     const l1 = getLuminance(foreground);
     const l2 = getLuminance(background);
-    
+
     const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
-    
+
     return {
       ratio: ratio.toFixed(2),
       wcagAA: ratio >= 4.5,
       wcagAAA: ratio >= 7,
-      wcagAALarge: ratio >= 3
+      wcagAALarge: ratio >= 3,
     };
   };
 

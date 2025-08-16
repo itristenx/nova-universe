@@ -1,13 +1,13 @@
 import React from 'react';
 import './Stepper.css';
 interface Step {
-    label: string;
-    completed?: boolean;
+  label: string;
+  completed?: boolean;
 }
 interface StepperProps {
-    steps: Step[];
-    activeStep: number;
-    className?: string;
+  steps: Step[];
+  activeStep: number;
+  className?: string;
 }
 export declare const Stepper: React.FC<StepperProps>;
 export {};

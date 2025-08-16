@@ -104,7 +104,7 @@ h6 {
 }
 
 /* Dark mode styles */
-[data-theme="dark"] body {
+[data-theme='dark'] body {
   background-color: rgb(var(--color-neutral-950));
   color: rgb(var(--color-neutral-50));
 }
@@ -196,14 +196,14 @@ h6 {
   background: rgb(var(--color-neutral-400));
 }
 
-[data-theme="dark"] ::-webkit-scrollbar-track {
+[data-theme='dark'] ::-webkit-scrollbar-track {
   background: rgb(var(--color-neutral-800));
 }
 
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
   background: rgb(var(--color-neutral-600));
 }
 
-[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--color-neutral-500));
 }

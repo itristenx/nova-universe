@@ -19,13 +19,7 @@ interface WebSocketProviderProps {
 export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const { 
-    isConnected, 
-    connectionError, 
-    subscribe, 
-    unsubscribe, 
-    sendMessage 
-  } = useWebSocket({
+  const { isConnected, connectionError, subscribe, unsubscribe, sendMessage } = useWebSocket({
     enabled: isInitialized,
     subscriptions: ['tickets', 'kiosks', 'users', 'system'],
     onConnect: () => {
@@ -40,7 +34,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     },
     onError: (error) => {
       console.error('❌ Admin WebSocket error:', error);
-    }
+    },
   });
 
   useEffect(() => {
@@ -57,9 +51,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ message, data })
+        body: JSON.stringify({ message, data }),
       });
 
       if (!response.ok) {
@@ -78,9 +72,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ userId, message, type })
+        body: JSON.stringify({ userId, message, type }),
       });
 
       if (!response.ok) {
@@ -99,14 +93,10 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     subscribe,
     unsubscribe,
     broadcast,
-    notify
+    notify,
   };
 
-  return (
-    <WebSocketContext.Provider value={contextValue}>
-      {children}
-    </WebSocketContext.Provider>
-  );
+  return <WebSocketContext.Provider value={contextValue}>{children}</WebSocketContext.Provider>;
 };
 
 export const useWebSocketContext = (): WebSocketContextType => {

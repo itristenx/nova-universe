@@ -11,7 +11,7 @@ const router = express.Router();
 const notificationRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
-  message: 'Too many notification requests, please try again later.'
+  message: 'Too many notification requests, please try again later.',
 });
 
 router.use(notificationRateLimit);
@@ -33,30 +33,29 @@ router.get('/', async (req, res) => {
     const tenantId = req.user.tenantId;
 
     const providers = await req.services.notifications.getNotificationProviders(tenantId);
-    
+
     // Apply filters
     let filteredProviders = providers;
-    
+
     if (type) {
-      filteredProviders = filteredProviders.filter(p => p.type === type);
+      filteredProviders = filteredProviders.filter((p) => p.type === type);
     }
-    
+
     if (active !== undefined) {
-      filteredProviders = filteredProviders.filter(p => p.active === (active === 'true'));
+      filteredProviders = filteredProviders.filter((p) => p.active === (active === 'true'));
     }
 
     res.json({
       success: true,
       providers: filteredProviders,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Notification providers fetch error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve notification providers',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -68,13 +67,16 @@ router.get('/', async (req, res) => {
  *     tags: [Notifications]
  *     summary: Create notification provider
  */
-router.post('/',
+router.post(
+  '/',
   [
     body('name').isString().isLength({ min: 1, max: 100 }).withMessage('Provider name required'),
-    body('type').isIn(['email', 'slack', 'discord', 'webhook', 'telegram', 'teams', 'sms']).withMessage('Valid provider type required'),
+    body('type')
+      .isIn(['email', 'slack', 'discord', 'webhook', 'telegram', 'teams', 'sms'])
+      .withMessage('Valid provider type required'),
     body('config').isObject().withMessage('Provider configuration required'),
     body('isDefault').optional().isBoolean(),
-    body('active').optional().isBoolean()
+    body('active').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
@@ -83,7 +85,7 @@ router.post('/',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -91,25 +93,24 @@ router.post('/',
         ...req.body,
         tenantId: req.user.tenantId,
         createdBy: req.user.id,
-        uptimeKumaId: crypto.randomUUID()
+        uptimeKumaId: crypto.randomUUID(),
       });
 
       res.status(201).json({
         success: true,
         provider,
         message: 'Notification provider created successfully',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Notification provider creation error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to create notification provider',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -119,47 +120,53 @@ router.post('/',
  *     tags: [Notifications]
  *     summary: Test notification provider
  */
-router.post('/:id/test',
+router.post(
+  '/:id/test',
   [param('id').isString().withMessage('Provider ID required')],
   async (req, res) => {
     try {
       const { id } = req.params;
 
       // Get provider from database
-      const provider = await req.services.database.db.prepare(`
+      const provider = await req.services.database.db
+        .prepare(
+          `
         SELECT * FROM notifications WHERE id = ? AND tenant_id = ?
-      `).get(id, req.user.tenantId);
+      `,
+        )
+        .get(id, req.user.tenantId);
 
       if (!provider) {
         return res.status(404).json({
           success: false,
-          error: 'Notification provider not found'
+          error: 'Notification provider not found',
         });
       }
 
       const providerData = {
         ...provider,
-        config: JSON.parse(provider.config)
+        config: JSON.parse(provider.config),
       };
 
       const result = await req.services.notifications.testNotificationProvider(providerData);
 
       res.json({
         success: result.success,
-        message: result.success ? 'Test notification sent successfully' : 'Test notification failed',
+        message: result.success
+          ? 'Test notification sent successfully'
+          : 'Test notification failed',
         details: result.error || result.result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Notification test error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to test notification provider',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 export default router;

@@ -1,22 +1,22 @@
-import * as React from "react"
-import { cn } from "../../lib/utils"
+import * as React from 'react';
+import { cn } from '../../lib/utils';
 
 interface SelectProps {
-  value?: string
-  onValueChange?: (value: string) => void
-  children: React.ReactNode
+  value?: string;
+  onValueChange?: (value: string) => void;
+  children: React.ReactNode;
 }
 
 const Select = ({ value, onValueChange, children }: SelectProps) => {
-  const [isOpen, setIsOpen] = React.useState(false)
-  const [selectedValue, setSelectedValue] = React.useState(value || '')
-  const listboxId = React.useId()
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [selectedValue, setSelectedValue] = React.useState(value || '');
+  const listboxId = React.useId();
 
   const handleSelect = (newValue: string) => {
-    setSelectedValue(newValue)
-    onValueChange?.(newValue)
-    setIsOpen(false)
-  }
+    setSelectedValue(newValue);
+    onValueChange?.(newValue);
+    setIsOpen(false);
+  };
 
   return (
     <div className="relative" role="group">
@@ -28,20 +28,20 @@ const Select = ({ value, onValueChange, children }: SelectProps) => {
             selectedValue,
             onSelect: handleSelect,
             listboxId,
-          })
+          });
         }
-        return child
+        return child;
       })}
     </div>
-  )
-}
+  );
+};
 
 const SelectTrigger = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    isOpen?: boolean
-    setIsOpen?: (open: boolean) => void
-    selectedValue?: string
+    isOpen?: boolean;
+    setIsOpen?: (open: boolean) => void;
+    selectedValue?: string;
   }
 >(({ className, children, isOpen, setIsOpen, selectedValue, listboxId, ...props }, ref) => (
   <button
@@ -50,14 +50,14 @@ const SelectTrigger = React.forwardRef<
     aria-haspopup="listbox"
     aria-controls={listboxId}
     className={cn(
-      "flex h-11 w-full items-center justify-between rounded-xl border border-input bg-background/60 backdrop-blur px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-      className
+      'border-input bg-background/60 placeholder:text-muted-foreground focus:ring-ring flex h-11 w-full items-center justify-between rounded-xl border px-3 py-2 text-sm backdrop-blur focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+      className,
     )}
     onClick={() => setIsOpen?.(!isOpen)}
     onKeyDown={(e) => {
       if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        setIsOpen?.(true)
+        e.preventDefault();
+        setIsOpen?.(true);
       }
     }}
     {...props}
@@ -79,68 +79,73 @@ const SelectTrigger = React.forwardRef<
       />
     </svg>
   </button>
-))
-SelectTrigger.displayName = "SelectTrigger"
+));
+SelectTrigger.displayName = 'SelectTrigger';
 
-const SelectValue = ({ placeholder, selectedValue }: { 
-  placeholder?: string
-  selectedValue?: string
+const SelectValue = ({
+  placeholder,
+  selectedValue,
+}: {
+  placeholder?: string;
+  selectedValue?: string;
 }) => {
-  return <span>{selectedValue || placeholder}</span>
-}
+  return <span>{selectedValue || placeholder}</span>;
+};
 
 const SelectContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    isOpen?: boolean
-    children: React.ReactNode
+    isOpen?: boolean;
+    children: React.ReactNode;
   }
 >(({ className, children, isOpen, listboxId, setIsOpen, ...props }, ref) => {
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div
       ref={ref}
       id={listboxId}
       className={cn(
-        "absolute top-full z-50 min-w-[8rem] overflow-hidden rounded-xl border bg-popover/90 backdrop-blur p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95",
-        className
+        'bg-popover/90 text-popover-foreground animate-in fade-in-0 zoom-in-95 absolute top-full z-50 min-w-[8rem] overflow-hidden rounded-xl border p-1 shadow-md backdrop-blur',
+        className,
       )}
       tabIndex={-1}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
-          e.preventDefault()
-          setIsOpen?.(false)
-          return
+          e.preventDefault();
+          setIsOpen?.(false);
+          return;
         }
-        const options = Array.from((e.currentTarget as HTMLDivElement).querySelectorAll('[data-select-item="true"]')) as HTMLElement[]
-        if (options.length === 0) return
-        const active = document.activeElement as HTMLElement
-        const index = options.indexOf(active)
+        const options = Array.from(
+          (e.currentTarget as HTMLDivElement).querySelectorAll('[data-select-item="true"]'),
+        ) as HTMLElement[];
+        if (options.length === 0) return;
+        const active = document.activeElement as HTMLElement;
+        const index = options.indexOf(active);
         if (e.key === 'ArrowDown') {
-          e.preventDefault()
-          const next = options[Math.min(index + 1, options.length - 1)] || options[0]
-          next.focus()
+          e.preventDefault();
+          const next = options[Math.min(index + 1, options.length - 1)] || options[0];
+          next.focus();
         }
         if (e.key === 'ArrowUp') {
-          e.preventDefault()
-          const prev = options[Math.max(index - 1, 0)] || options[options.length - 1]
-          prev.focus()
+          e.preventDefault();
+          const prev = options[Math.max(index - 1, 0)] || options[options.length - 1];
+          prev.focus();
         }
       }}
       {...props}
     >
       {children}
     </div>
-  )
-})
-SelectContent.displayName = "SelectContent"
+  );
+});
+SelectContent.displayName = 'SelectContent';
 
 const SelectItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    value: string
-    onSelect?: (value: string) => void
+    value: string;
+    onSelect?: (value: string) => void;
   }
 >(({ className, children, value, onSelect, ...props }, ref) => (
   <div
@@ -150,27 +155,21 @@ const SelectItem = React.forwardRef<
     data-select-item="true"
     // aria-selected removed for the same reason
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-md py-2 pl-3 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
+      'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-md py-2 pr-2 pl-3 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      className,
     )}
     onClick={() => onSelect?.(value)}
     onKeyDown={(e) => {
       if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        onSelect?.(value)
+        e.preventDefault();
+        onSelect?.(value);
       }
     }}
     {...props}
   >
     {children}
   </div>
-))
-SelectItem.displayName = "SelectItem"
+));
+SelectItem.displayName = 'SelectItem';
 
-export {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-}
+export { Select, SelectTrigger, SelectValue, SelectContent, SelectItem };

@@ -1,43 +1,122 @@
 // Type definitions for Nova Sentinel monitoring system - Enhanced with full Uptime Kuma parity
 
 // Extended monitor types for complete coverage
-export type MonitorType = 
-  | 'http' 
-  | 'port' 
-  | 'ping' 
-  | 'keyword' 
-  | 'dns' 
-  | 'docker' 
-  | 'push' 
-  | 'steam' 
-  | 'real-browser' 
-  | 'json-query' 
-  | 'mongodb' 
-  | 'microsoft-sql-server' 
+export type MonitorType =
+  | 'http'
+  | 'port'
+  | 'ping'
+  | 'keyword'
+  | 'dns'
+  | 'docker'
+  | 'push'
+  | 'steam'
+  | 'real-browser'
+  | 'json-query'
+  | 'mongodb'
+  | 'microsoft-sql-server'
   | 'postgres';
 
 // Enhanced notification provider types (90+ providers)
-export type NotificationProviderType = 
-  | 'slack' | 'discord' | 'teams' | 'email' | 'webhook' | 'telegram' 
-  | 'pushover' | 'gotify' | 'ntfy' | 'apprise' | 'pushbullet' | 'line'
-  | 'mattermost' | 'rocket.chat' | 'matrix' | 'opsgenie' | 'pagerduty' 
-  | 'pagertree' | 'signal' | 'clicksendsms' | 'lunasea' | 'dingding'
-  | 'wecom' | 'bark' | 'smsmanager' | 'mailgun' | 'smtp' | 'pushsafer'
-  | 'octopush' | 'promosms' | 'smspartner' | 'splunk' | 'homeassistant'
-  | 'notica' | 'serverless' | 'google-chat' | 'gorush' | 'aliyunsms'
-  | 'dingding-robot' | 'feishu' | 'alerta' | 'beanstalk' | 'squadcast'
-  | 'keep' | 'google-chat-webhook' | 'smsc' | 'cellsynt' | 'sevenio'
-  | 'clickup' | 'google-analytics' | 'webhook-json' | 'gotify-priority'
-  | 'ntfy-priority' | 'twilio' | 'freemobile' | 'alertnow' | 'alertmanager'
-  | 'goalert' | 'serverchan' | 'techlulus' | 'mailgun-api' | 'zoho'
-  | 'mightytext' | 'phonenumber' | 'stackfield' | 'pushme' | 'ifttt'
-  | 'post' | 'custom' | 'mqtt' | 'kafka' | 'rabbitMQ' | 'aws-sns'
-  | 'aws-ses' | 'azure-notification-hub' | 'gcp-chat' | 'gcp-pubsub'
-  | 'facebook-workplace' | 'whatsapp-business' | 'telegram-bot'
-  | 'zendesk' | 'freshdesk' | 'servicenow' | 'jira' | 'linear'
-  | 'github-issues' | 'gitlab-issues' | 'trello' | 'monday'
-  | 'asana' | 'notion' | 'airtable' | 'basecamp' | 'clickup-task'
-  | 'monday-item' | 'zapier' | 'make' | 'n8n' | 'integromat';
+export type NotificationProviderType =
+  | 'slack'
+  | 'discord'
+  | 'teams'
+  | 'email'
+  | 'webhook'
+  | 'telegram'
+  | 'pushover'
+  | 'gotify'
+  | 'ntfy'
+  | 'apprise'
+  | 'pushbullet'
+  | 'line'
+  | 'mattermost'
+  | 'rocket.chat'
+  | 'matrix'
+  | 'opsgenie'
+  | 'pagerduty'
+  | 'pagertree'
+  | 'signal'
+  | 'clicksendsms'
+  | 'lunasea'
+  | 'dingding'
+  | 'wecom'
+  | 'bark'
+  | 'smsmanager'
+  | 'mailgun'
+  | 'smtp'
+  | 'pushsafer'
+  | 'octopush'
+  | 'promosms'
+  | 'smspartner'
+  | 'splunk'
+  | 'homeassistant'
+  | 'notica'
+  | 'serverless'
+  | 'google-chat'
+  | 'gorush'
+  | 'aliyunsms'
+  | 'dingding-robot'
+  | 'feishu'
+  | 'alerta'
+  | 'beanstalk'
+  | 'squadcast'
+  | 'keep'
+  | 'google-chat-webhook'
+  | 'smsc'
+  | 'cellsynt'
+  | 'sevenio'
+  | 'clickup'
+  | 'google-analytics'
+  | 'webhook-json'
+  | 'gotify-priority'
+  | 'ntfy-priority'
+  | 'twilio'
+  | 'freemobile'
+  | 'alertnow'
+  | 'alertmanager'
+  | 'goalert'
+  | 'serverchan'
+  | 'techlulus'
+  | 'mailgun-api'
+  | 'zoho'
+  | 'mightytext'
+  | 'phonenumber'
+  | 'stackfield'
+  | 'pushme'
+  | 'ifttt'
+  | 'post'
+  | 'custom'
+  | 'mqtt'
+  | 'kafka'
+  | 'rabbitMQ'
+  | 'aws-sns'
+  | 'aws-ses'
+  | 'azure-notification-hub'
+  | 'gcp-chat'
+  | 'gcp-pubsub'
+  | 'facebook-workplace'
+  | 'whatsapp-business'
+  | 'telegram-bot'
+  | 'zendesk'
+  | 'freshdesk'
+  | 'servicenow'
+  | 'jira'
+  | 'linear'
+  | 'github-issues'
+  | 'gitlab-issues'
+  | 'trello'
+  | 'monday'
+  | 'asana'
+  | 'notion'
+  | 'airtable'
+  | 'basecamp'
+  | 'clickup-task'
+  | 'monday-item'
+  | 'zapier'
+  | 'make'
+  | 'n8n'
+  | 'integromat';
 
 export interface Monitor {
   id: string;
@@ -57,13 +136,13 @@ export interface Monitor {
   created_by?: string;
   created_at: string;
   updated_at: string;
-  
+
   // Enhanced monitoring configuration
   interval: number;
   retries: number;
   retry_interval: number;
   resend_interval: number;
-  
+
   // Status and performance
   current_status: boolean;
   uptime_24h?: number;
@@ -72,21 +151,21 @@ export interface Monitor {
   avg_response_time_24h?: number;
   avg_response_time_7d?: number;
   avg_response_time_30d?: number;
-  
+
   // Enhanced features
   tag_names?: string[];
   in_maintenance_window?: boolean;
   cert_days_remaining?: number;
   keyword?: string;
   accepted_statuscodes?: string[];
-  
+
   // HTTP specific
   method?: string;
   headers?: Record<string, string>;
   body?: string;
   follow_redirect?: boolean;
   ignore_tls?: boolean;
-  
+
   // Legacy compatibility
   http_method?: string;
   http_headers?: Record<string, string>;
@@ -98,19 +177,19 @@ export interface Monitor {
   avg_response_time?: number;
   group_name?: string;
   incident_status?: string;
-  
+
   // Docker specific
   docker_container?: string;
   docker_host?: string;
-  
+
   // DNS specific
   dns_server?: string;
   dns_resolve_type?: string;
-  
+
   // Database specific
   database_connection_string?: string;
   database_query?: string;
-  
+
   // Game server specific
   game_server_type?: string;
   game_server_port?: number;

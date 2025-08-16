@@ -13,7 +13,7 @@ export async function generate2FASecret(user) {
     const secret = speakeasy.generateSecret({
       name: `Nova Universe (${user.email})`,
       issuer: 'Nova Universe',
-      length: 32
+      length: 32,
     });
 
     // Store the secret in database (temporarily, until verified)
@@ -28,12 +28,12 @@ export async function generate2FASecret(user) {
           user.id,
           secret.base32,
           now,
-          new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes expiry
+          new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 minutes expiry
         ],
         (err) => {
           if (err) reject(err);
           else resolve();
-        }
+        },
       );
     });
 
@@ -44,7 +44,7 @@ export async function generate2FASecret(user) {
       secret: secret.base32,
       qrCode: qrCodeUrl,
       manualEntryKey: secret.base32,
-      tempId: tempSecretId
+      tempId: tempSecretId,
     };
   } catch (error) {
     logger.error('Error generating 2FA secret:', error);
@@ -65,7 +65,7 @@ export async function verify2FASetup(userId, tempId, token) {
         (err, row) => {
           if (err) reject(err);
           else resolve(row);
-        }
+        },
       );
     });
 
@@ -78,7 +78,7 @@ export async function verify2FASetup(userId, tempId, token) {
       secret: tempSecret.secret,
       encoding: 'base32',
       token: token,
-      window: 2 // Allow some time skew
+      window: 2, // Allow some time skew
     });
 
     if (!verified) {
@@ -99,12 +99,12 @@ export async function verify2FASetup(userId, tempId, token) {
           JSON.stringify(generateBackupCodes()),
           1, // enabled
           now,
-          now
+          now,
         ],
         (err) => {
           if (err) reject(err);
           else resolve();
-        }
+        },
       );
     });
 
@@ -127,7 +127,7 @@ export async function verify2FASetup(userId, tempId, token) {
         (err) => {
           if (err) reject(err);
           else resolve();
-        }
+        },
       );
     });
 
@@ -147,14 +147,10 @@ export async function verify2FAToken(userId, token) {
   try {
     // Get user's 2FA secret
     const user2FA = await new Promise((resolve, reject) => {
-      db.get(
-        'SELECT * FROM user_2fa WHERE user_id = ? AND enabled = 1',
-        [userId],
-        (err, row) => {
-          if (err) reject(err);
-          else resolve(row);
-        }
-      );
+      db.get('SELECT * FROM user_2fa WHERE user_id = ? AND enabled = 1', [userId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
     });
 
     if (!user2FA) {
@@ -163,8 +159,8 @@ export async function verify2FAToken(userId, token) {
 
     // Check if it's a backup code
     const backupCodes = JSON.parse(user2FA.backup_codes || '[]');
-    const backupCodeIndex = backupCodes.findIndex(code => code.code === token && !code.used);
-    
+    const backupCodeIndex = backupCodes.findIndex((code) => code.code === token && !code.used);
+
     if (backupCodeIndex !== -1) {
       // Mark backup code as used
       backupCodes[backupCodeIndex].used = true;
@@ -177,7 +173,7 @@ export async function verify2FAToken(userId, token) {
           (err) => {
             if (err) reject(err);
             else resolve();
-          }
+          },
         );
       });
 
@@ -190,7 +186,7 @@ export async function verify2FAToken(userId, token) {
       secret: user2FA.secret,
       encoding: 'base32',
       token: token,
-      window: 2
+      window: 2,
     });
 
     if (verified) {
@@ -220,7 +216,7 @@ export async function disable2FA(userId) {
         (err) => {
           if (err) reject(err);
           else resolve();
-        }
+        },
       );
     });
 
@@ -232,7 +228,7 @@ export async function disable2FA(userId) {
         (err) => {
           if (err) reject(err);
           else resolve();
-        }
+        },
       );
     });
 
@@ -259,12 +255,12 @@ export async function regenerateBackupCodes(userId) {
         (err) => {
           if (err) reject(err);
           else resolve();
-        }
+        },
       );
     });
 
     logger.info('Backup codes regenerated for user', { userId });
-    return backupCodes.map(c => c.code);
+    return backupCodes.map((c) => c.code);
   } catch (error) {
     logger.error('Error regenerating backup codes:', error);
     throw error;
@@ -280,7 +276,7 @@ function generateBackupCodes() {
     codes.push({
       code: Math.random().toString(36).substring(2, 10).toUpperCase(),
       used: false,
-      usedAt: null
+      usedAt: null,
     });
   }
   return codes;
@@ -298,7 +294,7 @@ export async function is2FAEnabled(userId) {
         (err, row) => {
           if (err) reject(err);
           else resolve(row);
-        }
+        },
       );
     });
 
@@ -315,14 +311,10 @@ export async function is2FAEnabled(userId) {
 export async function get2FAStatus(userId) {
   try {
     const user2FA = await new Promise((resolve, reject) => {
-      db.get(
-        'SELECT * FROM user_2fa WHERE user_id = ? AND enabled = 1',
-        [userId],
-        (err, row) => {
-          if (err) reject(err);
-          else resolve(row);
-        }
-      );
+      db.get('SELECT * FROM user_2fa WHERE user_id = ? AND enabled = 1', [userId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
     });
 
     if (!user2FA) {
@@ -330,13 +322,13 @@ export async function get2FAStatus(userId) {
     }
 
     const backupCodes = JSON.parse(user2FA.backup_codes || '[]');
-    const unusedBackupCodes = backupCodes.filter(c => !c.used).length;
+    const unusedBackupCodes = backupCodes.filter((c) => !c.used).length;
 
     return {
       enabled: true,
       setupDate: user2FA.created_at,
       lastUsed: user2FA.last_used_at,
-      backupCodesRemaining: unusedBackupCodes
+      backupCodesRemaining: unusedBackupCodes,
     };
   } catch (error) {
     logger.error('Error getting 2FA status:', error);
@@ -350,7 +342,7 @@ export async function get2FAStatus(userId) {
 export function require2FA(req, res, next) {
   // This middleware can be used to protect sensitive endpoints
   // It checks if the user has completed 2FA verification in their current session
-  
+
   if (req.user && req.user.twoFactorVerified) {
     return next();
   }
@@ -360,7 +352,7 @@ export function require2FA(req, res, next) {
       success: false,
       error: 'Two-factor authentication required',
       errorCode: '2FA_REQUIRED',
-      requiresTwoFactor: true
+      requiresTwoFactor: true,
     });
   }
 
@@ -376,5 +368,5 @@ export default {
   regenerateBackupCodes,
   is2FAEnabled,
   get2FAStatus,
-  require2FA
+  require2FA,
 };

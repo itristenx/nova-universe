@@ -17,7 +17,7 @@ try {
   const ascii = figlet.textSync('Nova CLI', {
     font: 'Standard',
     horizontalLayout: 'default',
-    verticalLayout: 'default'
+    verticalLayout: 'default',
   });
   console.log(chalk.cyan(ascii));
   console.log('Figlet working!');
@@ -25,10 +25,7 @@ try {
   console.error('Figlet failed:', error);
 }
 
-program
-  .name('nova-debug')
-  .description('Debug version of Nova CLI')
-  .version('1.0.0');
+program.name('nova-debug').description('Debug version of Nova CLI').version('1.0.0');
 
 program
   .command('test')

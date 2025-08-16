@@ -11,7 +11,7 @@ const router = express.Router();
 const statusPageRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200, // Higher limit for public status pages
-  message: 'Too many status page requests, please try again later.'
+  message: 'Too many status page requests, please try again later.',
 });
 
 router.use(statusPageRateLimit);
@@ -20,14 +20,14 @@ router.use(statusPageRateLimit);
 async function optionalAuth(req, res, next) {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (token) {
       const user = await req.services.helix.validateToken(token);
       if (user) {
         req.user = user;
       }
     }
-    
+
     next();
   } catch (error) {
     next(); // Continue without auth for public pages
@@ -38,28 +38,28 @@ async function optionalAuth(req, res, next) {
 async function requireAuth(req, res, next) {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Authentication required' 
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required',
       });
     }
 
     const user = await req.services.helix.validateToken(token);
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Invalid authentication token' 
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid authentication token',
       });
     }
 
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ 
-      success: false, 
-      error: 'Authentication failed' 
+    res.status(401).json({
+      success: false,
+      error: 'Authentication failed',
     });
   }
 }
@@ -82,19 +82,20 @@ router.get('/', requireAuth, async (req, res) => {
 
     // Get status pages from Uptime Kuma
     const statusPages = await req.services.uptimeKuma.getAllStatusPages();
-    
+
     // Apply filters
     let filteredPages = statusPages;
-    
+
     if (search) {
-      filteredPages = filteredPages.filter(page => 
-        page.title?.toLowerCase().includes(search.toLowerCase()) ||
-        page.description?.toLowerCase().includes(search.toLowerCase())
+      filteredPages = filteredPages.filter(
+        (page) =>
+          page.title?.toLowerCase().includes(search.toLowerCase()) ||
+          page.description?.toLowerCase().includes(search.toLowerCase()),
       );
     }
-    
+
     if (published !== undefined) {
-      filteredPages = filteredPages.filter(page => page.published === (published === 'true'));
+      filteredPages = filteredPages.filter((page) => page.published === (published === 'true'));
     }
 
     // Apply pagination
@@ -104,9 +105,9 @@ router.get('/', requireAuth, async (req, res) => {
     const enrichedPages = await Promise.all(
       paginatedPages.map(async (page) => {
         const preferences = await req.services.helix.getUserPreference(
-          userId, 
+          userId,
           `sentinel.status-page.${page.id}`,
-          { favorite: false, lastViewed: null }
+          { favorite: false, lastViewed: null },
         );
 
         // Get page statistics
@@ -116,9 +117,9 @@ router.get('/', requireAuth, async (req, res) => {
           ...page,
           userPreferences: preferences,
           stats,
-          publicUrl: `/api/v1/status-pages/public/${page.slug || page.id}`
+          publicUrl: `/api/v1/status-pages/public/${page.slug || page.id}`,
         };
-      })
+      }),
     );
 
     res.json({
@@ -128,17 +129,16 @@ router.get('/', requireAuth, async (req, res) => {
         total: filteredPages.length,
         limit: parseInt(limit),
         offset: parseInt(offset),
-        hasMore: offset + parseInt(limit) < filteredPages.length
+        hasMore: offset + parseInt(limit) < filteredPages.length,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Status pages list error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve status pages',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -150,20 +150,40 @@ router.get('/', requireAuth, async (req, res) => {
  *     tags: [Status Pages]
  *     summary: Create new status page
  */
-router.post('/', requireAuth,
+router.post(
+  '/',
+  requireAuth,
   [
-    body('title').isString().isLength({ min: 1, max: 150 }).withMessage('Status page title required (1-150 chars)'),
-    body('description').optional().isString().isLength({ max: 500 }).withMessage('Description too long (max 500 chars)'),
-    body('slug').optional().matches(/^[a-z0-9-]+$/).withMessage('Slug must contain only lowercase letters, numbers, and hyphens'),
+    body('title')
+      .isString()
+      .isLength({ min: 1, max: 150 })
+      .withMessage('Status page title required (1-150 chars)'),
+    body('description')
+      .optional()
+      .isString()
+      .isLength({ max: 500 })
+      .withMessage('Description too long (max 500 chars)'),
+    body('slug')
+      .optional()
+      .matches(/^[a-z0-9-]+$/)
+      .withMessage('Slug must contain only lowercase letters, numbers, and hyphens'),
     body('theme').optional().isIn(['light', 'dark', 'auto']).withMessage('Invalid theme'),
     body('published').optional().isBoolean(),
     body('showTags').optional().isBoolean(),
     body('showPoweredBy').optional().isBoolean(),
-    body('customCSS').optional().isString().isLength({ max: 10000 }).withMessage('Custom CSS too long (max 10000 chars)'),
-    body('footerText').optional().isString().isLength({ max: 200 }).withMessage('Footer text too long (max 200 chars)'),
+    body('customCSS')
+      .optional()
+      .isString()
+      .isLength({ max: 10000 })
+      .withMessage('Custom CSS too long (max 10000 chars)'),
+    body('footerText')
+      .optional()
+      .isString()
+      .isLength({ max: 200 })
+      .withMessage('Footer text too long (max 200 chars)'),
     body('icon').optional().isString().isLength({ max: 500 }).withMessage('Icon URL too long'),
     body('domainNameList').optional().isArray(),
-    body('publicGroupList').optional().isArray()
+    body('publicGroupList').optional().isArray(),
   ],
   async (req, res) => {
     try {
@@ -172,12 +192,12 @@ router.post('/', requireAuth,
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
       const userId = req.user.id;
-      
+
       // Create slug if not provided
       if (!req.body.slug) {
         req.body.slug = req.body.title
@@ -196,18 +216,14 @@ router.post('/', requireAuth,
         tenantId: req.user.tenantId,
         title: statusPage.title,
         slug: statusPage.slug,
-        config: statusPage
+        config: statusPage,
       });
 
       // Set default user preferences in Helix
-      await req.services.helix.setUserPreference(
-        userId,
-        `sentinel.status-page.${statusPage.id}`,
-        { 
-          favorite: false, 
-          createdAt: new Date().toISOString()
-        }
-      );
+      await req.services.helix.setUserPreference(userId, `sentinel.status-page.${statusPage.id}`, {
+        favorite: false,
+        createdAt: new Date().toISOString(),
+      });
 
       // Emit real-time update
       req.io.to(`tenant_${req.user.tenantId}`).emit('status_page_created', statusPage);
@@ -216,21 +232,20 @@ router.post('/', requireAuth,
         success: true,
         statusPage: {
           ...statusPage,
-          publicUrl: `/api/v1/status-pages/public/${statusPage.slug || statusPage.id}`
+          publicUrl: `/api/v1/status-pages/public/${statusPage.slug || statusPage.id}`,
         },
         message: 'Status page created successfully',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Status page creation error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to create status page',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -240,7 +255,9 @@ router.post('/', requireAuth,
  *     tags: [Status Pages]
  *     summary: Get status page details (admin only)
  */
-router.get('/:id', requireAuth,
+router.get(
+  '/:id',
+  requireAuth,
   [param('id').isString().withMessage('Status page ID required')],
   async (req, res) => {
     try {
@@ -252,7 +269,7 @@ router.get('/:id', requireAuth,
       if (!statusPage) {
         return res.status(404).json({
           success: false,
-          error: 'Status page not found'
+          error: 'Status page not found',
         });
       }
 
@@ -260,20 +277,19 @@ router.get('/:id', requireAuth,
       const preferences = await req.services.helix.getUserPreference(
         userId,
         `sentinel.status-page.${id}`,
-        { favorite: false, lastViewed: null }
+        { favorite: false, lastViewed: null },
       );
 
       // Update last viewed timestamp
-      await req.services.helix.setUserPreference(
-        userId,
-        `sentinel.status-page.${id}`,
-        { ...preferences, lastViewed: new Date().toISOString() }
-      );
+      await req.services.helix.setUserPreference(userId, `sentinel.status-page.${id}`, {
+        ...preferences,
+        lastViewed: new Date().toISOString(),
+      });
 
       // Get page statistics and monitor data
       const [stats, monitors] = await Promise.all([
         req.services.statusPages.getPageStats(id),
-        req.services.statusPages.getPageMonitors(id)
+        req.services.statusPages.getPageMonitors(id),
       ]);
 
       res.json({
@@ -283,20 +299,19 @@ router.get('/:id', requireAuth,
           userPreferences: preferences,
           stats,
           monitors,
-          publicUrl: `/api/v1/status-pages/public/${statusPage.slug || id}`
+          publicUrl: `/api/v1/status-pages/public/${statusPage.slug || id}`,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Status page details error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve status page details',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -306,13 +321,15 @@ router.get('/:id', requireAuth,
  *     tags: [Status Pages]
  *     summary: Update status page
  */
-router.put('/:id', requireAuth,
+router.put(
+  '/:id',
+  requireAuth,
   [
     param('id').isString().withMessage('Status page ID required'),
     body('title').optional().isString().isLength({ min: 1, max: 150 }),
     body('description').optional().isString().isLength({ max: 500 }),
     body('theme').optional().isIn(['light', 'dark', 'auto']),
-    body('customCSS').optional().isString().isLength({ max: 10000 })
+    body('customCSS').optional().isString().isLength({ max: 10000 }),
   ],
   async (req, res) => {
     try {
@@ -326,7 +343,7 @@ router.put('/:id', requireAuth,
       await req.services.database.updateStatusPage(id, {
         updatedBy: userId,
         config: statusPage,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       });
 
       // Emit real-time update
@@ -336,18 +353,17 @@ router.put('/:id', requireAuth,
         success: true,
         statusPage,
         message: 'Status page updated successfully',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Status page update error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to update status page',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -357,7 +373,9 @@ router.put('/:id', requireAuth,
  *     tags: [Status Pages]
  *     summary: Delete status page
  */
-router.delete('/:id', requireAuth,
+router.delete(
+  '/:id',
+  requireAuth,
   [param('id').isString().withMessage('Status page ID required')],
   async (req, res) => {
     try {
@@ -379,18 +397,17 @@ router.delete('/:id', requireAuth,
       res.json({
         success: true,
         message: 'Status page deleted successfully',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Status page deletion error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to delete status page',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -418,19 +435,19 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
     if (!statusPage || !statusPage.published) {
       return res.status(404).json({
         success: false,
-        error: 'Status page not found or not published'
+        error: 'Status page not found or not published',
       });
     }
 
     // Get monitors and their current status
     const monitors = await req.services.statusPages.getPageMonitors(statusPage.id);
-    
+
     // Enrich monitors with current status and uptime
     const enrichedMonitors = await Promise.all(
       monitors.map(async (monitor) => {
         const heartbeat = req.services.monitoring.getLatestHeartbeat(monitor.id);
         const uptime = await req.services.monitoring.getUptimeStats(monitor.id, '30d');
-        
+
         return {
           id: monitor.id,
           name: monitor.name,
@@ -439,15 +456,15 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
           lastHeartbeat: heartbeat?.time,
           responseTime: heartbeat?.ping,
           type: monitor.type,
-          tags: monitor.tags || []
+          tags: monitor.tags || [],
         };
-      })
+      }),
     );
 
     // Get active incidents and maintenance
     const [incidents, maintenance] = await Promise.all([
       req.services.statusPages.getPageIncidents(statusPage.id),
-      req.services.statusPages.getPageMaintenance(statusPage.id)
+      req.services.statusPages.getPageMaintenance(statusPage.id),
     ]);
 
     // Calculate overall status
@@ -458,7 +475,7 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
       await req.services.helix.setUserPreference(
         req.user.id,
         `sentinel.status-page.${statusPage.id}`,
-        { lastPublicView: new Date().toISOString() }
+        { lastPublicView: new Date().toISOString() },
       );
     }
 
@@ -478,8 +495,8 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
           monitors: enrichedMonitors,
           incidents,
           maintenance,
-          lastUpdated: new Date().toISOString()
-        }
+          lastUpdated: new Date().toISOString(),
+        },
       });
     }
 
@@ -488,18 +505,17 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
       monitors: enrichedMonitors,
       incidents,
       maintenance,
-      overallStatus
+      overallStatus,
     });
 
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
-
   } catch (error) {
     console.error('Public status page error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to load status page',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -533,9 +549,9 @@ router.get('/public/:slugOrId/embed', async (req, res) => {
         const heartbeat = req.services.monitoring.getLatestHeartbeat(monitor.id);
         return {
           name: monitor.name,
-          status: heartbeat?.status === 1 ? 'up' : 'down'
+          status: heartbeat?.status === 1 ? 'up' : 'down',
         };
-      })
+      }),
     );
 
     const overallStatus = req.services.statusPages.calculateOverallStatus(enrichedMonitors);
@@ -545,13 +561,12 @@ router.get('/public/:slugOrId/embed', async (req, res) => {
       monitors: enrichedMonitors,
       overallStatus,
       theme,
-      compact: compact === 'true'
+      compact: compact === 'true',
     });
 
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('X-Frame-Options', 'ALLOWALL');
     res.send(embedHTML);
-
   } catch (error) {
     console.error('Status page embed error:', error);
     res.status(500).send('<div>Error loading status page</div>');
@@ -565,11 +580,12 @@ router.get('/public/:slugOrId/embed', async (req, res) => {
  *     tags: [Status Pages]
  *     summary: Subscribe to status page updates
  */
-router.post('/public/:slugOrId/subscribe',
+router.post(
+  '/public/:slugOrId/subscribe',
   [
     param('slugOrId').isString().withMessage('Status page ID or slug required'),
     body('email').isEmail().withMessage('Valid email required'),
-    body('types').optional().isArray().withMessage('Notification types must be array')
+    body('types').optional().isArray().withMessage('Notification types must be array'),
   ],
   async (req, res) => {
     try {
@@ -585,7 +601,7 @@ router.post('/public/:slugOrId/subscribe',
       if (!statusPage || !statusPage.published) {
         return res.status(404).json({
           success: false,
-          error: 'Status page not found'
+          error: 'Status page not found',
         });
       }
 
@@ -594,31 +610,30 @@ router.post('/public/:slugOrId/subscribe',
         statusPageId: statusPage.id,
         email,
         types,
-        confirmed: false
+        confirmed: false,
       });
 
       // Send confirmation email
       await req.services.notifications.sendSubscriptionConfirmation({
         email,
         statusPageTitle: statusPage.title,
-        confirmationUrl: `${req.protocol}://${req.get('host')}/api/v1/status-pages/confirm-subscription`
+        confirmationUrl: `${req.protocol}://${req.get('host')}/api/v1/status-pages/confirm-subscription`,
       });
 
       res.json({
         success: true,
         message: 'Subscription created. Please check your email to confirm.',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Status page subscription error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to create subscription',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -632,12 +647,20 @@ router.post('/public/:slugOrId/subscribe',
  *     tags: [Status Pages]
  *     summary: Create status page incident
  */
-router.post('/:id/incidents', requireAuth,
+router.post(
+  '/:id/incidents',
+  requireAuth,
   [
     param('id').isString().withMessage('Status page ID required'),
     body('title').isString().isLength({ min: 1, max: 200 }).withMessage('Incident title required'),
-    body('content').isString().isLength({ min: 1, max: 2000 }).withMessage('Incident content required'),
-    body('style').optional().isIn(['info', 'warning', 'danger', 'primary']).withMessage('Invalid incident style')
+    body('content')
+      .isString()
+      .isLength({ min: 1, max: 2000 })
+      .withMessage('Incident content required'),
+    body('style')
+      .optional()
+      .isIn(['info', 'warning', 'danger', 'primary'])
+      .withMessage('Invalid incident style'),
   ],
   async (req, res) => {
     try {
@@ -647,7 +670,7 @@ router.post('/:id/incidents', requireAuth,
       // Create incident in Uptime Kuma
       const incident = await req.services.uptimeKuma.createIncident({
         ...req.body,
-        statusPageList: [id]
+        statusPageList: [id],
       });
 
       // Store in Nova database
@@ -657,14 +680,14 @@ router.post('/:id/incidents', requireAuth,
         createdBy: userId,
         title: incident.title,
         content: incident.content,
-        style: incident.style
+        style: incident.style,
       });
 
       // Notify subscribers
       await req.services.notifications.notifyStatusPageSubscribers(id, {
         type: 'incident',
         title: incident.title,
-        content: incident.content
+        content: incident.content,
       });
 
       // Emit real-time update
@@ -674,18 +697,17 @@ router.post('/:id/incidents', requireAuth,
         success: true,
         incident,
         message: 'Incident created successfully',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Incident creation error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to create incident',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -699,7 +721,9 @@ router.post('/:id/incidents', requireAuth,
  *     tags: [Status Pages]
  *     summary: Add status page to favorites (stored in Helix)
  */
-router.post('/:id/favorite', requireAuth,
+router.post(
+  '/:id/favorite',
+  requireAuth,
   [param('id').isString().withMessage('Status page ID required')],
   async (req, res) => {
     try {
@@ -709,30 +733,29 @@ router.post('/:id/favorite', requireAuth,
       const preferences = await req.services.helix.getUserPreference(
         userId,
         `sentinel.status-page.${id}`,
-        { favorite: false }
+        { favorite: false },
       );
 
-      await req.services.helix.setUserPreference(
-        userId,
-        `sentinel.status-page.${id}`,
-        { ...preferences, favorite: true, favoritedAt: new Date().toISOString() }
-      );
+      await req.services.helix.setUserPreference(userId, `sentinel.status-page.${id}`, {
+        ...preferences,
+        favorite: true,
+        favoritedAt: new Date().toISOString(),
+      });
 
       res.json({
         success: true,
         message: 'Status page added to favorites',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Favorite status page error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to favorite status page',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 export default router;

@@ -12,11 +12,11 @@ alerting:
   alertmanagers:
     - static_configs:
         - targets:
-          - alertmanager:9093
+            - alertmanager:9093
 
 # Rules for alerting
 rule_files:
-  - "/etc/prometheus/rules/*.yml"
+  - '/etc/prometheus/rules/*.yml'
 
 # Scrape configurations
 scrape_configs:
@@ -99,19 +99,19 @@ recording_rules:
       # API Request Rate
       - record: nova:api_request_rate_5m
         expr: rate(http_requests_total{job="nova-api"}[5m])
-      
+
       # API Error Rate
       - record: nova:api_error_rate_5m
         expr: rate(http_requests_total{job="nova-api",status=~"5.."}[5m]) / rate(http_requests_total{job="nova-api"}[5m])
-      
+
       # Database Connection Pool Usage
       - record: nova:db_pool_usage
         expr: (postgres_active_connections / postgres_max_connections) * 100
-      
+
       # Memory Usage Percentage
       - record: nova:memory_usage_percent
         expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
-      
+
       # Disk Usage Percentage
       - record: nova:disk_usage_percent
         expr: (1 - (node_filesystem_free_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100

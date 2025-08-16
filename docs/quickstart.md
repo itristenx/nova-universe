@@ -5,6 +5,7 @@ Get Nova Universe running in under 5 minutes.
 ## Installation
 
 **Option 1: Automatic Setup (Recommended)**
+
 ```bash
 git clone https://github.com/itristenx/nova-universe.git
 cd nova-universe
@@ -12,6 +13,7 @@ cd nova-universe
 ```
 
 **Option 2: Manual Setup**
+
 ```bash
 git clone https://github.com/itristenx/nova-universe.git
 cd nova-universe
@@ -24,7 +26,7 @@ docker-compose up -d
 After setup completes, open these URLs:
 
 - **Admin Interface**: http://localhost:3001
-- **Setup Wizard**: http://localhost:3001/setup  
+- **Setup Wizard**: http://localhost:3001/setup
 - **API Docs**: http://localhost:3000/docs
 - **Monitoring**: http://localhost:3002
 - **Alerting**: http://localhost:8081
@@ -39,7 +41,9 @@ After setup completes, open these URLs:
 ## Next Steps
 
 ### 1. Complete Setup Wizard
+
 Visit http://localhost:3001/setup to configure:
+
 - Team integrations (Slack, Teams)
 - File storage (Local or S3)
 - Search engine (Elasticsearch)
@@ -47,25 +51,31 @@ Visit http://localhost:3001/setup to configure:
 - AI features
 
 ### 2. Create Your First Ticket
+
 - Go to the admin interface
 - Click "New Ticket"
 - Fill out the form
 - Submit and track progress
 
 ### 3. Setup iPad Kiosk
+
 - Visit http://localhost:3001/kiosks
 - Generate activation code
 - Enter code on iPad at http://your-server:3001/kiosk
 
 ### 4. Configure Monitoring
+
 Nova Sentinel provides uptime monitoring:
+
 - Visit http://localhost:3002
 - Add your websites/services
 - Configure notifications
 - Set up status pages
 
 ### 5. Setup Alerting
+
 GoAlert handles incident response:
+
 - Visit http://localhost:8081
 - Create escalation policies
 - Add on-call schedules
@@ -74,6 +84,7 @@ GoAlert handles incident response:
 ## Common Commands
 
 ### Service Management
+
 ```bash
 # Check system health
 cd apps/api && node cli.js health
@@ -87,6 +98,7 @@ cd apps/api && node cli.js status
 ```
 
 ### User Management
+
 ```bash
 # Change admin password
 cd apps/api && node cli.js passwd newpassword123
@@ -96,6 +108,7 @@ cd apps/api && node cli.js users
 ```
 
 ### System Operations
+
 ```bash
 # Reset system (removes all data)
 cd apps/api && node cli.js reset
@@ -110,6 +123,7 @@ cd apps/api && node cli.js reset
 ## Troubleshooting
 
 **Services won't start?**
+
 ```bash
 # Check Docker status
 docker ps
@@ -122,11 +136,13 @@ docker-compose down && docker-compose up -d
 ```
 
 **Can't access web interface?**
+
 - Ensure port 3001 is not blocked
 - Check if services are running: `docker-compose ps`
 - Wait 30-60 seconds after startup
 
 **Database connection issues?**
+
 ```bash
 # Check PostgreSQL status
 docker-compose logs postgres
@@ -137,6 +153,7 @@ docker-compose up -d
 ```
 
 **Monitoring not working?**
+
 - Ensure port 3002 is available
 - Check monitoring logs: `docker-compose -f docker-compose.monitoring.yml logs`
 - Restart monitoring: `docker-compose -f docker-compose.monitoring.yml restart`
@@ -154,11 +171,13 @@ docker-compose up -d
 For production environments:
 
 1. **Generate production secrets**:
+
    ```bash
    bash scripts/generate-production-secrets.sh
    ```
 
 2. **Deploy with SSL and monitoring**:
+
    ```bash
    bash scripts/deploy-production.sh
    ```

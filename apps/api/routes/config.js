@@ -14,7 +14,7 @@ const router = Router();
 /**
  * Hierarchical configuration resolution:
  * 1. Environment variables (highest priority)
- * 2. Database configuration (admin configurable)  
+ * 2. Database configuration (admin configurable)
  * 3. Built-in defaults (fallback)
  */
 class ConfigurationManager {
@@ -25,11 +25,11 @@ class ConfigurationManager {
     'organization.favicon_url': 'FAVICON_URL',
     'organization.primary_color': 'PRIMARY_COLOR',
     'organization.secondary_color': 'SECONDARY_COLOR',
-    
+
     // Messages
     'messages.welcome': 'WELCOME_MESSAGE',
     'messages.help': 'HELP_MESSAGE',
-    
+
     // Status Messages
     'status.open': 'STATUS_OPEN_MSG',
     'status.closed': 'STATUS_CLOSED_MSG',
@@ -38,7 +38,7 @@ class ConfigurationManager {
     'status.brb': 'STATUS_BRB_MSG',
     'status.lunch': 'STATUS_LUNCH_MSG',
     'status.unavailable': 'STATUS_UNAVAILABLE_MSG',
-    
+
     // Security
     'security.min_pin_length': 'MIN_PIN_LENGTH',
     'security.max_pin_length': 'MAX_PIN_LENGTH',
@@ -46,17 +46,17 @@ class ConfigurationManager {
     'security.rate_limit_max': 'RATE_LIMIT_MAX',
     'security.submit_ticket_limit': 'SUBMIT_TICKET_LIMIT',
     'security.api_login_limit': 'API_LOGIN_LIMIT',
-    
+
     // Features
     'features.directory_enabled': 'DIRECTORY_ENABLED',
     'features.cosmo_enabled': 'COSMO_ENABLED',
     'features.ai_ticket_processing': 'AI_TICKET_PROCESSING_ENABLED',
     'features.sentiment_analysis': 'ML_SENTIMENT_ANALYSIS_ENABLED',
-    
+
     // Integrations
     'integrations.directory_provider': 'DIRECTORY_PROVIDER',
     'integrations.cosmo_model_provider': 'COSMO_MODEL_PROVIDER',
-    'integrations.cosmo_personality': 'COSMO_PERSONALITY'
+    'integrations.cosmo_personality': 'COSMO_PERSONALITY',
   };
 
   /**
@@ -70,13 +70,13 @@ class ConfigurationManager {
         return {
           value: process.env[envVar],
           source: 'environment',
-          key
+          key,
         };
       }
 
       // 2. Check database configuration
       const dbConfig = await prisma.config.findUnique({
-        where: { key }
+        where: { key },
       });
 
       if (dbConfig && dbConfig.value !== null) {
@@ -84,7 +84,7 @@ class ConfigurationManager {
           value: this.parseValue(dbConfig.value, dbConfig.valueType),
           source: 'database',
           key,
-          ...dbConfig
+          ...dbConfig,
         };
       }
 
@@ -94,7 +94,7 @@ class ConfigurationManager {
           value: this.parseValue(dbConfig.defaultValue, dbConfig.valueType),
           source: 'default',
           key,
-          ...dbConfig
+          ...dbConfig,
         };
       }
 
@@ -117,10 +117,7 @@ class ConfigurationManager {
 
       const configs = await prisma.config.findMany({
         where: whereClause,
-        orderBy: [
-          { displayOrder: 'asc' },
-          { key: 'asc' }
-        ]
+        orderBy: [{ displayOrder: 'asc' }, { key: 'asc' }],
       });
 
       const result = {};
@@ -145,7 +142,7 @@ class ConfigurationManager {
     try {
       // Check if configuration exists and is UI editable
       const config = await prisma.config.findUnique({
-        where: { key }
+        where: { key },
       });
 
       if (!config) {
@@ -177,8 +174,8 @@ class ConfigurationManager {
           data: {
             value: stringValue,
             updatedBy: userId,
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
 
         // Create audit trail
@@ -188,8 +185,8 @@ class ConfigurationManager {
             oldValue: oldValue ? String(oldValue) : null,
             newValue: stringValue,
             changedBy: userId,
-            changeReason: reason
-          }
+            changeReason: reason,
+          },
         });
 
         return updatedConfig;
@@ -255,7 +252,7 @@ class ConfigurationManager {
 router.get('/', async (req, res) => {
   try {
     const { category, includeAdvanced = false } = req.query;
-    
+
     let result;
     if (category) {
       result = await ConfigurationManager.getByCategory(category, includeAdvanced === 'true');
@@ -264,13 +261,9 @@ router.get('/', async (req, res) => {
       const configs = await prisma.config.findMany({
         where: {
           isPublic: true,
-          ...(includeAdvanced !== 'true' ? { isAdvanced: false } : {})
+          ...(includeAdvanced !== 'true' ? { isAdvanced: false } : {}),
         },
-        orderBy: [
-          { category: 'asc' },
-          { displayOrder: 'asc' },
-          { key: 'asc' }
-        ]
+        orderBy: [{ category: 'asc' }, { displayOrder: 'asc' }, { key: 'asc' }],
       });
 
       result = {};
@@ -293,18 +286,14 @@ router.get('/', async (req, res) => {
 router.get('/admin', ensureAuth, async (req, res) => {
   try {
     const { category, includeAdvanced = true } = req.query;
-    
+
     let result;
     if (category) {
       result = await ConfigurationManager.getByCategory(category, includeAdvanced === 'true');
     } else {
       // Get all configurations with metadata
       const configs = await prisma.config.findMany({
-        orderBy: [
-          { category: 'asc' },
-          { displayOrder: 'asc' },
-          { key: 'asc' }
-        ]
+        orderBy: [{ category: 'asc' }, { displayOrder: 'asc' }, { key: 'asc' }],
       });
 
       result = {};
@@ -324,8 +313,8 @@ router.get('/admin', ensureAuth, async (req, res) => {
               defaultValue: config.defaultValue,
               helpText: config.helpText,
               isAdvanced: config.isAdvanced,
-              displayOrder: config.displayOrder
-            }
+              displayOrder: config.displayOrder,
+            },
           };
         }
       }
@@ -342,9 +331,9 @@ router.get('/admin', ensureAuth, async (req, res) => {
 router.get('/:key', async (req, res) => {
   try {
     const { key } = req.params;
-    
+
     const config = await prisma.config.findUnique({
-      where: { key }
+      where: { key },
     });
 
     if (!config) {
@@ -365,15 +354,17 @@ router.get('/:key', async (req, res) => {
       key,
       value: resolved.value,
       source: resolved.source,
-      ...(req.user ? {
-        metadata: {
-          description: config.description,
-          category: config.category,
-          subcategory: config.subcategory,
-          valueType: config.valueType,
-          helpText: config.helpText
-        }
-      } : {})
+      ...(req.user
+        ? {
+            metadata: {
+              description: config.description,
+              category: config.category,
+              subcategory: config.subcategory,
+              valueType: config.valueType,
+              helpText: config.helpText,
+            },
+          }
+        : {}),
     });
   } catch (error) {
     logger.error(`Error getting configuration for key ${req.params.key}:`, error);
@@ -389,16 +380,16 @@ router.put('/:key', ensureAuth, async (req, res) => {
     const userId = req.user.id;
 
     const updated = await ConfigurationManager.setValue(key, value, userId, reason);
-    
+
     const resolved = await ConfigurationManager.getValue(key);
-    
+
     res.json({
       success: true,
       key,
       value: resolved.value,
       source: resolved.source,
       updatedAt: updated.updatedAt,
-      updatedBy: updated.updatedBy
+      updatedBy: updated.updatedBy,
     });
   } catch (error) {
     logger.error(`Error updating configuration for key ${req.params.key}:`, error);
@@ -426,12 +417,12 @@ router.post('/bulk', ensureAuth, async (req, res) => {
         results.push({
           key,
           value: resolved.value,
-          success: true
+          success: true,
         });
       } catch (error) {
         errors.push({
           key,
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -442,7 +433,7 @@ router.post('/bulk', ensureAuth, async (req, res) => {
       errors,
       total: configs.length,
       successful: results.length,
-      failed: errors.length
+      failed: errors.length,
     });
   } catch (error) {
     logger.error('Error in bulk configuration update:', error);
@@ -465,14 +456,14 @@ router.get('/:key/history', ensureAuth, async (req, res) => {
         config: {
           select: {
             description: true,
-            category: true
-          }
-        }
-      }
+            category: true,
+          },
+        },
+      },
     });
 
     const total = await prisma.configHistory.count({
-      where: { configKey: key }
+      where: { configKey: key },
     });
 
     res.json({
@@ -481,8 +472,8 @@ router.get('/:key/history', ensureAuth, async (req, res) => {
         total,
         limit: parseInt(limit),
         offset: parseInt(offset),
-        hasMore: total > parseInt(offset) + parseInt(limit)
-      }
+        hasMore: total > parseInt(offset) + parseInt(limit),
+      },
     });
   } catch (error) {
     logger.error(`Error getting configuration history for key ${req.params.key}:`, error);
@@ -499,8 +490,8 @@ router.get('/schema/validation', ensureAuth, async (req, res) => {
         valueType: true,
         validationRules: true,
         isRequired: true,
-        defaultValue: true
-      }
+        defaultValue: true,
+      },
     });
 
     const schema = {};
@@ -519,11 +510,7 @@ router.get('/schema/validation', ensureAuth, async (req, res) => {
 router.get('/templates', ensureAuth, async (req, res) => {
   try {
     const templates = await prisma.configTemplate.findMany({
-      orderBy: [
-        { isDefault: 'desc' },
-        { category: 'asc' },
-        { name: 'asc' }
-      ]
+      orderBy: [{ isDefault: 'desc' }, { category: 'asc' }, { name: 'asc' }],
     });
 
     res.json(templates);
@@ -541,7 +528,7 @@ router.post('/templates/:id/apply', ensureAuth, async (req, res) => {
     const userId = req.user.id;
 
     const template = await prisma.configTemplate.findUnique({
-      where: { id: parseInt(id) }
+      where: { id: parseInt(id) },
     });
 
     if (!template) {
@@ -555,10 +542,10 @@ router.post('/templates/:id/apply', ensureAuth, async (req, res) => {
     for (const [key, value] of configs) {
       try {
         await ConfigurationManager.setValue(
-          key, 
-          value, 
-          userId, 
-          reason || `Applied template: ${template.name}`
+          key,
+          value,
+          userId,
+          reason || `Applied template: ${template.name}`,
         );
         results.push({ key, value, success: true });
       } catch (error) {
@@ -573,7 +560,7 @@ router.post('/templates/:id/apply', ensureAuth, async (req, res) => {
       errors,
       total: configs.length,
       applied: results.length,
-      failed: errors.length
+      failed: errors.length,
     });
   } catch (error) {
     logger.error('Error applying configuration template:', error);

@@ -2,12 +2,7 @@ import dotenv from 'dotenv';
 import { validateDatabaseConfig } from './database.js';
 dotenv.config();
 
-const required = [
-  'SESSION_SECRET',
-  'JWT_SECRET',
-  'KIOSK_TOKEN',
-  'SCIM_TOKEN'
-];
+const required = ['SESSION_SECRET', 'JWT_SECRET', 'KIOSK_TOKEN', 'SCIM_TOKEN'];
 
 // Database configuration
 if (!process.env.DATABASE_URL) {
@@ -40,30 +35,30 @@ const config = {
   corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['*'],
   nodeEnv: process.env.NODE_ENV || 'development',
   helpdeskEmail: process.env.HELPDESK_EMAIL,
-// Add more config as needed
+  // Add more config as needed
 };
 
 // Validate environment and return status info
 export const validateEnvironment = () => {
   const env = process.env.NODE_ENV || 'development';
   const warnings = [];
-  
+
   if (!process.env.SESSION_SECRET) {
     warnings.push('SESSION_SECRET not set - using default (insecure)');
   }
-  
+
   if (!process.env.JWT_SECRET) {
     warnings.push('JWT_SECRET not set - using default (insecure)');
   }
-  
+
   if (warnings.length > 0) {
     console.warn('⚠️  Environment warnings:');
-    warnings.forEach(warning => console.warn(`   - ${warning}`));
+    warnings.forEach((warning) => console.warn(`   - ${warning}`));
   }
 
   // Validate database configuration separately
   validateDatabaseConfig();
-  
+
   return {
     environment: env,
     isProduction: env === 'production',
@@ -74,7 +69,7 @@ export const validateEnvironment = () => {
     hasHelpScout: !!(process.env.HELPSCOUT_API_KEY && process.env.HELPSCOUT_MAILBOX_ID),
     hasKioskToken: !!process.env.KIOSK_TOKEN,
     hasScimToken: !!process.env.SCIM_TOKEN,
-    tlsEnabled: !!(process.env.TLS_CERT_PATH && process.env.TLS_KEY_PATH)
+    tlsEnabled: !!(process.env.TLS_CERT_PATH && process.env.TLS_KEY_PATH),
   };
 };
 
@@ -109,14 +104,14 @@ export const getConfig = () => {
     SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
     HELPSCOUT_API_KEY: process.env.HELPSCOUT_API_KEY,
     HELPSCOUT_MAILBOX_ID: process.env.HELPSCOUT_MAILBOX_ID,
-    HELPSCOUT_SMTP_FALLBACK: process.env.HELPSCOUT_SMTP_FALLBACK === 'true'
+    HELPSCOUT_SMTP_FALLBACK: process.env.HELPSCOUT_SMTP_FALLBACK === 'true',
   };
 };
 
 // Log environment status
 export const logEnvironmentStatus = () => {
   const config = validateEnvironment();
-  
+
   console.log(`🌍 Environment: ${config.environment}`);
   console.log(`🔐 Authentication: ${config.authDisabled ? 'DISABLED' : 'ENABLED'}`);
   console.log(`📧 Email: ${config.hasSmtp ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
@@ -124,6 +119,6 @@ export const logEnvironmentStatus = () => {
   console.log(`📱 Kiosk Token: ${config.hasKioskToken ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
   console.log(`🔐 SCIM Token: ${config.hasScimToken ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
   console.log(`🔒 TLS: ${config.tlsEnabled ? 'ENABLED' : 'DISABLED'}`);
-  
+
   return config;
 };

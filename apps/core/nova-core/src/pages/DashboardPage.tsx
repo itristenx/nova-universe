@@ -21,7 +21,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, ch
     <Card>
       <CardBody className="p-6">
         <div className="flex items-center">
-          <div className={`p-3 rounded-lg ${color}`}>
+          <div className={`rounded-lg p-3 ${color}`}>
             <Icon className="h-6 w-6 text-white" />
           </div>
           <div className="ml-4 flex-1">
@@ -80,7 +80,7 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="bg-gray-200 h-32 rounded-lg"></div>
+              <div className="h-32 rounded-lg bg-gray-200"></div>
             </div>
           ))}
         </div>
@@ -126,7 +126,7 @@ export const DashboardPage: React.FC = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Tickets */}
         <Card>
           <CardHeader>
@@ -141,23 +141,37 @@ export const DashboardPage: React.FC = () => {
                 <p className="text-sm text-gray-500">No recent tickets</p>
               ) : (
                 recentTickets.map((ticket) => (
-                  <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={ticket.id}
+                    className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+                  >
                     <div className="flex-1">
                       <h4 className="text-sm font-medium text-gray-900">{ticket.title}</h4>
-                      <p className="text-xs text-gray-600">{ticket.name} • {ticket.email}</p>
+                      <p className="text-xs text-gray-600">
+                        {ticket.name} • {ticket.email}
+                      </p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        ticket.urgency === 'Critical' ? 'bg-red-100 text-red-800' :
-                        ticket.urgency === 'High' ? 'bg-orange-100 text-orange-800' :
-                        ticket.urgency === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          ticket.urgency === 'Critical'
+                            ? 'bg-red-100 text-red-800'
+                            : ticket.urgency === 'High'
+                              ? 'bg-orange-100 text-orange-800'
+                              : ticket.urgency === 'Medium'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-green-100 text-green-800'
+                        }`}
+                      >
                         {ticket.urgency}
                       </span>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        ticket.emailStatus === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          ticket.emailStatus === 'success'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
                         {ticket.emailStatus}
                       </span>
                     </div>
@@ -182,22 +196,33 @@ export const DashboardPage: React.FC = () => {
                 <p className="text-sm text-gray-500">No kiosks registered</p>
               ) : (
                 kiosks.slice(0, 5).map((kiosk) => (
-                  <div key={kiosk.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={kiosk.id}
+                    className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+                  >
                     <div className="flex-1">
                       <h4 className="text-sm font-medium text-gray-900">Kiosk {kiosk.id}</h4>
-                      <p className="text-xs text-gray-600">Last seen: {new Date(kiosk.lastSeen).toLocaleDateString()}</p>
+                      <p className="text-xs text-gray-600">
+                        Last seen: {new Date(kiosk.lastSeen).toLocaleDateString()}
+                      </p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        kiosk.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          kiosk.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
                         {kiosk.active ? 'Active' : 'Inactive'}
                       </span>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        kiosk.effectiveConfig.currentStatus === 'open' ? 'bg-blue-100 text-blue-800' :
-                        kiosk.effectiveConfig.currentStatus === 'closed' ? 'bg-gray-100 text-gray-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          kiosk.effectiveConfig.currentStatus === 'open'
+                            ? 'bg-blue-100 text-blue-800'
+                            : kiosk.effectiveConfig.currentStatus === 'closed'
+                              ? 'bg-gray-100 text-gray-800'
+                              : 'bg-red-100 text-red-800'
+                        }`}
+                      >
                         {kiosk.effectiveConfig.currentStatus || 'Unknown'}
                       </span>
                     </div>

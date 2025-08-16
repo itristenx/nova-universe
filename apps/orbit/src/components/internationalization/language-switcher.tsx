@@ -22,29 +22,29 @@ const LANGUAGE_INFO: Record<string, LanguageInfo> = {
     name: 'English',
     nativeName: 'English',
     flag: '🇺🇸',
-    direction: 'ltr'
+    direction: 'ltr',
   },
   es: {
     code: 'es',
     name: 'Spanish',
     nativeName: 'Español',
     flag: '🇪🇸',
-    direction: 'ltr'
+    direction: 'ltr',
   },
   fr: {
     code: 'fr',
     name: 'French',
     nativeName: 'Français',
     flag: '🇫🇷',
-    direction: 'ltr'
+    direction: 'ltr',
   },
   ar: {
     code: 'ar',
     name: 'Arabic',
     nativeName: 'العربية',
     flag: '🇸🇦',
-    direction: 'rtl'
-  }
+    direction: 'rtl',
+  },
 };
 
 interface LanguageSwitcherProps {
@@ -53,21 +53,21 @@ interface LanguageSwitcherProps {
   showDirection?: boolean;
 }
 
-export function LanguageSwitcher({ 
-  variant = 'default', 
+export function LanguageSwitcher({
+  variant = 'default',
   showFlags = true,
-  showDirection = false 
+  showDirection = false,
 }: LanguageSwitcherProps) {
   const tAccessibility = useTranslations('Accessibility');
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const currentLanguage = LANGUAGE_INFO[locale];
-  const availableLanguages = routing.locales.map(code => LANGUAGE_INFO[code]);
+  const availableLanguages = routing.locales.map((code) => LANGUAGE_INFO[code]);
 
   const handleLanguageChange = (newLocale: string) => {
     router.replace(pathname, { locale: newLocale });
@@ -98,8 +98,8 @@ export function LanguageSwitcher({
   if (variant === 'compact') {
     return (
       <div className="relative" ref={dropdownRef}>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="sm"
           className="h-9 w-9 p-0"
           onClick={() => setIsOpen(!isOpen)}
@@ -110,10 +110,10 @@ export function LanguageSwitcher({
         >
           <span className="text-lg">{currentLanguage.flag}</span>
         </Button>
-        
+
         {isOpen && (
-          <div 
-            className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-md shadow-lg z-50"
+          <div
+            className="bg-background border-border absolute top-full right-0 z-50 mt-2 w-48 rounded-md border shadow-lg"
             role="menu"
             aria-orientation="vertical"
           >
@@ -121,16 +121,14 @@ export function LanguageSwitcher({
               <button
                 key={language.code}
                 onClick={() => handleLanguageChange(language.code)}
-                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-accent focus:bg-accent focus:outline-none cursor-pointer first:rounded-t-md last:rounded-b-md"
+                className="hover:bg-accent focus:bg-accent flex w-full cursor-pointer items-center justify-between px-3 py-2 text-sm first:rounded-t-md last:rounded-b-md focus:outline-none"
                 role="menuitem"
               >
                 <div className="flex items-center gap-2">
                   {showFlags && <span className="text-sm">{language.flag}</span>}
                   <span className="text-sm">{language.nativeName}</span>
                 </div>
-                {locale === language.code && (
-                  <Check className="w-4 h-4 text-primary" />
-                )}
+                {locale === language.code && <Check className="text-primary h-4 w-4" />}
               </button>
             ))}
           </div>
@@ -141,9 +139,9 @@ export function LanguageSwitcher({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <Button 
-        variant="outline" 
-        className="flex items-center gap-2 min-w-[140px] justify-between"
+      <Button
+        variant="outline"
+        className="flex min-w-[140px] items-center justify-between gap-2"
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
         aria-label={tAccessibility('languageSelector')}
@@ -151,23 +149,21 @@ export function LanguageSwitcher({
         aria-haspopup="true"
       >
         <div className="flex items-center gap-2">
-          <Globe className="w-4 h-4" />
+          <Globe className="h-4 w-4" />
           {showFlags && <span>{currentLanguage.flag}</span>}
-          <span className="text-sm font-medium">
-            {currentLanguage.nativeName}
-          </span>
+          <span className="text-sm font-medium">{currentLanguage.nativeName}</span>
           {showDirection && (
-            <Badge variant="secondary" className="text-xs px-1 py-0">
+            <Badge variant="secondary" className="px-1 py-0 text-xs">
               {currentLanguage.direction.toUpperCase()}
             </Badge>
           )}
         </div>
-        <ChevronDown className="w-4 h-4" />
+        <ChevronDown className="h-4 w-4" />
       </Button>
-      
+
       {isOpen && (
-        <div 
-          className="absolute right-0 top-full mt-2 w-56 bg-background border border-border rounded-md shadow-lg z-50"
+        <div
+          className="bg-background border-border absolute top-full right-0 z-50 mt-2 w-56 rounded-md border shadow-lg"
           role="menu"
           aria-orientation="vertical"
         >
@@ -175,24 +171,22 @@ export function LanguageSwitcher({
             <button
               key={language.code}
               onClick={() => handleLanguageChange(language.code)}
-              className="flex items-center justify-between w-full px-3 py-3 text-sm hover:bg-accent focus:bg-accent focus:outline-none cursor-pointer first:rounded-t-md last:rounded-b-md"
+              className="hover:bg-accent focus:bg-accent flex w-full cursor-pointer items-center justify-between px-3 py-3 text-sm first:rounded-t-md last:rounded-b-md focus:outline-none"
               role="menuitem"
             >
               <div className="flex items-center gap-3">
                 {showFlags && <span>{language.flag}</span>}
                 <div className="flex flex-col items-start">
                   <span className="text-sm font-medium">{language.nativeName}</span>
-                  <span className="text-xs text-muted-foreground">{language.name}</span>
+                  <span className="text-muted-foreground text-xs">{language.name}</span>
                 </div>
                 {showDirection && (
-                  <Badge variant="outline" className="text-xs px-1 py-0 ml-2">
+                  <Badge variant="outline" className="ml-2 px-1 py-0 text-xs">
                     {language.direction.toUpperCase()}
                   </Badge>
                 )}
               </div>
-              {locale === language.code && (
-                <Check className="w-4 h-4 text-primary" />
-              )}
+              {locale === language.code && <Check className="text-primary h-4 w-4" />}
             </button>
           ))}
         </div>
@@ -206,7 +200,7 @@ export function useLanguageInfo() {
   const locale = useLocale();
   return {
     current: LANGUAGE_INFO[locale],
-    available: routing.locales.map(code => LANGUAGE_INFO[code])
+    available: routing.locales.map((code) => LANGUAGE_INFO[code]),
   };
 }
 
@@ -234,7 +228,7 @@ export function RTLLayout({ children, className = '' }: RTLLayoutProps) {
   const isRTL = LANGUAGE_INFO[locale]?.direction === 'rtl';
 
   return (
-    <div 
+    <div
       className={`${className} ${isRTL ? 'rtl-layout' : 'ltr-layout'}`}
       dir={isRTL ? 'rtl' : 'ltr'}
     >

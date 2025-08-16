@@ -44,28 +44,47 @@ export const CatalogItemsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Catalog Items</h1>
         </div>
-        <Button variant="primary" onClick={() => setShowModal(true)}>Add Item</Button>
+        <Button variant="primary" onClick={() => setShowModal(true)}>
+          Add Item
+        </Button>
       </div>
       <Card>
         {loading ? (
           <div className="p-4">Loading...</div>
         ) : (
-          <ul className="p-4 space-y-2">
-            {items.map(i => (
-              <li key={i.id} className="border p-2 rounded">{i.name}</li>
+          <ul className="space-y-2 p-4">
+            {items.map((i) => (
+              <li key={i.id} className="rounded border p-2">
+                {i.name}
+              </li>
             ))}
           </ul>
         )}
       </Card>
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="New Catalog Item" size="md">
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="New Catalog Item"
+        size="md"
+      >
         <div className="space-y-4">
-          <Input label="Name" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-          <Input label="Form Schema (JSON)" value={formData.formSchema} onChange={e => setFormData({ ...formData, formSchema: e.target.value })} />
-          <Button variant="primary" onClick={createItem}>Create</Button>
+          <Input
+            label="Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+          <Input
+            label="Form Schema (JSON)"
+            value={formData.formSchema}
+            onChange={(e) => setFormData({ ...formData, formSchema: e.target.value })}
+          />
+          <Button variant="primary" onClick={createItem}>
+            Create
+          </Button>
         </div>
       </Modal>
     </div>

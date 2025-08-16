@@ -17,7 +17,7 @@ describe('Accessibility Workflow Integration Tests', () => {
             <LanguageSwitcher />
             <PermissionManager />
           </main>
-        </div>
+        </div>,
       );
 
       // Test skip links functionality
@@ -53,7 +53,7 @@ describe('Accessibility Workflow Integration Tests', () => {
           <main id="main-content">
             <PermissionManager />
           </main>
-        </div>
+        </div>,
       );
 
       // Use skip to navigation
@@ -78,11 +78,11 @@ describe('Accessibility Workflow Integration Tests', () => {
         <div>
           <LanguageSwitcher />
           <PermissionManager />
-        </div>
+        </div>,
       );
 
       const languageButton = screen.getByRole('button', { name: /language/i });
-      
+
       // Should have proper ARIA attributes
       expect(languageButton).toHaveAttribute('aria-haspopup');
       expect(languageButton).toHaveAttribute('aria-expanded', 'false');
@@ -95,14 +95,14 @@ describe('Accessibility Workflow Integration Tests', () => {
       const languageOptions = screen.getAllByRole('menuitem');
       expect(languageOptions.length).toBeGreaterThan(0);
 
-      languageOptions.forEach(option => {
+      languageOptions.forEach((option) => {
         expect(option).toHaveAttribute('role', 'menuitem');
       });
 
       // Select a language
       if (languageOptions.length > 1) {
         await userEvent.click(languageOptions[1]);
-        
+
         // Focus should return to trigger button
         expect(languageButton).toHaveFocus();
       }
@@ -114,7 +114,7 @@ describe('Accessibility Workflow Integration Tests', () => {
           <LanguageSwitcher />
           <PermissionManager />
           <DataPrivacyDashboard />
-        </div>
+        </div>,
       );
 
       // Check initial accessibility
@@ -149,7 +149,7 @@ describe('Accessibility Workflow Integration Tests', () => {
           <main id="main-content">
             <PermissionManager />
           </main>
-        </div>
+        </div>,
       );
 
       // Check overall accessibility
@@ -168,7 +168,10 @@ describe('Accessibility Workflow Integration Tests', () => {
 
         // Toggle with keyboard
         await userEvent.keyboard(' ');
-        expect(firstSwitch).toHaveAttribute('aria-checked', initialState === 'true' ? 'false' : 'true');
+        expect(firstSwitch).toHaveAttribute(
+          'aria-checked',
+          initialState === 'true' ? 'false' : 'true',
+        );
 
         // Check accessibility after interaction
         const resultsAfterToggle = await axe(container);
@@ -183,7 +186,7 @@ describe('Accessibility Workflow Integration Tests', () => {
           <main id="main-content">
             <DataPrivacyDashboard />
           </main>
-        </div>
+        </div>,
       );
 
       // Check overall accessibility
@@ -211,7 +214,10 @@ describe('Accessibility Workflow Integration Tests', () => {
           if (!switchEl.hasAttribute('disabled')) {
             const initialState = switchEl.getAttribute('aria-checked');
             await userEvent.click(switchEl);
-            expect(switchEl).toHaveAttribute('aria-checked', initialState === 'true' ? 'false' : 'true');
+            expect(switchEl).toHaveAttribute(
+              'aria-checked',
+              initialState === 'true' ? 'false' : 'true',
+            );
           }
         }
 
@@ -235,7 +241,7 @@ describe('Accessibility Workflow Integration Tests', () => {
             <PermissionManager />
             <DataPrivacyDashboard />
           </main>
-        </div>
+        </div>,
       );
 
       // Start with skip links
@@ -293,7 +299,7 @@ describe('Accessibility Workflow Integration Tests', () => {
             <PermissionManager />
             <DataPrivacyDashboard />
           </main>
-        </div>
+        </div>,
       );
 
       // Start with tab key navigation from the beginning
@@ -305,7 +311,7 @@ describe('Accessibility Workflow Integration Tests', () => {
         ...screen.getAllByRole('link'),
         ...screen.getAllByRole('button'),
         ...screen.getAllByRole('switch'),
-        ...screen.getAllByRole('tab')
+        ...screen.getAllByRole('tab'),
       ];
 
       // Test that all elements are reachable via keyboard

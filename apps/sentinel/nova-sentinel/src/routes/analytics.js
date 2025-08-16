@@ -11,7 +11,7 @@ const router = express.Router();
 const analyticsRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: 'Too many analytics requests, please try again later.'
+  message: 'Too many analytics requests, please try again later.',
 });
 
 router.use(analyticsRateLimit);
@@ -36,15 +36,14 @@ router.get('/system', async (req, res) => {
     res.json({
       success: true,
       analytics,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('System analytics error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve system analytics',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -56,10 +55,11 @@ router.get('/system', async (req, res) => {
  *     tags: [Analytics]
  *     summary: Get monitor-specific analytics
  */
-router.get('/monitors/:id',
+router.get(
+  '/monitors/:id',
   [
     param('id').isString().withMessage('Monitor ID required'),
-    query('period').optional().isIn(['1h', '24h', '7d', '30d']).withMessage('Invalid period')
+    query('period').optional().isIn(['1h', '24h', '7d', '30d']).withMessage('Invalid period'),
   ],
   async (req, res) => {
     try {
@@ -71,18 +71,17 @@ router.get('/monitors/:id',
       res.json({
         success: true,
         analytics,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error('Monitor analytics error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve monitor analytics',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 export default router;

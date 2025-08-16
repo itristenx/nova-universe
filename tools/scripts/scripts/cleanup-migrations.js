@@ -8,9 +8,9 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.resolve(__dirname, '../nova-api/migrations');
 
-const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql'));
+const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql'));
 
-files.forEach(file => {
+files.forEach((file) => {
   const fullPath = path.join(migrationsDir, file);
   const content = fs.readFileSync(fullPath, 'utf8').trim();
   if (!content || content.length < 10) {

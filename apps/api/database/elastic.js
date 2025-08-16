@@ -14,7 +14,7 @@ class ElasticsearchManager {
       knowledge: 'nova-knowledge-base',
       assets: 'nova-assets',
       users: 'nova-users',
-      logs: 'nova-logs'
+      logs: 'nova-logs',
     };
   }
 
@@ -25,31 +25,35 @@ class ElasticsearchManager {
     try {
       const config = {
         node: process.env.ELASTICSEARCH_NODE || 'http://localhost:9200',
-        auth: process.env.ELASTICSEARCH_AUTH ? {
-          username: process.env.ELASTICSEARCH_USERNAME || 'elastic',
-          password: process.env.ELASTICSEARCH_PASSWORD || 'password'
-        } : undefined,
-        tls: process.env.ELASTICSEARCH_TLS === 'true' ? {
-          ca: process.env.ELASTICSEARCH_CA_CERT,
-          rejectUnauthorized: process.env.ELASTICSEARCH_VERIFY_CERTS !== 'false'
-        } : undefined,
+        auth: process.env.ELASTICSEARCH_AUTH
+          ? {
+              username: process.env.ELASTICSEARCH_USERNAME || 'elastic',
+              password: process.env.ELASTICSEARCH_PASSWORD || 'password',
+            }
+          : undefined,
+        tls:
+          process.env.ELASTICSEARCH_TLS === 'true'
+            ? {
+                ca: process.env.ELASTICSEARCH_CA_CERT,
+                rejectUnauthorized: process.env.ELASTICSEARCH_VERIFY_CERTS !== 'false',
+              }
+            : undefined,
         requestTimeout: parseInt(process.env.ELASTICSEARCH_REQUEST_TIMEOUT || '30000'),
-        pingTimeout: parseInt(process.env.ELASTICSEARCH_PING_TIMEOUT || '3000')
+        pingTimeout: parseInt(process.env.ELASTICSEARCH_PING_TIMEOUT || '3000'),
       };
 
       this.client = new Client(config);
-      
+
       // Test connection
       await this.client.ping();
       this.isConnected = true;
-      
+
       logger.info('✅ Elasticsearch connected successfully');
       await this.ensureIndicesExist();
-      
     } catch (error) {
       this.isConnected = false;
       logger.error('❌ Elasticsearch connection failed:', error.message);
-      
+
       // Don't throw in development to allow app to continue without search
       if (process.env.NODE_ENV === 'production') {
         throw error;
@@ -79,9 +83,9 @@ class ElasticsearchManager {
             tags: { type: 'keyword' },
             created_at: { type: 'date' },
             updated_at: { type: 'date' },
-            content_vector: { type: 'dense_vector', dims: 384 }
-          }
-        }
+            content_vector: { type: 'dense_vector', dims: 384 },
+          },
+        },
       });
 
       // Knowledge base index
@@ -97,9 +101,9 @@ class ElasticsearchManager {
             status: { type: 'keyword' },
             created_at: { type: 'date' },
             updated_at: { type: 'date' },
-            content_vector: { type: 'dense_vector', dims: 384 }
-          }
-        }
+            content_vector: { type: 'dense_vector', dims: 384 },
+          },
+        },
       });
 
       // Assets index
@@ -114,9 +118,9 @@ class ElasticsearchManager {
             status: { type: 'keyword' },
             tags: { type: 'keyword' },
             created_at: { type: 'date' },
-            updated_at: { type: 'date' }
-          }
-        }
+            updated_at: { type: 'date' },
+          },
+        },
       });
 
       // Logs index
@@ -130,9 +134,9 @@ class ElasticsearchManager {
             user_id: { type: 'keyword' },
             ip_address: { type: 'ip' },
             timestamp: { type: 'date' },
-            metadata: { type: 'object' }
-          }
-        }
+            metadata: { type: 'object' },
+          },
+        },
       });
 
       logger.info('📝 Elasticsearch indices verified/created successfully');
@@ -147,7 +151,7 @@ class ElasticsearchManager {
       if (!exists) {
         await this.client.indices.create({
           index: indexName,
-          body: settings
+          body: settings,
         });
         logger.info(`Created index: ${indexName}`);
       }
@@ -171,7 +175,7 @@ class ElasticsearchManager {
       priority,
       assignee,
       category,
-      sortBy = 'relevance'
+      sortBy = 'relevance',
     } = options;
 
     try {
@@ -185,8 +189,8 @@ class ElasticsearchManager {
             query: query.trim(),
             fields: ['title^2', 'description', 'tags'],
             type: 'best_fields',
-            fuzziness: 'AUTO'
-          }
+            fuzziness: 'AUTO',
+          },
         });
       }
 
@@ -200,8 +204,8 @@ class ElasticsearchManager {
         query: {
           bool: {
             must: must.length > 0 ? must : [{ match_all: {} }],
-            filter
-          }
+            filter,
+          },
         },
         from,
         size,
@@ -209,26 +213,25 @@ class ElasticsearchManager {
         highlight: {
           fields: {
             title: {},
-            description: {}
-          }
-        }
+            description: {},
+          },
+        },
       };
 
       const response = await this.client.search({
         index: this.indices.tickets,
-        body: searchBody
+        body: searchBody,
       });
 
       return {
-        tickets: response.body.hits.hits.map(hit => ({
+        tickets: response.body.hits.hits.map((hit) => ({
           ...hit._source,
           _score: hit._score,
-          _highlights: hit.highlight
+          _highlights: hit.highlight,
         })),
         total: response.body.hits.total.value,
-        took: response.body.took
+        took: response.body.took,
       };
-
     } catch (error) {
       logger.error('Ticket search failed:', error.message);
       return { tickets: [], total: 0, error: error.message };
@@ -255,8 +258,8 @@ class ElasticsearchManager {
             query: query.trim(),
             fields: ['title^3', 'content^2', 'tags'],
             type: 'best_fields',
-            fuzziness: 'AUTO'
-          }
+            fuzziness: 'AUTO',
+          },
         });
       }
 
@@ -268,8 +271,8 @@ class ElasticsearchManager {
           query: {
             bool: {
               must: must.length > 0 ? must : [{ match_all: {} }],
-              filter
-            }
+              filter,
+            },
           },
           from,
           size,
@@ -277,22 +280,21 @@ class ElasticsearchManager {
           highlight: {
             fields: {
               title: {},
-              content: { fragment_size: 150, number_of_fragments: 3 }
-            }
-          }
-        }
+              content: { fragment_size: 150, number_of_fragments: 3 },
+            },
+          },
+        },
       });
 
       return {
-        articles: response.body.hits.hits.map(hit => ({
+        articles: response.body.hits.hits.map((hit) => ({
           ...hit._source,
           _score: hit._score,
-          _highlights: hit.highlight
+          _highlights: hit.highlight,
         })),
         total: response.body.hits.total.value,
-        took: response.body.took
+        took: response.body.took,
       };
-
     } catch (error) {
       logger.error('Knowledge base search failed:', error.message);
       return { articles: [], total: 0, error: error.message };
@@ -316,8 +318,8 @@ class ElasticsearchManager {
             query: query.trim(),
             fields: ['title^2', 'description', 'content', 'name'],
             type: 'best_fields',
-            fuzziness: 'AUTO'
-          }
+            fuzziness: 'AUTO',
+          },
         },
         from,
         size,
@@ -327,28 +329,27 @@ class ElasticsearchManager {
             title: {},
             description: {},
             content: { fragment_size: 150, number_of_fragments: 2 },
-            name: {}
-          }
-        }
+            name: {},
+          },
+        },
       };
 
       const response = await this.client.search({
         index: [this.indices.tickets, this.indices.knowledge, this.indices.assets],
-        body: searchBody
+        body: searchBody,
       });
 
       return {
-        results: response.body.hits.hits.map(hit => ({
+        results: response.body.hits.hits.map((hit) => ({
           ...hit._source,
           _index: hit._index,
           _type: this.getTypeFromIndex(hit._index),
           _score: hit._score,
-          _highlights: hit.highlight
+          _highlights: hit.highlight,
         })),
         total: response.body.hits.total.value,
-        took: response.body.took
+        took: response.body.took,
       };
-
     } catch (error) {
       logger.error('Global search failed:', error.message);
       return { results: [], total: 0, error: error.message };
@@ -375,22 +376,21 @@ class ElasticsearchManager {
               phrase: {
                 field: 'title',
                 size,
-                confidence: 0.7
-              }
-            }
+                confidence: 0.7,
+              },
+            },
           },
-          size: 0
-        }
+          size: 0,
+        },
       });
 
       const suggestions = response.body.suggest?.suggestions?.[0]?.options || [];
       return {
-        suggestions: suggestions.map(s => ({
+        suggestions: suggestions.map((s) => ({
           text: s.text,
-          score: s.score
-        }))
+          score: s.score,
+        })),
       };
-
     } catch (error) {
       logger.error('Search suggestions failed:', error.message);
       return { suggestions: [] };
@@ -405,14 +405,7 @@ class ElasticsearchManager {
       return { logs: [], total: 0, message: 'Search unavailable' };
     }
 
-    const {
-      from = 0,
-      size = 50,
-      level,
-      source,
-      startTime,
-      endTime
-    } = options;
+    const { from = 0, size = 50, level, source, startTime, endTime } = options;
 
     try {
       const must = [];
@@ -423,8 +416,8 @@ class ElasticsearchManager {
           multi_match: {
             query: query.trim(),
             fields: ['message', 'source'],
-            type: 'phrase_prefix'
-          }
+            type: 'phrase_prefix',
+          },
         });
       }
 
@@ -444,21 +437,20 @@ class ElasticsearchManager {
           query: {
             bool: {
               must: must.length > 0 ? must : [{ match_all: {} }],
-              filter
-            }
+              filter,
+            },
           },
           from,
           size,
-          sort: [{ timestamp: { order: 'desc' } }]
-        }
+          sort: [{ timestamp: { order: 'desc' } }],
+        },
       });
 
       return {
-        logs: response.body.hits.hits.map(hit => hit._source),
+        logs: response.body.hits.hits.map((hit) => hit._source),
         total: response.body.hits.total.value,
-        took: response.body.took
+        took: response.body.took,
       };
-
     } catch (error) {
       logger.error('Log search failed:', error.message);
       return { logs: [], total: 0, error: error.message };
@@ -476,7 +468,7 @@ class ElasticsearchManager {
     try {
       // Get index stats
       const stats = await this.client.indices.stats({
-        index: Object.values(this.indices)
+        index: Object.values(this.indices),
       });
 
       // Get cluster health
@@ -488,14 +480,14 @@ class ElasticsearchManager {
           indices: Object.entries(stats.body.indices || {}).map(([name, data]) => ({
             name,
             document_count: data.total?.docs?.count || 0,
-            size_bytes: data.total?.store?.size_in_bytes || 0
+            size_bytes: data.total?.store?.size_in_bytes || 0,
           })),
           total_documents: Object.values(stats.body.indices || {}).reduce(
-            (sum, idx) => sum + (idx.total?.docs?.count || 0), 0
-          )
-        }
+            (sum, idx) => sum + (idx.total?.docs?.count || 0),
+            0,
+          ),
+        },
       };
-
     } catch (error) {
       logger.error('Analytics failed:', error.message);
       return { analytics: null, error: error.message };
@@ -514,8 +506,8 @@ class ElasticsearchManager {
         id,
         body: {
           ...document,
-          indexed_at: new Date().toISOString()
-        }
+          indexed_at: new Date().toISOString(),
+        },
       });
       return true;
     } catch (error) {
@@ -548,7 +540,7 @@ class ElasticsearchManager {
       newest: [{ created_at: { order: 'desc' } }],
       oldest: [{ created_at: { order: 'asc' } }],
       updated: [{ updated_at: { order: 'desc' } }],
-      priority: [{ priority: { order: 'asc' } }, { created_at: { order: 'desc' } }]
+      priority: [{ priority: { order: 'asc' } }, { created_at: { order: 'desc' } }],
     };
     return sortConfigs[sortBy] || sortConfigs.relevance;
   }
@@ -558,7 +550,7 @@ class ElasticsearchManager {
       [this.indices.tickets]: 'ticket',
       [this.indices.knowledge]: 'knowledge',
       [this.indices.assets]: 'asset',
-      [this.indices.logs]: 'log'
+      [this.indices.logs]: 'log',
     };
     return typeMap[indexName] || 'unknown';
   }
@@ -577,7 +569,7 @@ class ElasticsearchManager {
         status: health.body.status,
         cluster_name: health.body.cluster_name,
         number_of_nodes: health.body.number_of_nodes,
-        active_primary_shards: health.body.active_primary_shards
+        active_primary_shards: health.body.active_primary_shards,
       };
     } catch (error) {
       return { status: 'error', message: error.message };

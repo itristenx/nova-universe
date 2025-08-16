@@ -9,17 +9,16 @@ import { spawn } from 'child_process';
 import { existsSync, readdirSync, statSync } from 'fs';
 import path from 'path';
 import Table from 'cli-table3';
-import { 
-  logger, 
-  createSpinner, 
+import {
+  logger,
+  createSpinner,
   runCommand,
   getProjectRoot,
   checkServiceStatus,
-  sleep
+  sleep,
 } from '../utils/index.js';
 
-export const devCommand = new Command('dev')
-  .description('Development tools and utilities');
+export const devCommand = new Command('dev').description('Development tools and utilities');
 
 // Dev start command
 devCommand
@@ -171,7 +170,7 @@ async function startDevelopment(options) {
   const apiProcess = spawn('npm', ['run', 'dev'], {
     cwd: path.join(projectRoot, 'nova-api'),
     stdio: 'pipe',
-    env: { ...process.env, PORT: '3000' }
+    env: { ...process.env, PORT: '3000' },
   });
 
   processes.push({ name: 'API', process: apiProcess, port: 3000 });
@@ -181,7 +180,7 @@ async function startDevelopment(options) {
   const frontendProcess = spawn('npm', ['run', 'dev'], {
     cwd: path.join(projectRoot, 'nova-core'),
     stdio: 'pipe',
-    env: { ...process.env, PORT: '5173' }
+    env: { ...process.env, PORT: '5173' },
   });
 
   processes.push({ name: 'Frontend', process: frontendProcess, port: 5173 });
@@ -193,7 +192,7 @@ async function startDevelopment(options) {
     const commsProcess = spawn('npm', ['run', 'dev'], {
       cwd: commsPath,
       stdio: 'pipe',
-      env: { ...process.env, PORT: '3001' }
+      env: { ...process.env, PORT: '3001' },
     });
 
     processes.push({ name: 'Comms', process: commsProcess, port: 3001 });
@@ -233,7 +232,7 @@ async function startDevelopment(options) {
   console.log(chalk.green('\n🎉 Development environment is ready!\n'));
   console.log(chalk.cyan('📱 Frontend:'), chalk.blue('http://localhost:5173'));
   console.log(chalk.cyan('🔧 API:'), chalk.blue('http://localhost:3000'));
-  if (processes.find(p => p.name === 'Comms')) {
+  if (processes.find((p) => p.name === 'Comms')) {
     console.log(chalk.cyan('📞 Comms:'), chalk.blue('http://localhost:3001'));
   }
 
@@ -242,7 +241,7 @@ async function startDevelopment(options) {
   // Handle graceful shutdown
   process.on('SIGINT', () => {
     console.log(chalk.yellow('\n🛑 Shutting down development environment...'));
-    
+
     processes.forEach(({ name, process: proc }) => {
       console.log(chalk.gray(`Stopping ${name}...`));
       proc.kill('SIGTERM');
@@ -278,30 +277,30 @@ async function runTests(options) {
   }
 
   const jestOptions = [];
-  
+
   if (options.watch) {
     jestOptions.push('--watch');
   }
-  
+
   if (options.coverage) {
     jestOptions.push('--coverage');
   }
-  
+
   if (options.update) {
     jestOptions.push('--updateSnapshot');
   }
-  
+
   if (options.testNamePattern) {
     jestOptions.push('--testNamePattern', options.testNamePattern);
   }
 
   for (const [command, args] of testCommands) {
     console.log(chalk.blue(`Running: ${command} ${args.join(' ')} ${jestOptions.join(' ')}`));
-    
+
     try {
       await runCommand(command, [...args, ...jestOptions], {
         cwd: projectRoot,
-        stdio: 'inherit'
+        stdio: 'inherit',
       });
     } catch (error) {
       if (!options.watch) {
@@ -324,7 +323,7 @@ async function runLinting(options) {
 
   // Check if ESLint config exists
   const eslintConfigFiles = ['.eslintrc.js', '.eslintrc.json', '.eslintrc.yml', 'eslint.config.js'];
-  const hasEslint = eslintConfigFiles.some(file => existsSync(path.join(projectRoot, file)));
+  const hasEslint = eslintConfigFiles.some((file) => existsSync(path.join(projectRoot, file)));
 
   if (hasEslint) {
     const eslintArgs = ['run', 'lint'];
@@ -335,8 +334,10 @@ async function runLinting(options) {
   }
 
   // Check for Prettier
-  if (existsSync(path.join(projectRoot, '.prettierrc')) || 
-      existsSync(path.join(projectRoot, 'prettier.config.js'))) {
+  if (
+    existsSync(path.join(projectRoot, '.prettierrc')) ||
+    existsSync(path.join(projectRoot, 'prettier.config.js'))
+  ) {
     if (options.fix) {
       lintCommands.push(['npm', ['run', 'format']]);
     } else {
@@ -380,7 +381,7 @@ async function buildApplication(options) {
 
   const buildPromises = services.map(async (service) => {
     const servicePath = path.join(projectRoot, service);
-    
+
     if (!existsSync(servicePath)) {
       return;
     }
@@ -390,14 +391,14 @@ async function buildApplication(options) {
 
     try {
       const buildArgs = options.production ? ['run', 'build'] : ['run', 'build:dev'];
-      
+
       if (options.watch && service === 'nova-core') {
         buildArgs.push('--', '--watch');
       }
 
-      await runCommand('npm', buildArgs, { 
+      await runCommand('npm', buildArgs, {
         cwd: servicePath,
-        silent: !options.watch 
+        silent: !options.watch,
       });
 
       spinner.succeed(`${service} built successfully`);
@@ -411,10 +412,10 @@ async function buildApplication(options) {
 
   if (options.analyze) {
     console.log(chalk.cyan('\n📊 Analyzing bundle...\n'));
-    
+
     try {
       await runCommand('npm', ['run', 'analyze'], {
-        cwd: path.join(projectRoot, 'nova-core')
+        cwd: path.join(projectRoot, 'nova-core'),
       });
     } catch (error) {
       logger.warning('Bundle analysis not available');
@@ -430,9 +431,9 @@ async function manageDependencies(options) {
 
   if (options.check) {
     console.log(chalk.cyan('🔍 Checking for outdated packages...\n'));
-    
+
     const services = ['nova-api', 'nova-core', 'nova-comms'];
-    
+
     for (const service of services) {
       const servicePath = path.join(projectRoot, service);
       if (existsSync(servicePath)) {
@@ -449,9 +450,9 @@ async function manageDependencies(options) {
 
   if (options.audit) {
     console.log(chalk.cyan('🔒 Running security audit...\n'));
-    
+
     const services = ['nova-api', 'nova-core', 'nova-comms'];
-    
+
     for (const service of services) {
       const servicePath = path.join(projectRoot, service);
       if (existsSync(servicePath)) {
@@ -467,25 +468,25 @@ async function manageDependencies(options) {
 
   if (options.update) {
     console.log(chalk.cyan('📦 Updating packages...\n'));
-    
+
     const { confirm } = await inquirer.prompt([
       {
         type: 'confirm',
         name: 'confirm',
         message: 'This will update all packages. Continue?',
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     if (confirm) {
       const services = ['nova-api', 'nova-core', 'nova-comms'];
-      
+
       for (const service of services) {
         const servicePath = path.join(projectRoot, service);
         if (existsSync(servicePath)) {
           const spinner = createSpinner(`Updating ${service} packages...`);
           spinner.start();
-          
+
           try {
             await runCommand('npm', ['update'], { cwd: servicePath });
             spinner.succeed(`${service} packages updated`);
@@ -499,25 +500,25 @@ async function manageDependencies(options) {
 
   if (options.clean) {
     console.log(chalk.cyan('🧹 Cleaning and reinstalling dependencies...\n'));
-    
+
     const { confirm } = await inquirer.prompt([
       {
         type: 'confirm',
         name: 'confirm',
         message: 'This will delete node_modules and reinstall. Continue?',
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     if (confirm) {
       const services = ['nova-api', 'nova-core', 'nova-comms'];
-      
+
       for (const service of services) {
         const servicePath = path.join(projectRoot, service);
         if (existsSync(servicePath)) {
           const spinner = createSpinner(`Cleaning ${service}...`);
           spinner.start();
-          
+
           try {
             await runCommand('rm', ['-rf', 'node_modules'], { cwd: servicePath });
             await runCommand('npm', ['install'], { cwd: servicePath });
@@ -537,7 +538,7 @@ async function databaseTools(options) {
 
   if (options.migrate) {
     console.log(chalk.cyan('📊 Running database migrations...\n'));
-    
+
     try {
       await runCommand('npm', ['run', 'migrate'], { cwd: projectRoot });
       logger.success('✅ Migrations completed');
@@ -549,7 +550,7 @@ async function databaseTools(options) {
 
   if (options.seed) {
     console.log(chalk.cyan('🌱 Seeding database...\n'));
-    
+
     try {
       await runCommand('npm', ['run', 'seed'], { cwd: projectRoot });
       logger.success('✅ Database seeded');
@@ -561,14 +562,14 @@ async function databaseTools(options) {
 
   if (options.reset) {
     console.log(chalk.cyan('🔄 Resetting database...\n'));
-    
+
     const { confirm } = await inquirer.prompt([
       {
         type: 'confirm',
         name: 'confirm',
         message: 'This will delete all data. Continue?',
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     if (confirm) {
@@ -584,11 +585,11 @@ async function databaseTools(options) {
 
   if (options.studio) {
     console.log(chalk.cyan('🎨 Opening database studio...\n'));
-    
+
     try {
-      await runCommand('npm', ['run', 'db:studio'], { 
+      await runCommand('npm', ['run', 'db:studio'], {
         cwd: projectRoot,
-        stdio: 'inherit'
+        stdio: 'inherit',
       });
     } catch (error) {
       logger.error('Failed to open database studio');
@@ -601,15 +602,15 @@ async function generateCode(type, options) {
   console.log(chalk.cyan(`🎭 Generating ${type}...\n`));
 
   const projectRoot = getProjectRoot();
-  
+
   if (!options.name) {
     const { name } = await inquirer.prompt([
       {
         type: 'input',
         name: 'name',
         message: `Enter ${type} name:`,
-        validate: (input) => input.trim() !== '' || 'Name is required'
-      }
+        validate: (input) => input.trim() !== '' || 'Name is required',
+      },
     ]);
     options.name = name;
   }
@@ -670,7 +671,10 @@ export default ${componentName};
 
   require('fs').writeFileSync(path.join(componentPath, `${componentName}.tsx`), componentContent);
   require('fs').writeFileSync(path.join(componentPath, `${componentName}.css`), cssContent);
-  require('fs').writeFileSync(path.join(componentPath, 'index.ts'), `export { default } from './${componentName}';`);
+  require('fs').writeFileSync(
+    path.join(componentPath, 'index.ts'),
+    `export { default } from './${componentName}';`,
+  );
 }
 
 // Generate API route
@@ -770,7 +774,7 @@ export default ${modelName};
 async function generateAPI(options, projectRoot) {
   // This would generate both route and controller
   await generateRoute(options, projectRoot);
-  
+
   // Generate controller
   const controllerName = options.name;
   const targetDir = 'nova-api/controllers';
@@ -844,7 +848,7 @@ async function manageDocs(options) {
 
   if (options.generate) {
     console.log(chalk.cyan('📚 Generating documentation...\n'));
-    
+
     const spinner = createSpinner('Generating API documentation...');
     spinner.start();
 
@@ -852,7 +856,7 @@ async function manageDocs(options) {
       // Generate JSDoc documentation
       await runCommand('npm', ['run', 'docs:generate'], { cwd: projectRoot });
       spinner.succeed('Documentation generated');
-      
+
       logger.success('✅ Documentation generated in ./docs');
     } catch (error) {
       spinner.fail('Documentation generation failed');
@@ -862,7 +866,7 @@ async function manageDocs(options) {
 
   if (options.serve) {
     console.log(chalk.cyan('📖 Starting documentation server...\n'));
-    
+
     const port = options.port;
     const docsPath = path.join(projectRoot, 'docs');
 
@@ -877,7 +881,7 @@ async function manageDocs(options) {
 
     // Start simple HTTP server
     const server = spawn('npx', ['http-server', docsPath, '-p', port, '-o'], {
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
 
     process.on('SIGINT', () => {
@@ -891,18 +895,14 @@ async function manageDocs(options) {
 function displayServiceStatus(status) {
   const table = new Table({
     head: ['Service', 'Status', 'Port'],
-    colWidths: [15, 15, 10]
+    colWidths: [15, 15, 10],
   });
 
   for (const [key, service] of Object.entries(status)) {
     const statusColor = service.status === 'running' ? chalk.green : chalk.red;
     const statusIcon = service.status === 'running' ? '🟢' : '🔴';
-    
-    table.push([
-      service.name,
-      statusColor(`${statusIcon} ${service.status}`),
-      service.port
-    ]);
+
+    table.push([service.name, statusColor(`${statusIcon} ${service.status}`), service.port]);
   }
 
   console.log(table.toString());

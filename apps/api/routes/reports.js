@@ -9,7 +9,7 @@ const router = express.Router();
 async function generateSystemInsights() {
   try {
     const insights = [];
-    
+
     // Analyze ticket volume trends
     const ticketTrends = await db.query(`
       SELECT 
@@ -20,23 +20,26 @@ async function generateSystemInsights() {
       GROUP BY day
       ORDER BY day
     `);
-    
+
     if (ticketTrends.rows.length > 1) {
       const recent = ticketTrends.rows[ticketTrends.rows.length - 1].count;
       const previous = ticketTrends.rows[ticketTrends.rows.length - 2].count;
-      const change = ((recent - previous) / previous * 100).toFixed(1);
-      
+      const change = (((recent - previous) / previous) * 100).toFixed(1);
+
       if (Math.abs(change) > 20) {
         insights.push({
           id: Date.now() + 1,
           type: 'trend',
           severity: Math.abs(change) > 50 ? 'high' : 'medium',
           message: `Ticket volume ${change > 0 ? 'increased' : 'decreased'} by ${Math.abs(change)}% today`,
-          recommendation: change > 0 ? 'Consider increasing support staff coverage' : 'Current staffing levels are adequate'
+          recommendation:
+            change > 0
+              ? 'Consider increasing support staff coverage'
+              : 'Current staffing levels are adequate',
         });
       }
     }
-    
+
     // Analyze resolution times
     const avgResolutionTime = await db.query(`
       SELECT AVG(EXTRACT(EPOCH FROM (resolved_at - created_at))/3600) as avg_hours
@@ -44,17 +47,17 @@ async function generateSystemInsights() {
       WHERE resolved_at IS NOT NULL 
       AND created_at >= NOW() - INTERVAL '7 days'
     `);
-    
+
     if (avgResolutionTime.rows[0]?.avg_hours > 24) {
       insights.push({
         id: Date.now() + 2,
         type: 'performance',
         severity: avgResolutionTime.rows[0].avg_hours > 48 ? 'high' : 'medium',
         message: `Average resolution time is ${avgResolutionTime.rows[0].avg_hours.toFixed(1)} hours`,
-        recommendation: 'Review ticket assignment and escalation processes'
+        recommendation: 'Review ticket assignment and escalation processes',
       });
     }
-    
+
     // Analyze user activity patterns
     const peakHours = await db.query(`
       SELECT 
@@ -66,17 +69,17 @@ async function generateSystemInsights() {
       ORDER BY count DESC
       LIMIT 1
     `);
-    
+
     if (peakHours.rows.length > 0) {
       insights.push({
         id: Date.now() + 3,
         type: 'pattern',
         severity: 'info',
         message: `Peak activity occurs at ${peakHours.rows[0].hour}:00 with ${peakHours.rows[0].count} tickets`,
-        recommendation: 'Ensure adequate staffing during peak hours'
+        recommendation: 'Ensure adequate staffing during peak hours',
       });
     }
-    
+
     // Analyze top issue categories
     const topCategories = await db.query(`
       SELECT system, COUNT(*) as count
@@ -86,27 +89,29 @@ async function generateSystemInsights() {
       ORDER BY count DESC
       LIMIT 3
     `);
-    
+
     if (topCategories.rows.length > 0) {
       insights.push({
         id: Date.now() + 4,
         type: 'category',
         severity: 'info',
-        message: `Top issue categories: ${topCategories.rows.map(r => `${r.system} (${r.count})`).join(', ')}`,
-        recommendation: 'Consider creating knowledge base articles for common issues'
+        message: `Top issue categories: ${topCategories.rows.map((r) => `${r.system} (${r.count})`).join(', ')}`,
+        recommendation: 'Consider creating knowledge base articles for common issues',
       });
     }
-    
+
     return insights;
   } catch (error) {
     console.error('Error generating insights:', error);
-    return [{
-      id: Date.now(),
-      type: 'error',
-      severity: 'low',
-      message: 'Unable to generate insights at this time',
-      recommendation: 'Check system logs for details'
-    }];
+    return [
+      {
+        id: Date.now(),
+        type: 'error',
+        severity: 'low',
+        message: 'Unable to generate insights at this time',
+        recommendation: 'Check system logs for details',
+      },
+    ];
   }
 }
 
@@ -138,7 +143,7 @@ router.get('/usage', async (req, res) => {
     res.json({
       users: parseInt(userRows[0].count, 10),
       kiosks: parseInt(kioskRows[0].count, 10),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     console.error('Database query error:', err);
@@ -193,7 +198,9 @@ router.get('/vip-heatmap', async (req, res) => {
     `);
     res.json({ success: true, heatmap: rows });
   } catch (err) {
-    res.status(500).json({ success:false, error:'Failed to load heatmap', errorCode:'HEATMAP_ERROR' });
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to load heatmap', errorCode: 'HEATMAP_ERROR' });
   }
 });
 

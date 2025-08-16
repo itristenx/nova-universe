@@ -4,13 +4,11 @@ export default {
   transform: {},
   globals: {
     'ts-jest': {
-      useESM: true
-    }
+      useESM: true,
+    },
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  testMatch: [
-    '**/test/**/*.test.js'
-  ]
+  testMatch: ['**/test/**/*.test.js'],
 };

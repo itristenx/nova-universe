@@ -9,12 +9,14 @@ The Nova CLI provides a comprehensive set of tools for developers and administra
 ## Features
 
 ✨ **Modern Design**
+
 - Beautiful ASCII art branding
 - Colored output with intuitive icons
 - Interactive prompts and wizards
 - Progress indicators and spinners
 
 🚀 **Comprehensive Commands**
+
 - **Setup**: Interactive platform initialization
 - **Service Management**: Start, stop, restart, and monitor services
 - **User Management**: Create, update, delete, and manage users
@@ -26,6 +28,7 @@ The Nova CLI provides a comprehensive set of tools for developers and administra
 - **Dashboard**: Web-based monitoring interface
 
 🛠 **Developer Experience**
+
 - Tab completion support
 - Contextual help for all commands
 - Error handling with helpful messages
@@ -186,10 +189,12 @@ npm run nova -- dashboard open
 ## Configuration
 
 The CLI stores its configuration in:
+
 - **macOS/Linux**: `~/.config/nova-cli/config.json`
 - **Windows**: `%APPDATA%/nova-cli/config.json`
 
 Default configuration:
+
 ```json
 {
   "apiUrl": "http://localhost:3000",
@@ -249,6 +254,7 @@ cli/
 ### Common Issues
 
 **CLI not responding**
+
 ```bash
 # Check if all dependencies are installed
 npm install
@@ -258,12 +264,14 @@ DEBUG=* npm run nova -- --help
 ```
 
 **Permission errors**
+
 ```bash
 # Make CLI executable
 chmod +x cli/index.js
 ```
 
 **Module import errors**
+
 ```bash
 # Verify ES modules are enabled
 # Check package.json has "type": "module"
@@ -277,4 +285,4 @@ chmod +x cli/index.js
 
 ---
 
-*Built with ❤️ for the Nova Universe platform*
+_Built with ❤️ for the Nova Universe platform_

@@ -3,30 +3,42 @@
  * CSS utilities and type definitions for typography components
  */
 
-import { typographySystem } from '../typography'
+import { typographySystem } from '../typography';
 
 /**
  * Typography variant types
  */
-export type TypographyVariant = keyof typeof typographySystem.scale
-export type TypographyElement = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span' | 'div' | 'label' | 'code' | 'pre'
+export type TypographyVariant = keyof typeof typographySystem.scale;
+export type TypographyElement =
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'h4'
+  | 'h5'
+  | 'h6'
+  | 'p'
+  | 'span'
+  | 'div'
+  | 'label'
+  | 'code'
+  | 'pre';
 
 /**
  * Typography component props interface
  */
 export interface TypographyProps {
-  variant: TypographyVariant
-  as?: TypographyElement
-  children?: any
-  className?: string
+  variant: TypographyVariant;
+  as?: TypographyElement;
+  children?: any;
+  className?: string;
 }
 
 /**
  * Generate CSS classes for typography variants
  */
 export function generateTypographyCSS(): string {
-  const cssRules: string[] = []
-  
+  const cssRules: string[] = [];
+
   // Generate base typography classes
   Object.entries(typographySystem.scale).forEach(([variant, styles]) => {
     cssRules.push(`
@@ -36,9 +48,9 @@ export function generateTypographyCSS(): string {
   letter-spacing: ${styles.letterSpacing};
   font-weight: ${styles.fontWeight};
   font-family: ${styles.fontFamily};
-}`)
-  })
-  
+}`);
+  });
+
   // Generate responsive typography classes
   Object.entries(typographySystem.responsive.mobile).forEach(([variant, styles]) => {
     cssRules.push(`
@@ -46,9 +58,9 @@ export function generateTypographyCSS(): string {
   .text-${variant} {
     font-size: ${styles.fontSize};
   }
-}`)
-  })
-  
+}`);
+  });
+
   // Generate semantic utility classes
   cssRules.push(`
 /* Semantic Typography Utilities */
@@ -83,28 +95,28 @@ export function generateTypographyCSS(): string {
 .typography-code-block {
   @apply text-code-md p-4 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-x-auto;
 }
-`)
-  
-  return cssRules.join('\n')
+`);
+
+  return cssRules.join('\n');
 }
 
 /**
  * Helper function to determine default HTML element for a variant
  */
 export function getDefaultElement(variant: TypographyVariant): TypographyElement {
-  const variantStr = String(variant)
-  
-  if (variantStr.startsWith('display-')) return 'h1'
-  if (variantStr.startsWith('heading-xl')) return 'h1'
-  if (variantStr.startsWith('heading-lg')) return 'h2'
-  if (variantStr.startsWith('heading-md')) return 'h3'
-  if (variantStr.startsWith('heading-sm')) return 'h4'
-  if (variantStr.startsWith('heading-xs')) return 'h5'
-  if (variantStr.startsWith('body-')) return 'p'
-  if (variantStr.startsWith('label-')) return 'label'
-  if (variantStr.startsWith('code-')) return 'code'
-  if (variantStr === 'caption') return 'span'
-  return 'p'
+  const variantStr = String(variant);
+
+  if (variantStr.startsWith('display-')) return 'h1';
+  if (variantStr.startsWith('heading-xl')) return 'h1';
+  if (variantStr.startsWith('heading-lg')) return 'h2';
+  if (variantStr.startsWith('heading-md')) return 'h3';
+  if (variantStr.startsWith('heading-sm')) return 'h4';
+  if (variantStr.startsWith('heading-xs')) return 'h5';
+  if (variantStr.startsWith('body-')) return 'p';
+  if (variantStr.startsWith('label-')) return 'label';
+  if (variantStr.startsWith('code-')) return 'code';
+  if (variantStr === 'caption') return 'span';
+  return 'p';
 }
 
 /**
@@ -116,46 +128,46 @@ export const semanticMappings = {
     md: 'display-md' as TypographyVariant,
     lg: 'display-lg' as TypographyVariant,
     xl: 'display-xl' as TypographyVariant,
-    '2xl': 'display-2xl' as TypographyVariant
+    '2xl': 'display-2xl' as TypographyVariant,
   },
   heading: {
     xs: 'heading-xs' as TypographyVariant,
     sm: 'heading-sm' as TypographyVariant,
     md: 'heading-md' as TypographyVariant,
     lg: 'heading-lg' as TypographyVariant,
-    xl: 'heading-xl' as TypographyVariant
+    xl: 'heading-xl' as TypographyVariant,
   },
   body: {
     xs: 'body-xs' as TypographyVariant,
     sm: 'body-sm' as TypographyVariant,
     md: 'body-md' as TypographyVariant,
     lg: 'body-lg' as TypographyVariant,
-    xl: 'body-xl' as TypographyVariant
+    xl: 'body-xl' as TypographyVariant,
   },
   label: {
     sm: 'label-sm' as TypographyVariant,
     md: 'label-md' as TypographyVariant,
-    lg: 'label-lg' as TypographyVariant
+    lg: 'label-lg' as TypographyVariant,
   },
   code: {
     sm: 'code-sm' as TypographyVariant,
     md: 'code-md' as TypographyVariant,
-    lg: 'code-lg' as TypographyVariant
-  }
-}
+    lg: 'code-lg' as TypographyVariant,
+  },
+};
 
 /**
  * Get typography class name for a variant
  */
 export function getTypographyClass(variant: TypographyVariant): string {
-  return `text-${variant}`
+  return `text-${variant}`;
 }
 
 /**
  * Get typography styles object for a variant
  */
 export function getTypographyStyles(variant: TypographyVariant) {
-  return typographySystem.scale[variant]
+  return typographySystem.scale[variant];
 }
 
 /**
@@ -168,10 +180,10 @@ export const typographyCustomProperties = `
   --font-family-body: ${typographySystem.fontFamily.body.join(', ')};
   --font-family-mono: ${typographySystem.fontFamily.mono.join(', ')};
 }
-`
+`;
 
 // Export the generated CSS for use in applications
-export const typographyCSS = generateTypographyCSS()
+export const typographyCSS = generateTypographyCSS();
 
 // Export the typography system
-export { typographySystem } from '../typography'
+export { typographySystem } from '../typography';

@@ -16,9 +16,9 @@ const STATUS_PAGES_ENABLED = process.env.FEATURE_STATUS_PAGES === 'true';
 
 // GET /status/summary
 router.get('/summary', (req, res) => {
-  db.all("SELECT key, value FROM config", (err, rows) => {
+  db.all('SELECT key, value FROM config', (err, rows) => {
     if (err) return res.status(500).json({ success: false, error: 'DB error' });
-    const cfg = Object.fromEntries((rows || []).map(r => [r.key, r.value]));
+    const cfg = Object.fromEntries((rows || []).map((r) => [r.key, r.value]));
     const currentStatus = cfg.currentStatus || 'operational';
 
     res.json({
@@ -27,9 +27,9 @@ router.get('/summary', (req, res) => {
       components: [
         { id: 'api', name: 'API', status: 'operational' },
         { id: 'db', name: 'Database', status: 'operational' },
-        { id: 'notifications', name: 'Notifications', status: 'operational' }
+        { id: 'notifications', name: 'Notifications', status: 'operational' },
       ],
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
   });
 });
@@ -56,7 +56,7 @@ router.get('/status-pages/:slug', async (req, res) => {
          JOIN nova_monitors m ON m.id = sps.monitor_id
          LEFT JOIN nova_monitor_summary sms ON sms.id = m.id
          WHERE sps.status_page_id = $1`,
-        [page.id]
+        [page.id],
       );
       monitors = ms?.rows || [];
       const inc = await db.query?.(
@@ -64,11 +64,13 @@ router.get('/status-pages/:slug', async (req, res) => {
          FROM nova_status_page_incidents
          WHERE status_page_id = $1
          ORDER BY created_at DESC LIMIT 50`,
-        [page.id]
+        [page.id],
       );
       incidents = inc?.rows || [];
     } catch {}
-    const html = sps ? await sps.generateStatusPageHTML(page, monitors, incidents) : '<!doctype html><html><body><h1>Status</h1></body></html>';
+    const html = sps
+      ? await sps.generateStatusPageHTML(page, monitors, incidents)
+      : '<!doctype html><html><body><h1>Status</h1></body></html>';
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
   } catch (error) {
@@ -97,7 +99,7 @@ router.get('/pages/:slug', async (req, res) => {
          JOIN nova_monitors m ON m.id = sps.monitor_id
          LEFT JOIN nova_monitor_summary sms ON sms.id = m.id
          WHERE sps.status_page_id = $1`,
-        [page.id]
+        [page.id],
       );
       monitors = ms?.rows || [];
       const inc = await db.query?.(
@@ -105,7 +107,7 @@ router.get('/pages/:slug', async (req, res) => {
          FROM nova_status_page_incidents
          WHERE status_page_id = $1
          ORDER BY created_at DESC LIMIT 50`,
-        [page.id]
+        [page.id],
       );
       incidents = inc?.rows || [];
     } catch {}

@@ -22,4 +22,3 @@ describe('Status Pages', () => {
     expect(res.statusCode).toBe(404);
   });
 });
-

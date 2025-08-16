@@ -8,14 +8,14 @@ import db from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
-import { 
-  startConversation, 
-  sendMessage, 
-  endConversation, 
+import {
+  startConversation,
+  sendMessage,
+  endConversation,
   getConversationHistory,
   createEscalation,
   handleMCPRequest,
-  initializeMCPServer 
+  initializeMCPServer,
 } from '../utils/cosmo.js';
 
 const router = express.Router();
@@ -81,13 +81,14 @@ const router = express.Router();
  *                   items:
  *                     type: string
  */
-router.post('/conversation/start',
+router.post(
+  '/conversation/start',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20), // 20 conversations per 15 minutes
   [
     body('context.module').optional().isIn(['pulse', 'orbit', 'comms', 'beacon', 'core']),
     body('context.userRole').optional().isIn(['user', 'technician', 'admin']),
-    body('initialMessage').optional().isLength({ max: 2000 })
+    body('initialMessage').optional().isLength({ max: 2000 }),
   ],
   async (req, res) => {
     try {
@@ -96,12 +97,12 @@ router.post('/conversation/start',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
       const { context = {}, initialMessage } = req.body;
-      
+
       // Enhanced context with user info from JWT
       const enhancedContext = {
         ...context,
@@ -109,7 +110,7 @@ router.post('/conversation/start',
         userName: req.user.name,
         userRole: context.userRole || req.user.role,
         tenantId: req.user.tenantId || 'default',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       const result = await startConversation(enhancedContext, initialMessage);
@@ -120,18 +121,20 @@ router.post('/conversation/start',
         sessionId: result.sessionId,
         context: enhancedContext,
         availableTools: result.availableTools || [],
-        message: result.initialResponse || 'Hello! I\'m Cosmo, your Nova AI assistant. How can I help you today?',
-        timestamp: new Date().toISOString()
+        message:
+          result.initialResponse ||
+          "Hello! I'm Cosmo, your Nova AI assistant. How can I help you today?",
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Failed to start conversation:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to start conversation',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -181,12 +184,15 @@ router.post('/conversation/start',
  *       200:
  *         description: Message sent and response received
  */
-router.post('/conversation/:id/send',
+router.post(
+  '/conversation/:id/send',
   authenticateJWT,
   createRateLimit(60 * 1000, 30), // 30 messages per minute
   [
-    body('message').isLength({ min: 1, max: 2000 }).withMessage('Message must be 1-2000 characters'),
-    body('enableTools').optional().isBoolean()
+    body('message')
+      .isLength({ min: 1, max: 2000 })
+      .withMessage('Message must be 1-2000 characters'),
+    body('enableTools').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
@@ -195,7 +201,7 @@ router.post('/conversation/:id/send',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -207,7 +213,7 @@ router.post('/conversation/:id/send',
         attachments,
         enableTools,
         userId: req.user.id,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       res.json({
@@ -216,17 +222,17 @@ router.post('/conversation/:id/send',
         response: result.response,
         toolsUsed: result.toolsUsed || [],
         suggestions: result.suggestions || [],
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Failed to send message:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to send message',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -251,7 +257,8 @@ router.post('/conversation/:id/send',
  *           default: 50
  *           maximum: 200
  */
-router.get('/conversation/:id',
+router.get(
+  '/conversation/:id',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100), // 100 requests per 15 minutes
   async (req, res) => {
@@ -261,13 +268,13 @@ router.get('/conversation/:id',
 
       const conversation = await getConversationHistory(conversationId, {
         userId: req.user.id,
-        limit: Math.min(parseInt(limit), 200)
+        limit: Math.min(parseInt(limit), 200),
       });
 
       if (!conversation) {
         return res.status(404).json({
           success: false,
-          error: 'Conversation not found'
+          error: 'Conversation not found',
         });
       }
 
@@ -279,18 +286,18 @@ router.get('/conversation/:id',
           messages: conversation.messages,
           status: conversation.status,
           createdAt: conversation.createdAt,
-          updatedAt: conversation.updatedAt
-        }
+          updatedAt: conversation.updatedAt,
+        },
       });
     } catch (error) {
       logger.error('Failed to get conversation:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve conversation',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -301,7 +308,8 @@ router.get('/conversation/:id',
  *     summary: End and archive conversation
  *     description: End an active conversation and archive the session
  */
-router.delete('/conversation/:id',
+router.delete(
+  '/conversation/:id',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 50), // 50 deletions per 15 minutes
   async (req, res) => {
@@ -310,24 +318,24 @@ router.delete('/conversation/:id',
 
       const result = await endConversation(conversationId, {
         userId: req.user.id,
-        reason: 'user_requested'
+        reason: 'user_requested',
       });
 
       res.json({
         success: true,
         message: 'Conversation ended and archived',
         summary: result.summary || null,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Failed to end conversation:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to end conversation',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -342,12 +350,13 @@ router.delete('/conversation/:id',
  *     summary: Classify user input intent
  *     description: Use AI to classify user input into categories like ticket, command, query
  */
-router.post('/intent/classify',
+router.post(
+  '/intent/classify',
   authenticateJWT,
   createRateLimit(60 * 1000, 100), // 100 classifications per minute
   [
     body('input').isLength({ min: 1, max: 2000 }).withMessage('Input text required'),
-    body('context').optional().isObject()
+    body('context').optional().isObject(),
   ],
   async (req, res) => {
     try {
@@ -356,7 +365,7 @@ router.post('/intent/classify',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -368,8 +377,8 @@ router.post('/intent/classify',
         context: {
           ...context,
           userId: req.user.id,
-          userRole: req.user.role
-        }
+          userRole: req.user.role,
+        },
       });
 
       const classification = JSON.parse(result.content[0].text);
@@ -382,19 +391,19 @@ router.post('/intent/classify',
           category: classification.category,
           priority: classification.priority,
           entities: classification.entities || [],
-          suggestedActions: classification.suggestedActions || []
+          suggestedActions: classification.suggestedActions || [],
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Intent classification failed:', error);
       res.status(500).json({
         success: false,
         error: 'Intent classification failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -405,13 +414,14 @@ router.post('/intent/classify',
  *     summary: Auto-create ticket from classified intent
  *     description: Automatically create a ticket based on intent classification
  */
-router.post('/ticket/auto-create',
+router.post(
+  '/ticket/auto-create',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20), // 20 auto-creations per 15 minutes
   [
     body('input').isLength({ min: 5, max: 2000 }).withMessage('Input text required'),
     body('classification').optional().isObject(),
-    body('requesterInfo').optional().isObject()
+    body('requesterInfo').optional().isObject(),
   ],
   async (req, res) => {
     try {
@@ -420,7 +430,7 @@ router.post('/ticket/auto-create',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -434,9 +444,9 @@ router.post('/ticket/auto-create',
           ...requesterInfo,
           userId: req.user.id,
           userName: req.user.name,
-          userEmail: req.user.email
+          userEmail: req.user.email,
         },
-        useAI: true
+        useAI: true,
       });
 
       const ticket = JSON.parse(result.content[0].text);
@@ -451,20 +461,20 @@ router.post('/ticket/auto-create',
           priority: ticket.priority,
           status: ticket.status,
           assignedTo: ticket.assignedTo,
-          estimatedResolution: ticket.estimatedResolution
+          estimatedResolution: ticket.estimatedResolution,
         },
         aiAnalysis: ticket.aiAnalysis || null,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Auto ticket creation failed:', error);
       res.status(500).json({
         success: false,
         error: 'Auto ticket creation failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -479,14 +489,15 @@ router.post('/ticket/auto-create',
  *     summary: Semantic knowledge base search
  *     description: AI-powered semantic search of Nova Lore knowledge base
  */
-router.post('/lore/query',
+router.post(
+  '/lore/query',
   authenticateJWT,
   createRateLimit(60 * 1000, 50), // 50 queries per minute
   [
     body('query').isLength({ min: 3, max: 500 }).withMessage('Query must be 3-500 characters'),
     body('context').optional().isObject(),
     body('limit').optional().isInt({ min: 1, max: 20 }),
-    body('includeAttachments').optional().isBoolean()
+    body('includeAttachments').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
@@ -495,7 +506,7 @@ router.post('/lore/query',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -508,10 +519,10 @@ router.post('/lore/query',
           ...context,
           userId: req.user.id,
           userRole: req.user.role,
-          tenantId: req.user.tenantId
+          tenantId: req.user.tenantId,
         },
         limit,
-        includeAttachments
+        includeAttachments,
       });
 
       const searchResults = JSON.parse(result.content[0].text);
@@ -522,17 +533,17 @@ router.post('/lore/query',
         totalResults: searchResults.totalResults || 0,
         searchTime: searchResults.searchTime || 0,
         suggestions: searchResults.suggestions || [],
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Knowledge search failed:', error);
       res.status(500).json({
         success: false,
         error: 'Knowledge search failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -543,7 +554,8 @@ router.post('/lore/query',
  *     summary: Submit feedback on AI results
  *     description: Submit feedback to improve AI search and recommendations
  */
-router.post('/lore/feedback',
+router.post(
+  '/lore/feedback',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100), // 100 feedback submissions per 15 minutes
   [
@@ -551,7 +563,7 @@ router.post('/lore/feedback',
     body('resultId').isString().withMessage('Result ID required'),
     body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be 1-5'),
     body('feedback').optional().isLength({ max: 1000 }),
-    body('helpful').isBoolean().withMessage('Helpful flag required')
+    body('helpful').isBoolean().withMessage('Helpful flag required'),
   ],
   async (req, res) => {
     try {
@@ -560,7 +572,7 @@ router.post('/lore/feedback',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -574,23 +586,23 @@ router.post('/lore/feedback',
         feedback,
         helpful,
         userId: req.user.id,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       res.json({
         success: true,
         message: 'Feedback submitted successfully',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Feedback submission failed:', error);
       res.status(500).json({
         success: false,
         error: 'Feedback submission failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -605,13 +617,14 @@ router.post('/lore/feedback',
  *     summary: Execute predefined workflow
  *     description: Execute a predefined workflow by ID with parameters
  */
-router.post('/workflow/execute',
+router.post(
+  '/workflow/execute',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 30), // 30 workflow executions per 15 minutes
   [
     body('workflowId').isString().withMessage('Workflow ID required'),
     body('parameters').optional().isObject(),
-    body('dryRun').optional().isBoolean()
+    body('dryRun').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
@@ -620,7 +633,7 @@ router.post('/workflow/execute',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -632,9 +645,9 @@ router.post('/workflow/execute',
         parameters: {
           ...parameters,
           executedBy: req.user.id,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
-        dryRun
+        dryRun,
       });
 
       const execution = JSON.parse(result.content[0].text);
@@ -648,19 +661,19 @@ router.post('/workflow/execute',
           steps: execution.steps || [],
           duration: execution.duration,
           output: execution.output,
-          dryRun
+          dryRun,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Workflow execution failed:', error);
       res.status(500).json({
         success: false,
         error: 'Workflow execution failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -671,14 +684,15 @@ router.post('/workflow/execute',
  *     summary: Execute custom ad-hoc workflow
  *     description: Execute a custom workflow defined in the request
  */
-router.post('/workflow/custom',
+router.post(
+  '/workflow/custom',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 10), // 10 custom workflows per 15 minutes
   [
     body('name').isString().withMessage('Workflow name required'),
     body('steps').isArray({ min: 1 }).withMessage('At least one step required'),
     body('parameters').optional().isObject(),
-    body('dryRun').optional().isBoolean()
+    body('dryRun').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
@@ -687,7 +701,7 @@ router.post('/workflow/custom',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -700,9 +714,9 @@ router.post('/workflow/custom',
         parameters: {
           ...parameters,
           createdBy: req.user.id,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
-        dryRun
+        dryRun,
       });
 
       const execution = JSON.parse(result.content[0].text);
@@ -716,19 +730,19 @@ router.post('/workflow/custom',
           steps: execution.steps || [],
           duration: execution.duration,
           output: execution.output,
-          dryRun
+          dryRun,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Custom workflow execution failed:', error);
       res.status(500).json({
         success: false,
         error: 'Custom workflow execution failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -743,15 +757,24 @@ router.post('/workflow/custom',
  *     summary: Grant or deduct XP
  *     description: Award or deduct experience points with optional reason
  */
-router.post('/gamification/xp',
+router.post(
+  '/gamification/xp',
   authenticateJWT,
   createRateLimit(60 * 1000, 50), // 50 XP operations per minute
   [
     body('userId').optional().isString(),
     body('amount').isInt({ min: -1000, max: 1000 }).withMessage('XP amount must be -1000 to 1000'),
     body('reason').optional().isString(),
-    body('category').optional().isIn(['ticket_resolved', 'knowledge_shared', 'feedback_given', 'milestone_reached', 'penalty']),
-    body('metadata').optional().isObject()
+    body('category')
+      .optional()
+      .isIn([
+        'ticket_resolved',
+        'knowledge_shared',
+        'feedback_given',
+        'milestone_reached',
+        'penalty',
+      ]),
+    body('metadata').optional().isObject(),
   ],
   async (req, res) => {
     try {
@@ -760,7 +783,7 @@ router.post('/gamification/xp',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -775,8 +798,8 @@ router.post('/gamification/xp',
         metadata: {
           ...metadata,
           grantedBy: req.user.id,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       });
 
       const xpResult = JSON.parse(result.content[0].text);
@@ -790,19 +813,19 @@ router.post('/gamification/xp',
           levelUp: xpResult.levelUp || false,
           newLevel: xpResult.newLevel,
           badgesEarned: xpResult.badgesEarned || [],
-          reason
+          reason,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('XP operation failed:', error);
       res.status(500).json({
         success: false,
         error: 'XP operation failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -813,7 +836,8 @@ router.post('/gamification/xp',
  *     summary: Get user gamification profile
  *     description: Retrieve user XP, level, badges, and leaderboard position
  */
-router.get('/gamification/profile',
+router.get(
+  '/gamification/profile',
   authenticateJWT,
   createRateLimit(60 * 1000, 100), // 100 profile requests per minute
   async (req, res) => {
@@ -824,7 +848,7 @@ router.get('/gamification/profile',
       const result = await mcpServer.callTool('nova.gamification.get_profile', {
         userId,
         includeLeaderboard: true,
-        includeHistory: false
+        includeHistory: false,
       });
 
       const profile = JSON.parse(result.content[0].text);
@@ -839,19 +863,19 @@ router.get('/gamification/profile',
           achievements: profile.achievements || [],
           leaderboardRank: profile.leaderboardRank,
           streaks: profile.streaks || {},
-          stats: profile.stats || {}
+          stats: profile.stats || {},
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Profile retrieval failed:', error);
       res.status(500).json({
         success: false,
         error: 'Profile retrieval failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -866,7 +890,8 @@ router.get('/gamification/profile',
  *     summary: Register an event hook
  *     description: Register a webhook or API call for specific events
  */
-router.post('/hook/register',
+router.post(
+  '/hook/register',
   authenticateJWT,
   createRateLimit(60 * 60 * 1000, 10), // 10 hook registrations per hour
   [
@@ -875,7 +900,7 @@ router.post('/hook/register',
     body('endpoint').isURL().withMessage('Valid endpoint URL required'),
     body('method').optional().isIn(['GET', 'POST', 'PUT', 'DELETE']),
     body('headers').optional().isObject(),
-    body('active').optional().isBoolean()
+    body('active').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
@@ -884,7 +909,7 @@ router.post('/hook/register',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -899,7 +924,7 @@ router.post('/hook/register',
         headers,
         active,
         registeredBy: req.user.id,
-        tenantId: req.user.tenantId
+        tenantId: req.user.tenantId,
       });
 
       const hook = JSON.parse(result.content[0].text);
@@ -913,19 +938,19 @@ router.post('/hook/register',
           endpoint,
           method,
           active,
-          createdAt: hook.createdAt
+          createdAt: hook.createdAt,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Hook registration failed:', error);
       res.status(500).json({
         success: false,
         error: 'Hook registration failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -975,14 +1000,15 @@ router.post('/hook/register',
  *               userRole:
  *                 type: string
  */
-router.post('/alerts/analyze',
+router.post(
+  '/alerts/analyze',
   authenticateJWT,
   createRateLimit(60 * 1000, 20), // 20 analyses per minute
   [
     body('context').isObject().withMessage('Context object required'),
     body('message').isString().withMessage('Analysis message required'),
     body('module').optional().isIn(['pulse', 'orbit', 'core']),
-    body('userRole').optional().isString()
+    body('userRole').optional().isString(),
   ],
   async (req, res) => {
     try {
@@ -991,7 +1017,7 @@ router.post('/alerts/analyze',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -999,7 +1025,7 @@ router.post('/alerts/analyze',
 
       // Initialize MCP server for analysis
       const mcpServer = await initializeMCPServer();
-      
+
       // Prepare analysis context for Cosmo
       const analysisPayload = {
         userId: req.user.id,
@@ -1008,7 +1034,7 @@ router.post('/alerts/analyze',
         context: {
           ...context,
           tenantId: req.user.tenantId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         message: `${message}\n\nContext: ${JSON.stringify(context, null, 2)}\n\nBased on this information, analyze the situation and recommend one of the following actions:
 1. create_alert - If a new alert should be created
@@ -1016,12 +1042,12 @@ router.post('/alerts/analyze',
 3. suggest_resolution - If you have resolution suggestions but no alert is needed
 4. no_action - If no immediate action is required
 
-Please provide your reasoning, confidence level (0-1), and specific action data if applicable.`
+Please provide your reasoning, confidence level (0-1), and specific action data if applicable.`,
       };
 
       // Call Cosmo for intelligent analysis
       const analysisResult = await mcpServer.callTool('nova.alerts.analyze', analysisPayload);
-      
+
       let analysis;
       try {
         analysis = JSON.parse(analysisResult.content[0].text);
@@ -1032,7 +1058,7 @@ Please provide your reasoning, confidence level (0-1), and specific action data 
           action: 'suggest_resolution',
           reasoning: responseText,
           confidence: 0.7,
-          suggestions: [responseText]
+          suggestions: [responseText],
         };
       }
 
@@ -1043,18 +1069,17 @@ Please provide your reasoning, confidence level (0-1), and specific action data 
         success: true,
         analysis: enhancedAnalysis,
         conversationId: analysisResult.conversationId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Alert analysis failed:', error);
       res.status(500).json({
         success: false,
         error: 'Alert analysis failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -1081,12 +1106,12 @@ async function enhanceAnalysisWithRules(analysis, context, user) {
 
   // Apply security keyword detection
   const securityKeywords = ['security', 'breach', 'malware', 'phishing', 'unauthorized'];
-  if (context.keywords && context.keywords.some(k => securityKeywords.includes(k))) {
+  if (context.keywords && context.keywords.some((k) => securityKeywords.includes(k))) {
     analysis.confidence = Math.min(1.0, analysis.confidence + 0.25);
     if (analysis.action === 'no_action' || analysis.action === 'suggest_resolution') {
       analysis.action = 'create_alert';
       analysis.reasoning += ' Security incident detected - alert creation recommended.';
-      
+
       // Set specific alert data for security incidents
       analysis.alertData = {
         summary: `🔒 Security Alert: ${context.ticketId ? `Ticket #${context.ticketId}` : 'Security Incident'}`,
@@ -1098,25 +1123,25 @@ async function enhanceAnalysisWithRules(analysis, context, user) {
         metadata: {
           cosmoGenerated: true,
           securityIncident: true,
-          detectedKeywords: context.keywords.filter(k => securityKeywords.includes(k))
-        }
+          detectedKeywords: context.keywords.filter((k) => securityKeywords.includes(k)),
+        },
       };
     }
   }
 
   // Apply infrastructure outage detection
   const infraKeywords = ['outage', 'down', 'failed', 'unreachable', 'disconnected'];
-  if (context.keywords && context.keywords.some(k => infraKeywords.includes(k))) {
+  if (context.keywords && context.keywords.some((k) => infraKeywords.includes(k))) {
     if (context.affectedUsers && context.affectedUsers > 5) {
       analysis.confidence = Math.min(1.0, analysis.confidence + 0.2);
       analysis.action = 'escalate_alert';
       analysis.reasoning += ' Infrastructure outage with multiple users affected.';
-      
+
       analysis.escalationData = {
         ticketId: context.ticketId,
         reason: `Infrastructure outage affecting ${context.affectedUsers} users. Cosmo AI analysis: ${analysis.reasoning}`,
         priority: 'critical',
-        serviceId: 'ops-infra-001'
+        serviceId: 'ops-infra-001',
       };
     }
   }
@@ -1124,11 +1149,11 @@ async function enhanceAnalysisWithRules(analysis, context, user) {
   // Set default service mapping based on category
   if (analysis.action === 'create_alert' && !analysis.alertData) {
     const serviceMapping = {
-      'security': 'security-001',
-      'infrastructure': 'ops-infra-001',
-      'network': 'ops-network-001',
-      'software': 'support-l2-001',
-      'hardware': 'ops-infra-001'
+      security: 'security-001',
+      infrastructure: 'ops-infra-001',
+      network: 'ops-network-001',
+      software: 'support-l2-001',
+      hardware: 'ops-infra-001',
     };
 
     analysis.alertData = {
@@ -1140,8 +1165,8 @@ async function enhanceAnalysisWithRules(analysis, context, user) {
       ticketId: context.ticketId,
       metadata: {
         cosmoGenerated: true,
-        confidence: analysis.confidence
-      }
+        confidence: analysis.confidence,
+      },
     };
   }
 
@@ -1156,12 +1181,13 @@ async function enhanceAnalysisWithRules(analysis, context, user) {
  *     summary: Manually trigger a hook
  *     description: Manually trigger a registered hook with test data
  */
-router.post('/hook/trigger',
+router.post(
+  '/hook/trigger',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20), // 20 manual triggers per 15 minutes
   [
     body('hookId').isString().withMessage('Hook ID required'),
-    body('testData').optional().isObject()
+    body('testData').optional().isObject(),
   ],
   async (req, res) => {
     try {
@@ -1170,7 +1196,7 @@ router.post('/hook/trigger',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -1183,8 +1209,8 @@ router.post('/hook/trigger',
           ...testData,
           triggeredBy: req.user.id,
           timestamp: new Date().toISOString(),
-          manual: true
-        }
+          manual: true,
+        },
       });
 
       const triggerResult = JSON.parse(result.content[0].text);
@@ -1196,19 +1222,19 @@ router.post('/hook/trigger',
           status: triggerResult.status,
           responseCode: triggerResult.responseCode,
           responseTime: triggerResult.responseTime,
-          error: triggerResult.error || null
+          error: triggerResult.error || null,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Hook trigger failed:', error);
       res.status(500).json({
         success: false,
         error: 'Hook trigger failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 // ========================================================================
@@ -1223,13 +1249,14 @@ router.post('/hook/trigger',
  *     summary: Start MCP session
  *     description: Initialize a new Model Context Protocol session with available tools
  */
-router.post('/mcp/session',
+router.post(
+  '/mcp/session',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20), // 20 MCP sessions per 15 minutes
   [
     body('tools').optional().isArray(),
     body('context').optional().isObject(),
-    body('sessionName').optional().isString()
+    body('sessionName').optional().isString(),
   ],
   async (req, res) => {
     try {
@@ -1238,7 +1265,7 @@ router.post('/mcp/session',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -1251,9 +1278,9 @@ router.post('/mcp/session',
           ...context,
           userId: req.user.id,
           userRole: req.user.role,
-          tenantId: req.user.tenantId
+          tenantId: req.user.tenantId,
         },
-        sessionName
+        sessionName,
       });
 
       const session = JSON.parse(result.content[0].text);
@@ -1265,19 +1292,19 @@ router.post('/mcp/session',
           availableTools: session.availableTools,
           context: session.context,
           status: 'active',
-          createdAt: session.createdAt
+          createdAt: session.createdAt,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('MCP session creation failed:', error);
       res.status(500).json({
         success: false,
         error: 'MCP session creation failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -1288,13 +1315,14 @@ router.post('/mcp/session',
  *     summary: Execute MCP tool
  *     description: Execute a specific MCP tool with parameters
  */
-router.post('/mcp/tool/:name',
+router.post(
+  '/mcp/tool/:name',
   authenticateJWT,
   createRateLimit(60 * 1000, 100), // 100 tool calls per minute
   [
     body('sessionId').optional().isString(),
     body('parameters').optional().isObject(),
-    body('timeout').optional().isInt({ min: 1000, max: 300000 })
+    body('timeout').optional().isInt({ min: 1000, max: 300000 }),
   ],
   async (req, res) => {
     try {
@@ -1303,7 +1331,7 @@ router.post('/mcp/tool/:name',
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -1311,18 +1339,22 @@ router.post('/mcp/tool/:name',
       const { sessionId, parameters = {}, timeout = 30000 } = req.body;
 
       const mcpServer = await initializeMCPServer();
-      const result = await mcpServer.callTool(toolName, {
-        ...parameters,
-        userId: req.user.id,
-        sessionId
-      }, { timeout });
+      const result = await mcpServer.callTool(
+        toolName,
+        {
+          ...parameters,
+          userId: req.user.id,
+          sessionId,
+        },
+        { timeout },
+      );
 
       res.json({
         success: true,
         tool: toolName,
         result: result.content[0].text,
         executionTime: result.executionTime || 0,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error(`MCP tool ${req.params.name} execution failed:`, error);
@@ -1330,10 +1362,10 @@ router.post('/mcp/tool/:name',
         success: false,
         error: 'MCP tool execution failed',
         tool: req.params.name,
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -1344,7 +1376,8 @@ router.post('/mcp/tool/:name',
  *     summary: Get MCP session context
  *     description: Retrieve MCP session state and available tools
  */
-router.get('/mcp/session/:id',
+router.get(
+  '/mcp/session/:id',
   authenticateJWT,
   createRateLimit(60 * 1000, 100), // 100 session queries per minute
   async (req, res) => {
@@ -1354,7 +1387,7 @@ router.get('/mcp/session/:id',
       const mcpServer = await initializeMCPServer();
       const result = await mcpServer.callTool('nova.mcp.get_session', {
         sessionId,
-        userId: req.user.id
+        userId: req.user.id,
       });
 
       const session = JSON.parse(result.content[0].text);
@@ -1362,7 +1395,7 @@ router.get('/mcp/session/:id',
       if (!session) {
         return res.status(404).json({
           success: false,
-          error: 'MCP session not found'
+          error: 'MCP session not found',
         });
       }
 
@@ -1375,19 +1408,19 @@ router.get('/mcp/session/:id',
           status: session.status,
           callHistory: session.callHistory || [],
           createdAt: session.createdAt,
-          lastActive: session.lastActive
+          lastActive: session.lastActive,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('MCP session retrieval failed:', error);
       res.status(500).json({
         success: false,
         error: 'MCP session retrieval failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -1398,7 +1431,8 @@ router.get('/mcp/session/:id',
  *     summary: End MCP session
  *     description: End and cleanup MCP session
  */
-router.delete('/mcp/session/:id',
+router.delete(
+  '/mcp/session/:id',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 50), // 50 session deletions per 15 minutes
   async (req, res) => {
@@ -1408,24 +1442,24 @@ router.delete('/mcp/session/:id',
       const mcpServer = await initializeMCPServer();
       const result = await mcpServer.callTool('nova.mcp.end_session', {
         sessionId,
-        userId: req.user.id
+        userId: req.user.id,
       });
 
       res.json({
         success: true,
         message: 'MCP session ended successfully',
         sessionId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('MCP session cleanup failed:', error);
       res.status(500).json({
         success: false,
         error: 'MCP session cleanup failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 export default router;

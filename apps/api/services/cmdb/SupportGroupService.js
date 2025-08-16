@@ -4,16 +4,24 @@ async function getCorePrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
     const mod = await import('../../../../prisma/generated/core/index.js');
-    return new mod.PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
-  } catch { return null; }
+    return new mod.PrismaClient({
+      datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+    });
+  } catch {
+    return null;
+  }
 }
 
 async function getCmdbPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
     const mod = await import('../../../../prisma/generated/cmdb/index.js');
-    return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
-  } catch { return null; }
+    return new mod.PrismaClient({
+      datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } },
+    });
+  } catch {
+    return null;
+  }
 }
 
 // Initialize database clients
@@ -45,13 +53,13 @@ class SupportGroupService {
       adGroupDn,
       members = [],
       permissions = [],
-      createdBy
+      createdBy,
     } = data;
 
     // Validate manager exists in core.User
     if (manager) {
       const managerUser = await this.coreDb.user.findUnique({
-        where: { id: manager }
+        where: { id: manager },
       });
       if (!managerUser) {
         throw new Error('Manager user not found');
@@ -61,7 +69,7 @@ class SupportGroupService {
     // Validate escalation group exists
     if (escalationGroup) {
       const escalationGroupExists = await this.cmdbDb.supportGroup.findUnique({
-        where: { id: escalationGroup }
+        where: { id: escalationGroup },
       });
       if (!escalationGroupExists) {
         throw new Error('Escalation group not found');
@@ -84,30 +92,30 @@ class SupportGroupService {
         adGroupDn,
         createdBy,
         members: {
-          create: members.map(member => ({
+          create: members.map((member) => ({
             userId: member.userId,
             role: member.role || 'member',
             isPrimary: member.isPrimary || false,
             startDate: member.startDate,
-            assignedBy: createdBy
-          }))
+            assignedBy: createdBy,
+          })),
         },
         permissions: {
-          create: permissions.map(permission => ({
+          create: permissions.map((permission) => ({
             resource: permission.resource,
             action: permission.action,
             scope: permission.scope,
             conditions: permission.conditions,
-            grantedBy: createdBy
-          }))
-        }
+            grantedBy: createdBy,
+          })),
+        },
       },
       include: {
         members: true,
         permissions: true,
         escalationTarget: true,
-        escalationSource: true
-      }
+        escalationSource: true,
+      },
     });
 
     return supportGroup;
@@ -127,13 +135,13 @@ class SupportGroupService {
       isActive,
       externalId,
       adGroupDn,
-      updatedBy
+      updatedBy,
     } = data;
 
     // Validate manager exists if provided
     if (manager) {
       const managerUser = await this.coreDb.user.findUnique({
-        where: { id: manager }
+        where: { id: manager },
       });
       if (!managerUser) {
         throw new Error('Manager user not found');
@@ -155,14 +163,14 @@ class SupportGroupService {
         isActive,
         externalId,
         adGroupDn,
-        updatedBy
+        updatedBy,
       },
       include: {
         members: true,
         permissions: true,
         escalationTarget: true,
-        escalationSource: true
-      }
+        escalationSource: true,
+      },
     });
 
     return supportGroup;
@@ -171,7 +179,7 @@ class SupportGroupService {
   async deleteSupportGroup(id) {
     // Check if group is referenced by any CIs
     const ciCount = await this.cmdbDb.ciOwnership.count({
-      where: { supportGroupId: id }
+      where: { supportGroupId: id },
     });
 
     if (ciCount > 0) {
@@ -179,7 +187,7 @@ class SupportGroupService {
     }
 
     await this.cmdbDb.supportGroup.delete({
-      where: { id }
+      where: { id },
     });
 
     return { success: true };
@@ -195,10 +203,10 @@ class SupportGroupService {
         escalationSource: true,
         configurationItems: {
           include: {
-            ciType_rel: true
-          }
-        }
-      }
+            ciType_rel: true,
+          },
+        },
+      },
     });
 
     if (!supportGroup) {
@@ -210,26 +218,20 @@ class SupportGroupService {
       supportGroup.members.map(async (member) => {
         const user = await this.coreDb.user.findUnique({
           where: { id: member.userId },
-          select: { id: true, name: true, email: true, department: true }
+          select: { id: true, name: true, email: true, department: true },
         });
         return { ...member, user };
-      })
+      }),
     );
 
     return {
       ...supportGroup,
-      members: enrichedMembers
+      members: enrichedMembers,
     };
   }
 
   async listSupportGroups(filters = {}) {
-    const {
-      type,
-      isActive = true,
-      search,
-      page = 1,
-      limit = 50
-    } = filters;
+    const { type, isActive = true, search, page = 1, limit = 50 } = filters;
 
     const where = {
       isActive,
@@ -237,9 +239,9 @@ class SupportGroupService {
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } }
-        ]
-      })
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
     };
 
     const [supportGroups, total] = await Promise.all([
@@ -250,15 +252,15 @@ class SupportGroupService {
           permissions: true,
           _count: {
             select: {
-              configurationItems: true
-            }
-          }
+              configurationItems: true,
+            },
+          },
         },
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { name: 'asc' }
+        orderBy: { name: 'asc' },
       }),
-      this.cmdbDb.supportGroup.count({ where })
+      this.cmdbDb.supportGroup.count({ where }),
     ]);
 
     return {
@@ -267,8 +269,8 @@ class SupportGroupService {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -282,7 +284,7 @@ class SupportGroupService {
     // Validate user exists in core database
     const user = await this.coreDb.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, email: true }
+      select: { id: true, name: true, email: true },
     });
 
     if (!user) {
@@ -294,9 +296,9 @@ class SupportGroupService {
       where: {
         supportGroupId_userId: {
           supportGroupId,
-          userId
-        }
-      }
+          userId,
+        },
+      },
     });
 
     if (existingMembership) {
@@ -310,8 +312,8 @@ class SupportGroupService {
         role,
         isPrimary,
         startDate,
-        assignedBy
-      }
+        assignedBy,
+      },
     });
 
     return { ...member, user };
@@ -322,9 +324,9 @@ class SupportGroupService {
       where: {
         supportGroupId_userId: {
           supportGroupId,
-          userId
-        }
-      }
+          userId,
+        },
+      },
     });
 
     return { success: true };
@@ -337,15 +339,15 @@ class SupportGroupService {
       where: {
         supportGroupId_userId: {
           supportGroupId,
-          userId
-        }
+          userId,
+        },
       },
       data: {
         role,
         isPrimary,
         endDate,
-        isActive: !endDate
-      }
+        isActive: !endDate,
+      },
     });
 
     return member;
@@ -365,8 +367,8 @@ class SupportGroupService {
         action,
         scope,
         conditions,
-        grantedBy
-      }
+        grantedBy,
+      },
     });
 
     return permission;
@@ -378,9 +380,9 @@ class SupportGroupService {
         supportGroupId_resource_action: {
           supportGroupId,
           resource,
-          action
-        }
-      }
+          action,
+        },
+      },
     });
 
     return { success: true };
@@ -391,30 +393,30 @@ class SupportGroupService {
     const memberships = await this.cmdbDb.supportGroupMember.findMany({
       where: {
         userId,
-        isActive: true
+        isActive: true,
       },
       include: {
         supportGroup: {
           include: {
             permissions: {
-              where: { isActive: true }
-            }
-          }
-        }
-      }
+              where: { isActive: true },
+            },
+          },
+        },
+      },
     });
 
     // Aggregate permissions from all groups
     const permissions = {};
-    memberships.forEach(membership => {
-      membership.supportGroup.permissions.forEach(permission => {
+    memberships.forEach((membership) => {
+      membership.supportGroup.permissions.forEach((permission) => {
         const key = `${permission.resource}:${permission.action}`;
         if (!permissions[key]) {
           permissions[key] = {
             resource: permission.resource,
             action: permission.action,
             scopes: [],
-            conditions: []
+            conditions: [],
           };
         }
         if (permission.scope) {
@@ -431,15 +433,15 @@ class SupportGroupService {
 
   async checkPermission(userId, resource, action, context = {}) {
     const permissions = await this.getUserPermissions(userId);
-    
-    const hasPermission = permissions.some(permission => {
+
+    const hasPermission = permissions.some((permission) => {
       if (permission.resource !== resource || permission.action !== action) {
         return false;
       }
 
       // Check scope restrictions
       if (permission.scopes.length > 0) {
-        const scopeMatch = permission.scopes.some(scope => {
+        const scopeMatch = permission.scopes.some((scope) => {
           // Implement scope checking logic based on context
           if (scope.startsWith('ci_type:')) {
             const allowedType = scope.split(':')[1];
@@ -456,7 +458,7 @@ class SupportGroupService {
 
       // Check additional conditions
       if (permission.conditions.length > 0) {
-        return permission.conditions.every(condition => {
+        return permission.conditions.every((condition) => {
           // Implement condition checking logic
           return this.evaluateCondition(condition, context);
         });

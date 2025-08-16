@@ -59,7 +59,7 @@ export class UptimeKumaClient {
     try {
       const response = await axios.get(`${this.baseUrl}/api/monitor`, {
         headers: this.getHeaders(),
-        timeout: 10000
+        timeout: 10000,
       });
       return response.data.monitors || [];
     } catch (error) {
@@ -75,7 +75,7 @@ export class UptimeKumaClient {
     try {
       const response = await axios.post(`${this.baseUrl}/api/monitor`, monitor, {
         headers: this.getHeaders(),
-        timeout: 10000
+        timeout: 10000,
       });
       return response.data.monitor;
     } catch (error) {
@@ -91,7 +91,7 @@ export class UptimeKumaClient {
     try {
       const response = await axios.put(`${this.baseUrl}/api/monitor/${id}`, updates, {
         headers: this.getHeaders(),
-        timeout: 10000
+        timeout: 10000,
       });
       return response.data.monitor;
     } catch (error) {
@@ -107,7 +107,7 @@ export class UptimeKumaClient {
     try {
       await axios.delete(`${this.baseUrl}/api/monitor/${id}`, {
         headers: this.getHeaders(),
-        timeout: 10000
+        timeout: 10000,
       });
     } catch (error) {
       console.error('Failed to delete monitor in Kuma:', error);
@@ -122,7 +122,7 @@ export class UptimeKumaClient {
     try {
       const response = await axios.get(`${this.baseUrl}/api/monitor/${id}/status`, {
         headers: this.getHeaders(),
-        timeout: 10000
+        timeout: 10000,
       });
       return response.data;
     } catch (error) {
@@ -139,7 +139,7 @@ export class UptimeKumaClient {
       const response = await axios.get(`${this.baseUrl}/api/monitor/${monitorId}/heartbeats`, {
         params: { limit },
         headers: this.getHeaders(),
-        timeout: 10000
+        timeout: 10000,
       });
       return response.data.heartbeats || [];
     } catch (error) {
@@ -155,7 +155,7 @@ export class UptimeKumaClient {
     try {
       const response = await axios.get(`${this.baseUrl}/api/monitor/${monitorId}/uptime`, {
         headers: this.getHeaders(),
-        timeout: 10000
+        timeout: 10000,
       });
       return response.data;
     } catch (error) {
@@ -169,10 +169,14 @@ export class UptimeKumaClient {
    */
   async pauseMonitor(id: number): Promise<void> {
     try {
-      await axios.post(`${this.baseUrl}/api/monitor/${id}/pause`, {}, {
-        headers: this.getHeaders(),
-        timeout: 10000
-      });
+      await axios.post(
+        `${this.baseUrl}/api/monitor/${id}/pause`,
+        {},
+        {
+          headers: this.getHeaders(),
+          timeout: 10000,
+        },
+      );
     } catch (error) {
       console.error('Failed to pause monitor in Kuma:', error);
       throw new Error('Failed to pause monitor');
@@ -184,10 +188,14 @@ export class UptimeKumaClient {
    */
   async resumeMonitor(id: number): Promise<void> {
     try {
-      await axios.post(`${this.baseUrl}/api/monitor/${id}/resume`, {}, {
-        headers: this.getHeaders(),
-        timeout: 10000
-      });
+      await axios.post(
+        `${this.baseUrl}/api/monitor/${id}/resume`,
+        {},
+        {
+          headers: this.getHeaders(),
+          timeout: 10000,
+        },
+      );
     } catch (error) {
       console.error('Failed to resume monitor in Kuma:', error);
       throw new Error('Failed to resume monitor');
@@ -201,7 +209,7 @@ export class UptimeKumaClient {
     try {
       const response = await axios.get(`${this.baseUrl}/api/ping`, {
         headers: this.getHeaders(),
-        timeout: 5000
+        timeout: 5000,
       });
       return response.data.ok === true;
     } catch (error) {
@@ -217,7 +225,7 @@ export class UptimeKumaClient {
     try {
       const response = await axios.get(`${this.baseUrl}/api/info`, {
         headers: this.getHeaders(),
-        timeout: 10000
+        timeout: 10000,
       });
       return response.data;
     } catch (error) {
@@ -229,7 +237,7 @@ export class UptimeKumaClient {
   private getHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'User-Agent': 'Nova-Sentinel/1.0'
+      'User-Agent': 'Nova-Sentinel/1.0',
     };
 
     if (this.apiKey) {
@@ -258,7 +266,7 @@ export async function syncMonitorWithKuma(monitor: any): Promise<void> {
         port: monitor.port,
         interval: monitor.interval,
         timeout: monitor.timeout,
-        active: monitor.status === 'active'
+        active: monitor.status === 'active',
       });
     } else {
       // Create new monitor in Kuma
@@ -270,7 +278,7 @@ export async function syncMonitorWithKuma(monitor: any): Promise<void> {
         port: monitor.port,
         interval: monitor.interval,
         timeout: monitor.timeout,
-        active: monitor.status === 'active'
+        active: monitor.status === 'active',
       });
 
       // Update Nova monitor with Kuma ID
@@ -289,7 +297,7 @@ export async function syncMonitorWithKuma(monitor: any): Promise<void> {
 export async function syncStatusFromKuma(): Promise<void> {
   try {
     const kumaMonitors = await kumaClient.getMonitors();
-    
+
     for (const kumaMonitor of kumaMonitors) {
       try {
         const status = await kumaClient.getMonitorStatus(kumaMonitor.id);
@@ -303,7 +311,7 @@ export async function syncStatusFromKuma(): Promise<void> {
           uptime_24h: uptimeStats.uptime_24h,
           uptime_7d: uptimeStats.uptime_7d,
           uptime_30d: uptimeStats.uptime_30d,
-          avg_response_time: uptimeStats.avg_response_time
+          avg_response_time: uptimeStats.avg_response_time,
         });
       } catch (error) {
         console.error(`Failed to sync status for monitor ${kumaMonitor.id}:`, error);
@@ -328,7 +336,7 @@ export function processKumaWebhook(payload: any): void {
         monitor_id: monitor.id,
         status: heartbeat.status ? 'resolved' : 'open',
         severity: monitor.important ? 'critical' : 'medium',
-        message: heartbeat.msg
+        message: heartbeat.msg,
       });
     } else {
       // Handle status update
@@ -336,7 +344,7 @@ export function processKumaWebhook(payload: any): void {
         monitor_id: monitor.id,
         status: heartbeat.status,
         response_time: heartbeat.duration,
-        timestamp: heartbeat.time
+        timestamp: heartbeat.time,
       });
     }
 

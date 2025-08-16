@@ -349,57 +349,57 @@ export default function KioskStatusDisplay() {
     cpu: 15,
     memory: 68,
     storage: 45,
-    uptime: '7d 14h 32m'
+    uptime: '7d 14h 32m',
   });
   const [networkMetrics, setNetworkMetrics] = useState({
     status: 'online',
     latency: 12,
     bandwidth: '100 Mbps',
-    packets: 1250
+    packets: 1250,
   });
   const [usageStats, setUsageStats] = useState({
     todayTickets: 23,
     activeUsers: 3,
     avgSessionTime: '4m 32s',
-    successRate: 98.5
+    successRate: 98.5,
   });
   const [recentActivity, setRecentActivity] = useState([
     {
       id: 1,
       type: 'success',
       message: 'Ticket #NOV-847123 submitted successfully',
-      time: new Date(Date.now() - 2 * 60 * 1000)
+      time: new Date(Date.now() - 2 * 60 * 1000),
     },
     {
       id: 2,
       type: 'info',
       message: 'User session started from IT Department',
-      time: new Date(Date.now() - 5 * 60 * 1000)
+      time: new Date(Date.now() - 5 * 60 * 1000),
     },
     {
       id: 3,
       type: 'success',
       message: 'System health check completed',
-      time: new Date(Date.now() - 12 * 60 * 1000)
+      time: new Date(Date.now() - 12 * 60 * 1000),
     },
     {
       id: 4,
       type: 'warning',
       message: 'Memory usage above 65% threshold',
-      time: new Date(Date.now() - 18 * 60 * 1000)
+      time: new Date(Date.now() - 18 * 60 * 1000),
     },
     {
       id: 5,
       type: 'success',
       message: 'Network connectivity verified',
-      time: new Date(Date.now() - 25 * 60 * 1000)
+      time: new Date(Date.now() - 25 * 60 * 1000),
     },
     {
       id: 6,
       type: 'info',
       message: 'User session completed - 6m 42s duration',
-      time: new Date(Date.now() - 30 * 60 * 1000)
-    }
+      time: new Date(Date.now() - 30 * 60 * 1000),
+    },
   ]);
 
   // Update time every second
@@ -415,17 +415,17 @@ export default function KioskStatusDisplay() {
   useEffect(() => {
     const metricsTimer = setInterval(() => {
       // Update system metrics
-      setSystemMetrics(prev => ({
+      setSystemMetrics((prev) => ({
         ...prev,
         cpu: Math.max(5, Math.min(95, prev.cpu + (Math.random() - 0.5) * 10)),
-        memory: Math.max(30, Math.min(90, prev.memory + (Math.random() - 0.5) * 5))
+        memory: Math.max(30, Math.min(90, prev.memory + (Math.random() - 0.5) * 5)),
       }));
 
       // Update network metrics
-      setNetworkMetrics(prev => ({
+      setNetworkMetrics((prev) => ({
         ...prev,
         latency: Math.max(8, Math.min(50, prev.latency + (Math.random() - 0.5) * 5)),
-        packets: prev.packets + Math.floor(Math.random() * 10)
+        packets: prev.packets + Math.floor(Math.random() * 10),
       }));
 
       // Randomly add new activity
@@ -434,16 +434,16 @@ export default function KioskStatusDisplay() {
           { type: 'success', message: 'Ticket submitted successfully' },
           { type: 'info', message: 'User session started' },
           { type: 'success', message: 'User session completed' },
-          { type: 'info', message: 'System maintenance completed' }
+          { type: 'info', message: 'System maintenance completed' },
         ];
-        
+
         const newActivity = {
           id: Date.now(),
           ...activities[Math.floor(Math.random() * activities.length)],
-          time: new Date()
+          time: new Date(),
         };
 
-        setRecentActivity(prev => [newActivity, ...prev.slice(0, 9)]);
+        setRecentActivity((prev) => [newActivity, ...prev.slice(0, 9)]);
       }
     }, 5000);
 
@@ -454,17 +454,17 @@ export default function KioskStatusDisplay() {
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     });
   };
 
   const formatActivityTime = (date) => {
     const diff = Date.now() - date.getTime();
     const minutes = Math.floor(diff / 60000);
-    
+
     if (minutes < 1) return 'Just now';
     if (minutes < 60) return `${minutes}m ago`;
-    
+
     const hours = Math.floor(minutes / 60);
     return `${hours}h ago`;
   };
@@ -497,7 +497,7 @@ export default function KioskStatusDisplay() {
             <div className="section-icon section-icon--system">💻</div>
             <h2 className="section-title">System Health</h2>
           </div>
-          
+
           <div className="metric-grid">
             <div className="metric-item">
               <div className="metric-value">{systemMetrics.cpu}%</div>
@@ -518,10 +518,7 @@ export default function KioskStatusDisplay() {
               <span className="progress-label">CPU</span>
               <span className="progress-value">{systemMetrics.cpu}%</span>
             </div>
-            <Progress 
-              value={systemMetrics.cpu} 
-              variant={getProgressColor(systemMetrics.cpu)}
-            />
+            <Progress value={systemMetrics.cpu} variant={getProgressColor(systemMetrics.cpu)} />
           </div>
 
           <div className="progress-item">
@@ -529,8 +526,8 @@ export default function KioskStatusDisplay() {
               <span className="progress-label">Memory</span>
               <span className="progress-value">{systemMetrics.memory}%</span>
             </div>
-            <Progress 
-              value={systemMetrics.memory} 
+            <Progress
+              value={systemMetrics.memory}
               variant={getProgressColor(systemMetrics.memory)}
             />
           </div>
@@ -540,16 +537,19 @@ export default function KioskStatusDisplay() {
               <span className="progress-label">Storage</span>
               <span className="progress-value">{systemMetrics.storage}%</span>
             </div>
-            <Progress 
-              value={systemMetrics.storage} 
+            <Progress
+              value={systemMetrics.storage}
               variant={getProgressColor(systemMetrics.storage, { warning: 80, error: 90 })}
             />
           </div>
 
           <div style={{ textAlign: 'center', marginTop: 'var(--space-4)' }}>
-            <div className={`status-indicator status-indicator--${systemMetrics.cpu < 80 && systemMetrics.memory < 80 ? 'online' : 'warning'}`}>
+            <div
+              className={`status-indicator status-indicator--${systemMetrics.cpu < 80 && systemMetrics.memory < 80 ? 'online' : 'warning'}`}
+            >
               <span className="status-dot"></span>
-              System Running {systemMetrics.cpu < 80 && systemMetrics.memory < 80 ? 'Normally' : 'Under Load'}
+              System Running{' '}
+              {systemMetrics.cpu < 80 && systemMetrics.memory < 80 ? 'Normally' : 'Under Load'}
             </div>
           </div>
         </div>
@@ -564,8 +564,11 @@ export default function KioskStatusDisplay() {
           <div style={{ textAlign: 'center', marginBottom: 'var(--space-4)' }}>
             <div className={`status-indicator status-indicator--${getNetworkStatus()}`}>
               <span className="status-dot"></span>
-              {getNetworkStatus() === 'online' ? 'Connected' : 
-               getNetworkStatus() === 'warning' ? 'Slow Connection' : 'Connection Issues'}
+              {getNetworkStatus() === 'online'
+                ? 'Connected'
+                : getNetworkStatus() === 'warning'
+                  ? 'Slow Connection'
+                  : 'Connection Issues'}
             </div>
           </div>
 
@@ -626,9 +629,11 @@ export default function KioskStatusDisplay() {
           <div className="progress-item">
             <div className="progress-header">
               <span className="progress-label">Daily Capacity</span>
-              <span className="progress-value">{Math.round(usageStats.todayTickets / 50 * 100)}%</span>
+              <span className="progress-value">
+                {Math.round((usageStats.todayTickets / 50) * 100)}%
+              </span>
             </div>
-            <Progress value={usageStats.todayTickets / 50 * 100} variant="info" />
+            <Progress value={(usageStats.todayTickets / 50) * 100} variant="info" />
           </div>
 
           <div className="progress-item">

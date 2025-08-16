@@ -20,18 +20,18 @@ const DAYS = [
   { key: 'thursday', label: 'Thursday' },
   { key: 'friday', label: 'Friday' },
   { key: 'saturday', label: 'Saturday' },
-  { key: 'sunday', label: 'Sunday' }
+  { key: 'sunday', label: 'Sunday' },
 ];
 
 const TIMEZONES = [
   'America/New_York',
-  'America/Chicago', 
+  'America/Chicago',
   'America/Denver',
   'America/Los_Angeles',
   'America/Phoenix',
   'America/Anchorage',
   'Pacific/Honolulu',
-  'UTC'
+  'UTC',
 ];
 
 export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
@@ -40,7 +40,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
   onSave,
   showEnabled = true,
   showTitle = false,
-  showNextOpen = false
+  showNextOpen = false,
 }) => {
   const [localConfig, setLocalConfig] = useState(config);
   const [loading, setLoading] = useState(false);
@@ -76,8 +76,8 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
       ...localConfig,
       schedule: {
         ...localConfig.schedule,
-        [dayKey]: daySchedule
-      }
+        [dayKey]: daySchedule,
+      },
     });
   };
 
@@ -86,7 +86,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
     const newSlot: TimeSlot = { start: '09:00', end: '17:00' };
     updateDaySchedule(dayKey, {
       ...currentDay,
-      slots: [...currentDay.slots, newSlot]
+      slots: [...currentDay.slots, newSlot],
     });
   };
 
@@ -94,18 +94,23 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
     const currentDay = localConfig.schedule[dayKey];
     updateDaySchedule(dayKey, {
       ...currentDay,
-      slots: currentDay.slots.filter((_: TimeSlot, index: number) => index !== slotIndex)
+      slots: currentDay.slots.filter((_: TimeSlot, index: number) => index !== slotIndex),
     });
   };
 
-  const updateTimeSlot = (dayKey: string, slotIndex: number, field: 'start' | 'end', value: string) => {
+  const updateTimeSlot = (
+    dayKey: string,
+    slotIndex: number,
+    field: 'start' | 'end',
+    value: string,
+  ) => {
     const currentDay = localConfig.schedule[dayKey];
-    const updatedSlots = currentDay.slots.map((slot: TimeSlot, index: number) => 
-      index === slotIndex ? { ...slot, [field]: value } : slot
+    const updatedSlots = currentDay.slots.map((slot: TimeSlot, index: number) =>
+      index === slotIndex ? { ...slot, [field]: value } : slot,
     );
     updateDaySchedule(dayKey, {
       ...currentDay,
-      slots: updatedSlots
+      slots: updatedSlots,
     });
   };
 
@@ -113,7 +118,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
     const currentDay = localConfig.schedule[dayKey];
     updateDaySchedule(dayKey, {
       ...currentDay,
-      enabled: !currentDay.enabled
+      enabled: !currentDay.enabled,
     });
   };
 
@@ -122,11 +127,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <Button
-            variant="primary"
-            onClick={handleSave}
-            disabled={loading}
-          >
+          <Button variant="primary" onClick={handleSave} disabled={loading}>
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
@@ -173,30 +174,30 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Timezone
-          </label>
+          <label className="mb-2 block text-sm font-medium text-gray-700">Timezone</label>
           <select
             value={localConfig.timezone || 'America/New_York'}
             onChange={(e) => setLocalConfig({ ...localConfig, timezone: e.target.value })}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border-gray-300 shadow-sm"
             title="Select timezone"
           >
-            {TIMEZONES.map(tz => (
-              <option key={tz} value={tz}>{tz}</option>
+            {TIMEZONES.map((tz) => (
+              <option key={tz} value={tz}>
+                {tz}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="space-y-4">
           <h4 className="text-md font-medium text-gray-900">Weekly Schedule</h4>
-          
+
           {DAYS.map(({ key, label }) => {
             const daySchedule = localConfig.schedule?.[key] || { enabled: false, slots: [] };
-            
+
             return (
-              <div key={key} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
+              <div key={key} className="rounded-lg border border-gray-200 p-4">
+                <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -209,45 +210,42 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                       {label}
                     </label>
                   </div>
-                  
+
                   {daySchedule.enabled && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => addTimeSlot(key)}
-                    >
-                      <PlusIcon className="h-4 w-4 mr-1" />
+                    <Button variant="secondary" size="sm" onClick={() => addTimeSlot(key)}>
+                      <PlusIcon className="mr-1 h-4 w-4" />
                       Add Time Slot
                     </Button>
                   )}
                 </div>
 
-                {daySchedule.enabled && daySchedule.slots.map((slot: TimeSlot, index: number) => (
-                  <div key={index} className="flex items-center space-x-2 mb-2">
-                    <input
-                      type="time"
-                      value={slot.start}
-                      onChange={(e) => updateTimeSlot(key, index, 'start', e.target.value)}
-                      className="rounded border-gray-300 text-sm"
-                      title="Start time"
-                    />
-                    <span className="text-gray-500">to</span>
-                    <input
-                      type="time"
-                      value={slot.end}
-                      onChange={(e) => updateTimeSlot(key, index, 'end', e.target.value)}
-                      className="rounded border-gray-300 text-sm"
-                      title="End time"
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => removeTimeSlot(key, index)}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                {daySchedule.enabled &&
+                  daySchedule.slots.map((slot: TimeSlot, index: number) => (
+                    <div key={index} className="mb-2 flex items-center space-x-2">
+                      <input
+                        type="time"
+                        value={slot.start}
+                        onChange={(e) => updateTimeSlot(key, index, 'start', e.target.value)}
+                        className="rounded border-gray-300 text-sm"
+                        title="Start time"
+                      />
+                      <span className="text-gray-500">to</span>
+                      <input
+                        type="time"
+                        value={slot.end}
+                        onChange={(e) => updateTimeSlot(key, index, 'end', e.target.value)}
+                        className="rounded border-gray-300 text-sm"
+                        title="End time"
+                      />
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => removeTimeSlot(key, index)}
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
 
                 {daySchedule.enabled && daySchedule.slots.length === 0 && (
                   <p className="text-sm text-gray-500 italic">No time slots configured</p>

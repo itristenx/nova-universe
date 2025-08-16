@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CosmoSDK } from './CosmoSDK';
-import { 
-  CosmoConfig, 
-  CosmoContext, 
-  CosmoMessage, 
+import {
+  CosmoConfig,
+  CosmoContext,
+  CosmoMessage,
   CosmoConversation,
   CosmoEvent,
-  CosmoEventType
+  CosmoEventType,
 } from './types';
 
 export interface UseCosmoOptions {
@@ -25,14 +25,17 @@ export interface UseCosmoReturn {
   isLoading: boolean;
   isConnected: boolean;
   error: string | null;
-  
+
   // Actions
   sendMessage: (text: string) => Promise<void>;
   startConversation: (initialMessage?: string) => Promise<void>;
   endConversation: () => Promise<void>;
-  triggerEscalation: (reason: string, level?: 'low' | 'medium' | 'high' | 'critical') => Promise<void>;
+  triggerEscalation: (
+    reason: string,
+    level?: 'low' | 'medium' | 'high' | 'critical',
+  ) => Promise<void>;
   clearError: () => void;
-  
+
   // SDK instance (for advanced usage)
   sdk: CosmoSDK | null;
 }
@@ -40,7 +43,7 @@ export interface UseCosmoReturn {
 export function useCosmo(
   config: CosmoConfig,
   context: CosmoContext,
-  options: UseCosmoOptions = {}
+  options: UseCosmoOptions = {},
 ): UseCosmoReturn {
   const [sdk, setSdk] = useState<CosmoSDK | null>(null);
   const [conversation, setConversation] = useState<CosmoConversation | null>(null);
@@ -48,14 +51,14 @@ export function useCosmo(
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
   // Initialize SDK
   useEffect(() => {
     const cosmoSDK = new CosmoSDK(config);
-    
+
     // Set up event handlers
     cosmoSDK.on('message', (event: CosmoEvent) => {
       const message = event.data.message as CosmoMessage;
@@ -66,7 +69,7 @@ export function useCosmo(
         }
         return [...prev, message];
       });
-      
+
       if (optionsRef.current.onMessage) {
         optionsRef.current.onMessage(message);
       }
@@ -100,19 +103,21 @@ export function useCosmo(
     });
 
     cosmoSDK.on('error', (event: CosmoEvent) => {
-      const errorMessage = typeof event.data === 'string' ? event.data : event.data.error || 'Unknown error';
+      const errorMessage =
+        typeof event.data === 'string' ? event.data : event.data.error || 'Unknown error';
       setError(errorMessage);
-      
+
       if (optionsRef.current.onError) {
         optionsRef.current.onError(event.data);
       }
     });
 
     // Initialize SDK
-    cosmoSDK.initialize(context)
+    cosmoSDK
+      .initialize(context)
       .then(() => {
         setSdk(cosmoSDK);
-        
+
         // Auto-start conversation if enabled
         if (options.autoStart) {
           startConversationInternal(cosmoSDK, options.initialMessage);
@@ -134,7 +139,7 @@ export function useCosmo(
   const startConversationInternal = async (sdkInstance: CosmoSDK, initialMessage?: string) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       await sdkInstance.startConversation(initialMessage);
     } catch (err) {
@@ -145,46 +150,52 @@ export function useCosmo(
     }
   };
 
-  const startConversation = useCallback(async (initialMessage?: string) => {
-    if (!sdk) {
-      setError('SDK not initialized');
-      return;
-    }
-    
-    await startConversationInternal(sdk, initialMessage);
-  }, [sdk]);
+  const startConversation = useCallback(
+    async (initialMessage?: string) => {
+      if (!sdk) {
+        setError('SDK not initialized');
+        return;
+      }
 
-  const sendMessage = useCallback(async (text: string) => {
-    if (!sdk) {
-      setError('SDK not initialized');
-      return;
-    }
-    
-    if (!text.trim()) {
-      return;
-    }
+      await startConversationInternal(sdk, initialMessage);
+    },
+    [sdk],
+  );
 
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      await sdk.sendMessage(text);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [sdk]);
+  const sendMessage = useCallback(
+    async (text: string) => {
+      if (!sdk) {
+        setError('SDK not initialized');
+        return;
+      }
+
+      if (!text.trim()) {
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        await sdk.sendMessage(text);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
+        setError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [sdk],
+  );
 
   const endConversation = useCallback(async () => {
     if (!sdk) {
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       await sdk.endConversation();
     } catch (err) {
@@ -195,27 +206,27 @@ export function useCosmo(
     }
   }, [sdk]);
 
-  const triggerEscalation = useCallback(async (
-    reason: string, 
-    level: 'low' | 'medium' | 'high' | 'critical' = 'medium'
-  ) => {
-    if (!sdk) {
-      setError('SDK not initialized');
-      return;
-    }
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      await sdk.triggerEscalation(reason, level);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to trigger escalation';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [sdk]);
+  const triggerEscalation = useCallback(
+    async (reason: string, level: 'low' | 'medium' | 'high' | 'critical' = 'medium') => {
+      if (!sdk) {
+        setError('SDK not initialized');
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        await sdk.triggerEscalation(reason, level);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to trigger escalation';
+        setError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [sdk],
+  );
 
   const clearError = useCallback(() => {
     setError(null);
@@ -232,6 +243,6 @@ export function useCosmo(
     endConversation,
     triggerEscalation,
     clearError,
-    sdk
+    sdk,
   };
 }

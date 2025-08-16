@@ -10,14 +10,14 @@ import { spawn, exec } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
 import Table from 'cli-table3';
-import { 
-  logger, 
-  createSpinner, 
-  runCommand, 
+import {
+  logger,
+  createSpinner,
+  runCommand,
   getProjectRoot,
   checkServiceStatus,
   formatDuration,
-  sleep
+  sleep,
 } from '../utils/index.js';
 
 export const serviceCommand = new Command('service')
@@ -33,7 +33,7 @@ serviceCommand
   .option('-w, --watch', 'Start services in watch mode')
   .action(async (options) => {
     const projectRoot = getProjectRoot();
-    
+
     try {
       if (options.service) {
         await startSingleService(options.service, projectRoot, options);
@@ -73,7 +73,7 @@ serviceCommand
   .action(async (options) => {
     try {
       console.log(chalk.cyan('🔄 Restarting services...\n'));
-      
+
       // Stop first
       if (options.service) {
         await stopSingleService(options.service, { force: true });
@@ -84,7 +84,7 @@ serviceCommand
         await sleep(2000);
         await startAllServices(getProjectRoot(), {});
       }
-      
+
       logger.success('Services restarted successfully');
     } catch (error) {
       logger.error(`Failed to restart services: ${error.message}`);
@@ -105,7 +105,7 @@ serviceCommand
         await watchServiceStatus();
       } else {
         const status = await checkServiceStatus();
-        
+
         if (options.json) {
           console.log(JSON.stringify(status, null, 2));
         } else {
@@ -139,13 +139,13 @@ async function startAllServices(projectRoot, options) {
   const services = [
     { name: 'api', dir: 'nova-api', command: 'npm', args: ['start'] },
     { name: 'admin', dir: 'nova-core', command: 'npm', args: ['run', 'dev'] },
-    { name: 'comms', dir: 'nova-comms', command: 'npm', args: ['start'] }
+    { name: 'comms', dir: 'nova-comms', command: 'npm', args: ['start'] },
   ];
 
   if (options.detached) {
     // Start services in background
     const tasks = new Listr(
-      services.map(service => ({
+      services.map((service) => ({
         title: `Starting ${service.name}`,
         task: async () => {
           const servicePath = path.join(projectRoot, service.dir);
@@ -153,13 +153,13 @@ async function startAllServices(projectRoot, options) {
             const child = spawn(service.command, service.args, {
               cwd: servicePath,
               detached: true,
-              stdio: 'ignore'
+              stdio: 'ignore',
             });
             child.unref();
           }
-        }
+        },
       })),
-      { concurrent: true }
+      { concurrent: true },
     );
 
     await tasks.run();
@@ -167,19 +167,19 @@ async function startAllServices(projectRoot, options) {
   } else {
     // Start services in foreground with concurrency
     console.log(chalk.cyan('🚀 Starting Nova Universe services...\n'));
-    
+
     const processes = [];
-    
+
     for (const service of services) {
       const servicePath = path.join(projectRoot, service.dir);
       if (existsSync(servicePath)) {
         console.log(chalk.blue(`▶️  Starting ${service.name}...`));
-        
+
         const child = spawn(service.command, service.args, {
           cwd: servicePath,
-          stdio: 'inherit'
+          stdio: 'inherit',
         });
-        
+
         processes.push({ name: service.name, process: child });
       }
     }
@@ -196,11 +196,12 @@ async function startAllServices(projectRoot, options) {
 
     // Wait for all processes
     await Promise.all(
-      processes.map(({ process }) => 
-        new Promise((resolve) => {
-          process.on('close', resolve);
-        })
-      )
+      processes.map(
+        ({ process }) =>
+          new Promise((resolve) => {
+            process.on('close', resolve);
+          }),
+      ),
     );
   }
 }
@@ -210,7 +211,7 @@ async function startSingleService(serviceName, projectRoot, options) {
   const serviceConfig = {
     api: { dir: 'nova-api', command: 'npm', args: ['start'] },
     admin: { dir: 'nova-core', command: 'npm', args: ['run', 'dev'] },
-    comms: { dir: 'nova-comms', command: 'npm', args: ['start'] }
+    comms: { dir: 'nova-comms', command: 'npm', args: ['start'] },
   };
 
   const service = serviceConfig[serviceName];
@@ -229,14 +230,14 @@ async function startSingleService(serviceName, projectRoot, options) {
     const child = spawn(service.command, service.args, {
       cwd: servicePath,
       detached: true,
-      stdio: 'ignore'
+      stdio: 'ignore',
     });
     child.unref();
     logger.success(`${serviceName} started in background`);
   } else {
     const child = spawn(service.command, service.args, {
       cwd: servicePath,
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
 
     process.on('SIGINT', () => {
@@ -259,7 +260,7 @@ async function stopAllServices(options) {
   try {
     // Kill processes by port
     const ports = [3000, 5173, 3001];
-    
+
     for (const port of ports) {
       try {
         if (options.force) {
@@ -285,7 +286,7 @@ async function stopSingleService(serviceName, options) {
   const portMap = {
     api: 3000,
     admin: 5173,
-    comms: 3001
+    comms: 3001,
   };
 
   const port = portMap[serviceName];
@@ -302,7 +303,7 @@ async function stopSingleService(serviceName, options) {
     } else {
       exec(`lsof -ti:${port} | xargs kill -TERM`, { stdio: 'ignore' });
     }
-    
+
     spinner.succeed(`${serviceName} stopped`);
   } catch (error) {
     spinner.fail(`Failed to stop ${serviceName}`);
@@ -314,18 +315,18 @@ async function stopSingleService(serviceName, options) {
 function displayServiceStatus(status) {
   const table = new Table({
     head: ['Service', 'Status', 'Port', 'PID'],
-    colWidths: [15, 10, 8, 10]
+    colWidths: [15, 10, 8, 10],
   });
 
   for (const [key, service] of Object.entries(status)) {
     const statusColor = service.status === 'running' ? chalk.green : chalk.red;
     const statusIcon = service.status === 'running' ? '🟢' : '🔴';
-    
+
     table.push([
       service.name,
       statusColor(`${statusIcon} ${service.status}`),
       service.port,
-      service.pid || 'N/A'
+      service.pid || 'N/A',
     ]);
   }
 
@@ -337,30 +338,34 @@ function displayServiceStatus(status) {
 // Watch service status continuously
 async function watchServiceStatus() {
   console.log(chalk.cyan('👀 Watching service status (Press Ctrl+C to exit)\n'));
-  
+
   let previousStatus = {};
-  
+
   const updateStatus = async () => {
     try {
       const status = await checkServiceStatus();
-      
+
       // Clear screen
       process.stdout.write('\x1B[2J\x1B[0f');
-      
+
       console.log(chalk.cyan('👀 Service Status (Live)\n'));
       console.log(chalk.gray(`Last updated: ${new Date().toLocaleTimeString()}\n`));
-      
+
       displayServiceStatus(status);
-      
+
       // Check for status changes
       for (const [key, service] of Object.entries(status)) {
         const previous = previousStatus[key];
         if (previous && previous.status !== service.status) {
           const icon = service.status === 'running' ? '🟢' : '🔴';
-          console.log(chalk.yellow(`${icon} ${service.name} status changed: ${previous.status} → ${service.status}`));
+          console.log(
+            chalk.yellow(
+              `${icon} ${service.name} status changed: ${previous.status} → ${service.status}`,
+            ),
+          );
         }
       }
-      
+
       previousStatus = status;
     } catch (error) {
       console.error(chalk.red('Error checking status:'), error.message);
@@ -369,10 +374,10 @@ async function watchServiceStatus() {
 
   // Initial update
   await updateStatus();
-  
+
   // Update every 2 seconds
   const interval = setInterval(updateStatus, 2000);
-  
+
   // Cleanup on exit
   process.on('SIGINT', () => {
     clearInterval(interval);
@@ -386,7 +391,7 @@ async function showServiceLogs(options) {
   const logFiles = {
     api: 'nova-api/server.log',
     admin: 'nova-core/dist/server.log',
-    comms: 'nova-comms/server.log'
+    comms: 'nova-comms/server.log',
   };
 
   if (options.service) {
@@ -394,23 +399,23 @@ async function showServiceLogs(options) {
     if (!logFile) {
       throw new Error(`Unknown service: ${options.service}`);
     }
-    
+
     const projectRoot = getProjectRoot();
     const logPath = path.join(projectRoot, logFile);
-    
+
     if (!existsSync(logPath)) {
       logger.warning(`Log file not found: ${logPath}`);
       return;
     }
 
     console.log(chalk.cyan(`📋 ${options.service} logs\n`));
-    
+
     if (options.follow) {
       // Follow logs
       const tail = spawn('tail', ['-f', '-n', options.lines, logPath], {
-        stdio: 'inherit'
+        stdio: 'inherit',
       });
-      
+
       process.on('SIGINT', () => {
         tail.kill();
         process.exit(0);
@@ -422,11 +427,11 @@ async function showServiceLogs(options) {
   } else {
     // Show all logs
     console.log(chalk.cyan('📋 All service logs\n'));
-    
+
     for (const [serviceName, logFile] of Object.entries(logFiles)) {
       const projectRoot = getProjectRoot();
       const logPath = path.join(projectRoot, logFile);
-      
+
       if (existsSync(logPath)) {
         console.log(chalk.yellow(`\n=== ${serviceName.toUpperCase()} ===`));
         try {

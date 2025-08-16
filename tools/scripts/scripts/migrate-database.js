@@ -2,10 +2,10 @@
 /**
  * Database Migration Script for Nova Universe
  * Migrates data from SQLite to PostgreSQL/MongoDB
- * 
+ *
  * Usage:
  *   node migrate-database.js [options]
- * 
+ *
  * Options:
  *   --source <path>     Source SQLite database path (default: ./log.sqlite)
  *   --target <type>     Target database type (postgresql, mongodb, both)
@@ -66,13 +66,11 @@ async function main() {
 
     // Perform data migration
     logger.info('Starting data migration...');
-    const migrationResult = await migrationManager.migrate(
-      {
-        targetDatabases: options.target === 'both' ? ['postgresql', 'mongodb'] : [options.target],
-        dryRun: options.dryRun,
-        force: options.force
-      }
-    );
+    const migrationResult = await migrationManager.migrate({
+      targetDatabases: options.target === 'both' ? ['postgresql', 'mongodb'] : [options.target],
+      dryRun: options.dryRun,
+      force: options.force,
+    });
 
     // Display results
     displayMigrationResults(migrationResult);
@@ -86,7 +84,6 @@ async function main() {
       logger.info('3. Verify data integrity');
       logger.info('4. Consider removing the old SQLite database after verification');
     }
-
   } catch (error) {
     logger.error('Migration failed:', error);
     process.exit(1);
@@ -99,20 +96,20 @@ async function main() {
 async function createBackup(sourcePath) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const backupPath = `${sourcePath}.backup.${timestamp}`;
-  
+
   logger.info(`Creating backup: ${backupPath}`);
-  
+
   return new Promise((resolve, reject) => {
     const readStream = fs.createReadStream(sourcePath);
     const writeStream = fs.createWriteStream(backupPath);
-    
+
     readStream.on('error', reject);
     writeStream.on('error', reject);
     writeStream.on('close', () => {
       logger.info('Backup created successfully');
       resolve(backupPath);
     });
-    
+
     readStream.pipe(writeStream);
   });
 }
@@ -124,37 +121,37 @@ function displayMigrationResults(results) {
   logger.info('');
   logger.info('Migration Results:');
   logger.info('='.repeat(50));
-  
+
   for (const [database, dbResults] of Object.entries(results)) {
     logger.info(`\n${database.toUpperCase()}:`);
-    
+
     for (const [table, tableResult] of Object.entries(dbResults)) {
       const status = tableResult.error ? '❌ FAILED' : '✅ SUCCESS';
       const count = tableResult.recordsProcessed || 0;
-      
+
       logger.info(`  ${table}: ${status} (${count} records)`);
-      
+
       if (tableResult.error) {
         logger.error(`    Error: ${tableResult.error}`);
       }
-      
+
       if (tableResult.warnings && tableResult.warnings.length > 0) {
-        tableResult.warnings.forEach(warning => {
+        tableResult.warnings.forEach((warning) => {
           logger.warn(`    Warning: ${warning}`);
         });
       }
     }
   }
-  
+
   // Summary
   const totalTables = Object.values(results).reduce((acc, db) => acc + Object.keys(db).length, 0);
   const failedTables = Object.values(results).reduce((acc, db) => {
-    return acc + Object.values(db).filter(table => table.error).length;
+    return acc + Object.values(db).filter((table) => table.error).length;
   }, 0);
-  
+
   logger.info('');
   logger.info(`Summary: ${totalTables - failedTables}/${totalTables} tables migrated successfully`);
-  
+
   if (failedTables > 0) {
     logger.warn(`${failedTables} tables had errors - please review the logs above`);
   }
@@ -167,10 +164,10 @@ async function interactiveSetup() {
   const readline = await import('readline');
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
-  const question = (prompt) => new Promise(resolve => rl.question(prompt, resolve));
+  const question = (prompt) => new Promise((resolve) => rl.question(prompt, resolve));
 
   try {
     logger.info('Nova Universe Database Migration Setup');
@@ -180,9 +177,11 @@ async function interactiveSetup() {
     // Check for existing .env file
     const envExists = fs.existsSync('.env');
     if (!envExists) {
-      logger.info('No .env file found. Let\'s create one...');
-      
-      const setupEnv = await question('Would you like to set up database configuration now? (y/N): ');
+      logger.info("No .env file found. Let's create one...");
+
+      const setupEnv = await question(
+        'Would you like to set up database configuration now? (y/N): ',
+      );
       if (setupEnv.toLowerCase() === 'y') {
         await setupEnvironment(question);
       } else {
@@ -208,7 +207,6 @@ async function interactiveSetup() {
     }
 
     await main();
-
   } finally {
     rl.close();
   }
@@ -221,28 +219,31 @@ async function setupEnvironment(question) {
   const config = {};
 
   // Database selection
-  const dbType = await question('Database type (postgresql/mongodb/both) [both]: ') || 'both';
+  const dbType = (await question('Database type (postgresql/mongodb/both) [both]: ')) || 'both';
   config.PRIMARY_DATABASE = dbType === 'both' ? 'postgresql,mongodb' : dbType;
 
   if (dbType === 'postgresql' || dbType === 'both') {
     // PostgreSQL configuration
-    config.POSTGRES_HOST = await question('PostgreSQL host [localhost]: ') || 'localhost';
-    config.POSTGRES_PORT = await question('PostgreSQL port [5432]: ') || '5432';
-    config.POSTGRES_DB = await question('PostgreSQL database [nova_universe]: ') || 'nova_universe';
-    config.POSTGRES_USER = await question('PostgreSQL user [nova_user]: ') || 'nova_user';
+    config.POSTGRES_HOST = (await question('PostgreSQL host [localhost]: ')) || 'localhost';
+    config.POSTGRES_PORT = (await question('PostgreSQL port [5432]: ')) || '5432';
+    config.POSTGRES_DB =
+      (await question('PostgreSQL database [nova_universe]: ')) || 'nova_universe';
+    config.POSTGRES_USER = (await question('PostgreSQL user [nova_user]: ')) || 'nova_user';
     config.POSTGRES_PASSWORD = await question('PostgreSQL password: ');
   }
 
   if (dbType === 'mongodb' || dbType === 'both') {
     // MongoDB configuration
-    config.MONGO_URI = await question('MongoDB URI [mongodb://localhost:27017/nova_universe]: ') || 'mongodb://localhost:27017/nova_universe';
-    config.MONGO_USER = await question('MongoDB user [nova_user]: ') || 'nova_user';
+    config.MONGO_URI =
+      (await question('MongoDB URI [mongodb://localhost:27017/nova_universe]: ')) ||
+      'mongodb://localhost:27017/nova_universe';
+    config.MONGO_USER = (await question('MongoDB user [nova_user]: ')) || 'nova_user';
     config.MONGO_PASSWORD = await question('MongoDB password: ');
   }
 
   // Admin user
-  config.ADMIN_EMAIL = await question('Admin email [admin@example.com]: ') || 'admin@example.com';
-  config.ADMIN_PASSWORD = await question('Admin password [admin123!]: ') || 'admin123!';
+  config.ADMIN_EMAIL = (await question('Admin email [admin@example.com]: ')) || 'admin@example.com';
+  config.ADMIN_PASSWORD = (await question('Admin password [admin123!]: ')) || 'admin123!';
 
   // Generate secrets
   config.JWT_SECRET = generateSecret(64);
@@ -271,12 +272,12 @@ function generateSecret(length = 64) {
 
 // Run the migration
 if (process.argv.includes('--interactive')) {
-  interactiveSetup().catch(error => {
+  interactiveSetup().catch((error) => {
     logger.error('Interactive setup failed:', error);
     process.exit(1);
   });
 } else {
-  main().catch(error => {
+  main().catch((error) => {
     logger.error('Migration failed:', error);
     process.exit(1);
   });

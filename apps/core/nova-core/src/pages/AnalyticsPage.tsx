@@ -10,7 +10,7 @@ import {
   Tab,
   Chip,
   Progress,
-  Divider
+  Divider,
 } from '@heroui/react';
 import {
   ChartBarIcon,
@@ -20,7 +20,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CalendarIcon,
-  DocumentChartBarIcon
+  DocumentChartBarIcon,
 } from '@heroicons/react/24/outline';
 import {
   LineChart,
@@ -37,7 +37,7 @@ import {
   Pie,
   Cell,
   AreaChart,
-  Area
+  Area,
 } from 'recharts';
 import { api } from '@/lib/api';
 
@@ -158,15 +158,51 @@ export const AnalyticsPage: React.FC = () => {
           { metric: 'Customer Satisfaction', value: 4.7, target: 4.5, trend: 0.2 },
         ],
         systemPerformance: [
-          { timestamp: '00:00', cpu_usage: 45, memory_usage: 62, disk_usage: 78, response_time: 120 },
-          { timestamp: '04:00', cpu_usage: 32, memory_usage: 58, disk_usage: 78, response_time: 98 },
-          { timestamp: '08:00', cpu_usage: 68, memory_usage: 72, disk_usage: 79, response_time: 145 },
-          { timestamp: '12:00', cpu_usage: 85, memory_usage: 81, disk_usage: 80, response_time: 180 },
-          { timestamp: '16:00', cpu_usage: 72, memory_usage: 75, disk_usage: 80, response_time: 165 },
-          { timestamp: '20:00', cpu_usage: 54, memory_usage: 68, disk_usage: 81, response_time: 132 },
+          {
+            timestamp: '00:00',
+            cpu_usage: 45,
+            memory_usage: 62,
+            disk_usage: 78,
+            response_time: 120,
+          },
+          {
+            timestamp: '04:00',
+            cpu_usage: 32,
+            memory_usage: 58,
+            disk_usage: 78,
+            response_time: 98,
+          },
+          {
+            timestamp: '08:00',
+            cpu_usage: 68,
+            memory_usage: 72,
+            disk_usage: 79,
+            response_time: 145,
+          },
+          {
+            timestamp: '12:00',
+            cpu_usage: 85,
+            memory_usage: 81,
+            disk_usage: 80,
+            response_time: 180,
+          },
+          {
+            timestamp: '16:00',
+            cpu_usage: 72,
+            memory_usage: 75,
+            disk_usage: 80,
+            response_time: 165,
+          },
+          {
+            timestamp: '20:00',
+            cpu_usage: 54,
+            memory_usage: 68,
+            disk_usage: 81,
+            response_time: 132,
+          },
         ],
       };
-      
+
       setAnalytics(mockData);
     } finally {
       setLoading(false);
@@ -180,7 +216,7 @@ export const AnalyticsPage: React.FC = () => {
       change: 12.5,
       trend: 'up',
       icon: DocumentChartBarIcon,
-      color: 'bg-blue-500'
+      color: 'bg-blue-500',
     },
     {
       title: 'Avg Response Time',
@@ -188,7 +224,7 @@ export const AnalyticsPage: React.FC = () => {
       change: -8.2,
       trend: 'down',
       icon: ClockIcon,
-      color: 'bg-green-500'
+      color: 'bg-green-500',
     },
     {
       title: 'Active Users',
@@ -196,7 +232,7 @@ export const AnalyticsPage: React.FC = () => {
       change: 5.7,
       trend: 'up',
       icon: UserIcon,
-      color: 'bg-purple-500'
+      color: 'bg-purple-500',
     },
     {
       title: 'System Uptime',
@@ -204,15 +240,15 @@ export const AnalyticsPage: React.FC = () => {
       change: 0.3,
       trend: 'up',
       icon: ComputerDesktopIcon,
-      color: 'bg-orange-500'
+      color: 'bg-orange-500',
     },
   ];
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-96">
+      <div className="flex min-h-96 items-center justify-center">
         <div className="text-center">
-          <ChartBarIcon className="w-12 h-12 mx-auto animate-pulse text-primary" />
+          <ChartBarIcon className="text-primary mx-auto h-12 w-12 animate-pulse" />
           <p className="mt-4 text-lg">Loading analytics...</p>
         </div>
       </div>
@@ -222,7 +258,7 @@ export const AnalyticsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Analytics & Reports</h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -241,22 +277,19 @@ export const AnalyticsPage: React.FC = () => {
             <SelectItem key="30d">Last Month</SelectItem>
             <SelectItem key="90d">Last Quarter</SelectItem>
           </Select>
-          <Button
-            startContent={<CalendarIcon className="w-4 h-4" />}
-            variant="bordered"
-          >
+          <Button startContent={<CalendarIcon className="h-4 w-4" />} variant="bordered">
             Export Report
           </Button>
         </div>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {metricCards.map((metric, index) => (
           <Card key={index}>
             <CardBody className="p-6">
               <div className="flex items-center">
-                <div className={`p-3 rounded-lg ${metric.color}`}>
+                <div className={`rounded-lg p-3 ${metric.color}`}>
                   <metric.icon className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4 flex-1">
@@ -265,9 +298,9 @@ export const AnalyticsPage: React.FC = () => {
                     <p className="text-2xl font-semibold text-gray-900">{metric.value}</p>
                     <div className="ml-2 flex items-center">
                       {metric.trend === 'up' ? (
-                        <ArrowTrendingUpIcon className="w-4 h-4 text-green-500" />
+                        <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
                       ) : metric.trend === 'down' ? (
-                        <ArrowTrendingDownIcon className="w-4 h-4 text-red-500" />
+                        <ArrowTrendingDownIcon className="h-4 w-4 text-red-500" />
                       ) : null}
                       <span
                         className={`text-sm font-medium ${
@@ -318,7 +351,7 @@ export const AnalyticsPage: React.FC = () => {
                 </Card>
 
                 {/* Category Distribution */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   <Card>
                     <CardHeader>
                       <h3 className="text-lg font-semibold">Issue Categories</h3>
@@ -353,7 +386,7 @@ export const AnalyticsPage: React.FC = () => {
                       <div className="space-y-4">
                         {analytics?.responseTimeMetrics.map((metric, index) => (
                           <div key={index}>
-                            <div className="flex justify-between items-center mb-2">
+                            <div className="mb-2 flex items-center justify-between">
                               <span className="text-sm font-medium">{metric.metric}</span>
                               <div className="flex items-center gap-2">
                                 <span className="text-sm">{metric.value}</span>
@@ -362,7 +395,8 @@ export const AnalyticsPage: React.FC = () => {
                                   color={metric.trend >= 0 ? 'success' : 'danger'}
                                   variant="flat"
                                 >
-                                  {metric.trend >= 0 ? '+' : ''}{metric.trend}
+                                  {metric.trend >= 0 ? '+' : ''}
+                                  {metric.trend}
                                 </Chip>
                               </div>
                             </div>
@@ -406,29 +440,31 @@ export const AnalyticsPage: React.FC = () => {
                   </CardBody>
                 </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   {analytics?.kioskMetrics.map((kiosk, index) => (
                     <Card key={index}>
                       <CardBody>
-                        <h4 className="font-semibold mb-3">{kiosk.name}</h4>
+                        <h4 className="mb-3 font-semibold">{kiosk.name}</h4>
                         <div className="space-y-3">
                           <div>
-                            <div className="flex justify-between text-sm mb-1">
+                            <div className="mb-1 flex justify-between text-sm">
                               <span>Uptime</span>
                               <span>{kiosk.uptime}%</span>
                             </div>
                             <Progress value={kiosk.uptime} color="success" />
                           </div>
                           <div>
-                            <div className="flex justify-between text-sm mb-1">
+                            <div className="mb-1 flex justify-between text-sm">
                               <span>Usage</span>
                               <span>{kiosk.usage}%</span>
                             </div>
                             <Progress value={kiosk.usage} color="primary" />
                           </div>
-                          <div className="flex justify-between items-center">
+                          <div className="flex items-center justify-between">
                             <span className="text-sm">Tickets</span>
-                            <Chip size="sm" variant="flat">{kiosk.tickets}</Chip>
+                            <Chip size="sm" variant="flat">
+                              {kiosk.tickets}
+                            </Chip>
                           </div>
                         </div>
                       </CardBody>
@@ -489,10 +525,30 @@ export const AnalyticsPage: React.FC = () => {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="cpu_usage" stroke="#8884d8" name="CPU Usage %" />
-                        <Line type="monotone" dataKey="memory_usage" stroke="#82ca9d" name="Memory Usage %" />
-                        <Line type="monotone" dataKey="disk_usage" stroke="#ffc658" name="Disk Usage %" />
-                        <Line type="monotone" dataKey="response_time" stroke="#ff7300" name="Response Time (ms)" />
+                        <Line
+                          type="monotone"
+                          dataKey="cpu_usage"
+                          stroke="#8884d8"
+                          name="CPU Usage %"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="memory_usage"
+                          stroke="#82ca9d"
+                          name="Memory Usage %"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="disk_usage"
+                          stroke="#ffc658"
+                          name="Disk Usage %"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="response_time"
+                          stroke="#ff7300"
+                          name="Response Time (ms)"
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardBody>

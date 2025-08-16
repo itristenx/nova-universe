@@ -24,11 +24,20 @@ export const Menu: React.FC<MenuProps> = ({ items, buttonLabel, className = '' }
   }, [open]);
   return (
     <div className={`menu ${className}`} ref={ref}>
-      <button className="menu-btn" onClick={() => setOpen(v => !v)}>{buttonLabel}</button>
+      <button className="menu-btn" onClick={() => setOpen((v) => !v)}>
+        {buttonLabel}
+      </button>
       {open && (
         <div className="menu-list">
-          {items.map(item => (
-            <button key={item.label} className="menu-item" onClick={() => { item.onClick(); setOpen(false); }}>
+          {items.map((item) => (
+            <button
+              key={item.label}
+              className="menu-item"
+              onClick={() => {
+                item.onClick();
+                setOpen(false);
+              }}
+            >
               {item.label}
             </button>
           ))}

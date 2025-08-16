@@ -1,2 +1,3 @@
 import React from 'react';
-export const AlertTitle = ({ children, ...props }) => (React.createElement("div", { ...props, className: props.className || 'alert-title' }, children));
+export const AlertTitle = ({ children, ...props }) =>
+  React.createElement('div', { ...props, className: props.className || 'alert-title' }, children);

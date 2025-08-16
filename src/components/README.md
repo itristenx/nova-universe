@@ -5,6 +5,7 @@ This directory contains reusable UI components for Nova Universe.
 ## Components
 
 ### Button
+
 - **File**: `Button.js`
 - **Styles**: `Button.css`
 - **Description**: A reusable button component with primary, secondary, and danger styles.
@@ -21,9 +22,5 @@ This directory contains reusable UI components for Nova Universe.
 ```jsx
 import Button from './Button';
 
-<Button
-  label="Click Me"
-  onClick={() => alert('Button clicked!')}
-  type="primary"
-/>
+<Button label="Click Me" onClick={() => alert('Button clicked!')} type="primary" />;
 ```

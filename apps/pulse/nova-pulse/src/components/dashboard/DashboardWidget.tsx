@@ -1,34 +1,34 @@
-import React, { ReactNode } from 'react'
-import { Button, Card, CardHeader, CardBody } from '@heroui/react'
+import React, { ReactNode } from 'react';
+import { Button, Card, CardHeader, CardBody } from '@heroui/react';
 import {
   Bars3Icon,
   EllipsisVerticalIcon,
   MinusIcon,
   PlusIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline'
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 
 export interface DashboardWidgetProps {
-  id: string
-  title: string
-  subtitle?: string
-  icon?: ReactNode
-  children: ReactNode
-  size?: 'sm' | 'md' | 'lg' | 'xl'
-  isCollapsed?: boolean
-  isDragging?: boolean
-  onToggleCollapse?: () => void
-  onRemove?: () => void
-  onResize?: () => void
-  className?: string
+  id: string;
+  title: string;
+  subtitle?: string;
+  icon?: ReactNode;
+  children: ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  isCollapsed?: boolean;
+  isDragging?: boolean;
+  onToggleCollapse?: () => void;
+  onRemove?: () => void;
+  onResize?: () => void;
+  className?: string;
 }
 
 const sizeClasses = {
   sm: 'col-span-1 row-span-1',
-  md: 'col-span-2 row-span-1', 
+  md: 'col-span-2 row-span-1',
   lg: 'col-span-2 row-span-2',
-  xl: 'col-span-3 row-span-2'
-}
+  xl: 'col-span-3 row-span-2',
+};
 
 export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
   id,
@@ -42,16 +42,16 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
   onToggleCollapse,
   onRemove,
   onResize,
-  className = ''
+  className = '',
 }) => {
   const widgetClasses = `
     ${sizeClasses[size]}
     ${isDragging ? 'opacity-50' : ''}
     ${className}
-  `.trim()
+  `.trim();
 
   return (
-    <Card 
+    <Card
       className={`${widgetClasses} transition-all duration-200 hover:shadow-lg`}
       shadow="sm"
       isHoverable
@@ -61,26 +61,16 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
           <Button
             variant="light"
             size="sm"
-            className="cursor-grab active:cursor-grabbing p-1 min-w-6 h-6"
+            className="h-6 min-w-6 cursor-grab p-1 active:cursor-grabbing"
           >
-            <Bars3Icon className="w-4 h-4" />
+            <Bars3Icon className="h-4 w-4" />
           </Button>
-          
+
           <div className="flex items-center space-x-2">
-            {icon && (
-              <div className="text-gray-500 dark:text-gray-400">
-                {icon}
-              </div>
-            )}
+            {icon && <div className="text-gray-500 dark:text-gray-400">{icon}</div>}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {title}
-              </h3>
-              {subtitle && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {subtitle}
-                </p>
-              )}
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+              {subtitle && <p className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</p>}
             </div>
           </div>
         </div>
@@ -91,33 +81,20 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
               variant="light"
               size="sm"
               onClick={onToggleCollapse}
-              className="p-1 min-w-6 h-6"
+              className="h-6 min-w-6 p-1"
             >
-              {isCollapsed ? (
-                <PlusIcon className="w-3 h-3" />
-              ) : (
-                <MinusIcon className="w-3 h-3" />
-              )}
-            </Button>
-          )}
-          
-          {onResize && (
-            <Button
-              variant="light"
-              size="sm"
-              onClick={onResize}
-              className="p-1 min-w-6 h-6"
-            >
-              <PlusIcon className="w-3 h-3" />
+              {isCollapsed ? <PlusIcon className="h-3 w-3" /> : <MinusIcon className="h-3 w-3" />}
             </Button>
           )}
 
-          <Button
-            variant="light"
-            size="sm"
-            className="p-1 min-w-6 h-6"
-          >
-            <EllipsisVerticalIcon className="w-3 h-3" />
+          {onResize && (
+            <Button variant="light" size="sm" onClick={onResize} className="h-6 min-w-6 p-1">
+              <PlusIcon className="h-3 w-3" />
+            </Button>
+          )}
+
+          <Button variant="light" size="sm" className="h-6 min-w-6 p-1">
+            <EllipsisVerticalIcon className="h-3 w-3" />
           </Button>
 
           {onRemove && (
@@ -125,19 +102,15 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
               variant="light"
               size="sm"
               onClick={onRemove}
-              className="p-1 min-w-6 h-6 text-red-500 hover:text-red-700"
+              className="h-6 min-w-6 p-1 text-red-500 hover:text-red-700"
             >
-              <XMarkIcon className="w-3 h-3" />
+              <XMarkIcon className="h-3 w-3" />
             </Button>
           )}
         </div>
       </CardHeader>
 
-      {!isCollapsed && (
-        <CardBody className="p-4 pt-0">
-          {children}
-        </CardBody>
-      )}
+      {!isCollapsed && <CardBody className="p-4 pt-0">{children}</CardBody>}
     </Card>
-  )
-}
+  );
+};

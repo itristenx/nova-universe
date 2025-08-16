@@ -20,15 +20,17 @@ export class MongoDBManager {
 
     try {
       logger.info('Initializing MongoDB connection...');
-      
+
       // Configure SSL if enabled
-      const sslOptions = this.config.ssl ? {
-        tls: true,
-        tlsCertificateKeyFile: this.config.sslCert,
-        tlsCAFile: this.config.sslCa,
-        tlsAllowInvalidCertificates: false,
-        tlsAllowInvalidHostnames: false
-      } : {};
+      const sslOptions = this.config.ssl
+        ? {
+            tls: true,
+            tlsCertificateKeyFile: this.config.sslCert,
+            tlsCAFile: this.config.sslCa,
+            tlsAllowInvalidCertificates: false,
+            tlsAllowInvalidHostnames: false,
+          }
+        : {};
 
       // Connection options with improved security and performance settings
       const options = {
@@ -38,14 +40,14 @@ export class MongoDBManager {
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
         family: 4, // Use IPv4, skip trying IPv6
-        ...sslOptions
+        ...sslOptions,
       };
 
       // Add authentication if configured
       if (this.config.username && this.config.password) {
         options.auth = {
           username: this.config.username,
-          password: this.config.password
+          password: this.config.password,
         };
         options.authSource = this.config.options?.authSource || 'admin';
       }
@@ -53,7 +55,7 @@ export class MongoDBManager {
       // Connect to MongoDB
       this.client = new MongoClient(this.config.uri, options);
       await this.client.connect();
-      
+
       // Get database instance
       const dbName = this.config.uri.split('/').pop().split('?')[0];
       this.db = this.client.db(dbName);
@@ -87,32 +89,31 @@ export class MongoDBManager {
               user_id: { bsonType: 'int' },
               theme: { bsonType: 'string' },
               notifications: { bsonType: 'bool' },
-              last_updated: { bsonType: 'date' }
-            }
-          }
-        }
+              last_updated: { bsonType: 'date' },
+            },
+          },
+        },
       });
 
       // Analytics collection with TTL index
       await this.createCollectionIfNotExists('analytics');
       await this.db.collection('analytics').createIndex(
-        { created_at: 1 }, 
-        { expireAfterSeconds: 2592000 } // 30 days
+        { created_at: 1 },
+        { expireAfterSeconds: 2592000 }, // 30 days
       );
 
       // Audit logs collection with TTL index
       await this.createCollectionIfNotExists('audit_logs');
       await this.db.collection('audit_logs').createIndex(
-        { created_at: 1 }, 
-        { expireAfterSeconds: 7776000 } // 90 days
+        { created_at: 1 },
+        { expireAfterSeconds: 7776000 }, // 90 days
       );
 
       // Sessions collection with TTL index
       await this.createCollectionIfNotExists('sessions');
-      await this.db.collection('sessions').createIndex(
-        { expires_at: 1 }, 
-        { expireAfterSeconds: 0 }
-      );
+      await this.db
+        .collection('sessions')
+        .createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
 
       // File chunks for GridFS-like storage
       await this.createCollectionIfNotExists('file_chunks');
@@ -153,15 +154,15 @@ export class MongoDBManager {
       const docWithTimestamp = {
         ...document,
         created_at: timestamp,
-        updated_at: timestamp
+        updated_at: timestamp,
       };
 
       const result = await this.db.collection(collection).insertOne(docWithTimestamp);
-      
+
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Document inserted into ${collection}:`, result.insertedId);
       }
-      
+
       return result;
     } catch (error) {
       logger.error(`Error storing document in ${collection}:`, error);
@@ -180,11 +181,11 @@ export class MongoDBManager {
     try {
       const cursor = this.db.collection(collection).find(query, options);
       const documents = await cursor.toArray();
-      
+
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Found ${documents.length} documents in ${collection}`);
       }
-      
+
       return documents;
     } catch (error) {
       logger.error(`Error finding documents in ${collection}:`, error);
@@ -205,16 +206,18 @@ export class MongoDBManager {
         ...update,
         $set: {
           ...update.$set,
-          updated_at: new Date()
-        }
+          updated_at: new Date(),
+        },
       };
 
-      const result = await this.db.collection(collection).updateMany(query, updateWithTimestamp, options);
-      
+      const result = await this.db
+        .collection(collection)
+        .updateMany(query, updateWithTimestamp, options);
+
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Updated ${result.modifiedCount} documents in ${collection}`);
       }
-      
+
       return result;
     } catch (error) {
       logger.error(`Error updating documents in ${collection}:`, error);
@@ -232,11 +235,11 @@ export class MongoDBManager {
 
     try {
       const result = await this.db.collection(collection).deleteMany(query);
-      
+
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Deleted ${result.deletedCount} documents from ${collection}`);
       }
-      
+
       return result;
     } catch (error) {
       logger.error(`Error deleting documents from ${collection}:`, error);
@@ -253,7 +256,7 @@ export class MongoDBManager {
     }
 
     const session = this.client.startSession();
-    
+
     try {
       const result = await session.withTransaction(callback);
       return result;
@@ -276,7 +279,7 @@ export class MongoDBManager {
         details,
         ip_address: details.ip || 'unknown',
         user_agent: details.userAgent || 'unknown',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       await this.storeDocument('audit_logs', auditEntry);
@@ -291,7 +294,7 @@ export class MongoDBManager {
    */
   async healthCheck() {
     const start = Date.now();
-    
+
     try {
       if (!this.isInitialized) {
         await this.initialize();
@@ -299,23 +302,23 @@ export class MongoDBManager {
 
       await this.db.admin().ping();
       const responseTime = Date.now() - start;
-      
+
       const serverStatus = await this.db.admin().serverStatus();
-      
+
       return {
         healthy: true,
         responseTime,
         serverStatus: {
           version: serverStatus.version,
           uptime: serverStatus.uptime,
-          connections: serverStatus.connections
-        }
+          connections: serverStatus.connections,
+        },
       };
     } catch (error) {
       return {
         healthy: false,
         error: error.message,
-        responseTime: Date.now() - start
+        responseTime: Date.now() - start,
       };
     }
   }

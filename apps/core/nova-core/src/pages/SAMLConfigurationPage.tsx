@@ -5,18 +5,18 @@ import { Select } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { api } from '@/lib/api';
 import {
-    ArrowPathIcon,
-    CheckCircleIcon,
-    ClipboardDocumentIcon,
-    CogIcon,
-    DocumentTextIcon,
-    ExclamationTriangleIcon,
-    InformationCircleIcon,
-    KeyIcon,
-    LinkIcon,
-    PlayIcon,
-    ShieldCheckIcon,
-    XCircleIcon
+  ArrowPathIcon,
+  CheckCircleIcon,
+  ClipboardDocumentIcon,
+  CogIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  KeyIcon,
+  LinkIcon,
+  PlayIcon,
+  ShieldCheckIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -78,7 +78,7 @@ export const SAMLConfigurationPage: React.FC = () => {
       displayName: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
       firstName: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname',
       lastName: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname',
-      groups: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/group'
+      groups: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/group',
     },
     spEntityId: window.location.origin,
     allowedClockDrift: 0,
@@ -86,7 +86,7 @@ export const SAMLConfigurationPage: React.FC = () => {
     bypassLoginPage: false,
     groupMirroringEnabled: false,
     autoProvisionUsers: true,
-    defaultUserRole: 'user'
+    defaultUserRole: 'user',
   });
 
   const [loading, setLoading] = useState(true);
@@ -112,7 +112,7 @@ export const SAMLConfigurationPage: React.FC = () => {
         setConfig({
           ...config,
           ...data.saml,
-          enabled: data.enabled && data.provider === 'saml'
+          enabled: data.enabled && data.provider === 'saml',
         });
       }
     } catch (error) {
@@ -120,7 +120,7 @@ export const SAMLConfigurationPage: React.FC = () => {
       addToast({
         type: 'error',
         title: 'Error',
-        description: 'Failed to load SAML configuration'
+        description: 'Failed to load SAML configuration',
       });
     } finally {
       setLoading(false);
@@ -134,26 +134,27 @@ export const SAMLConfigurationPage: React.FC = () => {
   const saveConfig = async () => {
     try {
       setSaving(true);
-      
+
       await api.updateSSOConfig({
         enabled: config.enabled,
         provider: 'saml',
         configuration: {
-          saml: config
-        }
+          saml: config,
+        },
       });
-      
+
       addToast({
         type: 'success',
         title: 'Success',
-        description: 'SAML configuration saved successfully. Server restart may be required for changes to take effect.'
+        description:
+          'SAML configuration saved successfully. Server restart may be required for changes to take effect.',
       });
     } catch (error) {
       console.error('Failed to save SAML config:', error);
       addToast({
         type: 'error',
         title: 'Error',
-        description: 'Failed to save SAML configuration'
+        description: 'Failed to save SAML configuration',
       });
     } finally {
       setSaving(false);
@@ -164,42 +165,46 @@ export const SAMLConfigurationPage: React.FC = () => {
     try {
       setTesting(true);
       setTestResult(null);
-      
+
       // Simulate SAML connection test
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       const mockResult: TestResult = {
         success: config.entryPoint && config.issuer && config.cert ? true : false,
-        message: config.entryPoint && config.issuer && config.cert 
-          ? 'SAML configuration test passed successfully'
-          : 'Missing required SAML configuration fields',
+        message:
+          config.entryPoint && config.issuer && config.cert
+            ? 'SAML configuration test passed successfully'
+            : 'Missing required SAML configuration fields',
         details: {
           connectionTest: !!config.entryPoint,
           certificateValid: !!config.cert,
           attributeMapping: true,
-          userInfo: config.entryPoint && config.issuer && config.cert ? {
-            email: 'test.user@example.com',
-            displayName: 'Test User',
-            firstName: 'Test',
-            lastName: 'User',
-            groups: ['Users', 'Employees']
-          } : undefined
-        }
+          userInfo:
+            config.entryPoint && config.issuer && config.cert
+              ? {
+                  email: 'test.user@example.com',
+                  displayName: 'Test User',
+                  firstName: 'Test',
+                  lastName: 'User',
+                  groups: ['Users', 'Employees'],
+                }
+              : undefined,
+        },
       };
-      
+
       setTestResult(mockResult);
-      
+
       addToast({
         type: mockResult.success ? 'success' : 'error',
         title: mockResult.success ? 'Test Successful' : 'Test Failed',
-        description: mockResult.message
+        description: mockResult.message,
       });
     } catch (error) {
       console.error('SAML test failed:', error);
       addToast({
         type: 'error',
         title: 'Test Failed',
-        description: 'Failed to test SAML connection'
+        description: 'Failed to test SAML connection',
       });
     } finally {
       setTesting(false);
@@ -212,7 +217,7 @@ export const SAMLConfigurationPage: React.FC = () => {
         addToast({
           type: 'error',
           title: 'Error',
-          description: 'Please provide IdP metadata XML'
+          description: 'Please provide IdP metadata XML',
         });
         return;
       }
@@ -221,12 +226,12 @@ export const SAMLConfigurationPage: React.FC = () => {
       const mockParsedData = {
         entryPoint: 'https://your-idp.com/sso/saml',
         issuer: 'https://your-idp.com',
-        cert: '-----BEGIN CERTIFICATE-----\nMIIC...\n-----END CERTIFICATE-----'
+        cert: '-----BEGIN CERTIFICATE-----\nMIIC...\n-----END CERTIFICATE-----',
       };
 
-      setConfig(prev => ({
+      setConfig((prev) => ({
         ...prev,
-        ...mockParsedData
+        ...mockParsedData,
       }));
 
       setShowMetadataParser(false);
@@ -235,13 +240,13 @@ export const SAMLConfigurationPage: React.FC = () => {
       addToast({
         type: 'success',
         title: 'Success',
-        description: 'IdP metadata parsed successfully'
+        description: 'IdP metadata parsed successfully',
       });
     } catch {
       addToast({
         type: 'error',
         title: 'Error',
-        description: 'Failed to parse IdP metadata'
+        description: 'Failed to parse IdP metadata',
       });
     }
   };
@@ -251,7 +256,7 @@ export const SAMLConfigurationPage: React.FC = () => {
     addToast({
       type: 'success',
       title: 'Copied',
-      description: 'Text copied to clipboard'
+      description: 'Text copied to clipboard',
     });
   };
 
@@ -270,72 +275,71 @@ export const SAMLConfigurationPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="border-primary-600 h-32 w-32 animate-spin rounded-full border-b-2"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
-            <ShieldCheckIcon className="h-8 w-8 mr-3 text-blue-600" />
+          <h1 className="flex items-center text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <ShieldCheckIcon className="mr-3 h-8 w-8 text-blue-600" />
             SAML Configuration
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="mt-1 text-gray-600 dark:text-gray-400">
             Configure Security Assertion Markup Language (SAML) 2.0 for enterprise single sign-on
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button
-            variant="secondary"
-            onClick={() => setShowSetupWizard(true)}
-          >
-            <CogIcon className="h-4 w-4 mr-2" />
+          <Button variant="secondary" onClick={() => setShowSetupWizard(true)}>
+            <CogIcon className="mr-2 h-4 w-4" />
             Setup Wizard
           </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setShowMetadataParser(true)}
-          >
-            <DocumentTextIcon className="h-4 w-4 mr-2" />
+          <Button variant="secondary" onClick={() => setShowMetadataParser(true)}>
+            <DocumentTextIcon className="mr-2 h-4 w-4" />
             Parse Metadata
           </Button>
         </div>
       </div>
 
       {/* Status Banner */}
-      <div className={`border rounded-lg p-4 ${
-        config.enabled 
-          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-          : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
-      }`}>
+      <div
+        className={`rounded-lg border p-4 ${
+          config.enabled
+            ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+            : 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20'
+        }`}
+      >
         <div className="flex items-center">
           {config.enabled ? (
-            <CheckCircleIcon className="h-5 w-5 text-green-500 mr-3" />
+            <CheckCircleIcon className="mr-3 h-5 w-5 text-green-500" />
           ) : (
-            <ExclamationTriangleIcon className="h-5 w-5 text-amber-500 mr-3" />
+            <ExclamationTriangleIcon className="mr-3 h-5 w-5 text-amber-500" />
           )}
           <div>
-            <h3 className={`font-medium ${
-              config.enabled 
-                ? 'text-green-800 dark:text-green-200' 
-                : 'text-amber-800 dark:text-amber-200'
-            }`}>
+            <h3
+              className={`font-medium ${
+                config.enabled
+                  ? 'text-green-800 dark:text-green-200'
+                  : 'text-amber-800 dark:text-amber-200'
+              }`}
+            >
               SAML SSO {config.enabled ? 'Enabled' : 'Disabled'}
             </h3>
-            <p className={`text-sm ${
-              config.enabled 
-                ? 'text-green-600 dark:text-green-300' 
-                : 'text-amber-600 dark:text-amber-300'
-            }`}>
-              {config.enabled 
+            <p
+              className={`text-sm ${
+                config.enabled
+                  ? 'text-green-600 dark:text-green-300'
+                  : 'text-amber-600 dark:text-amber-300'
+              }`}
+            >
+              {config.enabled
                 ? 'Users can authenticate using SAML SSO in addition to local login'
-                : 'Configure SAML settings below and enable to allow SSO authentication'
-              }
+                : 'Configure SAML settings below and enable to allow SSO authentication'}
             </p>
           </div>
         </div>
@@ -348,18 +352,18 @@ export const SAMLConfigurationPage: React.FC = () => {
             { id: 'basic', label: 'Basic Configuration', icon: CogIcon },
             { id: 'advanced', label: 'Advanced Settings', icon: KeyIcon },
             { id: 'attributes', label: 'Attribute Mapping', icon: LinkIcon },
-            { id: 'test', label: 'Test & Validate', icon: PlayIcon }
+            { id: 'test', label: 'Test & Validate', icon: PlayIcon },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as 'basic' | 'advanced' | 'attributes' | 'test')}
-              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex items-center border-b-2 px-1 py-2 text-sm font-medium ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
-              <tab.icon className="h-4 w-4 mr-2" />
+              <tab.icon className="mr-2 h-4 w-4" />
               {tab.label}
             </button>
           ))}
@@ -375,25 +379,25 @@ export const SAMLConfigurationPage: React.FC = () => {
               <Checkbox
                 label="Enable SAML SSO"
                 checked={config.enabled}
-                onChange={(checked) => setConfig(prev => ({ ...prev, enabled: checked }))}
+                onChange={(checked) => setConfig((prev) => ({ ...prev, enabled: checked }))}
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-4">
                 <Input
                   label="Identity Provider SSO URL"
                   value={config.entryPoint}
-                  onChange={(e) => setConfig(prev => ({ ...prev, entryPoint: e.target.value }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, entryPoint: e.target.value }))}
                   placeholder="https://idp.example.com/sso/saml"
                   helperText="The URL where users will be redirected for authentication"
                   required
                 />
-                
+
                 <Input
                   label="Identity Provider Issuer"
                   value={config.issuer}
-                  onChange={(e) => setConfig(prev => ({ ...prev, issuer: e.target.value }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, issuer: e.target.value }))}
                   placeholder="https://idp.example.com"
                   helperText="Unique identifier for the identity provider"
                   required
@@ -402,7 +406,7 @@ export const SAMLConfigurationPage: React.FC = () => {
                 <Input
                   label="Callback URL"
                   value={config.callbackUrl}
-                  onChange={(e) => setConfig(prev => ({ ...prev, callbackUrl: e.target.value }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, callbackUrl: e.target.value }))}
                   placeholder="https://your-app.com/auth/saml/callback"
                   helperText="URL where IdP sends authentication response"
                   required
@@ -411,17 +415,17 @@ export const SAMLConfigurationPage: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Identity Provider Certificate *
                   </label>
                   <textarea
                     value={config.cert}
-                    onChange={(e) => setConfig(prev => ({ ...prev, cert: e.target.value }))}
+                    onChange={(e) => setConfig((prev) => ({ ...prev, cert: e.target.value }))}
                     placeholder="-----BEGIN CERTIFICATE-----&#10;MIICXjCCAcegAwIBAgIBADA...&#10;-----END CERTIFICATE-----"
                     rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100 font-mono text-sm"
+                    className="focus:ring-primary-500 focus:border-primary-500 w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm shadow-sm focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="mt-1 text-xs text-gray-500">
                     X.509 certificate used to verify SAML assertions from the IdP
                   </p>
                 </div>
@@ -429,22 +433,22 @@ export const SAMLConfigurationPage: React.FC = () => {
                 <Input
                   label="Service Provider Entity ID"
                   value={config.spEntityId}
-                  onChange={(e) => setConfig(prev => ({ ...prev, spEntityId: e.target.value }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, spEntityId: e.target.value }))}
                   placeholder="https://your-app.com"
                   helperText="Unique identifier for this service provider"
                 />
               </div>
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md">
-              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+            <div className="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+              <h4 className="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
                 Service Provider Information
               </h4>
               <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
                 <div className="flex items-center justify-between">
                   <span>SSO Login URL:</span>
                   <div className="flex items-center space-x-2">
-                    <code className="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                    <code className="rounded bg-blue-100 px-2 py-1 dark:bg-blue-800">
                       {window.location.origin}/auth/saml
                     </code>
                     <Button
@@ -459,7 +463,7 @@ export const SAMLConfigurationPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span>ACS URL:</span>
                   <div className="flex items-center space-x-2">
-                    <code className="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                    <code className="rounded bg-blue-100 px-2 py-1 dark:bg-blue-800">
                       {config.callbackUrl}
                     </code>
                     <Button
@@ -473,11 +477,7 @@ export const SAMLConfigurationPage: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span>SP Metadata:</span>
-                  <Button
-                    size="sm"
-                    variant="default"
-                    onClick={generateMetadata}
-                  >
+                  <Button size="sm" variant="default" onClick={generateMetadata}>
                     Generate & Copy
                   </Button>
                 </div>
@@ -492,34 +492,38 @@ export const SAMLConfigurationPage: React.FC = () => {
           <div className="space-y-6">
             <h3 className="text-lg font-medium">Advanced SAML Settings</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-4">
                 <Select
                   label="Signature Algorithm"
                   value={config.signatureAlgorithm}
-                  onChange={(value) => setConfig(prev => ({ ...prev, signatureAlgorithm: value }))}
+                  onChange={(value) =>
+                    setConfig((prev) => ({ ...prev, signatureAlgorithm: value }))
+                  }
                   options={[
                     { value: 'sha1', label: 'SHA-1 (Legacy)' },
                     { value: 'sha256', label: 'SHA-256 (Recommended)' },
-                    { value: 'sha512', label: 'SHA-512' }
+                    { value: 'sha512', label: 'SHA-512' },
                   ]}
                 />
 
                 <Select
                   label="Digest Algorithm"
                   value={config.digestAlgorithm}
-                  onChange={(value) => setConfig(prev => ({ ...prev, digestAlgorithm: value }))}
+                  onChange={(value) => setConfig((prev) => ({ ...prev, digestAlgorithm: value }))}
                   options={[
                     { value: 'sha1', label: 'SHA-1 (Legacy)' },
                     { value: 'sha256', label: 'SHA-256 (Recommended)' },
-                    { value: 'sha512', label: 'SHA-512' }
+                    { value: 'sha512', label: 'SHA-512' },
                   ]}
                 />
 
                 <Input
                   label="Authentication Context Class"
                   value={config.authnContextClassRef}
-                  onChange={(e) => setConfig(prev => ({ ...prev, authnContextClassRef: e.target.value }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({ ...prev, authnContextClassRef: e.target.value }))
+                  }
                   placeholder="urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"
                   helperText="Required authentication strength"
                 />
@@ -530,7 +534,12 @@ export const SAMLConfigurationPage: React.FC = () => {
                   label="Allowed Clock Drift (seconds)"
                   type="number"
                   value={config.allowedClockDrift.toString()}
-                  onChange={(e) => setConfig(prev => ({ ...prev, allowedClockDrift: parseInt(e.target.value) || 0 }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      allowedClockDrift: parseInt(e.target.value) || 0,
+                    }))
+                  }
                   placeholder="0"
                   helperText="Tolerance for timestamp differences with IdP"
                 />
@@ -540,36 +549,52 @@ export const SAMLConfigurationPage: React.FC = () => {
                     <Checkbox
                       label="Force Authentication"
                       checked={config.forceAuthn}
-                      onChange={(checked) => setConfig(prev => ({ ...prev, forceAuthn: checked }))}
+                      onChange={(checked) =>
+                        setConfig((prev) => ({ ...prev, forceAuthn: checked }))
+                      }
                     />
-                    <p className="text-xs text-gray-500 mt-1">Require users to re-authenticate even if they have an active IdP session</p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Require users to re-authenticate even if they have an active IdP session
+                    </p>
                   </div>
 
                   <div>
                     <Checkbox
                       label="Bypass Login Page"
                       checked={config.bypassLoginPage}
-                      onChange={(checked) => setConfig(prev => ({ ...prev, bypassLoginPage: checked }))}
+                      onChange={(checked) =>
+                        setConfig((prev) => ({ ...prev, bypassLoginPage: checked }))
+                      }
                     />
-                    <p className="text-xs text-gray-500 mt-1">Redirect directly to IdP without showing local login page</p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Redirect directly to IdP without showing local login page
+                    </p>
                   </div>
 
                   <div>
                     <Checkbox
                       label="Auto-Provision Users"
                       checked={config.autoProvisionUsers}
-                      onChange={(checked) => setConfig(prev => ({ ...prev, autoProvisionUsers: checked }))}
+                      onChange={(checked) =>
+                        setConfig((prev) => ({ ...prev, autoProvisionUsers: checked }))
+                      }
                     />
-                    <p className="text-xs text-gray-500 mt-1">Automatically create local accounts for new SAML users</p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Automatically create local accounts for new SAML users
+                    </p>
                   </div>
 
                   <div>
                     <Checkbox
                       label="Enable Group Mirroring"
                       checked={config.groupMirroringEnabled}
-                      onChange={(checked) => setConfig(prev => ({ ...prev, groupMirroringEnabled: checked }))}
+                      onChange={(checked) =>
+                        setConfig((prev) => ({ ...prev, groupMirroringEnabled: checked }))
+                      }
                     />
-                    <p className="text-xs text-gray-500 mt-1">Synchronize user groups from SAML attributes</p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Synchronize user groups from SAML attributes
+                    </p>
                   </div>
                 </div>
               </div>
@@ -580,11 +605,11 @@ export const SAMLConfigurationPage: React.FC = () => {
                 <Select
                   label="Default User Role"
                   value={config.defaultUserRole}
-                  onChange={(value) => setConfig(prev => ({ ...prev, defaultUserRole: value }))}
+                  onChange={(value) => setConfig((prev) => ({ ...prev, defaultUserRole: value }))}
                   options={[
                     { value: 'user', label: 'User' },
                     { value: 'admin', label: 'Administrator' },
-                    { value: 'moderator', label: 'Moderator' }
+                    { value: 'moderator', label: 'Moderator' },
                   ]}
                   helperText="Role assigned to auto-provisioned users"
                 />
@@ -599,7 +624,7 @@ export const SAMLConfigurationPage: React.FC = () => {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium">SAML Attribute Mapping</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="mt-1 text-sm text-gray-500">
                 Map SAML assertion attributes to user profile fields
               </p>
             </div>
@@ -608,10 +633,12 @@ export const SAMLConfigurationPage: React.FC = () => {
               <Input
                 label="Email Attribute"
                 value={config.attributeMapping.email}
-                onChange={(e) => setConfig(prev => ({
-                  ...prev,
-                  attributeMapping: { ...prev.attributeMapping, email: e.target.value }
-                }))}
+                onChange={(e) =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    attributeMapping: { ...prev.attributeMapping, email: e.target.value },
+                  }))
+                }
                 placeholder="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
                 helperText="SAML attribute containing user email address"
                 required
@@ -620,32 +647,38 @@ export const SAMLConfigurationPage: React.FC = () => {
               <Input
                 label="Display Name Attribute"
                 value={config.attributeMapping.displayName}
-                onChange={(e) => setConfig(prev => ({
-                  ...prev,
-                  attributeMapping: { ...prev.attributeMapping, displayName: e.target.value }
-                }))}
+                onChange={(e) =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    attributeMapping: { ...prev.attributeMapping, displayName: e.target.value },
+                  }))
+                }
                 placeholder="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
                 helperText="SAML attribute containing user's full name"
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Input
                   label="First Name Attribute"
                   value={config.attributeMapping.firstName}
-                  onChange={(e) => setConfig(prev => ({
-                    ...prev,
-                    attributeMapping: { ...prev.attributeMapping, firstName: e.target.value }
-                  }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      attributeMapping: { ...prev.attributeMapping, firstName: e.target.value },
+                    }))
+                  }
                   placeholder="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
                 />
 
                 <Input
                   label="Last Name Attribute"
                   value={config.attributeMapping.lastName}
-                  onChange={(e) => setConfig(prev => ({
-                    ...prev,
-                    attributeMapping: { ...prev.attributeMapping, lastName: e.target.value }
-                  }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      attributeMapping: { ...prev.attributeMapping, lastName: e.target.value },
+                    }))
+                  }
                   placeholder="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
                 />
               </div>
@@ -654,24 +687,26 @@ export const SAMLConfigurationPage: React.FC = () => {
                 <Input
                   label="Groups Attribute"
                   value={config.attributeMapping.groups}
-                  onChange={(e) => setConfig(prev => ({
-                    ...prev,
-                    attributeMapping: { ...prev.attributeMapping, groups: e.target.value }
-                  }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      attributeMapping: { ...prev.attributeMapping, groups: e.target.value },
+                    }))
+                  }
                   placeholder="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/group"
                   helperText="SAML attribute containing user group memberships"
                 />
               )}
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
-              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+            <div className="rounded-md bg-gray-50 p-4 dark:bg-gray-800">
+              <h4 className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-100">
                 Common Attribute Names
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-1 gap-4 text-xs md:grid-cols-2">
                 <div>
                   <p className="font-medium text-gray-700 dark:text-gray-300">Microsoft AD FS:</p>
-                  <ul className="text-gray-600 dark:text-gray-400 space-y-1">
+                  <ul className="space-y-1 text-gray-600 dark:text-gray-400">
                     <li>• Email: emailaddress</li>
                     <li>• Name: displayname</li>
                     <li>• Groups: group</li>
@@ -679,7 +714,7 @@ export const SAMLConfigurationPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-700 dark:text-gray-300">Okta:</p>
-                  <ul className="text-gray-600 dark:text-gray-400 space-y-1">
+                  <ul className="space-y-1 text-gray-600 dark:text-gray-400">
                     <li>• Email: email</li>
                     <li>• Name: displayName</li>
                     <li>• Groups: groups</li>
@@ -696,7 +731,7 @@ export const SAMLConfigurationPage: React.FC = () => {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium">Test SAML Configuration</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="mt-1 text-sm text-gray-500">
                 Validate your SAML setup before enabling for users
               </p>
             </div>
@@ -707,81 +742,83 @@ export const SAMLConfigurationPage: React.FC = () => {
                 disabled={testing || !config.entryPoint || !config.issuer}
                 isLoading={testing}
               >
-                <PlayIcon className="h-4 w-4 mr-2" />
+                <PlayIcon className="mr-2 h-4 w-4" />
                 Test Configuration
               </Button>
-              
-              <Button
-                variant="secondary"
-                onClick={loadConfig}
-                disabled={loading}
-              >
-                <ArrowPathIcon className="h-4 w-4 mr-2" />
+
+              <Button variant="secondary" onClick={loadConfig} disabled={loading}>
+                <ArrowPathIcon className="mr-2 h-4 w-4" />
                 Reload Config
               </Button>
             </div>
 
             {testResult && (
-              <div className={`border rounded-lg p-4 ${
-                testResult.success
-                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-              }`}>
-                <div className="flex items-center mb-3">
+              <div
+                className={`rounded-lg border p-4 ${
+                  testResult.success
+                    ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+                    : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
+                }`}
+              >
+                <div className="mb-3 flex items-center">
                   {testResult.success ? (
-                    <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
+                    <CheckCircleIcon className="mr-2 h-5 w-5 text-green-500" />
                   ) : (
-                    <XCircleIcon className="h-5 w-5 text-red-500 mr-2" />
+                    <XCircleIcon className="mr-2 h-5 w-5 text-red-500" />
                   )}
-                  <h4 className={`font-medium ${
-                    testResult.success 
-                      ? 'text-green-800 dark:text-green-200'
-                      : 'text-red-800 dark:text-red-200'
-                  }`}>
+                  <h4
+                    className={`font-medium ${
+                      testResult.success
+                        ? 'text-green-800 dark:text-green-200'
+                        : 'text-red-800 dark:text-red-200'
+                    }`}
+                  >
                     Test {testResult.success ? 'Passed' : 'Failed'}
                   </h4>
                 </div>
-                <p className={`text-sm mb-4 ${
-                  testResult.success 
-                    ? 'text-green-700 dark:text-green-300'
-                    : 'text-red-700 dark:text-red-300'
-                }`}>
+                <p
+                  className={`mb-4 text-sm ${
+                    testResult.success
+                      ? 'text-green-700 dark:text-green-300'
+                      : 'text-red-700 dark:text-red-300'
+                  }`}
+                >
                   {testResult.message}
                 </p>
 
                 {testResult.details && (
                   <div className="space-y-2">
-                    <h5 className="font-medium text-sm">Test Details:</h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <h5 className="text-sm font-medium">Test Details:</h5>
+                    <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                       <div className="flex items-center">
                         {testResult.details.connectionTest ? (
-                          <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                          <CheckCircleIcon className="mr-2 h-4 w-4 text-green-500" />
                         ) : (
-                          <XCircleIcon className="h-4 w-4 text-red-500 mr-2" />
+                          <XCircleIcon className="mr-2 h-4 w-4 text-red-500" />
                         )}
                         IdP Connection
                       </div>
                       <div className="flex items-center">
                         {testResult.details.certificateValid ? (
-                          <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                          <CheckCircleIcon className="mr-2 h-4 w-4 text-green-500" />
                         ) : (
-                          <XCircleIcon className="h-4 w-4 text-red-500 mr-2" />
+                          <XCircleIcon className="mr-2 h-4 w-4 text-red-500" />
                         )}
                         Certificate Validation
                       </div>
                       <div className="flex items-center">
                         {testResult.details.attributeMapping ? (
-                          <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                          <CheckCircleIcon className="mr-2 h-4 w-4 text-green-500" />
                         ) : (
-                          <XCircleIcon className="h-4 w-4 text-red-500 mr-2" />
+                          <XCircleIcon className="mr-2 h-4 w-4 text-red-500" />
                         )}
                         Attribute Mapping
                       </div>
                     </div>
 
                     {testResult.details.userInfo && (
-                      <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded">
-                        <h6 className="font-medium text-sm mb-2">Sample User Data:</h6>
+                      <div className="mt-4 rounded bg-gray-100 p-3 dark:bg-gray-700">
+                        <h6 className="mb-2 text-sm font-medium">Sample User Data:</h6>
                         <pre className="text-xs text-gray-600 dark:text-gray-300">
                           {JSON.stringify(testResult.details.userInfo, null, 2)}
                         </pre>
@@ -792,14 +829,14 @@ export const SAMLConfigurationPage: React.FC = () => {
               </div>
             )}
 
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md">
+            <div className="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
               <div className="flex">
-                <InformationCircleIcon className="h-5 w-5 text-blue-400 mr-3 mt-0.5" />
+                <InformationCircleIcon className="mt-0.5 mr-3 h-5 w-5 text-blue-400" />
                 <div>
                   <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
                     Testing Guidelines
                   </h4>
-                  <ul className="text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1">
+                  <ul className="mt-2 space-y-1 text-sm text-blue-700 dark:text-blue-300">
                     <li>• Ensure all required fields are configured before testing</li>
                     <li>• Test with a non-production user account first</li>
                     <li>• Verify attribute mappings return expected user data</li>
@@ -815,40 +852,31 @@ export const SAMLConfigurationPage: React.FC = () => {
 
       {/* Action Buttons */}
       <div className="flex justify-end space-x-3">
-        <Button
-          variant="secondary"
-          onClick={loadConfig}
-          disabled={loading}
-        >
+        <Button variant="secondary" onClick={loadConfig} disabled={loading}>
           Reset Changes
         </Button>
-        <Button
-          onClick={saveConfig}
-          disabled={saving}
-          isLoading={saving}
-        >
+        <Button onClick={saveConfig} disabled={saving} isLoading={saving}>
           Save Configuration
         </Button>
       </div>
 
       {/* Setup Wizard Modal */}
       {showSetupWizard && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
+        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+          <div className="mx-4 max-h-screen w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 dark:bg-gray-800">
+            <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-medium">SAML Setup Wizard</h3>
-              <Button
-                variant="default"
-                onClick={() => setShowSetupWizard(false)}
-              >
+              <Button variant="default" onClick={() => setShowSetupWizard(false)}>
                 ×
               </Button>
             </div>
-            
+
             <div className="space-y-4">
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md">
-                <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Step 1: Gather Information</h4>
-                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+              <div className="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+                <h4 className="mb-2 font-medium text-blue-800 dark:text-blue-200">
+                  Step 1: Gather Information
+                </h4>
+                <ul className="space-y-1 text-sm text-blue-700 dark:text-blue-300">
                   <li>• IdP SSO URL (from your identity provider)</li>
                   <li>• IdP Entity ID/Issuer</li>
                   <li>• IdP signing certificate</li>
@@ -856,19 +884,33 @@ export const SAMLConfigurationPage: React.FC = () => {
                 </ul>
               </div>
 
-              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-md">
-                <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">Step 2: Configure Identity Provider</h4>
-                <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
-                  <li>• Entity ID: <code className="bg-green-100 dark:bg-green-800 px-1 rounded">{config.spEntityId}</code></li>
-                  <li>• ACS URL: <code className="bg-green-100 dark:bg-green-800 px-1 rounded">{config.callbackUrl}</code></li>
+              <div className="rounded-md bg-green-50 p-4 dark:bg-green-900/20">
+                <h4 className="mb-2 font-medium text-green-800 dark:text-green-200">
+                  Step 2: Configure Identity Provider
+                </h4>
+                <ul className="space-y-1 text-sm text-green-700 dark:text-green-300">
+                  <li>
+                    • Entity ID:{' '}
+                    <code className="rounded bg-green-100 px-1 dark:bg-green-800">
+                      {config.spEntityId}
+                    </code>
+                  </li>
+                  <li>
+                    • ACS URL:{' '}
+                    <code className="rounded bg-green-100 px-1 dark:bg-green-800">
+                      {config.callbackUrl}
+                    </code>
+                  </li>
                   <li>• Name ID Format: EmailAddress</li>
                   <li>• Signature Required: Yes</li>
                 </ul>
               </div>
 
-              <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-md">
-                <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-2">Step 3: Test Configuration</h4>
-                <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+              <div className="rounded-md bg-amber-50 p-4 dark:bg-amber-900/20">
+                <h4 className="mb-2 font-medium text-amber-800 dark:text-amber-200">
+                  Step 3: Test Configuration
+                </h4>
+                <ul className="space-y-1 text-sm text-amber-700 dark:text-amber-300">
                   <li>• Use the test functionality in this interface</li>
                   <li>• Verify user attributes are correctly mapped</li>
                   <li>• Test with different user accounts</li>
@@ -882,21 +924,18 @@ export const SAMLConfigurationPage: React.FC = () => {
 
       {/* Metadata Parser Modal */}
       {showMetadataParser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
+        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+          <div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 dark:bg-gray-800">
+            <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-medium">Parse IdP Metadata</h3>
-              <Button
-                variant="default"
-                onClick={() => setShowMetadataParser(false)}
-              >
+              <Button variant="default" onClick={() => setShowMetadataParser(false)}>
                 ×
               </Button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   IdP Metadata XML
                 </label>
                 <textarea
@@ -904,20 +943,15 @@ export const SAMLConfigurationPage: React.FC = () => {
                   onChange={(e) => setMetadataXml(e.target.value)}
                   placeholder="Paste your identity provider's metadata XML here..."
                   rows={10}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100 font-mono text-sm"
+                  className="focus:ring-primary-500 focus:border-primary-500 w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm shadow-sm focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
               </div>
-              
+
               <div className="flex justify-end space-x-3">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowMetadataParser(false)}
-                >
+                <Button variant="secondary" onClick={() => setShowMetadataParser(false)}>
                   Cancel
                 </Button>
-                <Button onClick={parseMetadata}>
-                  Parse Metadata
-                </Button>
+                <Button onClick={parseMetadata}>Parse Metadata</Button>
               </div>
             </div>
           </div>

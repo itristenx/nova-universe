@@ -15,7 +15,7 @@ Modern, enterprise-grade admin interface for managing Nova Beacon kiosks, users,
 
 - **Modern Tech Stack**: Built with React 18, TypeScript, Vite, and Tailwind CSS
 - **Enterprise Architecture**: Scalable, maintainable, and type-safe codebase
-- **Comprehensive Management**: 
+- **Comprehensive Management**:
   - Dashboard with real-time statistics
   - Support ticket management with advanced filtering
   - Beacon kiosk monitoring and configuration
@@ -47,26 +47,31 @@ Modern, enterprise-grade admin interface for managing Nova Beacon kiosks, users,
 ### Installation
 
 1. Clone the repository and navigate to the core admin directory:
+
    ```bash
    cd nova-core
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Copy environment variables:
+
    ```bash
    cp .env.example .env
    ```
 
 4. Update the API URL in `.env` if needed:
+
    ```
    VITE_API_URL=http://localhost:3000
    ```
 
 5. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -98,18 +103,21 @@ src/
 ## Key Features
 
 ### Dashboard
+
 - Real-time system statistics
 - Recent ticket overview
 - Beacon kiosk status monitoring
 - Quick actions and navigation
 
 ### Ticket Management
+
 - Comprehensive ticket listing with filtering
 - Search by name, email, system, or title
 - Filter by status, urgency, and date range
 - Bulk operations and export capabilities
 
 ### Beacon Kiosk Management
+
 - Real-time kiosk status monitoring
 - Remote activation/deactivation
 - Configuration management
@@ -117,12 +125,14 @@ src/
 - Status monitoring (open/closed/error)
 
 ### User Management
+
 - User account creation and management
 - Role-based access control (RBAC)
 - Permission management
 - User activity tracking
 
 ### Settings & Configuration
+
 - System-wide configuration options
 - Branding customization (logos, colors, messages)
 - Security settings
@@ -145,6 +155,7 @@ The admin interface communicates with the Nova Platform API server through a cen
 - Role-based access control
 
 ## Community & Contributing
+
 - [Contributing Guidelines](../.github/CONTRIBUTING.md)
 - [Code of Conduct](../.github/CODE_OF_CONDUCT.md)
 - [Security Policy](../.github/SECURITY.md)
@@ -160,5 +171,6 @@ This project is licensed under the [MIT License](../LICENSE).
 ---
 
 ## Credits & Acknowledgments
+
 - [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) for README inspiration
 - All contributors and open source dependencies

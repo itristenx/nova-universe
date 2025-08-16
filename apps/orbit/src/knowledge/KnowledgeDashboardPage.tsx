@@ -8,21 +8,29 @@ const KnowledgeDashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
-  const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || '') : '';
-  const userRoles = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('roles') || '[]') : [];
-  const isEditor = userRoles.includes('admin') || userRoles.includes('superadmin') || userRoles.includes('kb_editor');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
+  const userRoles =
+    typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('roles') || '[]') : [];
+  const isEditor =
+    userRoles.includes('admin') ||
+    userRoles.includes('superadmin') ||
+    userRoles.includes('kb_editor');
 
   useEffect(() => {
     if (!isEditor) return;
     setLoading(true);
     getKnowledgeArticles(token, { search })
-      .then(res => setArticles(res.articles || []))
-      .catch(err => setError(err.message || 'Failed to load articles'))
+      .then((res) => setArticles(res.articles || []))
+      .catch((err) => setError(err.message || 'Failed to load articles'))
       .finally(() => setLoading(false));
   }, [search]);
 
   if (!isEditor) {
-    return <div className="p-8 text-center text-destructive">You do not have permission to manage articles.</div>;
+    return (
+      <div className="text-destructive p-8 text-center">
+        You do not have permission to manage articles.
+      </div>
+    );
   }
 
   const handleDelete = async (slug: string) => {
@@ -30,7 +38,7 @@ const KnowledgeDashboardPage: React.FC = () => {
     setLoading(true);
     try {
       await deleteKnowledgeArticle(token, slug);
-      setArticles(articles.filter(a => a.slug !== slug));
+      setArticles(articles.filter((a) => a.slug !== slug));
     } catch (err: any) {
       setError(err.message || 'Failed to delete article');
     } finally {
@@ -39,18 +47,20 @@ const KnowledgeDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-4">Knowledge Base Management</h1>
+    <div className="mx-auto max-w-3xl p-8">
+      <h1 className="mb-4 text-2xl font-bold">Knowledge Base Management</h1>
       <div className="mb-4 flex gap-2">
         <input
-          className="border rounded px-3 py-2 flex-1"
+          className="flex-1 rounded border px-3 py-2"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search articles..."
         />
-        <button className="btn btn-primary" onClick={() => navigate('/knowledge/new')}>New Article</button>
+        <button className="btn btn-primary" onClick={() => navigate('/knowledge/new')}>
+          New Article
+        </button>
       </div>
-      {error && <div className="mb-4 text-destructive">{error}</div>}
+      {error && <div className="text-destructive mb-4">{error}</div>}
       {loading ? (
         <div>Loading...</div>
       ) : (
@@ -63,14 +73,29 @@ const KnowledgeDashboardPage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {articles.map(article => (
+            {articles.map((article) => (
               <tr key={article.id}>
                 <td className="border px-2 py-1">{article.title}</td>
                 <td className="border px-2 py-1">{article.slug}</td>
-                <td className="border px-2 py-1 flex gap-2">
-                  <button className="btn btn-secondary" onClick={() => navigate(`/knowledge/${article.slug}`)}>View</button>
-                  <button className="btn btn-secondary" onClick={() => navigate(`/knowledge/${article.slug}/edit`)}>Edit</button>
-                  <button className="btn btn-destructive" onClick={() => handleDelete(article.slug)}>Delete</button>
+                <td className="flex gap-2 border px-2 py-1">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => navigate(`/knowledge/${article.slug}`)}
+                  >
+                    View
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => navigate(`/knowledge/${article.slug}/edit`)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="btn btn-destructive"
+                    onClick={() => handleDelete(article.slug)}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}

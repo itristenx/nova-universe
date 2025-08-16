@@ -21,7 +21,7 @@ export interface Permission {
 // Schedule and Office Hours Types
 export interface TimeSlot {
   start: string; // Format: "HH:mm" (24-hour format)
-  end: string;   // Format: "HH:mm" (24-hour format)
+  end: string; // Format: "HH:mm" (24-hour format)
 }
 
 export interface DaySchedule {
@@ -58,12 +58,12 @@ export interface Kiosk {
   lastSeen: string;
   version: string;
   active: boolean;
-  
+
   // Configuration Management
   configScope: ConfigScope; // 'global' | 'individual'
   hasOverrides: boolean;
   overrideCount: number;
-  
+
   // Current effective configuration (resolved from global + overrides)
   effectiveConfig: {
     logoUrl?: string;
@@ -76,7 +76,7 @@ export interface Kiosk {
     schedule?: ScheduleConfig;
     officeHours?: OfficeHours;
   };
-  
+
   // Individual overrides (only set when configScope is 'individual')
   overrides?: {
     status?: ConfigOverride;
@@ -321,19 +321,19 @@ export interface KioskConfiguration {
       lunchMessage?: string;
     };
   };
-  
+
   // Schedule Configuration
   scheduleConfig?: {
     override: ConfigOverride;
     schedule: ScheduleConfig;
   };
-  
+
   // Office Hours Configuration
   officeHoursConfig?: {
     override: ConfigOverride;
     officeHours: OfficeHours;
   };
-  
+
   // Branding Configuration
   brandingConfig?: {
     override: ConfigOverride;
@@ -359,10 +359,10 @@ export interface GlobalConfiguration {
       lunchMessage: string;
     };
   };
-  
+
   defaultSchedule: ScheduleConfig;
   defaultOfficeHours: OfficeHours;
-  
+
   defaultBranding: {
     logoUrl: string;
     backgroundUrl?: string;
@@ -371,7 +371,7 @@ export interface GlobalConfiguration {
     welcomeMessage: string;
     helpMessage: string;
   };
-  
+
   // Global systems configuration
   systems: string[];
 }
@@ -413,7 +413,7 @@ export interface KioskRemoteConfig {
   };
   adminPins: {
     global?: string; // Encrypted/hashed PIN
-    kiosk?: string;  // Kiosk-specific PIN (encrypted/hashed)
+    kiosk?: string; // Kiosk-specific PIN (encrypted/hashed)
   };
   lastUpdate: string;
   version: number;

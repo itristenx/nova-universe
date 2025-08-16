@@ -13,7 +13,7 @@ const TEST_CONFIG = {
   timeout: 300000, // 5 minutes per test suite
   parallel: process.env.TEST_PARALLEL === 'true',
   verbose: process.env.TEST_VERBOSE === 'true',
-  apiAvailable: false
+  apiAvailable: false,
 };
 
 // Detect whether a test file imports @jest/globals
@@ -34,7 +34,7 @@ const TEST_SUITES = {
     description: 'API endpoints, database operations, and service integrations',
     priority: 1,
     estimatedDuration: 120000, // 2 minutes
-    requiresApi: true
+    requiresApi: true,
   },
   performance: {
     name: 'Performance Testing',
@@ -42,7 +42,7 @@ const TEST_SUITES = {
     description: 'Response times, throughput, memory usage, and scalability',
     priority: 2,
     estimatedDuration: 180000, // 3 minutes
-    requiresApi: true
+    requiresApi: true,
   },
   security: {
     name: 'Security Testing',
@@ -50,7 +50,7 @@ const TEST_SUITES = {
     description: 'Authentication, authorization, input validation, and vulnerabilities',
     priority: 3,
     estimatedDuration: 240000, // 4 minutes
-    requiresApi: true
+    requiresApi: true,
   },
   uat: {
     name: 'User Acceptance Testing',
@@ -58,7 +58,7 @@ const TEST_SUITES = {
     description: 'Business workflows, user experience, and feature functionality',
     priority: 4,
     estimatedDuration: 300000, // 5 minutes
-    requiresApi: true
+    requiresApi: true,
   },
   load: {
     name: 'Load Testing',
@@ -66,8 +66,8 @@ const TEST_SUITES = {
     description: 'System behavior under various load conditions and stress testing',
     priority: 5,
     estimatedDuration: 600000, // 10 minutes
-    skipInCI: process.env.CI === 'true' && process.env.FULL_LOAD_TEST !== 'true'
-  }
+    skipInCI: process.env.CI === 'true' && process.env.FULL_LOAD_TEST !== 'true',
+  },
 };
 
 class TestResultTracker {
@@ -81,17 +81,17 @@ class TestResultTracker {
         passed: 0,
         failed: 0,
         skipped: 0,
-        duration: 0
-      }
+        duration: 0,
+      },
     };
   }
 
   addSuiteResult(suiteName, result) {
     this.results.suites[suiteName] = {
       ...result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    
+
     this.results.summary.total++;
     if (result.success) {
       this.results.summary.passed++;
@@ -110,40 +110,40 @@ class TestResultTracker {
 
   generateReport() {
     const report = this.finalize();
-    
+
     console.log('\n' + '='.repeat(80));
     console.log('🧪 NOVA UNIVERSE - COMPREHENSIVE TEST RESULTS');
     console.log('='.repeat(80));
-    
+
     console.log('\n📊 Test Suite Summary:');
     console.log(`   Total Suites: ${report.summary.total}`);
     console.log(`   Passed: ${report.summary.passed} ✅`);
     console.log(`   Failed: ${report.summary.failed} ❌`);
     console.log(`   Skipped: ${report.summary.skipped} ⏭️`);
     console.log(`   Total Duration: ${(report.summary.duration / 1000 / 60).toFixed(2)} minutes`);
-    
+
     console.log('\n📋 Detailed Results:');
     for (const [suiteName, result] of Object.entries(report.suites)) {
       const icon = result.success ? '✅' : result.skipped ? '⏭️' : '❌';
       const duration = result.duration ? `(${(result.duration / 1000).toFixed(2)}s)` : '';
       console.log(`   ${icon} ${result.name} ${duration}`);
-      
+
       if (result.error && TEST_CONFIG.verbose) {
         console.log(`      Error: ${result.error}`);
       }
-      
+
       if (result.warnings && result.warnings.length > 0) {
-        result.warnings.forEach(warning => {
+        result.warnings.forEach((warning) => {
           console.log(`      ⚠️  ${warning}`);
         });
       }
     }
-    
+
     console.log('\n🎯 Test Quality Assessment:');
-    const denom = Math.max(1, (report.summary.total - report.summary.skipped));
+    const denom = Math.max(1, report.summary.total - report.summary.skipped);
     const successRate = (report.summary.passed / denom) * 100;
     console.log(`   Success Rate: ${successRate.toFixed(1)}%`);
-    
+
     if (successRate >= 95) {
       console.log('   Quality Grade: A+ 🌟 (Excellent)');
     } else if (successRate >= 85) {
@@ -153,25 +153,26 @@ class TestResultTracker {
     } else {
       console.log('   Quality Grade: C ❌ (Poor - Requires Attention)');
     }
-    
+
     console.log('\n🔍 Recommendations:');
     if (report.summary.failed > 0) {
       console.log('   • Review and fix failing test suites before deployment');
       console.log('   • Check logs for detailed error information');
     }
-    
+
     if (successRate < 95) {
       console.log('   • Consider increasing test coverage');
       console.log('   • Review test thresholds and expectations');
     }
-    
-    if (report.summary.duration > 900000) { // 15 minutes
+
+    if (report.summary.duration > 900000) {
+      // 15 minutes
       console.log('   • Consider optimizing test execution time');
       console.log('   • Evaluate parallel test execution options');
     }
-    
+
     console.log('\n' + '='.repeat(80));
-    
+
     return report;
   }
 }
@@ -242,7 +243,7 @@ class TestSuiteRunner {
         success: true,
         skipped: true,
         duration: 0,
-        warnings: ['API not available']
+        warnings: ['API not available'],
       });
       return { success: true, skipped: true };
     }
@@ -263,14 +264,14 @@ class TestSuiteRunner {
         duration,
         output: result.output,
         error: result.error,
-        warnings: result.warnings || []
+        warnings: result.warnings || [],
       });
 
       const icon = result.success ? '✅' : '❌';
       console.log(`   ${icon} ${suite.name} completed in ${(duration / 1000).toFixed(2)}s`);
 
       if (result.warnings && result.warnings.length > 0) {
-        result.warnings.forEach(warning => console.log(`   ⚠️  ${warning}`));
+        result.warnings.forEach((warning) => console.log(`   ⚠️  ${warning}`));
       }
 
       return result;
@@ -280,7 +281,7 @@ class TestSuiteRunner {
         name: suite.name,
         success: false,
         duration,
-        error: error.message
+        error: error.message,
       });
       console.log(`   ❌ ${suite.name} failed: ${error.message}`);
       return { success: false, error: error.message };
@@ -297,31 +298,52 @@ class TestSuiteRunner {
         ...process.env,
         TEST_API_URL: TEST_CONFIG.apiUrl,
         TEST_TIMEOUT: suite.estimatedDuration.toString(),
-        NODE_OPTIONS: '--experimental-vm-modules'
+        NODE_OPTIONS: '--experimental-vm-modules',
       };
 
-      const args = useJest
-        ? ['--runInBand', '--silent', testFile]
-        : ['--test', testFile];
+      const args = useJest ? ['--runInBand', '--silent', testFile] : ['--test', testFile];
 
       const cmd = useJest ? 'jest' : 'node';
       const child = spawn(cmd, args, { env, cwd: process.cwd(), stdio: ['pipe', 'pipe', 'pipe'] });
 
-      child.stdout.on('data', (d) => { const t = d.toString(); output += t; if (TEST_CONFIG.verbose) process.stdout.write(t); });
-      child.stderr.on('data', (d) => { const t = d.toString(); error += t; if (TEST_CONFIG.verbose) process.stderr.write(t); });
+      child.stdout.on('data', (d) => {
+        const t = d.toString();
+        output += t;
+        if (TEST_CONFIG.verbose) process.stdout.write(t);
+      });
+      child.stderr.on('data', (d) => {
+        const t = d.toString();
+        error += t;
+        if (TEST_CONFIG.verbose) process.stderr.write(t);
+      });
 
       child.on('close', (code) => {
         const duration = Date.now() - startTime;
         const success = code === 0;
         const warnings = [];
-        if (output.includes('Warning') || output.includes('WARN')) warnings.push('Test execution produced warnings');
-        if (duration > suite.estimatedDuration * 1.5) warnings.push(`Test took longer than expected (${(duration / 1000).toFixed(2)}s vs ${(suite.estimatedDuration / 1000).toFixed(2)}s)`);
-        resolve({ success, output, error: error || (success ? null : `Process exited with code ${code}`), warnings, duration });
+        if (output.includes('Warning') || output.includes('WARN'))
+          warnings.push('Test execution produced warnings');
+        if (duration > suite.estimatedDuration * 1.5)
+          warnings.push(
+            `Test took longer than expected (${(duration / 1000).toFixed(2)}s vs ${(suite.estimatedDuration / 1000).toFixed(2)}s)`,
+          );
+        resolve({
+          success,
+          output,
+          error: error || (success ? null : `Process exited with code ${code}`),
+          warnings,
+          duration,
+        });
       });
 
       setTimeout(() => {
         child.kill();
-        resolve({ success: false, error: `Test timed out after ${TEST_CONFIG.timeout / 1000}s`, warnings: ['Test execution timed out'], duration: TEST_CONFIG.timeout });
+        resolve({
+          success: false,
+          error: `Test timed out after ${TEST_CONFIG.timeout / 1000}s`,
+          warnings: ['Test execution timed out'],
+          duration: TEST_CONFIG.timeout,
+        });
       }, TEST_CONFIG.timeout);
     });
   }
@@ -334,7 +356,9 @@ class TestSuiteRunner {
     console.log(`   Parallel Execution: ${TEST_CONFIG.parallel ? 'Enabled' : 'Disabled'}`);
     console.log(`   Verbose Output: ${TEST_CONFIG.verbose ? 'Enabled' : 'Disabled'}`);
 
-    const sortedSuites = Object.entries(TEST_SUITES).sort(([, a], [, b]) => a.priority - b.priority);
+    const sortedSuites = Object.entries(TEST_SUITES).sort(
+      ([, a], [, b]) => a.priority - b.priority,
+    );
 
     if (TEST_CONFIG.parallel) {
       console.log('\n⚡ Running test suites in parallel...');
@@ -347,7 +371,12 @@ class TestSuiteRunner {
       for (const [suiteKey, suite] of sortedSuites) {
         if (suite.skipInCI) {
           console.log(`\n⏭️  Skipping ${suite.name} (CI environment)`);
-          this.tracker.addSuiteResult(suiteKey, { name: suite.name, success: true, skipped: true, duration: 0 });
+          this.tracker.addSuiteResult(suiteKey, {
+            name: suite.name,
+            success: true,
+            skipped: true,
+            duration: 0,
+          });
           continue;
         }
         await this.runSuite(suiteKey, suite);
@@ -381,13 +410,16 @@ class TestCLI {
       switch (arg) {
         case '--help':
         case '-h':
-          options.help = true; break;
+          options.help = true;
+          break;
         case '--parallel':
         case '-p':
-          options.parallel = true; break;
+          options.parallel = true;
+          break;
         case '--verbose':
         case '-v':
-          options.verbose = true; break;
+          options.verbose = true;
+          break;
         case '--suite':
         case '-s':
           if (i + 1 < args.length) options.suites.push(args[++i]);
@@ -436,7 +468,10 @@ Environment Variables:
 
 async function main() {
   const options = TestCLI.parseArgs();
-  if (options.help) { TestCLI.showHelp(); return; }
+  if (options.help) {
+    TestCLI.showHelp();
+    return;
+  }
   if (options.parallel) TEST_CONFIG.parallel = true;
   if (options.verbose) TEST_CONFIG.verbose = true;
 
@@ -448,7 +483,10 @@ async function main() {
       for (const suiteName of options.suites) {
         const suite = TEST_SUITES[suiteName];
         if (suite) await runner.runSuite(suiteName, suite);
-        else { console.error(`❌ Unknown test suite: ${suiteName}`); console.log('Available suites:', Object.keys(TEST_SUITES).join(', ')); }
+        else {
+          console.error(`❌ Unknown test suite: ${suiteName}`);
+          console.log('Available suites:', Object.keys(TEST_SUITES).join(', '));
+        }
       }
       finalReport = runner.tracker.generateReport();
     } else {

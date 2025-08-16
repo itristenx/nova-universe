@@ -29,13 +29,13 @@ interface ServiceData {
   knowledgeBaseEnabled?: boolean;
   aiAssistEnabled?: boolean;
   openaiApiKey?: string;
-  
+
   // Nova Sentinel Monitoring
   sentinelEnabled?: boolean;
   sentinelUrl?: string;
   sentinelApiKey?: string;
   sentinelWebhookSecret?: string;
-  
+
   // GoAlert Alerting
   goalertEnabled?: boolean;
   goalertUrl?: string;
@@ -63,52 +63,52 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
   onUpdate,
   onComplete,
   errors,
-  isLoading
+  isLoading,
 }) => {
   const [formData, setFormData] = useState({
     // Integrations
     slackEnabled: data?.services?.slackEnabled || false,
     slackToken: data?.services?.slackToken || '',
     slackChannel: data?.services?.slackChannel || '#support',
-    
+
     teamsEnabled: data?.services?.teamsEnabled || false,
     teamsWebhook: data?.services?.teamsWebhook || '',
-    
+
     webhooksEnabled: data?.services?.webhooksEnabled || false,
     webhookUrl: data?.services?.webhookUrl || '',
     webhookSecret: data?.services?.webhookSecret || '',
-    
+
     // Search and Analytics
     elasticsearchEnabled: data?.services?.elasticsearchEnabled || false,
     elasticsearchUrl: data?.services?.elasticsearchUrl || 'http://localhost:9200',
     elasticsearchIndex: data?.services?.elasticsearchIndex || 'nova-tickets',
-    
+
     analyticsEnabled: data?.services?.analyticsEnabled || false,
     analyticsProvider: data?.services?.analyticsProvider || 'internal',
     googleAnalyticsId: data?.services?.googleAnalyticsId || '',
-    
+
     // Monitoring
     sentryEnabled: data?.services?.sentryEnabled || false,
     sentryDsn: data?.services?.sentryDsn || '',
-    
+
     // File Storage
     storageProvider: data?.services?.storageProvider || 'local',
     s3Bucket: data?.services?.s3Bucket || '',
     s3Region: data?.services?.s3Region || 'us-east-1',
     s3AccessKey: data?.services?.s3AccessKey || '',
     s3SecretKey: data?.services?.s3SecretKey || '',
-    
+
     // Knowledge Base
     knowledgeBaseEnabled: data?.services?.knowledgeBaseEnabled || false,
     aiAssistEnabled: data?.services?.aiAssistEnabled || false,
     openaiApiKey: data?.services?.openaiApiKey || '',
-    
+
     // Nova Sentinel Monitoring
     sentinelEnabled: data?.services?.sentinelEnabled || false,
     sentinelUrl: data?.services?.sentinelUrl || 'http://localhost:3001',
     sentinelApiKey: data?.services?.sentinelApiKey || '',
     sentinelWebhookSecret: data?.services?.sentinelWebhookSecret || '',
-    
+
     // GoAlert Alerting
     goalertEnabled: data?.services?.goalertEnabled || false,
     goalertUrl: data?.services?.goalertUrl || 'http://localhost:8081',
@@ -116,31 +116,33 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
     goalertSmtpHost: data?.services?.goalertSmtpHost || '',
     goalertSmtpPort: data?.services?.goalertSmtpPort || '587',
     goalertSmtpUser: data?.services?.goalertSmtpUser || '',
-    goalertSmtpPass: data?.services?.goalertSmtpPass || ''
+    goalertSmtpPass: data?.services?.goalertSmtpPass || '',
   });
 
-  const [connectionTests, setConnectionTests] = useState<Record<string, 'idle' | 'testing' | 'success' | 'error'>>({});
+  const [connectionTests, setConnectionTests] = useState<
+    Record<string, 'idle' | 'testing' | 'success' | 'error'>
+  >({});
   const [connectionErrors, setConnectionErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     onUpdate({
-      services: formData
+      services: formData,
     });
   }, [formData, onUpdate]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear connection status when field changes
     if (connectionTests[field]) {
-      setConnectionTests(prev => ({ ...prev, [field]: 'idle' }));
-      setConnectionErrors(prev => ({ ...prev, [field]: '' }));
+      setConnectionTests((prev) => ({ ...prev, [field]: 'idle' }));
+      setConnectionErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
   const testConnection = async (service: string) => {
-    setConnectionTests(prev => ({ ...prev, [service]: 'testing' }));
-    setConnectionErrors(prev => ({ ...prev, [service]: '' }));
-    
+    setConnectionTests((prev) => ({ ...prev, [service]: 'testing' }));
+    setConnectionErrors((prev) => ({ ...prev, [service]: '' }));
+
     try {
       const response = await fetch(`/api/setup/test-${service}`, {
         method: 'POST',
@@ -151,16 +153,22 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
-        setConnectionTests(prev => ({ ...prev, [service]: 'success' }));
+        setConnectionTests((prev) => ({ ...prev, [service]: 'success' }));
       } else {
-        setConnectionTests(prev => ({ ...prev, [service]: 'error' }));
-        setConnectionErrors(prev => ({ ...prev, [service]: result.error || `Failed to test ${service} connection` }));
+        setConnectionTests((prev) => ({ ...prev, [service]: 'error' }));
+        setConnectionErrors((prev) => ({
+          ...prev,
+          [service]: result.error || `Failed to test ${service} connection`,
+        }));
       }
     } catch (error) {
-      setConnectionTests(prev => ({ ...prev, [service]: 'error' }));
-      setConnectionErrors(prev => ({ ...prev, [service]: `Unable to test ${service} connection` }));
+      setConnectionTests((prev) => ({ ...prev, [service]: 'error' }));
+      setConnectionErrors((prev) => ({
+        ...prev,
+        [service]: `Unable to test ${service} connection`,
+      }));
     }
   };
 
@@ -175,29 +183,30 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
     if (status === 'idle') return null;
 
     return (
-      <div className={`mt-2 rounded-lg p-3 ${
-        status === 'success' 
-          ? 'bg-green-50 dark:bg-green-900/20' 
-          : status === 'error'
-          ? 'bg-red-50 dark:bg-red-900/20'
-          : 'bg-blue-50 dark:bg-blue-900/20'
-      }`}>
+      <div
+        className={`mt-2 rounded-lg p-3 ${
+          status === 'success'
+            ? 'bg-green-50 dark:bg-green-900/20'
+            : status === 'error'
+              ? 'bg-red-50 dark:bg-red-900/20'
+              : 'bg-blue-50 dark:bg-blue-900/20'
+        }`}
+      >
         <div className="flex items-center space-x-2">
           {status === 'success' && (
-            <CheckCircleIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
+            <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-green-600" />
           )}
           {status === 'error' && (
-            <ExclamationTriangleIcon className="w-4 h-4 text-red-600 flex-shrink-0" />
+            <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0 text-red-600" />
           )}
-          <p className={`text-sm ${
-            status === 'success' 
-              ? 'text-green-700 dark:text-green-300'
-              : 'text-red-700 dark:text-red-300'
-          }`}>
-            {status === 'success' 
-              ? `${service} connection successful!` 
-              : error
-            }
+          <p
+            className={`text-sm ${
+              status === 'success'
+                ? 'text-green-700 dark:text-green-300'
+                : 'text-red-700 dark:text-red-300'
+            }`}
+          >
+            {status === 'success' ? `${service} connection successful!` : error}
           </p>
         </div>
       </div>
@@ -207,13 +216,15 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="mx-auto w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center">
-          <CogIcon className="w-8 h-8 text-purple-600" />
+      <div className="space-y-4 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/20">
+          <CogIcon className="h-8 w-8 text-purple-600" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Services & Integrations</h2>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+            Services & Integrations
+          </h2>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
             Connect external services to enhance your platform capabilities
           </p>
         </div>
@@ -223,11 +234,13 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
       <div className="space-y-8">
         {/* Team Communication */}
         <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Team Communication</h3>
-          
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+            Team Communication
+          </h3>
+
           {/* Slack Integration */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="text-2xl">💬</div>
                 <div>
@@ -245,9 +258,9 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
 
             {formData.slackEnabled && (
               <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       Bot Token *
                     </label>
                     <Input
@@ -260,7 +273,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       Default Channel
                     </label>
                     <Input
@@ -289,8 +302,8 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
           </div>
 
           {/* Microsoft Teams Integration */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="text-2xl">📢</div>
                 <div>
@@ -309,7 +322,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
             {formData.teamsEnabled && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Teams Webhook URL *
                   </label>
                   <Input
@@ -341,50 +354,54 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
         {/* Storage & Search */}
         <div className="space-y-6">
           <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Storage & Search</h3>
-          
+
           {/* File Storage */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
             <div className="mb-4">
-              <h4 className="font-medium text-slate-900 dark:text-white mb-2">File Storage</h4>
+              <h4 className="mb-2 font-medium text-slate-900 dark:text-white">File Storage</h4>
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 Choose where to store uploaded files and attachments
               </p>
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <button
                   onClick={() => handleInputChange('storageProvider', 'local')}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                  className={`rounded-lg border-2 p-4 text-left transition-all ${
                     formData.storageProvider === 'local'
                       ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'
                   }`}
                 >
-                  <div className="text-2xl mb-2">💾</div>
+                  <div className="mb-2 text-2xl">💾</div>
                   <h5 className="font-medium text-slate-900 dark:text-white">Local Storage</h5>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Store files on the server</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Store files on the server
+                  </p>
                 </button>
 
                 <button
                   onClick={() => handleInputChange('storageProvider', 's3')}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                  className={`rounded-lg border-2 p-4 text-left transition-all ${
                     formData.storageProvider === 's3'
                       ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'
                   }`}
                 >
-                  <div className="text-2xl mb-2">☁️</div>
+                  <div className="mb-2 text-2xl">☁️</div>
                   <h5 className="font-medium text-slate-900 dark:text-white">Amazon S3</h5>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Cloud storage with S3</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Cloud storage with S3
+                  </p>
                 </button>
               </div>
 
               {formData.storageProvider === 's3' && (
-                <div className="space-y-4 mt-4">
-                  <div className="grid md:grid-cols-2 gap-4">
+                <div className="mt-4 space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         S3 Bucket *
                       </label>
                       <Input
@@ -396,7 +413,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         Region
                       </label>
                       <Input
@@ -408,9 +425,9 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                       />
                     </div>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         Access Key *
                       </label>
                       <Input
@@ -422,7 +439,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         Secret Key *
                       </label>
                       <Input
@@ -453,8 +470,8 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
           </div>
 
           {/* Elasticsearch */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="text-2xl">🔍</div>
                 <div>
@@ -472,9 +489,9 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
 
             {formData.elasticsearchEnabled && (
               <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       Elasticsearch URL *
                     </label>
                     <Input
@@ -487,7 +504,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       Index Name
                     </label>
                     <Input
@@ -504,7 +521,9 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     variant="secondary"
                     size="sm"
                     onClick={() => testConnection('elasticsearch')}
-                    disabled={connectionTests.elasticsearch === 'testing' || !formData.elasticsearchUrl}
+                    disabled={
+                      connectionTests.elasticsearch === 'testing' || !formData.elasticsearchUrl
+                    }
                     isLoading={connectionTests.elasticsearch === 'testing'}
                   >
                     Test Connection
@@ -518,9 +537,11 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
 
         {/* AI & Knowledge Base */}
         <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">AI & Knowledge Base</h3>
-          
-          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+            AI & Knowledge Base
+          </h3>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -556,7 +577,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
 
               {formData.aiAssistEnabled && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                     OpenAI API Key *
                   </label>
                   <Input
@@ -567,7 +588,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     error={errors.openaiApiKey}
                     className="w-full"
                   />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     Get your API key from the OpenAI dashboard
                   </p>
                 </div>
@@ -578,11 +599,13 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
 
         {/* Monitoring & Alerting */}
         <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Monitoring & Alerting</h3>
-          
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+            Monitoring & Alerting
+          </h3>
+
           {/* Nova Sentinel */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="text-2xl">🛡️</div>
                 <div>
@@ -600,9 +623,9 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
 
             {formData.sentinelEnabled && (
               <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       Sentinel URL *
                     </label>
                     <Input
@@ -615,7 +638,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       API Key
                     </label>
                     <Input
@@ -629,7 +652,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Webhook Secret
                   </label>
                   <Input
@@ -640,7 +663,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     error={errors.sentinelWebhookSecret}
                     className="w-full"
                   />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     Used to validate incoming webhook notifications from Sentinel
                   </p>
                 </div>
@@ -661,8 +684,8 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
           </div>
 
           {/* GoAlert */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="text-2xl">🚨</div>
                 <div>
@@ -680,9 +703,9 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
 
             {formData.goalertEnabled && (
               <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       GoAlert URL *
                     </label>
                     <Input
@@ -695,7 +718,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       API Key *
                     </label>
                     <Input
@@ -709,15 +732,17 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                   </div>
                 </div>
 
-                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-                  <h5 className="font-medium text-slate-900 dark:text-white mb-3">SMTP Configuration</h5>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
+                  <h5 className="mb-3 font-medium text-slate-900 dark:text-white">
+                    SMTP Configuration
+                  </h5>
+                  <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
                     Configure email settings for GoAlert notifications
                   </p>
-                  
-                  <div className="grid md:grid-cols-2 gap-4">
+
+                  <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         SMTP Host
                       </label>
                       <Input
@@ -729,7 +754,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         SMTP Port
                       </label>
                       <Input
@@ -741,10 +766,10 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                       />
                     </div>
                   </div>
-                  
-                  <div className="grid md:grid-cols-2 gap-4 mt-4">
+
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         SMTP Username
                       </label>
                       <Input
@@ -756,7 +781,7 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         SMTP Password
                       </label>
                       <Input
@@ -776,7 +801,11 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
                     variant="secondary"
                     size="sm"
                     onClick={() => testConnection('goalert')}
-                    disabled={connectionTests.goalert === 'testing' || !formData.goalertUrl || !formData.goalertApiKey}
+                    disabled={
+                      connectionTests.goalert === 'testing' ||
+                      !formData.goalertUrl ||
+                      !formData.goalertApiKey
+                    }
                     isLoading={connectionTests.goalert === 'testing'}
                   >
                     Test Connection
@@ -789,16 +818,16 @@ export const ServicesStep: React.FC<ServicesStepProps> = ({
         </div>
 
         {/* Continue/Skip */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+        <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
           <div className="flex items-start space-x-3">
-            <CogIcon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <CogIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
             <div>
-              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
+              <h4 className="mb-1 text-sm font-medium text-blue-800 dark:text-blue-200">
                 Optional Configuration
               </h4>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                All integrations are optional and can be configured later. You can enable 
-                basic functionality now and add integrations as your team grows.
+                All integrations are optional and can be configured later. You can enable basic
+                functionality now and add integrations as your team grows.
               </p>
             </div>
           </div>

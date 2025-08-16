@@ -8,7 +8,7 @@ import {
   XCircleIcon,
   ServerIcon,
   BellIcon,
-  WrenchScrewdriverIcon
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 
 interface Monitor {
@@ -61,23 +61,27 @@ interface NovaStatusPageProps {
   compact?: boolean;
 }
 
-const NovaStatusPage: React.FC<NovaStatusPageProps> = ({ 
-  statusPageSlug, 
-  embedded = false, 
-  compact = false 
+const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
+  statusPageSlug,
+  embedded = false,
+  compact = false,
 }) => {
   const [statusData, setStatusData] = useState<StatusPageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subscriptionEmail, setSubscriptionEmail] = useState('');
-  const [subscriptionStatus, setSubscriptionStatus] = useState<'idle' | 'subscribing' | 'success' | 'error'>('idle');
+  const [subscriptionStatus, setSubscriptionStatus] = useState<
+    'idle' | 'subscribing' | 'success' | 'error'
+  >('idle');
 
   useEffect(() => {
     fetchStatusPage();
-    
+
     // Set up real-time updates via WebSocket
-    const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`);
-    
+    const ws = new WebSocket(
+      `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`,
+    );
+
     ws.onopen = () => {
       ws.send(JSON.stringify({ type: 'subscribe_status_page', statusPageId: statusPageSlug }));
     };
@@ -97,7 +101,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
   const fetchStatusPage = useCallback(async () => {
     try {
       const response = await fetch(`/api/v1/status-pages/public/${statusPageSlug}?format=json`);
-      
+
       if (!response.ok) {
         throw new Error('Status page not found');
       }
@@ -120,14 +124,14 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
       const response = await fetch(`/api/v1/status-pages/public/${statusPageSlug}/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: subscriptionEmail, 
-          types: ['incidents', 'maintenance'] 
-        })
+        body: JSON.stringify({
+          email: subscriptionEmail,
+          types: ['incidents', 'maintenance'],
+        }),
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         setSubscriptionStatus('success');
         setSubscriptionEmail('');
@@ -144,15 +148,15 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'operational':
-        return <CheckCircleIcon className="w-6 h-6 text-green-500" />;
+        return <CheckCircleIcon className="h-6 w-6 text-green-500" />;
       case 'degraded_performance':
-        return <ExclamationTriangleIcon className="w-6 h-6 text-yellow-500" />;
+        return <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500" />;
       case 'partial_outage':
-        return <ExclamationTriangleIcon className="w-6 h-6 text-orange-500" />;
+        return <ExclamationTriangleIcon className="h-6 w-6 text-orange-500" />;
       case 'major_outage':
-        return <XCircleIcon className="w-6 h-6 text-red-500" />;
+        return <XCircleIcon className="h-6 w-6 text-red-500" />;
       default:
-        return <ServerIcon className="w-6 h-6 text-gray-500" />;
+        return <ServerIcon className="h-6 w-6 text-gray-500" />;
     }
   };
 
@@ -203,17 +207,17 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <XCircleIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Status Page</h2>
+      <div className="py-12 text-center">
+        <XCircleIcon className="mx-auto mb-4 h-16 w-16 text-red-500" />
+        <h2 className="mb-2 text-xl font-semibold text-gray-900">Error Loading Status Page</h2>
         <p className="text-gray-600">{error}</p>
       </div>
     );
@@ -227,26 +231,35 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
 
   if (embedded) {
     return (
-      <div className={`${isDark ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} rounded-lg border ${isDark ? 'border-gray-700' : 'border-gray-200'} overflow-hidden`}>
-        <div className={`px-4 py-3 ${getStatusColor(statusData.overallStatus)} text-white text-center font-medium text-sm`}>
+      <div
+        className={`${isDark ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} rounded-lg border ${isDark ? 'border-gray-700' : 'border-gray-200'} overflow-hidden`}
+      >
+        <div
+          className={`px-4 py-3 ${getStatusColor(statusData.overallStatus)} text-center text-sm font-medium text-white`}
+        >
           {getStatusMessage(statusData.overallStatus)}
         </div>
-        
+
         <div className="p-4">
           {statusData.monitors.slice(0, compact ? 3 : 8).map((monitor) => (
-            <div key={monitor.id} className="flex items-center justify-between py-2 border-b border-gray-200 last:border-b-0">
+            <div
+              key={monitor.id}
+              className="flex items-center justify-between border-b border-gray-200 py-2 last:border-b-0"
+            >
               <span className="text-sm font-medium">{monitor.name}</span>
               <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${monitor.status === 'up' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <div
+                  className={`h-2 w-2 rounded-full ${monitor.status === 'up' ? 'bg-green-500' : 'bg-red-500'}`}
+                ></div>
                 <span className="text-xs text-gray-500">
                   {monitor.status === 'up' ? 'Up' : 'Down'}
                 </span>
               </div>
             </div>
           ))}
-          
+
           {statusData.monitors.length > (compact ? 3 : 8) && (
-            <div className="text-center py-2 text-xs text-gray-500">
+            <div className="py-2 text-center text-xs text-gray-500">
               +{statusData.monitors.length - (compact ? 3 : 8)} more services
             </div>
           )}
@@ -256,29 +269,31 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
   }
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div
+      className={`min-h-screen ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}
+    >
+      <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
-          className={`text-center mb-8 p-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
+          className={`mb-8 rounded-2xl p-8 text-center ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
         >
           {statusData.icon && (
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden">
-              <Image 
-                src={statusData.icon} 
-                alt="Service Icon" 
-                width={64} 
-                height={64} 
-                className="w-full h-full object-cover"
+            <div className="mx-auto mb-4 h-16 w-16 overflow-hidden rounded-full">
+              <Image
+                src={statusData.icon}
+                alt="Service Icon"
+                width={64}
+                height={64}
+                className="h-full w-full object-cover"
                 unoptimized={true}
               />
             </div>
           )}
-          
-          <h1 className="text-4xl font-bold mb-4">{statusData.title}</h1>
+
+          <h1 className="mb-4 text-4xl font-bold">{statusData.title}</h1>
           {statusData.description && (
             <p className="text-xl text-gray-600 dark:text-gray-300">{statusData.description}</p>
           )}
@@ -289,13 +304,15 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
-          className={`mb-8 p-6 rounded-2xl text-center ${getStatusColor(statusData.overallStatus)} text-white shadow-lg`}
+          className={`mb-8 rounded-2xl p-6 text-center ${getStatusColor(statusData.overallStatus)} text-white shadow-lg`}
         >
-          <div className="flex items-center justify-center space-x-3 mb-2">
+          <div className="mb-2 flex items-center justify-center space-x-3">
             {getStatusIcon(statusData.overallStatus)}
             <span className="text-2xl font-bold">{getStatusMessage(statusData.overallStatus)}</span>
           </div>
-          <p className="text-sm opacity-90">Last updated: {new Date(statusData.lastUpdated).toLocaleString()}</p>
+          <p className="text-sm opacity-90">
+            Last updated: {new Date(statusData.lastUpdated).toLocaleString()}
+          </p>
         </motion.div>
 
         {/* Active Incidents */}
@@ -306,32 +323,32 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
-              className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg overflow-hidden`}
+              className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} overflow-hidden shadow-lg`}
             >
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="border-b border-gray-200 p-6 dark:border-gray-700">
                 <div className="flex items-center space-x-2">
-                  <BellIcon className="w-6 h-6 text-red-500" />
+                  <BellIcon className="h-6 w-6 text-red-500" />
                   <h2 className="text-xl font-semibold">Active Incidents</h2>
                 </div>
               </div>
-              
-              <div className="p-6 space-y-4">
+
+              <div className="space-y-4 p-6">
                 {statusData.incidents.map((incident) => (
                   <motion.div
                     key={incident.id}
                     layout
-                    className={`p-4 border-l-4 rounded-lg ${getIncidentStyle(incident.style)}`}
+                    className={`rounded-lg border-l-4 p-4 ${getIncidentStyle(incident.style)}`}
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold mb-2">{incident.title}</h3>
+                        <h3 className="mb-2 font-semibold">{incident.title}</h3>
                         <p className="text-sm">{incident.content}</p>
-                        <p className="text-xs mt-2 opacity-75">
+                        <p className="mt-2 text-xs opacity-75">
                           {new Date(incident.created_at).toLocaleString()}
                         </p>
                       </div>
                       {incident.pin && (
-                        <div className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                        <div className="rounded bg-red-100 px-2 py-1 text-xs text-red-800">
                           PINNED
                         </div>
                       )}
@@ -351,32 +368,36 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
-              className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg overflow-hidden`}
+              className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} overflow-hidden shadow-lg`}
             >
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="border-b border-gray-200 p-6 dark:border-gray-700">
                 <div className="flex items-center space-x-2">
-                  <WrenchScrewdriverIcon className="w-6 h-6 text-yellow-500" />
+                  <WrenchScrewdriverIcon className="h-6 w-6 text-yellow-500" />
                   <h2 className="text-xl font-semibold">Scheduled Maintenance</h2>
                 </div>
               </div>
-              
-              <div className="p-6 space-y-4">
+
+              <div className="space-y-4 p-6">
                 {statusData.maintenance.map((maintenance) => (
                   <motion.div
                     key={maintenance.id}
                     layout
-                    className="p-4 border-l-4 border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-900 dark:text-yellow-100 rounded-lg"
+                    className="rounded-lg border-l-4 border-l-yellow-500 bg-yellow-50 p-4 text-yellow-900 dark:bg-yellow-900/20 dark:text-yellow-100"
                   >
-                    <h3 className="font-semibold mb-2">{maintenance.title}</h3>
-                    <p className="text-sm mb-2">{maintenance.description}</p>
+                    <h3 className="mb-2 font-semibold">{maintenance.title}</h3>
+                    <p className="mb-2 text-sm">{maintenance.description}</p>
                     <div className="flex items-center space-x-4 text-xs">
                       <span>Start: {new Date(maintenance.start_time).toLocaleString()}</span>
                       <span>End: {new Date(maintenance.end_time).toLocaleString()}</span>
-                      <span className={`px-2 py-1 rounded ${
-                        maintenance.status === 'active' ? 'bg-yellow-200 text-yellow-800' :
-                        maintenance.status === 'completed' ? 'bg-green-200 text-green-800' :
-                        'bg-blue-200 text-blue-800'
-                      }`}>
+                      <span
+                        className={`rounded px-2 py-1 ${
+                          maintenance.status === 'active'
+                            ? 'bg-yellow-200 text-yellow-800'
+                            : maintenance.status === 'completed'
+                              ? 'bg-green-200 text-green-800'
+                              : 'bg-blue-200 text-blue-800'
+                        }`}
+                      >
                         {maintenance.status.toUpperCase()}
                       </span>
                     </div>
@@ -392,25 +413,27 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
-          className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg overflow-hidden`}
+          className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} overflow-hidden shadow-lg`}
         >
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="border-b border-gray-200 p-6 dark:border-gray-700">
             <div className="flex items-center space-x-2">
-              <ServerIcon className="w-6 h-6 text-blue-500" />
+              <ServerIcon className="h-6 w-6 text-blue-500" />
               <h2 className="text-xl font-semibold">Services Status</h2>
             </div>
           </div>
-          
+
           <div className="p-6">
             <div className="space-y-4">
               {statusData.monitors.map((monitor) => (
                 <motion.div
                   key={monitor.id}
                   layout
-                  className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200"
+                  className="flex items-center justify-between rounded-lg border border-gray-200 p-4 transition-shadow duration-200 hover:shadow-md dark:border-gray-700"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className={`w-3 h-3 rounded-full ${monitor.status === 'up' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <div
+                      className={`h-3 w-3 rounded-full ${monitor.status === 'up' ? 'bg-green-500' : 'bg-red-500'}`}
+                    ></div>
                     <div>
                       <h3 className="font-medium">{monitor.name}</h3>
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -419,19 +442,19 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="text-right">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      monitor.status === 'up' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
-                    }`}>
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+                        monitor.status === 'up'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                      }`}
+                    >
                       {monitor.status === 'up' ? 'Operational' : 'Down'}
                     </span>
                     {monitor.responseTime && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        {monitor.responseTime}ms
-                      </div>
+                      <div className="mt-1 text-xs text-gray-500">{monitor.responseTime}ms</div>
                     )}
                   </div>
                 </motion.div>
@@ -445,20 +468,20 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
-          className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg overflow-hidden`}
+          className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} overflow-hidden shadow-lg`}
         >
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="border-b border-gray-200 p-6 dark:border-gray-700">
             <div className="flex items-center space-x-2">
-              <BellIcon className="w-6 h-6 text-blue-500" />
+              <BellIcon className="h-6 w-6 text-blue-500" />
               <h2 className="text-xl font-semibold">Get Notified</h2>
             </div>
           </div>
-          
+
           <div className="p-6">
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
+            <p className="mb-4 text-gray-600 dark:text-gray-300">
               Subscribe to receive notifications about incidents and maintenance.
             </p>
-            
+
             <form onSubmit={handleSubscription} className="max-w-md">
               <div className="flex space-x-3">
                 <input
@@ -467,19 +490,19 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
                   onChange={(e) => setSubscriptionEmail(e.target.value)}
                   placeholder="Enter your email"
                   required
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 />
                 <motion.button
                   type="submit"
                   disabled={subscriptionStatus === 'subscribing'}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  className="rounded-lg bg-blue-600 px-6 py-2 text-white transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {subscriptionStatus === 'subscribing' ? 'Subscribing...' : 'Subscribe'}
                 </motion.button>
               </div>
-              
+
               {subscriptionStatus === 'success' && (
                 <motion.p
                   initial={{ opacity: 0 }}
@@ -489,7 +512,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
                   Subscription successful! Please check your email to confirm.
                 </motion.p>
               )}
-              
+
               {subscriptionStatus === 'error' && (
                 <motion.p
                   initial={{ opacity: 0 }}
@@ -504,13 +527,9 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
         </motion.div>
 
         {/* Footer */}
-        <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
-          {statusData.footerText && (
-            <p className="mb-2">{statusData.footerText}</p>
-          )}
-          {statusData.showPoweredBy && (
-            <p>Powered by Nova Universe</p>
-          )}
+        <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+          {statusData.footerText && <p className="mb-2">{statusData.footerText}</p>}
+          {statusData.showPoweredBy && <p>Powered by Nova Universe</p>}
         </div>
       </div>
     </div>

@@ -21,10 +21,9 @@ export function normalizeTicketType(typeCode) {
     throw new Error('type is required');
   }
   const upper = typeCode.trim().toUpperCase();
-  const allowed = new Set(['INC','REQ','PRB','CHG','TASK','HR','OPS','ISAC','FB']);
+  const allowed = new Set(['INC', 'REQ', 'PRB', 'CHG', 'TASK', 'HR', 'OPS', 'ISAC', 'FB']);
   if (!allowed.has(upper)) {
     throw new Error(`Unsupported ticket type: ${upper}`);
   }
   return upper;
 }
-

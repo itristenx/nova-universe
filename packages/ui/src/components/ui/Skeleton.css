@@ -1,6 +1,11 @@
 .skeleton {
   display: inline-block;
-  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-muted) 50%, var(--color-surface) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 25%,
+    var(--color-muted) 50%,
+    var(--color-surface) 75%
+  );
   background-size: 200% 100%;
   animation: skeleton-loading 1.2s ease-in-out infinite;
   min-width: 1rem;

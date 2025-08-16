@@ -20,20 +20,6 @@ export default [
       "**/*.d.ts"
     ]
   },
-  // Global project-level settings to reduce false positives and noisy rules during mass lint fixes.
-  {
-    languageOptions: {
-      globals: { ...globals.node, ...globals.browser, ...globals.es2024, ...globals.jest }
-    },
-    rules: {
-      // Allow require() style imports in mixed JS/TS code while migrating to ESM
-      "@typescript-eslint/no-require-imports": "off",
-      // Temporarily relax explicit-any rule across the repo to reduce thousands of errors
-      "@typescript-eslint/no-explicit-any": "off",
-      // Disable Next.js-specific rule that isn't available in this environment
-      "@next/next/no-img-element": "off"
-    }
-  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -57,6 +43,7 @@ export default [
   {
     files: [
       "apps/api/**/*.{js,ts}",
+      "apps/comms/**/*.{js,ts}",
       "scripts/**/*.{js,ts}",
       "tools/**/*.{js,ts}"
     ],
@@ -93,7 +80,26 @@ export default [
   },
   // TypeScript specific tweaks
   {
-    files: ["**/*.{ts,tsx}"]
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": ["error", { 
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "ignoreRestSiblings": true 
+      }]
+    }
+  },
+  // General rule relaxations for large codebase
+  {
+    rules: {
+      "no-empty": ["error", { "allowEmptyCatch": true }],
+      "@typescript-eslint/no-unused-vars": ["error", { 
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "ignoreRestSiblings": true 
+      }]
+    }
   }
 ];
 

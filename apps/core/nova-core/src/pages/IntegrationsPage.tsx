@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Input, Modal, Select, Checkbox } from '@/components/ui';
-import { 
+import {
   Cog6ToothIcon,
   CheckCircleIcon,
   XCircleIcon,
   PlusIcon,
   TrashIcon,
-  PencilIcon
+  PencilIcon,
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
@@ -90,11 +90,11 @@ export const IntegrationsPage: React.FC = () => {
         type: formData.type as Integration['type'],
       };
       await api.updateIntegration(editingIntegration.id, integrationData);
-      setIntegrations(integrations.map(i => 
-        i.id === editingIntegration.id 
-          ? { ...i, ...integrationData } 
-          : i
-      ));
+      setIntegrations(
+        integrations.map((i) =>
+          i.id === editingIntegration.id ? { ...i, ...integrationData } : i,
+        ),
+      );
       setEditingIntegration(null);
       resetForm();
       addToast({
@@ -116,7 +116,7 @@ export const IntegrationsPage: React.FC = () => {
     if (confirm('Are you sure you want to delete this integration?')) {
       try {
         await api.deleteIntegration(id);
-        setIntegrations(integrations.filter(i => i.id !== id));
+        setIntegrations(integrations.filter((i) => i.id !== id));
         addToast({
           type: 'success',
           title: 'Success',
@@ -127,7 +127,8 @@ export const IntegrationsPage: React.FC = () => {
         addToast({
           type: 'error',
           title: 'Error',
-          description: error.response?.data?.error || 'Failed to delete integration. Please try again.',
+          description:
+            error.response?.data?.error || 'Failed to delete integration. Please try again.',
         });
       }
     }
@@ -184,24 +185,35 @@ export const IntegrationsPage: React.FC = () => {
       case 'smtp':
         return (
           <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded-md p-4">
+            <div className="rounded-md border border-green-200 bg-green-50 p-4">
               <div className="text-sm text-green-700">
-                <h4 className="font-medium mb-2">SMTP Setup Instructions:</h4>
-                <ul className="list-disc list-inside space-y-1 text-xs">
-                  <li><strong>Gmail:</strong> Use smtp.gmail.com, port 587, enable 2FA and use App Password</li>
-                  <li><strong>Outlook:</strong> Use smtp.live.com, port 587 with TLS</li>
-                  <li><strong>Office 365:</strong> Use smtp.office365.com, port 587 with TLS</li>
-                  <li><strong>Custom:</strong> Contact your email provider for SMTP settings</li>
+                <h4 className="mb-2 font-medium">SMTP Setup Instructions:</h4>
+                <ul className="list-inside list-disc space-y-1 text-xs">
+                  <li>
+                    <strong>Gmail:</strong> Use smtp.gmail.com, port 587, enable 2FA and use App
+                    Password
+                  </li>
+                  <li>
+                    <strong>Outlook:</strong> Use smtp.live.com, port 587 with TLS
+                  </li>
+                  <li>
+                    <strong>Office 365:</strong> Use smtp.office365.com, port 587 with TLS
+                  </li>
+                  <li>
+                    <strong>Custom:</strong> Contact your email provider for SMTP settings
+                  </li>
                 </ul>
               </div>
             </div>
             <Input
               label="SMTP Host"
               value={formData.config.host || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, host: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, host: e.target.value },
+                })
+              }
               placeholder="smtp.gmail.com"
               required
             />
@@ -210,10 +222,12 @@ export const IntegrationsPage: React.FC = () => {
                 label="Port"
                 type="number"
                 value={formData.config.port || ''}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  config: { ...formData.config, port: parseInt(e.target.value) }
-                })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    config: { ...formData.config, port: parseInt(e.target.value) },
+                  })
+                }
                 placeholder="587"
                 required
               />
@@ -221,20 +235,24 @@ export const IntegrationsPage: React.FC = () => {
                 <Checkbox
                   label="Use TLS"
                   checked={formData.config.secure || false}
-                  onChange={(checked) => setFormData({
-                    ...formData,
-                    config: { ...formData.config, secure: checked }
-                  })}
+                  onChange={(checked) =>
+                    setFormData({
+                      ...formData,
+                      config: { ...formData.config, secure: checked },
+                    })
+                  }
                 />
               </div>
             </div>
             <Input
               label="Username"
               value={formData.config.username || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, username: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, username: e.target.value },
+                })
+              }
               placeholder="your-email@example.com"
               required
             />
@@ -242,10 +260,12 @@ export const IntegrationsPage: React.FC = () => {
               label="Password"
               type="password"
               value={formData.config.password || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, password: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, password: e.target.value },
+                })
+              }
               placeholder="App password or SMTP password"
               required
             />
@@ -257,20 +277,24 @@ export const IntegrationsPage: React.FC = () => {
             <Input
               label="API Key"
               value={formData.config.apiKey || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, apiKey: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, apiKey: e.target.value },
+                })
+              }
               placeholder="Help Scout API key"
               required
             />
             <Input
               label="Mailbox ID"
               value={formData.config.mailboxId || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, mailboxId: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, mailboxId: e.target.value },
+                })
+              }
               placeholder="123456"
               required
             />
@@ -279,10 +303,10 @@ export const IntegrationsPage: React.FC = () => {
       case 'slack':
         return (
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
               <div className="text-sm text-blue-700">
-                <h4 className="font-medium mb-2">Slack Setup Instructions:</h4>
-                <ol className="list-decimal list-inside space-y-1 text-xs">
+                <h4 className="mb-2 font-medium">Slack Setup Instructions:</h4>
+                <ol className="list-inside list-decimal space-y-1 text-xs">
                   <li>Go to your Slack workspace settings</li>
                   <li>Navigate to "Apps" → "App Directory" → "Manage"</li>
                   <li>Create a new app or select "Incoming Webhooks"</li>
@@ -294,30 +318,36 @@ export const IntegrationsPage: React.FC = () => {
             <Input
               label="Webhook URL"
               value={formData.config.webhookUrl || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, webhookUrl: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, webhookUrl: e.target.value },
+                })
+              }
               placeholder="https://hooks.slack.com/services/..."
               required
             />
             <Input
               label="Channel"
               value={formData.config.channel || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, channel: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, channel: e.target.value },
+                })
+              }
               placeholder="#general or #support"
               required
             />
             <Input
               label="Username (optional)"
               value={formData.config.username || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, username: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, username: e.target.value },
+                })
+              }
               placeholder="Nova Universe Bot"
             />
           </div>
@@ -325,10 +355,10 @@ export const IntegrationsPage: React.FC = () => {
       case 'teams':
         return (
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
               <div className="text-sm text-blue-700">
-                <h4 className="font-medium mb-2">Microsoft Teams Setup Instructions:</h4>
-                <ol className="list-decimal list-inside space-y-1 text-xs">
+                <h4 className="mb-2 font-medium">Microsoft Teams Setup Instructions:</h4>
+                <ol className="list-inside list-decimal space-y-1 text-xs">
                   <li>Open Microsoft Teams and go to your channel</li>
                   <li>Click "..." → "Connectors" → "Configure"</li>
                   <li>Find "Incoming Webhook" and click "Add"</li>
@@ -340,10 +370,12 @@ export const IntegrationsPage: React.FC = () => {
             <Input
               label="Webhook URL"
               value={formData.config.webhookUrl || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, webhookUrl: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, webhookUrl: e.target.value },
+                })
+              }
               placeholder="https://your-tenant.webhook.office.com/..."
               required
             />
@@ -355,20 +387,24 @@ export const IntegrationsPage: React.FC = () => {
             <Input
               label="Webhook URL"
               value={formData.config.url || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, url: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, url: e.target.value },
+                })
+              }
               placeholder="https://your-webhook-endpoint.com/hook"
               required
             />
             <Select
               label="HTTP Method"
               value={formData.config.method || 'POST'}
-              onChange={(value) => setFormData({
-                ...formData,
-                config: { ...formData.config, method: value }
-              })}
+              onChange={(value) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, method: value },
+                })
+              }
               options={[
                 { value: 'POST', label: 'POST' },
                 { value: 'PUT', label: 'PUT' },
@@ -378,10 +414,12 @@ export const IntegrationsPage: React.FC = () => {
             <Input
               label="Content Type"
               value={formData.config.contentType || 'application/json'}
-              onChange={(e) => setFormData({
-                ...formData,
-                config: { ...formData.config, contentType: e.target.value }
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  config: { ...formData.config, contentType: e.target.value },
+                })
+              }
               placeholder="application/json"
             />
           </div>
@@ -404,27 +442,24 @@ export const IntegrationsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Integrations</h1>
           <p className="mt-1 text-sm text-gray-600">
             Manage external service integrations and API connections
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setShowCreateModal(true)}
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
+        <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+          <PlusIcon className="mr-2 h-4 w-4" />
           Add Integration
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-blue-500">
+            <div className="rounded-lg bg-blue-500 p-3">
               <Cog6ToothIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
@@ -435,26 +470,26 @@ export const IntegrationsPage: React.FC = () => {
         </Card>
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-green-500">
+            <div className="rounded-lg bg-green-500 p-3">
               <CheckCircleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {integrations.filter(i => i.enabled).length}
+                {integrations.filter((i) => i.enabled).length}
               </p>
             </div>
           </div>
         </Card>
         <Card>
           <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-red-500">
+            <div className="rounded-lg bg-red-500 p-3">
               <XCircleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Inactive</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {integrations.filter(i => !i.enabled).length}
+                {integrations.filter((i) => !i.enabled).length}
               </p>
             </div>
           </div>
@@ -465,21 +500,18 @@ export const IntegrationsPage: React.FC = () => {
       <Card>
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <div className="border-primary-600 h-8 w-8 animate-spin rounded-full border-b-2"></div>
           </div>
         ) : integrations.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="py-12 text-center">
             <Cog6ToothIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No integrations configured</h3>
             <p className="mt-1 text-sm text-gray-500">
               Get started by adding your first integration.
             </p>
             <div className="mt-6">
-              <Button
-                variant="primary"
-                onClick={() => setShowCreateModal(true)}
-              >
-                <PlusIcon className="h-4 w-4 mr-2" />
+              <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+                <PlusIcon className="mr-2 h-4 w-4" />
                 Add Integration
               </Button>
             </div>
@@ -496,7 +528,8 @@ export const IntegrationsPage: React.FC = () => {
                         {integration.name}
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {integrationTypes.find(t => t.value === integration.type)?.label || integration.type}
+                        {integrationTypes.find((t) => t.value === integration.type)?.label ||
+                          integration.type}
                       </p>
                     </div>
                   </div>
@@ -528,10 +561,12 @@ export const IntegrationsPage: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-                
+
                 {integration.lastError && (
-                  <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                    <p className="text-sm text-red-600 dark:text-red-400">{integration.lastError}</p>
+                  <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {integration.lastError}
+                    </p>
                   </div>
                 )}
               </div>
@@ -541,12 +576,7 @@ export const IntegrationsPage: React.FC = () => {
       </Card>
 
       {/* Create Integration Modal */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={closeModals}
-        title="Add Integration"
-        size="lg"
-      >
+      <Modal isOpen={showCreateModal} onClose={closeModals} title="Add Integration" size="lg">
         <div className="space-y-4">
           <Input
             label="Integration Name"
@@ -555,7 +585,7 @@ export const IntegrationsPage: React.FC = () => {
             placeholder="My Integration"
             required
           />
-          
+
           <Select
             label="Integration Type"
             value={formData.type}
@@ -573,12 +603,12 @@ export const IntegrationsPage: React.FC = () => {
           />
         </div>
 
-        <div className="flex justify-end space-x-3 mt-6">
+        <div className="mt-6 flex justify-end space-x-3">
           <Button variant="secondary" onClick={closeModals}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleCreateIntegration}
             disabled={!formData.name || !formData.type}
           >
@@ -601,7 +631,7 @@ export const IntegrationsPage: React.FC = () => {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
-          
+
           <Select
             label="Integration Type"
             value={formData.type}
@@ -619,12 +649,12 @@ export const IntegrationsPage: React.FC = () => {
           />
         </div>
 
-        <div className="flex justify-end space-x-3 mt-6">
+        <div className="mt-6 flex justify-end space-x-3">
           <Button variant="secondary" onClick={closeModals}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleUpdateIntegration}
             disabled={!formData.name || !formData.type}
           >

@@ -8,7 +8,13 @@ interface ColorPickerProps {
   className?: string;
 }
 
-export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange, disabled = false, className = '' }) => {
+export const ColorPicker: React.FC<ColorPickerProps> = ({
+  label,
+  value,
+  onChange,
+  disabled = false,
+  className = '',
+}) => {
   const id = React.useId();
   return (
     <div className={`space-y-1 ${className}`}>
@@ -23,7 +29,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="h-10 w-16 border border-gray-300 rounded-md"
+        className="h-10 w-16 rounded-md border border-gray-300"
       />
     </div>
   );

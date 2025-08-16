@@ -11,7 +11,8 @@ const CONFIG = {
   apiUrl: process.env.TEST_API_URL || 'http://localhost:3000',
   timeout: 30000,
   retryAttempts: 3,
-  testDatabase: process.env.TEST_DATABASE_URL || 'postgresql://test_user:test_pass@localhost:5432/nova_test'
+  testDatabase:
+    process.env.TEST_DATABASE_URL || 'postgresql://test_user:test_pass@localhost:5432/nova_test',
 };
 
 // Test Utilities
@@ -25,7 +26,7 @@ class TestHelper {
       } catch (error) {
         // Service not ready yet
       }
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
     throw new Error(`Service at ${url} not ready after ${timeout}ms`);
   }
@@ -35,16 +36,16 @@ class TestHelper {
     const defaultOptions = {
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'Nova-Universe-Integration-Test'
-      }
+        'User-Agent': 'Nova-Universe-Integration-Test',
+      },
     };
-    
+
     const response = await fetch(url, { ...defaultOptions, ...options });
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
-    
+
     return response;
   }
 
@@ -56,14 +57,14 @@ class TestHelper {
         description: `Integration test ticket created at ${new Date().toISOString()}`,
         priority: 'medium',
         category: 'technical',
-        requester_email: `test${timestamp}@example.com`
+        requester_email: `test${timestamp}@example.com`,
       },
       user: {
         email: `testuser${timestamp}@example.com`,
         first_name: 'Test',
         last_name: 'User',
-        role: 'user'
-      }
+        role: 'user',
+      },
     };
   }
 }
@@ -79,7 +80,7 @@ test('Service Health Checks', async (t) => {
   await t.test('Database connectivity', async () => {
     const response = await TestHelper.makeRequest('/api/monitoring/health');
     const health = await response.json();
-    
+
     assert.strictEqual(health.status, 'healthy');
     assert.strictEqual(health.database.status, 'connected');
   });
@@ -87,7 +88,7 @@ test('Service Health Checks', async (t) => {
   await t.test('Redis connectivity', async () => {
     const response = await TestHelper.makeRequest('/api/monitoring/health');
     const health = await response.json();
-    
+
     assert.strictEqual(health.redis.status, 'connected');
   });
 });
@@ -101,7 +102,7 @@ test('Authentication & Authorization', async (t) => {
     const userData = TestHelper.generateTestData().user;
     const response = await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ ...userData, password: 'TestPassword123!' })
+      body: JSON.stringify({ ...userData, password: 'TestPassword123!' }),
     });
 
     assert.strictEqual(response.status, 201);
@@ -115,8 +116,8 @@ test('Authentication & Authorization', async (t) => {
       method: 'POST',
       body: JSON.stringify({
         email: testUser.email,
-        password: 'TestPassword123!'
-      })
+        password: 'TestPassword123!',
+      }),
     });
 
     assert.strictEqual(response.status, 200);
@@ -128,8 +129,8 @@ test('Authentication & Authorization', async (t) => {
   await t.test('Protected endpoint access', async () => {
     const response = await TestHelper.makeRequest('/api/tickets', {
       headers: {
-        'Authorization': `Bearer ${authToken}`
-      }
+        Authorization: `Bearer ${authToken}`,
+      },
     });
 
     assert.strictEqual(response.status, 200);
@@ -139,8 +140,8 @@ test('Authentication & Authorization', async (t) => {
     try {
       await TestHelper.makeRequest('/api/tickets', {
         headers: {
-          'Authorization': 'Bearer invalid-token'
-        }
+          Authorization: 'Bearer invalid-token',
+        },
       });
       assert.fail('Should have rejected invalid token');
     } catch (error) {
@@ -159,15 +160,15 @@ test('Ticket Management System', async (t) => {
     const userData = TestHelper.generateTestData().user;
     await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ ...userData, password: 'TestPassword123!' })
+      body: JSON.stringify({ ...userData, password: 'TestPassword123!' }),
     });
 
     const loginResponse = await TestHelper.makeRequest('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({
         email: userData.email,
-        password: 'TestPassword123!'
-      })
+        password: 'TestPassword123!',
+      }),
     });
 
     const loginResult = await loginResponse.json();
@@ -179,9 +180,9 @@ test('Ticket Management System', async (t) => {
     const response = await TestHelper.makeRequest('/api/tickets', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${authToken}`
+        Authorization: `Bearer ${authToken}`,
       },
-      body: JSON.stringify(ticketData)
+      body: JSON.stringify(ticketData),
     });
 
     assert.strictEqual(response.status, 201);
@@ -194,8 +195,8 @@ test('Ticket Management System', async (t) => {
   await t.test('Retrieve ticket', async () => {
     const response = await TestHelper.makeRequest(`/api/tickets/${testTicket.id}`, {
       headers: {
-        'Authorization': `Bearer ${authToken}`
-      }
+        Authorization: `Bearer ${authToken}`,
+      },
     });
 
     assert.strictEqual(response.status, 200);
@@ -207,9 +208,9 @@ test('Ticket Management System', async (t) => {
     const response = await TestHelper.makeRequest(`/api/tickets/${testTicket.id}`, {
       method: 'PATCH',
       headers: {
-        'Authorization': `Bearer ${authToken}`
+        Authorization: `Bearer ${authToken}`,
       },
-      body: JSON.stringify({ status: 'in_progress' })
+      body: JSON.stringify({ status: 'in_progress' }),
     });
 
     assert.strictEqual(response.status, 200);
@@ -220,15 +221,15 @@ test('Ticket Management System', async (t) => {
   await t.test('Add ticket comment', async () => {
     const commentData = {
       content: 'Test comment for integration testing',
-      type: 'internal'
+      type: 'internal',
     };
 
     const response = await TestHelper.makeRequest(`/api/tickets/${testTicket.id}/comments`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${authToken}`
+        Authorization: `Bearer ${authToken}`,
       },
-      body: JSON.stringify(commentData)
+      body: JSON.stringify(commentData),
     });
 
     assert.strictEqual(response.status, 201);
@@ -248,20 +249,20 @@ test('Analytics & Reporting System', async (t) => {
       first_name: 'Admin',
       last_name: 'User',
       role: 'admin',
-      password: 'AdminPassword123!'
+      password: 'AdminPassword123!',
     };
 
     await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify(adminData)
+      body: JSON.stringify(adminData),
     });
 
     const loginResponse = await TestHelper.makeRequest('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({
         email: adminData.email,
-        password: adminData.password
-      })
+        password: adminData.password,
+      }),
     });
 
     const loginResult = await loginResponse.json();
@@ -271,13 +272,13 @@ test('Analytics & Reporting System', async (t) => {
   await t.test('Dashboard analytics', async () => {
     const response = await TestHelper.makeRequest('/api/analytics/dashboard', {
       headers: {
-        'Authorization': `Bearer ${authToken}`
-      }
+        Authorization: `Bearer ${authToken}`,
+      },
     });
 
     assert.strictEqual(response.status, 200);
     const analytics = await response.json();
-    
+
     assert.ok(analytics.summary);
     assert.ok(typeof analytics.summary.totalTickets === 'number');
     assert.ok(typeof analytics.summary.openTickets === 'number');
@@ -287,13 +288,13 @@ test('Analytics & Reporting System', async (t) => {
   await t.test('Real-time metrics', async () => {
     const response = await TestHelper.makeRequest('/api/analytics/realtime', {
       headers: {
-        'Authorization': `Bearer ${authToken}`
-      }
+        Authorization: `Bearer ${authToken}`,
+      },
     });
 
     assert.strictEqual(response.status, 200);
     const metrics = await response.json();
-    
+
     assert.ok(metrics.currentLoad);
     assert.ok(typeof metrics.currentLoad.activeUsers === 'number');
     assert.ok(typeof metrics.currentLoad.ticketsPerHour === 'number');
@@ -302,13 +303,13 @@ test('Analytics & Reporting System', async (t) => {
   await t.test('Executive reporting', async () => {
     const response = await TestHelper.makeRequest('/api/analytics/executive', {
       headers: {
-        'Authorization': `Bearer ${authToken}`
-      }
+        Authorization: `Bearer ${authToken}`,
+      },
     });
 
     assert.strictEqual(response.status, 200);
     const report = await response.json();
-    
+
     assert.ok(report.kpis);
     assert.ok(report.trends);
     assert.ok(Array.isArray(report.insights));
@@ -326,20 +327,20 @@ test('VIP Priority System', async (t) => {
       first_name: 'VIP',
       last_name: 'Customer',
       role: 'vip',
-      password: 'VIPPassword123!'
+      password: 'VIPPassword123!',
     };
 
     await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify(vipUserData)
+      body: JSON.stringify(vipUserData),
     });
 
     const loginResponse = await TestHelper.makeRequest('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({
         email: vipUserData.email,
-        password: vipUserData.password
-      })
+        password: vipUserData.password,
+      }),
     });
 
     const loginResult = await loginResponse.json();
@@ -351,20 +352,20 @@ test('VIP Priority System', async (t) => {
       title: 'VIP Priority Test Ticket',
       description: 'Testing VIP priority system',
       priority: 'high',
-      category: 'technical'
+      category: 'technical',
     };
 
     const response = await TestHelper.makeRequest('/api/tickets', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${authToken}`
+        Authorization: `Bearer ${authToken}`,
       },
-      body: JSON.stringify(ticketData)
+      body: JSON.stringify(ticketData),
     });
 
     assert.strictEqual(response.status, 201);
     vipTicket = await response.json();
-    
+
     // VIP tickets should have elevated priority score
     assert.ok(vipTicket.vip_priority_score > 0);
     assert.strictEqual(vipTicket.is_vip, true);
@@ -377,20 +378,20 @@ test('VIP Priority System', async (t) => {
       first_name: 'Regular',
       last_name: 'User',
       role: 'user',
-      password: 'RegularPassword123!'
+      password: 'RegularPassword123!',
     };
 
     await TestHelper.makeRequest('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify(regularUserData)
+      body: JSON.stringify(regularUserData),
     });
 
     const regularLoginResponse = await TestHelper.makeRequest('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({
         email: regularUserData.email,
-        password: regularUserData.password
-      })
+        password: regularUserData.password,
+      }),
     });
 
     const regularLoginResult = await regularLoginResponse.json();
@@ -399,14 +400,14 @@ test('VIP Priority System', async (t) => {
     const regularTicketResponse = await TestHelper.makeRequest('/api/tickets', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${regularToken}`
+        Authorization: `Bearer ${regularToken}`,
       },
       body: JSON.stringify({
         title: 'Regular Priority Test Ticket',
         description: 'Testing regular priority',
         priority: 'high',
-        category: 'technical'
-      })
+        category: 'technical',
+      }),
     });
 
     const regularTicket = await regularTicketResponse.json();
@@ -423,7 +424,7 @@ test('WebSocket Communication', async (t) => {
     // For now, we'll test the HTTP endpoint that supports WebSocket upgrades
     const response = await TestHelper.makeRequest('/api/monitoring/health');
     assert.strictEqual(response.status, 200);
-    
+
     // In a full implementation, we would:
     // 1. Connect to WebSocket endpoint
     // 2. Test real-time ticket updates
@@ -449,8 +450,8 @@ test('Error Handling & Edge Cases', async (t) => {
         method: 'POST',
         body: 'invalid-json',
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
       assert.fail('Should have returned 400');
     } catch (error) {
@@ -462,18 +463,16 @@ test('Error Handling & Edge Cases', async (t) => {
     // Test rate limiting by making multiple rapid requests
     const promises = [];
     for (let i = 0; i < 100; i++) {
-      promises.push(
-        TestHelper.makeRequest('/api/health').catch(error => error)
-      );
+      promises.push(TestHelper.makeRequest('/api/health').catch((error) => error));
     }
 
     const results = await Promise.all(promises);
-    
+
     // Should have some rate limited responses if rate limiting is enabled
-    const rateLimitedResponses = results.filter(result => 
-      result instanceof Error && result.message.includes('429')
+    const rateLimitedResponses = results.filter(
+      (result) => result instanceof Error && result.message.includes('429'),
     );
-    
+
     // At least some requests should be rate limited in a proper implementation
     console.log(`Rate limited responses: ${rateLimitedResponses.length}/100`);
   });

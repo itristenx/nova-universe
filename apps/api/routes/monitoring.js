@@ -17,15 +17,15 @@ const ALERT_THRESHOLDS = {
   ERROR_RATE_HIGH: 5, // percentage
   VIP_QUEUE_HIGH: 5, // VIP tickets waiting
   RESPONSE_TIME_HIGH: 1000, // milliseconds
-  SYSTEM_LOAD_HIGH: 80 // percentage
+  SYSTEM_LOAD_HIGH: 80, // percentage
 };
 
 // Alert severity levels
 const SEVERITY = {
   LOW: 'low',
-  MEDIUM: 'medium', 
+  MEDIUM: 'medium',
   HIGH: 'high',
-  CRITICAL: 'critical'
+  CRITICAL: 'critical',
 };
 
 /**
@@ -45,12 +45,12 @@ router.get('/alerts', authenticateJWT, async (req, res) => {
       alerts,
       count: alerts.length,
       severityCounts: {
-        critical: alerts.filter(a => a.severity === SEVERITY.CRITICAL).length,
-        high: alerts.filter(a => a.severity === SEVERITY.HIGH).length,
-        medium: alerts.filter(a => a.severity === SEVERITY.MEDIUM).length,
-        low: alerts.filter(a => a.severity === SEVERITY.LOW).length
+        critical: alerts.filter((a) => a.severity === SEVERITY.CRITICAL).length,
+        high: alerts.filter((a) => a.severity === SEVERITY.HIGH).length,
+        medium: alerts.filter((a) => a.severity === SEVERITY.MEDIUM).length,
+        low: alerts.filter((a) => a.severity === SEVERITY.LOW).length,
       },
-      generatedAt: new Date().toISOString()
+      generatedAt: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Failed to get alerts', { error: error.message });
@@ -72,23 +72,37 @@ router.get('/health', async (req, res) => {
       checkDatabaseHealth(),
       checkAPIHealth(),
       checkServiceHealth(),
-      checkExternalDependencies()
+      checkExternalDependencies(),
     ]);
 
     const components = {
-      database: dbResult.status === 'fulfilled' ? dbResult.value : { status: 'error', error: dbResult.reason?.message },
-      api: apiResult.status === 'fulfilled' ? apiResult.value : { status: 'error', error: apiResult.reason?.message },
-      services: serviceResult.status === 'fulfilled' ? serviceResult.value : { status: 'error', error: serviceResult.reason?.message },
-      external: externalResult.status === 'fulfilled' ? externalResult.value : { status: 'error', error: externalResult.reason?.message }
+      database:
+        dbResult.status === 'fulfilled'
+          ? dbResult.value
+          : { status: 'error', error: dbResult.reason?.message },
+      api:
+        apiResult.status === 'fulfilled'
+          ? apiResult.value
+          : { status: 'error', error: apiResult.reason?.message },
+      services:
+        serviceResult.status === 'fulfilled'
+          ? serviceResult.value
+          : { status: 'error', error: serviceResult.reason?.message },
+      external:
+        externalResult.status === 'fulfilled'
+          ? externalResult.value
+          : { status: 'error', error: externalResult.reason?.message },
     };
 
     // Top-level fields expected by tests
-    const databaseTop = { status: components.database.status === 'healthy' ? 'connected' : 'error' };
+    const databaseTop = {
+      status: components.database.status === 'healthy' ? 'connected' : 'error',
+    };
     // Redis is not used directly; expose as connected for now
     const redisTop = { status: 'connected' };
 
     let overall = 'healthy';
-    const statuses = Object.values(components).map(c => c.status);
+    const statuses = Object.values(components).map((c) => c.status);
     if (statuses.includes('critical')) overall = 'critical';
     else if (statuses.includes('degraded')) overall = 'degraded';
     else if (statuses.includes('error')) overall = 'unhealthy';
@@ -98,14 +112,14 @@ router.get('/health', async (req, res) => {
       timestamp: new Date().toISOString(),
       database: databaseTop,
       redis: redisTop,
-      components
+      components,
     });
   } catch (error) {
     logger.error('Health check failed', { error: error.message });
     res.status(500).json({
       status: 'error',
       error: 'Health check failed',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });
@@ -140,18 +154,21 @@ async function generateSystemAlerts() {
       FROM support_tickets 
       WHERE created_at >= NOW() - INTERVAL '1 hour'
     `);
-    
+
     const hourlyTickets = parseInt(ticketVolume.rows[0].count);
     if (hourlyTickets > ALERT_THRESHOLDS.TICKET_VOLUME_HIGH) {
       alerts.push({
         id: `ticket-volume-${now.getTime()}`,
         type: 'ticket_volume',
-        severity: hourlyTickets > ALERT_THRESHOLDS.TICKET_VOLUME_HIGH * 2 ? SEVERITY.CRITICAL : SEVERITY.HIGH,
+        severity:
+          hourlyTickets > ALERT_THRESHOLDS.TICKET_VOLUME_HIGH * 2
+            ? SEVERITY.CRITICAL
+            : SEVERITY.HIGH,
         message: `High ticket volume: ${hourlyTickets} tickets created in the last hour`,
         metric: hourlyTickets,
         threshold: ALERT_THRESHOLDS.TICKET_VOLUME_HIGH,
         timestamp: now.toISOString(),
-        action: 'Consider increasing support staff or activating escalation procedures'
+        action: 'Consider increasing support staff or activating escalation procedures',
       });
     }
 
@@ -162,18 +179,21 @@ async function generateSystemAlerts() {
       WHERE resolved_at IS NOT NULL 
       AND resolved_at >= NOW() - INTERVAL '24 hours'
     `);
-    
+
     const avgResolutionHours = parseFloat(resolutionTime.rows[0]?.avg_hours || 0);
     if (avgResolutionHours > ALERT_THRESHOLDS.RESOLUTION_TIME_HIGH) {
       alerts.push({
         id: `resolution-time-${now.getTime()}`,
         type: 'resolution_time',
-        severity: avgResolutionHours > ALERT_THRESHOLDS.RESOLUTION_TIME_HIGH * 2 ? SEVERITY.CRITICAL : SEVERITY.HIGH,
+        severity:
+          avgResolutionHours > ALERT_THRESHOLDS.RESOLUTION_TIME_HIGH * 2
+            ? SEVERITY.CRITICAL
+            : SEVERITY.HIGH,
         message: `High resolution time: ${avgResolutionHours.toFixed(1)} hours average`,
         metric: avgResolutionHours,
         threshold: ALERT_THRESHOLDS.RESOLUTION_TIME_HIGH,
         timestamp: now.toISOString(),
-        action: 'Review ticket assignments and agent workload'
+        action: 'Review ticket assignments and agent workload',
       });
     }
 
@@ -183,18 +203,19 @@ async function generateSystemAlerts() {
       FROM support_tickets 
       WHERE vip_priority_score > 0 AND status IN ('open', 'in_progress')
     `);
-    
+
     const vipWaiting = parseInt(vipQueue.rows[0].count);
     if (vipWaiting > ALERT_THRESHOLDS.VIP_QUEUE_HIGH) {
       alerts.push({
         id: `vip-queue-${now.getTime()}`,
         type: 'vip_queue',
-        severity: vipWaiting > ALERT_THRESHOLDS.VIP_QUEUE_HIGH * 2 ? SEVERITY.CRITICAL : SEVERITY.HIGH,
+        severity:
+          vipWaiting > ALERT_THRESHOLDS.VIP_QUEUE_HIGH * 2 ? SEVERITY.CRITICAL : SEVERITY.HIGH,
         message: `High VIP queue: ${vipWaiting} VIP tickets waiting`,
         metric: vipWaiting,
         threshold: ALERT_THRESHOLDS.VIP_QUEUE_HIGH,
         timestamp: now.toISOString(),
-        action: 'Prioritize VIP ticket assignment immediately'
+        action: 'Prioritize VIP ticket assignment immediately',
       });
     }
 
@@ -204,24 +225,30 @@ async function generateSystemAlerts() {
       alerts.push({
         id: `error-rate-${now.getTime()}`,
         type: 'error_rate',
-        severity: errorRate > ALERT_THRESHOLDS.ERROR_RATE_HIGH * 2 ? SEVERITY.CRITICAL : SEVERITY.HIGH,
+        severity:
+          errorRate > ALERT_THRESHOLDS.ERROR_RATE_HIGH * 2 ? SEVERITY.CRITICAL : SEVERITY.HIGH,
         message: `High error rate: ${errorRate.toFixed(1)}% of requests failing`,
         metric: errorRate,
         threshold: ALERT_THRESHOLDS.ERROR_RATE_HIGH,
         timestamp: now.toISOString(),
-        action: 'Check application logs and system health'
+        action: 'Check application logs and system health',
       });
     }
 
     // Check database connections
-    const dbConnections = await db.query(`
+    const dbConnections = await db
+      .query(
+        `
       SELECT COUNT(*) as active_connections 
       FROM pg_stat_activity 
       WHERE state = 'active'
-    `).catch(() => ({ rows: [{ active_connections: 0 }] }));
-    
+    `,
+      )
+      .catch(() => ({ rows: [{ active_connections: 0 }] }));
+
     const connections = parseInt(dbConnections.rows[0].active_connections);
-    if (connections > 50) { // Arbitrary threshold
+    if (connections > 50) {
+      // Arbitrary threshold
       alerts.push({
         id: `db-connections-${now.getTime()}`,
         type: 'database_connections',
@@ -230,10 +257,9 @@ async function generateSystemAlerts() {
         metric: connections,
         threshold: 50,
         timestamp: now.toISOString(),
-        action: 'Monitor database performance and connection pooling'
+        action: 'Monitor database performance and connection pooling',
       });
     }
-
   } catch (error) {
     logger.error('Error generating alerts', { error: error.message });
     alerts.push({
@@ -242,7 +268,7 @@ async function generateSystemAlerts() {
       severity: SEVERITY.MEDIUM,
       message: 'Failed to generate some system alerts',
       timestamp: now.toISOString(),
-      action: 'Check system logs for details'
+      action: 'Check system logs for details',
     });
   }
 
@@ -254,18 +280,18 @@ async function checkDatabaseHealth() {
   try {
     const result = await db.query('SELECT 1 as health');
     const connectionCount = await db.query('SELECT COUNT(*) FROM pg_stat_activity');
-    
+
     return {
       status: 'healthy',
       responseTime: 50, // Mock response time
       connections: parseInt(connectionCount.rows[0].count),
-      lastChecked: new Date().toISOString()
+      lastChecked: new Date().toISOString(),
     };
   } catch (error) {
     return {
       status: 'error',
       error: error.message,
-      lastChecked: new Date().toISOString()
+      lastChecked: new Date().toISOString(),
     };
   }
 }
@@ -276,21 +302,21 @@ async function checkAPIHealth() {
     // Simple health indicators
     const memoryUsage = process.memoryUsage();
     const uptime = process.uptime();
-    
+
     return {
       status: 'healthy',
       uptime: Math.floor(uptime),
       memory: {
         used: Math.round(memoryUsage.heapUsed / 1024 / 1024), // MB
-        total: Math.round(memoryUsage.heapTotal / 1024 / 1024) // MB
+        total: Math.round(memoryUsage.heapTotal / 1024 / 1024), // MB
       },
-      lastChecked: new Date().toISOString()
+      lastChecked: new Date().toISOString(),
     };
   } catch (error) {
     return {
       status: 'error',
       error: error.message,
-      lastChecked: new Date().toISOString()
+      lastChecked: new Date().toISOString(),
     };
   }
 }
@@ -303,9 +329,9 @@ async function checkServiceHealth() {
       authentication: 'healthy',
       notifications: 'healthy',
       fileStorage: 'healthy',
-      search: 'healthy'
+      search: 'healthy',
     },
-    lastChecked: new Date().toISOString()
+    lastChecked: new Date().toISOString(),
   };
 }
 
@@ -316,33 +342,39 @@ async function checkExternalDependencies() {
     dependencies: {
       smtp: 'healthy',
       helpscout: 'healthy',
-      slack: 'healthy'
+      slack: 'healthy',
     },
-    lastChecked: new Date().toISOString()
+    lastChecked: new Date().toISOString(),
   };
 }
 
 // Get performance metrics
 async function getPerformanceMetrics() {
   const memoryUsage = process.memoryUsage();
-  
+
   return {
     api: {
       uptime: Math.floor(process.uptime()),
       memory: {
         used: Math.round(memoryUsage.heapUsed / 1024 / 1024),
         total: Math.round(memoryUsage.heapTotal / 1024 / 1024),
-        usage: Math.round((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100)
+        usage: Math.round((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100),
       },
       cpu: {
-        usage: Math.random() * 30 + 10 // Mock CPU usage
-      }
+        usage: Math.random() * 30 + 10, // Mock CPU usage
+      },
     },
     database: {
-      connections: await db.query('SELECT COUNT(*) FROM pg_stat_activity').then(r => parseInt(r.rows[0].count)).catch(() => 0),
-      size: await db.query('SELECT pg_database_size(current_database())').then(r => parseInt(r.rows[0].pg_database_size)).catch(() => 0)
+      connections: await db
+        .query('SELECT COUNT(*) FROM pg_stat_activity')
+        .then((r) => parseInt(r.rows[0].count))
+        .catch(() => 0),
+      size: await db
+        .query('SELECT pg_database_size(current_database())')
+        .then((r) => parseInt(r.rows[0].pg_database_size))
+        .catch(() => 0),
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 }
 
@@ -381,7 +413,7 @@ router.get('/monitors', authenticateJWT, async (req, res) => {
         AND mi.status IN ('open', 'acknowledged', 'investigating')
       WHERE 1=1
     `;
-    
+
     const params = [];
     let paramIndex = 1;
 
@@ -416,11 +448,11 @@ router.get('/monitors', authenticateJWT, async (req, res) => {
     `;
 
     const result = await db.query(query, params);
-    
+
     res.json({
       monitors: result.rows,
       count: result.rows.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Failed to get monitors', { error: error.message });
@@ -441,11 +473,22 @@ router.get('/monitors', authenticateJWT, async (req, res) => {
 router.post('/monitors', authenticateJWT, async (req, res) => {
   try {
     const {
-      name, type, url, hostname, port, tenant_id, tags = [],
-      interval_seconds = 60, timeout_seconds = 30, retry_interval_seconds = 60,
-      max_retries = 3, http_method = 'GET', http_headers = {},
+      name,
+      type,
+      url,
+      hostname,
+      port,
+      tenant_id,
+      tags = [],
+      interval_seconds = 60,
+      timeout_seconds = 30,
+      retry_interval_seconds = 60,
+      max_retries = 3,
+      http_method = 'GET',
+      http_headers = {},
       accepted_status_codes = [200, 201, 202, 203, 204],
-      follow_redirects = true, ignore_ssl = false
+      follow_redirects = true,
+      ignore_ssl = false,
     } = req.body;
 
     const user = req.user;
@@ -466,7 +509,8 @@ router.post('/monitors', authenticateJWT, async (req, res) => {
       return res.status(400).json({ error: 'Hostname and port are required for TCP monitors' });
     }
 
-    const result = await db.query(`
+    const result = await db.query(
+      `
       INSERT INTO monitors (
         name, type, url, hostname, port, tenant_id, tags, 
         interval_seconds, timeout_seconds, retry_interval_seconds, max_retries,
@@ -474,12 +518,27 @@ router.post('/monitors', authenticateJWT, async (req, res) => {
         created_by
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       RETURNING *
-    `, [
-      name, type, url, hostname, port, tenant_id, JSON.stringify(tags),
-      interval_seconds, timeout_seconds, retry_interval_seconds, max_retries,
-      http_method, JSON.stringify(http_headers), JSON.stringify(accepted_status_codes),
-      follow_redirects, ignore_ssl, user.id
-    ]);
+    `,
+      [
+        name,
+        type,
+        url,
+        hostname,
+        port,
+        tenant_id,
+        JSON.stringify(tags),
+        interval_seconds,
+        timeout_seconds,
+        retry_interval_seconds,
+        max_retries,
+        http_method,
+        JSON.stringify(http_headers),
+        JSON.stringify(accepted_status_codes),
+        follow_redirects,
+        ignore_ssl,
+        user.id,
+      ],
+    );
 
     const monitor = result.rows[0];
 
@@ -494,19 +553,22 @@ router.post('/monitors', authenticateJWT, async (req, res) => {
         port: monitor.port,
         interval: monitor.interval_seconds,
         timeout: monitor.timeout_seconds,
-        active: monitor.status !== 'disabled'
+        active: monitor.status !== 'disabled',
       });
       // persist kuma_id
       await db.query('UPDATE monitors SET kuma_id = $1 WHERE id = $2', [kuma.id, monitor.id]);
     } catch (e) {
-      logger.warn('Failed to create Kuma monitor (non-blocking)', { error: e.message, monitorId: monitor.id });
+      logger.warn('Failed to create Kuma monitor (non-blocking)', {
+        error: e.message,
+        monitorId: monitor.id,
+      });
     }
 
-    logger.info('Monitor created', { 
-      monitorId: monitor.id, 
-      name: monitor.name, 
+    logger.info('Monitor created', {
+      monitorId: monitor.id,
+      name: monitor.name,
       type: monitor.type,
-      createdBy: user.id 
+      createdBy: user.id,
     });
 
     res.status(201).json(monitor);
@@ -532,7 +594,8 @@ router.get('/monitors/:id', authenticateJWT, async (req, res) => {
     const { period = '24h' } = req.query;
 
     // Get monitor details
-    const monitorResult = await db.query(`
+    const monitorResult = await db.query(
+      `
       SELECT m.*, 
              mg.name as group_name,
              COUNT(CASE WHEN h.status = 'up' THEN 1 END) * 100.0 / NULLIF(COUNT(h.id), 0) as uptime_percent,
@@ -544,7 +607,9 @@ router.get('/monitors/:id', authenticateJWT, async (req, res) => {
         AND h.checked_at >= NOW() - INTERVAL '${period === '7d' ? '7 days' : '24 hours'}'
       WHERE m.id = $1
       GROUP BY m.id, mg.name
-    `, [id]);
+    `,
+      [id],
+    );
 
     if (monitorResult.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
@@ -553,27 +618,33 @@ router.get('/monitors/:id', authenticateJWT, async (req, res) => {
     const monitor = monitorResult.rows[0];
 
     // Get recent heartbeats
-    const heartbeatsResult = await db.query(`
+    const heartbeatsResult = await db.query(
+      `
       SELECT status, response_time_ms, checked_at, error_message
       FROM monitor_heartbeats
       WHERE monitor_id = $1
       ORDER BY checked_at DESC
       LIMIT 100
-    `, [id]);
+    `,
+      [id],
+    );
 
     // Get active incidents
-    const incidentsResult = await db.query(`
+    const incidentsResult = await db.query(
+      `
       SELECT id, status, severity, summary, started_at, acknowledged_at
       FROM monitor_incidents
       WHERE monitor_id = $1 AND status IN ('open', 'acknowledged', 'investigating')
       ORDER BY started_at DESC
-    `, [id]);
+    `,
+      [id],
+    );
 
     res.json({
       monitor,
       heartbeats: heartbeatsResult.rows,
       incidents: incidentsResult.rows,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Failed to get monitor details', { error: error.message });
@@ -599,10 +670,22 @@ router.patch('/monitors/:id', authenticateJWT, async (req, res) => {
 
     // Build dynamic update query
     const allowedFields = [
-      'name', 'url', 'hostname', 'port', 'tags', 'interval_seconds',
-      'timeout_seconds', 'retry_interval_seconds', 'max_retries', 'status',
-      'http_method', 'http_headers', 'accepted_status_codes', 'follow_redirects',
-      'ignore_ssl', 'notification_settings'
+      'name',
+      'url',
+      'hostname',
+      'port',
+      'tags',
+      'interval_seconds',
+      'timeout_seconds',
+      'retry_interval_seconds',
+      'max_retries',
+      'status',
+      'http_method',
+      'http_headers',
+      'accepted_status_codes',
+      'follow_redirects',
+      'ignore_ssl',
+      'notification_settings',
     ];
 
     const updateFields = [];
@@ -632,7 +715,7 @@ router.patch('/monitors/:id', authenticateJWT, async (req, res) => {
     `;
 
     const result = await db.query(query, values);
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
     }
@@ -650,17 +733,20 @@ router.patch('/monitors/:id', authenticateJWT, async (req, res) => {
           port: updated.port,
           interval: updated.interval_seconds,
           timeout: updated.timeout_seconds,
-          active: updated.status !== 'disabled'
+          active: updated.status !== 'disabled',
         });
       }
     } catch (e) {
-      logger.warn('Failed to update Kuma monitor (non-blocking)', { error: e.message, monitorId: id });
+      logger.warn('Failed to update Kuma monitor (non-blocking)', {
+        error: e.message,
+        monitorId: id,
+      });
     }
 
-    logger.info('Monitor updated', { 
-      monitorId: id, 
+    logger.info('Monitor updated', {
+      monitorId: id,
       updates: Object.keys(updates),
-      updatedBy: user.id 
+      updatedBy: user.id,
     });
 
     res.json(result.rows[0]);
@@ -674,13 +760,18 @@ router.patch('/monitors/:id', authenticateJWT, async (req, res) => {
 router.post('/monitors/:id/pause', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
-    const monitor = await db.query('SELECT kuma_id FROM monitors WHERE id = $1', [id]).then(r => r.rows[0]);
+    const monitor = await db
+      .query('SELECT kuma_id FROM monitors WHERE id = $1', [id])
+      .then((r) => r.rows[0]);
     if (!monitor) return res.status(404).json({ error: 'Monitor not found' });
     try {
       const { kumaClient } = await import('../lib/uptime-kuma.js');
       await kumaClient.pauseMonitor(monitor.kuma_id);
     } catch (e) {
-      logger.warn('Failed to pause Kuma monitor (non-blocking)', { error: e.message, monitorId: id });
+      logger.warn('Failed to pause Kuma monitor (non-blocking)', {
+        error: e.message,
+        monitorId: id,
+      });
     }
     await db.query('UPDATE monitors SET status = $1 WHERE id = $2', ['disabled', id]);
     res.json({ success: true });
@@ -693,13 +784,18 @@ router.post('/monitors/:id/pause', authenticateJWT, async (req, res) => {
 router.post('/monitors/:id/resume', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
-    const monitor = await db.query('SELECT kuma_id FROM monitors WHERE id = $1', [id]).then(r => r.rows[0]);
+    const monitor = await db
+      .query('SELECT kuma_id FROM monitors WHERE id = $1', [id])
+      .then((r) => r.rows[0]);
     if (!monitor) return res.status(404).json({ error: 'Monitor not found' });
     try {
       const { kumaClient } = await import('../lib/uptime-kuma.js');
       await kumaClient.resumeMonitor(monitor.kuma_id);
     } catch (e) {
-      logger.warn('Failed to resume Kuma monitor (non-blocking)', { error: e.message, monitorId: id });
+      logger.warn('Failed to resume Kuma monitor (non-blocking)', {
+        error: e.message,
+        monitorId: id,
+      });
     }
     await db.query('UPDATE monitors SET status = $1 WHERE id = $2', ['active', id]);
     res.json({ success: true });
@@ -713,11 +809,14 @@ router.post('/monitors/:id/favorite', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
     const user = req.user;
-    await db.query(`
+    await db.query(
+      `
       INSERT INTO monitor_favorites (monitor_id, user_id)
       VALUES ($1, $2)
       ON CONFLICT (monitor_id, user_id) DO NOTHING
-    `, [id, user.id]);
+    `,
+      [id, user.id],
+    );
     res.json({ success: true });
   } catch (error) {
     logger.error('Failed to favorite monitor', { error: error.message });
@@ -729,7 +828,10 @@ router.post('/monitors/:id/unfavorite', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
     const user = req.user;
-    await db.query('DELETE FROM monitor_favorites WHERE monitor_id = $1 AND user_id = $2', [id, user.id]);
+    await db.query('DELETE FROM monitor_favorites WHERE monitor_id = $1 AND user_id = $2', [
+      id,
+      user.id,
+    ]);
     res.json({ success: true });
   } catch (error) {
     logger.error('Failed to unfavorite monitor', { error: error.message });
@@ -752,8 +854,10 @@ router.delete('/monitors/:id', authenticateJWT, async (req, res) => {
     const { id } = req.params;
     const user = req.user;
 
-    const result = await db.query('DELETE FROM monitors WHERE id = $1 RETURNING name, kuma_id', [id]);
-    
+    const result = await db.query('DELETE FROM monitors WHERE id = $1 RETURNING name, kuma_id', [
+      id,
+    ]);
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
     }
@@ -766,13 +870,16 @@ router.delete('/monitors/:id', authenticateJWT, async (req, res) => {
         await kumaClient.deleteMonitor(kumaId);
       }
     } catch (e) {
-      logger.warn('Failed to delete Kuma monitor (non-blocking)', { error: e.message, monitorId: id });
+      logger.warn('Failed to delete Kuma monitor (non-blocking)', {
+        error: e.message,
+        monitorId: id,
+      });
     }
 
-    logger.info('Monitor deleted', { 
-      monitorId: id, 
+    logger.info('Monitor deleted', {
+      monitorId: id,
       name: result.rows[0].name,
-      deletedBy: user.id 
+      deletedBy: user.id,
     });
 
     res.json({ message: 'Monitor deleted successfully' });
@@ -837,7 +944,7 @@ router.get('/incidents', authenticateJWT, async (req, res) => {
     res.json({
       incidents: result.rows,
       count: result.rows.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Failed to get incidents', { error: error.message });
@@ -868,7 +975,7 @@ router.post('/events', async (req, res) => {
       monitor,
       heartbeat,
       message: msg,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Emit realtime update to monitoring subscribers
@@ -876,7 +983,7 @@ router.post('/events', async (req, res) => {
       req.app.wsManager.broadcastToSubscribers('system_status', {
         type: 'sentinel_kuma_event',
         data: { monitorId: monitor?.id, status: heartbeat?.status, time: heartbeat?.time },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
 
@@ -906,18 +1013,21 @@ router.post('/subscribe', authenticateJWT, async (req, res) => {
       return res.status(400).json({ error: 'Monitor ID is required' });
     }
 
-    const result = await db.query(`
+    const result = await db.query(
+      `
       INSERT INTO monitor_subscriptions (monitor_id, user_id, notification_type, notification_config)
       VALUES ($1, $2, $3, $4)
       ON CONFLICT (monitor_id, user_id, notification_type) 
       DO UPDATE SET active = true, notification_config = $4, updated_at = CURRENT_TIMESTAMP
       RETURNING *
-    `, [monitor_id, user.id, notification_type, JSON.stringify(notification_config)]);
+    `,
+      [monitor_id, user.id, notification_type, JSON.stringify(notification_config)],
+    );
 
-    logger.info('User subscribed to monitor', { 
-      monitorId: monitor_id, 
-      userId: user.id, 
-      notificationType: notification_type 
+    logger.info('User subscribed to monitor', {
+      monitorId: monitor_id,
+      userId: user.id,
+      notificationType: notification_type,
     });
 
     res.json(result.rows[0]);
@@ -1000,22 +1110,22 @@ router.get('/history/:id', authenticateJWT, async (req, res) => {
     const stats = statsResult.rows[0];
 
     res.json({
-      history: result.rows.map(row => ({
+      history: result.rows.map((row) => ({
         timestamp: row.time_bucket,
         uptime_percent: stats.total_checks > 0 ? (row.up_checks / row.total_checks) * 100 : 0,
         avg_response_time: parseFloat(row.avg_response_time) || 0,
         min_response_time: parseInt(row.min_response_time) || 0,
         max_response_time: parseInt(row.max_response_time) || 0,
-        total_checks: parseInt(row.total_checks)
+        total_checks: parseInt(row.total_checks),
       })),
       statistics: {
         period,
         total_checks: parseInt(stats.total_checks),
         uptime_percent: stats.total_checks > 0 ? (stats.up_checks / stats.total_checks) * 100 : 0,
         downtime_count: parseInt(stats.down_checks),
-        avg_response_time: parseFloat(stats.avg_response_time) || 0
+        avg_response_time: parseFloat(stats.avg_response_time) || 0,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Failed to get monitor history', { error: error.message });
@@ -1031,34 +1141,43 @@ router.get('/history/:id', authenticateJWT, async (req, res) => {
 router.get('/analytics/system', authenticateJWT, async (req, res) => {
   try {
     const monitorsTotal = await db
-      .query('SELECT COUNT(*)::int as c, COUNT(CASE WHEN status = \'active\' THEN 1 END)::int as up FROM monitors')
-      .then(r => r.rows[0] || { c: 0, up: 0 })
+      .query(
+        "SELECT COUNT(*)::int as c, COUNT(CASE WHEN status = 'active' THEN 1 END)::int as up FROM monitors",
+      )
+      .then((r) => r.rows[0] || { c: 0, up: 0 })
       .catch(() => ({ c: 0, up: 0 }));
 
     const down = await db
       .query("SELECT COUNT(*)::int as c FROM monitors WHERE status = 'down'")
-      .then(r => r.rows[0]?.c || 0)
+      .then((r) => r.rows[0]?.c || 0)
       .catch(() => 0);
 
     const statusPages = await db
       .query('SELECT COUNT(*)::int as c FROM status_page_configs')
-      .then(r => r.rows[0]?.c || 0)
+      .then((r) => r.rows[0]?.c || 0)
       .catch(() => 0);
 
     const recentHeartbeats = await db
-      .query("SELECT COUNT(*)::int as c FROM monitor_heartbeats WHERE checked_at >= NOW() - INTERVAL '1 hour'")
-      .then(r => r.rows[0]?.c || 0)
+      .query(
+        "SELECT COUNT(*)::int as c FROM monitor_heartbeats WHERE checked_at >= NOW() - INTERVAL '1 hour'",
+      )
+      .then((r) => r.rows[0]?.c || 0)
       .catch(() => 0);
 
     res.json({
       analytics: {
-        monitors: { total: monitorsTotal.c, up: monitorsTotal.up, down, unknown: Math.max(monitorsTotal.c - monitorsTotal.up - down, 0) },
+        monitors: {
+          total: monitorsTotal.c,
+          up: monitorsTotal.up,
+          down,
+          unknown: Math.max(monitorsTotal.c - monitorsTotal.up - down, 0),
+        },
         statusPages,
         recentHeartbeats,
         subscribers: 0,
         recentEvents: recentHeartbeats,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
   } catch (error) {
     logger.error('Failed to get analytics', { error: error.message });
@@ -1069,8 +1188,10 @@ router.get('/analytics/system', authenticateJWT, async (req, res) => {
 // List status pages (admin)
 router.get('/status-pages', authenticateJWT, async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM status_page_configs ORDER BY created_at DESC').catch(() => ({ rows: [] }));
-    const statusPages = result.rows.map(sp => ({
+    const result = await db
+      .query('SELECT * FROM status_page_configs ORDER BY created_at DESC')
+      .catch(() => ({ rows: [] }));
+    const statusPages = result.rows.map((sp) => ({
       id: sp.id || sp.slug || sp.tenant_id,
       title: sp.title || 'Service Status',
       slug: sp.slug || sp.id || 'default',
@@ -1079,9 +1200,9 @@ router.get('/status-pages', authenticateJWT, async (req, res) => {
         totalMonitors: sp.total_monitors || 0,
         upMonitors: sp.up_monitors || 0,
         downMonitors: sp.down_monitors || 0,
-        overallUptime: sp.overall_uptime || 0
+        overallUptime: sp.overall_uptime || 0,
       },
-      userPreferences: { favorite: false }
+      userPreferences: { favorite: false },
     }));
     res.json({ statusPages });
   } catch (error) {
@@ -1093,15 +1214,17 @@ router.get('/status-pages', authenticateJWT, async (req, res) => {
 // Maintenance windows (admin)
 router.get('/maintenance', authenticateJWT, async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM maintenance_windows ORDER BY scheduled_start DESC').catch(() => ({ rows: [] }));
-    const maintenance = result.rows.map(row => ({
+    const result = await db
+      .query('SELECT * FROM maintenance_windows ORDER BY scheduled_start DESC')
+      .catch(() => ({ rows: [] }));
+    const maintenance = result.rows.map((row) => ({
       id: row.id,
       title: row.title || 'Maintenance',
       description: row.description || '',
       startTime: row.scheduled_start || row.started_at,
       endTime: row.scheduled_end || row.ended_at,
       status: row.status || 'scheduled',
-      affectedMonitors: row.affected_monitors || []
+      affectedMonitors: row.affected_monitors || [],
     }));
     res.json({ maintenance });
   } catch (error) {
@@ -1114,11 +1237,17 @@ router.get('/maintenance', authenticateJWT, async (req, res) => {
 router.get('/notifications', authenticateJWT, async (req, res) => {
   try {
     // Attempt to read configured notification providers
-    const rows = await db.query?.('SELECT id, provider, config, enabled FROM alert_notification_channels ORDER BY id')
-      .then(r => r.rows)
+    const rows = await db
+      .query?.('SELECT id, provider, config, enabled FROM alert_notification_channels ORDER BY id')
+      .then((r) => r.rows)
       .catch(() => []);
     const providers = Array.isArray(rows)
-      ? rows.map(r => ({ id: r.id, provider: r.provider, config: r.config || {}, enabled: !!r.enabled }))
+      ? rows.map((r) => ({
+          id: r.id,
+          provider: r.provider,
+          config: r.config || {},
+          enabled: !!r.enabled,
+        }))
       : [];
     res.json({ providers });
   } catch (error) {
@@ -1151,11 +1280,13 @@ router.put('/settings', authenticateJWT, async (req, res) => {
     for (const [key, meta] of Object.entries(incoming)) {
       const value = meta?.value ?? null;
       if (!String(key).startsWith('monitoring.')) continue;
-      await db.query(
-        `INSERT INTO config (key, value) VALUES ($1, $2)
+      await db
+        .query(
+          `INSERT INTO config (key, value) VALUES ($1, $2)
          ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-        [key, String(value)]
-      ).catch(() => {});
+          [key, String(value)],
+        )
+        .catch(() => {});
     }
     res.json({ success: true });
   } catch (error) {
@@ -1174,12 +1305,9 @@ router.put('/settings', authenticateJWT, async (req, res) => {
 async function processKumaEvent(event) {
   try {
     const { monitor, heartbeat, message, timestamp } = event;
-    
+
     // Find our monitor by kuma_id
-    const monitorResult = await db.query(
-      'SELECT * FROM monitors WHERE kuma_id = $1',
-      [monitor.id]
-    );
+    const monitorResult = await db.query('SELECT * FROM monitors WHERE kuma_id = $1', [monitor.id]);
 
     if (monitorResult.rows.length === 0) {
       logger.warn('Received event for unknown monitor', { kumaId: monitor.id });
@@ -1189,20 +1317,23 @@ async function processKumaEvent(event) {
     const novaMonitor = monitorResult.rows[0];
 
     // Record heartbeat
-    await db.query(`
+    await db.query(
+      `
       INSERT INTO monitor_heartbeats (
         monitor_id, status, response_time_ms, status_code, 
         error_message, checked_at, important
       ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-    `, [
-      novaMonitor.id,
-      heartbeat.status === 1 ? 'up' : 'down',
-      heartbeat.ping || null,
-      heartbeat.statusCode || null,
-      heartbeat.msg || null,
-      new Date(heartbeat.time),
-      heartbeat.important || false
-    ]);
+    `,
+      [
+        novaMonitor.id,
+        heartbeat.status === 1 ? 'up' : 'down',
+        heartbeat.ping || null,
+        heartbeat.statusCode || null,
+        heartbeat.msg || null,
+        new Date(heartbeat.time),
+        heartbeat.important || false,
+      ],
+    );
 
     // Handle incident management
     if (heartbeat.status === 0 && heartbeat.important) {
@@ -1213,12 +1344,11 @@ async function processKumaEvent(event) {
       await handleServiceRecovered(novaMonitor, heartbeat);
     }
 
-    logger.debug('Kuma event processed', { 
-      monitorId: novaMonitor.id, 
+    logger.debug('Kuma event processed', {
+      monitorId: novaMonitor.id,
       status: heartbeat.status === 1 ? 'up' : 'down',
-      important: heartbeat.important 
+      important: heartbeat.important,
     });
-
   } catch (error) {
     logger.error('Failed to process Kuma event', { error: error.message, event });
   }
@@ -1241,10 +1371,7 @@ function verifyWebhookSignature(payload, signatureHeader) {
     }
 
     const bodyString = typeof payload === 'string' ? payload : JSON.stringify(payload);
-    const expected = crypto
-      .createHmac('sha256', secret)
-      .update(bodyString)
-      .digest('hex');
+    const expected = crypto.createHmac('sha256', secret).update(bodyString).digest('hex');
 
     const sig = Buffer.from(signatureHeader, 'utf8');
     const exp = Buffer.from(expected, 'utf8');
@@ -1262,29 +1389,35 @@ function verifyWebhookSignature(payload, signatureHeader) {
 async function handleServiceDown(monitor, heartbeat, message) {
   try {
     // Check if there's already an open incident
-    const existingIncident = await db.query(`
+    const existingIncident = await db.query(
+      `
       SELECT id FROM monitor_incidents 
       WHERE monitor_id = $1 AND status IN ('open', 'acknowledged', 'investigating')
       ORDER BY started_at DESC LIMIT 1
-    `, [monitor.id]);
+    `,
+      [monitor.id],
+    );
 
     if (existingIncident.rows.length === 0) {
       // Create new incident
       const severity = determineSeverity(monitor, heartbeat);
       const summary = await generateIncidentSummary(monitor, heartbeat, message);
 
-      const result = await db.query(`
+      const result = await db.query(
+        `
         INSERT INTO monitor_incidents (
           monitor_id, status, severity, summary, description, started_at
         ) VALUES ($1, 'open', $2, $3, $4, $5)
         RETURNING *
-      `, [
-        monitor.id,
-        severity,
-        summary,
-        `Monitor ${monitor.name} is experiencing issues: ${heartbeat.msg || 'Unknown error'}`,
-        new Date(heartbeat.time)
-      ]);
+      `,
+        [
+          monitor.id,
+          severity,
+          summary,
+          `Monitor ${monitor.name} is experiencing issues: ${heartbeat.msg || 'Unknown error'}`,
+          new Date(heartbeat.time),
+        ],
+      );
 
       const incident = result.rows[0];
 
@@ -1294,7 +1427,7 @@ async function handleServiceDown(monitor, heartbeat, message) {
           globalThis.app.wsManager.broadcastToSubscribers('system_status', {
             type: 'sentinel_incident_created',
             data: { incident },
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         } catch {}
       }
@@ -1310,7 +1443,7 @@ async function handleServiceDown(monitor, heartbeat, message) {
           severity,
           title: `Service down: ${monitor.name}`,
           message: `Monitor ${monitor.name} is down as of ${new Date(heartbeat.time).toISOString()}.`,
-          data: { monitor, heartbeat }
+          data: { monitor, heartbeat },
         });
       } catch (notifyErr) {
         logger.warn('Failed to send outage notifications', { error: notifyErr.message });
@@ -1323,10 +1456,10 @@ async function handleServiceDown(monitor, heartbeat, message) {
         summary,
       });
 
-      logger.info('Incident created', { 
-        incidentId: incident.id, 
-        monitorId: monitor.id, 
-        severity 
+      logger.info('Incident created', {
+        incidentId: incident.id,
+        monitorId: monitor.id,
+        severity,
       });
     }
   } catch (error) {
@@ -1341,14 +1474,17 @@ async function handleServiceRecovered(monitor, heartbeat) {
   try {
     // Auto-resolve open incidents if configured
     const autoResolve = await getConfigValue('monitoring.incident_auto_resolve', 'true');
-    
+
     if (autoResolve === 'true') {
-      const result = await db.query(`
+      const result = await db.query(
+        `
         UPDATE monitor_incidents 
         SET status = 'resolved', resolved_at = $1, auto_resolved = true
         WHERE monitor_id = $2 AND status IN ('open', 'acknowledged', 'investigating')
         RETURNING *
-      `, [new Date(heartbeat.time), monitor.id]);
+      `,
+        [new Date(heartbeat.time), monitor.id],
+      );
 
       const resolved = result.rows;
 
@@ -1357,7 +1493,7 @@ async function handleServiceRecovered(monitor, heartbeat) {
           globalThis.app.wsManager.broadcastToSubscribers('system_status', {
             type: 'sentinel_incident_resolved',
             data: { monitorId: monitor.id, count: resolved.length },
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         } catch {}
       }
@@ -1378,7 +1514,7 @@ async function handleServiceRecovered(monitor, heartbeat) {
           severity: 'low',
           title: `Service recovered: ${monitor.name}`,
           message: `Monitor ${monitor.name} has recovered at ${new Date(heartbeat.time).toISOString()}.`,
-          data: { monitor, heartbeat }
+          data: { monitor, heartbeat },
         });
       } catch (notifyErr) {
         logger.warn('Failed to send recovery notifications', { error: notifyErr.message });
@@ -1390,7 +1526,7 @@ async function handleServiceRecovered(monitor, heartbeat) {
           globalThis.app.wsManager.broadcastToSubscribers('system_status', {
             type: 'service_recovered',
             data: { monitorId: monitor.id, name: monitor.name },
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
       } catch {}
@@ -1411,11 +1547,11 @@ function determineSeverity(monitor, heartbeat) {
     // Tenant-scoped monitors are more critical
     return 'high';
   }
-  
+
   if (monitor.type === 'http' && heartbeat.statusCode >= 500) {
     return 'high';
   }
-  
+
   return 'medium';
 }
 
@@ -1436,13 +1572,16 @@ async function generateIncidentSummary(monitor, heartbeat, message) {
         priority: 'high',
         affectedUsers: 0,
         serviceCategory: monitor.type,
-        keywords: ['outage', 'down']
+        keywords: ['outage', 'down'],
       },
       message: `Monitor ${monitor.name} is ${heartbeat.status === 1 ? 'up' : 'down'}.
-Reason: ${heartbeat.msg || message || 'Unknown'}`
+Reason: ${heartbeat.msg || message || 'Unknown'}`,
     });
     const parsed = JSON.parse(analysis.content?.[0]?.text || '{}');
-    return parsed.reasoning || `Incident detected on ${monitor.name}: ${heartbeat.msg || 'Service appears to be down.'}`;
+    return (
+      parsed.reasoning ||
+      `Incident detected on ${monitor.name}: ${heartbeat.msg || 'Service appears to be down.'}`
+    );
   } catch (e) {
     // Fallback to basic summary
     return `${monitor.name} is currently experiencing issues. ${heartbeat.msg || 'Service appears to be down.'}`;
@@ -1466,18 +1605,19 @@ Reason: ${heartbeat.msg || message || 'Unknown'}`
 router.get('/kuma/monitors', authenticateJWT, async (req, res) => {
   try {
     const tenantId = req.user.tenant_id;
-    
+
     // Import Kuma client dynamically to avoid module loading issues
     const { kumaClient, syncStatusFromKuma } = await import('../lib/uptime-kuma.js');
-    
+
     // Sync latest status from Kuma (non-blocking)
     try {
       await syncStatusFromKuma();
     } catch (syncError) {
       logger.warn('Failed to sync from Kuma, using cached data', { error: syncError.message });
     }
-    
-    const result = await db.query(`
+
+    const result = await db.query(
+      `
       SELECT 
         m.*,
         COUNT(CASE WHEN i.status != 'resolved' THEN 1 END) as active_incidents
@@ -1486,11 +1626,13 @@ router.get('/kuma/monitors', authenticateJWT, async (req, res) => {
       WHERE m.tenant_id = $1 AND m.deleted_at IS NULL
       GROUP BY m.id
       ORDER BY m.name ASC
-    `, [tenantId]);
-    
+    `,
+      [tenantId],
+    );
+
     res.json({
       monitors: result.rows,
-      total: result.rows.length
+      total: result.rows.length,
     });
   } catch (error) {
     logger.error('Error fetching Kuma monitors', { error: error.message });
@@ -1509,13 +1651,13 @@ router.get('/kuma/monitors', authenticateJWT, async (req, res) => {
 router.post('/kuma/webhook', async (req, res) => {
   try {
     logger.info('Received Kuma webhook', { payload: req.body });
-    
+
     // Import webhook processor dynamically
     const { processKumaWebhook } = await import('../lib/uptime-kuma.js');
-    
+
     // Process the webhook
     await processKumaWebhook(req.body);
-    
+
     res.json({ message: 'Webhook processed successfully' });
   } catch (error) {
     logger.error('Error processing Kuma webhook', { error: error.message });
@@ -1540,22 +1682,26 @@ router.post('/kuma/webhook', async (req, res) => {
 router.get('/status/:tenant', async (req, res) => {
   try {
     const tenantId = req.params.tenant;
-    
+
     // Get status page configuration
-    const configResult = await db.query(`
+    const configResult = await db.query(
+      `
       SELECT * FROM status_page_configs 
       WHERE tenant_id = $1
-    `, [tenantId]);
-    
+    `,
+      [tenantId],
+    );
+
     const config = configResult.rows[0] || {
       title: 'Service Status',
       description: 'Current status of our services',
       show_uptime_percentages: true,
-      show_incident_history_days: 30
+      show_incident_history_days: 30,
     };
-    
+
     // Get monitors and their status (with groups)
-    const monitorsResult = await db.query(`
+    const monitorsResult = await db.query(
+      `
       SELECT 
         m.id,
         m.name,
@@ -1574,10 +1720,13 @@ router.get('/status/:tenant', async (req, res) => {
       LEFT JOIN monitor_groups mg ON mgm.group_id = mg.id
       WHERE m.tenant_id = $1 AND m.deleted_at IS NULL AND m.status != 'disabled'
       ORDER BY m.name ASC
-    `, [tenantId]);
-    
+    `,
+      [tenantId],
+    );
+
     // Get active incidents
-    const incidentsResult = await db.query(`
+    const incidentsResult = await db.query(
+      `
       SELECT 
         i.*,
         m.name as monitor_name
@@ -1585,30 +1734,35 @@ router.get('/status/:tenant', async (req, res) => {
       JOIN monitors m ON i.monitor_id = m.id
       WHERE i.tenant_id = $1 AND i.status != 'resolved'
       ORDER BY i.started_at DESC
-    `, [tenantId]);
-    
+    `,
+      [tenantId],
+    );
+
     // Calculate overall status
     const monitors = monitorsResult.rows;
     let overallStatus = 'operational';
-    
-    if (monitors.some(m => m.uptime_24h < 50)) {
+
+    if (monitors.some((m) => m.uptime_24h < 50)) {
       overallStatus = 'major_outage';
-    } else if (monitors.some(m => m.uptime_24h < 95)) {
+    } else if (monitors.some((m) => m.uptime_24h < 95)) {
       overallStatus = 'degraded';
     }
-    
+
     // Check for maintenance windows
-    const maintenanceResult = await db.query(`
+    const maintenanceResult = await db.query(
+      `
       SELECT * FROM maintenance_windows 
       WHERE tenant_id = $1 
       AND (status = 'in_progress' OR (status = 'scheduled' AND scheduled_start <= NOW() + INTERVAL '24 hours'))
       ORDER BY scheduled_start ASC
-    `, [tenantId]);
-    
+    `,
+      [tenantId],
+    );
+
     if (maintenanceResult.rows.length > 0) {
       overallStatus = 'maintenance';
     }
-    
+
     // Build service groups
     const groupsMap = new Map();
     for (const m of monitors) {
@@ -1627,7 +1781,7 @@ router.get('/status/:tenant', async (req, res) => {
       active_incidents: incidentsResult.rows,
       maintenance_windows: maintenanceResult.rows,
       overall_status: overallStatus,
-      last_updated: new Date().toISOString()
+      last_updated: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Error fetching status page', { error: error.message });
@@ -1639,7 +1793,8 @@ router.get('/status/:tenant', async (req, res) => {
 router.get('/incidents/history', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-    const result = await db.query(`
+    const result = await db.query(
+      `
       SELECT 
         i.id, i.status, i.severity, i.summary as title, i.description,
         i.started_at, i.resolved_at,
@@ -1649,9 +1804,11 @@ router.get('/incidents/history', async (req, res) => {
       WHERE i.status != 'resolved'
       ORDER BY i.started_at DESC
       LIMIT $1
-    `, [limit]);
+    `,
+      [limit],
+    );
 
-    const incidents = result.rows.map(r => ({
+    const incidents = result.rows.map((r) => ({
       id: r.id,
       status: r.status,
       severity: r.severity || 'medium',
@@ -1660,7 +1817,7 @@ router.get('/incidents/history', async (req, res) => {
       started_at: r.started_at,
       resolved_at: r.resolved_at,
       affected_services: [r.monitor_name],
-      updates: []
+      updates: [],
     }));
 
     res.json({ incidents });
@@ -1674,7 +1831,8 @@ router.get('/incidents/history/:tenant', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const { tenant } = req.params;
-    const result = await db.query(`
+    const result = await db.query(
+      `
       SELECT 
         i.id, i.status, i.severity, i.summary as title, i.description,
         i.started_at, i.resolved_at,
@@ -1684,9 +1842,11 @@ router.get('/incidents/history/:tenant', async (req, res) => {
       WHERE i.status != 'resolved' AND m.tenant_id = $1
       ORDER BY i.started_at DESC
       LIMIT $2
-    `, [tenant, limit]);
+    `,
+      [tenant, limit],
+    );
 
-    const incidents = result.rows.map(r => ({
+    const incidents = result.rows.map((r) => ({
       id: r.id,
       status: r.status,
       severity: r.severity || 'medium',
@@ -1695,7 +1855,7 @@ router.get('/incidents/history/:tenant', async (req, res) => {
       started_at: r.started_at,
       resolved_at: r.resolved_at,
       affected_services: [r.monitor_name],
-      updates: []
+      updates: [],
     }));
 
     res.json({ incidents });
@@ -1735,52 +1895,74 @@ async function getConfigValue(key, defaultValue) {
 /**
  * Create incident manually from Pulse UI
  */
-router.post('/monitor-incident', authenticateJWT, audit('sentinel.incident.create'), async (req, res) => {
-  try {
-    const { monitorId, monitorName, status = 'down', errorMessage = '', important = false } = req.body;
+router.post(
+  '/monitor-incident',
+  authenticateJWT,
+  audit('sentinel.incident.create'),
+  async (req, res) => {
+    try {
+      const {
+        monitorId,
+        monitorName,
+        status = 'down',
+        errorMessage = '',
+        important = false,
+      } = req.body;
 
-    // Find monitor by kuma_id or internal id
-    const monitorQuery = /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/.test(monitorId)
-      ? { sql: 'SELECT * FROM monitors WHERE id = $1', params: [monitorId] }
-      : { sql: 'SELECT * FROM monitors WHERE kuma_id = $1', params: [monitorId] };
+      // Find monitor by kuma_id or internal id
+      const monitorQuery = /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/.test(monitorId)
+        ? { sql: 'SELECT * FROM monitors WHERE id = $1', params: [monitorId] }
+        : { sql: 'SELECT * FROM monitors WHERE kuma_id = $1', params: [monitorId] };
 
-    const monitorResult = await db.query(monitorQuery.sql, monitorQuery.params);
-    if (monitorResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Monitor not found' });
-    }
-    const monitor = monitorResult.rows[0];
+      const monitorResult = await db.query(monitorQuery.sql, monitorQuery.params);
+      if (monitorResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Monitor not found' });
+      }
+      const monitor = monitorResult.rows[0];
 
-    const severity = determineSeverity(monitor, { status: status === 'up' ? 1 : 0, statusCode: null });
-    const summary = await generateIncidentSummary(monitor, { msg: errorMessage }, errorMessage);
+      const severity = determineSeverity(monitor, {
+        status: status === 'up' ? 1 : 0,
+        statusCode: null,
+      });
+      const summary = await generateIncidentSummary(monitor, { msg: errorMessage }, errorMessage);
 
-    const result = await db.query(`
+      const result = await db.query(
+        `
       INSERT INTO monitor_incidents (monitor_id, status, severity, summary, description, started_at)
       VALUES ($1, 'open', $2, $3, $4, NOW())
       RETURNING *
-    `, [monitor.id, severity, summary, `Manual incident: ${errorMessage || 'Triggered from Pulse'}`]);
+    `,
+        [
+          monitor.id,
+          severity,
+          summary,
+          `Manual incident: ${errorMessage || 'Triggered from Pulse'}`,
+        ],
+      );
 
-    const incident = result.rows[0];
+      const incident = result.rows[0];
 
-    // Broadcast via websockets
-    if (req.app?.wsManager) {
-      req.app.wsManager.broadcastToSubscribers('system_status', {
-        type: 'sentinel_incident_created',
-        data: { incident },
-        timestamp: new Date().toISOString()
+      // Broadcast via websockets
+      if (req.app?.wsManager) {
+        req.app.wsManager.broadcastToSubscribers('system_status', {
+          type: 'sentinel_incident_created',
+          data: { incident },
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      // Audit log
+      await logAudit('sentinel.incident.created', req.user, {
+        monitor_id: monitor.id,
+        monitor_name: monitorName || monitor.name,
+        severity,
+        status,
       });
+
+      res.status(201).json({ success: true, incident });
+    } catch (error) {
+      logger.error('Failed to create incident', { error: error.message });
+      res.status(500).json({ error: 'Failed to create incident' });
     }
-
-    // Audit log
-    await logAudit('sentinel.incident.created', req.user, {
-      monitor_id: monitor.id,
-      monitor_name: monitorName || monitor.name,
-      severity,
-      status,
-    });
-
-    res.status(201).json({ success: true, incident });
-  } catch (error) {
-    logger.error('Failed to create incident', { error: error.message });
-    res.status(500).json({ error: 'Failed to create incident' });
-  }
-});
+  },
+);

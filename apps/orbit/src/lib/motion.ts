@@ -10,5 +10,3 @@ export const MotionTokens = {
     easeInOut: [0.4, 0.0, 0.2, 1.0] as [number, number, number, number],
   },
 } as const;
-
-

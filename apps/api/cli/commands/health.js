@@ -8,19 +8,20 @@ import { existsSync, statSync } from 'fs';
 import path from 'path';
 import os from 'os';
 import Table from 'cli-table3';
-import { 
-  logger, 
-  createSpinner, 
+import {
+  logger,
+  createSpinner,
   runCommand,
   getProjectRoot,
   checkServiceStatus,
   connectDatabase,
   formatFileSize,
-  formatDuration
+  formatDuration,
 } from '../utils/index.js';
 
-export const healthCommand = new Command('health')
-  .description('System health monitoring and diagnostics');
+export const healthCommand = new Command('health').description(
+  'System health monitoring and diagnostics',
+);
 
 // Health check command
 healthCommand
@@ -90,7 +91,7 @@ async function runHealthCheck(options) {
   const results = {
     timestamp: new Date().toISOString(),
     overall: 'healthy',
-    checks: {}
+    checks: {},
   };
 
   const checks = [];
@@ -104,7 +105,7 @@ async function runHealthCheck(options) {
       { name: 'Database', check: checkDatabase },
       { name: 'File System', check: checkFileSystem },
       { name: 'Dependencies', check: checkDependencies },
-      { name: 'Configuration', check: checkConfiguration }
+      { name: 'Configuration', check: checkConfiguration },
     );
   } else {
     if (options.system) {
@@ -143,12 +144,11 @@ async function runHealthCheck(options) {
           console.log(chalk.gray(`   ${icon} ${detail.message}`));
         }
       }
-
     } catch (error) {
       spinner.fail(`${name}: ${chalk.red('Error')}`);
       results.checks[name] = {
         status: 'error',
-        message: error.message
+        message: error.message,
       };
       results.overall = 'critical';
     }
@@ -157,12 +157,18 @@ async function runHealthCheck(options) {
   // Display summary
   console.log(chalk.cyan('\n📊 Health Summary\n'));
 
-  const overallColor = results.overall === 'healthy' ? chalk.green : 
-                      results.overall === 'warning' ? chalk.yellow : chalk.red;
-  const overallIcon = results.overall === 'healthy' ? '🟢' : 
-                     results.overall === 'warning' ? '🟡' : '🔴';
+  const overallColor =
+    results.overall === 'healthy'
+      ? chalk.green
+      : results.overall === 'warning'
+        ? chalk.yellow
+        : chalk.red;
+  const overallIcon =
+    results.overall === 'healthy' ? '🟢' : results.overall === 'warning' ? '🟡' : '🔴';
 
-  console.log(`Overall Status: ${overallColor(`${overallIcon} ${results.overall.toUpperCase()}`)}\n`);
+  console.log(
+    `Overall Status: ${overallColor(`${overallIcon} ${results.overall.toUpperCase()}`)}\n`,
+  );
 
   if (options.json) {
     console.log(JSON.stringify(results, null, 2));
@@ -182,7 +188,7 @@ async function runHealthCheck(options) {
 async function checkSystemResources(verbose = false) {
   const result = {
     status: 'healthy',
-    details: []
+    details: [],
   };
 
   // Memory usage
@@ -193,7 +199,7 @@ async function checkSystemResources(verbose = false) {
 
   result.details.push({
     status: memoryUsage > 90 ? 'error' : memoryUsage > 80 ? 'warning' : 'ok',
-    message: `Memory: ${formatFileSize(usedMem)} / ${formatFileSize(totalMem)} (${memoryUsage.toFixed(1)}%)`
+    message: `Memory: ${formatFileSize(usedMem)} / ${formatFileSize(totalMem)} (${memoryUsage.toFixed(1)}%)`,
   });
 
   if (memoryUsage > 90) {
@@ -209,7 +215,7 @@ async function checkSystemResources(verbose = false) {
 
   result.details.push({
     status: loadPercentage > 100 ? 'error' : loadPercentage > 80 ? 'warning' : 'ok',
-    message: `CPU Load: ${loadAvg[0].toFixed(2)} (${loadPercentage.toFixed(1)}%)`
+    message: `CPU Load: ${loadAvg[0].toFixed(2)} (${loadPercentage.toFixed(1)}%)`,
   });
 
   if (loadPercentage > 100 && result.status !== 'critical') {
@@ -229,7 +235,7 @@ async function checkSystemResources(verbose = false) {
 
     result.details.push({
       status: usage > 95 ? 'error' : usage > 85 ? 'warning' : 'ok',
-      message: `Disk Usage: ${parts[4]} (${parts[2]} used of ${parts[1]})`
+      message: `Disk Usage: ${parts[4]} (${parts[2]} used of ${parts[1]})`,
     });
 
     if (usage > 95 && result.status !== 'critical') {
@@ -240,7 +246,7 @@ async function checkSystemResources(verbose = false) {
   } catch (error) {
     result.details.push({
       status: 'warning',
-      message: 'Disk usage check failed'
+      message: 'Disk usage check failed',
     });
   }
 
@@ -248,7 +254,7 @@ async function checkSystemResources(verbose = false) {
   const uptime = os.uptime();
   result.details.push({
     status: 'ok',
-    message: `System Uptime: ${formatDuration(uptime * 1000)}`
+    message: `System Uptime: ${formatDuration(uptime * 1000)}`,
   });
 
   return result;
@@ -258,18 +264,18 @@ async function checkSystemResources(verbose = false) {
 async function checkServices(verbose = false) {
   const result = {
     status: 'healthy',
-    details: []
+    details: [],
   };
 
   try {
     const serviceStatus = await checkServiceStatus();
-    
+
     for (const [key, service] of Object.entries(serviceStatus)) {
       const isRunning = service.status === 'running';
-      
+
       result.details.push({
         status: isRunning ? 'ok' : 'error',
-        message: `${service.name}: ${service.status} ${service.port ? `(port ${service.port})` : ''}`
+        message: `${service.name}: ${service.status} ${service.port ? `(port ${service.port})` : ''}`,
       });
 
       if (!isRunning) {
@@ -279,23 +285,22 @@ async function checkServices(verbose = false) {
 
     // Check for port conflicts
     const ports = Object.values(serviceStatus)
-      .filter(s => s.port)
-      .map(s => s.port);
-    
+      .filter((s) => s.port)
+      .map((s) => s.port);
+
     const duplicatePorts = ports.filter((port, index) => ports.indexOf(port) !== index);
     if (duplicatePorts.length > 0) {
       result.details.push({
         status: 'error',
-        message: `Port conflicts detected: ${duplicatePorts.join(', ')}`
+        message: `Port conflicts detected: ${duplicatePorts.join(', ')}`,
       });
       result.status = 'critical';
     }
-
   } catch (error) {
     result.status = 'error';
     result.details.push({
       status: 'error',
-      message: `Service check failed: ${error.message}`
+      message: `Service check failed: ${error.message}`,
     });
   }
 
@@ -306,7 +311,7 @@ async function checkServices(verbose = false) {
 async function checkDatabase(verbose = false) {
   const result = {
     status: 'healthy',
-    details: []
+    details: [],
   };
 
   try {
@@ -316,7 +321,7 @@ async function checkDatabase(verbose = false) {
 
     result.details.push({
       status: connectionTime > 5000 ? 'warning' : 'ok',
-      message: `Database connection: ${connectionTime}ms`
+      message: `Database connection: ${connectionTime}ms`,
     });
 
     if (connectionTime > 5000) {
@@ -328,12 +333,12 @@ async function checkDatabase(verbose = false) {
       await db.admin().ping();
       result.details.push({
         status: 'ok',
-        message: 'Database ping: successful'
+        message: 'Database ping: successful',
       });
     } catch (error) {
       result.details.push({
         status: 'error',
-        message: `Database ping failed: ${error.message}`
+        message: `Database ping failed: ${error.message}`,
       });
       result.status = 'critical';
     }
@@ -343,20 +348,19 @@ async function checkDatabase(verbose = false) {
       const collections = await db.listCollections().toArray();
       result.details.push({
         status: 'ok',
-        message: `Collections: ${collections.length} found`
+        message: `Collections: ${collections.length} found`,
       });
     } catch (error) {
       result.details.push({
         status: 'warning',
-        message: 'Could not list collections'
+        message: 'Could not list collections',
       });
     }
-
   } catch (error) {
     result.status = 'critical';
     result.details.push({
       status: 'error',
-      message: `Database connection failed: ${error.message}`
+      message: `Database connection failed: ${error.message}`,
     });
   }
 
@@ -367,26 +371,21 @@ async function checkDatabase(verbose = false) {
 async function checkFileSystem(verbose = false) {
   const result = {
     status: 'healthy',
-    details: []
+    details: [],
   };
 
   const projectRoot = getProjectRoot();
-  
+
   // Check critical directories
-  const criticalDirs = [
-    'nova-api',
-    'nova-core',
-    'uploads',
-    'logs'
-  ];
+  const criticalDirs = ['nova-api', 'nova-core', 'uploads', 'logs'];
 
   for (const dir of criticalDirs) {
     const dirPath = path.join(projectRoot, dir);
     const exists = existsSync(dirPath);
-    
+
     result.details.push({
       status: exists ? 'ok' : 'error',
-      message: `Directory ${dir}: ${exists ? 'exists' : 'missing'}`
+      message: `Directory ${dir}: ${exists ? 'exists' : 'missing'}`,
     });
 
     if (!exists && dir !== 'uploads' && dir !== 'logs') {
@@ -400,10 +399,10 @@ async function checkFileSystem(verbose = false) {
     if (existsSync(logDir)) {
       const stats = statSync(logDir);
       const isWritable = (stats.mode & parseInt('0200', 8)) !== 0;
-      
+
       result.details.push({
         status: isWritable ? 'ok' : 'error',
-        message: `Log directory: ${isWritable ? 'writable' : 'not writable'}`
+        message: `Log directory: ${isWritable ? 'writable' : 'not writable'}`,
       });
 
       if (!isWritable) {
@@ -413,7 +412,7 @@ async function checkFileSystem(verbose = false) {
   } catch (error) {
     result.details.push({
       status: 'warning',
-      message: 'Could not check file permissions'
+      message: 'Could not check file permissions',
     });
   }
 
@@ -424,7 +423,7 @@ async function checkFileSystem(verbose = false) {
 async function checkDependencies(verbose = false) {
   const result = {
     status: 'healthy',
-    details: []
+    details: [],
   };
 
   const projectRoot = getProjectRoot();
@@ -443,7 +442,7 @@ async function checkDependencies(verbose = false) {
 
       result.details.push({
         status: hasNodeModules ? 'ok' : 'error',
-        message: `${service} dependencies: ${hasNodeModules ? 'installed' : 'missing'}`
+        message: `${service} dependencies: ${hasNodeModules ? 'installed' : 'missing'}`,
       });
 
       if (!hasNodeModules) {
@@ -456,11 +455,11 @@ async function checkDependencies(verbose = false) {
         try {
           const lockStats = statSync(lockPath);
           const packageStats = statSync(packageJsonPath);
-          
+
           if (packageStats.mtime > lockStats.mtime) {
             result.details.push({
               status: 'warning',
-              message: `${service}: package.json newer than package-lock.json`
+              message: `${service}: package.json newer than package-lock.json`,
             });
             if (result.status === 'healthy') {
               result.status = 'warning';
@@ -480,21 +479,21 @@ async function checkDependencies(verbose = false) {
 async function checkConfiguration(verbose = false) {
   const result = {
     status: 'healthy',
-    details: []
+    details: [],
   };
 
   const projectRoot = getProjectRoot();
-  
+
   // Check environment files
   const envFiles = ['.env', '.env.local', 'nova-api/.env'];
-  
+
   for (const envFile of envFiles) {
     const envPath = path.join(projectRoot, envFile);
     const exists = existsSync(envPath);
-    
+
     result.details.push({
       status: exists ? 'ok' : 'warning',
-      message: `${envFile}: ${exists ? 'found' : 'missing'}`
+      message: `${envFile}: ${exists ? 'found' : 'missing'}`,
     });
 
     if (!exists && envFile === '.env') {
@@ -506,13 +505,13 @@ async function checkConfiguration(verbose = false) {
 
   // Check required environment variables
   const requiredVars = ['DATABASE_URL', 'JWT_SECRET'];
-  
+
   for (const varName of requiredVars) {
     const exists = !!process.env[varName];
-    
+
     result.details.push({
       status: exists ? 'ok' : 'error',
-      message: `${varName}: ${exists ? 'set' : 'missing'}`
+      message: `${varName}: ${exists ? 'set' : 'missing'}`,
     });
 
     if (!exists) {
@@ -534,21 +533,21 @@ async function showSystemInfo(options) {
     memory: {
       total: os.totalmem(),
       free: os.freemem(),
-      used: os.totalmem() - os.freemem()
+      used: os.totalmem() - os.freemem(),
     },
     cpu: {
       count: os.cpus().length,
       model: os.cpus()[0]?.model || 'Unknown',
-      load: os.loadavg()
+      load: os.loadavg(),
     },
     node: {
       version: process.version,
-      execPath: process.execPath
+      execPath: process.execPath,
     },
     project: {
       root: getProjectRoot(),
-      pid: process.pid
-    }
+      pid: process.pid,
+    },
   };
 
   if (options.json) {
@@ -571,7 +570,7 @@ async function startMonitoring(options) {
     try {
       // Clear screen
       process.stdout.write('\x1B[2J\x1B[0f');
-      
+
       console.log(chalk.cyan('📊 Nova Universe Health Monitor\n'));
       console.log(chalk.gray(`Last updated: ${new Date().toLocaleTimeString()}\n`));
 
@@ -595,13 +594,16 @@ async function startMonitoring(options) {
           const previous = previousStatus[key];
           if (previous && previous.status !== service.status) {
             const icon = service.status === 'running' ? '🟢' : '🔴';
-            console.log(chalk.yellow(`\n🚨 ALERT: ${service.name} status changed: ${previous.status} → ${service.status}`));
+            console.log(
+              chalk.yellow(
+                `\n🚨 ALERT: ${service.name} status changed: ${previous.status} → ${service.status}`,
+              ),
+            );
           }
         }
       }
 
       previousStatus = serviceStatus;
-
     } catch (error) {
       console.error(chalk.red('Monitor error:'), error.message);
     }
@@ -634,7 +636,7 @@ async function runDiagnostics(options) {
       check: async () => {
         const ports = [3000, 5173, 3001];
         const conflicts = [];
-        
+
         for (const port of ports) {
           try {
             const { stdout } = await runCommand('lsof', [`-i:${port}`], { silent: true });
@@ -645,13 +647,13 @@ async function runDiagnostics(options) {
             // Port not in use
           }
         }
-        
+
         return conflicts.length === 0 ? null : `Port conflicts: ${conflicts.join(', ')}`;
       },
       fix: async () => {
         logger.info('To fix port conflicts, stop services using these ports');
         return false;
-      }
+      },
     },
     {
       name: 'Missing dependencies',
@@ -659,32 +661,32 @@ async function runDiagnostics(options) {
         const projectRoot = getProjectRoot();
         const services = ['nova-api', 'nova-core'];
         const missing = [];
-        
+
         for (const service of services) {
           const nodeModules = path.join(projectRoot, service, 'node_modules');
           if (!existsSync(nodeModules)) {
             missing.push(service);
           }
         }
-        
+
         return missing.length === 0 ? null : `Missing dependencies: ${missing.join(', ')}`;
       },
       fix: async () => {
         const projectRoot = getProjectRoot();
         const services = ['nova-api', 'nova-core'];
-        
+
         for (const service of services) {
           const servicePath = path.join(projectRoot, service);
           const nodeModules = path.join(servicePath, 'node_modules');
-          
+
           if (!existsSync(nodeModules)) {
             console.log(chalk.blue(`Installing dependencies for ${service}...`));
             await runCommand('npm', ['install'], { cwd: servicePath });
           }
         }
-        
+
         return true;
-      }
+      },
     },
     {
       name: 'Database connection',
@@ -700,8 +702,8 @@ async function runDiagnostics(options) {
         logger.info('Database connection issues require manual intervention');
         logger.info('Check DATABASE_URL environment variable');
         return false;
-      }
-    }
+      },
+    },
   ];
 
   // Run diagnostics
@@ -711,7 +713,7 @@ async function runDiagnostics(options) {
 
     try {
       const issue = await diagnostic.check();
-      
+
       if (issue) {
         spinner.fail(issue);
         issues.push({ ...diagnostic, issue });
@@ -729,19 +731,19 @@ async function runDiagnostics(options) {
     logger.success('✅ No issues found');
   } else {
     console.log(chalk.yellow(`\n⚠️  Found ${issues.length} issue(s):\n`));
-    
+
     for (const issue of issues) {
       console.log(chalk.red(`❌ ${issue.issue}`));
     }
 
     if (options.fix) {
       console.log(chalk.cyan('\n🔧 Attempting to fix issues...\n'));
-      
+
       for (const issue of issues) {
         if (issue.fix) {
           const spinner = createSpinner(`Fixing ${issue.name}...`);
           spinner.start();
-          
+
           try {
             const fixed = await issue.fix();
             if (fixed) {
@@ -764,23 +766,29 @@ async function runDiagnostics(options) {
 function displayHealthSummary(results) {
   const table = new Table({
     head: ['Component', 'Status', 'Details'],
-    colWidths: [20, 12, 50]
+    colWidths: [20, 12, 50],
   });
 
   for (const [name, check] of Object.entries(results.checks)) {
-    const statusColor = check.status === 'healthy' ? chalk.green :
-                       check.status === 'warning' ? chalk.yellow : chalk.red;
-    const statusIcon = check.status === 'healthy' ? '🟢' :
-                      check.status === 'warning' ? '🟡' : '🔴';
+    const statusColor =
+      check.status === 'healthy'
+        ? chalk.green
+        : check.status === 'warning'
+          ? chalk.yellow
+          : chalk.red;
+    const statusIcon = check.status === 'healthy' ? '🟢' : check.status === 'warning' ? '🟡' : '🔴';
 
-    const details = check.details ? 
-      check.details.slice(0, 2).map(d => d.message).join(', ') :
-      check.message || '';
+    const details = check.details
+      ? check.details
+          .slice(0, 2)
+          .map((d) => d.message)
+          .join(', ')
+      : check.message || '';
 
     table.push([
       name,
       statusColor(`${statusIcon} ${check.status}`),
-      details.length > 47 ? details.substring(0, 44) + '...' : details
+      details.length > 47 ? details.substring(0, 44) + '...' : details,
     ]);
   }
 
@@ -792,10 +800,22 @@ function displaySystemInfo(info) {
   console.log(chalk.cyan('💻 System Information\n'));
 
   const table = new Table({
-    chars: { 'top': '' , 'top-mid': '' , 'top-left': '' , 'top-right': ''
-            , 'bottom': '' , 'bottom-mid': '' , 'bottom-left': '' , 'bottom-right': ''
-            , 'left': '' , 'left-mid': '' , 'mid': '' , 'mid-mid': ''
-            , 'right': '' , 'right-mid': '' }
+    chars: {
+      top: '',
+      'top-mid': '',
+      'top-left': '',
+      'top-right': '',
+      bottom: '',
+      'bottom-mid': '',
+      'bottom-left': '',
+      'bottom-right': '',
+      left: '',
+      'left-mid': '',
+      mid: '',
+      'mid-mid': '',
+      right: '',
+      'right-mid': '',
+    },
   });
 
   table.push(
@@ -805,10 +825,10 @@ function displaySystemInfo(info) {
     ['Uptime:', formatDuration(info.uptime * 1000)],
     ['Memory:', `${formatFileSize(info.memory.used)} / ${formatFileSize(info.memory.total)}`],
     ['CPU:', `${info.cpu.count}x ${info.cpu.model.split(' ')[0]}`],
-    ['Load:', info.cpu.load.map(l => l.toFixed(2)).join(', ')],
+    ['Load:', info.cpu.load.map((l) => l.toFixed(2)).join(', ')],
     ['Node.js:', info.node.version],
     ['Project:', info.project.root],
-    ['PID:', info.project.pid.toString()]
+    ['PID:', info.project.pid.toString()],
   );
 
   console.log(table.toString());
@@ -819,17 +839,17 @@ function displaySystemInfo(info) {
 function displayServiceStatus(status) {
   const table = new Table({
     head: ['Service', 'Status', 'Port'],
-    colWidths: [15, 15, 10]
+    colWidths: [15, 15, 10],
   });
 
   for (const [key, service] of Object.entries(status)) {
     const statusColor = service.status === 'running' ? chalk.green : chalk.red;
     const statusIcon = service.status === 'running' ? '🟢' : '🔴';
-    
+
     table.push([
       service.name,
       statusColor(`${statusIcon} ${service.status}`),
-      service.port || 'N/A'
+      service.port || 'N/A',
     ]);
   }
 

@@ -4,12 +4,25 @@ export interface GridProps extends React.HTMLAttributes<HTMLDivElement> {
   item?: boolean;
   spacing?: number;
 }
-export const Grid: React.FC<GridProps> = ({ container, item, spacing, className, style, children, ...props }) => {
+export const Grid: React.FC<GridProps> = ({
+  container,
+  item,
+  spacing,
+  className,
+  style,
+  children,
+  ...props
+}) => {
   const classes = [className, container ? 'grid-container' : '', item ? 'grid-item' : '']
-    .filter(Boolean).join(' ');
+    .filter(Boolean)
+    .join(' ');
   const gridStyle = {
     ...(container && spacing ? { gap: spacing * 8 } : {}),
-    ...style
+    ...style,
   };
-  return <div {...props} className={classes} style={gridStyle}>{children}</div>;
+  return (
+    <div {...props} className={classes} style={gridStyle}>
+      {children}
+    </div>
+  );
 };

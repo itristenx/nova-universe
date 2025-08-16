@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Modal } from '@/components/ui';
-import { 
+import {
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   TrashIcon,
   PlusIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
@@ -24,13 +24,13 @@ interface PasskeyManagementProps {
   showTitle?: boolean;
 }
 
-export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ 
-  showTitle = true 
-}) => {
+export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ showTitle = true }) => {
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
-  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; passkey?: Passkey }>({ isOpen: false });
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; passkey?: Passkey }>({
+    isOpen: false,
+  });
   const { addToast } = useToastStore();
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
       addToast({
         type: 'error',
         title: 'Error',
-        description: 'Failed to load passkeys'
+        description: 'Failed to load passkeys',
       });
     } finally {
       setLoading(false);
@@ -67,19 +67,25 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
       const options = await api.beginPasskeyRegistration({});
 
       // Convert base64url to ArrayBuffer for the challenge
-      const challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
-      const userIdBuffer = Uint8Array.from(atob(options.user.id.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+      const challenge = Uint8Array.from(
+        atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')),
+        (c) => c.charCodeAt(0),
+      );
+      const userIdBuffer = Uint8Array.from(
+        atob(options.user.id.replace(/-/g, '+').replace(/_/g, '/')),
+        (c) => c.charCodeAt(0),
+      );
 
-      const credential = await navigator.credentials.create({
+      const credential = (await navigator.credentials.create({
         publicKey: {
           ...options,
           challenge,
           user: {
             ...options.user,
-            id: userIdBuffer
-          }
-        }
-      }) as PublicKeyCredential;
+            id: userIdBuffer,
+          },
+        },
+      })) as PublicKeyCredential;
 
       if (!credential) {
         throw new Error('Failed to create credential');
@@ -92,19 +98,20 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
         rawId: arrayBufferToBase64url(credential.rawId),
         response: {
           clientDataJSON: arrayBufferToBase64url(response.clientDataJSON),
-          attestationObject: arrayBufferToBase64url(response.attestationObject)
+          attestationObject: arrayBufferToBase64url(response.attestationObject),
         },
         type: credential.type,
-        name: prompt('Enter a name for this passkey (e.g., "iPhone", "YubiKey")') || 'Unnamed Passkey'
+        name:
+          prompt('Enter a name for this passkey (e.g., "iPhone", "YubiKey")') || 'Unnamed Passkey',
       };
 
       // Register with server
       await api.completePasskeyRegistration(credentialData);
-      
+
       addToast({
         type: 'success',
         title: 'Passkey Registered',
-        description: 'Your passkey has been successfully registered'
+        description: 'Your passkey has been successfully registered',
       });
 
       await loadPasskeys();
@@ -113,7 +120,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
       addToast({
         type: 'error',
         title: 'Registration Failed',
-        description: error.message || 'Failed to register passkey'
+        description: error.message || 'Failed to register passkey',
       });
     } finally {
       setRegistering(false);
@@ -123,11 +130,11 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
   const deletePasskey = async (passkey: Passkey) => {
     try {
       await api.deletePasskey(passkey.id);
-      
+
       addToast({
         type: 'success',
         title: 'Passkey Deleted',
-        description: 'The passkey has been removed from your account'
+        description: 'The passkey has been removed from your account',
       });
 
       await loadPasskeys();
@@ -137,7 +144,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
       addToast({
         type: 'error',
         title: 'Error',
-        description: 'Failed to delete passkey'
+        description: 'Failed to delete passkey',
       });
     }
   };
@@ -148,10 +155,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
     for (let i = 0; i < bytes.byteLength; i++) {
       binary += String.fromCharCode(bytes[i]);
     }
-    return btoa(binary)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
   };
 
   const getDeviceIcon = (deviceType?: string) => {
@@ -167,7 +171,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
     const now = new Date();
     const diffMs = now.getTime() - lastUsed.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
@@ -178,7 +182,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+        <div className="border-primary-600 h-6 w-6 animate-spin rounded-full border-b-2"></div>
       </div>
     );
   }
@@ -187,7 +191,9 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
     <div className="space-y-6">
       {showTitle && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Passkey Management</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+            Passkey Management
+          </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Manage your passkeys for secure, passwordless authentication
           </p>
@@ -196,7 +202,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
 
       {/* WebAuthn Support Check */}
       {!window.PublicKeyCredential && (
-        <Card className="p-4 border-amber-200 bg-amber-50 dark:bg-amber-900/20">
+        <Card className="border-amber-200 bg-amber-50 p-4 dark:bg-amber-900/20">
           <div className="flex">
             <ExclamationTriangleIcon className="h-5 w-5 text-amber-400" />
             <div className="ml-3">
@@ -204,7 +210,10 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
                 WebAuthn Not Supported
               </h3>
               <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
-                <p>Your browser does not support WebAuthn. Please use a modern browser like Chrome, Firefox, Safari, or Edge to use passkeys.</p>
+                <p>
+                  Your browser does not support WebAuthn. Please use a modern browser like Chrome,
+                  Firefox, Safari, or Edge to use passkeys.
+                </p>
               </div>
             </div>
           </div>
@@ -213,11 +222,13 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
 
       {/* Add Passkey Button */}
       {window.PublicKeyCredential && (
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div>
             <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Your Passkeys</h4>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {passkeys.length === 0 ? 'No passkeys configured' : `${passkeys.length} passkey${passkeys.length === 1 ? '' : 's'} configured`}
+              {passkeys.length === 0
+                ? 'No passkeys configured'
+                : `${passkeys.length} passkey${passkeys.length === 1 ? '' : 's'} configured`}
             </p>
           </div>
           <Button
@@ -227,7 +238,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
             disabled={registering}
             isLoading={registering}
           >
-            <PlusIcon className="h-4 w-4 mr-2" />
+            <PlusIcon className="mr-2 h-4 w-4" />
             Add Passkey
           </Button>
         </div>
@@ -243,8 +254,8 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
-                        <DeviceIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                      <div className="bg-primary-100 dark:bg-primary-900 flex h-10 w-10 items-center justify-center rounded-lg">
+                        <DeviceIcon className="text-primary-600 dark:text-primary-400 h-5 w-5" />
                       </div>
                     </div>
                     <div>
@@ -261,7 +272,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
                     variant="default"
                     size="sm"
                     onClick={() => setDeleteModal({ isOpen: true, passkey })}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
                   >
                     <TrashIcon className="h-4 w-4" />
                   </Button>
@@ -273,13 +284,11 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
       )}
 
       {/* Info Card */}
-      <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+      <Card className="border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
         <div className="flex">
           <CheckCircleIcon className="h-5 w-5 text-blue-400" />
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-              About Passkeys
-            </h3>
+            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">About Passkeys</h3>
             <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
               <ul className="space-y-1">
                 <li>• Passkeys provide secure, passwordless authentication</li>
@@ -300,14 +309,11 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Are you sure you want to delete the passkey "{deleteModal.passkey?.name}"? 
-            This action cannot be undone.
+            Are you sure you want to delete the passkey "{deleteModal.passkey?.name}"? This action
+            cannot be undone.
           </p>
           <div className="flex justify-end space-x-3">
-            <Button
-              variant="secondary"
-              onClick={() => setDeleteModal({ isOpen: false })}
-            >
+            <Button variant="secondary" onClick={() => setDeleteModal({ isOpen: false })}>
               Cancel
             </Button>
             <Button

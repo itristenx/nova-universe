@@ -1,6 +1,6 @@
 import React from 'react';
 interface HeaderProps {
-    onToggleSidebar: () => void;
+  onToggleSidebar: () => void;
 }
 export declare const Header: React.FC<HeaderProps>;
 export {};

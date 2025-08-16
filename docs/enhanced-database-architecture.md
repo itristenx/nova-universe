@@ -7,18 +7,21 @@ Nova Universe now features a sophisticated multi-database architecture designed 
 ## Architecture Components
 
 ### 🗄️ PostgreSQL with Prisma ORM (Core Data)
+
 - **Purpose**: Primary database for structured application data
 - **Technology**: PostgreSQL 15 + Prisma ORM + TypeScript
 - **Data Types**: Users, roles, permissions, configurations, core business logic
 - **Features**: Type-safe queries, automatic migrations, connection pooling
 
 ### 📊 MongoDB (Logs and Telemetry)
+
 - **Purpose**: Specialized storage for logs, telemetry, and unstructured data
 - **Technology**: MongoDB 7.0 + Native Node.js driver
 - **Data Types**: Audit logs, system logs, user activity, performance metrics, API usage
 - **Features**: TTL indexes, specialized collections, horizontal scaling
 
 ### 🔍 Elasticsearch (Search and Analytics)
+
 - **Purpose**: Full-text search, analytics, and operational observability
 - **Technology**: Elasticsearch 8.11 + Kibana dashboard
 - **Data Types**: Indexed tickets, knowledge base articles, log analytics, search embeddings
@@ -69,24 +72,28 @@ ELASTIC_PASSWORD=changeme
 ## Key Features
 
 ### 🔐 Enhanced Security
+
 - Role-based access control (RBAC)
 - WebAuthn passkey support
 - Comprehensive audit logging
 - Secure connection management
 
 ### 📈 Performance Optimization
+
 - Connection pooling for PostgreSQL
 - TTL indexes for MongoDB collections
 - Elasticsearch index templates with optimized mappings
 - Singleton pattern for database clients
 
 ### 🛡️ Error Handling & Monitoring
+
 - Health checks for all database systems
 - Automatic retry mechanisms
 - Comprehensive error logging
 - Performance metrics collection
 
 ### 🔍 Advanced Search Capabilities
+
 - Full-text search across tickets and knowledge base
 - Semantic search with embedding support
 - Search analytics and user behavior tracking
@@ -95,6 +102,7 @@ ELASTIC_PASSWORD=changeme
 ## Database Clients
 
 ### PostgreSQL Client (Enhanced Prisma)
+
 ```typescript
 import { novaDb } from '../src/lib/db';
 
@@ -102,53 +110,47 @@ import { novaDb } from '../src/lib/db';
 const user = await novaDb.createUser({
   email: 'user@example.com',
   firstName: 'John',
-  lastName: 'Doe'
+  lastName: 'Doe',
 });
 
 // Type-safe queries with middleware
 const users = await novaDb.postgres.prisma.user.findMany({
   where: { active: true },
-  include: { roles: true }
+  include: { roles: true },
 });
 ```
 
 ### MongoDB Client (Logs and Telemetry)
+
 ```typescript
 // Log user activity
-await novaDb.mongo.logUserActivity(
-  'user123',
-  'ticket_created',
-  { ticketId: 'T001', priority: 'high' }
-);
+await novaDb.mongo.logUserActivity('user123', 'ticket_created', {
+  ticketId: 'T001',
+  priority: 'high',
+});
 
 // Log system performance
-await novaDb.mongo.logPerformance(
-  'api',
-  '/tickets/search',
-  150,
-  { resultsCount: 25 }
-);
+await novaDb.mongo.logPerformance('api', '/tickets/search', 150, { resultsCount: 25 });
 ```
 
 ### Elasticsearch Client (Search and Analytics)
+
 ```typescript
 // Search tickets with filters
 const results = await novaDb.searchTickets(
   'installation issue',
   { status: 'open', priority: 'high' },
-  { size: 10 }
+  { size: 10 },
 );
 
 // Search knowledge base
-const kbResults = await novaDb.searchKnowledgeBase(
-  'setup guide',
-  { category: 'documentation' }
-);
+const kbResults = await novaDb.searchKnowledgeBase('setup guide', { category: 'documentation' });
 ```
 
 ## Data Models
 
 ### Core PostgreSQL Schema
+
 - **User**: User accounts with authentication
 - **Role/Permission**: RBAC system
 - **Passkey**: WebAuthn credentials
@@ -158,6 +160,7 @@ const kbResults = await novaDb.searchKnowledgeBase(
 - **AuditLog**: Critical action tracking
 
 ### MongoDB Collections
+
 - **audit_logs**: User actions and system changes (90 days TTL)
 - **system_logs**: Application logs (30 days TTL)
 - **user_activity**: User behavior tracking (30 days TTL)
@@ -167,6 +170,7 @@ const kbResults = await novaDb.searchKnowledgeBase(
 - **search_analytics**: Search behavior analysis (90 days TTL)
 
 ### Elasticsearch Indexes
+
 - **nova_tickets**: Searchable ticket index
 - **nova_kb**: Knowledge base search index
 - **nova_logs**: Log analytics index
@@ -194,6 +198,7 @@ docker-compose up elasticsearch kibana  # Elasticsearch + Kibana
 ## Operations Guide
 
 ### 🚀 Setup and Initialization
+
 ```bash
 # 1. Install dependencies
 pnpm install
@@ -212,6 +217,7 @@ pnpm test test/database-setup.test.js
 ```
 
 ### 🔧 Database Management
+
 ```bash
 # View database schema
 npx prisma studio
@@ -230,6 +236,7 @@ curl -X GET "localhost:9200/_cluster/health"
 ```
 
 ### 📊 Monitoring and Analytics
+
 ```bash
 # Check system health
 curl -X GET "localhost:3000/api/health"
@@ -246,16 +253,19 @@ node -e "require('./src/lib/db').exportData({includeUsers: true})"
 ### From SQLite to Enhanced Architecture
 
 1. **Backup existing data**:
+
    ```bash
    sqlite3 log.sqlite ".dump" > backup.sql
    ```
 
 2. **Set up new databases**:
+
    ```bash
    docker-compose up -d
    ```
 
 3. **Generate Prisma client**:
+
    ```bash
    npx prisma generate
    npx prisma db push
@@ -264,10 +274,11 @@ node -e "require('./src/lib/db').exportData({includeUsers: true})"
 4. **Migrate data** (custom script needed based on existing schema)
 
 5. **Update application code** to use new database manager:
+
    ```typescript
    // Old
    const db = require('./db.js');
-   
+
    // New
    import { novaDb } from './src/lib/db';
    ```
@@ -275,24 +286,28 @@ node -e "require('./src/lib/db').exportData({includeUsers: true})"
 ## Best Practices
 
 ### 🔒 Security
+
 - Use environment variables for all credentials
 - Enable SSL/TLS in production
 - Implement proper backup encryption
 - Regular security audits of database access
 
 ### ⚡ Performance
+
 - Use database connection pooling
 - Implement proper indexing strategies
 - Monitor query performance with Prisma logging
 - Use TTL indexes for temporary data in MongoDB
 
 ### 🛠️ Maintenance
+
 - Regular database backups
 - Monitor disk space and performance
 - Keep database software updated
 - Regular cleanup of expired logs
 
 ### 📈 Scaling
+
 - PostgreSQL: Read replicas, connection pooling
 - MongoDB: Replica sets, sharding
 - Elasticsearch: Multi-node clusters
@@ -339,18 +354,21 @@ DEBUG=prisma:query npm start
 ## API Reference
 
 ### Health Check Endpoint
+
 ```typescript
-GET /api/health
+GET / api / health;
 // Returns comprehensive health status of all databases
 ```
 
 ### Search Endpoints
+
 ```typescript
 GET /api/tickets/search?q=query&status=open
 GET /api/kb/search?q=query&category=docs
 ```
 
 ### Analytics Endpoints
+
 ```typescript
 GET /api/analytics/search?timeRange=24h
 GET /api/analytics/performance?service=api
@@ -370,6 +388,7 @@ When contributing to the database layer:
 ## Support
 
 For database-related issues:
+
 1. Check the troubleshooting section above
 2. Review application logs
 3. Test individual database connections

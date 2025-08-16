@@ -19,20 +19,48 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import { Showcase } from '@/components/ui/Showcase';
 
 // Lazy load other pages for better performance
-const TicketsPage = React.lazy(() => import('@/pages/TicketsPage').then(m => ({ default: m.TicketsPage })));
-const KiosksPage = React.lazy(() => import('@/pages/KiosksPage').then(m => ({ default: m.KiosksPage })));
-const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
-const NotificationsPage = React.lazy(() => import('@/pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
-const SettingsPage = React.lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
-const IntegrationsPage = React.lazy(() => import('@/pages/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
-const EmailAccountsPage = React.lazy(() => import('@/pages/EmailAccountsPage').then(m => ({ default: m.EmailAccountsPage })));
-const ModuleManagementPage = React.lazy(() => import('@/pages/ModuleManagementPage').then(m => ({ default: m.ModuleManagementPage }))); 
-const KioskActivationPage = React.lazy(() => import('@/pages/KioskActivationPage').then(m => ({ default: m.KioskActivationPage }))); 
-const CatalogItemsPage = React.lazy(() => import('@/pages/CatalogItemsPage').then(m => ({ default: m.CatalogItemsPage }))); 
-const KnowledgeListPage = React.lazy(() => import('@/pages/knowledge/KnowledgeListPage').then(m => ({ default: m.default }))); 
-const KnowledgeDetailPage = React.lazy(() => import('@/pages/knowledge/KnowledgeDetailPage').then(m => ({ default: m.default }))); 
-const KnowledgeEditPage = React.lazy(() => import('@/pages/knowledge/KnowledgeEditPage').then(m => ({ default: m.default })));
-const APIDocumentationPage = React.lazy(() => import('@/pages/APIDocumentationPage').then(m => ({ default: m.default })));
+const TicketsPage = React.lazy(() =>
+  import('@/pages/TicketsPage').then((m) => ({ default: m.TicketsPage })),
+);
+const KiosksPage = React.lazy(() =>
+  import('@/pages/KiosksPage').then((m) => ({ default: m.KiosksPage })),
+);
+const AnalyticsPage = React.lazy(() =>
+  import('@/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })),
+);
+const NotificationsPage = React.lazy(() =>
+  import('@/pages/NotificationsPage').then((m) => ({ default: m.NotificationsPage })),
+);
+const SettingsPage = React.lazy(() =>
+  import('@/pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+);
+const IntegrationsPage = React.lazy(() =>
+  import('@/pages/IntegrationsPage').then((m) => ({ default: m.IntegrationsPage })),
+);
+const EmailAccountsPage = React.lazy(() =>
+  import('@/pages/EmailAccountsPage').then((m) => ({ default: m.EmailAccountsPage })),
+);
+const ModuleManagementPage = React.lazy(() =>
+  import('@/pages/ModuleManagementPage').then((m) => ({ default: m.ModuleManagementPage })),
+);
+const KioskActivationPage = React.lazy(() =>
+  import('@/pages/KioskActivationPage').then((m) => ({ default: m.KioskActivationPage })),
+);
+const CatalogItemsPage = React.lazy(() =>
+  import('@/pages/CatalogItemsPage').then((m) => ({ default: m.CatalogItemsPage })),
+);
+const KnowledgeListPage = React.lazy(() =>
+  import('@/pages/knowledge/KnowledgeListPage').then((m) => ({ default: m.default })),
+);
+const KnowledgeDetailPage = React.lazy(() =>
+  import('@/pages/knowledge/KnowledgeDetailPage').then((m) => ({ default: m.default })),
+);
+const KnowledgeEditPage = React.lazy(() =>
+  import('@/pages/knowledge/KnowledgeEditPage').then((m) => ({ default: m.default })),
+);
+const APIDocumentationPage = React.lazy(() =>
+  import('@/pages/APIDocumentationPage').then((m) => ({ default: m.default })),
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -89,8 +117,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (loading || authStatusLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="border-primary-600 h-32 w-32 animate-spin rounded-full border-b-2"></div>
       </div>
     );
   }
@@ -139,22 +167,10 @@ const AppRoutes: React.FC = () => {
             </React.Suspense>
           }
         />
-        <Route
-          path="users"
-          element={<UserManagementPage />}
-        />
-        <Route
-          path="user-management"
-          element={<UserManagementPage />}
-        />
-        <Route
-          path="vip-management"
-          element={<VIPManagementPage />}
-        />
-        <Route
-          path="saml-configuration"
-          element={<SAMLConfigurationPage />}
-        />
+        <Route path="users" element={<UserManagementPage />} />
+        <Route path="user-management" element={<UserManagementPage />} />
+        <Route path="vip-management" element={<VIPManagementPage />} />
+        <Route path="saml-configuration" element={<SAMLConfigurationPage />} />
         <Route
           path="analytics"
           element={

@@ -4,7 +4,11 @@ import '@testing-library/jest-dom';
 import { MainNavigation } from '../../layout/navigation';
 
 jest.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ href, children, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 jest.mock('@/i18n/routing', () => ({
@@ -27,5 +31,3 @@ describe('MainNavigation', () => {
     expect(screen.getByText('Navigation.accessibility')).toBeInTheDocument();
   });
 });
-
-

@@ -120,19 +120,22 @@ export class NovaLocalAI extends EventEmitter {
   private async loadExistingModels(): Promise<void> {
     try {
       const modelsFile = path.join(this.modelsPath, 'models.json');
-      const exists = await fs.access(modelsFile).then(() => true).catch(() => false);
-      
+      const exists = await fs
+        .access(modelsFile)
+        .then(() => true)
+        .catch(() => false);
+
       if (exists) {
         const modelsData = await fs.readFile(modelsFile, 'utf-8');
         const models: NovaModel[] = JSON.parse(modelsData);
-        
+
         for (const model of models) {
           this.models.set(model.id, model);
           if (model.status === 'ready') {
             await this.loadModel(model.id);
           }
         }
-        
+
         console.log(`Loaded ${models.length} Nova AI models`);
       }
     } catch (error) {
@@ -146,7 +149,7 @@ export class NovaLocalAI extends EventEmitter {
   async createModel(
     name: string,
     type: NovaModel['type'],
-    config: TrainingConfig
+    config: TrainingConfig,
   ): Promise<string> {
     const modelId = createHash('sha256')
       .update(`${name}-${type}-${Date.now()}`)
@@ -162,12 +165,12 @@ export class NovaLocalAI extends EventEmitter {
       trainingData: {
         samples: 0,
         features: 0,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
       modelPath: path.join(this.modelsPath, 'production', modelId),
       metadata: { config },
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.models.set(modelId, model);
@@ -177,7 +180,7 @@ export class NovaLocalAI extends EventEmitter {
       type: 'model_created',
       userId: 'system',
       details: { modelId, name, type },
-      riskLevel: 'low'
+      riskLevel: 'low',
     });
 
     this.emit('modelCreated', model);
@@ -190,7 +193,7 @@ export class NovaLocalAI extends EventEmitter {
   async trainModel(
     modelId: string,
     trainingData: TrainingData,
-    config: TrainingConfig
+    config: TrainingConfig,
   ): Promise<void> {
     const model = this.models.get(modelId);
     if (!model) {
@@ -199,14 +202,14 @@ export class NovaLocalAI extends EventEmitter {
 
     // Add to training queue
     this.trainingQueue.push({ modelId, config, data: trainingData });
-    
+
     model.status = 'training';
     model.trainingData = {
       samples: trainingData.features.length,
       features: trainingData.features[0]?.length || 0,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
-    
+
     this.models.set(modelId, model);
     await this.saveModelsMetadata();
 
@@ -218,7 +221,7 @@ export class NovaLocalAI extends EventEmitter {
       type: 'model_training_started',
       userId: 'system',
       details: { modelId, samples: trainingData.features.length },
-      riskLevel: 'medium'
+      riskLevel: 'medium',
     });
   }
 
@@ -246,14 +249,14 @@ export class NovaLocalAI extends EventEmitter {
   private async executeTraining(
     modelId: string,
     data: TrainingData,
-    config: TrainingConfig
+    config: TrainingConfig,
   ): Promise<void> {
     try {
       const model = this.models.get(modelId)!;
-      
+
       // Create TensorFlow model based on type
       let tfModel: tf.LayersModel;
-      
+
       switch (model.type) {
         case 'classification':
           tfModel = await this.createClassificationModel(data, config);
@@ -282,9 +285,9 @@ export class NovaLocalAI extends EventEmitter {
             modelId,
             epoch,
             loss: logs.loss,
-            accuracy: logs.accuracy
+            accuracy: logs.accuracy,
           });
-        }
+        },
       };
 
       // Train the model
@@ -292,28 +295,28 @@ export class NovaLocalAI extends EventEmitter {
         epochs: config.epochs,
         batchSize: config.batchSize,
         validationSplit: config.validationSplit,
-        callbacks
+        callbacks,
       });
 
       // Save the trained model
       await tfModel.save(`file://${model.modelPath}`);
-      
+
       // Update model metadata
-      const finalAccuracy = history.history.accuracy?.slice(-1)[0] as number || 0;
+      const finalAccuracy = (history.history.accuracy?.slice(-1)[0] as number) || 0;
       model.status = 'ready';
       model.accuracy = finalAccuracy;
       model.updatedAt = new Date();
-      
+
       this.models.set(modelId, model);
       this.loadedModels.set(modelId, tfModel);
-      
+
       await this.saveModelsMetadata();
 
       // Record training completion
       await aiMonitoringSystem.recordMetric({
         type: 'model_performance',
         value: finalAccuracy,
-        metadata: { modelId, type: model.type, trainingTime: Date.now() }
+        metadata: { modelId, type: model.type, trainingTime: Date.now() },
       });
 
       // Cleanup tensors
@@ -321,17 +324,16 @@ export class NovaLocalAI extends EventEmitter {
       ys.dispose();
 
       this.emit('trainingCompleted', { modelId, accuracy: finalAccuracy });
-
     } catch (error) {
       const model = this.models.get(modelId)!;
       model.status = 'error';
       this.models.set(modelId, model);
-      
+
       await aiMonitoringSystem.recordAuditEvent({
         type: 'model_training_failed',
         userId: 'system',
         details: { modelId, error: error.message },
-        riskLevel: 'high'
+        riskLevel: 'high',
       });
 
       throw error;
@@ -343,7 +345,7 @@ export class NovaLocalAI extends EventEmitter {
    */
   private async createClassificationModel(
     data: TrainingData,
-    config: TrainingConfig
+    config: TrainingConfig,
   ): Promise<tf.LayersModel> {
     const inputShape = data.features[0].length;
     const numClasses = Math.max(...data.labels) + 1;
@@ -353,25 +355,25 @@ export class NovaLocalAI extends EventEmitter {
         tf.layers.dense({
           inputShape: [inputShape],
           units: 128,
-          activation: 'relu'
+          activation: 'relu',
         }),
         tf.layers.dropout({ rate: 0.3 }),
         tf.layers.dense({
           units: 64,
-          activation: 'relu'
+          activation: 'relu',
         }),
         tf.layers.dropout({ rate: 0.2 }),
         tf.layers.dense({
           units: numClasses,
-          activation: 'softmax'
-        })
-      ]
+          activation: 'softmax',
+        }),
+      ],
     });
 
     model.compile({
       optimizer: tf.train.adam(config.learningRate),
       loss: 'sparseCategoricalCrossentropy',
-      metrics: ['accuracy']
+      metrics: ['accuracy'],
     });
 
     return model;
@@ -382,7 +384,7 @@ export class NovaLocalAI extends EventEmitter {
    */
   private async createRegressionModel(
     data: TrainingData,
-    config: TrainingConfig
+    config: TrainingConfig,
   ): Promise<tf.LayersModel> {
     const inputShape = data.features[0].length;
 
@@ -391,23 +393,23 @@ export class NovaLocalAI extends EventEmitter {
         tf.layers.dense({
           inputShape: [inputShape],
           units: 64,
-          activation: 'relu'
+          activation: 'relu',
         }),
         tf.layers.dense({
           units: 32,
-          activation: 'relu'
+          activation: 'relu',
         }),
         tf.layers.dense({
           units: 1,
-          activation: 'linear'
-        })
-      ]
+          activation: 'linear',
+        }),
+      ],
     });
 
     model.compile({
       optimizer: tf.train.adam(config.learningRate),
       loss: 'meanSquaredError',
-      metrics: ['meanAbsoluteError']
+      metrics: ['meanAbsoluteError'],
     });
 
     return model;
@@ -418,7 +420,7 @@ export class NovaLocalAI extends EventEmitter {
    */
   private async createNLPModel(
     data: TrainingData,
-    config: TrainingConfig
+    config: TrainingConfig,
   ): Promise<tf.LayersModel> {
     const inputShape = data.features[0].length;
     const vocabSize = Math.max(...data.features.flat()) + 1;
@@ -429,24 +431,24 @@ export class NovaLocalAI extends EventEmitter {
         tf.layers.embedding({
           inputDim: vocabSize,
           outputDim: embeddingDim,
-          inputLength: inputShape
+          inputLength: inputShape,
         }),
         tf.layers.globalAveragePooling1d(),
         tf.layers.dense({
           units: 64,
-          activation: 'relu'
+          activation: 'relu',
         }),
         tf.layers.dense({
           units: 1,
-          activation: 'sigmoid'
-        })
-      ]
+          activation: 'sigmoid',
+        }),
+      ],
     });
 
     model.compile({
       optimizer: tf.train.adam(config.learningRate),
       loss: 'binaryCrossentropy',
-      metrics: ['accuracy']
+      metrics: ['accuracy'],
     });
 
     return model;
@@ -457,7 +459,7 @@ export class NovaLocalAI extends EventEmitter {
    */
   private async createPredictionModel(
     data: TrainingData,
-    config: TrainingConfig
+    config: TrainingConfig,
   ): Promise<tf.LayersModel> {
     const inputShape = data.features[0].length;
 
@@ -466,27 +468,27 @@ export class NovaLocalAI extends EventEmitter {
         tf.layers.lstm({
           units: 50,
           returnSequences: true,
-          inputShape: [inputShape, 1]
+          inputShape: [inputShape, 1],
         }),
         tf.layers.lstm({
           units: 50,
-          returnSequences: false
+          returnSequences: false,
         }),
         tf.layers.dense({
           units: 25,
-          activation: 'relu'
+          activation: 'relu',
         }),
         tf.layers.dense({
           units: 1,
-          activation: 'linear'
-        })
-      ]
+          activation: 'linear',
+        }),
+      ],
     });
 
     model.compile({
       optimizer: tf.train.adam(config.learningRate),
       loss: 'meanSquaredError',
-      metrics: ['meanAbsoluteError']
+      metrics: ['meanAbsoluteError'],
     });
 
     return model;
@@ -504,14 +506,13 @@ export class NovaLocalAI extends EventEmitter {
     try {
       const tfModel = await tf.loadLayersModel(`file://${model.modelPath}/model.json`);
       this.loadedModels.set(modelId, tfModel);
-      
+
       await aiMonitoringSystem.recordAuditEvent({
         type: 'model_loaded',
         userId: 'system',
         details: { modelId },
-        riskLevel: 'low'
+        riskLevel: 'low',
       });
-
     } catch (error) {
       console.error(`Failed to load model ${modelId}:`, error);
       throw error;
@@ -524,7 +525,7 @@ export class NovaLocalAI extends EventEmitter {
   async predict(request: PredictionRequest): Promise<PredictionResult> {
     const startTime = Date.now();
     const model = this.models.get(request.modelId);
-    
+
     if (!model) {
       throw new Error(`Model ${request.modelId} not found`);
     }
@@ -538,11 +539,11 @@ export class NovaLocalAI extends EventEmitter {
     try {
       // Prepare input tensor
       const inputTensor = tf.tensor2d([request.input]);
-      
+
       // Make prediction
       const prediction = tfModel.predict(inputTensor) as tf.Tensor;
       const predictionData = await prediction.data();
-      
+
       // Calculate confidence based on model type
       let confidence = 0;
       let result: any;
@@ -569,8 +570,8 @@ export class NovaLocalAI extends EventEmitter {
         metadata: {
           modelId: request.modelId,
           processingTime,
-          userId: request.userId
-        }
+          userId: request.userId,
+        },
       });
 
       const predictionResult: PredictionResult = {
@@ -578,18 +579,17 @@ export class NovaLocalAI extends EventEmitter {
         confidence,
         modelUsed: request.modelId,
         processingTime,
-        explanation: await this.generateExplanation(request, result)
+        explanation: await this.generateExplanation(request, result),
       };
 
       this.emit('predictionMade', predictionResult);
       return predictionResult;
-
     } catch (error) {
       await aiMonitoringSystem.recordAuditEvent({
         type: 'model_prediction_failed',
         userId: request.userId || 'system',
         details: { modelId: request.modelId, error: error.message },
-        riskLevel: 'medium'
+        riskLevel: 'medium',
       });
 
       throw error;
@@ -599,18 +599,15 @@ export class NovaLocalAI extends EventEmitter {
   /**
    * Generate explanation for prediction
    */
-  private async generateExplanation(
-    request: PredictionRequest,
-    result: any
-  ): Promise<any> {
+  private async generateExplanation(request: PredictionRequest, result: any): Promise<any> {
     // Simplified explanation - in production, use SHAP, LIME, or similar
     return {
       method: 'feature_importance',
       factors: [
         { feature: 'primary_factor', importance: 0.7, value: 'high' },
-        { feature: 'secondary_factor', importance: 0.3, value: 'medium' }
+        { feature: 'secondary_factor', importance: 0.3, value: 'medium' },
       ],
-      reasoning: `Prediction based on ${request.input.length} input features`
+      reasoning: `Prediction based on ${request.input.length} input features`,
     };
   }
 
@@ -623,11 +620,11 @@ export class NovaLocalAI extends EventEmitter {
     await aiMonitoringSystem.recordAuditEvent({
       type: 'learning_feedback_received',
       userId: 'system',
-      details: { 
+      details: {
         predictionId: feedback.predictionId,
-        feedback: feedback.feedback 
+        feedback: feedback.feedback,
       },
-      riskLevel: 'low'
+      riskLevel: 'low',
     });
 
     // Trigger retraining if threshold reached
@@ -649,7 +646,7 @@ export class NovaLocalAI extends EventEmitter {
 
     // Group feedback by model
     const modelFeedback = new Map<string, LearningFeedback[]>();
-    
+
     for (const item of feedback) {
       // Note: In real implementation, track prediction->model mapping
       const modelId = 'default'; // Simplified for this example
@@ -667,11 +664,11 @@ export class NovaLocalAI extends EventEmitter {
     await aiMonitoringSystem.recordAuditEvent({
       type: 'learning_feedback_processed',
       userId: 'system',
-      details: { 
+      details: {
         feedbackItems: feedback.length,
-        modelsUpdated: modelFeedback.size 
+        modelsUpdated: modelFeedback.size,
       },
-      riskLevel: 'low'
+      riskLevel: 'low',
     });
   }
 
@@ -680,7 +677,7 @@ export class NovaLocalAI extends EventEmitter {
    */
   private async updateModelFromFeedback(
     modelId: string,
-    feedback: LearningFeedback[]
+    feedback: LearningFeedback[],
   ): Promise<void> {
     // In a real implementation, this would:
     // 1. Extract corrected training samples from feedback
@@ -689,17 +686,17 @@ export class NovaLocalAI extends EventEmitter {
     // 4. Deploy updated model
 
     console.log(`Processing ${feedback.length} feedback items for model ${modelId}`);
-    
+
     // Simplified: just log the feedback processing
-    const correctFeedback = feedback.filter(f => f.feedback === 'correct').length;
-    const incorrectFeedback = feedback.filter(f => f.feedback === 'incorrect').length;
-    
+    const correctFeedback = feedback.filter((f) => f.feedback === 'correct').length;
+    const incorrectFeedback = feedback.filter((f) => f.feedback === 'incorrect').length;
+
     const accuracy = correctFeedback / feedback.length;
-    
+
     await aiMonitoringSystem.recordMetric({
       type: 'model_feedback_accuracy',
       value: accuracy,
-      metadata: { modelId, totalFeedback: feedback.length }
+      metadata: { modelId, totalFeedback: feedback.length },
     });
   }
 
@@ -708,16 +705,22 @@ export class NovaLocalAI extends EventEmitter {
    */
   private startContinuousLearning(): void {
     // Process feedback every 5 minutes
-    setInterval(async () => {
-      if (this.feedbackBuffer.length > 0) {
-        await this.processLearningFeedback();
-      }
-    }, 5 * 60 * 1000);
+    setInterval(
+      async () => {
+        if (this.feedbackBuffer.length > 0) {
+          await this.processLearningFeedback();
+        }
+      },
+      5 * 60 * 1000,
+    );
 
     // Health check every hour
-    setInterval(async () => {
-      await this.performHealthCheck();
-    }, 60 * 60 * 1000);
+    setInterval(
+      async () => {
+        await this.performHealthCheck();
+      },
+      60 * 60 * 1000,
+    );
   }
 
   /**
@@ -732,17 +735,17 @@ export class NovaLocalAI extends EventEmitter {
           await this.predict({
             modelId,
             input: testInput,
-            context: { healthCheck: true }
+            context: { healthCheck: true },
           });
         }
       } catch (error) {
         console.error(`Health check failed for model ${modelId}:`, error);
-        
+
         await aiMonitoringSystem.recordAuditEvent({
           type: 'model_health_check_failed',
           userId: 'system',
           details: { modelId, error: error.message },
-          riskLevel: 'high'
+          riskLevel: 'high',
         });
       }
     }
@@ -789,7 +792,7 @@ export class NovaLocalAI extends EventEmitter {
       type: 'model_deleted',
       userId: 'system',
       details: { modelId, archived: true },
-      riskLevel: 'medium'
+      riskLevel: 'medium',
     });
   }
 
@@ -816,13 +819,13 @@ export class NovaLocalAI extends EventEmitter {
       trainingQueue: this.trainingQueue.length,
       isTraining: this.isTraining,
       feedbackBuffer: this.feedbackBuffer.length,
-      models: Array.from(this.models.values()).map(m => ({
+      models: Array.from(this.models.values()).map((m) => ({
         id: m.id,
         name: m.name,
         type: m.type,
         status: m.status,
-        accuracy: m.accuracy
-      }))
+        accuracy: m.accuracy,
+      })),
     };
   }
 }

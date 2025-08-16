@@ -2,7 +2,7 @@
 
 /**
  * Nova AI Fabric Test Script
- * 
+ *
  * This script tests the AI Fabric implementation to ensure all components
  * are properly integrated and working correctly.
  */
@@ -27,27 +27,29 @@ async function testAIFabric() {
     // Test 2: RAG Engine
     console.log('2️⃣  Testing RAG Engine...');
     await ragEngine.initialize();
-    
+
     // Add test documents
     const testDocuments = [
       {
         id: 'test-doc-1',
-        content: 'Nova Universe is an advanced ITSM platform with AI capabilities. It includes modules like Pulse for technicians, Orbit for end users, and Synth for AI orchestration.',
+        content:
+          'Nova Universe is an advanced ITSM platform with AI capabilities. It includes modules like Pulse for technicians, Orbit for end users, and Synth for AI orchestration.',
         metadata: {
           source: 'documentation',
           type: 'knowledge_article',
-          category: 'platform_overview'
-        }
+          category: 'platform_overview',
+        },
       },
       {
         id: 'test-doc-2',
-        content: 'To reset a password in Nova, users can use the self-service portal or contact their IT department. The system supports automatic password policy enforcement.',
+        content:
+          'To reset a password in Nova, users can use the self-service portal or contact their IT department. The system supports automatic password policy enforcement.',
         metadata: {
           source: 'knowledge_base',
           type: 'knowledge_article',
-          category: 'user_management'
-        }
-      }
+          category: 'user_management',
+        },
+      },
     ];
 
     await ragEngine.addDocuments(testDocuments);
@@ -58,9 +60,9 @@ async function testAIFabric() {
       query: 'How to reset password in Nova?',
       options: {
         maxResults: 5,
-        hybridSearch: true
+        hybridSearch: true,
       },
-      metadata: {}
+      metadata: {},
     });
 
     console.log(`   🔍 RAG Query Results: ${ragResult.chunks.length} chunks found`);
@@ -79,7 +81,7 @@ async function testAIFabric() {
       value: 1200,
       unit: 'milliseconds',
       metadata: { test: true },
-      tags: ['test']
+      tags: ['test'],
     });
 
     // Record test audit event
@@ -89,7 +91,7 @@ async function testAIFabric() {
       userId: 'test-user',
       metadata: { test: true },
       complianceFlags: [],
-      riskScore: 0.1
+      riskScore: 0.1,
     });
 
     const dashboardData = aiMonitoringSystem.getDashboardData();
@@ -101,7 +103,7 @@ async function testAIFabric() {
     await novaMCPServer.start();
     console.log(`   ✅ MCP Server started on port ${novaMCPServer.serverPort}`);
     console.log(`   🔧 Server running: ${novaMCPServer.isServerRunning}`);
-    
+
     const serverInfo = novaMCPServer.getServerInfo();
     console.log(`   🛠️  Available tools: ${serverInfo.tools?.length || 0}`);
     console.log(`   🎯 Capabilities: ${serverInfo.capabilities?.length || 0}\n`);
@@ -114,11 +116,11 @@ async function testAIFabric() {
       context: {
         userId: 'test-user',
         tenantId: 'test-tenant',
-        module: 'test'
+        module: 'test',
       },
       preferences: {},
       metadata: { test: true },
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     const aiResponse = await aiFabric.processRequest(testRequest);
@@ -134,11 +136,11 @@ async function testAIFabric() {
       data: {
         requestId: aiResponse.requestId,
         rating: 4,
-        feedback: 'Good classification accuracy'
+        feedback: 'Good classification accuracy',
       },
       context: { userId: 'test-user', module: 'test' },
       timestamp: new Date(),
-      quality: 0.8
+      quality: 0.8,
     });
     console.log('   ✅ Learning event recorded\n');
 
@@ -157,7 +159,6 @@ async function testAIFabric() {
     console.log('🔧 API Endpoints: /api/ai-fabric/*');
     console.log('📊 MCP Server: http://localhost:3001');
     console.log('🔍 Discovery: http://localhost:3001/.well-known/mcp-server');
-
   } catch (error) {
     console.error('❌ AI Fabric Test Failed:', error);
     console.error('Stack trace:', error.stack);

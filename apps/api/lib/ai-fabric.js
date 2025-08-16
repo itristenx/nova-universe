@@ -57,12 +57,12 @@ class AIFabric {
     }
 
     logger.info('Processing AI request', { type: request.type });
-    
+
     // Basic implementation
     return {
       success: true,
       data: { message: 'AI Fabric processing complete' },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }
@@ -72,7 +72,7 @@ export const aiFabric = new AIFabric();
 
 // Initialize on module load
 if (process.env.NODE_ENV !== 'test') {
-  aiFabric.initialize().catch(err => {
+  aiFabric.initialize().catch((err) => {
     logger.error('AI Fabric initialization failed', { error: err.message });
   });
 }

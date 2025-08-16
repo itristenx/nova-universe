@@ -6,29 +6,23 @@
     "^@/(.*)$": "<rootDir>/src/$1"
   },
   "transform": {
-    "^.+\\.(ts|tsx)$": ["ts-jest", {
-      "tsconfig": {
-        "jsx": "react-jsx"
+    "^.+\\.(ts|tsx)$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "jsx": "react-jsx"
+        }
       }
-    }]
+    ]
   },
   "testMatch": [
     "<rootDir>/src/**/__tests__/**/*.(ts|tsx)",
     "<rootDir>/src/**/?(*.)(test|spec).(ts|tsx)"
   ],
-  "testPathIgnorePatterns": [
-    "<rootDir>/src/test/*.node-test.tsx",
-    "<rootDir>/../../../test/*"
-  ],
+  "testPathIgnorePatterns": ["<rootDir>/src/test/*.node-test.tsx", "<rootDir>/../../../test/*"],
   "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
-  "collectCoverageFrom": [
-    "src/**/*.{ts,tsx}",
-    "!src/**/*.d.ts",
-    "!src/test/**/*"
-  ],
+  "collectCoverageFrom": ["src/**/*.{ts,tsx}", "!src/**/*.d.ts", "!src/test/**/*"],
   "moduleDirectories": ["node_modules", "<rootDir>/src"],
   "extensionsToTreatAsEsm": [],
-  "transformIgnorePatterns": [
-    "node_modules/(?!(@heroui|@tanstack|@testing-library)/)"
-  ]
+  "transformIgnorePatterns": ["node_modules/(?!(@heroui|@tanstack|@testing-library)/)"]
 }

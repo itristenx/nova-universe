@@ -3,36 +3,36 @@
  * Wrapper for Lucide React icons with Nova Universe styling
  */
 
-import { 
-  iconMappings, 
-  iconSizes, 
-  iconSizeClasses, 
+import {
+  iconMappings,
+  iconSizes,
+  iconSizeClasses,
   iconColorClasses,
   iconVariants,
   getIconClass,
   type NovaIconName,
   type NovaIconSize,
   type NovaIconColor,
-  type NovaIconVariant
-} from '../icons'
+  type NovaIconVariant,
+} from '../icons';
 
 // Basic icon props interface (compatible with lucide-react)
 export interface BaseIconProps {
-  size?: number | string
-  color?: string
-  strokeWidth?: number
-  className?: string
-  style?: any
-  onClick?: (event: any) => void
+  size?: number | string;
+  color?: string;
+  strokeWidth?: number;
+  className?: string;
+  style?: any;
+  onClick?: (event: any) => void;
 }
 
 // Type definitions
 export interface NovaIconProps extends Omit<BaseIconProps, 'size'> {
-  name: NovaIconName
-  size?: NovaIconSize | number
-  color?: NovaIconColor
-  variant?: NovaIconVariant
-  className?: string
+  name: NovaIconName;
+  size?: NovaIconSize | number;
+  color?: NovaIconColor;
+  variant?: NovaIconVariant;
+  className?: string;
 }
 
 /**
@@ -42,10 +42,10 @@ export interface NovaIconProps extends Omit<BaseIconProps, 'size'> {
 export const getLucideIcon = (iconName: string) => {
   // Icon retrieval function for Nova Universe design system
   // This function maps icon names to Lucide React icon components
-  // 
+  //
   // Implementation note: This function requires Lucide React to be installed
   // in the consuming application: npm install lucide-react
-  // 
+  //
   // const getLucideIcon = (iconName: string) => {
   //   const pascalCase = iconName
   //     .split('-')
@@ -53,9 +53,9 @@ export const getLucideIcon = (iconName: string) => {
   //     .join('')
   //   return LucideIcons[pascalCase as keyof typeof LucideIcons]
   // }
-  
-  throw new Error(`Icon implementation needed for: ${iconName}`)
-}
+
+  throw new Error(`Icon implementation needed for: ${iconName}`);
+};
 
 /**
  * Nova Icon Component Props Interface (for consuming apps)
@@ -69,51 +69,51 @@ export const getNovaIconClassName = (
   size?: NovaIconSize | number,
   color?: NovaIconColor,
   variant?: NovaIconVariant,
-  className?: string
+  className?: string,
 ): string => {
-  const classes: string[] = []
-  
+  const classes: string[] = [];
+
   // Handle variant styling
   if (variant && iconVariants[variant]) {
-    const variantConfig = iconVariants[variant]
-    classes.push(iconSizeClasses[variantConfig.size])
-    classes.push(variantConfig.className)
+    const variantConfig = iconVariants[variant];
+    classes.push(iconSizeClasses[variantConfig.size]);
+    classes.push(variantConfig.className);
   } else {
     // Handle size
     if (typeof size === 'string' && size in iconSizeClasses) {
-      classes.push(iconSizeClasses[size])
+      classes.push(iconSizeClasses[size]);
     }
-    
+
     // Handle color
     if (color && color in iconColorClasses) {
-      classes.push(iconColorClasses[color])
+      classes.push(iconColorClasses[color]);
     } else {
-      classes.push(iconColorClasses.default)
+      classes.push(iconColorClasses.default);
     }
   }
-  
+
   // Add custom className
   if (className) {
-    classes.push(className)
+    classes.push(className);
   }
-  
-  return classes.join(' ')
-}
+
+  return classes.join(' ');
+};
 
 /**
  * Get the numeric size value for Lucide icons
  */
 export const getNumericSize = (size?: NovaIconSize | number): number => {
   if (typeof size === 'number') {
-    return size
+    return size;
   }
-  
+
   if (size && size in iconSizes) {
-    return iconSizes[size]
+    return iconSizes[size];
   }
-  
-  return iconSizes.md // default size
-}
+
+  return iconSizes.md; // default size
+};
 
 /**
  * Icon implementation guide for consuming applications
@@ -171,7 +171,7 @@ export const NovaIcon: React.FC<NovaIconProps> = ({
 // <NovaIcon name="dashboard" size="md" color="primary" />
 // <NovaIcon name="add" variant="button" />
 // <NovaIcon name="success" color="success" size="lg" />
-`
+`;
 
 /**
  * Export icon presets for common use cases
@@ -182,19 +182,35 @@ export const iconPresets = {
   buttonEdit: { name: 'edit' as NovaIconName, variant: 'button' as NovaIconVariant },
   buttonDelete: { name: 'delete' as NovaIconName, variant: 'button' as NovaIconVariant },
   buttonSave: { name: 'save' as NovaIconName, variant: 'button' as NovaIconVariant },
-  
+
   // Navigation icons
   navDashboard: { name: 'dashboard' as NovaIconName, variant: 'nav' as NovaIconVariant },
   navTickets: { name: 'tickets' as NovaIconName, variant: 'nav' as NovaIconVariant },
   navAgents: { name: 'agents' as NovaIconName, variant: 'nav' as NovaIconVariant },
   navReports: { name: 'reports' as NovaIconName, variant: 'nav' as NovaIconVariant },
-  
+
   // Status icons
-  statusSuccess: { name: 'success' as NovaIconName, variant: 'status' as NovaIconVariant, color: 'success' as NovaIconColor },
-  statusWarning: { name: 'warning' as NovaIconName, variant: 'status' as NovaIconVariant, color: 'warning' as NovaIconColor },
-  statusError: { name: 'error' as NovaIconName, variant: 'status' as NovaIconVariant, color: 'error' as NovaIconColor },
-  statusInfo: { name: 'info' as NovaIconName, variant: 'status' as NovaIconVariant, color: 'info' as NovaIconColor }
-} as const
+  statusSuccess: {
+    name: 'success' as NovaIconName,
+    variant: 'status' as NovaIconVariant,
+    color: 'success' as NovaIconColor,
+  },
+  statusWarning: {
+    name: 'warning' as NovaIconName,
+    variant: 'status' as NovaIconVariant,
+    color: 'warning' as NovaIconColor,
+  },
+  statusError: {
+    name: 'error' as NovaIconName,
+    variant: 'status' as NovaIconVariant,
+    color: 'error' as NovaIconColor,
+  },
+  statusInfo: {
+    name: 'info' as NovaIconName,
+    variant: 'status' as NovaIconVariant,
+    color: 'info' as NovaIconColor,
+  },
+} as const;
 
 // Re-export everything from the icons module
-export * from '../icons'
+export * from '../icons';

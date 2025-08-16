@@ -20,7 +20,7 @@ export const Switch: React.FC<SwitchProps> = ({
     <input
       type="checkbox"
       checked={checked}
-      onChange={e => onChange(e.target.checked)}
+      onChange={(e) => onChange(e.target.checked)}
       disabled={disabled}
       className="switch-input"
     />

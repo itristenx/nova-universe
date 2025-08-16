@@ -6,7 +6,7 @@ import {
   CheckCircleIcon,
   XMarkIcon,
   ArrowUpIcon,
-  ClockIcon
+  ClockIcon,
 } from '@heroicons/react/24/outline';
 import { useAlertCosmo } from '../../hooks/useAlertCosmo';
 
@@ -29,7 +29,7 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
   ticketData,
   className = '',
   onAlertCreated,
-  onAlertEscalated
+  onAlertEscalated,
 }) => {
   const [showSuggestion, setShowSuggestion] = useState(false);
   const [autoExecute, setAutoExecute] = useState(false);
@@ -41,13 +41,13 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
     executeRecommendation,
     isCreatingAlert,
     isEscalating,
-    analysisError
+    analysisError,
   } = useAlertCosmo({
     onAlertCreated,
     onAlertEscalated,
     onSuggestionReceived: (suggestions) => {
       console.log('Cosmo suggestions:', suggestions);
-    }
+    },
   });
 
   const handleSmartAnalyze = async () => {
@@ -56,11 +56,13 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
     try {
       const analysis = await analyzeTicket(ticketData);
       setShowSuggestion(true);
-      
+
       // Auto-execute high confidence recommendations for critical issues
-      if (analysis.confidence > 0.8 && 
-          (analysis.action === 'create_alert' || analysis.action === 'escalate_alert') &&
-          ticketData.priority === 'critical') {
+      if (
+        analysis.confidence > 0.8 &&
+        (analysis.action === 'create_alert' || analysis.action === 'escalate_alert') &&
+        ticketData.priority === 'critical'
+      ) {
         setAutoExecute(true);
         setTimeout(() => {
           executeRecommendation(analysis);
@@ -136,23 +138,20 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
         whileTap={{ scale: 0.95 }}
         onClick={handleSmartAnalyze}
         disabled={isLoading || !ticketData}
-        className={`
-          px-4 py-2 rounded-lg font-medium text-sm
-          transition-all duration-200 flex items-center space-x-2
-          ${isLoading
-            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : 'bg-purple-500 hover:bg-purple-600 text-white shadow-lg hover:shadow-xl'
-          }
-        `}
+        className={`flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+          isLoading
+            ? 'cursor-not-allowed bg-gray-300 text-gray-500'
+            : 'bg-purple-500 text-white shadow-lg hover:bg-purple-600 hover:shadow-xl'
+        } `}
       >
         {isLoading ? (
           <>
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
             <span>Analyzing...</span>
           </>
         ) : (
           <>
-            <SparklesIcon className="w-5 h-5" />
+            <SparklesIcon className="h-5 w-5" />
             <span>Smart Alert</span>
           </>
         )}
@@ -165,11 +164,11 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 mt-2 p-4 bg-orange-100 border border-orange-200 rounded-xl shadow-lg z-50 min-w-72"
+            className="absolute top-full left-0 z-50 mt-2 min-w-72 rounded-xl border border-orange-200 bg-orange-100 p-4 shadow-lg"
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                <div className="h-2 w-2 animate-pulse rounded-full bg-orange-500" />
                 <span className="text-sm font-medium text-orange-900">
                   Auto-executing in 3 seconds...
                 </span>
@@ -178,14 +177,14 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={handleCancelAutoExecute}
-                className="p-1 text-orange-600 hover:bg-orange-200 rounded"
+                className="rounded p-1 text-orange-600 hover:bg-orange-200"
               >
-                <XMarkIcon className="w-4 h-4" />
+                <XMarkIcon className="h-4 w-4" />
               </motion.button>
             </div>
             <p className="text-xs text-orange-700">
-              High confidence critical recommendation will be executed automatically.
-              Click X to cancel.
+              High confidence critical recommendation will be executed automatically. Click X to
+              cancel.
             </p>
           </motion.div>
         )}
@@ -198,54 +197,50 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 mt-2 p-4 bg-white/95 backdrop-blur-xl border border-gray-200/50 rounded-xl shadow-lg z-50 min-w-80"
+            className="absolute top-full left-0 z-50 mt-2 min-w-80 rounded-xl border border-gray-200/50 bg-white/95 p-4 shadow-lg backdrop-blur-xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <SparklesIcon className="w-5 h-5 text-purple-600" />
-                <span className="font-medium text-gray-900">
-                  Cosmo Recommendation
-                </span>
+                <SparklesIcon className="h-5 w-5 text-purple-600" />
+                <span className="font-medium text-gray-900">Cosmo Recommendation</span>
               </div>
               <div className="flex items-center space-x-2">
-                <span className={`
-                  px-2 py-1 text-xs rounded-full
-                  ${lastAnalysis.confidence > 0.7 
-                    ? 'bg-green-100 text-green-700' 
-                    : lastAnalysis.confidence > 0.5
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-red-100 text-red-700'
-                  }
-                `}>
+                <span
+                  className={`rounded-full px-2 py-1 text-xs ${
+                    lastAnalysis.confidence > 0.7
+                      ? 'bg-green-100 text-green-700'
+                      : lastAnalysis.confidence > 0.5
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-red-100 text-red-700'
+                  } `}
+                >
                   {Math.round(lastAnalysis.confidence * 100)}% confident
                 </span>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setShowSuggestion(false)}
-                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+                  className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                 >
-                  <XMarkIcon className="w-4 h-4" />
+                  <XMarkIcon className="h-4 w-4" />
                 </motion.button>
               </div>
             </div>
 
             {/* Reasoning */}
             <div className="mb-4">
-              <p className="text-sm text-gray-700">
-                {lastAnalysis.reasoning}
-              </p>
+              <p className="text-sm text-gray-700">{lastAnalysis.reasoning}</p>
             </div>
 
             {/* Suggestions */}
             {lastAnalysis.suggestions && lastAnalysis.suggestions.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-xs font-medium text-gray-600 mb-2">Suggestions:</h4>
+                <h4 className="mb-2 text-xs font-medium text-gray-600">Suggestions:</h4>
                 <ul className="space-y-1">
                   {lastAnalysis.suggestions.map((suggestion, index) => (
-                    <li key={index} className="text-xs text-gray-600 flex items-start space-x-2">
-                      <span className="text-purple-400 mt-1">•</span>
+                    <li key={index} className="flex items-start space-x-2 text-xs text-gray-600">
+                      <span className="mt-1 text-purple-400">•</span>
                       <span>{suggestion}</span>
                     </li>
                   ))}
@@ -256,31 +251,26 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
             {/* Action Button */}
             {lastAnalysis.action !== 'no_action' && (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">
-                  Recommended action:
-                </span>
+                <span className="text-xs text-gray-500">Recommended action:</span>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleExecuteRecommendation}
                   disabled={isLoading}
-                  className={`
-                    px-3 py-2 rounded-lg text-white text-sm font-medium
-                    transition-all duration-200 flex items-center space-x-1
-                    ${getActionColor(lastAnalysis.action)}
-                    ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-                  `}
+                  className={`flex items-center space-x-1 rounded-lg px-3 py-2 text-sm font-medium text-white transition-all duration-200 ${getActionColor(lastAnalysis.action)} ${isLoading ? 'cursor-not-allowed opacity-50' : ''} `}
                 >
-                  {React.createElement(getActionIcon(lastAnalysis.action), { className: 'w-4 h-4' })}
+                  {React.createElement(getActionIcon(lastAnalysis.action), {
+                    className: 'w-4 h-4',
+                  })}
                   <span>{getActionLabel(lastAnalysis.action)}</span>
                 </motion.button>
               </div>
             )}
 
             {lastAnalysis.action === 'no_action' && (
-              <div className="text-center py-2">
+              <div className="py-2 text-center">
                 <div className="flex items-center justify-center space-x-2 text-green-600">
-                  <CheckCircleIcon className="w-5 h-5" />
+                  <CheckCircleIcon className="h-5 w-5" />
                   <span className="text-sm font-medium">No immediate action needed</span>
                 </div>
               </div>
@@ -296,17 +286,13 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 mt-2 p-3 bg-red-50 border border-red-200 rounded-xl shadow-lg z-50 min-w-64"
+            className="absolute top-full left-0 z-50 mt-2 min-w-64 rounded-xl border border-red-200 bg-red-50 p-3 shadow-lg"
           >
             <div className="flex items-center space-x-2">
-              <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
-              <span className="text-sm text-red-900 font-medium">
-                Analysis failed
-              </span>
+              <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
+              <span className="text-sm font-medium text-red-900">Analysis failed</span>
             </div>
-            <p className="text-xs text-red-700 mt-1">
-              {analysisError.message}
-            </p>
+            <p className="mt-1 text-xs text-red-700">{analysisError.message}</p>
           </motion.div>
         )}
       </AnimatePresence>

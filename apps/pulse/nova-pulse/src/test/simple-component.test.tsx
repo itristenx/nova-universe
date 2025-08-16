@@ -16,7 +16,7 @@ const TestComponent: React.FC = () => {
 describe('Simple Component Tests', () => {
   test('renders basic component without providers', () => {
     render(<TestComponent />);
-    
+
     expect(screen.getByText('Hello Test')).toBeInTheDocument();
     expect(screen.getByText('This is a simple test component')).toBeInTheDocument();
   });

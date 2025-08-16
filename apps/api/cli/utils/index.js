@@ -15,25 +15,25 @@ export const config = new Conf({
   schema: {
     apiUrl: {
       type: 'string',
-      default: 'http://localhost:3000'
+      default: 'http://localhost:3000',
     },
     adminUrl: {
-      type: 'string', 
-      default: 'http://localhost:5173'
+      type: 'string',
+      default: 'http://localhost:5173',
     },
     environment: {
       type: 'string',
-      default: 'development'
+      default: 'development',
     },
     autoStart: {
       type: 'boolean',
-      default: false
+      default: false,
     },
     theme: {
       type: 'string',
-      default: 'default'
-    }
-  }
+      default: 'default',
+    },
+  },
 });
 
 // Logging utilities
@@ -58,7 +58,7 @@ export const logger = {
     if (process.env.DEBUG) {
       console.log(chalk.gray('🐛'), chalk.gray(message));
     }
-  }
+  },
 };
 
 // Spinner utilities
@@ -67,7 +67,7 @@ export function createSpinner(text, options = {}) {
     text,
     color: 'cyan',
     spinner: 'dots',
-    ...options
+    ...options,
   });
 }
 
@@ -77,7 +77,7 @@ export async function runCommand(command, args = [], options = {}) {
     const child = spawn(command, args, {
       stdio: options.silent ? 'pipe' : 'inherit',
       shell: true,
-      ...options
+      ...options,
     });
 
     let stdout = '';
@@ -87,7 +87,7 @@ export async function runCommand(command, args = [], options = {}) {
       child.stdout?.on('data', (data) => {
         stdout += data.toString();
       });
-      
+
       child.stderr?.on('data', (data) => {
         stderr += data.toString();
       });
@@ -110,7 +110,7 @@ export async function checkServiceStatus() {
   const services = {
     api: { port: 3000, name: 'Nova API' },
     admin: { port: 5173, name: 'Nova Admin UI' },
-    comms: { port: 3001, name: 'Nova Communications' }
+    comms: { port: 3001, name: 'Nova Communications' },
   };
 
   const results = {};
@@ -119,16 +119,16 @@ export async function checkServiceStatus() {
     try {
       // Check if port is in use
       execSync(`lsof -i :${service.port}`, { stdio: 'pipe' });
-      results[key] = { 
-        status: 'running', 
-        name: service.name, 
-        port: service.port 
+      results[key] = {
+        status: 'running',
+        name: service.name,
+        port: service.port,
       };
     } catch {
-      results[key] = { 
-        status: 'stopped', 
-        name: service.name, 
-        port: service.port 
+      results[key] = {
+        status: 'stopped',
+        name: service.name,
+        port: service.port,
       };
     }
   }
@@ -139,7 +139,7 @@ export async function checkServiceStatus() {
 // Get project root directory
 export function getProjectRoot() {
   let current = process.cwd();
-  
+
   while (current !== path.parse(current).root) {
     if (existsSync(path.join(current, 'package.json'))) {
       const pkg = JSON.parse(readFileSync(path.join(current, 'package.json'), 'utf8'));
@@ -149,7 +149,7 @@ export function getProjectRoot() {
     }
     current = path.dirname(current);
   }
-  
+
   return process.cwd();
 }
 
@@ -158,7 +158,7 @@ export function formatDuration(ms) {
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
-  
+
   if (hours > 0) {
     return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
   } else if (minutes > 0) {
@@ -191,9 +191,9 @@ export function validatePassword(password) {
   const hasLower = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
   const hasSpecial = /[!@#$%^&*]/.test(password);
-  
+
   const issues = [];
-  
+
   if (password.length < minLength) {
     issues.push(`Must be at least ${minLength} characters long`);
   }
@@ -209,23 +209,23 @@ export function validatePassword(password) {
   if (!hasSpecial) {
     issues.push('Must contain at least one special character (!@#$%^&*)');
   }
-  
+
   return {
     valid: issues.length === 0,
-    issues
+    issues,
   };
 }
 
 // Format bytes
 export function formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  
+
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
@@ -234,18 +234,18 @@ export const formatFileSize = formatBytes;
 
 // Sleep utility
 export function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Check if running in CI
 export function isCI() {
   return Boolean(
     process.env.CI ||
-    process.env.CONTINUOUS_INTEGRATION ||
-    process.env.BUILD_NUMBER ||
-    process.env.GITHUB_ACTIONS ||
-    process.env.TRAVIS ||
-    process.env.CIRCLECI
+      process.env.CONTINUOUS_INTEGRATION ||
+      process.env.BUILD_NUMBER ||
+      process.env.GITHUB_ACTIONS ||
+      process.env.TRAVIS ||
+      process.env.CIRCLECI,
   );
 }
 
@@ -256,7 +256,7 @@ export async function connectDatabase() {
   // For now, we'll simulate it
   return {
     connected: true,
-    type: 'mock'
+    type: 'mock',
   };
 }
 
@@ -266,7 +266,7 @@ export const validateEmail = isValidEmail;
 // Format date
 export function formatDate(date, format = 'short') {
   const d = new Date(date);
-  
+
   if (format === 'short') {
     return d.toLocaleDateString();
   } else if (format === 'long') {

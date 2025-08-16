@@ -11,8 +11,8 @@ groups:
           severity: critical
           service: nova-api
         annotations:
-          summary: "Nova API service is down"
-          description: "Nova API service has been down for more than 1 minute"
+          summary: 'Nova API service is down'
+          description: 'Nova API service has been down for more than 1 minute'
 
       - alert: NovaAPIHighErrorRate
         expr: nova:api_error_rate_5m > 0.05
@@ -21,8 +21,8 @@ groups:
           severity: warning
           service: nova-api
         annotations:
-          summary: "Nova API high error rate"
-          description: "Nova API error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+          summary: 'Nova API high error rate'
+          description: 'Nova API error rate is {{ $value | humanizePercentage }} over the last 5 minutes'
 
       - alert: NovaAPIHighLatency
         expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="nova-api"}[5m])) > 2
@@ -31,8 +31,8 @@ groups:
           severity: warning
           service: nova-api
         annotations:
-          summary: "Nova API high latency"
-          description: "Nova API 95th percentile latency is {{ $value }}s over the last 5 minutes"
+          summary: 'Nova API high latency'
+          description: 'Nova API 95th percentile latency is {{ $value }}s over the last 5 minutes'
 
       - alert: NovaAPILowThroughput
         expr: nova:api_request_rate_5m < 1
@@ -41,8 +41,8 @@ groups:
           severity: warning
           service: nova-api
         annotations:
-          summary: "Nova API low throughput"
-          description: "Nova API request rate is {{ $value }} requests/second over the last 5 minutes"
+          summary: 'Nova API low throughput'
+          description: 'Nova API request rate is {{ $value }} requests/second over the last 5 minutes'
 
   # Database Alerts
   - name: nova_database_alerts
@@ -54,8 +54,8 @@ groups:
           severity: critical
           service: postgresql
         annotations:
-          summary: "PostgreSQL database is down"
-          description: "PostgreSQL database has been down for more than 1 minute"
+          summary: 'PostgreSQL database is down'
+          description: 'PostgreSQL database has been down for more than 1 minute'
 
       - alert: PostgreSQLHighConnections
         expr: nova:db_pool_usage > 80
@@ -64,8 +64,8 @@ groups:
           severity: warning
           service: postgresql
         annotations:
-          summary: "PostgreSQL high connection usage"
-          description: "PostgreSQL connection pool usage is {{ $value }}%"
+          summary: 'PostgreSQL high connection usage'
+          description: 'PostgreSQL connection pool usage is {{ $value }}%'
 
       - alert: PostgreSQLLongRunningQueries
         expr: pg_stat_activity_max_tx_duration > 300
@@ -74,8 +74,8 @@ groups:
           severity: warning
           service: postgresql
         annotations:
-          summary: "PostgreSQL long running queries"
-          description: "PostgreSQL has queries running for more than 5 minutes"
+          summary: 'PostgreSQL long running queries'
+          description: 'PostgreSQL has queries running for more than 5 minutes'
 
       - alert: MongoDBDown
         expr: up{job="mongodb"} == 0
@@ -84,8 +84,8 @@ groups:
           severity: warning
           service: mongodb
         annotations:
-          summary: "MongoDB is down"
-          description: "MongoDB has been down for more than 1 minute"
+          summary: 'MongoDB is down'
+          description: 'MongoDB has been down for more than 1 minute'
 
       - alert: ElasticsearchDown
         expr: up{job="elasticsearch"} == 0
@@ -94,8 +94,8 @@ groups:
           severity: warning
           service: elasticsearch
         annotations:
-          summary: "Elasticsearch is down"
-          description: "Elasticsearch has been down for more than 1 minute"
+          summary: 'Elasticsearch is down'
+          description: 'Elasticsearch has been down for more than 1 minute'
 
   # System Resource Alerts
   - name: nova_system_alerts
@@ -107,8 +107,8 @@ groups:
           severity: warning
           service: system
         annotations:
-          summary: "High memory usage"
-          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+          summary: 'High memory usage'
+          description: 'Memory usage is {{ $value }}% on {{ $labels.instance }}'
 
       - alert: HighDiskUsage
         expr: nova:disk_usage_percent > 85
@@ -117,8 +117,8 @@ groups:
           severity: warning
           service: system
         annotations:
-          summary: "High disk usage"
-          description: "Disk usage is {{ $value }}% on {{ $labels.instance }}"
+          summary: 'High disk usage'
+          description: 'Disk usage is {{ $value }}% on {{ $labels.instance }}'
 
       - alert: HighCPUUsage
         expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
@@ -127,8 +127,8 @@ groups:
           severity: warning
           service: system
         annotations:
-          summary: "High CPU usage"
-          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+          summary: 'High CPU usage'
+          description: 'CPU usage is {{ $value }}% on {{ $labels.instance }}'
 
       - alert: DiskSpaceCritical
         expr: nova:disk_usage_percent > 95
@@ -137,8 +137,8 @@ groups:
           severity: critical
           service: system
         annotations:
-          summary: "Critical disk space"
-          description: "Disk usage is {{ $value }}% on {{ $labels.instance }} - immediate action required"
+          summary: 'Critical disk space'
+          description: 'Disk usage is {{ $value }}% on {{ $labels.instance }} - immediate action required'
 
   # Application Health Alerts
   - name: nova_health_alerts
@@ -150,8 +150,8 @@ groups:
           severity: warning
           service: nova-core
         annotations:
-          summary: "Nova Core admin interface is down"
-          description: "Nova Core has been down for more than 1 minute"
+          summary: 'Nova Core admin interface is down'
+          description: 'Nova Core has been down for more than 1 minute'
 
       - alert: NovaOrbitDown
         expr: up{job="nova-orbit"} == 0
@@ -160,8 +160,8 @@ groups:
           severity: warning
           service: nova-orbit
         annotations:
-          summary: "Nova Orbit user portal is down"
-          description: "Nova Orbit has been down for more than 1 minute"
+          summary: 'Nova Orbit user portal is down'
+          description: 'Nova Orbit has been down for more than 1 minute'
 
       - alert: NginxDown
         expr: up{job="nginx"} == 0
@@ -170,8 +170,8 @@ groups:
           severity: critical
           service: nginx
         annotations:
-          summary: "Nginx reverse proxy is down"
-          description: "Nginx has been down for more than 1 minute"
+          summary: 'Nginx reverse proxy is down'
+          description: 'Nginx has been down for more than 1 minute'
 
       - alert: RedisDown
         expr: up{job="redis"} == 0
@@ -180,8 +180,8 @@ groups:
           severity: warning
           service: redis
         annotations:
-          summary: "Redis cache is down"
-          description: "Redis has been down for more than 1 minute"
+          summary: 'Redis cache is down'
+          description: 'Redis has been down for more than 1 minute'
 
   # Security Alerts
   - name: nova_security_alerts
@@ -193,8 +193,8 @@ groups:
           severity: warning
           service: security
         annotations:
-          summary: "High authentication failure rate"
-          description: "Authentication failure rate is {{ $value }} failures/second"
+          summary: 'High authentication failure rate'
+          description: 'Authentication failure rate is {{ $value }} failures/second'
 
       - alert: SuspiciousActivity
         expr: rate(http_requests_total{status="401"}[5m]) > 20
@@ -203,8 +203,8 @@ groups:
           severity: warning
           service: security
         annotations:
-          summary: "Suspicious activity detected"
-          description: "High rate of 401 responses: {{ $value }} requests/second"
+          summary: 'Suspicious activity detected'
+          description: 'High rate of 401 responses: {{ $value }} requests/second'
 
   # Business Logic Alerts
   - name: nova_business_alerts
@@ -216,8 +216,8 @@ groups:
           severity: warning
           service: business
         annotations:
-          summary: "Low ticket processing rate"
-          description: "Ticket processing rate is {{ $value }} tickets/second over the last 10 minutes"
+          summary: 'Low ticket processing rate'
+          description: 'Ticket processing rate is {{ $value }} tickets/second over the last 10 minutes'
 
       - alert: HighTicketBacklog
         expr: tickets_pending_total > 100
@@ -226,5 +226,5 @@ groups:
           severity: warning
           service: business
         annotations:
-          summary: "High ticket backlog"
-          description: "There are {{ $value }} pending tickets"
+          summary: 'High ticket backlog'
+          description: 'There are {{ $value }} pending tickets'

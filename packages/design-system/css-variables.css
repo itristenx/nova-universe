@@ -77,7 +77,9 @@
   --color-muted: var(--gray-500);
 
   /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+    sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace;
   --font-display: 'Inter', system-ui, -apple-system, sans-serif;
 
@@ -203,7 +205,7 @@
 }
 
 /* Dark Theme Variables */
-[data-theme="dark"] {
+[data-theme='dark'] {
   /* Override colors for dark mode */
   --color-background: var(--gray-900);
   --color-surface: var(--gray-800);
@@ -227,7 +229,7 @@
 }
 
 /* High Contrast Theme Variables */
-[data-theme="high-contrast"] {
+[data-theme='high-contrast'] {
   --color-primary: #0000ff;
   --color-background: #ffffff;
   --color-content: #000000;
@@ -294,8 +296,12 @@
 
 /* Animation Utilities */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -321,20 +327,39 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.animate-fade-in { animation: fadeIn var(--duration-200) var(--ease-out); }
-.animate-slide-up { animation: slideUp var(--duration-200) var(--ease-out); }
-.animate-slide-down { animation: slideDown var(--duration-200) var(--ease-out); }
-.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.animate-spin { animation: spin 1s linear infinite; }
+.animate-fade-in {
+  animation: fadeIn var(--duration-200) var(--ease-out);
+}
+.animate-slide-up {
+  animation: slideUp var(--duration-200) var(--ease-out);
+}
+.animate-slide-down {
+  animation: slideDown var(--duration-200) var(--ease-out);
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
 
 /* Responsive Design Utilities */
 @media (max-width: 640px) {
@@ -354,7 +379,7 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .animate-pulse,
   .animate-spin {
     animation: none !important;

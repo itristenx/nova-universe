@@ -13,17 +13,17 @@ import { SecurityAuditTrail } from './security-audit-trail';
 
 export function SecurityHub() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       {/* Header */}
-      <div className="border-b border-border bg-muted/50">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="border-border bg-muted/50 border-b">
+        <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary rounded-lg">
-              <Shield className="w-8 h-8 text-primary-foreground" />
+            <div className="bg-primary rounded-lg p-3">
+              <Shield className="text-primary-foreground h-8 w-8" />
             </div>
             <div>
               <h1 className="text-4xl font-bold">Security Center</h1>
-              <p className="text-lg text-muted-foreground mt-2">
+              <p className="text-muted-foreground mt-2 text-lg">
                 Comprehensive security management for your Nova Universe account
               </p>
             </div>
@@ -32,7 +32,7 @@ export function SecurityHub() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="mx-auto max-w-7xl px-6 py-8">
         <Tabs defaultValue="overview" className="space-y-8">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -44,18 +44,18 @@ export function SecurityHub() {
 
           {/* Security Overview */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               <Card className="relative overflow-hidden">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-2xl font-bold text-green-600">98%</div>
-                      <div className="text-sm text-muted-foreground">Security Score</div>
+                      <div className="text-muted-foreground text-sm">Security Score</div>
                     </div>
-                    <Shield className="w-8 h-8 text-green-500" />
+                    <Shield className="h-8 w-8 text-green-500" />
                   </div>
-                  <div className="mt-4 h-2 bg-muted rounded-full">
-                    <div className="h-2 bg-green-500 rounded-full w-[98%]" />
+                  <div className="bg-muted mt-4 h-2 rounded-full">
+                    <div className="h-2 w-[98%] rounded-full bg-green-500" />
                   </div>
                 </CardContent>
               </Card>
@@ -65,9 +65,9 @@ export function SecurityHub() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-2xl font-bold">4</div>
-                      <div className="text-sm text-muted-foreground">Active Permissions</div>
+                      <div className="text-muted-foreground text-sm">Active Permissions</div>
                     </div>
-                    <Users className="w-8 h-8 text-blue-500" />
+                    <Users className="h-8 w-8 text-blue-500" />
                   </div>
                 </CardContent>
               </Card>
@@ -77,9 +77,9 @@ export function SecurityHub() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-2xl font-bold">85%</div>
-                      <div className="text-sm text-muted-foreground">Privacy Score</div>
+                      <div className="text-muted-foreground text-sm">Privacy Score</div>
                     </div>
-                    <Eye className="w-8 h-8 text-purple-500" />
+                    <Eye className="h-8 w-8 text-purple-500" />
                   </div>
                 </CardContent>
               </Card>
@@ -89,57 +89,55 @@ export function SecurityHub() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-2xl font-bold">247</div>
-                      <div className="text-sm text-muted-foreground">Security Events</div>
+                      <div className="text-muted-foreground text-sm">Security Events</div>
                     </div>
-                    <Database className="w-8 h-8 text-orange-500" />
+                    <Database className="h-8 w-8 text-orange-500" />
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Security Status Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5" />
+                    <Shield className="h-5 w-5" />
                     Security Status
                   </CardTitle>
-                  <CardDescription>
-                    Current security posture overview
-                  </CardDescription>
+                  <CardDescription>Current security posture overview</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
+                      <div className="h-2 w-2 rounded-full bg-green-500" />
                       <span className="font-medium">Two-Factor Authentication</span>
                     </div>
-                    <span className="text-green-600 text-sm">Enabled</span>
+                    <span className="text-sm text-green-600">Enabled</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
+                      <div className="h-2 w-2 rounded-full bg-green-500" />
                       <span className="font-medium">Strong Password</span>
                     </div>
-                    <span className="text-green-600 text-sm">Active</span>
+                    <span className="text-sm text-green-600">Active</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="flex items-center justify-between rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                      <div className="h-2 w-2 rounded-full bg-yellow-500" />
                       <span className="font-medium">Account Recovery</span>
                     </div>
-                    <span className="text-yellow-600 text-sm">Needs Setup</span>
+                    <span className="text-sm text-yellow-600">Needs Setup</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 p-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                      <div className="h-2 w-2 rounded-full bg-blue-500" />
                       <span className="font-medium">Session Management</span>
                     </div>
-                    <span className="text-blue-600 text-sm">Optimized</span>
+                    <span className="text-sm text-blue-600">Optimized</span>
                   </div>
                 </CardContent>
               </Card>
@@ -147,33 +145,37 @@ export function SecurityHub() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Settings className="w-5 h-5" />
+                    <Settings className="h-5 w-5" />
                     Quick Actions
                   </CardTitle>
-                  <CardDescription>
-                    Common security management tasks
-                  </CardDescription>
+                  <CardDescription>Common security management tasks</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-1 gap-3">
-                    <div className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                    <div className="hover:bg-muted/50 cursor-pointer rounded-lg border p-3 transition-colors">
                       <div className="font-medium">Update Password</div>
-                      <div className="text-sm text-muted-foreground">Change your account password</div>
+                      <div className="text-muted-foreground text-sm">
+                        Change your account password
+                      </div>
                     </div>
 
-                    <div className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                    <div className="hover:bg-muted/50 cursor-pointer rounded-lg border p-3 transition-colors">
                       <div className="font-medium">Review Permissions</div>
-                      <div className="text-sm text-muted-foreground">Manage account permissions</div>
+                      <div className="text-muted-foreground text-sm">
+                        Manage account permissions
+                      </div>
                     </div>
 
-                    <div className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                    <div className="hover:bg-muted/50 cursor-pointer rounded-lg border p-3 transition-colors">
                       <div className="font-medium">Export Data</div>
-                      <div className="text-sm text-muted-foreground">Download your data</div>
+                      <div className="text-muted-foreground text-sm">Download your data</div>
                     </div>
 
-                    <div className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                    <div className="hover:bg-muted/50 cursor-pointer rounded-lg border p-3 transition-colors">
                       <div className="font-medium">View Activity</div>
-                      <div className="text-sm text-muted-foreground">Check recent security events</div>
+                      <div className="text-muted-foreground text-sm">
+                        Check recent security events
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -190,31 +192,33 @@ export function SecurityHub() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
-                    <div className="w-2 h-2 bg-amber-500 rounded-full mt-2" />
+                  <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                    <div className="mt-2 h-2 w-2 rounded-full bg-amber-500" />
                     <div className="flex-1">
                       <h4 className="font-medium text-amber-800">Set up Account Recovery</h4>
-                      <p className="text-sm text-amber-700 mt-1">
-                        Configure backup recovery methods to ensure you can always access your account.
+                      <p className="mt-1 text-sm text-amber-700">
+                        Configure backup recovery methods to ensure you can always access your
+                        account.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
+                  <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <div className="mt-2 h-2 w-2 rounded-full bg-blue-500" />
                     <div className="flex-1">
                       <h4 className="font-medium text-blue-800">Review Data Sharing Settings</h4>
-                      <p className="text-sm text-blue-700 mt-1">
-                        Check your privacy settings to ensure data is shared according to your preferences.
+                      <p className="mt-1 text-sm text-blue-700">
+                        Check your privacy settings to ensure data is shared according to your
+                        preferences.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2" />
+                  <div className="flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
+                    <div className="mt-2 h-2 w-2 rounded-full bg-green-500" />
                     <div className="flex-1">
                       <h4 className="font-medium text-green-800">Security Audit Complete</h4>
-                      <p className="text-sm text-green-700 mt-1">
+                      <p className="mt-1 text-sm text-green-700">
                         Your recent security audit shows excellent compliance with best practices.
                       </p>
                     </div>

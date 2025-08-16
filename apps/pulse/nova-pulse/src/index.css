@@ -10,7 +10,9 @@
     /* Avoid Tailwind utility @apply here to prevent build-time validation issues */
     background-color: #f9fafb;
     color: #111827;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", "Roboto", system-ui, sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', 'Roboto',
+      system-ui, sans-serif;
   }
 
   /* Safe-area support for iOS */
@@ -33,7 +35,9 @@
 
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.001ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.001ms !important;

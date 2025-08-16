@@ -10,7 +10,9 @@ async function getPrisma() {
   try {
     const mod = await import('../../../prisma/generated/core/index.js');
     const PrismaClient = mod.PrismaClient;
-    return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
+    return new PrismaClient({
+      datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
+    });
   } catch (e) {
     logger.warn('Prisma unavailable in HelixKioskIntegrationService', { error: e?.message });
     return null;
@@ -18,7 +20,9 @@ async function getPrisma() {
 }
 
 let prisma;
-(async ()=>{ prisma = await getPrisma(); })();
+(async () => {
+  prisma = await getPrisma();
+})();
 
 export class HelixKioskIntegrationService {
   constructor() {
@@ -40,9 +44,9 @@ export class HelixKioskIntegrationService {
         include: {
           statusLogs: {
             orderBy: { timestamp: 'desc' },
-            take: 5
-          }
-        }
+            take: 5,
+          },
+        },
       });
 
       if (!asset) {
@@ -51,7 +55,7 @@ export class HelixKioskIntegrationService {
 
       // Validate kiosk exists
       const kiosk = await this.db.kiosk.findUnique({
-        where: { id: kioskId }
+        where: { id: kioskId },
       });
 
       if (!kiosk) {
@@ -66,18 +70,18 @@ export class HelixKioskIntegrationService {
           tag: asset.asset_tag,
           model: asset.model,
           status: asset.status,
-          department: asset.department
+          department: asset.department,
         },
         syncPreferences: {
           autoSync: options.autoSync !== false,
           syncInterval: options.syncInterval || 300, // 5 minutes
-          syncOnStatusChange: options.syncOnStatusChange !== false
+          syncOnStatusChange: options.syncOnStatusChange !== false,
         },
         helixConfig: {
           enabled: options.helixEnabled !== false,
           identitySync: options.identitySync !== false,
-          auditLevel: options.auditLevel || 'standard'
-        }
+          auditLevel: options.auditLevel || 'standard',
+        },
       };
 
       const encryptedMetadata = encrypt(JSON.stringify(kioskMetadata));
@@ -129,16 +133,15 @@ export class HelixKioskIntegrationService {
           id: asset.id,
           tag: asset.asset_tag,
           model: asset.model,
-          status: asset.status
+          status: asset.status,
         },
         kiosk: {
           id: kiosk.id,
-          active: kiosk.active
+          active: kiosk.active,
         },
         helixSync: helixSyncResult,
-        metadata: kioskMetadata
+        metadata: kioskMetadata,
       };
-
     } catch (error) {
       logger.error(`Failed to register asset with kiosk: ${error.message}`, error);
       throw error;
@@ -155,7 +158,7 @@ export class HelixKioskIntegrationService {
         return {
           status: 'skipped',
           reason: 'api_key_not_configured',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         };
       }
 
@@ -172,18 +175,18 @@ export class HelixKioskIntegrationService {
           status: asset.status,
           department: asset.department,
           location: asset.location_id,
-          assignedTo: asset.assigned_to_user_id
+          assignedTo: asset.assigned_to_user_id,
         },
         metadata: {
           registrationDate: metadata.registeredAt,
           syncConfig: metadata.helixConfig,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
         },
         auditInfo: {
           action: 'kiosk_asset_registration',
           timestamp: new Date().toISOString(),
-          source: 'inventory_service'
-        }
+          source: 'inventory_service',
+        },
       };
 
       // Make API call to Helix
@@ -195,18 +198,17 @@ export class HelixKioskIntegrationService {
           status: 'synced',
           helixEntityId: helixResponse.entityId,
           timestamp: new Date().toISOString(),
-          response: helixResponse
+          response: helixResponse,
         };
       } else {
         throw new Error(`Helix sync failed: ${helixResponse.error}`);
       }
-
     } catch (error) {
       logger.error(`Helix sync failed for asset ${assetId}:`, error);
       return {
         status: 'failed',
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -228,7 +230,6 @@ export class HelixKioskIntegrationService {
           helix_error_message = ${errorMessage}
         WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
       `;
-
     } catch (error) {
       logger.error('Failed to update Helix sync status:', error);
     }
@@ -257,7 +258,7 @@ export class HelixKioskIntegrationService {
       `;
 
       // Decrypt metadata for each asset
-      const decryptedAssets = kioskAssets.map(asset => {
+      const decryptedAssets = kioskAssets.map((asset) => {
         let metadata = null;
         if (asset.encrypted_metadata) {
           try {
@@ -272,7 +273,7 @@ export class HelixKioskIntegrationService {
         return {
           ...asset,
           encrypted_metadata: undefined, // Remove encrypted field from response
-          metadata: metadata
+          metadata: metadata,
         };
       });
 
@@ -280,9 +281,8 @@ export class HelixKioskIntegrationService {
         success: true,
         kioskId,
         assets: decryptedAssets,
-        totalCount: decryptedAssets.length
+        totalCount: decryptedAssets.length,
       };
-
     } catch (error) {
       logger.error(`Failed to get kiosk assets for ${kioskId}:`, error);
       throw error;
@@ -321,9 +321,8 @@ export class HelixKioskIntegrationService {
 
       return {
         success: true,
-        message: 'Asset unregistered from kiosk'
+        message: 'Asset unregistered from kiosk',
       };
-
     } catch (error) {
       logger.error(`Failed to unregister asset from kiosk: ${error.message}`, error);
       throw error;
@@ -346,12 +345,11 @@ export class HelixKioskIntegrationService {
         action: 'unregister',
         timestamp: new Date().toISOString(),
         reason: options.reason || 'manual_unregistration',
-        userId: options.userId || 'system'
+        userId: options.userId || 'system',
       };
 
       await this.callHelixAPI(`/identity/kiosk-assets/${kioskId}-${assetId}`, 'DELETE', payload);
       logger.info(`Notified Helix about asset ${assetId} unregistration`);
-
     } catch (error) {
       logger.error('Failed to notify Helix about unregistration:', error);
       // Don't throw error - unregistration should succeed even if Helix notification fails
@@ -384,7 +382,7 @@ export class HelixKioskIntegrationService {
         total: pendingSync.length,
         synced: 0,
         failed: 0,
-        errors: []
+        errors: [],
       };
 
       for (const entry of pendingSync) {
@@ -407,9 +405,9 @@ export class HelixKioskIntegrationService {
               asset_tag: entry.asset_tag,
               model: entry.model,
               status: entry.status,
-              department: entry.department
+              department: entry.department,
             },
-            metadata
+            metadata,
           );
 
           // Update sync status
@@ -422,16 +420,15 @@ export class HelixKioskIntegrationService {
             results.errors.push({
               assetId: entry.asset_id,
               kioskId: entry.kiosk_id,
-              error: syncResult.error
+              error: syncResult.error,
             });
           }
-
         } catch (error) {
           results.failed++;
           results.errors.push({
             assetId: entry.asset_id,
             kioskId: entry.kiosk_id,
-            error: error.message
+            error: error.message,
           });
           logger.error(`Failed to sync asset ${entry.asset_id}:`, error);
         }
@@ -439,7 +436,6 @@ export class HelixKioskIntegrationService {
 
       logger.info(`Bulk sync completed: ${results.synced} synced, ${results.failed} failed`);
       return results;
-
     } catch (error) {
       logger.error('Bulk sync with Helix failed:', error);
       throw error;
@@ -478,9 +474,8 @@ export class HelixKioskIntegrationService {
       return {
         summary: statusSummary,
         recentErrors,
-        totalRegistrations: statusSummary.reduce((sum, item) => sum + item.count, 0)
+        totalRegistrations: statusSummary.reduce((sum, item) => sum + item.count, 0),
       };
-
     } catch (error) {
       logger.error('Failed to get Helix sync status:', error);
       throw error;
@@ -495,13 +490,13 @@ export class HelixKioskIntegrationService {
       const url = `${this.helixBaseUrl}${endpoint}`;
       const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.helixApiKey}`,
-        'X-API-Source': 'inventory-service'
+        Authorization: `Bearer ${this.helixApiKey}`,
+        'X-API-Source': 'inventory-service',
       };
 
       const options = {
         method,
-        headers
+        headers,
       };
 
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
@@ -516,7 +511,6 @@ export class HelixKioskIntegrationService {
       }
 
       return responseData;
-
     } catch (error) {
       logger.error(`Helix API call failed: ${method} ${endpoint}`, error);
       throw error;
@@ -569,7 +563,7 @@ export class HelixKioskIntegrationService {
           kioskId,
           assetId,
           status,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         };
 
         try {
@@ -580,7 +574,6 @@ export class HelixKioskIntegrationService {
       }
 
       return { success: true };
-
     } catch (error) {
       logger.error('Failed to update asset check-in:', error);
       throw error;
@@ -597,7 +590,7 @@ export class HelixKioskIntegrationService {
       if (!metadata || typeof metadata !== 'object') {
         return null;
       }
-      
+
       const metadataString = JSON.stringify(metadata);
       return encrypt(metadataString);
     } catch (error) {

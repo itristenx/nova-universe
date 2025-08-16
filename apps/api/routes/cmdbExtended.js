@@ -21,7 +21,7 @@ router.get('/support-groups', async (req, res) => {
       isActive: req.query.isActive !== 'false',
       search: req.query.search,
       page: parseInt(req.query.page) || 1,
-      limit: parseInt(req.query.limit) || 50
+      limit: parseInt(req.query.limit) || 50,
     };
 
     const result = await supportGroupService.listSupportGroups(filters);
@@ -46,7 +46,7 @@ router.post('/support-groups', async (req, res) => {
   try {
     const supportGroup = await supportGroupService.createSupportGroup({
       ...req.body,
-      createdBy: req.user?.id
+      createdBy: req.user?.id,
     });
     res.status(201).json(supportGroup);
   } catch (error) {
@@ -59,7 +59,7 @@ router.put('/support-groups/:id', async (req, res) => {
   try {
     const supportGroup = await supportGroupService.updateSupportGroup(req.params.id, {
       ...req.body,
-      updatedBy: req.user?.id
+      updatedBy: req.user?.id,
     });
     res.json(supportGroup);
   } catch (error) {
@@ -82,7 +82,7 @@ router.post('/support-groups/:id/members', async (req, res) => {
   try {
     const member = await supportGroupService.addMember(req.params.id, {
       ...req.body,
-      assignedBy: req.user?.id
+      assignedBy: req.user?.id,
     });
     res.status(201).json(member);
   } catch (error) {
@@ -104,9 +104,9 @@ router.delete('/support-groups/:id/members/:userId', async (req, res) => {
 router.put('/support-groups/:id/members/:userId', async (req, res) => {
   try {
     const member = await supportGroupService.updateMemberRole(
-      req.params.id, 
-      req.params.userId, 
-      req.body
+      req.params.id,
+      req.params.userId,
+      req.body,
     );
     res.json(member);
   } catch (error) {
@@ -119,7 +119,7 @@ router.post('/support-groups/:id/permissions', async (req, res) => {
   try {
     const permission = await supportGroupService.addPermission(req.params.id, {
       ...req.body,
-      grantedBy: req.user?.id
+      grantedBy: req.user?.id,
     });
     res.status(201).json(permission);
   } catch (error) {
@@ -131,9 +131,9 @@ router.post('/support-groups/:id/permissions', async (req, res) => {
 router.delete('/support-groups/:id/permissions/:resource/:action', async (req, res) => {
   try {
     await supportGroupService.removePermission(
-      req.params.id, 
-      req.params.resource, 
-      req.params.action
+      req.params.id,
+      req.params.resource,
+      req.params.action,
     );
     res.json({ success: true });
   } catch (error) {
@@ -159,7 +159,7 @@ router.post('/users/:userId/permissions/check', async (req, res) => {
       req.params.userId,
       resource,
       action,
-      context
+      context,
     );
     res.json({ hasPermission });
   } catch (error) {
@@ -186,7 +186,7 @@ router.post('/cis/:ciId/ownership', async (req, res) => {
   try {
     const ownership = await cmdbService.assignOwnership(req.params.ciId, {
       ...req.body,
-      assignedBy: req.user?.id
+      assignedBy: req.user?.id,
     });
     res.status(201).json(ownership);
   } catch (error) {
@@ -197,11 +197,7 @@ router.post('/cis/:ciId/ownership', async (req, res) => {
 // Remove CI ownership
 router.delete('/cis/:ciId/ownership/:ownershipType/:userId', async (req, res) => {
   try {
-    await cmdbService.removeOwnership(
-      req.params.ciId,
-      req.params.ownershipType,
-      req.params.userId
-    );
+    await cmdbService.removeOwnership(req.params.ciId, req.params.ownershipType, req.params.userId);
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -215,7 +211,7 @@ router.put('/cis/:ciId/ownership/:ownershipType/:userId', async (req, res) => {
       req.params.ciId,
       req.params.ownershipType,
       req.params.userId,
-      req.body
+      req.body,
     );
     res.json(ownership);
   } catch (error) {
@@ -243,11 +239,14 @@ router.get('/inventory-mappings', async (req, res) => {
   try {
     const filters = {
       ciId: req.query.ciId,
-      inventoryAssetId: req.query.inventoryAssetId ? parseInt(req.query.inventoryAssetId) : undefined,
+      inventoryAssetId: req.query.inventoryAssetId
+        ? parseInt(req.query.inventoryAssetId)
+        : undefined,
       mappingType: req.query.mappingType,
-      syncEnabled: req.query.syncEnabled !== undefined ? req.query.syncEnabled === 'true' : undefined,
+      syncEnabled:
+        req.query.syncEnabled !== undefined ? req.query.syncEnabled === 'true' : undefined,
       page: parseInt(req.query.page) || 1,
-      limit: parseInt(req.query.limit) || 50
+      limit: parseInt(req.query.limit) || 50,
     };
 
     const result = await integrationService.listMappings(filters);
@@ -272,7 +271,7 @@ router.post('/inventory-mappings', async (req, res) => {
   try {
     const mapping = await integrationService.createMapping({
       ...req.body,
-      createdBy: req.user?.id
+      createdBy: req.user?.id,
     });
     res.status(201).json(mapping);
   } catch (error) {
@@ -335,10 +334,10 @@ router.post('/inventory-mappings/bulk', async (req, res) => {
   try {
     const { mappings } = req.body;
     const result = await integrationService.bulkCreateMappings(
-      mappings.map(mapping => ({
+      mappings.map((mapping) => ({
         ...mapping,
-        createdBy: req.user?.id
-      }))
+        createdBy: req.user?.id,
+      })),
     );
     res.json(result);
   } catch (error) {

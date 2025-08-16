@@ -128,18 +128,13 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/articles',
+router.get(
+  '/articles',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100), // 100 requests per 15 minutes
   async (req, res) => {
     try {
-      const {
-        search,
-        tags,
-        visibility,
-        limit = 50,
-        offset = 0
-      } = req.query;
+      const { search, tags, visibility, limit = 50, offset = 0 } = req.query;
 
       const userRoles = req.user.roles || [];
       const isAdmin = userRoles.includes('admin') || userRoles.includes('superadmin');
@@ -147,21 +142,22 @@ router.get('/articles',
       // Build Prisma filters
       const where = {
         AND: [
-          !isAdmin ? {
-            OR: [
-              { isPublished: true },
-              { isPublished: false, authorId: req.user.id }
-            ]
-          } : {},
-          search ? {
-            OR: [
-              { title: { contains: search, mode: 'insensitive' } },
-              { versions: { some: { content: { contains: search, mode: 'insensitive' } } } }
-            ]
-          } : {},
-          tags ? { tags: { hasSome: tags.split(',').map(t => t.trim()) } } : {},
+          !isAdmin
+            ? {
+                OR: [{ isPublished: true }, { isPublished: false, authorId: req.user.id }],
+              }
+            : {},
+          search
+            ? {
+                OR: [
+                  { title: { contains: search, mode: 'insensitive' } },
+                  { versions: { some: { content: { contains: search, mode: 'insensitive' } } } },
+                ],
+              }
+            : {},
+          tags ? { tags: { hasSome: tags.split(',').map((t) => t.trim()) } } : {},
           visibility ? { visibility } : {},
-        ]
+        ],
       };
 
       const [articles, total] = await Promise.all([
@@ -169,18 +165,18 @@ router.get('/articles',
           where,
           include: {
             author: { select: { id: true, name: true } },
-            currentVersion: true
+            currentVersion: true,
           },
           orderBy: { updatedAt: 'desc' },
           skip: parseInt(offset),
-          take: parseInt(limit)
+          take: parseInt(limit),
         }),
-        prisma.kbArticle.count({ where })
+        prisma.kbArticle.count({ where }),
       ]);
 
       res.json({
         success: true,
-        articles: articles.map(a => ({
+        articles: articles.map((a) => ({
           id: a.id,
           slug: a.slug,
           title: a.title,
@@ -190,20 +186,20 @@ router.get('/articles',
           isPublished: a.isPublished,
           createdBy: a.author ? { id: a.author.id, name: a.author.name } : null,
           createdAt: a.createdAt,
-          updatedAt: a.updatedAt
+          updatedAt: a.updatedAt,
         })),
         total,
-        hasMore: parseInt(offset) + parseInt(limit) < total
+        hasMore: parseInt(offset) + parseInt(limit) < total,
       });
     } catch (error) {
       logger.error('Error fetching knowledge articles:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch articles',
-        errorCode: 'ARTICLES_FETCH_ERROR'
+        errorCode: 'ARTICLES_FETCH_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -239,7 +235,8 @@ router.get('/articles',
  *       401:
  *         description: Unauthorized
  */
-router.get('/articles/:kbId',
+router.get(
+  '/articles/:kbId',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 200), // 200 requests per 15 minutes
   async (req, res) => {
@@ -267,7 +264,7 @@ router.get('/articles/:kbId',
         return res.status(404).json({
           success: false,
           error: 'Article not found',
-          errorCode: 'ARTICLE_NOT_FOUND'
+          errorCode: 'ARTICLE_NOT_FOUND',
         });
       }
 
@@ -288,25 +285,25 @@ router.get('/articles/:kbId',
         viewCount: (row.access_count || 0) + 1,
         createdBy: {
           id: row.created_by_id,
-          name: row.author_name
+          name: row.author_name,
         },
         createdAt: row.created_at,
-        updatedAt: row.updated_at
+        updatedAt: row.updated_at,
       };
 
       res.json({
         success: true,
-        article
+        article,
       });
     } catch (error) {
       logger.error('Error in article detail endpoint:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch article',
-        errorCode: 'ARTICLE_ERROR'
+        errorCode: 'ARTICLE_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -363,13 +360,16 @@ router.get('/articles/:kbId',
  *       401:
  *         description: Unauthorized
  */
-router.post('/articles',
+router.post(
+  '/articles',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20),
   [
-    body('title').isLength({ min: 1, max: 255 }).withMessage('Title must be between 1 and 255 characters'),
+    body('title')
+      .isLength({ min: 1, max: 255 })
+      .withMessage('Title must be between 1 and 255 characters'),
     body('content').isLength({ min: 1 }).withMessage('Content is required'),
-    body('tags').optional().isArray().withMessage('Tags must be an array')
+    body('tags').optional().isArray().withMessage('Tags must be an array'),
   ],
   async (req, res) => {
     try {
@@ -379,18 +379,25 @@ router.post('/articles',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
       const { title, content, tags = [] } = req.body;
       const userId = req.user.id;
       // Only allow users with editor/admin roles
       const userRoles = req.user.roles || [];
-      if (!userRoles.includes('admin') && !userRoles.includes('superadmin') && !userRoles.includes('kb_editor')) {
+      if (
+        !userRoles.includes('admin') &&
+        !userRoles.includes('superadmin') &&
+        !userRoles.includes('kb_editor')
+      ) {
         return res.status(403).json({ success: false, error: 'Forbidden', errorCode: 'FORBIDDEN' });
       }
       // Generate unique slug
-      const slugBase = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const slugBase = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
       let slug = slugBase;
       let i = 1;
       while (await prisma.kbArticle.findUnique({ where: { slug } })) {
@@ -405,18 +412,20 @@ router.post('/articles',
           authorId: userId,
           isPublished: false,
           versions: {
-            create: [{
-              content,
-              authorId: userId,
-              version: 1,
-              isApproved: false
-            }]
-          }
+            create: [
+              {
+                content,
+                authorId: userId,
+                version: 1,
+                isApproved: false,
+              },
+            ],
+          },
         },
         include: {
           author: { select: { id: true, name: true } },
-          versions: true
-        }
+          versions: true,
+        },
       });
       res.status(201).json({
         success: true,
@@ -429,18 +438,18 @@ router.post('/articles',
           isPublished: article.isPublished,
           createdBy: article.author ? { id: article.author.id, name: article.author.name } : null,
           createdAt: article.createdAt,
-          updatedAt: article.updatedAt
-        }
+          updatedAt: article.updatedAt,
+        },
       });
     } catch (error) {
       logger.error('Error creating article:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to create article',
-        errorCode: 'ARTICLE_CREATE_ERROR'
+        errorCode: 'ARTICLE_CREATE_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -482,12 +491,17 @@ router.post('/articles',
  *       401:
  *         description: Unauthorized
  */
-router.post('/articles/:kbId/feedback',
+router.post(
+  '/articles/:kbId/feedback',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 50), // 50 feedback submissions per 15 minutes
   [
     body('helpful').isBoolean().withMessage('Helpful must be true or false'),
-    body('comment').optional().isString().isLength({ max: 1000 }).withMessage('Comment must be less than 1000 characters')
+    body('comment')
+      .optional()
+      .isString()
+      .isLength({ max: 1000 })
+      .withMessage('Comment must be less than 1000 characters'),
   ],
   async (req, res) => {
     try {
@@ -497,7 +511,7 @@ router.post('/articles/:kbId/feedback',
           success: false,
           error: 'Invalid input',
           details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
+          errorCode: 'VALIDATION_ERROR',
         });
       }
 
@@ -505,19 +519,24 @@ router.post('/articles/:kbId/feedback',
       const { helpful, comment } = req.body;
 
       // Check if article exists
-      const article = await db.oneOrNone('SELECT id FROM kb_articles WHERE kb_id = $1 AND deleted_at IS NULL', [kbId]);
+      const article = await db.oneOrNone(
+        'SELECT id FROM kb_articles WHERE kb_id = $1 AND deleted_at IS NULL',
+        [kbId],
+      );
 
       if (!article) {
         return res.status(404).json({
           success: false,
           error: 'Article not found',
-          errorCode: 'ARTICLE_NOT_FOUND'
+          errorCode: 'ARTICLE_NOT_FOUND',
         });
       }
 
       // Update feedback counts
       const updateField = helpful ? 'helpful_count' : 'unhelpful_count';
-      await db.none(`UPDATE kb_articles SET ${updateField} = ${updateField} + 1 WHERE id = $1`, [article.id]);
+      await db.none(`UPDATE kb_articles SET ${updateField} = ${updateField} + 1 WHERE id = $1`, [
+        article.id,
+      ]);
 
       // If there's a comment, store it in the feedback table
       if (comment) {
@@ -528,23 +547,23 @@ router.post('/articles/:kbId/feedback',
             if (feedbackErr) {
               logger.error('Error storing feedback comment:', feedbackErr);
             }
-          }
+          },
         );
       }
 
       res.json({
         success: true,
-        message: 'Feedback submitted successfully'
+        message: 'Feedback submitted successfully',
       });
     } catch (error) {
       logger.error('Error submitting feedback:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to submit feedback',
-        errorCode: 'FEEDBACK_ERROR'
+        errorCode: 'FEEDBACK_ERROR',
       });
     }
-  }
+  },
 );
 
 /**
@@ -586,7 +605,8 @@ router.post('/articles/:kbId/feedback',
  *       401:
  *         description: Unauthorized
  */
-router.get('/search',
+router.get(
+  '/search',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 100), // 100 searches per 15 minutes
   async (req, res) => {
@@ -597,7 +617,7 @@ router.get('/search',
         return res.status(400).json({
           success: false,
           error: 'Search query is required',
-          errorCode: 'QUERY_REQUIRED'
+          errorCode: 'QUERY_REQUIRED',
         });
       }
 
@@ -631,7 +651,7 @@ router.get('/search',
 
       const rows = await db.any(query, params);
 
-      const results = (rows || []).map(row => ({
+      const results = (rows || []).map((row) => ({
         id: row.id,
         kbId: row.kb_id,
         title: row.title,
@@ -647,25 +667,25 @@ router.get('/search',
         relevanceScore: row.relevance_score,
         createdBy: {
           id: row.created_by_id,
-          name: row.author_name
+          name: row.author_name,
         },
         createdAt: row.created_at,
-        updatedAt: row.updated_at
+        updatedAt: row.updated_at,
       }));
 
       res.json({
         success: true,
-        results
+        results,
       });
     } catch (error) {
       logger.error('Error in search endpoint:', error);
       res.status(500).json({
         success: false,
         error: 'Search failed',
-        errorCode: 'SEARCH_ERROR'
+        errorCode: 'SEARCH_ERROR',
       });
     }
-  }
+  },
 );
 
 // --- New: Article Versions ---
@@ -676,7 +696,7 @@ router.get('/articles/:articleId/versions', authenticateJWT, async (req, res) =>
     const versions = await prisma.kbArticleVersion.findMany({
       where: { articleId: parseInt(articleId) },
       include: { author: { select: { id: true, name: true } } },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
     res.json({ success: true, versions });
   } catch (error) {
@@ -691,7 +711,7 @@ router.get('/articles/:articleId/versions/:versionId', authenticateJWT, async (r
     const { versionId } = req.params;
     const version = await prisma.kbArticleVersion.findUnique({
       where: { id: parseInt(versionId) },
-      include: { author: { select: { id: true, name: true } } }
+      include: { author: { select: { id: true, name: true } } },
     });
     if (!version) return res.status(404).json({ success: false, error: 'Version not found' });
     res.json({ success: true, version });
@@ -702,44 +722,53 @@ router.get('/articles/:articleId/versions/:versionId', authenticateJWT, async (r
 });
 
 // Create a new version (edit)
-router.post('/articles/:articleId/versions', authenticateJWT, [
-  body('content').isLength({ min: 1 }).withMessage('Content is required')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, error: 'Invalid input', details: errors.array() });
+router.post(
+  '/articles/:articleId/versions',
+  authenticateJWT,
+  [body('content').isLength({ min: 1 }).withMessage('Content is required')],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(400)
+          .json({ success: false, error: 'Invalid input', details: errors.array() });
+      }
+      const { articleId } = req.params;
+      const { content } = req.body;
+      const userId = req.user.id;
+      // Only allow users with editor/admin roles
+      const userRoles = req.user.roles || [];
+      if (
+        !userRoles.includes('admin') &&
+        !userRoles.includes('superadmin') &&
+        !userRoles.includes('kb_editor')
+      ) {
+        return res.status(403).json({ success: false, error: 'Forbidden', errorCode: 'FORBIDDEN' });
+      }
+      // Get latest version number
+      const lastVersion = await prisma.kbArticleVersion.findFirst({
+        where: { articleId: parseInt(articleId) },
+        orderBy: { version: 'desc' },
+      });
+      const newVersionNum = lastVersion ? lastVersion.version + 1 : 1;
+      const version = await prisma.kbArticleVersion.create({
+        data: {
+          articleId: parseInt(articleId),
+          content,
+          authorId: userId,
+          version: newVersionNum,
+          isApproved: false,
+        },
+        include: { author: { select: { id: true, name: true } } },
+      });
+      res.status(201).json({ success: true, version });
+    } catch (error) {
+      logger.error('Error creating article version:', error);
+      res.status(500).json({ success: false, error: 'Failed to create version' });
     }
-    const { articleId } = req.params;
-    const { content } = req.body;
-    const userId = req.user.id;
-    // Only allow users with editor/admin roles
-    const userRoles = req.user.roles || [];
-    if (!userRoles.includes('admin') && !userRoles.includes('superadmin') && !userRoles.includes('kb_editor')) {
-      return res.status(403).json({ success: false, error: 'Forbidden', errorCode: 'FORBIDDEN' });
-    }
-    // Get latest version number
-    const lastVersion = await prisma.kbArticleVersion.findFirst({
-      where: { articleId: parseInt(articleId) },
-      orderBy: { version: 'desc' }
-    });
-    const newVersionNum = lastVersion ? lastVersion.version + 1 : 1;
-    const version = await prisma.kbArticleVersion.create({
-      data: {
-        articleId: parseInt(articleId),
-        content,
-        authorId: userId,
-        version: newVersionNum,
-        isApproved: false
-      },
-      include: { author: { select: { id: true, name: true } } }
-    });
-    res.status(201).json({ success: true, version });
-  } catch (error) {
-    logger.error('Error creating article version:', error);
-    res.status(500).json({ success: false, error: 'Failed to create version' });
-  }
-});
+  },
+);
 
 // --- New: Comments on Article Versions ---
 // List comments for an article
@@ -749,7 +778,7 @@ router.get('/articles/:articleId/comments', authenticateJWT, async (req, res) =>
     const comments = await prisma.kbArticleComment.findMany({
       where: { articleId: parseInt(articleId) },
       include: { user: { select: { id: true, name: true } } },
-      orderBy: { createdAt: 'asc' }
+      orderBy: { createdAt: 'asc' },
     });
     res.json({ success: true, comments });
   } catch (error) {
@@ -759,30 +788,35 @@ router.get('/articles/:articleId/comments', authenticateJWT, async (req, res) =>
 });
 
 // Add a comment to an article
-router.post('/articles/:articleId/comments', authenticateJWT, [
-  body('content').isLength({ min: 1 }).withMessage('Content is required')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, error: 'Invalid input', details: errors.array() });
+router.post(
+  '/articles/:articleId/comments',
+  authenticateJWT,
+  [body('content').isLength({ min: 1 }).withMessage('Content is required')],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(400)
+          .json({ success: false, error: 'Invalid input', details: errors.array() });
+      }
+      const { articleId } = req.params;
+      const { content } = req.body;
+      const userId = req.user.id;
+      const comment = await prisma.kbArticleComment.create({
+        data: {
+          articleId: parseInt(articleId),
+          userId,
+          content,
+        },
+        include: { user: { select: { id: true, name: true } } },
+      });
+      res.status(201).json({ success: true, comment });
+    } catch (error) {
+      logger.error('Error creating comment:', error);
+      res.status(500).json({ success: false, error: 'Failed to create comment' });
     }
-    const { articleId } = req.params;
-    const { content } = req.body;
-    const userId = req.user.id;
-    const comment = await prisma.kbArticleComment.create({
-      data: {
-        articleId: parseInt(articleId),
-        userId,
-        content
-      },
-      include: { user: { select: { id: true, name: true } } }
-    });
-    res.status(201).json({ success: true, comment });
-  } catch (error) {
-    logger.error('Error creating comment:', error);
-    res.status(500).json({ success: false, error: 'Failed to create comment' });
-  }
-});
+  },
+);
 
 export default router;

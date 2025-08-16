@@ -29,9 +29,9 @@ export const Select: React.FC<SelectProps> = ({
   return (
     <div className={`space-y-1 ${className}`}>
       {label && (
-        <label className="block text-sm font-medium select-label">
+        <label className="select-label block text-sm font-medium">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
       <select
@@ -39,7 +39,7 @@ export const Select: React.FC<SelectProps> = ({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         aria-label={label || placeholder}
-        className="select block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm"
+        className="select block w-full rounded-md border px-3 py-2 shadow-sm focus:ring-1 focus:outline-none sm:text-sm"
       >
         <option value="" disabled>
           {placeholder}
@@ -50,12 +50,8 @@ export const Select: React.FC<SelectProps> = ({
           </option>
         ))}
       </select>
-      {error && (
-        <p className="text-sm select-error">{error}</p>
-      )}
-      {helperText && !error && (
-        <p className="text-sm select-helper">{helperText}</p>
-      )}
+      {error && <p className="select-error text-sm">{error}</p>}
+      {helperText && !error && <p className="select-helper text-sm">{helperText}</p>}
     </div>
   );
 };

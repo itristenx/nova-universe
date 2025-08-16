@@ -1,6 +1,6 @@
 /**
  * AI-Powered Ticket Processing Engine for Cosmo/Synth
- * 
+ *
  * This module provides intelligent ticket processing capabilities including:
  * - Metadata extraction and enrichment
  * - Customer matching and account linking
@@ -19,28 +19,72 @@ import { EventEmitter } from 'events';
 class TicketClassifier {
   constructor() {
     this.categories = {
-      'hardware': ['computer', 'laptop', 'monitor', 'printer', 'keyboard', 'mouse', 'server', 'network device'],
-      'software': ['application', 'program', 'install', 'update', 'crash', 'error', 'bug', 'license'],
-      'network': ['internet', 'wifi', 'connection', 'vpn', 'firewall', 'router', 'switch', 'bandwidth'],
-      'security': ['virus', 'malware', 'phishing', 'breach', 'password', 'access', 'authentication', 'encryption'],
-      'email': ['outlook', 'gmail', 'email', 'mail', 'attachment', 'spam', 'distribution list'],
-      'phone': ['voip', 'phone', 'call', 'conference', 'voicemail', 'extension', 'dial tone'],
-      'access': ['permission', 'login', 'account', 'role', 'rights', 'folder', 'file access', 'sharepoint']
+      hardware: [
+        'computer',
+        'laptop',
+        'monitor',
+        'printer',
+        'keyboard',
+        'mouse',
+        'server',
+        'network device',
+      ],
+      software: ['application', 'program', 'install', 'update', 'crash', 'error', 'bug', 'license'],
+      network: [
+        'internet',
+        'wifi',
+        'connection',
+        'vpn',
+        'firewall',
+        'router',
+        'switch',
+        'bandwidth',
+      ],
+      security: [
+        'virus',
+        'malware',
+        'phishing',
+        'breach',
+        'password',
+        'access',
+        'authentication',
+        'encryption',
+      ],
+      email: ['outlook', 'gmail', 'email', 'mail', 'attachment', 'spam', 'distribution list'],
+      phone: ['voip', 'phone', 'call', 'conference', 'voicemail', 'extension', 'dial tone'],
+      access: [
+        'permission',
+        'login',
+        'account',
+        'role',
+        'rights',
+        'folder',
+        'file access',
+        'sharepoint',
+      ],
     };
 
     this.priorities = {
-      'critical': ['down', 'outage', 'critical', 'urgent', 'emergency', 'security breach', 'data loss'],
-      'high': ['slow', 'performance', 'multiple users', 'business impact', 'deadline'],
-      'medium': ['issue', 'problem', 'not working', 'error', 'difficulty'],
-      'low': ['question', 'request', 'how to', 'training', 'information']
+      critical: [
+        'down',
+        'outage',
+        'critical',
+        'urgent',
+        'emergency',
+        'security breach',
+        'data loss',
+      ],
+      high: ['slow', 'performance', 'multiple users', 'business impact', 'deadline'],
+      medium: ['issue', 'problem', 'not working', 'error', 'difficulty'],
+      low: ['question', 'request', 'how to', 'training', 'information'],
     };
 
     this.urgencyFactors = {
-      'executive': 3,
-      'manager': 2,
-      'department_head': 2,
-      'regular_user': 1,
-      'contractor': 0.5
+      executive: 3,
+      manager: 2,
+      department_head: 2,
+      regular_user: 1,
+      contractor: 0.5,
     };
   }
 
@@ -58,8 +102,8 @@ class TicketClassifier {
     }
 
     const maxScore = Math.max(...Object.values(scores));
-    const bestCategory = Object.keys(scores).find(key => scores[key] === maxScore);
-    
+    const bestCategory = Object.keys(scores).find((key) => scores[key] === maxScore);
+
     return {
       category: bestCategory || 'general',
       confidence: maxScore > 0 ? maxScore / Math.max(1, text.split(' ').length) : 0.1,
@@ -67,7 +111,7 @@ class TicketClassifier {
         .filter(([cat, score]) => score > 0 && cat !== bestCategory)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 2)
-        .map(([cat]) => cat)
+        .map(([cat]) => cat),
     };
   }
 
@@ -104,13 +148,13 @@ class TicketClassifier {
       factors: {
         detectedKeywords: detectedPriority,
         userRole: userRole,
-        roleMultiplier: roleMultiplier
-      }
+        roleMultiplier: roleMultiplier,
+      },
     };
   }
 
   getPriorityScore(priority) {
-    const scores = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
+    const scores = { critical: 4, high: 3, medium: 2, low: 1 };
     return scores[priority] || 1;
   }
 }
@@ -134,7 +178,7 @@ class CustomerMatcher {
         contract: 'enterprise',
         priority: 'high',
         location: 'New York',
-        department: 'IT'
+        department: 'IT',
       },
       {
         id: 'CUST-002',
@@ -144,14 +188,14 @@ class CustomerMatcher {
         contract: 'standard',
         priority: 'medium',
         location: 'California',
-        department: 'Operations'
-      }
+        department: 'Operations',
+      },
     ];
 
     for (const customer of sampleCustomers) {
       this.customers.set(customer.id, customer);
       this.domains.set(customer.domain, customer.id);
-      
+
       for (const email of customer.emails) {
         const domain = email.split('@')[1];
         if (domain) {
@@ -163,7 +207,7 @@ class CustomerMatcher {
 
   matchCustomer(email, name = null, phone = null) {
     const domain = email ? email.split('@')[1] : null;
-    
+
     // Try domain matching first
     if (domain && this.domains.has(domain)) {
       const customerId = this.domains.get(domain);
@@ -171,7 +215,7 @@ class CustomerMatcher {
       return {
         customer,
         matchType: 'domain',
-        confidence: 0.9
+        confidence: 0.9,
       };
     }
 
@@ -181,7 +225,7 @@ class CustomerMatcher {
         return {
           customer,
           matchType: 'email',
-          confidence: 1.0
+          confidence: 1.0,
         };
       }
     }
@@ -193,7 +237,7 @@ class CustomerMatcher {
           return {
             customer,
             matchType: 'name',
-            confidence: 0.7
+            confidence: 0.7,
           };
         }
       }
@@ -202,7 +246,7 @@ class CustomerMatcher {
     return {
       customer: null,
       matchType: 'none',
-      confidence: 0
+      confidence: 0,
     };
   }
 
@@ -215,28 +259,30 @@ class CustomerMatcher {
     // Simple Levenshtein distance-based similarity
     const maxLen = Math.max(str1.length, str2.length);
     if (maxLen === 0) return 1;
-    
+
     const distance = this.levenshteinDistance(str1, str2);
-    return 1 - (distance / maxLen);
+    return 1 - distance / maxLen;
   }
 
   levenshteinDistance(str1, str2) {
-    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
-    
+    const matrix = Array(str2.length + 1)
+      .fill(null)
+      .map(() => Array(str1.length + 1).fill(null));
+
     for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
     for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
-    
+
     for (let j = 1; j <= str2.length; j++) {
       for (let i = 1; i <= str1.length; i++) {
         const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
         matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1,     // deletion
-          matrix[j - 1][i] + 1,     // insertion
-          matrix[j - 1][i - 1] + indicator // substitution
+          matrix[j][i - 1] + 1, // deletion
+          matrix[j - 1][i] + 1, // insertion
+          matrix[j - 1][i - 1] + indicator, // substitution
         );
       }
     }
-    
+
     return matrix[str2.length][str1.length];
   }
 }
@@ -252,9 +298,9 @@ class SimilarTicketDetector {
     this.vectorStore.set(ticket.id, {
       vector,
       ticket,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
-    
+
     // Update text index
     const keywords = this.extractKeywords(ticket.title, ticket.description);
     for (const keyword of keywords) {
@@ -271,55 +317,55 @@ class SimilarTicketDetector {
 
     for (const [ticketId, data] of this.vectorStore) {
       const similarity = this.cosineSimilarity(queryVector, data.vector);
-      if (similarity > 0.3) { // Threshold for similarity
+      if (similarity > 0.3) {
+        // Threshold for similarity
         similarities.push({
           ticketId,
           ticket: data.ticket,
           similarity,
-          timestamp: data.timestamp
+          timestamp: data.timestamp,
         });
       }
     }
 
-    return similarities
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, limit);
+    return similarities.sort((a, b) => b.similarity - a.similarity).slice(0, limit);
   }
 
   findDuplicates(title, description, threshold = 0.8) {
     const similar = this.findSimilarTickets(title, description);
-    return similar.filter(item => item.similarity >= threshold);
+    return similar.filter((item) => item.similarity >= threshold);
   }
 
   createTextVector(title, description) {
     const text = `${title} ${description}`.toLowerCase();
-    const words = text.split(/\s+/).filter(word => word.length > 2);
+    const words = text.split(/\s+/).filter((word) => word.length > 2);
     const wordCount = new Map();
-    
+
     // Count word frequencies
     for (const word of words) {
       wordCount.set(word, (wordCount.get(word) || 0) + 1);
     }
-    
+
     // Convert to simple vector (top 100 most common words)
     const vector = Array(100).fill(0);
     const sortedWords = Array.from(wordCount.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 100);
-    
+
     for (let i = 0; i < sortedWords.length; i++) {
       vector[i] = sortedWords[i][1];
     }
-    
+
     return vector;
   }
 
   extractKeywords(title, description) {
     const text = `${title} ${description}`.toLowerCase();
-    const words = text.split(/\s+/)
-      .filter(word => word.length > 3)
-      .filter(word => !/^(the|and|or|but|in|on|at|to|for|of|with|by)$/.test(word));
-    
+    const words = text
+      .split(/\s+/)
+      .filter((word) => word.length > 3)
+      .filter((word) => !/^(the|and|or|but|in|on|at|to|for|of|with|by)$/.test(word));
+
     return [...new Set(words)];
   }
 
@@ -327,13 +373,13 @@ class SimilarTicketDetector {
     let dotProduct = 0;
     let normA = 0;
     let normB = 0;
-    
+
     for (let i = 0; i < vecA.length; i++) {
       dotProduct += vecA[i] * vecB[i];
       normA += vecA[i] * vecA[i];
       normB += vecB[i] * vecB[i];
     }
-    
+
     if (normA === 0 || normB === 0) return 0;
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
@@ -349,7 +395,7 @@ class TrendAnalyzer {
   addTicketData(ticket) {
     this.ticketHistory.push({
       ...ticket,
-      timestamp: ticket.timestamp || Date.now()
+      timestamp: ticket.timestamp || Date.now(),
     });
 
     // Keep only last 1000 tickets for performance
@@ -363,14 +409,14 @@ class TrendAnalyzer {
   updateTrends() {
     const now = Date.now();
     const timeWindows = {
-      'daily': 24 * 60 * 60 * 1000,
-      'weekly': 7 * 24 * 60 * 60 * 1000,
-      'monthly': 30 * 24 * 60 * 60 * 1000
+      daily: 24 * 60 * 60 * 1000,
+      weekly: 7 * 24 * 60 * 60 * 1000,
+      monthly: 30 * 24 * 60 * 60 * 1000,
     };
 
     for (const [window, duration] of Object.entries(timeWindows)) {
       const recentTickets = this.ticketHistory.filter(
-        ticket => now - ticket.timestamp < duration
+        (ticket) => now - ticket.timestamp < duration,
       );
 
       this.trends.set(window, {
@@ -379,7 +425,7 @@ class TrendAnalyzer {
         priorities: this.groupBy(recentTickets, 'priority'),
         customers: this.groupBy(recentTickets, 'customerId'),
         timeDistribution: this.analyzeTimeDistribution(recentTickets),
-        averageResolutionTime: this.calculateAverageResolutionTime(recentTickets)
+        averageResolutionTime: this.calculateAverageResolutionTime(recentTickets),
       });
     }
   }
@@ -399,7 +445,7 @@ class TrendAnalyzer {
             type: 'category_spike',
             category,
             severity: dailyCount / weeklyAvg,
-            description: `Unusual spike in ${category} tickets (${dailyCount} vs avg ${weeklyAvg.toFixed(1)})`
+            description: `Unusual spike in ${category} tickets (${dailyCount} vs avg ${weeklyAvg.toFixed(1)})`,
           });
         }
       }
@@ -408,15 +454,15 @@ class TrendAnalyzer {
     // Identify time-based patterns
     if (dailyTrends) {
       const hourlyDistribution = dailyTrends.timeDistribution;
-      const peakHour = Object.keys(hourlyDistribution).reduce((a, b) => 
-        hourlyDistribution[a] > hourlyDistribution[b] ? a : b
+      const peakHour = Object.keys(hourlyDistribution).reduce((a, b) =>
+        hourlyDistribution[a] > hourlyDistribution[b] ? a : b,
       );
-      
+
       patterns.push({
         type: 'peak_hours',
         hour: peakHour,
         count: hourlyDistribution[peakHour],
-        description: `Peak ticket volume at ${peakHour}:00 (${hourlyDistribution[peakHour]} tickets)`
+        description: `Peak ticket volume at ${peakHour}:00 (${hourlyDistribution[peakHour]} tickets)`,
       });
     }
 
@@ -437,7 +483,7 @@ class TrendAnalyzer {
           category,
           probability,
           expectedCount: Math.round(probability * 10), // Next 10 tickets
-          confidence: probability > 0.3 ? 'high' : probability > 0.15 ? 'medium' : 'low'
+          confidence: probability > 0.3 ? 'high' : probability > 0.15 ? 'medium' : 'low',
         });
       }
     }
@@ -455,23 +501,23 @@ class TrendAnalyzer {
 
   analyzeTimeDistribution(tickets) {
     const distribution = {};
-    
+
     for (const ticket of tickets) {
       const hour = new Date(ticket.timestamp).getHours();
       distribution[hour] = (distribution[hour] || 0) + 1;
     }
-    
+
     return distribution;
   }
 
   calculateAverageResolutionTime(tickets) {
-    const resolvedTickets = tickets.filter(t => t.resolvedAt && t.createdAt);
+    const resolvedTickets = tickets.filter((t) => t.resolvedAt && t.createdAt);
     if (resolvedTickets.length === 0) return null;
-    
+
     const totalTime = resolvedTickets.reduce((sum, ticket) => {
       return sum + (ticket.resolvedAt - ticket.createdAt);
     }, 0);
-    
+
     return totalTime / resolvedTickets.length;
   }
 }
@@ -480,7 +526,7 @@ class TrendAnalyzer {
 export class CosmoTicketProcessor extends EventEmitter {
   constructor(config = {}) {
     super();
-    
+
     this.config = {
       enableAI: true,
       enableTrendAnalysis: true,
@@ -489,28 +535,28 @@ export class CosmoTicketProcessor extends EventEmitter {
       similarityThreshold: 0.6,
       autoClassifyPriority: true,
       autoMatchCustomers: true,
-      ...config
+      ...config,
     };
 
     this.classifier = new TicketClassifier();
     this.customerMatcher = new CustomerMatcher();
     this.similarTicketDetector = new SimilarTicketDetector();
     this.trendAnalyzer = new TrendAnalyzer();
-    
+
     this.ticketQueue = [];
     this.processing = false;
-    
+
     this.startProcessing();
   }
 
   async processTicket(ticketData) {
     const enrichedTicket = await this.enrichTicketData(ticketData);
-    
+
     // Add to processing queue
     this.ticketQueue.push(enrichedTicket);
-    
+
     this.emit('ticketQueued', enrichedTicket);
-    
+
     return enrichedTicket;
   }
 
@@ -523,9 +569,9 @@ export class CosmoTicketProcessor extends EventEmitter {
       if (this.config.enableAI) {
         const classification = this.classifier.classifyCategory(ticket.title, ticket.description);
         const prioritization = this.classifier.classifyPriority(
-          ticket.title, 
-          ticket.description, 
-          ticket.userRole
+          ticket.title,
+          ticket.description,
+          ticket.userRole,
         );
 
         enriched.aiClassification = {
@@ -534,7 +580,7 @@ export class CosmoTicketProcessor extends EventEmitter {
           alternativeCategories: classification.alternativeCategories,
           priority: prioritization.priority,
           priorityScore: prioritization.score,
-          priorityFactors: prioritization.factors
+          priorityFactors: prioritization.factors,
         };
 
         // Auto-assign if confidence is high enough
@@ -551,11 +597,11 @@ export class CosmoTicketProcessor extends EventEmitter {
         const customerMatch = this.customerMatcher.matchCustomer(
           ticket.requesterEmail,
           ticket.requesterName,
-          ticket.requesterPhone
+          ticket.requesterPhone,
         );
 
         enriched.customerMatch = customerMatch;
-        
+
         if (customerMatch.customer && customerMatch.confidence > 0.8) {
           enriched.customerId = customerMatch.customer.id;
           enriched.customerName = customerMatch.customer.name;
@@ -571,20 +617,22 @@ export class CosmoTicketProcessor extends EventEmitter {
         const duplicates = this.similarTicketDetector.findDuplicates(
           ticket.title,
           ticket.description,
-          this.config.duplicateThreshold
+          this.config.duplicateThreshold,
         );
 
         const similarTickets = this.similarTicketDetector.findSimilarTickets(
           ticket.title,
           ticket.description,
-          5
+          5,
         );
 
         enriched.duplicateAnalysis = {
           isDuplicate: duplicates.length > 0,
           duplicateTickets: duplicates,
-          similarTickets: similarTickets.filter(t => !duplicates.find(d => d.ticketId === t.ticketId)),
-          confidence: duplicates.length > 0 ? Math.max(...duplicates.map(d => d.similarity)) : 0
+          similarTickets: similarTickets.filter(
+            (t) => !duplicates.find((d) => d.ticketId === t.ticketId),
+          ),
+          confidence: duplicates.length > 0 ? Math.max(...duplicates.map((d) => d.similarity)) : 0,
         };
       }
 
@@ -597,21 +645,20 @@ export class CosmoTicketProcessor extends EventEmitter {
           classification: this.config.enableAI,
           customerMatching: this.config.autoMatchCustomers,
           duplicateDetection: this.config.enableDuplicateDetection,
-          trendAnalysis: this.config.enableTrendAnalysis
-        }
+          trendAnalysis: this.config.enableTrendAnalysis,
+        },
       };
 
       // Step 5: Generate suggestions
       enriched.suggestions = this.generateSuggestions(enriched);
 
       return enriched;
-
     } catch (error) {
       console.error('Error enriching ticket data:', error);
       enriched.aiProcessing = {
         error: error.message,
         processedAt: Date.now(),
-        processingTime: Date.now() - startTime
+        processingTime: Date.now() - startTime,
       };
       return enriched;
     }
@@ -627,7 +674,7 @@ export class CosmoTicketProcessor extends EventEmitter {
         action: 'set_priority',
         value: ticket.aiClassification.priority,
         confidence: ticket.aiClassification.categoryConfidence,
-        reason: `AI suggests ${ticket.aiClassification.priority} priority based on content analysis`
+        reason: `AI suggests ${ticket.aiClassification.priority} priority based on content analysis`,
       });
     }
 
@@ -638,7 +685,7 @@ export class CosmoTicketProcessor extends EventEmitter {
         action: 'set_category',
         value: ticket.aiClassification.category,
         confidence: ticket.aiClassification.categoryConfidence,
-        reason: `AI suggests ${ticket.aiClassification.category} category (${Math.round(ticket.aiClassification.categoryConfidence * 100)}% confidence)`
+        reason: `AI suggests ${ticket.aiClassification.category} category (${Math.round(ticket.aiClassification.categoryConfidence * 100)}% confidence)`,
       });
     }
 
@@ -649,7 +696,7 @@ export class CosmoTicketProcessor extends EventEmitter {
         action: 'merge_or_close',
         value: ticket.duplicateAnalysis.duplicateTickets[0].ticketId,
         confidence: ticket.duplicateAnalysis.confidence,
-        reason: `Potential duplicate of ticket ${ticket.duplicateAnalysis.duplicateTickets[0].ticketId}`
+        reason: `Potential duplicate of ticket ${ticket.duplicateAnalysis.duplicateTickets[0].ticketId}`,
       });
     }
 
@@ -660,20 +707,22 @@ export class CosmoTicketProcessor extends EventEmitter {
         action: 'escalate_customer',
         value: 'high_priority_customer',
         confidence: 1.0,
-        reason: `High priority customer: ${ticket.customerMatch.customer.name}`
+        reason: `High priority customer: ${ticket.customerMatch.customer.name}`,
       });
     }
 
     // Similar ticket resolution suggestions
     if (ticket.duplicateAnalysis?.similarTickets?.length > 0) {
-      const resolvedSimilar = ticket.duplicateAnalysis.similarTickets.filter(t => t.ticket.status === 'resolved');
+      const resolvedSimilar = ticket.duplicateAnalysis.similarTickets.filter(
+        (t) => t.ticket.status === 'resolved',
+      );
       if (resolvedSimilar.length > 0) {
         suggestions.push({
           type: 'knowledge',
           action: 'suggest_solution',
           value: resolvedSimilar[0].ticketId,
           confidence: resolvedSimilar[0].similarity,
-          reason: `Similar resolved ticket found: ${resolvedSimilar[0].ticket.title}`
+          reason: `Similar resolved ticket found: ${resolvedSimilar[0].ticket.title}`,
         });
       }
     }
@@ -683,37 +732,36 @@ export class CosmoTicketProcessor extends EventEmitter {
 
   async startProcessing() {
     if (this.processing) return;
-    
+
     this.processing = true;
-    
+
     const processQueue = async () => {
       while (this.ticketQueue.length > 0) {
         const ticket = this.ticketQueue.shift();
-        
+
         try {
           // Add to similarity detection index
           this.similarTicketDetector.addTicket(ticket);
-          
+
           // Add to trend analysis
           if (this.config.enableTrendAnalysis) {
             this.trendAnalyzer.addTicketData(ticket);
           }
-          
+
           this.emit('ticketProcessed', ticket);
-          
         } catch (error) {
           console.error('Error processing ticket:', error);
           this.emit('ticketError', { ticket, error });
         }
-        
+
         // Small delay to prevent overwhelming the system
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      
+
       // Continue processing after a short delay
       setTimeout(processQueue, 1000);
     };
-    
+
     processQueue();
   }
 
@@ -721,7 +769,7 @@ export class CosmoTicketProcessor extends EventEmitter {
     return {
       current: this.trendAnalyzer.trends,
       patterns: this.trendAnalyzer.identifyPatterns(),
-      predictions: this.trendAnalyzer.predictNextTickets()
+      predictions: this.trendAnalyzer.predictNextTickets(),
     };
   }
 
@@ -731,7 +779,7 @@ export class CosmoTicketProcessor extends EventEmitter {
       queueLength: this.ticketQueue.length,
       processing: this.processing,
       customers: this.customerMatcher.customers.size,
-      trends: this.getTrends()
+      trends: this.getTrends(),
     };
   }
 
@@ -748,15 +796,15 @@ export class CosmoTicketProcessor extends EventEmitter {
       contract: customerData.contract || 'standard',
       priority: customerData.priority || 'medium',
       location: customerData.location,
-      department: customerData.department
+      department: customerData.department,
     };
 
     this.customerMatcher.customers.set(customer.id, customer);
-    
+
     if (customer.domain) {
       this.customerMatcher.domains.set(customer.domain, customer.id);
     }
-    
+
     for (const email of customer.emails) {
       const domain = email.split('@')[1];
       if (domain) {

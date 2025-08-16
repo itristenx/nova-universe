@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
+import {
   FlaskConical,
   CheckCircle,
   Pause,
@@ -10,7 +10,7 @@ import {
   Eye,
   Copy,
   Plus,
-  Filter
+  Filter,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 // Types
 interface FeatureFlag {
@@ -112,7 +118,7 @@ function useFeatureFlag(flagName: string): boolean {
   return isEnabled;
 }
 
-// A/B Test Hook (example implementation)  
+// A/B Test Hook (example implementation)
 function useABTest(experimentId: string): string {
   const [variant, setVariant] = useState('control');
 
@@ -120,10 +126,10 @@ function useABTest(experimentId: string): string {
     // In a real app, this would be determined by your A/B testing service
     const userId = localStorage.getItem('user-id') || 'anonymous';
     const hash = userId.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
+      a = (a << 5) - a + b.charCodeAt(0);
       return a & a;
     }, 0);
-    
+
     // Simple hash-based variant assignment
     const variantIndex = Math.abs(hash) % 100;
     setVariant(variantIndex < 50 ? 'control' : 'variant-a');
@@ -144,10 +150,10 @@ export default function ABTestingFramework() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      
+
       // Simulate API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Mock feature flags
       setFeatureFlags([
         {
@@ -159,7 +165,7 @@ export default function ABTestingFramework() {
           targetAudience: ['beta_users', 'internal_staff'],
           environment: 'production',
           createdAt: new Date('2024-01-10'),
-          updatedAt: new Date('2024-01-15')
+          updatedAt: new Date('2024-01-15'),
         },
         {
           id: '2',
@@ -169,7 +175,7 @@ export default function ABTestingFramework() {
           rolloutPercentage: 0,
           environment: 'staging',
           createdAt: new Date('2024-01-12'),
-          updatedAt: new Date('2024-01-12')
+          updatedAt: new Date('2024-01-12'),
         },
         {
           id: '3',
@@ -179,8 +185,8 @@ export default function ABTestingFramework() {
           rolloutPercentage: 100,
           environment: 'production',
           createdAt: new Date('2024-01-05'),
-          updatedAt: new Date('2024-01-14')
-        }
+          updatedAt: new Date('2024-01-14'),
+        },
       ]);
 
       // Mock experiments
@@ -203,8 +209,8 @@ export default function ABTestingFramework() {
                 conversionRate: 27.4,
                 averageValue: 145.3,
                 bounceRate: 23.1,
-                sessionDuration: 8.2
-              }
+                sessionDuration: 8.2,
+              },
             },
             {
               id: 'variant-a',
@@ -218,9 +224,9 @@ export default function ABTestingFramework() {
                 conversionRate: 31.6,
                 averageValue: 152.7,
                 bounceRate: 21.3,
-                sessionDuration: 9.1
-              }
-            }
+                sessionDuration: 9.1,
+              },
+            },
           ],
           targetMetric: 'conversion_rate',
           trafficAllocation: 50,
@@ -232,8 +238,8 @@ export default function ABTestingFramework() {
             significance: 95,
             confidenceInterval: [2.1, 6.3],
             pValue: 0.023,
-            improvement: 15.3
-          }
+            improvement: 15.3,
+          },
         },
         {
           id: '2',
@@ -253,8 +259,8 @@ export default function ABTestingFramework() {
                 conversionRate: 26.2,
                 averageValue: 89.4,
                 bounceRate: 34.7,
-                sessionDuration: 5.3
-              }
+                sessionDuration: 5.3,
+              },
             },
             {
               id: 'variant-a',
@@ -268,8 +274,8 @@ export default function ABTestingFramework() {
                 conversionRate: 21.8,
                 averageValue: 76.2,
                 bounceRate: 41.2,
-                sessionDuration: 4.1
-              }
+                sessionDuration: 4.1,
+              },
             },
             {
               id: 'variant-b',
@@ -283,9 +289,9 @@ export default function ABTestingFramework() {
                 conversionRate: 33.8,
                 averageValue: 112.6,
                 bounceRate: 28.3,
-                sessionDuration: 7.2
-              }
-            }
+                sessionDuration: 7.2,
+              },
+            },
           ],
           targetMetric: 'search_success_rate',
           trafficAllocation: 25,
@@ -298,9 +304,9 @@ export default function ABTestingFramework() {
             significance: 99,
             confidenceInterval: [4.2, 11.8],
             pValue: 0.001,
-            improvement: 29.0
-          }
-        }
+            improvement: 29.0,
+          },
+        },
       ]);
 
       // Mock conversion funnels
@@ -313,8 +319,8 @@ export default function ABTestingFramework() {
             { name: 'Landing Page Visit', users: 5847, conversionRate: 100, dropOffRate: 0 },
             { name: 'Started Form', users: 4234, conversionRate: 72.4, dropOffRate: 27.6 },
             { name: 'Filled Details', users: 2891, conversionRate: 68.3, dropOffRate: 31.7 },
-            { name: 'Submitted Ticket', users: 1369, conversionRate: 47.3, dropOffRate: 52.7 }
-          ]
+            { name: 'Submitted Ticket', users: 1369, conversionRate: 47.3, dropOffRate: 52.7 },
+          ],
         },
         {
           name: 'Knowledge Base Search Funnel',
@@ -324,9 +330,9 @@ export default function ABTestingFramework() {
             { name: 'Search Page Visit', users: 3421, conversionRate: 100, dropOffRate: 0 },
             { name: 'Performed Search', users: 2734, conversionRate: 79.9, dropOffRate: 20.1 },
             { name: 'Clicked Result', users: 2156, conversionRate: 78.9, dropOffRate: 21.1 },
-            { name: 'Found Solution', users: 1564, conversionRate: 72.5, dropOffRate: 27.5 }
-          ]
-        }
+            { name: 'Found Solution', users: 1564, conversionRate: 72.5, dropOffRate: 27.5 },
+          ],
+        },
       ]);
 
       // Mock performance impacts
@@ -336,29 +342,29 @@ export default function ABTestingFramework() {
           baseline: 2.3,
           variant: 1.9,
           impact: -17.4,
-          significance: 'high'
+          significance: 'high',
         },
         {
           metric: 'Time to Interactive',
           baseline: 3.7,
           variant: 3.2,
           impact: -13.5,
-          significance: 'medium'
+          significance: 'medium',
         },
         {
           metric: 'Bundle Size',
           baseline: 245.6,
           variant: 231.2,
           impact: -5.9,
-          significance: 'low'
+          significance: 'low',
         },
         {
           metric: 'Memory Usage',
           baseline: 42.3,
           variant: 38.9,
           impact: -8.0,
-          significance: 'medium'
-        }
+          significance: 'medium',
+        },
       ]);
 
       setLoading(false);
@@ -368,19 +374,23 @@ export default function ABTestingFramework() {
   }, []);
 
   const toggleFeatureFlag = useCallback((flagId: string) => {
-    setFeatureFlags(prev => prev.map(flag => 
-      flag.id === flagId 
-        ? { ...flag, enabled: !flag.enabled, updatedAt: new Date() }
-        : flag
-    ));
+    setFeatureFlags((prev) =>
+      prev.map((flag) =>
+        flag.id === flagId ? { ...flag, enabled: !flag.enabled, updatedAt: new Date() } : flag,
+      ),
+    );
   }, []);
 
   const getExperimentStatusColor = (status: string) => {
     switch (status) {
-      case 'running': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      case 'paused': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'running':
+        return 'bg-green-100 text-green-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
+      case 'paused':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -398,9 +408,9 @@ export default function ABTestingFramework() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <FlaskConical className="w-8 h-8 animate-pulse mx-auto mb-4 text-purple-600" />
+          <FlaskConical className="mx-auto mb-4 h-8 w-8 animate-pulse text-purple-600" />
           <p className="text-muted-foreground">Loading A/B testing framework...</p>
         </div>
       </div>
@@ -408,34 +418,35 @@ export default function ABTestingFramework() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg text-white">
-                <FlaskConical className="w-6 h-6" />
+              <div className="rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 p-2 text-white">
+                <FlaskConical className="h-6 w-6" />
               </div>
               <div>
                 <CardTitle className="flex items-center gap-2">
                   A/B Testing Framework
-                  <Badge variant="outline" className="text-purple-600 border-purple-600">
+                  <Badge variant="outline" className="border-purple-600 text-purple-600">
                     Experimentation Platform
                   </Badge>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Feature flags, user experience experiments, conversion funnel analysis, and performance impact measurement
+                <p className="text-muted-foreground text-sm">
+                  Feature flags, user experience experiments, conversion funnel analysis, and
+                  performance impact measurement
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4 mr-2" />
+                <Settings className="mr-2 h-4 w-4" />
                 Settings
               </Button>
               <Button size="sm">
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 New Experiment
               </Button>
             </div>
@@ -468,7 +479,7 @@ export default function ABTestingFramework() {
                 </SelectContent>
               </Select>
               <Button variant="outline" size="sm">
-                <Filter className="w-4 h-4" />
+                <Filter className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -481,64 +492,88 @@ export default function ABTestingFramework() {
                     {/* Experiment Header */}
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="mb-2 flex items-center gap-3">
                           <h4 className="font-semibold">{experiment.name}</h4>
                           <Badge className={getExperimentStatusColor(experiment.status)}>
                             {experiment.status}
                           </Badge>
                           {experiment.results?.winner && (
-                            <Badge variant="outline" className="text-green-600 border-green-600">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Winner: {experiment.variants.find(v => v.id === experiment.results!.winner)?.name}
+                            <Badge variant="outline" className="border-green-600 text-green-600">
+                              <CheckCircle className="mr-1 h-3 w-3" />
+                              Winner:{' '}
+                              {
+                                experiment.variants.find((v) => v.id === experiment.results!.winner)
+                                  ?.name
+                              }
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">{experiment.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <p className="text-muted-foreground mb-2 text-sm">
+                          {experiment.description}
+                        </p>
+                        <div className="text-muted-foreground flex items-center gap-4 text-xs">
                           <span>Target: {experiment.targetMetric.replace('_', ' ')}</span>
                           <span>Traffic: {experiment.trafficAllocation}%</span>
-                          <span>Confidence: <span className={getSignificanceColor(experiment.confidence)}>{experiment.confidence}%</span></span>
+                          <span>
+                            Confidence:{' '}
+                            <span className={getSignificanceColor(experiment.confidence)}>
+                              {experiment.confidence}%
+                            </span>
+                          </span>
                           {experiment.results && (
-                            <span>Improvement: <span className={getImpactColor(experiment.results.improvement)}>+{experiment.results.improvement}%</span></span>
+                            <span>
+                              Improvement:{' '}
+                              <span className={getImpactColor(experiment.results.improvement)}>
+                                +{experiment.results.improvement}%
+                              </span>
+                            </span>
                           )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         {experiment.status === 'running' ? (
                           <Button variant="outline" size="sm">
-                            <Pause className="w-4 h-4" />
+                            <Pause className="h-4 w-4" />
                           </Button>
                         ) : (
                           <Button variant="outline" size="sm">
-                            <Play className="w-4 h-4" />
+                            <Play className="h-4 w-4" />
                           </Button>
                         )}
                         <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4" />
+                          <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="outline" size="sm">
-                          <Copy className="w-4 h-4" />
+                          <Copy className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
 
                     {/* Variants Comparison */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                       {experiment.variants.map((variant) => (
-                        <div key={variant.id} className={`p-4 rounded-lg border ${variant.isControl ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}`}>
-                          <div className="flex items-center justify-between mb-3">
-                            <h5 className="font-medium text-sm">{variant.name}</h5>
+                        <div
+                          key={variant.id}
+                          className={`rounded-lg border p-4 ${variant.isControl ? 'border-blue-200 bg-blue-50' : 'bg-gray-50'}`}
+                        >
+                          <div className="mb-3 flex items-center justify-between">
+                            <h5 className="text-sm font-medium">{variant.name}</h5>
                             {variant.isControl && (
-                              <Badge variant="outline" className="text-blue-600 border-blue-600 text-xs">
+                              <Badge
+                                variant="outline"
+                                className="border-blue-600 text-xs text-blue-600"
+                              >
                                 Control
                               </Badge>
                             )}
                           </div>
-                          
+
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Participants:</span>
-                              <span className="font-medium">{variant.metrics.participants.toLocaleString()}</span>
+                              <span className="font-medium">
+                                {variant.metrics.participants.toLocaleString()}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Conversions:</span>
@@ -546,7 +581,9 @@ export default function ABTestingFramework() {
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Rate:</span>
-                              <span className="font-medium text-green-600">{variant.metrics.conversionRate}%</span>
+                              <span className="font-medium text-green-600">
+                                {variant.metrics.conversionRate}%
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Avg Value:</span>
@@ -559,12 +596,12 @@ export default function ABTestingFramework() {
 
                     {/* Results Summary */}
                     {experiment.results && (
-                      <div className="p-4 bg-green-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
+                      <div className="rounded-lg bg-green-50 p-4">
+                        <div className="mb-2 flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
                           <span className="font-medium text-green-800">Experiment Results</span>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                           <div>
                             <span className="text-muted-foreground">Statistical Significance:</span>
                             <div className="font-medium">{experiment.results.significance}%</div>
@@ -575,11 +612,16 @@ export default function ABTestingFramework() {
                           </div>
                           <div>
                             <span className="text-muted-foreground">Improvement:</span>
-                            <div className="font-medium text-green-600">+{experiment.results.improvement}%</div>
+                            <div className="font-medium text-green-600">
+                              +{experiment.results.improvement}%
+                            </div>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Confidence Interval:</span>
-                            <div className="font-medium">[{experiment.results.confidenceInterval[0]}%, {experiment.results.confidenceInterval[1]}%]</div>
+                            <div className="font-medium">
+                              [{experiment.results.confidenceInterval[0]}%,{' '}
+                              {experiment.results.confidenceInterval[1]}%]
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -595,7 +637,7 @@ export default function ABTestingFramework() {
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Feature Flags</h3>
             <Button>
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               New Flag
             </Button>
           </div>
@@ -606,22 +648,22 @@ export default function ABTestingFramework() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="mb-2 flex items-center gap-3">
                         <h4 className="font-medium">{flag.name}</h4>
                         <Badge variant={flag.enabled ? 'default' : 'secondary'}>
                           {flag.enabled ? 'Enabled' : 'Disabled'}
                         </Badge>
                         <Badge variant="outline">{flag.environment}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">{flag.description}</p>
-                      
+                      <p className="text-muted-foreground mb-3 text-sm">{flag.description}</p>
+
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span>Rollout Percentage:</span>
                           <span className="font-medium">{flag.rolloutPercentage}%</span>
                         </div>
                         <Progress value={flag.rolloutPercentage} className="h-2" />
-                        
+
                         {flag.targetAudience && flag.targetAudience.length > 0 && (
                           <div className="flex items-center gap-2 text-sm">
                             <span className="text-muted-foreground">Targets:</span>
@@ -637,7 +679,7 @@ export default function ABTestingFramework() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-2 ml-4">
+                    <div className="ml-4 flex flex-col gap-2">
                       <Button
                         variant={flag.enabled ? 'destructive' : 'default'}
                         size="sm"
@@ -646,7 +688,7 @@ export default function ABTestingFramework() {
                         {flag.enabled ? 'Disable' : 'Enable'}
                       </Button>
                       <Button variant="outline" size="sm">
-                        <Settings className="w-4 h-4" />
+                        <Settings className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -658,13 +700,13 @@ export default function ABTestingFramework() {
 
         <TabsContent value="funnels" className="space-y-4">
           <h3 className="text-lg font-semibold">Conversion Funnels</h3>
-          
+
           <div className="space-y-6">
             {funnels.map((funnel, index) => (
               <Card key={index}>
                 <CardHeader>
                   <CardTitle className="text-base">{funnel.name}</CardTitle>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex items-center gap-4 text-sm">
                     <span>Total Users: {funnel.totalUsers.toLocaleString()}</span>
                     <span>Overall Conversion: {funnel.conversionRate}%</span>
                   </div>
@@ -673,18 +715,18 @@ export default function ABTestingFramework() {
                   <div className="space-y-4">
                     {funnel.steps.map((step, stepIndex) => (
                       <div key={stepIndex} className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-medium">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-medium text-white">
                           {stepIndex + 1}
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
+                          <div className="mb-1 flex items-center justify-between">
                             <span className="font-medium">{step.name}</span>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-muted-foreground text-sm">
                               {step.users.toLocaleString()} users ({step.conversionRate}%)
                             </span>
                           </div>
                           <div className="flex items-center gap-4">
-                            <Progress value={step.conversionRate} className="flex-1 h-2" />
+                            <Progress value={step.conversionRate} className="h-2 flex-1" />
                             {stepIndex > 0 && (
                               <span className="text-xs text-red-600">
                                 -{step.dropOffRate}% drop-off
@@ -703,34 +745,59 @@ export default function ABTestingFramework() {
 
         <TabsContent value="performance" className="space-y-4">
           <h3 className="text-lg font-semibold">Performance Impact Analysis</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {performanceImpacts.map((impact, index) => (
               <Card key={index}>
                 <CardContent className="p-4">
-                  <h4 className="font-medium mb-3">{impact.metric}</h4>
-                  
+                  <h4 className="mb-3 font-medium">{impact.metric}</h4>
+
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Baseline:</span>
-                      <span className="font-medium">{impact.baseline}{impact.metric.includes('Time') ? 's' : impact.metric.includes('Size') ? 'KB' : 'MB'}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Variant:</span>
-                      <span className="font-medium">{impact.variant}{impact.metric.includes('Time') ? 's' : impact.metric.includes('Size') ? 'KB' : 'MB'}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Impact:</span>
-                      <span className={`font-medium ${impact.impact < 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {impact.impact > 0 ? '+' : ''}{impact.impact}%
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground text-sm">Baseline:</span>
+                      <span className="font-medium">
+                        {impact.baseline}
+                        {impact.metric.includes('Time')
+                          ? 's'
+                          : impact.metric.includes('Size')
+                            ? 'KB'
+                            : 'MB'}
                       </span>
                     </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Significance:</span>
-                      <Badge variant={impact.significance === 'high' ? 'default' : impact.significance === 'medium' ? 'secondary' : 'outline'}>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground text-sm">Variant:</span>
+                      <span className="font-medium">
+                        {impact.variant}
+                        {impact.metric.includes('Time')
+                          ? 's'
+                          : impact.metric.includes('Size')
+                            ? 'KB'
+                            : 'MB'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground text-sm">Impact:</span>
+                      <span
+                        className={`font-medium ${impact.impact < 0 ? 'text-green-600' : 'text-red-600'}`}
+                      >
+                        {impact.impact > 0 ? '+' : ''}
+                        {impact.impact}%
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground text-sm">Significance:</span>
+                      <Badge
+                        variant={
+                          impact.significance === 'high'
+                            ? 'default'
+                            : impact.significance === 'medium'
+                              ? 'secondary'
+                              : 'outline'
+                        }
+                      >
                         {impact.significance}
                       </Badge>
                     </div>

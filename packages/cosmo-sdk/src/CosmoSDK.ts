@@ -1,13 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  CosmoConfig, 
-  CosmoContext, 
-  CosmoMessage, 
-  CosmoConversation, 
+import {
+  CosmoConfig,
+  CosmoContext,
+  CosmoMessage,
+  CosmoConversation,
   CosmoResponse,
   CosmoEvent,
   CosmoEventHandler,
-  CosmoEventType
+  CosmoEventType,
 } from './types';
 
 export class CosmoSDK {
@@ -28,7 +28,7 @@ export class CosmoSDK {
       sessionTimeout: 3600000,
       retryAttempts: 3,
       retryDelay: 1000,
-      ...config
+      ...config,
     };
   }
 
@@ -37,14 +37,14 @@ export class CosmoSDK {
    */
   async initialize(context: CosmoContext): Promise<void> {
     this.context = context;
-    
+
     if (this.config.enableWebSocket && this.config.websocketUrl) {
       await this.connectWebSocket();
     }
 
-    this.emit('connection_status', { 
-      connected: true, 
-      context: this.context 
+    this.emit('connection_status', {
+      connected: true,
+      context: this.context,
     });
   }
 
@@ -66,12 +66,12 @@ export class CosmoSDK {
         module: this.context.module,
         ticketId: this.context.activeTicket?.id,
         userRole: this.context.session.userInfo.role,
-        capabilities: this.context.session.permissions
+        capabilities: this.context.session.permissions,
       },
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
-      lastActivity: new Date()
+      lastActivity: new Date(),
     };
 
     this.activeConversation = conversation;
@@ -82,13 +82,13 @@ export class CosmoSDK {
         body: JSON.stringify({
           conversationId,
           context: conversation.context,
-          initialMessage
-        })
+          initialMessage,
+        }),
       });
 
       if (response.success) {
         this.activeConversation = response.conversation || conversation;
-        
+
         if (initialMessage) {
           await this.sendMessage(initialMessage);
         }
@@ -99,9 +99,9 @@ export class CosmoSDK {
         throw new Error(response.error?.message || 'Failed to start conversation');
       }
     } catch (error) {
-      this.emit('error', { 
-        error: error instanceof Error ? error.message : 'Unknown error', 
-        action: 'start_conversation' 
+      this.emit('error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        action: 'start_conversation',
       });
       throw error;
     }
@@ -120,7 +120,7 @@ export class CosmoSDK {
       conversationId: this.activeConversation.id,
       from: 'user',
       text,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     // Add user message to conversation
@@ -130,16 +130,19 @@ export class CosmoSDK {
     this.emit('message', { message: userMessage });
 
     try {
-      const response = await this.apiCall(`/v2/synth/conversation/${this.activeConversation.id}/send`, {
-        method: 'POST',
-        body: JSON.stringify({
-          message: text,
-          context: {
-            ...this.context,
-            conversationHistory: this.getRecentMessages(10)
-          }
-        })
-      });
+      const response = await this.apiCall(
+        `/v2/synth/conversation/${this.activeConversation.id}/send`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            message: text,
+            context: {
+              ...this.context,
+              conversationHistory: this.getRecentMessages(10),
+            },
+          }),
+        },
+      );
 
       if (response.success && response.message) {
         const cosmoMessage: CosmoMessage = {
@@ -148,7 +151,7 @@ export class CosmoSDK {
           from: 'cosmo',
           text: response.message,
           timestamp: new Date(),
-          metadata: response.metadata
+          metadata: response.metadata,
         };
 
         this.activeConversation.messages.push(cosmoMessage);
@@ -172,14 +175,14 @@ export class CosmoSDK {
         from: 'cosmo',
         text: 'Sorry, I encountered an error processing your request. Please try again.',
         timestamp: new Date(),
-        metadata: { error: true }
+        metadata: { error: true },
       };
 
       this.activeConversation.messages.push(errorMessage);
       this.emit('message', { message: errorMessage });
-      this.emit('error', { 
-        error: error instanceof Error ? error.message : 'Unknown error', 
-        action: 'send_message' 
+      this.emit('error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        action: 'send_message',
       });
 
       return errorMessage;
@@ -196,7 +199,7 @@ export class CosmoSDK {
 
     try {
       await this.apiCall(`/v2/synth/conversation/${this.activeConversation.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
       const conversation = this.activeConversation;
@@ -205,9 +208,9 @@ export class CosmoSDK {
 
       this.emit('conversation_ended', { conversation });
     } catch (error) {
-      this.emit('error', { 
-        error: error instanceof Error ? error.message : 'Unknown error', 
-        action: 'end_conversation' 
+      this.emit('error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        action: 'end_conversation',
       });
     }
   }
@@ -215,7 +218,10 @@ export class CosmoSDK {
   /**
    * Trigger an escalation
    */
-  async triggerEscalation(reason: string, level: 'low' | 'medium' | 'high' | 'critical' = 'medium'): Promise<void> {
+  async triggerEscalation(
+    reason: string,
+    level: 'low' | 'medium' | 'high' | 'critical' = 'medium',
+  ): Promise<void> {
     if (!this.activeConversation || !this.context) {
       throw new Error('No active conversation or context');
     }
@@ -229,25 +235,27 @@ export class CosmoSDK {
           level,
           reason,
           context: {
-            userInput: this.getRecentUserMessages(3).map(m => m.text).join(' '),
-            conversationHistory: this.getRecentMessages(5)
-          }
-        })
+            userInput: this.getRecentUserMessages(3)
+              .map((m) => m.text)
+              .join(' '),
+            conversationHistory: this.getRecentMessages(5),
+          },
+        }),
       });
 
       if (response.success) {
         this.activeConversation.status = 'escalated';
-        this.emit('escalation_created', { 
+        this.emit('escalation_created', {
           escalation: response.escalation,
-          conversation: this.activeConversation
+          conversation: this.activeConversation,
         });
       } else {
         throw new Error(response.error?.message || 'Failed to create escalation');
       }
     } catch (error) {
-      this.emit('error', { 
-        error: error instanceof Error ? error.message : 'Unknown error', 
-        action: 'trigger_escalation' 
+      this.emit('error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        action: 'trigger_escalation',
       });
       throw error;
     }
@@ -273,7 +281,7 @@ export class CosmoSDK {
    */
   getRecentUserMessages(count: number = 5): CosmoMessage[] {
     const messages = this.getConversationHistory();
-    return messages.filter(m => m.from === 'user').slice(-count);
+    return messages.filter((m) => m.from === 'user').slice(-count);
   }
 
   /**
@@ -307,10 +315,10 @@ export class CosmoSDK {
     const event: CosmoEvent = {
       type: eventType,
       data,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    handlers.forEach(handler => {
+    handlers.forEach((handler) => {
       try {
         handler(event);
       } catch (error) {
@@ -374,23 +382,23 @@ export class CosmoSDK {
             from: 'cosmo',
             text: data.text,
             timestamp: new Date(data.timestamp),
-            metadata: data.metadata
+            metadata: data.metadata,
           };
-          
+
           this.activeConversation.messages.push(message);
           this.activeConversation.lastActivity = new Date();
           this.emit('message', { message });
         }
         break;
-        
+
       case 'escalation_update':
         this.emit('escalation_resolved', data);
         break;
-        
+
       case 'xp_awarded':
         this.emit('xp_awarded', data);
         break;
-        
+
       default:
         console.log('Unknown WebSocket message type:', data.type);
     }
@@ -410,7 +418,9 @@ export class CosmoSDK {
 
     setTimeout(() => {
       if (!this.isConnected) {
-        console.log(`Attempting WebSocket reconnection (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        console.log(
+          `Attempting WebSocket reconnection (${this.reconnectAttempts}/${this.maxReconnectAttempts})`,
+        );
         this.connectWebSocket();
       }
     }, delay);
@@ -426,16 +436,16 @@ export class CosmoSDK {
           case 'award_xp':
             this.emit('xp_awarded', action.payload);
             break;
-            
+
           case 'escalate':
             await this.triggerEscalation(action.payload.reason, action.payload.level);
             break;
-            
+
           case 'create_ticket':
             // Handle ticket creation
             console.log('Cosmo suggested ticket creation:', action.payload);
             break;
-            
+
           default:
             console.log('Unknown Cosmo action:', action.type);
         }
@@ -456,8 +466,8 @@ export class CosmoSDK {
     const url = `${this.config.apiUrl}${endpoint}`;
     const headers = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.context.session.token}`,
-      ...options.headers
+      Authorization: `Bearer ${this.context.session.token}`,
+      ...options.headers,
     };
 
     let attempts = 0;
@@ -468,18 +478,20 @@ export class CosmoSDK {
         const response = await fetch(url, {
           ...options,
           headers,
-          credentials: 'include'
+          credentials: 'include',
         });
 
         if (!response.ok) {
           if (response.status >= 500 && attempts < maxAttempts - 1) {
             attempts++;
-            await new Promise(resolve => setTimeout(resolve, this.config.retryDelay || 1000));
+            await new Promise((resolve) => setTimeout(resolve, this.config.retryDelay || 1000));
             continue;
           }
-          
+
           const errorText = await response.text();
-          throw new Error(`API call failed: ${response.status} ${response.statusText} - ${errorText}`);
+          throw new Error(
+            `API call failed: ${response.status} ${response.statusText} - ${errorText}`,
+          );
         }
 
         return await response.json();
@@ -488,7 +500,7 @@ export class CosmoSDK {
           throw error;
         }
         attempts++;
-        await new Promise(resolve => setTimeout(resolve, this.config.retryDelay || 1000));
+        await new Promise((resolve) => setTimeout(resolve, this.config.retryDelay || 1000));
       }
     }
 
@@ -503,7 +515,7 @@ export class CosmoSDK {
       this.websocket.close();
       this.websocket = null;
     }
-    
+
     this.activeConversation = null;
     this.context = null;
     this.eventHandlers.clear();

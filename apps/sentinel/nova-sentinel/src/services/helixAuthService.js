@@ -7,7 +7,7 @@ import winston from 'winston';
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.simple(),
-  transports: [new winston.transports.Console()]
+  transports: [new winston.transports.Console()],
 });
 
 export class HelixAuthService {
@@ -24,7 +24,7 @@ export class HelixAuthService {
       if (!health) {
         throw new Error('Unable to connect to Nova Helix');
       }
-      
+
       logger.info('Helix authentication service initialized');
     } catch (error) {
       logger.error('Failed to initialize Helix auth service:', error);
@@ -42,10 +42,10 @@ export class HelixAuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({ token }),
-        timeout: 5000
+        timeout: 5000,
       });
 
       if (!response.ok) {
@@ -54,7 +54,7 @@ export class HelixAuthService {
       }
 
       const data = await response.json();
-      
+
       if (data.success && data.user) {
         return {
           id: data.user.id,
@@ -62,7 +62,7 @@ export class HelixAuthService {
           email: data.user.email,
           tenantId: data.user.tenant_id || data.user.tenantId,
           roles: data.user.roles || [],
-          permissions: data.user.permissions || []
+          permissions: data.user.permissions || [],
         };
       }
 
@@ -77,9 +77,9 @@ export class HelixAuthService {
     try {
       const response = await fetch(`${this.baseUrl}/users/${userId}`, {
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
-        timeout: 5000
+        timeout: 5000,
       });
 
       if (!response.ok) {
@@ -102,9 +102,9 @@ export class HelixAuthService {
     try {
       const response = await fetch(`${this.baseUrl}/users/${userId}/preferences`, {
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
-        timeout: 5000
+        timeout: 5000,
       });
 
       if (!response.ok) {
@@ -113,7 +113,7 @@ export class HelixAuthService {
 
       const data = await response.json();
       const preferences = data.preferences || {};
-      
+
       return preferences[key] !== undefined ? preferences[key] : defaultValue;
     } catch (error) {
       logger.debug('Get user preference error:', error);
@@ -127,12 +127,12 @@ export class HelixAuthService {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          [key]: value
+          [key]: value,
         }),
-        timeout: 5000
+        timeout: 5000,
       });
 
       if (!response.ok) {
@@ -152,9 +152,9 @@ export class HelixAuthService {
       const response = await fetch(`${this.baseUrl}/users/${userId}/preferences/${key}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
-        timeout: 5000
+        timeout: 5000,
       });
 
       return response.ok;
@@ -168,9 +168,9 @@ export class HelixAuthService {
     try {
       const response = await fetch(`${this.baseUrl}/users/${userId}/preferences`, {
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
-        timeout: 5000
+        timeout: 5000,
       });
 
       if (!response.ok) {
@@ -198,8 +198,8 @@ export class HelixAuthService {
       alertPreferences: {
         email: true,
         push: true,
-        sms: false
-      }
+        sms: false,
+      },
     });
   }
 
@@ -207,7 +207,7 @@ export class HelixAuthService {
     const key = `sentinel.monitor.${monitorId}`;
     const existing = await this.getMonitorPreferences(userId, monitorId);
     const merged = { ...existing, ...preferences, updatedAt: new Date().toISOString() };
-    
+
     return await this.setUserPreference(userId, key, merged);
   }
 
@@ -217,7 +217,7 @@ export class HelixAuthService {
       favorite: false,
       lastViewed: null,
       subscribed: false,
-      notificationTypes: ['incidents', 'maintenance']
+      notificationTypes: ['incidents', 'maintenance'],
     });
   }
 
@@ -225,7 +225,7 @@ export class HelixAuthService {
     const key = `sentinel.status-page.${statusPageId}`;
     const existing = await this.getStatusPagePreferences(userId, statusPageId);
     const merged = { ...existing, ...preferences, updatedAt: new Date().toISOString() };
-    
+
     return await this.setUserPreference(userId, key, merged);
   }
 
@@ -244,8 +244,8 @@ export class HelixAuthService {
       filters: {
         status: 'all',
         type: 'all',
-        tags: []
-      }
+        tags: [],
+      },
     });
   }
 
@@ -253,7 +253,7 @@ export class HelixAuthService {
     const key = 'sentinel.dashboard';
     const existing = await this.getDashboardPreferences(userId);
     const merged = { ...existing, ...preferences, updatedAt: new Date().toISOString() };
-    
+
     return await this.setUserPreference(userId, key, merged);
   }
 
@@ -266,7 +266,7 @@ export class HelixAuthService {
         maintenance: true,
         monitorDown: true,
         monitorUp: false,
-        sslExpiry: true
+        sslExpiry: true,
       },
       push: {
         enabled: true,
@@ -274,7 +274,7 @@ export class HelixAuthService {
         maintenance: false,
         monitorDown: true,
         monitorUp: false,
-        sslExpiry: true
+        sslExpiry: true,
       },
       sms: {
         enabled: false,
@@ -282,14 +282,14 @@ export class HelixAuthService {
         maintenance: false,
         monitorDown: false,
         monitorUp: false,
-        sslExpiry: false
+        sslExpiry: false,
       },
       quietHours: {
         enabled: false,
         start: '22:00',
         end: '08:00',
-        timezone: 'UTC'
-      }
+        timezone: 'UTC',
+      },
     });
   }
 
@@ -297,7 +297,7 @@ export class HelixAuthService {
     const key = 'sentinel.notifications';
     const existing = await this.getNotificationPreferences(userId);
     const merged = { ...existing, ...preferences, updatedAt: new Date().toISOString() };
-    
+
     return await this.setUserPreference(userId, key, merged);
   }
 
@@ -318,13 +318,13 @@ export class HelixAuthService {
 
       // Check role-based permissions
       const rolePermissions = {
-        'admin': ['*'],
+        admin: ['*'],
         'sentinel:admin': [
           'sentinel:*',
           'sentinel:monitors:*',
           'sentinel:status-pages:*',
           'sentinel:notifications:*',
-          'sentinel:maintenance:*'
+          'sentinel:maintenance:*',
         ],
         'sentinel:manager': [
           'sentinel:monitors:read',
@@ -332,28 +332,25 @@ export class HelixAuthService {
           'sentinel:monitors:update',
           'sentinel:status-pages:read',
           'sentinel:status-pages:create',
-          'sentinel:notifications:read'
+          'sentinel:notifications:read',
         ],
         'sentinel:operator': [
           'sentinel:monitors:read',
           'sentinel:status-pages:read',
-          'sentinel:maintenance:read'
+          'sentinel:maintenance:read',
         ],
-        'sentinel:viewer': [
-          'sentinel:monitors:read',
-          'sentinel:status-pages:read'
-        ]
+        'sentinel:viewer': ['sentinel:monitors:read', 'sentinel:status-pages:read'],
       };
 
       for (const role of roles) {
         const rolePerms = rolePermissions[role] || [];
-        
+
         // Wildcard permission
         if (rolePerms.includes('*')) return true;
-        
+
         // Direct permission match
         if (rolePerms.includes(permission)) return true;
-        
+
         // Wildcard pattern match
         for (const perm of rolePerms) {
           if (perm.endsWith('*')) {
@@ -374,9 +371,9 @@ export class HelixAuthService {
     try {
       const response = await fetch(`${this.baseUrl}/tenants/${tenantId}/users`, {
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
-        timeout: 5000
+        timeout: 5000,
       });
 
       if (!response.ok) {
@@ -401,7 +398,7 @@ export class HelixAuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
           userId,
@@ -409,9 +406,9 @@ export class HelixAuthService {
           resource,
           service: 'nova-sentinel',
           metadata,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         }),
-        timeout: 5000
+        timeout: 5000,
       });
     } catch (error) {
       logger.error('Audit log error:', error);
@@ -426,9 +423,9 @@ export class HelixAuthService {
   async healthCheck() {
     try {
       const response = await fetch(`${this.baseUrl}/health`, {
-        timeout: 3000
+        timeout: 3000,
       });
-      
+
       return response.ok;
     } catch (error) {
       logger.debug('Helix health check failed:', error.message);
@@ -440,9 +437,9 @@ export class HelixAuthService {
     try {
       const response = await fetch(`${this.baseUrl}/system/info`, {
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
-        timeout: 5000
+        timeout: 5000,
       });
 
       if (!response.ok) {

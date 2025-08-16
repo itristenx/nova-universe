@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Card,
   CardHeader,
@@ -11,8 +11,8 @@ import {
   Badge,
   Tabs,
   Tab,
-  Avatar
-} from '@heroui/react'
+  Avatar,
+} from '@heroui/react';
 import {
   ChartBarIcon,
   TrophyIcon,
@@ -20,70 +20,70 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   SparklesIcon,
-  CalendarIcon
-} from '@heroicons/react/24/outline'
+  CalendarIcon,
+} from '@heroicons/react/24/outline';
 
 interface PerformanceMetric {
-  id: string
-  name: string
-  value: number
-  target?: number
-  unit: string
-  trend: 'up' | 'down' | 'stable'
-  trendPercentage: number
-  period: 'daily' | 'weekly' | 'monthly'
+  id: string;
+  name: string;
+  value: number;
+  target?: number;
+  unit: string;
+  trend: 'up' | 'down' | 'stable';
+  trendPercentage: number;
+  period: 'daily' | 'weekly' | 'monthly';
 }
 
 interface TeamMember {
-  id: string
-  name: string
-  avatar?: string
-  role: string
+  id: string;
+  name: string;
+  avatar?: string;
+  role: string;
   metrics: {
-    ticketsResolved: number
-    avgResolutionTime: number // in minutes
-    customerSatisfaction: number
-    escalationRate: number
-  }
-  rank: number
-  achievements: Achievement[]
+    ticketsResolved: number;
+    avgResolutionTime: number; // in minutes
+    customerSatisfaction: number;
+    escalationRate: number;
+  };
+  rank: number;
+  achievements: Achievement[];
 }
 
 interface Achievement {
-  id: string
-  name: string
-  description: string
-  icon: string
-  rarity: 'common' | 'rare' | 'epic' | 'legendary'
-  unlockedAt: Date
-  category: 'productivity' | 'quality' | 'teamwork' | 'innovation'
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  unlockedAt: Date;
+  category: 'productivity' | 'quality' | 'teamwork' | 'innovation';
 }
 
 interface Goal {
-  id: string
-  title: string
-  description: string
-  target: number
-  current: number
-  unit: string
-  deadline: Date
-  category: 'individual' | 'team'
-  priority: 'low' | 'medium' | 'high'
-  progress: number // 0-100
+  id: string;
+  title: string;
+  description: string;
+  target: number;
+  current: number;
+  unit: string;
+  deadline: Date;
+  category: 'individual' | 'team';
+  priority: 'low' | 'medium' | 'high';
+  progress: number; // 0-100
 }
 
 interface Props {
-  userId?: string
-  timeRange?: 'week' | 'month' | 'quarter' | 'year'
+  userId?: string;
+  timeRange?: 'week' | 'month' | 'quarter' | 'year';
 }
 
 export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
   userId = 'current-user',
-  timeRange: initialTimeRange = 'month'
+  timeRange: initialTimeRange = 'month',
 }) => {
-  const [selectedTab, setSelectedTab] = useState('overview')
-  const [timeRange, setTimeRange] = useState(initialTimeRange)
-  const [comparisonMode, setComparisonMode] = useState<'team' | 'department' | 'company'>('team')
+  const [selectedTab, setSelectedTab] = useState('overview');
+  const [timeRange, setTimeRange] = useState(initialTimeRange);
+  const [comparisonMode, setComparisonMode] = useState<'team' | 'department' | 'company'>('team');
 
   // Individual performance metrics
   const { data: personalMetrics = [] } = useQuery({
@@ -97,7 +97,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         unit: 'tickets',
         trend: 'up',
         trendPercentage: 12.5,
-        period: 'monthly'
+        period: 'monthly',
       },
       {
         id: 'avg-resolution-time',
@@ -107,7 +107,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         unit: 'hours',
         trend: 'up',
         trendPercentage: 8.2,
-        period: 'monthly'
+        period: 'monthly',
       },
       {
         id: 'customer-satisfaction',
@@ -117,7 +117,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         unit: '/5',
         trend: 'up',
         trendPercentage: 5.5,
-        period: 'monthly'
+        period: 'monthly',
       },
       {
         id: 'first-contact-resolution',
@@ -127,7 +127,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         unit: '%',
         trend: 'up',
         trendPercentage: 3.2,
-        period: 'monthly'
+        period: 'monthly',
       },
       {
         id: 'escalation-rate',
@@ -137,7 +137,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         unit: '%',
         trend: 'down',
         trendPercentage: 15.0,
-        period: 'monthly'
+        period: 'monthly',
       },
       {
         id: 'knowledge-base-usage',
@@ -147,10 +147,10 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         unit: 'articles',
         trend: 'up',
         trendPercentage: 18.5,
-        period: 'monthly'
-      }
-    ]
-  })
+        period: 'monthly',
+      },
+    ],
+  });
 
   // Team comparison data
   const { data: teamMembers = [] } = useQuery({
@@ -165,7 +165,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
           ticketsResolved: 52,
           avgResolutionTime: 1.8,
           customerSatisfaction: 4.8,
-          escalationRate: 5
+          escalationRate: 5,
         },
         achievements: [
           {
@@ -175,9 +175,9 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
             icon: '⚡',
             rarity: 'rare',
             unlockedAt: new Date(),
-            category: 'productivity'
-          }
-        ]
+            category: 'productivity',
+          },
+        ],
       },
       {
         id: 'user-2',
@@ -188,7 +188,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
           ticketsResolved: 47,
           avgResolutionTime: 2.3,
           customerSatisfaction: 4.7,
-          escalationRate: 8
+          escalationRate: 8,
         },
         achievements: [
           {
@@ -198,9 +198,9 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
             icon: '🦸',
             rarity: 'epic',
             unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            category: 'quality'
-          }
-        ]
+            category: 'quality',
+          },
+        ],
       },
       {
         id: 'user-3',
@@ -211,7 +211,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
           ticketsResolved: 43,
           avgResolutionTime: 2.1,
           customerSatisfaction: 4.6,
-          escalationRate: 12
+          escalationRate: 12,
         },
         achievements: [
           {
@@ -221,9 +221,9 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
             icon: '🤝',
             rarity: 'common',
             unlockedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            category: 'teamwork'
-          }
-        ]
+            category: 'teamwork',
+          },
+        ],
       },
       {
         id: 'current-user',
@@ -234,7 +234,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
           ticketsResolved: 47,
           avgResolutionTime: 2.3,
           customerSatisfaction: 4.7,
-          escalationRate: 8
+          escalationRate: 8,
         },
         achievements: [
           {
@@ -244,12 +244,12 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
             icon: '🎯',
             rarity: 'rare',
             unlockedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-            category: 'productivity'
-          }
-        ]
-      }
-    ]
-  })
+            category: 'productivity',
+          },
+        ],
+      },
+    ],
+  });
 
   // Goals and targets
   const { data: goals = [] } = useQuery({
@@ -265,7 +265,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         deadline: new Date(2025, 7, 31), // End of August
         category: 'individual',
         priority: 'high',
-        progress: 94
+        progress: 94,
       },
       {
         id: 'satisfaction-score',
@@ -277,7 +277,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         deadline: new Date(2025, 7, 31),
         category: 'individual',
         priority: 'medium',
-        progress: 100
+        progress: 100,
       },
       {
         id: 'team-collaboration',
@@ -289,7 +289,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         deadline: new Date(2025, 7, 31),
         category: 'team',
         priority: 'medium',
-        progress: 80
+        progress: 80,
       },
       {
         id: 'knowledge-sharing',
@@ -301,66 +301,83 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         deadline: new Date(2025, 8, 15), // Mid September
         category: 'individual',
         priority: 'low',
-        progress: 60
-      }
-    ]
-  })
+        progress: 60,
+      },
+    ],
+  });
 
-  const currentUser = teamMembers.find(member => member.id === userId)
-  const teamRank = currentUser?.rank || 0
-  const totalTeamMembers = teamMembers.length
+  const currentUser = teamMembers.find((member) => member.id === userId);
+  const teamRank = currentUser?.rank || 0;
+  const totalTeamMembers = teamMembers.length;
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'up': return <ArrowUpIcon className="w-4 h-4 text-green-500" />
-      case 'down': return <ArrowDownIcon className="w-4 h-4 text-red-500" />
-      default: return <div className="w-4 h-4" />
+      case 'up':
+        return <ArrowUpIcon className="h-4 w-4 text-green-500" />;
+      case 'down':
+        return <ArrowDownIcon className="h-4 w-4 text-red-500" />;
+      default:
+        return <div className="h-4 w-4" />;
     }
-  }
+  };
 
-  const getMetricColor = (value: number, target?: number): "success" | "warning" | "danger" | "primary" => {
-    if (!target) return 'primary'
-    const ratio = value / target
-    if (ratio >= 1.1) return 'success'
-    if (ratio >= 0.9) return 'primary'
-    if (ratio >= 0.7) return 'warning'
-    return 'danger'
-  }
+  const getMetricColor = (
+    value: number,
+    target?: number,
+  ): 'success' | 'warning' | 'danger' | 'primary' => {
+    if (!target) return 'primary';
+    const ratio = value / target;
+    if (ratio >= 1.1) return 'success';
+    if (ratio >= 0.9) return 'primary';
+    if (ratio >= 0.7) return 'warning';
+    return 'danger';
+  };
 
-  const getRarityColor = (rarity: string): "default" | "primary" | "secondary" | "success" | "warning" | "danger" => {
+  const getRarityColor = (
+    rarity: string,
+  ): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' => {
     switch (rarity) {
-      case 'legendary': return 'warning'
-      case 'epic': return 'secondary'
-      case 'rare': return 'primary'
-      default: return 'default'
+      case 'legendary':
+        return 'warning';
+      case 'epic':
+        return 'secondary';
+      case 'rare':
+        return 'primary';
+      default:
+        return 'default';
     }
-  }
+  };
 
-  const getGoalProgressColor = (progress: number): "success" | "warning" | "danger" => {
-    if (progress >= 90) return 'success'
-    if (progress >= 70) return 'warning'
-    return 'danger'
-  }
+  const getGoalProgressColor = (progress: number): 'success' | 'warning' | 'danger' => {
+    if (progress >= 90) return 'success';
+    if (progress >= 70) return 'warning';
+    return 'danger';
+  };
 
   const formatTimeRange = (range: string) => {
     switch (range) {
-      case 'week': return 'This Week'
-      case 'month': return 'This Month'
-      case 'quarter': return 'This Quarter'
-      case 'year': return 'This Year'
-      default: return 'This Month'
+      case 'week':
+        return 'This Week';
+      case 'month':
+        return 'This Month';
+      case 'quarter':
+        return 'This Quarter';
+      case 'year':
+        return 'This Year';
+      default:
+        return 'This Month';
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             Performance Analytics
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="mt-1 text-gray-600 dark:text-gray-400">
             Track your performance, compare with team, and achieve your goals
           </p>
         </div>
@@ -369,7 +386,9 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
           <Select
             label="Time Range"
             selectedKeys={[timeRange]}
-            onSelectionChange={(keys) => setTimeRange(Array.from(keys)[0] as 'week' | 'month' | 'quarter' | 'year')}
+            onSelectionChange={(keys) =>
+              setTimeRange(Array.from(keys)[0] as 'week' | 'month' | 'quarter' | 'year')
+            }
             className="w-40"
             size="sm"
           >
@@ -387,42 +406,46 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
 
       {/* Performance Overview */}
       <Tabs selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as string)}>
-        <Tab key="overview" title={
-          <div className="flex items-center gap-2">
-            <ChartBarIcon className="w-4 h-4" />
-            Overview
-          </div>
-        }>
+        <Tab
+          key="overview"
+          title={
+            <div className="flex items-center gap-2">
+              <ChartBarIcon className="h-4 w-4" />
+              Overview
+            </div>
+          }
+        >
           <div className="space-y-6">
             {/* Key Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {personalMetrics.map((metric) => (
                 <Card key={metric.id}>
                   <CardBody className="p-4">
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="mb-2 flex items-start justify-between">
                       <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {metric.name}
-                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{metric.name}</p>
                         <div className="flex items-baseline gap-2">
                           <span className="text-2xl font-bold">
-                            {metric.value}{metric.unit}
+                            {metric.value}
+                            {metric.unit}
                           </span>
                           {metric.target && (
                             <span className="text-sm text-gray-500">
-                              / {metric.target}{metric.unit}
+                              / {metric.target}
+                              {metric.unit}
                             </span>
                           )}
                         </div>
                       </div>
-                      
+
                       <Chip
                         size="sm"
                         color={getMetricColor(metric.value, metric.target)}
                         variant="flat"
                         startContent={getTrendIcon(metric.trend)}
                       >
-                        {metric.trendPercentage > 0 ? '+' : ''}{metric.trendPercentage}%
+                        {metric.trendPercentage > 0 ? '+' : ''}
+                        {metric.trendPercentage}%
                       </Chip>
                     </div>
 
@@ -443,24 +466,36 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <TrophyIcon className="w-5 h-5 text-blue-500" />
+                  <TrophyIcon className="h-5 w-5 text-blue-500" />
                   <h3 className="font-semibold">Goals Progress</h3>
                 </div>
               </CardHeader>
               <CardBody>
                 <div className="space-y-4">
                   {goals.map((goal) => (
-                    <div key={goal.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
+                    <div
+                      key={goal.id}
+                      className="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+                    >
+                      <div className="mb-2 flex items-start justify-between">
                         <div>
                           <h4 className="font-medium">{goal.title}</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             {goal.description}
                           </p>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
-                          <Chip size="sm" color={goal.priority === 'high' ? 'danger' : goal.priority === 'medium' ? 'warning' : 'default'}>
+                          <Chip
+                            size="sm"
+                            color={
+                              goal.priority === 'high'
+                                ? 'danger'
+                                : goal.priority === 'medium'
+                                  ? 'warning'
+                                  : 'default'
+                            }
+                          >
                             {goal.priority}
                           </Chip>
                           <Chip size="sm" variant="flat">
@@ -468,17 +503,17 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
                           </Chip>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-3 mb-2">
+
+                      <div className="mb-2 flex items-center gap-3">
                         <span className="text-sm font-medium">
                           {goal.current} / {goal.target} {goal.unit}
                         </span>
                         <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <CalendarIcon className="w-4 h-4" />
+                          <CalendarIcon className="h-4 w-4" />
                           Due: {goal.deadline.toLocaleDateString()}
                         </div>
                       </div>
-                      
+
                       <Progress
                         value={goal.progress}
                         color={getGoalProgressColor(goal.progress)}
@@ -493,17 +528,20 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
           </div>
         </Tab>
 
-        <Tab key="team" title={
-          <div className="flex items-center gap-2">
-            <UsersIcon className="w-4 h-4" />
-            Team Comparison
-          </div>
-        }>
+        <Tab
+          key="team"
+          title={
+            <div className="flex items-center gap-2">
+              <UsersIcon className="h-4 w-4" />
+              Team Comparison
+            </div>
+          }
+        >
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center w-full">
+              <div className="flex w-full items-center justify-between">
                 <h3 className="font-semibold">Team Leaderboard ({formatTimeRange(timeRange)})</h3>
-                
+
                 <Select
                   label="Compare with"
                   selectedKeys={[comparisonMode]}
@@ -524,7 +562,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
                   .map((member, index) => (
                     <div
                       key={member.id}
-                      className={`p-4 rounded-lg border ${
+                      className={`rounded-lg border p-4 ${
                         member.id === userId
                           ? 'border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
                           : 'border-gray-200 dark:border-gray-700'
@@ -533,14 +571,24 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
-                            {index === 0 && <TrophyIcon className="w-5 h-5 text-yellow-500" />}
-                            {index === 1 && <Badge color="default" variant="flat">2nd</Badge>}
-                            {index === 2 && <Badge color="default" variant="flat">3rd</Badge>}
-                            {index > 2 && <span className="text-sm text-gray-500">#{index + 1}</span>}
+                            {index === 0 && <TrophyIcon className="h-5 w-5 text-yellow-500" />}
+                            {index === 1 && (
+                              <Badge color="default" variant="flat">
+                                2nd
+                              </Badge>
+                            )}
+                            {index === 2 && (
+                              <Badge color="default" variant="flat">
+                                3rd
+                              </Badge>
+                            )}
+                            {index > 2 && (
+                              <span className="text-sm text-gray-500">#{index + 1}</span>
+                            )}
                           </div>
-                          
+
                           <Avatar name={member.name} size="sm" />
-                          
+
                           <div>
                             <p className="font-medium">
                               {member.name}
@@ -553,7 +601,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
                             <p className="text-sm text-gray-600">{member.role}</p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-4 text-sm">
                           <div className="text-center">
                             <p className="font-medium">{member.metrics.ticketsResolved}</p>
@@ -580,13 +628,16 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
           </Card>
         </Tab>
 
-        <Tab key="achievements" title={
-          <div className="flex items-center gap-2">
-            <SparklesIcon className="w-4 h-4" />
-            Achievements
-          </div>
-        }>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Tab
+          key="achievements"
+          title={
+            <div className="flex items-center gap-2">
+              <SparklesIcon className="h-4 w-4" />
+              Achievements
+            </div>
+          }
+        >
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Recent Achievements */}
             <Card>
               <CardHeader>
@@ -597,12 +648,12 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
                   {currentUser?.achievements.map((achievement) => (
                     <div
                       key={achievement.id}
-                      className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+                      className="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
                     >
                       <div className="flex items-start gap-3">
                         <span className="text-2xl">{achievement.icon}</span>
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <h4 className="font-medium">{achievement.name}</h4>
                             <Chip
                               size="sm"
@@ -612,7 +663,7 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
                               {achievement.rarity}
                             </Chip>
                           </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
                             {achievement.description}
                           </p>
                           <p className="text-xs text-gray-500">
@@ -633,49 +684,55 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
               </CardHeader>
               <CardBody>
                 <div className="space-y-4">
-                  <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
+                  <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                    <div className="mb-2 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">🏆</span>
                         <span className="font-medium">Resolution Master</span>
                       </div>
-                      <Chip size="sm" color="warning" variant="flat">legendary</Chip>
+                      <Chip size="sm" color="warning" variant="flat">
+                        legendary
+                      </Chip>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
                       Resolve 100 tickets in a month
                     </p>
                     <Progress value={47} color="warning" size="sm" showValueLabel />
-                    <p className="text-xs text-gray-500 mt-1">47 / 100 tickets</p>
+                    <p className="mt-1 text-xs text-gray-500">47 / 100 tickets</p>
                   </div>
 
-                  <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
+                  <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                    <div className="mb-2 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">⭐</span>
                         <span className="font-medium">Five Star Agent</span>
                       </div>
-                      <Chip size="sm" color="secondary" variant="flat">epic</Chip>
+                      <Chip size="sm" color="secondary" variant="flat">
+                        epic
+                      </Chip>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
                       Maintain 4.8+ satisfaction for 3 months
                     </p>
                     <Progress value={67} color="secondary" size="sm" showValueLabel />
-                    <p className="text-xs text-gray-500 mt-1">2 / 3 months</p>
+                    <p className="mt-1 text-xs text-gray-500">2 / 3 months</p>
                   </div>
 
-                  <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
+                  <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                    <div className="mb-2 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">🚀</span>
                         <span className="font-medium">Speed Racer</span>
                       </div>
-                      <Chip size="sm" color="primary" variant="flat">rare</Chip>
+                      <Chip size="sm" color="primary" variant="flat">
+                        rare
+                      </Chip>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
                       Average resolution time under 2 hours
                     </p>
                     <Progress value={85} color="primary" size="sm" showValueLabel />
-                    <p className="text-xs text-gray-500 mt-1">Current: 2.3h average</p>
+                    <p className="mt-1 text-xs text-gray-500">Current: 2.3h average</p>
                   </div>
                 </div>
               </CardBody>
@@ -684,5 +741,5 @@ export const PerformanceAnalyticsDashboard: React.FC<Props> = ({
         </Tab>
       </Tabs>
     </div>
-  )
-}
+  );
+};

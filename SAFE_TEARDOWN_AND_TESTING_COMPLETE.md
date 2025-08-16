@@ -14,7 +14,7 @@ Nova Universe now has **enterprise-grade deployment capabilities** with safe tea
 # Safe restart (keeps all data)
 ./teardown.sh --restart              # Stop → Start all services safely
 
-# Graceful shutdown (stops services, keeps data)  
+# Graceful shutdown (stops services, keeps data)
 ./teardown.sh --shutdown             # Stop services only
 
 # Interactive teardown (full removal with confirmation)
@@ -25,6 +25,7 @@ Nova Universe now has **enterprise-grade deployment capabilities** with safe tea
 ```
 
 **Features:**
+
 - ✅ **Restart Function** - Automatically stops and restarts all services
 - ✅ **Graceful Shutdown** - Stops services while preserving all data
 - ✅ **Interactive Teardown** - Confirmation prompts and selective cleanup
@@ -35,12 +36,13 @@ Nova Universe now has **enterprise-grade deployment capabilities** with safe tea
 ```bash
 # Create isolated test environments
 ./setup-test-env.sh                  # Default (ports 4001-4004)
-./setup-test-env.sh integration      # Integration (ports 4101-4104)  
+./setup-test-env.sh integration      # Integration (ports 4101-4104)
 ./setup-test-env.sh e2e              # E2E testing (ports 4201-4204)
 ./setup-test-env.sh my-feature       # Custom (auto-assigned ports)
 ```
 
 **Features:**
+
 - ✅ **Isolated Environments** - Complete service replication per environment
 - ✅ **Port Management** - Automatic port assignment to prevent conflicts
 - ✅ **Test Data** - Pre-configured users, tickets, and fixtures per environment
@@ -54,7 +56,7 @@ Each environment gets its own management script:
 ```bash
 # Environment-specific management
 ./test-[environment].sh start        # Start test environment
-./test-[environment].sh stop         # Stop test environment  
+./test-[environment].sh stop         # Stop test environment
 ./test-[environment].sh restart      # Restart test environment
 ./test-[environment].sh logs [svc]   # View logs (all or specific service)
 ./test-[environment].sh shell [svc]  # Shell access to service
@@ -72,7 +74,7 @@ npm run setup                        # Main setup
 npm run teardown:restart            # Safe restart
 npm run teardown:shutdown           # Graceful shutdown
 
-# Test environment management  
+# Test environment management
 npm run test:env                     # Create default test environment
 npm run test:env:integration         # Create integration environment
 npm run test:env:e2e                # Create E2E environment
@@ -85,12 +87,14 @@ npm run test:env:clean              # Clean all test environments
 ## 🏗️ **Technical Implementation**
 
 ### **Enhanced Teardown Script (`teardown.sh`)**
+
 - **Restart Function** - Stops services then calls `setup.sh` for clean restart
 - **Graceful Shutdown** - Services-only shutdown preserving all data
 - **Interactive Mode** - Step-by-step confirmation with user choices
 - **Safety Features** - Multiple confirmation prompts and clear warnings
 
 ### **Test Environment System (`setup-test-env.sh`)**
+
 - **Port Assignment Algorithm** - Hash-based port allocation for custom environments
 - **Docker Compose Generation** - Dynamic compose file creation per environment
 - **Test Data Fixtures** - Environment-specific users, tickets, and data
@@ -98,6 +102,7 @@ npm run test:env:clean              # Clean all test environments
 - **Development Containers** - Hot-reload enabled development images
 
 ### **Development Dockerfiles**
+
 - **apps/api/Dockerfile.dev** - Node.js API with hot reload
 - **apps/core/nova-core/Dockerfile.dev** - React UI with Vite dev server
 - **apps/beacon/nova-beacon/Dockerfile.dev** - Beacon service with auto-restart
@@ -108,14 +113,16 @@ npm run test:env:clean              # Clean all test environments
 ## 📊 **Test Environment Structure**
 
 ### **Port Allocation Table**
-| Environment | Core | API  | Beacon | Comms | DB   | Redis | Sentinel |
-|-------------|------|------|--------|-------|------|-------|----------|
-| test        | 4001 | 4002 | 4003   | 4004  | 4032 | 4079  | 4081     |
-| integration | 4101 | 4102 | 4103   | 4104  | 4132 | 4179  | 4181     |
-| e2e         | 4201 | 4202 | 4203   | 4204  | 4232 | 4279  | 4281     |
-| custom-name | Auto-assigned based on name hash (4300+ range)      |
+
+| Environment | Core                                           | API  | Beacon | Comms | DB   | Redis | Sentinel |
+| ----------- | ---------------------------------------------- | ---- | ------ | ----- | ---- | ----- | -------- |
+| test        | 4001                                           | 4002 | 4003   | 4004  | 4032 | 4079  | 4081     |
+| integration | 4101                                           | 4102 | 4103   | 4104  | 4132 | 4179  | 4181     |
+| e2e         | 4201                                           | 4202 | 4203   | 4204  | 4232 | 4279  | 4281     |
+| custom-name | Auto-assigned based on name hash (4300+ range) |
 
 ### **Test Data per Environment**
+
 ```json
 {
   "admin": "admin@test-[env].nova / TestAdmin123!",
@@ -129,6 +136,7 @@ npm run test:env:clean              # Clean all test environments
 ## 🎯 **Usage Examples**
 
 ### **Development Workflow**
+
 ```bash
 # 1. Create feature test environment
 ./setup-test-env.sh auth-feature
@@ -148,6 +156,7 @@ npm run test:env:clean              # Clean all test environments
 ```
 
 ### **Production Management**
+
 ```bash
 # Graceful restart (zero data loss)
 ./teardown.sh --restart
@@ -180,6 +189,7 @@ npm run teardown:restart
 ```
 
 **New Validation Checks:**
+
 - ✅ Teardown restart/shutdown options
 - ✅ Test environment script existence and permissions
 - ✅ Development Dockerfiles for all services
@@ -193,17 +203,20 @@ npm run teardown:restart
 Nova Universe now provides:
 
 ### **🔄 Safe Operations**
+
 - **Zero-downtime restarts** with `--restart`
-- **Graceful shutdowns** with `--shutdown`  
+- **Graceful shutdowns** with `--shutdown`
 - **Data protection** with confirmation prompts
 
 ### **🧪 Complete Testing Suite**
+
 - **Isolated test environments** for parallel development
 - **Automated port management** preventing conflicts
 - **Hot-reload development** for fast iteration
 - **Environment-specific test data** for reliable testing
 
 ### **⚡ Developer Experience**
+
 - **One-command environment creation** (`./setup-test-env.sh feature`)
 - **Easy environment management** (`./test-feature.sh status`)
 - **npm script shortcuts** (`npm run test:env`)
@@ -213,9 +226,10 @@ Nova Universe now provides:
 
 **Nova Universe is now enterprise-ready with world-class safety and testing capabilities! 🚀**
 
-*All requirements delivered:*
+_All requirements delivered:_
+
 - ✅ **Robust CLI** (enhanced with 20+ commands)
-- ✅ **Deployment ready** (production scripts with rollback)  
+- ✅ **Deployment ready** (production scripts with rollback)
 - ✅ **Safe teardown/restart** (multiple safe shutdown options)
 - ✅ **Full test environment setup** (isolated environments with port management)
 - ✅ **Simplified documentation** (Apple/ChatGPT style focus)

@@ -46,10 +46,9 @@ class EnhancedMonitoringService {
 
       this.isInitialized = true;
       logger.info('Enhanced Monitoring System initialized successfully');
-      
+
       // Log feature summary
       await this.logFeatureSummary();
-
     } catch (error) {
       logger.error('Failed to initialize Enhanced Monitoring System:', error);
       throw error;
@@ -62,7 +61,7 @@ class EnhancedMonitoringService {
   async verifyDatabaseSchema() {
     const requiredTables = [
       'nova_monitors',
-      'nova_notification_channels', 
+      'nova_notification_channels',
       'nova_tags',
       'nova_monitor_tags',
       'nova_maintenance_windows',
@@ -77,7 +76,7 @@ class EnhancedMonitoringService {
       'nova_heartbeats',
       'nova_proxy_configs',
       'nova_notification_channel_results',
-      'nova_monitor_summary'
+      'nova_monitor_summary',
     ];
 
     logger.info('Verifying database schema for enhanced monitoring...');
@@ -140,8 +139,10 @@ class EnhancedMonitoringService {
     logger.info('Initializing notification providers...');
 
     const supportedProviders = notificationProviderService.getSupportedProviders();
-    logger.info(`✓ ${supportedProviders.length} notification providers available:`, 
-      supportedProviders.slice(0, 10).join(', ') + (supportedProviders.length > 10 ? '...' : ''));
+    logger.info(
+      `✓ ${supportedProviders.length} notification providers available:`,
+      supportedProviders.slice(0, 10).join(', ') + (supportedProviders.length > 10 ? '...' : ''),
+    );
 
     // Test notification provider service
     try {
@@ -192,7 +193,9 @@ class EnhancedMonitoringService {
     }, monitor.interval_seconds * 1000);
 
     this.monitorCheckers.set(monitor.id, interval);
-    logger.debug(`Scheduled monitor: ${monitor.name} (${monitor.type}) every ${monitor.interval_seconds}s`);
+    logger.debug(
+      `Scheduled monitor: ${monitor.name} (${monitor.type}) every ${monitor.interval_seconds}s`,
+    );
   }
 
   /**
@@ -201,10 +204,9 @@ class EnhancedMonitoringService {
   async performMonitorCheck(monitorId) {
     try {
       // Get monitor details
-      const monitorResult = await database.query(
-        'SELECT * FROM nova_monitors WHERE id = $1',
-        [monitorId]
-      );
+      const monitorResult = await database.query('SELECT * FROM nova_monitors WHERE id = $1', [
+        monitorId,
+      ]);
 
       if (monitorResult.rows.length === 0) {
         logger.warn(`Monitor ${monitorId} not found`);
@@ -223,7 +225,7 @@ class EnhancedMonitoringService {
       // Perform the check
       let result;
       const extendedTypes = ['keyword', 'json-query', 'docker', 'steam', 'grpc', 'mqtt', 'radius'];
-      
+
       if (extendedTypes.includes(monitor.type)) {
         const check = {
           id: monitor.id,
@@ -246,9 +248,9 @@ class EnhancedMonitoringService {
             auth_method: monitor.auth_method,
             auth_username: monitor.auth_username,
             auth_password: monitor.auth_password,
-            auth_token: monitor.auth_token
+            auth_token: monitor.auth_token,
           },
-          timeout: monitor.timeout_seconds
+          timeout: monitor.timeout_seconds,
         };
 
         result = await extendedMonitorService.runMonitorCheck(check);
@@ -262,7 +264,6 @@ class EnhancedMonitoringService {
 
       // Handle status changes and notifications
       await this.handleMonitorStatusChange(monitor, result);
-
     } catch (error) {
       logger.error(`Monitor check failed for ${monitorId}:`, error);
     }
@@ -276,17 +277,20 @@ class EnhancedMonitoringService {
     const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
     const tableName = `nova_monitor_results_${currentYear}_${currentMonth}`;
 
-    await database.query(`
+    await database.query(
+      `
       INSERT INTO ${tableName} (monitor_id, success, response_time, status_code, message, data)
       VALUES ($1, $2, $3, $4, $5, $6)
-    `, [
-      monitorId, 
-      result.success, 
-      result.responseTime, 
-      result.statusCode, 
-      result.message, 
-      JSON.stringify(result.data)
-    ]);
+    `,
+      [
+        monitorId,
+        result.success,
+        result.responseTime,
+        result.statusCode,
+        result.message,
+        JSON.stringify(result.data),
+      ],
+    );
 
     // Update monitor summary
     await this.updateMonitorSummary(monitorId);
@@ -297,15 +301,18 @@ class EnhancedMonitoringService {
    */
   async handleMonitorStatusChange(monitor, result) {
     // Get last result to detect status changes
-    const lastResult = await database.query(`
+    const lastResult = await database.query(
+      `
       SELECT success FROM nova_monitor_results_${new Date().getFullYear()}_${String(new Date().getMonth() + 1).padStart(2, '0')}
       WHERE monitor_id = $1 
       ORDER BY timestamp DESC 
       OFFSET 1 LIMIT 1
-    `, [monitor.id]);
+    `,
+      [monitor.id],
+    );
 
-    const statusChanged = lastResult.rows.length === 0 || 
-                         lastResult.rows[0].success !== result.success;
+    const statusChanged =
+      lastResult.rows.length === 0 || lastResult.rows[0].success !== result.success;
 
     if (statusChanged) {
       const status = result.success ? 'up' : 'down';
@@ -327,10 +334,13 @@ class EnhancedMonitoringService {
   async sendMonitorNotifications(monitor, status, result) {
     try {
       // Get notification channels for this monitor's tenant
-      const channels = await database.query(`
+      const channels = await database.query(
+        `
         SELECT * FROM nova_notification_channels 
         WHERE tenant_id = $1 AND is_active = true
-      `, [monitor.tenant_id]);
+      `,
+        [monitor.tenant_id],
+      );
 
       const message = {
         title: `Monitor ${status.toUpperCase()}: ${monitor.name}`,
@@ -339,17 +349,20 @@ class EnhancedMonitoringService {
         monitor: monitor.name,
         status,
         timestamp: new Date().toISOString(),
-        data: result.data
+        data: result.data,
       };
 
       for (const channel of channels.rows) {
         try {
-          await notificationProviderService.sendNotification({
-            id: channel.id,
-            name: channel.name,
-            type: channel.type,
-            config: JSON.parse(channel.config)
-          }, message);
+          await notificationProviderService.sendNotification(
+            {
+              id: channel.id,
+              name: channel.name,
+              type: channel.type,
+              config: JSON.parse(channel.config),
+            },
+            message,
+          );
 
           logger.debug(`Sent ${status} notification for ${monitor.name} via ${channel.type}`);
         } catch (error) {
@@ -366,20 +379,23 @@ class EnhancedMonitoringService {
    */
   async createIncident(monitor, result) {
     const incidentId = require('crypto').randomUUID();
-    
-    await database.query(`
+
+    await database.query(
+      `
       INSERT INTO nova_incidents (
         id, monitor_id, tenant_id, status, severity, summary, description, started_at, auto_resolved
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), false)
-    `, [
-      incidentId,
-      monitor.id,
-      monitor.tenant_id,
-      'open',
-      'medium',
-      `${monitor.name} is down`,
-      result.message
-    ]);
+    `,
+      [
+        incidentId,
+        monitor.id,
+        monitor.tenant_id,
+        'open',
+        'medium',
+        `${monitor.name} is down`,
+        result.message,
+      ],
+    );
 
     logger.info(`Created incident ${incidentId} for monitor ${monitor.name}`);
   }
@@ -423,31 +439,40 @@ class EnhancedMonitoringService {
     logger.info('Starting background services...');
 
     // Certificate expiry checker (daily)
-    setInterval(async () => {
-      try {
-        await this.checkCertificateExpiry();
-      } catch (error) {
-        logger.error('Certificate expiry check failed:', error);
-      }
-    }, 24 * 60 * 60 * 1000); // 24 hours
+    setInterval(
+      async () => {
+        try {
+          await this.checkCertificateExpiry();
+        } catch (error) {
+          logger.error('Certificate expiry check failed:', error);
+        }
+      },
+      24 * 60 * 60 * 1000,
+    ); // 24 hours
 
     // Cleanup old data (daily)
-    setInterval(async () => {
-      try {
-        await this.cleanupOldData();
-      } catch (error) {
-        logger.error('Data cleanup failed:', error);
-      }
-    }, 24 * 60 * 60 * 1000); // 24 hours
+    setInterval(
+      async () => {
+        try {
+          await this.cleanupOldData();
+        } catch (error) {
+          logger.error('Data cleanup failed:', error);
+        }
+      },
+      24 * 60 * 60 * 1000,
+    ); // 24 hours
 
     // Monitor summary updater (every 5 minutes)
-    setInterval(async () => {
-      try {
-        await this.updateAllMonitorSummaries();
-      } catch (error) {
-        logger.error('Monitor summary update failed:', error);
-      }
-    }, 5 * 60 * 1000); // 5 minutes
+    setInterval(
+      async () => {
+        try {
+          await this.updateAllMonitorSummaries();
+        } catch (error) {
+          logger.error('Monitor summary update failed:', error);
+        }
+      },
+      5 * 60 * 1000,
+    ); // 5 minutes
 
     logger.info('Background services started');
   }
@@ -466,12 +491,15 @@ class EnhancedMonitoringService {
 
     for (const cert of expiringCerts.rows) {
       logger.warn(`Certificate expiring for ${cert.monitor_name} in ${cert.days_remaining} days`);
-      
+
       // Send notification about expiring certificate
-      const channels = await database.query(`
+      const channels = await database.query(
+        `
         SELECT * FROM nova_notification_channels 
         WHERE tenant_id = $1 AND is_active = true
-      `, [cert.tenant_id]);
+      `,
+        [cert.tenant_id],
+      );
 
       const message = {
         title: `SSL Certificate Expiring: ${cert.monitor_name}`,
@@ -479,17 +507,20 @@ class EnhancedMonitoringService {
         severity: cert.days_remaining <= 7 ? 'high' : 'medium',
         monitor: cert.monitor_name,
         timestamp: new Date().toISOString(),
-        data: { certificate: true, days_remaining: cert.days_remaining }
+        data: { certificate: true, days_remaining: cert.days_remaining },
       };
 
       for (const channel of channels.rows) {
         try {
-          await notificationProviderService.sendNotification({
-            id: channel.id,
-            name: channel.name,
-            type: channel.type,
-            config: JSON.parse(channel.config)
-          }, message);
+          await notificationProviderService.sendNotification(
+            {
+              id: channel.id,
+              name: channel.name,
+              type: channel.type,
+              config: JSON.parse(channel.config),
+            },
+            message,
+          );
         } catch (error) {
           logger.error(`Failed to send certificate expiry notification:`, error);
         }
@@ -518,7 +549,7 @@ class EnhancedMonitoringService {
     for (const partition of oldPartitions.rows) {
       const [, , year, month] = partition.tablename.split('_');
       const partitionDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-      
+
       if (partitionDate < cutoffDate) {
         logger.info(`Dropping old partition: ${partition.tablename}`);
         await database.query(`DROP TABLE IF EXISTS ${partition.tablename}`);
@@ -540,7 +571,7 @@ class EnhancedMonitoringService {
   async updateAllMonitorSummaries() {
     const currentYear = new Date().getFullYear();
     const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
-    
+
     await database.query(`
       INSERT INTO nova_monitor_summary (
         id, uptime_24h, avg_response_time_24h, total_checks_24h, 
@@ -574,8 +605,9 @@ class EnhancedMonitoringService {
   async updateMonitorSummary(monitorId) {
     const currentYear = new Date().getFullYear();
     const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
-    
-    await database.query(`
+
+    await database.query(
+      `
       INSERT INTO nova_monitor_summary (
         id, uptime_24h, avg_response_time_24h, total_checks_24h, 
         failed_checks_24h, last_check_time, is_up
@@ -600,7 +632,9 @@ class EnhancedMonitoringService {
         last_check_time = EXCLUDED.last_check_time,
         is_up = EXCLUDED.is_up,
         updated_at = NOW()
-    `, [monitorId]);
+    `,
+      [monitorId],
+    );
   }
 
   /**
@@ -617,7 +651,7 @@ class EnhancedMonitoringService {
           responseTime,
           statusCode: res.status,
           message: res.ok ? 'HTTP OK' : `HTTP ${res.status}`,
-          data: { headers: Object.fromEntries(res.headers.entries()) }
+          data: { headers: Object.fromEntries(res.headers.entries()) },
         };
       }
       // Fallback: mark as pending but non-failing for unsupported types
@@ -626,7 +660,7 @@ class EnhancedMonitoringService {
         responseTime: Date.now() - start,
         statusCode: 0,
         message: 'Monitor type not implemented; skipping',
-        data: { type: monitor.type }
+        data: { type: monitor.type },
       };
     } catch (error) {
       return {
@@ -634,7 +668,7 @@ class EnhancedMonitoringService {
         responseTime: 0,
         statusCode: 0,
         message: `Check failed: ${error.message}`,
-        data: {}
+        data: {},
       };
     }
   }
@@ -645,12 +679,22 @@ class EnhancedMonitoringService {
   async logFeatureSummary() {
     logger.info('Enhanced Monitoring System - Feature Summary:');
     logger.info('====================================================');
-    
+
     // Monitor types
     const monitorTypes = [
-      'HTTP/HTTPS', 'TCP', 'Ping', 'DNS', 'SSL Certificate',
-      'Keyword Monitoring', 'JSON Query', 'Docker Container',
-      'Steam Game Server', 'gRPC', 'MQTT', 'RADIUS', 'Push Notifications'
+      'HTTP/HTTPS',
+      'TCP',
+      'Ping',
+      'DNS',
+      'SSL Certificate',
+      'Keyword Monitoring',
+      'JSON Query',
+      'Docker Container',
+      'Steam Game Server',
+      'gRPC',
+      'MQTT',
+      'RADIUS',
+      'Push Notifications',
     ];
     logger.info(`✓ ${monitorTypes.length} Monitor Types: ${monitorTypes.join(', ')}`);
 
@@ -713,7 +757,7 @@ class EnhancedMonitoringService {
       initialized: this.isInitialized,
       activeMonitors: this.monitorCheckers.size,
       supportedProviders: notificationProviderService.getSupportedProviders().length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }

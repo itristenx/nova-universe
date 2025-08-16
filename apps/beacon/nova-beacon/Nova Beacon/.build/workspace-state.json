@@ -1,30 +1,26 @@
 {
-  "object" : {
-    "artifacts" : [
-
-    ],
-    "dependencies" : [
+  "object": {
+    "artifacts": [],
+    "dependencies": [
       {
-        "basedOn" : null,
-        "packageRef" : {
-          "identity" : "codescanner",
-          "kind" : "remoteSourceControl",
-          "location" : "https://github.com/twostraws/CodeScanner",
-          "name" : "CodeScanner"
+        "basedOn": null,
+        "packageRef": {
+          "identity": "codescanner",
+          "kind": "remoteSourceControl",
+          "location": "https://github.com/twostraws/CodeScanner",
+          "name": "CodeScanner"
         },
-        "state" : {
-          "checkoutState" : {
-            "revision" : "5e886430238944c7200fc9e10dbf2d9550dba865",
-            "version" : "2.5.2"
+        "state": {
+          "checkoutState": {
+            "revision": "5e886430238944c7200fc9e10dbf2d9550dba865",
+            "version": "2.5.2"
           },
-          "name" : "sourceControlCheckout"
+          "name": "sourceControlCheckout"
         },
-        "subpath" : "CodeScanner"
+        "subpath": "CodeScanner"
       }
     ],
-    "prebuilts" : [
-
-    ]
+    "prebuilts": []
   },
-  "version" : 7
+  "version": 7
 }

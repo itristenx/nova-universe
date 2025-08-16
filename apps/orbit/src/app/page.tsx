@@ -1,6 +1,6 @@
-"use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function HomePage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center">
       <p className="text-muted-foreground">Redirecting to dashboard...</p>
     </div>
   );

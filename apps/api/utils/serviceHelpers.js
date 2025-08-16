@@ -10,7 +10,7 @@
 export function isHelpScoutConfigured() {
   const HS_KEY = process.env.HELPSCOUT_API_KEY;
   const HS_MAILBOX = process.env.HELPSCOUT_MAILBOX_ID;
-  
+
   return !!(HS_KEY && HS_MAILBOX);
 }
 
@@ -22,19 +22,17 @@ export function getHelpScoutConfig() {
   if (!isHelpScoutConfigured()) {
     return null;
   }
-  
+
   return {
     apiKey: process.env.HELPSCOUT_API_KEY,
     mailboxId: process.env.HELPSCOUT_MAILBOX_ID,
-    smtpFallback: process.env.HELPSCOUT_SMTP_FALLBACK === 'true'
+    smtpFallback: process.env.HELPSCOUT_SMTP_FALLBACK === 'true',
   };
 }
 
 export function isM365Configured() {
   return (
-    !!process.env.M365_CLIENT_ID &&
-    !!process.env.M365_CLIENT_SECRET &&
-    !!process.env.M365_TENANT_ID
+    !!process.env.M365_CLIENT_ID && !!process.env.M365_CLIENT_SECRET && !!process.env.M365_TENANT_ID
   );
 }
 
@@ -44,8 +42,9 @@ export function getM365Config() {
     clientId: process.env.M365_CLIENT_ID,
     clientSecret: process.env.M365_CLIENT_SECRET,
     tenantId: process.env.M365_TENANT_ID,
-    scopes: (process.env.M365_GRAPH_SCOPES ||
-      'Mail.ReadWrite Mail.Send MailboxSettings.Read User.Read.All').split(' '),
+    scopes: (
+      process.env.M365_GRAPH_SCOPES || 'Mail.ReadWrite Mail.Send MailboxSettings.Read User.Read.All'
+    ).split(' '),
   };
 }
 
@@ -58,14 +57,14 @@ export function getEmailStrategy() {
   const m365Config = getM365Config();
   const sendViaHelpScout = !!helpScoutConfig;
   const sendViaM365 = !!m365Config;
-  const sendViaSmtp = (!sendViaHelpScout && !sendViaM365) ||
-    (helpScoutConfig && helpScoutConfig.smtpFallback);
+  const sendViaSmtp =
+    (!sendViaHelpScout && !sendViaM365) || (helpScoutConfig && helpScoutConfig.smtpFallback);
 
   return {
     helpScout: helpScoutConfig,
     m365: m365Config,
     sendViaHelpScout,
     sendViaM365,
-    sendViaSmtp
+    sendViaSmtp,
   };
 }

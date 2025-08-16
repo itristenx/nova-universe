@@ -1,6 +1,6 @@
 /**
  * Nova Universal Notification Platform Database Clients
- * 
+ *
  * Manages connections to different Prisma schemas used throughout
  * the Nova ecosystem for unified notification management
  */
@@ -20,14 +20,14 @@ import { logger } from '../../../apps/api/logger.js';
 export const coreClient = new CorePrismaClient({
   datasources: {
     core_db: {
-      url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL
-    }
+      url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL,
+    },
   },
   log: [
     { level: 'query', emit: 'event' },
     { level: 'error', emit: 'event' },
     { level: 'warn', emit: 'event' },
-  ]
+  ],
 });
 
 /**
@@ -36,14 +36,14 @@ export const coreClient = new CorePrismaClient({
 export const cmdbClient = new CmdbPrismaClient({
   datasources: {
     cmdb_db: {
-      url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL
-    }
+      url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL,
+    },
   },
   log: [
     { level: 'query', emit: 'event' },
     { level: 'error', emit: 'event' },
     { level: 'warn', emit: 'event' },
-  ]
+  ],
 });
 
 /**
@@ -52,14 +52,14 @@ export const cmdbClient = new CmdbPrismaClient({
 export const notificationClient = new NotificationPrismaClient({
   datasources: {
     notification_db: {
-      url: process.env.NOTIFICATION_DATABASE_URL || process.env.DATABASE_URL
-    }
+      url: process.env.NOTIFICATION_DATABASE_URL || process.env.DATABASE_URL,
+    },
   },
   log: [
     { level: 'query', emit: 'event' },
     { level: 'error', emit: 'event' },
     { level: 'warn', emit: 'event' },
-  ]
+  ],
 });
 
 // ============================================================================
@@ -72,7 +72,7 @@ coreClient.$on('query', (e) => {
     query: e.query,
     params: e.params,
     duration: `${e.duration}ms`,
-    timestamp: e.timestamp
+    timestamp: e.timestamp,
   });
 });
 
@@ -80,7 +80,7 @@ coreClient.$on('error', (e) => {
   logger.error('Core DB Error:', {
     message: e.message,
     target: e.target,
-    timestamp: e.timestamp
+    timestamp: e.timestamp,
   });
 });
 
@@ -90,7 +90,7 @@ cmdbClient.$on('query', (e) => {
     query: e.query,
     params: e.params,
     duration: `${e.duration}ms`,
-    timestamp: e.timestamp
+    timestamp: e.timestamp,
   });
 });
 
@@ -98,7 +98,7 @@ cmdbClient.$on('error', (e) => {
   logger.error('CMDB DB Error:', {
     message: e.message,
     target: e.target,
-    timestamp: e.timestamp
+    timestamp: e.timestamp,
   });
 });
 
@@ -108,7 +108,7 @@ notificationClient.$on('query', (e) => {
     query: e.query,
     params: e.params,
     duration: `${e.duration}ms`,
-    timestamp: e.timestamp
+    timestamp: e.timestamp,
   });
 });
 
@@ -116,7 +116,7 @@ notificationClient.$on('error', (e) => {
   logger.error('Notification DB Error:', {
     message: e.message,
     target: e.target,
-    timestamp: e.timestamp
+    timestamp: e.timestamp,
   });
 });
 
@@ -137,7 +137,10 @@ export async function initializeDatabaseConnections() {
     logger.info('Core database connection established');
 
     // Test CMDB connection (if different from core)
-    if (process.env.CMDB_DATABASE_URL && process.env.CMDB_DATABASE_URL !== process.env.DATABASE_URL) {
+    if (
+      process.env.CMDB_DATABASE_URL &&
+      process.env.CMDB_DATABASE_URL !== process.env.DATABASE_URL
+    ) {
       await cmdbClient.$connect();
       await cmdbClient.$executeRaw`SELECT 1`;
       logger.info('CMDB database connection established');
@@ -146,7 +149,10 @@ export async function initializeDatabaseConnections() {
     }
 
     // Test notification connection (if different from core)
-    if (process.env.NOTIFICATION_DATABASE_URL && process.env.NOTIFICATION_DATABASE_URL !== process.env.DATABASE_URL) {
+    if (
+      process.env.NOTIFICATION_DATABASE_URL &&
+      process.env.NOTIFICATION_DATABASE_URL !== process.env.DATABASE_URL
+    ) {
       await notificationClient.$connect();
       await notificationClient.$executeRaw`SELECT 1`;
       logger.info('Notification database connection established');
@@ -155,7 +161,6 @@ export async function initializeDatabaseConnections() {
     }
 
     logger.info('All database connections initialized successfully');
-
   } catch (error) {
     logger.error('Failed to initialize database connections:', error);
     throw error;
@@ -172,11 +177,10 @@ export async function closeDatabaseConnections() {
     await Promise.all([
       coreClient.$disconnect(),
       cmdbClient.$disconnect(),
-      notificationClient.$disconnect()
+      notificationClient.$disconnect(),
     ]);
 
     logger.info('All database connections closed successfully');
-
   } catch (error) {
     logger.error('Error closing database connections:', error);
     throw error;
@@ -194,7 +198,7 @@ export async function checkDatabaseHealth() {
   const health = {
     core: { status: 'unknown', latency: null },
     cmdb: { status: 'unknown', latency: null },
-    notification: { status: 'unknown', latency: null }
+    notification: { status: 'unknown', latency: null },
   };
 
   // Check core database
@@ -203,12 +207,12 @@ export async function checkDatabaseHealth() {
     await coreClient.$executeRaw`SELECT 1`;
     health.core = {
       status: 'healthy',
-      latency: Date.now() - start
+      latency: Date.now() - start,
     };
   } catch (error) {
     health.core = {
       status: 'unhealthy',
-      error: error.message
+      error: error.message,
     };
   }
 
@@ -218,12 +222,12 @@ export async function checkDatabaseHealth() {
     await cmdbClient.$executeRaw`SELECT 1`;
     health.cmdb = {
       status: 'healthy',
-      latency: Date.now() - start
+      latency: Date.now() - start,
     };
   } catch (error) {
     health.cmdb = {
       status: 'unhealthy',
-      error: error.message
+      error: error.message,
     };
   }
 
@@ -233,12 +237,12 @@ export async function checkDatabaseHealth() {
     await notificationClient.$executeRaw`SELECT 1`;
     health.notification = {
       status: 'healthy',
-      latency: Date.now() - start
+      latency: Date.now() - start,
     };
   } catch (error) {
     health.notification = {
       status: 'unhealthy',
-      error: error.message
+      error: error.message,
     };
   }
 
@@ -262,14 +266,13 @@ export async function executeMultiDbTransaction(operations) {
     for (const operation of operations) {
       const result = await operation.execute();
       results.push(result);
-      
+
       if (operation.rollback) {
         rollbackOperations.unshift(operation.rollback); // Add to beginning for reverse order
       }
     }
 
     return results;
-
   } catch (error) {
     logger.error('Multi-database transaction failed, attempting rollback:', error);
 
@@ -304,7 +307,7 @@ export async function getDatabaseStats() {
       stats.core = {
         users: coreUsers,
         roles: coreRoles,
-        status: 'healthy'
+        status: 'healthy',
       };
     } catch (error) {
       stats.core = { status: 'error', error: error.message };
@@ -317,14 +320,13 @@ export async function getDatabaseStats() {
       stats.notification = {
         events: notificationEvents,
         deliveries: notificationDeliveries,
-        status: 'healthy'
+        status: 'healthy',
       };
     } catch (error) {
       stats.notification = { status: 'error', error: error.message };
     }
 
     return stats;
-
   } catch (error) {
     logger.error('Failed to get database stats:', error);
     throw error;
@@ -343,7 +345,7 @@ export default {
   closeDatabaseConnections,
   checkDatabaseHealth,
   executeMultiDbTransaction,
-  getDatabaseStats
+  getDatabaseStats,
 };
 
 // Process handlers for graceful shutdown

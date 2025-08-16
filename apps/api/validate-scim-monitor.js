@@ -16,13 +16,13 @@ async function validateScimMonitorRouter() {
     console.log('2. Testing router mounting...');
     const app = express();
     app.use(express.json());
-    
+
     // Mock auth middleware
     app.use((req, res, next) => {
       req.user = { id: 'test-user' };
       next();
     });
-    
+
     app.use('/api/scim/monitor', scimMonitorRouter);
     console.log('✅ Router mounted successfully');
 
@@ -31,16 +31,16 @@ async function validateScimMonitorRouter() {
     const prisma = new PrismaClient();
     await prisma.$connect();
     console.log('✅ Database connection successful');
-    
+
     // Test 4: Verify ScimLog model exists
     console.log('4. Testing ScimLog model...');
     const count = await prisma.scimLog.count();
     console.log(`✅ ScimLog model working, found ${count} existing logs`);
-    
+
     await prisma.$disconnect();
 
     console.log('\n🎉 All validation tests passed! SCIM Monitor is ready for production.');
-    
+
     return true;
   } catch (error) {
     console.error('❌ Validation failed:', error);
@@ -51,7 +51,7 @@ async function validateScimMonitorRouter() {
 // Run validation if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   validateScimMonitorRouter()
-    .then(success => process.exit(success ? 0 : 1))
+    .then((success) => process.exit(success ? 0 : 1))
     .catch(() => process.exit(1));
 }
 

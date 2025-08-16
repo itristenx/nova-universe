@@ -236,13 +236,13 @@ export default function Modal({
   // Handle escape key
   React.useEffect(() => {
     if (!isOpen || !closeOnEscape) return;
-    
+
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
         onClose?.();
       }
     };
-    
+
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, closeOnEscape, onClose]);
@@ -254,7 +254,7 @@ export default function Modal({
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -272,16 +272,14 @@ export default function Modal({
   const overlayClasses = `nova-modal-overlay ${isOpen ? 'nova-modal-overlay--open' : ''}`;
 
   return (
-    <div 
+    <div
       className={overlayClasses}
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
       {...props}
     >
-      <div className={modalClasses}>
-        {children}
-      </div>
+      <div className={modalClasses}>{children}</div>
     </div>
   );
 }
@@ -292,13 +290,9 @@ export function ModalHeader({ children, onClose, className = '' }) {
     <div className={`nova-modal__header ${className}`}>
       <h2 className="nova-modal__title">{children}</h2>
       {onClose && (
-        <button 
-          className="nova-modal__close"
-          onClick={onClose}
-          aria-label="Close modal"
-        >
+        <button className="nova-modal__close" onClick={onClose} aria-label="Close modal">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M12.207 4.207a1 1 0 0 0-1.414-1.414L8 5.586 5.207 2.793a1 1 0 0 0-1.414 1.414L6.586 7l-2.793 2.793a1 1 0 1 0 1.414 1.414L8 8.414l2.793 2.793a1 1 0 0 0 1.414-1.414L9.414 7l2.793-2.793z"/>
+            <path d="M12.207 4.207a1 1 0 0 0-1.414-1.414L8 5.586 5.207 2.793a1 1 0 0 0-1.414 1.414L6.586 7l-2.793 2.793a1 1 0 1 0 1.414 1.414L8 8.414l2.793 2.793a1 1 0 0 0 1.414-1.414L9.414 7l2.793-2.793z" />
           </svg>
         </button>
       )}
@@ -309,21 +303,13 @@ export function ModalHeader({ children, onClose, className = '' }) {
 // Modal Body component
 export function ModalBody({ children, noPadding = false, className = '' }) {
   const bodyClasses = `nova-modal__body ${noPadding ? 'nova-modal__body--no-padding' : ''} ${className}`;
-  
-  return (
-    <div className={bodyClasses}>
-      {children}
-    </div>
-  );
+
+  return <div className={bodyClasses}>{children}</div>;
 }
 
 // Modal Footer component
 export function ModalFooter({ children, justify = 'right', className = '' }) {
   const justifyClass = justify !== 'right' ? `nova-modal__footer--${justify}` : '';
-  
-  return (
-    <div className={`nova-modal__footer ${justifyClass} ${className}`}>
-      {children}
-    </div>
-  );
+
+  return <div className={`nova-modal__footer ${justifyClass} ${className}`}>{children}</div>;
 }

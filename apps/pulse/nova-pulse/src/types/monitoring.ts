@@ -1,21 +1,49 @@
-import * as React from 'react'
+import * as React from 'react';
 // Nova Sentinel Enhanced Monitoring Types - Complete Uptime Kuma Parity
 // Supports 13+ monitor types and 90+ notification providers
 
-export type MonitorType = 
-  | 'http' | 'tcp' | 'ping' | 'dns' | 'ssl' 
-  | 'keyword' | 'json-query' | 'docker' | 'steam' 
-  | 'grpc' | 'mqtt' | 'radius' | 'push';
+export type MonitorType =
+  | 'http'
+  | 'tcp'
+  | 'ping'
+  | 'dns'
+  | 'ssl'
+  | 'keyword'
+  | 'json-query'
+  | 'docker'
+  | 'steam'
+  | 'grpc'
+  | 'mqtt'
+  | 'radius'
+  | 'push';
 
 export type MonitorStatus = 'active' | 'paused' | 'disabled' | 'maintenance';
 export type IncidentSeverity = 'critical' | 'high' | 'medium' | 'low';
 export type IncidentStatus = 'open' | 'acknowledged' | 'investigating' | 'resolved';
 
-export type NotificationProviderType = 
-  | 'telegram' | 'slack' | 'discord' | 'teams' | 'email' | 'webhook'
-  | 'pushover' | 'gotify' | 'pagerduty' | 'opsgenie' | 'pushbullet'
-  | 'line' | 'mattermost' | 'rocket_chat' | 'feishu' | 'dingtalk'
-  | 'bark' | 'ntfy' | 'splunk' | 'homeassistant' | 'matrix' | 'signal';
+export type NotificationProviderType =
+  | 'telegram'
+  | 'slack'
+  | 'discord'
+  | 'teams'
+  | 'email'
+  | 'webhook'
+  | 'pushover'
+  | 'gotify'
+  | 'pagerduty'
+  | 'opsgenie'
+  | 'pushbullet'
+  | 'line'
+  | 'mattermost'
+  | 'rocket_chat'
+  | 'feishu'
+  | 'dingtalk'
+  | 'bark'
+  | 'ntfy'
+  | 'splunk'
+  | 'homeassistant'
+  | 'matrix'
+  | 'signal';
 
 export interface Monitor {
   id: string;
@@ -30,7 +58,7 @@ export interface Monitor {
   retry_interval_seconds: number;
   max_retries: number;
   status: MonitorStatus;
-  
+
   // HTTP-specific
   http_method?: string;
   http_headers?: Record<string, string>;
@@ -38,7 +66,7 @@ export interface Monitor {
   accepted_status_codes?: number[];
   follow_redirects?: boolean;
   ignore_ssl?: boolean;
-  
+
   // Enhanced monitoring fields
   keyword?: string;
   keyword_inverted?: boolean;
@@ -48,14 +76,14 @@ export interface Monitor {
   docker_host?: string;
   steam_id?: string;
   ssl_days_remaining?: number;
-  
+
   // Authentication
   auth_method?: string;
   auth_username?: string;
   auth_password?: string;
   auth_token?: string;
   auth_domain?: string;
-  
+
   // Organization
   description?: string;
   group_name?: string;
@@ -63,7 +91,7 @@ export interface Monitor {
   tags?: string[];
   tag_names?: string[];
   tag_colors?: string[];
-  
+
   // Statistics
   uptime_24h?: number;
   uptime_7d?: number;
@@ -75,19 +103,19 @@ export interface Monitor {
   last_check_time?: string;
   last_response_time?: number;
   current_status?: boolean;
-  
+
   // Certificate info
   cert_days_remaining?: number;
   cert_expired?: boolean;
   cert_issuer?: string;
-  
+
   // Maintenance
   in_maintenance_window?: boolean;
-  
+
   // Push monitoring
   push_token?: string;
   push_url?: string;
-  
+
   // Metadata
   created_at: string;
   updated_at: string;

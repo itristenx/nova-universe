@@ -120,7 +120,7 @@ export class StatusPageService {
       // Query database for status page by slug or domain
       // This would be implemented with actual database queries
       const statusPage = await this.queryStatusPageBySlugOrDomain(slugOrDomain);
-      
+
       if (statusPage) {
         // Cache for 5 minutes
         this.cache.set(cacheKey, statusPage);
@@ -137,14 +137,18 @@ export class StatusPageService {
   /**
    * Generate status page HTML with custom branding
    */
-  async generateStatusPageHTML(statusPage: StatusPage, monitors: any[], incidents: StatusPageIncident[]): Promise<string> {
+  async generateStatusPageHTML(
+    statusPage: StatusPage,
+    monitors: any[],
+    incidents: StatusPageIncident[],
+  ): Promise<string> {
     const uptime7d = await this.calculateUptime(statusPage.id, 7);
     const uptime30d = await this.calculateUptime(statusPage.id, 30);
     const uptime90d = await this.calculateUptime(statusPage.id, 90);
 
     // Calculate overall status
     const overallStatus = this.calculateOverallStatus(monitors);
-    
+
     // Group monitors by status
     const monitorsByStatus = this.groupMonitorsByStatus(monitors);
 
@@ -234,7 +238,14 @@ export class StatusPageService {
     </section>
 
     <!-- Current Incidents -->
-    ${incidents.filter(i => i.status !== 'resolved').length > 0 ? this.generateIncidentsHTML(incidents.filter(i => i.status !== 'resolved'), 'Active Incidents') : ''}
+    ${
+      incidents.filter((i) => i.status !== 'resolved').length > 0
+        ? this.generateIncidentsHTML(
+            incidents.filter((i) => i.status !== 'resolved'),
+            'Active Incidents',
+          )
+        : ''
+    }
 
     <!-- Monitors -->
     <section class="monitors-section">
@@ -256,7 +267,14 @@ export class StatusPageService {
     </section>
 
     <!-- Incident History -->
-    ${incidents.filter(i => i.status === 'resolved').length > 0 ? this.generateIncidentsHTML(incidents.filter(i => i.status === 'resolved'), 'Recent Incidents') : ''}
+    ${
+      incidents.filter((i) => i.status === 'resolved').length > 0
+        ? this.generateIncidentsHTML(
+            incidents.filter((i) => i.status === 'resolved'),
+            'Recent Incidents',
+          )
+        : ''
+    }
 
     <!-- Subscription Form -->
     <section class="subscription-section">
@@ -632,7 +650,7 @@ export class StatusPageService {
       const { default: db } = await import('../db.js');
       const res = await db.query?.(
         `SELECT * FROM nova_status_pages WHERE slug = $1 OR domain_name = $1 LIMIT 1`,
-        [slugOrDomain]
+        [slugOrDomain],
       );
       if (res?.rows && res.rows.length > 0) {
         return res.rows[0] as unknown as StatusPage;
@@ -653,7 +671,7 @@ export class StatusPageService {
          JOIN nova_status_page_monitors spm ON spm.monitor_id = sms.id
          WHERE spm.status_page_id = $1
            AND sms.last_check_time >= NOW() - ($2 || ' days')::INTERVAL`,
-        [statusPageId, days]
+        [statusPageId, days],
       );
       const value = parseFloat(res?.rows?.[0]?.uptime ?? '0');
       return isFinite(value) ? value : 0;
@@ -664,39 +682,39 @@ export class StatusPageService {
   }
 
   private calculateOverallStatus(monitors: any[]): any {
-    const downCount = monitors.filter(m => m.status === 'down').length;
-    const degradedCount = monitors.filter(m => m.status === 'degraded').length;
-    
+    const downCount = monitors.filter((m) => m.status === 'down').length;
+    const degradedCount = monitors.filter((m) => m.status === 'degraded').length;
+
     if (downCount > 0) {
       return {
         class: 'down',
         icon: '🔴',
         title: 'Major Service Outage',
-        message: `${downCount} service${downCount > 1 ? 's are' : ' is'} currently down`
+        message: `${downCount} service${downCount > 1 ? 's are' : ' is'} currently down`,
       };
     } else if (degradedCount > 0) {
       return {
         class: 'degraded',
         icon: '🟡',
         title: 'Degraded Performance',
-        message: `${degradedCount} service${degradedCount > 1 ? 's are' : ' is'} experiencing issues`
+        message: `${degradedCount} service${degradedCount > 1 ? 's are' : ' is'} experiencing issues`,
       };
     } else {
       return {
         class: 'operational',
         icon: '🟢',
         title: 'All Systems Operational',
-        message: 'All services are running normally'
+        message: 'All services are running normally',
       };
     }
   }
 
   private groupMonitorsByStatus(monitors: any[]): any {
     return {
-      operational: monitors.filter(m => m.status === 'operational'),
-      degraded: monitors.filter(m => m.status === 'degraded'),
-      down: monitors.filter(m => m.status === 'down'),
-      maintenance: monitors.filter(m => m.status === 'maintenance')
+      operational: monitors.filter((m) => m.status === 'operational'),
+      degraded: monitors.filter((m) => m.status === 'degraded'),
+      down: monitors.filter((m) => m.status === 'down'),
+      maintenance: monitors.filter((m) => m.status === 'maintenance'),
     };
   }
 
@@ -705,7 +723,9 @@ export class StatusPageService {
       <div class="monitor-group">
         <h3>${title}</h3>
         <div class="monitor-list">
-          ${monitors.map(monitor => `
+          ${monitors
+            .map(
+              (monitor) => `
             <div class="monitor-item">
               <div class="monitor-info">
                 <div class="monitor-status ${status}"></div>
@@ -716,7 +736,9 @@ export class StatusPageService {
                 ${monitor.response_time ? `<span>Response: ${monitor.response_time}ms</span>` : ''}
               </div>
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       </div>
     `;
@@ -727,7 +749,9 @@ export class StatusPageService {
       <section class="incidents-section">
         <div class="container">
           <h2>${title}</h2>
-          ${incidents.map(incident => `
+          ${incidents
+            .map(
+              (incident) => `
             <div class="incident-item">
               <div class="incident-header">
                 <h3 class="incident-title">${incident.title}</h3>
@@ -736,7 +760,9 @@ export class StatusPageService {
               <p class="incident-content">${incident.content}</p>
               <p class="incident-time">${new Date(incident.created_at).toLocaleString()}</p>
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       </section>
     `;
@@ -758,15 +784,19 @@ export class StatusPageService {
   /**
    * Generate status badge SVG
    */
-  async generateStatusBadge(badge: StatusPageBadge, monitorStatus: string, uptime?: number): Promise<string> {
+  async generateStatusBadge(
+    badge: StatusPageBadge,
+    monitorStatus: string,
+    uptime?: number,
+  ): Promise<string> {
     const colors = {
       up: badge.color_up || '#4c1',
       down: badge.color_down || '#e05d44',
-      pending: badge.color_pending || '#dfb317'
+      pending: badge.color_pending || '#dfb317',
     };
 
-    const color = monitorStatus === 'up' ? colors.up : 
-                  monitorStatus === 'down' ? colors.down : colors.pending;
+    const color =
+      monitorStatus === 'up' ? colors.up : monitorStatus === 'down' ? colors.down : colors.pending;
 
     const label = badge.label || 'status';
     let message = '';

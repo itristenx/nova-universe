@@ -28,7 +28,10 @@ router.post(
     body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
     body('first_name').isString().isLength({ min: 1 }).withMessage('First name is required'),
     body('last_name').isString().isLength({ min: 1 }).withMessage('Last name is required'),
-    body('password').isString().isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    body('password')
+      .isString()
+      .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters'),
   ],
   async (req, res) => {
     try {
@@ -56,7 +59,7 @@ router.post(
         const passwordHash = await bcrypt.hash(password, 12);
         const result = await db.query(
           'INSERT INTO users (name, email, password_hash, disabled, created_at, updated_at) VALUES ($1, $2, $3, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, name, email',
-          [fullName, email, passwordHash]
+          [fullName, email, passwordHash],
         );
         const user = result.rows[0];
         return res.status(201).json({ id: user.id, email: user.email, name: user.name });
@@ -67,7 +70,13 @@ router.post(
         }
         const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         const passwordHash = await bcrypt.hash(password, 12);
-        const user = { id, email, name: fullName, passwordHash, createdAt: new Date().toISOString() };
+        const user = {
+          id,
+          email,
+          name: fullName,
+          passwordHash,
+          createdAt: new Date().toISOString(),
+        };
         inMemoryUsersByEmail.set(email, user);
         return res.status(201).json({ id, email, name: fullName });
       }
@@ -75,7 +84,7 @@ router.post(
       logger.error('Registration error', { error: error.message });
       return res.status(500).json({ error: 'Registration failed' });
     }
-  }
+  },
 );
 
 // POST /api/auth/login
@@ -83,7 +92,7 @@ router.post(
   '/login',
   [
     body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
-    body('password').isString().isLength({ min: 1 }).withMessage('Password is required')
+    body('password').isString().isLength({ min: 1 }).withMessage('Password is required'),
   ],
   async (req, res) => {
     try {
@@ -103,7 +112,10 @@ router.post(
 
       let user = null;
       try {
-        const found = await db.query('SELECT id, name, email, password_hash as passwordhash, disabled, locked_until FROM users WHERE email = $1', [email]);
+        const found = await db.query(
+          'SELECT id, name, email, password_hash as passwordhash, disabled, locked_until FROM users WHERE email = $1',
+          [email],
+        );
         if (found.rows && found.rows.length > 0) {
           user = { ...found.rows[0], passwordHash: found.rows[0].passwordhash };
           if (user.locked_until && new Date(user.locked_until).getTime() > now) {
@@ -142,9 +154,7 @@ router.post(
       logger.error('Login error', { error: error.message });
       return res.status(500).json({ error: 'Login failed' });
     }
-  }
+  },
 );
 
 export default router;
-
-

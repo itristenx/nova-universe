@@ -37,15 +37,15 @@ const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.json()
+    winston.format.json(),
   ),
   transports: [
     new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
     new winston.transports.File({ filename: 'logs/combined.log' }),
     new winston.transports.Console({
-      format: winston.format.simple()
-    })
-  ]
+      format: winston.format.simple(),
+    }),
+  ],
 });
 
 // Express app setup
@@ -53,9 +53,9 @@ const app = express();
 const server = createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "*",
-    methods: ["GET", "POST", "PUT", "DELETE"]
-  }
+    origin: process.env.CORS_ORIGIN || '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  },
 });
 
 // Configuration
@@ -64,40 +64,44 @@ const CONFIG = {
   uptimeKuma: {
     url: process.env.UPTIME_KUMA_URL || 'http://localhost:3001',
     apiKey: process.env.UPTIME_KUMA_API_KEY,
-    enabled: process.env.UPTIME_KUMA_ENABLED === 'true'
+    enabled: process.env.UPTIME_KUMA_ENABLED === 'true',
   },
   helix: {
     url: process.env.HELIX_URL || 'http://localhost:3000/api/v1/helix',
-    apiKey: process.env.HELIX_API_KEY
+    apiKey: process.env.HELIX_API_KEY,
   },
   database: {
     type: process.env.DB_TYPE || 'sqlite',
     path: process.env.DB_PATH || './data/sentinel.db',
-    url: process.env.DATABASE_URL
+    url: process.env.DATABASE_URL,
   },
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
-    enabled: process.env.REDIS_ENABLED === 'true'
-  }
+    enabled: process.env.REDIS_ENABLED === 'true',
+  },
 };
 
 // Middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:"]
-    }
-  }
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", 'ws:', 'wss:'],
+      },
+    },
+  }),
+);
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || "*",
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true,
+  }),
+);
 
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
@@ -109,7 +113,7 @@ const limiter = rateLimit({
   max: 1000, // limit each IP to 1000 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 app.use(limiter);
 
@@ -144,7 +148,7 @@ async function initializeServices() {
       services.monitoring.initialize(),
       services.notifications.initialize(),
       services.statusPages.initialize(),
-      services.analytics.initialize()
+      services.analytics.initialize(),
     ]);
 
     logger.info('All Nova Sentinel services initialized successfully');
@@ -158,19 +162,19 @@ async function initializeServices() {
 async function authenticateRequest(req, res, next) {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Authentication token required' 
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication token required',
       });
     }
 
     const user = await services.helix.validateToken(token);
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Invalid authentication token' 
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid authentication token',
       });
     }
 
@@ -178,9 +182,9 @@ async function authenticateRequest(req, res, next) {
     next();
   } catch (error) {
     logger.error('Authentication error:', error);
-    res.status(401).json({ 
-      success: false, 
-      error: 'Authentication failed' 
+    res.status(401).json({
+      success: false,
+      error: 'Authentication failed',
     });
   }
 }
@@ -199,14 +203,14 @@ app.get('/health', async (req, res) => {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       services: {
-        database: await services.database?.healthCheck() || false,
-        uptimeKuma: await services.uptimeKuma?.healthCheck() || false,
-        helix: await services.helix?.healthCheck() || false
-      }
+        database: (await services.database?.healthCheck()) || false,
+        uptimeKuma: (await services.uptimeKuma?.healthCheck()) || false,
+        helix: (await services.helix?.healthCheck()) || false,
+      },
     };
 
     // Check overall health
-    const servicesHealthy = Object.values(health.services).every(status => status === true);
+    const servicesHealthy = Object.values(health.services).every((status) => status === true);
     if (!servicesHealthy) {
       health.status = 'degraded';
     }
@@ -217,7 +221,7 @@ app.get('/health', async (req, res) => {
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -236,7 +240,7 @@ app.get('/api-docs', (req, res) => {
       'Maintenance windows',
       'Analytics and reporting',
       'Helix authentication integration',
-      'WebSocket real-time updates'
+      'WebSocket real-time updates',
     ],
     endpoints: {
       monitors: '/api/v1/monitors',
@@ -245,8 +249,8 @@ app.get('/api-docs', (req, res) => {
       maintenance: '/api/v1/maintenance',
       analytics: '/api/v1/analytics',
       webhooks: '/api/v1/webhooks',
-      settings: '/api/v1/settings'
-    }
+      settings: '/api/v1/settings',
+    },
   });
 });
 
@@ -287,7 +291,7 @@ io.on('connection', async (socket) => {
   // Handle monitor subscription
   socket.on('subscribe_monitors', (monitorIds) => {
     if (socket.user) {
-      monitorIds.forEach(id => {
+      monitorIds.forEach((id) => {
         socket.join(`monitor_${id}`);
       });
       socket.emit('subscription_confirmed', { monitors: monitorIds });
@@ -341,7 +345,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     success: false,
     error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
   });
 });
 
@@ -357,17 +361,17 @@ process.on('uncaughtException', (error) => {
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, shutting down gracefully');
-  
+
   // Close server
   server.close(() => {
     logger.info('Server closed');
   });
-  
+
   // Close database connections
   if (services.database) {
     await services.database.close();
   }
-  
+
   process.exit(0);
 });
 
@@ -375,7 +379,7 @@ process.on('SIGTERM', async () => {
 async function startServer() {
   try {
     await initializeServices();
-    
+
     server.listen(CONFIG.port, () => {
       logger.info(`🌌 Nova Sentinel running on port ${CONFIG.port}`);
       logger.info(`📊 Health check: http://localhost:${CONFIG.port}/health`);
@@ -386,7 +390,6 @@ async function startServer() {
 
     // Start background services
     await startBackgroundServices();
-    
   } catch (error) {
     logger.error('Failed to start server:', error);
     process.exit(1);

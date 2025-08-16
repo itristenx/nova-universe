@@ -16,7 +16,7 @@ export const Dialog: React.FC<DialogProps> = ({ open, onClose, children, ...prop
       previouslyFocused.current = document.activeElement as HTMLElement | null;
       // Focus the first focusable element inside the dialog
       const focusable = dialogRef.current?.querySelector<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       );
       focusable?.focus();
       const onKeyDown = (e: KeyboardEvent) => {
@@ -26,10 +26,10 @@ export const Dialog: React.FC<DialogProps> = ({ open, onClose, children, ...prop
         if (e.key === 'Tab') {
           // Simple focus trap
           const nodes = dialogRef.current?.querySelectorAll<HTMLElement>(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
           );
           if (!nodes || nodes.length === 0) return;
-          const focusables = Array.from(nodes).filter(n => !n.hasAttribute('disabled'));
+          const focusables = Array.from(nodes).filter((n) => !n.hasAttribute('disabled'));
           const first = focusables[0];
           const last = focusables[focusables.length - 1];
           if (e.shiftKey && document.activeElement === first) {
@@ -57,11 +57,7 @@ export const Dialog: React.FC<DialogProps> = ({ open, onClose, children, ...prop
       className={props.className || 'dialog-backdrop'}
       onClick={onClose}
     >
-      <div
-        ref={dialogRef}
-        className="dialog-content"
-        onClick={e => e.stopPropagation()}
-      >
+      <div ref={dialogRef} className="dialog-content" onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>

@@ -76,7 +76,6 @@ export interface CertificateInfo {
  * Implements tags, maintenance windows, proxy support, and certificate monitoring
  */
 export class AdvancedFeaturesService {
-
   /**
    * Tag Management
    */
@@ -88,13 +87,13 @@ export class AdvancedFeaturesService {
       description: tagData.description,
       tenant_id: tagData.tenant_id,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     // Save to database
     await this.saveTag(tag);
     logger.info(`Created tag: ${tag.name}`);
-    
+
     return tag;
   }
 
@@ -117,7 +116,9 @@ export class AdvancedFeaturesService {
   /**
    * Maintenance Window Management
    */
-  async createMaintenanceWindow(windowData: Partial<MaintenanceWindow>): Promise<MaintenanceWindow> {
+  async createMaintenanceWindow(
+    windowData: Partial<MaintenanceWindow>,
+  ): Promise<MaintenanceWindow> {
     const window: MaintenanceWindow = {
       id: this.generateId(),
       title: windowData.title!,
@@ -134,14 +135,14 @@ export class AdvancedFeaturesService {
       tenant_id: windowData.tenant_id,
       created_by: windowData.created_by,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     await this.saveMaintenanceWindow(window);
-    
+
     // Schedule notifications
     await this.scheduleMaintenanceNotifications(window);
-    
+
     logger.info(`Created maintenance window: ${window.title}`);
     return window;
   }
@@ -149,8 +150,8 @@ export class AdvancedFeaturesService {
   async getActiveMaintenanceWindows(): Promise<MaintenanceWindow[]> {
     const now = new Date();
     const windows = await this.queryMaintenanceWindows();
-    
-    return windows.filter(window => {
+
+    return windows.filter((window) => {
       const startTime = new Date(window.start_time);
       const endTime = new Date(window.end_time);
       return startTime <= now && endTime >= now && window.status === 'active';
@@ -159,10 +160,10 @@ export class AdvancedFeaturesService {
 
   async getScheduledMaintenanceWindows(daysAhead: number = 7): Promise<MaintenanceWindow[]> {
     const now = new Date();
-    const futureDate = new Date(now.getTime() + (daysAhead * 24 * 60 * 60 * 1000));
+    const futureDate = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000);
     const windows = await this.queryMaintenanceWindows();
-    
-    return windows.filter(window => {
+
+    return windows.filter((window) => {
       const startTime = new Date(window.start_time);
       return startTime > now && startTime <= futureDate && window.status === 'scheduled';
     });
@@ -170,13 +171,13 @@ export class AdvancedFeaturesService {
 
   async isMonitorInMaintenance(monitorId: string): Promise<boolean> {
     const activeWindows = await this.getActiveMaintenanceWindows();
-    
-    return activeWindows.some(window => {
+
+    return activeWindows.some((window) => {
       // Check if monitor is directly affected
       if (window.affected_monitors.includes(monitorId)) {
         return true;
       }
-      
+
       // Check if monitor has any affected tags
       // This would require querying monitor tags from database
       return false;
@@ -187,16 +188,16 @@ export class AdvancedFeaturesService {
     // Schedule notifications 24 hours, 1 hour, and 15 minutes before maintenance
     const startTime = new Date(window.start_time);
     const now = new Date();
-    
+
     const notifications = [
       { offset: 24 * 60 * 60 * 1000, message: '24 hours before maintenance' },
       { offset: 60 * 60 * 1000, message: '1 hour before maintenance' },
-      { offset: 15 * 60 * 1000, message: '15 minutes before maintenance' }
+      { offset: 15 * 60 * 1000, message: '15 minutes before maintenance' },
     ];
-    
+
     for (const notification of notifications) {
       const notificationTime = new Date(startTime.getTime() - notification.offset);
-      
+
       if (notificationTime > now) {
         // Schedule notification (this would use a job queue in production)
         setTimeout(async () => {
@@ -206,9 +207,12 @@ export class AdvancedFeaturesService {
     }
   }
 
-  private async sendMaintenanceNotification(window: MaintenanceWindow, timing: string): Promise<void> {
+  private async sendMaintenanceNotification(
+    window: MaintenanceWindow,
+    timing: string,
+  ): Promise<void> {
     logger.info(`Sending maintenance notification: ${window.title} - ${timing}`);
-    
+
     // Send notification to all subscribers
     // This would integrate with the notification system
   }
@@ -216,7 +220,9 @@ export class AdvancedFeaturesService {
   /**
    * Proxy Configuration Management
    */
-  async createProxyConfiguration(proxyData: Partial<ProxyConfiguration>): Promise<ProxyConfiguration> {
+  async createProxyConfiguration(
+    proxyData: Partial<ProxyConfiguration>,
+  ): Promise<ProxyConfiguration> {
     const proxy: ProxyConfiguration = {
       id: this.generateId(),
       name: proxyData.name!,
@@ -228,12 +234,12 @@ export class AdvancedFeaturesService {
       active: proxyData.active || true,
       tenant_id: proxyData.tenant_id,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     await this.saveProxyConfiguration(proxy);
     logger.info(`Created proxy configuration: ${proxy.name}`);
-    
+
     return proxy;
   }
 
@@ -246,15 +252,15 @@ export class AdvancedFeaturesService {
       // Test proxy connection
       const axios = await import('axios');
       const HttpsProxyAgent = await import('https-proxy-agent');
-      
+
       const proxyUrl = `${proxy.protocol}://${proxy.username ? `${proxy.username}:${proxy.password}@` : ''}${proxy.hostname}:${proxy.port}`;
       const agent = new HttpsProxyAgent.HttpsProxyAgent(proxyUrl);
-      
+
       const response = await axios.default.get('https://httpbin.org/ip', {
         httpsAgent: agent,
-        timeout: 10000
+        timeout: 10000,
       });
-      
+
       return response.status === 200;
     } catch (error: any) {
       logger.error(`Proxy test failed: ${error.message}`);
@@ -268,15 +274,17 @@ export class AdvancedFeaturesService {
   async checkCertificate(hostname: string, port: number = 443): Promise<CertificateInfo> {
     try {
       const tls = await import('tls');
-      
+
       return new Promise((resolve, reject) => {
         const socket = tls.connect(port, hostname, { servername: hostname }, () => {
           const cert = socket.getPeerCertificate(true);
           const now = new Date();
           const validTo = new Date(cert.valid_to);
           const validFrom = new Date(cert.valid_from);
-          const daysRemaining = Math.floor((validTo.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          
+          const daysRemaining = Math.floor(
+            (validTo.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+          );
+
           const certInfo: CertificateInfo = {
             monitor_id: '', // This would be set by the caller
             hostname,
@@ -294,9 +302,9 @@ export class AdvancedFeaturesService {
             is_expired: now > validTo,
             is_valid: now >= validFrom && now <= validTo,
             chain_length: 1, // This would require parsing the full chain
-            last_checked: new Date().toISOString()
+            last_checked: new Date().toISOString(),
           };
-          
+
           socket.destroy();
           resolve(certInfo);
         });
@@ -326,33 +334,33 @@ export class AdvancedFeaturesService {
   async generateTotpSecret(): Promise<{ secret: string; qrCode: string; backupCodes: string[] }> {
     const speakeasy = await import('speakeasy');
     const qrcode = await import('qrcode');
-    
+
     const secret = speakeasy.generateSecret({
-      name: 'Nova Sentinel'
+      name: 'Nova Sentinel',
     });
-    
+
     const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url!);
-    
+
     // Generate backup codes
-    const backupCodes = Array.from({ length: 10 }, () => 
-      Math.random().toString(36).substr(2, 8).toUpperCase()
+    const backupCodes = Array.from({ length: 10 }, () =>
+      Math.random().toString(36).substr(2, 8).toUpperCase(),
     );
-    
+
     return {
       secret: secret.base32!,
       qrCode: qrCodeUrl,
-      backupCodes
+      backupCodes,
     };
   }
 
   async verifyTotpToken(secret: string, token: string): Promise<boolean> {
     const speakeasy = await import('speakeasy');
-    
+
     return speakeasy.totp.verify({
       secret,
       token,
       encoding: 'base32',
-      window: 2 // Allow 2 time steps of variance
+      window: 2, // Allow 2 time steps of variance
     });
   }
 
@@ -362,11 +370,11 @@ export class AdvancedFeaturesService {
   async generatePingChartData(monitorId: string, hours: number = 24): Promise<any[]> {
     // Query monitor results for the specified time period
     const results = await this.queryMonitorResults(monitorId, hours);
-    
-    return results.map(result => ({
+
+    return results.map((result) => ({
       timestamp: result.timestamp,
       responseTime: result.response_time,
-      status: result.success ? 'up' : 'down'
+      status: result.success ? 'up' : 'down',
     }));
   }
 
@@ -379,8 +387,16 @@ export class AdvancedFeaturesService {
 
   private getRandomColor(): string {
     const colors = [
-      '#007AFF', '#34C759', '#FF9500', '#FF3B30', '#AF52DE',
-      '#FF2D92', '#5AC8FA', '#FFCC00', '#FF9F0A', '#30D158'
+      '#007AFF',
+      '#34C759',
+      '#FF9500',
+      '#FF3B30',
+      '#AF52DE',
+      '#FF2D92',
+      '#5AC8FA',
+      '#FFCC00',
+      '#FF9F0A',
+      '#30D158',
     ];
     return colors[Math.floor(Math.random() * colors.length)];
   }
@@ -388,17 +404,22 @@ export class AdvancedFeaturesService {
   // Database-backed methods
   private async saveTag(tag: Tag): Promise<void> {
     const db = (await import('../db.js')).default;
-    await db.query(`
+    await db.query(
+      `
       INSERT INTO tags (id, tenant_id, name, color, created_at, updated_at)
       VALUES ($1, $2, $3, $4, NOW(), NOW())
       ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, color = EXCLUDED.color, updated_at = NOW()
-    `, [tag.id, tag.tenantId || null, tag.name, tag.color || this.getRandomColor()]);
+    `,
+      [tag.id, tag.tenantId || null, tag.name, tag.color || this.getRandomColor()],
+    );
   }
 
   private async queryTagsByTenant(tenantId?: string): Promise<Tag[]> {
     const db = (await import('../db.js')).default;
     const res = tenantId
-      ? await db.query('SELECT id, name, color FROM tags WHERE tenant_id = $1 ORDER BY name', [tenantId])
+      ? await db.query('SELECT id, name, color FROM tags WHERE tenant_id = $1 ORDER BY name', [
+          tenantId,
+        ])
       : await db.query('SELECT id, name, color FROM tags ORDER BY name');
     return (res.rows || []).map((r: any) => ({ id: r.id, name: r.name, color: r.color, tenantId }));
   }
@@ -407,7 +428,10 @@ export class AdvancedFeaturesService {
     const db = (await import('../db.js')).default;
     await db.query('DELETE FROM monitor_tags WHERE monitor_id = $1', [monitorId]);
     for (const tagId of tagIds) {
-      await db.query('INSERT INTO monitor_tags (monitor_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [monitorId, tagId]);
+      await db.query(
+        'INSERT INTO monitor_tags (monitor_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [monitorId, tagId],
+      );
     }
   }
 
@@ -419,53 +443,77 @@ export class AdvancedFeaturesService {
 
   private async saveMaintenanceWindow(window: MaintenanceWindow): Promise<void> {
     const db = (await import('../db.js')).default;
-    await db.query(`
+    await db.query(
+      `
       INSERT INTO maintenance_windows (id, tenant_id, title, status, scheduled_start, scheduled_end, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, status = EXCLUDED.status, scheduled_start = EXCLUDED.scheduled_start, scheduled_end = EXCLUDED.scheduled_end, updated_at = NOW()
-    `, [window.id, window.tenantId || null, window.title, window.status || 'scheduled', window.startTime, window.endTime]);
+    `,
+      [
+        window.id,
+        window.tenantId || null,
+        window.title,
+        window.status || 'scheduled',
+        window.startTime,
+        window.endTime,
+      ],
+    );
   }
 
   private async queryMaintenanceWindows(): Promise<MaintenanceWindow[]> {
     const db = (await import('../db.js')).default;
-    const res = await db.query('SELECT id, title, status, scheduled_start as "startTime", scheduled_end as "endTime", tenant_id as "tenantId" FROM maintenance_windows ORDER BY scheduled_start DESC');
+    const res = await db.query(
+      'SELECT id, title, status, scheduled_start as "startTime", scheduled_end as "endTime", tenant_id as "tenantId" FROM maintenance_windows ORDER BY scheduled_start DESC',
+    );
     return res.rows || [];
   }
 
   private async saveProxyConfiguration(proxy: ProxyConfiguration): Promise<void> {
     const db = (await import('../db.js')).default;
-    await db.query(`
+    await db.query(
+      `
       INSERT INTO proxy_configurations (id, tenant_id, name, target_url, auth_type, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
       ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, target_url = EXCLUDED.target_url, auth_type = EXCLUDED.auth_type, updated_at = NOW()
-    `, [proxy.id, proxy.tenantId || null, proxy.name, proxy.targetUrl, proxy.authType || 'none']);
+    `,
+      [proxy.id, proxy.tenantId || null, proxy.name, proxy.targetUrl, proxy.authType || 'none'],
+    );
   }
 
   private async queryProxyConfiguration(proxyId: string): Promise<ProxyConfiguration | null> {
     const db = (await import('../db.js')).default;
-    const res = await db.query('SELECT id, tenant_id as "tenantId", name, target_url as "targetUrl", auth_type as "authType" FROM proxy_configurations WHERE id = $1', [proxyId]);
+    const res = await db.query(
+      'SELECT id, tenant_id as "tenantId", name, target_url as "targetUrl", auth_type as "authType" FROM proxy_configurations WHERE id = $1',
+      [proxyId],
+    );
     return res.rows?.[0] || null;
   }
 
   private async queryCertificatesExpiringSoon(days: number): Promise<CertificateInfo[]> {
     const db = (await import('../db.js')).default;
-    const res = await db.query(`
+    const res = await db.query(
+      `
       SELECT id, monitor_id as "monitorId", days_remaining as "daysRemaining", is_expired as "isExpired", issuer
       FROM certificate_info
       WHERE days_remaining <= $1
       ORDER BY days_remaining ASC
-    `, [days]);
+    `,
+      [days],
+    );
     return res.rows || [];
   }
 
   private async queryMonitorResults(monitorId: string, hours: number): Promise<any[]> {
     const db = (await import('../db.js')).default;
-    const res = await db.query(`
+    const res = await db.query(
+      `
       SELECT checked_at as timestamp, response_time_ms as response_time, (status = 'up') as success
       FROM monitor_heartbeats
       WHERE monitor_id = $1 AND checked_at >= NOW() - ($2 || ' hours')::interval
       ORDER BY checked_at ASC
-    `, [monitorId, String(hours)]);
+    `,
+      [monitorId, String(hours)],
+    );
     return res.rows || [];
   }
 }

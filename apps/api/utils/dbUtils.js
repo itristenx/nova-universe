@@ -71,7 +71,7 @@ export async function getSlaTargets(typeCode, urgency, impact) {
     const type = normalizeTicketType(typeCode);
     const res = await db.query(
       'SELECT response_minutes, resolution_minutes FROM sla_policies WHERE type_code = $1 AND urgency = $2 AND impact = $3',
-      [type, (urgency || 'medium').toLowerCase(), (impact || 'medium').toLowerCase()]
+      [type, (urgency || 'medium').toLowerCase(), (impact || 'medium').toLowerCase()],
     );
     if (res.rows && res.rows.length > 0) {
       return res.rows[0];
@@ -94,14 +94,16 @@ export function computeDueDate(now, priority, slaTargets) {
   }
   switch (priority) {
     case 'critical':
-      due.setHours(due.getHours() + 4); break;
+      due.setHours(due.getHours() + 4);
+      break;
     case 'high':
-      due.setDate(due.getDate() + 1); break;
+      due.setDate(due.getDate() + 1);
+      break;
     case 'medium':
-      due.setDate(due.getDate() + 3); break;
+      due.setDate(due.getDate() + 3);
+      break;
     default:
       due.setDate(due.getDate() + 7);
   }
   return due;
 }
-

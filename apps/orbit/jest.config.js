@@ -1,10 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const nextJest = require('next/jest')
+const nextJest = require('next/jest');
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files
   dir: './',
-})
+});
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
@@ -21,9 +21,7 @@ const customJestConfig = {
     '<rootDir>/node_modules/',
     '<rootDir>/src/__tests__/e2e/',
   ],
-  transformIgnorePatterns: [
-    'node_modules/(?!(next-intl)/)',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(next-intl)/)'],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
@@ -42,7 +40,7 @@ const customJestConfig = {
     '<rootDir>/src/**/__tests__/**/*.(spec|test).{js,jsx,ts,tsx}',
     '<rootDir>/src/**/*.(spec|test).{js,jsx,ts,tsx}',
   ],
-}
+};
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)
+module.exports = createJestConfig(customJestConfig);

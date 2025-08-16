@@ -14,7 +14,7 @@ class NovaSynthProductionTests {
       total: 0,
       passed: 0,
       failed: 0,
-      skipped: 0
+      skipped: 0,
     };
   }
 
@@ -27,31 +27,30 @@ class NovaSynthProductionTests {
     try {
       // Configuration Tests
       await this.runConfigurationTests();
-      
+
       // Authentication Tests
       await this.runAuthenticationTests();
-      
+
       // Data Intelligence Tests
       await this.runDataIntelligenceTests();
-      
+
       // Training Tests
       await this.runTrainingTests();
-      
+
       // Monitoring Tests
       await this.runMonitoringTests();
-      
+
       // Feedback Loop Tests
       await this.runFeedbackLoopTests();
-      
+
       // Performance Tests
       await this.runPerformanceTests();
-      
+
       // Security Tests
       await this.runSecurityTests();
 
       // Generate test report
       this.generateTestReport();
-      
     } catch (error) {
       console.error('❌ Test suite failed:', error);
     }
@@ -75,12 +74,12 @@ class NovaSynthProductionTests {
     await this.test('Environment Configuration', async () => {
       const devConfig = this.config.getConfig('development');
       const prodConfig = this.config.getConfig('production');
-      
+
       // They should be different objects, but both valid
       if (!devConfig || !prodConfig) {
         throw new Error('Development and production configs not properly configured');
       }
-      
+
       return { environments: 'configured correctly' };
     });
 
@@ -112,9 +111,9 @@ class NovaSynthProductionTests {
         mockMode: true,
         organization: { id: 'test-org' },
         endpoints: { synthUrl: 'https://api.test.com' },
-        credentials: { token: 'test-bearer-token' }
+        credentials: { token: 'test-bearer-token' },
       });
-      
+
       await connector.initialize();
       return { auth: 'bearer token configured' };
     });
@@ -125,12 +124,12 @@ class NovaSynthProductionTests {
         mockMode: true,
         organization: { id: 'test-org' },
         endpoints: { synthUrl: 'https://api.test.com' },
-        credentials: { 
+        credentials: {
           clientId: 'test-client-id',
-          clientSecret: 'test-client-secret'
-        }
+          clientSecret: 'test-client-secret',
+        },
       });
-      
+
       await connector.initialize();
       return { auth: 'oauth2 configured' };
     });
@@ -144,10 +143,10 @@ class NovaSynthProductionTests {
         credentials: {
           issuer: 'test-issuer',
           subject: 'test-subject',
-          jwtSecret: 'test-secret'
-        }
+          jwtSecret: 'test-secret',
+        },
       });
-      
+
       await connector.initialize();
       return { auth: 'jwt configured' };
     });
@@ -160,10 +159,10 @@ class NovaSynthProductionTests {
         endpoints: { synthUrl: 'https://api.test.com' },
         credentials: {
           apiKey: 'test-api-key',
-          apiKeyHeader: 'X-API-Key'
-        }
+          apiKeyHeader: 'X-API-Key',
+        },
       });
-      
+
       await connector.initialize();
       return { auth: 'api key configured' };
     });
@@ -180,21 +179,22 @@ class NovaSynthProductionTests {
     await this.test('Profile Matching', async () => {
       const result = await connector.matchUserProfiles([
         { name: 'John Doe', email: 'john@company.com' },
-        { name: 'J. Doe', email: 'j.doe@company.com' }
+        { name: 'J. Doe', email: 'j.doe@company.com' },
       ]);
-      
+
       if (!result.matches?.length) throw new Error('No matches found');
       return result;
     });
 
     await this.test('Data Transformation', async () => {
-      const result = await connector.transformData([
-        { raw_name: 'john doe', raw_email: 'JOHN@COMPANY.COM' }
-      ], {
-        name: { normalize: true, format: 'titleCase' },
-        email: { normalize: true, format: 'lowercase' }
-      });
-      
+      const result = await connector.transformData(
+        [{ raw_name: 'john doe', raw_email: 'JOHN@COMPANY.COM' }],
+        {
+          name: { normalize: true, format: 'titleCase' },
+          email: { normalize: true, format: 'lowercase' },
+        },
+      );
+
       if (!result.transformedData?.length) throw new Error('No transformed data');
       return result;
     });
@@ -202,9 +202,9 @@ class NovaSynthProductionTests {
     await this.test('Data Correlation', async () => {
       const result = await connector.correlateData([
         { id: 1, name: 'John Doe' },
-        { userId: 1, device: 'laptop-001' }
+        { userId: 1, device: 'laptop-001' },
       ]);
-      
+
       if (!result.correlations?.length) throw new Error('No correlations found');
       return result;
     });
@@ -212,9 +212,9 @@ class NovaSynthProductionTests {
     await this.test('Duplicate Detection', async () => {
       const result = await connector.deduplicateRecords([
         { name: 'John Doe', email: 'john@company.com' },
-        { name: 'John Doe', email: 'john@company.com' }
+        { name: 'John Doe', email: 'john@company.com' },
       ]);
-      
+
       if (result.duplicates?.length === 0) throw new Error('Duplicates not detected');
       return result;
     });
@@ -230,18 +230,14 @@ class NovaSynthProductionTests {
 
     await this.test('Organization Training', async () => {
       const result = await connector.trainWithOrganizationData({
-        userProfiles: [
-          { name: 'John Doe', email: 'john@company.com', department: 'IT' }
-        ],
-        devicePatterns: [
-          { name: 'IT-001', type: 'laptop', department: 'IT' }
-        ],
+        userProfiles: [{ name: 'John Doe', email: 'john@company.com', department: 'IT' }],
+        devicePatterns: [{ name: 'IT-001', type: 'laptop', department: 'IT' }],
         namingConventions: {
           employees: /^[A-Z][a-z]+ [A-Z][a-z]+$/,
-          devices: /^[A-Z]{2}-\d{3}$/
-        }
+          devices: /^[A-Z]{2}-\d{3}$/,
+        },
       });
-      
+
       if (!result.success) throw new Error('Training failed');
       return result;
     });
@@ -250,9 +246,9 @@ class NovaSynthProductionTests {
       const result = await connector.updateOrganizationPatterns({
         namePatterns: [/^[A-Z][a-z]+ [A-Z][a-z]+$/],
         emailDomains: ['newcompany.com'],
-        departmentMappings: { 'DevOps': ['Development Operations'] }
+        departmentMappings: { DevOps: ['Development Operations'] },
       });
-      
+
       if (!result.success) throw new Error('Pattern update failed');
       return result;
     });
@@ -262,9 +258,9 @@ class NovaSynthProductionTests {
         results: [{ matchId: '123', correct: true }],
         correctMatches: ['123'],
         incorrectMatches: [],
-        transformationAccuracy: { overall: 0.95 }
+        transformationAccuracy: { overall: 0.95 },
       });
-      
+
       if (!result.success) throw new Error('Feedback validation failed');
       return result;
     });
@@ -280,7 +276,7 @@ class NovaSynthProductionTests {
 
     await this.test('Quality Metrics', async () => {
       const result = await connector.getQualityMetrics('24h');
-      
+
       if (!result.success) throw new Error('Quality metrics retrieval failed');
       if (!result.data.overallQuality) throw new Error('Missing overall quality metric');
       return result;
@@ -288,18 +284,18 @@ class NovaSynthProductionTests {
 
     await this.test('Real-time Monitoring', async () => {
       let monitoringStarted = false;
-      
+
       const result = await connector.startQualityMonitoring((error, data) => {
         if (!error && data) {
           monitoringStarted = true;
         }
       });
-      
+
       if (!result.success) throw new Error('Quality monitoring failed to start');
-      
+
       // Simulate some time for monitoring to activate
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       return { monitoring: 'started successfully' };
     });
   }
@@ -316,9 +312,9 @@ class NovaSynthProductionTests {
       const result = await connector.startFeedbackLoop({
         frequency: 'daily',
         autoRetraining: true,
-        qualityThreshold: 0.8
+        qualityThreshold: 0.8,
       });
-      
+
       if (!result.success) throw new Error('Feedback loop failed to start');
       return result;
     });
@@ -327,14 +323,14 @@ class NovaSynthProductionTests {
       const mockMetrics = {
         overallQuality: 0.7, // Below threshold
         matchingAccuracy: 0.75,
-        errorRates: { total: 0.05 }
+        errorRates: { total: 0.05 },
       };
-      
+
       const result = await connector.evaluateAndImprove(mockMetrics, {
         qualityThreshold: 0.8,
-        alertThreshold: 0.7
+        alertThreshold: 0.7,
       });
-      
+
       if (!result.success) throw new Error('Automatic improvement failed');
       if (result.improvements === 0) throw new Error('No improvements triggered');
       return result;
@@ -357,34 +353,36 @@ class NovaSynthProductionTests {
 
     await this.test('Response Time', async () => {
       const startTime = Date.now();
-      await connector.matchUserProfiles([
-        { name: 'Test User', email: 'test@company.com' }
-      ]);
+      await connector.matchUserProfiles([{ name: 'Test User', email: 'test@company.com' }]);
       const duration = Date.now() - startTime;
-      
+
       if (duration > 2000) throw new Error(`Response time too slow: ${duration}ms`);
       return { responseTime: `${duration}ms` };
     });
 
     await this.test('Concurrent Operations', async () => {
-      const operations = Array(5).fill().map((_, i) => 
-        connector.transformData([{ name: `User ${i}` }], { name: { normalize: true } })
-      );
-      
+      const operations = Array(5)
+        .fill()
+        .map((_, i) =>
+          connector.transformData([{ name: `User ${i}` }], { name: { normalize: true } }),
+        );
+
       const results = await Promise.all(operations);
-      
-      if (results.some(r => !r.success)) throw new Error('Some concurrent operations failed');
+
+      if (results.some((r) => !r.success)) throw new Error('Some concurrent operations failed');
       return { concurrent: 'operations successful' };
     });
 
     await this.test('Large Dataset Processing', async () => {
-      const largeDataset = Array(100).fill().map((_, i) => ({
-        name: `User ${i}`,
-        email: `user${i}@company.com`
-      }));
-      
+      const largeDataset = Array(100)
+        .fill()
+        .map((_, i) => ({
+          name: `User ${i}`,
+          email: `user${i}@company.com`,
+        }));
+
       const result = await connector.matchUserProfiles(largeDataset);
-      
+
       if (!result.success) throw new Error('Large dataset processing failed');
       return { processed: `${largeDataset.length} records` };
     });
@@ -402,31 +400,29 @@ class NovaSynthProductionTests {
       config.organization = { id: 'test-org-123' };
       config.security = { encryptionEnabled: true };
       config.monitoring = { alertingEnabled: true };
-      
+
       const validation = this.config.validateConfig(config);
-      
+
       if (!validation.isValid) {
         throw new Error(`Config validation failed: ${validation.errors.join(', ')}`);
       }
-      
+
       return { validation: 'passed' };
     });
 
     await this.test('Sensitive Data Handling', async () => {
       const connector = await this.getMockConnector();
-      
+
       // Test that sensitive data is properly handled
-      const result = await connector.transformData([
-        { name: 'John Doe', ssn: '123-45-6789' }
-      ], {
+      const result = await connector.transformData([{ name: 'John Doe', ssn: '123-45-6789' }], {
         name: { normalize: true },
-        ssn: { redact: true }
+        ssn: { redact: true },
       });
-      
+
       if (result.transformedData?.[0]?.ssn !== '[REDACTED]') {
         throw new Error('Sensitive data not properly redacted');
       }
-      
+
       return { security: 'sensitive data handled correctly' };
     });
   }
@@ -441,19 +437,19 @@ class NovaSynthProductionTests {
       organization: {
         id: 'test-org-123',
         name: 'Test Organization',
-        tier: 'enterprise'
+        tier: 'enterprise',
       },
       endpoints: {
         synthUrl: 'https://api.novasynth.test',
-        fallbackUrl: 'https://fallback.novasynth.test'
+        fallbackUrl: 'https://fallback.novasynth.test',
       },
       credentials: {
         token: 'test-bearer-token',
         clientId: 'test-client-id',
-        clientSecret: 'test-client-secret'
-      }
+        clientSecret: 'test-client-secret',
+      },
     };
-    
+
     const connector = new NovaSynthConnector(config);
     await connector.initialize();
     return connector;
@@ -464,14 +460,14 @@ class NovaSynthProductionTests {
    */
   async test(name, testFunction) {
     this.testStats.total++;
-    
+
     try {
       const result = await testFunction();
       this.testResults.push({
         name,
         status: 'PASSED',
         result,
-        duration: Date.now()
+        duration: Date.now(),
       });
       this.testStats.passed++;
       console.log(`  ✅ ${name}`);
@@ -480,7 +476,7 @@ class NovaSynthProductionTests {
         name,
         status: 'FAILED',
         error: error.message,
-        duration: Date.now()
+        duration: Date.now(),
       });
       this.testStats.failed++;
       console.log(`  ❌ ${name}: ${error.message}`);
@@ -493,33 +489,37 @@ class NovaSynthProductionTests {
   generateTestReport() {
     console.log('\n📊 Nova Synth Production Test Report');
     console.log('='.repeat(50));
-    
+
     console.log(`\n📈 Test Statistics:`);
     console.log(`  Total Tests: ${this.testStats.total}`);
     console.log(`  Passed: ${this.testStats.passed} ✅`);
     console.log(`  Failed: ${this.testStats.failed} ❌`);
-    console.log(`  Success Rate: ${((this.testStats.passed / this.testStats.total) * 100).toFixed(1)}%`);
-    
+    console.log(
+      `  Success Rate: ${((this.testStats.passed / this.testStats.total) * 100).toFixed(1)}%`,
+    );
+
     if (this.testStats.failed > 0) {
       console.log(`\n❌ Failed Tests:`);
       this.testResults
-        .filter(t => t.status === 'FAILED')
-        .forEach(test => {
+        .filter((t) => t.status === 'FAILED')
+        .forEach((test) => {
           console.log(`  - ${test.name}: ${test.error}`);
         });
     }
-    
+
     console.log(`\n✅ Production Readiness Assessment:`);
     const readinessScore = (this.testStats.passed / this.testStats.total) * 100;
-    
+
     if (readinessScore >= 95) {
       console.log(`  🚀 READY FOR PRODUCTION (${readinessScore.toFixed(1)}%)`);
     } else if (readinessScore >= 85) {
       console.log(`  ⚠️  MOSTLY READY - Minor issues to address (${readinessScore.toFixed(1)}%)`);
     } else {
-      console.log(`  ❌ NOT READY FOR PRODUCTION - Significant issues (${readinessScore.toFixed(1)}%)`);
+      console.log(
+        `  ❌ NOT READY FOR PRODUCTION - Significant issues (${readinessScore.toFixed(1)}%)`,
+      );
     }
-    
+
     console.log('\n' + '='.repeat(50));
   }
 }

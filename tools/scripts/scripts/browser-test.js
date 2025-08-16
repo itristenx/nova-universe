@@ -10,7 +10,7 @@ localStorage.removeItem('auth-storage');
 // Test API connectivity
 async function testAPIConnection() {
   const API_URL = 'http://localhost:3000';
-  
+
   try {
     console.log('1. Testing health endpoint...');
     const healthResponse = await fetch(`${API_URL}/api/health`);
@@ -26,12 +26,12 @@ async function testAPIConnection() {
     const loginResponse = await fetch(`${API_URL}/api/login`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         email: 'admin@example.com',
-        password: 'admin'
-      })
+        password: 'admin',
+      }),
     });
 
     if (!loginResponse.ok) {
@@ -49,8 +49,8 @@ async function testAPIConnection() {
     console.log('4. Testing profile...');
     const profileResponse = await fetch(`${API_URL}/api/me`, {
       headers: {
-        'Authorization': `Bearer ${loginResult.token}`
-      }
+        Authorization: `Bearer ${loginResult.token}`,
+      },
     });
 
     const profile = await profileResponse.json();
@@ -58,7 +58,6 @@ async function testAPIConnection() {
 
     console.log('🎉 All tests passed! You should be able to login now.');
     console.log('💡 Try refreshing the page and logging in.');
-
   } catch (error) {
     console.error('❌ Test failed:', error);
   }
