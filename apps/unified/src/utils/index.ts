@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { format, formatDistance, formatRelative, isValid, parseISO } from 'date-fns'
-import type { TicketPriority, TicketStatus, TicketType } from '@types/index'
+import type { TicketPriority, TicketStatus, TicketType } from '@/types'
 
 /**
  * Utility function to merge Tailwind CSS classes with clsx
