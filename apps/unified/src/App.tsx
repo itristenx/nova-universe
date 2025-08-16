@@ -6,6 +6,7 @@ import { AppLayout } from '@components/layout/AppLayout'
 import { AuthLayout } from '@components/layout/AuthLayout'
 import { LoadingSpinner } from '@components/common/LoadingSpinner'
 import { ErrorBoundary } from '@components/common/ErrorBoundary'
+import { CosmoWidget } from '@components/cosmo/CosmoWidget'
 
 // Lazy load pages for better performance
 import { lazy, Suspense } from 'react'
@@ -44,6 +45,10 @@ const AdminPage = lazy(() => import('@pages/admin/AdminPage'))
 const UsersPage = lazy(() => import('@pages/admin/UsersPage'))
 const SettingsPage = lazy(() => import('@pages/admin/SettingsPage'))
 const ReportsPage = lazy(() => import('@pages/admin/ReportsPage'))
+
+// Knowledge and Mailroom pages
+const KnowledgePage = lazy(() => import('@pages/knowledge/KnowledgePage'))
+const MailroomPage = lazy(() => import('@pages/mailroom/MailroomPage'))
 
 // Error pages
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage'))
@@ -122,6 +127,14 @@ function App() {
                       <Route path="/spaces/booking" element={<BookingPage />} />
                       <Route path="/spaces/floor-plan" element={<FloorPlanPage />} />
                       <Route path="/spaces/:id" element={<SpaceDetailPage />} />
+
+                      {/* Knowledge Base routes */}
+                      <Route path="/knowledge" element={<KnowledgePage />} />
+                      <Route path="/knowledge/*" element={<KnowledgePage />} />
+
+                      {/* Mailroom routes */}
+                      <Route path="/mailroom" element={<MailroomPage />} />
+                      <Route path="/mailroom/*" element={<MailroomPage />} />
 
                       {/* Admin routes */}
                       <Route path="/admin" element={<AdminPage />} />

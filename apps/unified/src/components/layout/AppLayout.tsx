@@ -1,6 +1,7 @@
 import { ReactNode, useState } from 'react'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
+import { CosmoWidget } from '@components/cosmo/CosmoWidget'
 import { cn } from '@utils/index'
 
 interface AppLayoutProps {
@@ -50,6 +51,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </main>
       </div>
+
+      {/* Cosmo AI Assistant - Available throughout the app */}
+      <CosmoWidget />
     </div>
   )
 }

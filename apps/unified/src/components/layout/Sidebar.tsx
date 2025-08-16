@@ -8,6 +8,8 @@ import {
   Cog6ToothIcon,
   ChartBarIcon,
   XMarkIcon,
+  BookOpenIcon,
+  TruckIcon,
 } from '@heroicons/react/24/outline'
 import { cn } from '@utils/index'
 
@@ -23,6 +25,8 @@ const navigation = [
   { name: 'Tickets', href: '/tickets', icon: TicketIcon },
   { name: 'Assets', href: '/assets', icon: CubeIcon },
   { name: 'Spaces', href: '/spaces', icon: MapIcon },
+  { name: 'Knowledge', href: '/knowledge', icon: BookOpenIcon },
+  { name: 'Mailroom', href: '/mailroom', icon: TruckIcon },
   { name: 'Users', href: '/admin/users', icon: UserGroupIcon },
   { name: 'Reports', href: '/admin/reports', icon: ChartBarIcon },
   { name: 'Settings', href: '/admin/settings', icon: Cog6ToothIcon },
