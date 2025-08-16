@@ -8,13 +8,13 @@
  * @version 1.0.0
  */
 
-import { novaIntegrationLayer } from './apps/lib/integration/nova-integration-layer.js';
-import { OktaConnector } from './apps/lib/integration/connectors/okta-connector.js';
-import { JamfConnector } from './apps/lib/integration/connectors/jamf-connector.js';
-import { CrowdStrikeConnector } from './apps/lib/integration/connectors/crowdstrike-connector.js';
-import { IntuneConnector } from './apps/lib/integration/connectors/intune-connector.js';
-import { SlackConnector } from './apps/lib/integration/connectors/slack-connector.js';
-import { ZoomConnector } from './apps/lib/integration/connectors/zoom-connector.js';
+import { novaIntegrationLayer } from '../apps/lib/integration/nova-integration-layer.js';
+import { OktaConnector } from '../apps/lib/integration/connectors/okta-connector.js';
+import { JamfConnector } from '../apps/lib/integration/connectors/jamf-connector.js';
+import { CrowdStrikeConnector } from '../apps/lib/integration/connectors/crowdstrike-connector.js';
+import { IntuneConnector } from '../apps/lib/integration/connectors/intune-connector.js';
+import { SlackConnector } from '../apps/lib/integration/connectors/slack-connector.js';
+import { ZoomConnector } from '../apps/lib/integration/connectors/zoom-connector.js';
 
 console.log('🚀 Nova Integration Layer Test Suite');
 console.log('=====================================\n');

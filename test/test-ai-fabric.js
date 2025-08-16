@@ -7,10 +7,10 @@
  * are properly integrated and working correctly.
  */
 
-import { aiFabric } from './apps/api/lib/ai-fabric.js';
-import { ragEngine } from './apps/api/lib/rag-engine.js';
-import { aiMonitoringSystem } from './apps/api/lib/ai-monitoring.js';
-import { novaMCPServer } from './apps/api/lib/mcp-server.js';
+import { aiFabric } from '../apps/api/lib/ai-fabric.js';
+import { ragEngine } from '../apps/api/lib/rag-engine.js';
+import { aiMonitoringSystem } from '../apps/api/lib/ai-monitoring.js';
+import { novaMCPServer } from '../apps/api/lib/mcp-server.js';
 
 async function testAIFabric() {
   console.log('🧪 Starting Nova AI Fabric Tests...\n');

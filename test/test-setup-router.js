@@ -1,6 +1,5 @@
 // Test script to validate setup router without requiring database connection
 import fs from 'fs';
-import path from 'path';
 
 console.log('Testing Setup Router Integration...\n');
 
