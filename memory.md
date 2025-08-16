@@ -95,9 +95,44 @@
   - Nova Synth AI for intelligent asset classification and optimization
 - **Mobile Excellence**: Field asset management with offline capabilities, barcode scanning, and voice interface
 
-#### Nova Dock (Mailroom & Delivery)
-- **Purpose**: Package and delivery management integrated with operations
-- **Features**: Delivery tracking, signature capture, QR pickup, location filtering
+#### Nova Courier (Enterprise Package & Mailroom Management) - ENHANCED
+- **Purpose**: Comprehensive enterprise package and mailroom management system competing with QTrak and PackageX
+- **Features**: AI-powered package tracking, smart lockers, contactless delivery, vendor management, analytics
+
+#### Nova Atlas (Enterprise Space Management & Wayfinding) - NEW MAJOR FEATURE
+- **Purpose**: Comprehensive enterprise space management and wayfinding system competing with Maptician, Archibus, iOffice, and SpaceIQ
+- **Technology**: React 18, TypeScript, IoT integration, AR/VR, AI/ML, enterprise APIs, mobile applications
+- **Maptician Integration**: Complete feature parity and enhancement including:
+  - Conference room booking with smart scheduling and conflict resolution
+  - Visitor management with pre-registration, digital check-in, and badge printing
+  - Presence tracking and occupancy analytics with hybrid work support
+  - Space planning with dynamic floor plans and scenario modeling
+  - Workplace analytics with predictive insights and optimization recommendations
+- **Advanced Wayfinding**: Cutting-edge indoor navigation and wayfinding system
+  - BLE beacon and QR code-based positioning and routing with computer vision
+  - Turn-by-turn navigation with voice guidance and accessibility support
+  - AR navigation with augmented reality overlay for mobile devices
+  - Multi-floor navigation with elevator integration and emergency routing
+  - ADA-compliant routing and accessibility assistance features
+- **Smart Building Integration**: Comprehensive IoT sensor network and building automation
+  - Environmental controls for HVAC, lighting, and climate optimization
+  - Energy management with automated savings and sustainability metrics
+  - Predictive maintenance for building systems and equipment health monitoring
+  - Real-time occupancy monitoring and space utilization analytics
+  - Emergency management with evacuation routing and response coordination
+- **Enterprise Features**: Complete IWMS integration and enterprise system connectivity
+  - Archibus, Planon, iOffice, and facility management system integration
+  - Security system integration with access control and visitor screening
+  - Financial integration with real estate accounting and cost allocation
+  - Compliance management with regulatory tracking and audit support
+  - Building automation system (BMS) integration and control
+- **Nova Universe Integration**: Deep integration with all Nova modules
+  - Nova Pulse integration for facilities ticketing and workflow automation
+  - Nova Inventory integration for space asset management and move coordination
+  - Nova Courier integration for package delivery and installation coordination
+  - Nova Orbit integration for employee self-service space management
+  - Nova Synth integration for AI-powered optimization and natural language interface
+- **Mobile Excellence**: Native iOS and Android applications with offline capabilities, wearable integration, and voice interface
 
 #### Nova Alerts (Alerting Engine via GoAlert)
 - **Purpose**: On-call management and incident alerting
