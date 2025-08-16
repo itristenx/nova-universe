@@ -61,7 +61,7 @@ export const DeepWorkPage: React.FC = () => {
   }
 
   const updateTabAria = React.useCallback(() => {
-    const tabs = document.querySelectorAll('[role="tab"]');
+    const tabs = document.querySelectorAll('[role="tab"]'); // TODO-LINT: move to async function
     tabs.forEach(t => {
       const id = t.getAttribute('id');
       if (!id) return;

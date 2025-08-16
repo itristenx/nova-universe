@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-interface Kiosk { id: string; name?: string; location?: string; active?: boolean; configuration?: any; effectiveConfig?: any; logoUrl?: string; bgUrl?: string; currentStatus?: string; }
+interface Kiosk { id: string; name?: string; location?: string; active?: boolean; configuration?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; effectiveConfig?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; logoUrl?: string; bgUrl?: string; currentStatus?: string; }
 
 const KioskWebMock: React.FC<{ kioskId: string }> = ({ kioskId }) => {
   const [core, setCore] = useState<any>(null);

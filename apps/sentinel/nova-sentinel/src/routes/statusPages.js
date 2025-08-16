@@ -22,7 +22,7 @@ async function optionalAuth(req, res, next) {
     const token = req.headers.authorization?.replace('Bearer ', '');
     
     if (token) {
-      const user = await req.services.helix.validateToken(token);
+      const user = await req.services.helix.validateToken(token); // TODO-LINT: move to async function
       if (user) {
         req.user = user;
       }
@@ -46,7 +46,7 @@ async function requireAuth(req, res, next) {
       });
     }
 
-    const user = await req.services.helix.validateToken(token);
+    const user = await req.services.helix.validateToken(token); // TODO-LINT: move to async function
     if (!user) {
       return res.status(401).json({ 
         success: false, 
@@ -81,7 +81,7 @@ router.get('/', requireAuth, async (req, res) => {
     const userId = req.user.id;
 
     // Get status pages from Uptime Kuma
-    const statusPages = await req.services.uptimeKuma.getAllStatusPages();
+    const statusPages = await req.services.uptimeKuma.getAllStatusPages(); // TODO-LINT: move to async function
     
     // Apply filters
     let filteredPages = statusPages;
@@ -107,10 +107,10 @@ router.get('/', requireAuth, async (req, res) => {
           userId, 
           `sentinel.status-page.${page.id}`,
           { favorite: false, lastViewed: null }
-        );
+        ); // TODO-LINT: move to async function
 
         // Get page statistics
-        const stats = await req.services.statusPages.getPageStats(page.id);
+        const stats = await req.services.statusPages.getPageStats(page.id); // TODO-LINT: move to async function
 
         return {
           ...page,
@@ -187,7 +187,7 @@ router.post('/', requireAuth,
       }
 
       // Create status page in Uptime Kuma
-      const statusPage = await req.services.uptimeKuma.createStatusPage(req.body);
+      const statusPage = await req.services.uptimeKuma.createStatusPage(req.body); // TODO-LINT: move to async function
 
       // Store in Nova database for correlation
       await req.services.database.createStatusPage({
@@ -197,7 +197,7 @@ router.post('/', requireAuth,
         title: statusPage.title,
         slug: statusPage.slug,
         config: statusPage
-      });
+      }); // TODO-LINT: move to async function
 
       // Set default user preferences in Helix
       await req.services.helix.setUserPreference(
@@ -207,7 +207,7 @@ router.post('/', requireAuth,
           favorite: false, 
           createdAt: new Date().toISOString()
         }
-      );
+      ); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.to(`tenant_${req.user.tenantId}`).emit('status_page_created', statusPage);
@@ -248,7 +248,7 @@ router.get('/:id', requireAuth,
       const userId = req.user.id;
 
       // Get status page from Uptime Kuma
-      const statusPage = await req.services.uptimeKuma.getStatusPage(id);
+      const statusPage = await req.services.uptimeKuma.getStatusPage(id); // TODO-LINT: move to async function
       if (!statusPage) {
         return res.status(404).json({
           success: false,
@@ -261,20 +261,20 @@ router.get('/:id', requireAuth,
         userId,
         `sentinel.status-page.${id}`,
         { favorite: false, lastViewed: null }
-      );
+      ); // TODO-LINT: move to async function
 
       // Update last viewed timestamp
       await req.services.helix.setUserPreference(
         userId,
         `sentinel.status-page.${id}`,
         { ...preferences, lastViewed: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
 
       // Get page statistics and monitor data
       const [stats, monitors] = await Promise.all([
         req.services.statusPages.getPageStats(id),
         req.services.statusPages.getPageMonitors(id)
-      ]);
+      ]); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -320,14 +320,14 @@ router.put('/:id', requireAuth,
       const userId = req.user.id;
 
       // Update status page in Uptime Kuma
-      const statusPage = await req.services.uptimeKuma.updateStatusPage(id, req.body);
+      const statusPage = await req.services.uptimeKuma.updateStatusPage(id, req.body); // TODO-LINT: move to async function
 
       // Update in Nova database
       await req.services.database.updateStatusPage(id, {
         updatedBy: userId,
         config: statusPage,
         updatedAt: new Date().toISOString()
-      });
+      }); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.to(`tenant_${req.user.tenantId}`).emit('status_page_updated', statusPage);
@@ -365,13 +365,13 @@ router.delete('/:id', requireAuth,
       const userId = req.user.id;
 
       // Delete from Uptime Kuma
-      await req.services.uptimeKuma.deleteStatusPage(id);
+      await req.services.uptimeKuma.deleteStatusPage(id); // TODO-LINT: move to async function
 
       // Delete from Nova database
-      await req.services.database.deleteStatusPage(id);
+      await req.services.database.deleteStatusPage(id); // TODO-LINT: move to async function
 
       // Clean up user preferences
-      await req.services.helix.deleteUserPreference(userId, `sentinel.status-page.${id}`);
+      await req.services.helix.deleteUserPreference(userId, `sentinel.status-page.${id}`); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.to(`tenant_${req.user.tenantId}`).emit('status_page_deleted', { id });
@@ -410,9 +410,9 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
     const { format = 'html' } = req.query;
 
     // Get status page (try by slug first, then by ID)
-    let statusPage = await req.services.statusPages.getBySlug(slugOrId);
+    let statusPage = await req.services.statusPages.getBySlug(slugOrId); // TODO-LINT: move to async function
     if (!statusPage) {
-      statusPage = await req.services.uptimeKuma.getStatusPage(slugOrId);
+      statusPage = await req.services.uptimeKuma.getStatusPage(slugOrId); // TODO-LINT: move to async function
     }
 
     if (!statusPage || !statusPage.published) {
@@ -423,13 +423,13 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
     }
 
     // Get monitors and their current status
-    const monitors = await req.services.statusPages.getPageMonitors(statusPage.id);
+    const monitors = await req.services.statusPages.getPageMonitors(statusPage.id); // TODO-LINT: move to async function
     
     // Enrich monitors with current status and uptime
     const enrichedMonitors = await Promise.all(
       monitors.map(async (monitor) => {
-        const heartbeat = req.services.monitoring.getLatestHeartbeat(monitor.id);
-        const uptime = await req.services.monitoring.getUptimeStats(monitor.id, '30d');
+        const heartbeat = req.services.monitoring.getLatestHeartbeat(monitor.id); // TODO-LINT: move to async function
+        const uptime = await req.services.monitoring.getUptimeStats(monitor.id, '30d'); // TODO-LINT: move to async function
         
         return {
           id: monitor.id,
@@ -448,7 +448,7 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
     const [incidents, maintenance] = await Promise.all([
       req.services.statusPages.getPageIncidents(statusPage.id),
       req.services.statusPages.getPageMaintenance(statusPage.id)
-    ]);
+    ]); // TODO-LINT: move to async function
 
     // Calculate overall status
     const overallStatus = req.services.statusPages.calculateOverallStatus(enrichedMonitors);
@@ -459,7 +459,7 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
         req.user.id,
         `sentinel.status-page.${statusPage.id}`,
         { lastPublicView: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
     }
 
     // Return JSON format
@@ -489,7 +489,7 @@ router.get('/public/:slugOrId', optionalAuth, async (req, res) => {
       incidents,
       maintenance,
       overallStatus
-    });
+    }); // TODO-LINT: move to async function
 
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
@@ -517,9 +517,9 @@ router.get('/public/:slugOrId/embed', async (req, res) => {
     const { theme = 'light', compact = false } = req.query;
 
     // Get status page
-    let statusPage = await req.services.statusPages.getBySlug(slugOrId);
+    let statusPage = await req.services.statusPages.getBySlug(slugOrId); // TODO-LINT: move to async function
     if (!statusPage) {
-      statusPage = await req.services.uptimeKuma.getStatusPage(slugOrId);
+      statusPage = await req.services.uptimeKuma.getStatusPage(slugOrId); // TODO-LINT: move to async function
     }
 
     if (!statusPage || !statusPage.published) {
@@ -527,10 +527,10 @@ router.get('/public/:slugOrId/embed', async (req, res) => {
     }
 
     // Get monitors and calculate status
-    const monitors = await req.services.statusPages.getPageMonitors(statusPage.id);
+    const monitors = await req.services.statusPages.getPageMonitors(statusPage.id); // TODO-LINT: move to async function
     const enrichedMonitors = await Promise.all(
       monitors.map(async (monitor) => {
-        const heartbeat = req.services.monitoring.getLatestHeartbeat(monitor.id);
+        const heartbeat = req.services.monitoring.getLatestHeartbeat(monitor.id); // TODO-LINT: move to async function
         return {
           name: monitor.name,
           status: heartbeat?.status === 1 ? 'up' : 'down'
@@ -546,7 +546,7 @@ router.get('/public/:slugOrId/embed', async (req, res) => {
       overallStatus,
       theme,
       compact: compact === 'true'
-    });
+    }); // TODO-LINT: move to async function
 
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('X-Frame-Options', 'ALLOWALL');
@@ -577,9 +577,9 @@ router.post('/public/:slugOrId/subscribe',
       const { email, types = ['incidents', 'maintenance'] } = req.body;
 
       // Get status page
-      let statusPage = await req.services.statusPages.getBySlug(slugOrId);
+      let statusPage = await req.services.statusPages.getBySlug(slugOrId); // TODO-LINT: move to async function
       if (!statusPage) {
-        statusPage = await req.services.uptimeKuma.getStatusPage(slugOrId);
+        statusPage = await req.services.uptimeKuma.getStatusPage(slugOrId); // TODO-LINT: move to async function
       }
 
       if (!statusPage || !statusPage.published) {
@@ -595,14 +595,14 @@ router.post('/public/:slugOrId/subscribe',
         email,
         types,
         confirmed: false
-      });
+      }); // TODO-LINT: move to async function
 
       // Send confirmation email
       await req.services.notifications.sendSubscriptionConfirmation({
         email,
         statusPageTitle: statusPage.title,
         confirmationUrl: `${req.protocol}://${req.get('host')}/api/v1/status-pages/confirm-subscription`
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -648,7 +648,7 @@ router.post('/:id/incidents', requireAuth,
       const incident = await req.services.uptimeKuma.createIncident({
         ...req.body,
         statusPageList: [id]
-      });
+      }); // TODO-LINT: move to async function
 
       // Store in Nova database
       await req.services.database.createIncident({
@@ -658,14 +658,14 @@ router.post('/:id/incidents', requireAuth,
         title: incident.title,
         content: incident.content,
         style: incident.style
-      });
+      }); // TODO-LINT: move to async function
 
       // Notify subscribers
       await req.services.notifications.notifyStatusPageSubscribers(id, {
         type: 'incident',
         title: incident.title,
         content: incident.content
-      });
+      }); // TODO-LINT: move to async function
 
       // Emit real-time update
       req.io.to(`status_page_${id}`).emit('incident_created', incident);
@@ -710,13 +710,13 @@ router.post('/:id/favorite', requireAuth,
         userId,
         `sentinel.status-page.${id}`,
         { favorite: false }
-      );
+      ); // TODO-LINT: move to async function
 
       await req.services.helix.setUserPreference(
         userId,
         `sentinel.status-page.${id}`,
         { ...preferences, favorite: true, favoritedAt: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
 
       res.json({
         success: true,

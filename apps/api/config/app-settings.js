@@ -110,7 +110,7 @@ class ConfigurationManager {
    */
   static async get(key, fallback = null) {
     try {
-      const config = await this.getFullConfig();
+      const config = await this.getFullConfig(); // TODO-LINT: move to async function
       const value = this.getNestedValue(config, key);
       return value !== undefined ? value : fallback;
     } catch (error) {
@@ -129,13 +129,13 @@ class ConfigurationManager {
   static async set(key, value, userId = null) {
     try {
       // Validate the configuration change
-      const isValid = await this.validateConfigValue(key, value);
+      const isValid = await this.validateConfigValue(key, value); // TODO-LINT: move to async function
       if (!isValid) {
         throw new Error(`Invalid configuration value for ${key}`);
       }
 
       // Store in database
-      await this.saveToDatabase(key, value, userId);
+      await this.saveToDatabase(key, value, userId); // TODO-LINT: move to async function
       
       // Invalidate cache
       this.invalidateCache();
@@ -164,7 +164,7 @@ class ConfigurationManager {
       let config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 
       // Override with database configuration
-      const dbConfig = await this.loadFromDatabase();
+      const dbConfig = await this.loadFromDatabase(); // TODO-LINT: move to async function
       config = this.mergeConfigurations(config, dbConfig);
 
       // Override with environment variables
@@ -189,10 +189,10 @@ class ConfigurationManager {
   static async loadFromDatabase() {
     try {
       // Ensure database is ready
-      await db.ensureReady();
+      await db.ensureReady(); // TODO-LINT: move to async function
       
       const query = 'SELECT key, value FROM configurations';
-      const result = await db.query(query);
+      const result = await db.query(query); // TODO-LINT: move to async function
       const rows = result.rows || [];
 
       const config = {};
@@ -313,7 +313,7 @@ class ConfigurationManager {
         return Number.isInteger(value) && value >= 1 && value <= 20;
       }
       if (key === 'security.maxPinLength') {
-        return Number.isInteger(value) && value >= 1 && value <= 20 && value >= (await this.get('security.minPinLength', 4));
+        return Number.isInteger(value) && value >= 1 && value <= 20 && value >= (await this.get('security.minPinLength', 4)); // TODO-LINT: move to async function
       }
       if (key === 'security.maxLoginAttempts') {
         return Number.isInteger(value) && value >= 1 && value <= 20;
@@ -423,13 +423,13 @@ class ConfigurationManager {
       
       await new Promise((resolve, reject) => {
         db.run(createTableQuery, [], (err) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve();
         });
       });
 
       // Load initial configuration to populate cache
-      await this.getFullConfig();
+      await this.getFullConfig(); // TODO-LINT: move to async function
       
       logger.info('Configuration management system initialized');
     } catch (error) {
@@ -443,7 +443,7 @@ class ConfigurationManager {
    */
   static async exportConfiguration() {
     try {
-      const config = await this.getFullConfig();
+      const config = await this.getFullConfig(); // TODO-LINT: move to async function
       return {
         timestamp: new Date().toISOString(),
         version: '1.0',
@@ -473,11 +473,11 @@ class ConfigurationManager {
       
       for (const [key, value] of Object.entries(flatConfig)) {
         if (await this.validateConfigValue(key, value)) {
-          promises.push(this.saveToDatabase(key, value, userId));
+          promises.push(this.saveToDatabase(key, value, userId)); // TODO-LINT: move to async function
         }
       }
 
-      await Promise.all(promises);
+      await Promise.all(promises); // TODO-LINT: move to async function
       this.invalidateCache();
       
       logger.info('Configuration imported successfully', { userId, itemCount: promises.length });

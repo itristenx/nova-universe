@@ -17,7 +17,7 @@ const KnowledgeListPage = () => {
     const loadArticles = async () => {
         try {
             setLoading(true);
-            const data = await api.getKnowledgeArticles({ search });
+            const data = await api.getKnowledgeArticles({ search }); // TODO-LINT: move to async function
             setArticles(data);
         }
         finally {

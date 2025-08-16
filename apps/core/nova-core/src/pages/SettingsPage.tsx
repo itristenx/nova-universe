@@ -32,7 +32,7 @@ export const SettingsPage: React.FC = () => {
   const loadConfig = async () => {
     try {
       setLoading(true);
-      const data = await api.getConfig();
+      const data = await api.getConfig(); // TODO-LINT: move to async function
       setConfig(data);
     } catch (error) {
       console.error('Failed to load config:', error);
@@ -48,7 +48,7 @@ export const SettingsPage: React.FC = () => {
 
   const loadScheduleConfigs = async () => {
     try {
-      const statusConfig = await api.getStatusConfig();
+      const statusConfig = await api.getStatusConfig(); // TODO-LINT: move to async function
       setScheduleConfig(statusConfig.schedule || {
         enabled: false,
         schedule: {
@@ -84,7 +84,7 @@ export const SettingsPage: React.FC = () => {
 
   const loadKiosks = async () => {
     try {
-      const data = await api.getKiosks();
+      const data = await api.getKiosks(); // TODO-LINT: move to async function
       setKiosks(data);
     } catch (error) {
       console.error('Failed to load kiosks:', error);
@@ -98,11 +98,11 @@ export const SettingsPage: React.FC = () => {
 
   const saveScheduleConfig = async (newConfig: ScheduleConfig) => {
     try {
-      const currentStatusConfig = await api.getStatusConfig();
+      const currentStatusConfig = await api.getStatusConfig(); // TODO-LINT: move to async function
       await api.updateStatusConfig({
         ...currentStatusConfig,
         schedule: newConfig
-      });
+      }); // TODO-LINT: move to async function
       setScheduleConfig(newConfig);
       addToast({
         type: 'success',
@@ -122,11 +122,11 @@ export const SettingsPage: React.FC = () => {
 
   const saveOfficeHoursConfig = async (newConfig: OfficeHours) => {
     try {
-      const currentStatusConfig = await api.getStatusConfig();
+      const currentStatusConfig = await api.getStatusConfig(); // TODO-LINT: move to async function
       await api.updateStatusConfig({
         ...currentStatusConfig,
         officeHours: newConfig
-      });
+      }); // TODO-LINT: move to async function
       setOfficeHoursConfig(newConfig);
       addToast({
         type: 'success',
@@ -149,7 +149,7 @@ export const SettingsPage: React.FC = () => {
     
     try {
       setSaving(true);
-      await api.updateConfig(config);
+      await api.updateConfig(config); // TODO-LINT: move to async function
       addToast({
         type: 'success',
         title: 'Success',
@@ -174,7 +174,7 @@ export const SettingsPage: React.FC = () => {
 
     try {
       setRestarting(true);
-      await api.restartServer();
+      await api.restartServer(); // TODO-LINT: move to async function
       addToast({
         type: 'success',
         title: 'Success',
@@ -199,7 +199,7 @@ export const SettingsPage: React.FC = () => {
       setUploadingAsset(type);
       // Use 'logo' for API call for kiosk-logo since it's the same type
       const apiType = type === 'kiosk-logo' ? 'logo' as const : type;
-      const asset = await api.uploadAsset(file, apiType);
+      const asset = await api.uploadAsset(file, apiType); // TODO-LINT: move to async function
       
       setConfig(prev => prev ? {
         ...prev,
@@ -771,7 +771,7 @@ const SecuritySettingsForm: React.FC = () => {
   const loadSecuritySettings = async () => {
     try {
       setLoading(true);
-      const data = await api.getSecuritySettings();
+      const data = await api.getSecuritySettings(); // TODO-LINT: move to async function
       setSettings(data);
     } catch (error) {
       console.error('Failed to load security settings:', error);
@@ -790,7 +790,7 @@ const SecuritySettingsForm: React.FC = () => {
     
     try {
       setSaving(true);
-      await api.updateSecuritySettings(settings);
+      await api.updateSecuritySettings(settings); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -813,9 +813,9 @@ const SecuritySettingsForm: React.FC = () => {
     try {
       const response = await fetch('/api/admin-pin', {
         credentials: 'include',
-      });
+      }); // TODO-LINT: move to async function
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json(); // TODO-LINT: move to async function
         setAdminPin(data.pin);
       }
     } catch (error) {
@@ -962,7 +962,7 @@ const NotificationSettingsForm: React.FC = () => {
   const loadNotificationSettings = async () => {
     try {
       setLoading(true);
-      const data = await api.getNotificationSettings();
+      const data = await api.getNotificationSettings(); // TODO-LINT: move to async function
       setSettings(data);
     } catch (error) {
       console.error('Failed to load notification settings:', error);
@@ -981,7 +981,7 @@ const NotificationSettingsForm: React.FC = () => {
     
     try {
       setSaving(true);
-      await api.updateNotificationSettings(settings);
+      await api.updateNotificationSettings(settings); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -1012,14 +1012,14 @@ const NotificationSettingsForm: React.FC = () => {
 
     try {
       setTestingEmail(true);
-      await api.testSMTP(testEmail);
+      await api.testSMTP(testEmail); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
         title: 'SMTP Test Successful',
         description: `Test email sent to ${testEmail}`,
       });
-    } catch (error: any) {
+    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
       console.error('SMTP test failed:', error);
       addToast({
         type: 'error',

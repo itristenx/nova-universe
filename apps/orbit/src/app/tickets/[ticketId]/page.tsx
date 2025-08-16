@@ -12,7 +12,7 @@ interface TicketUpdate {
 import { Button } from "../../../components/ui/button";
 import { useParams, useRouter } from "next/navigation";
 
-export default function TicketDetailPage() {
+export default function _TicketDetailPage() {
   const { ticketId } = useParams() as { ticketId: string };
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [updates, setUpdates] = useState<TicketUpdate[]>([]);

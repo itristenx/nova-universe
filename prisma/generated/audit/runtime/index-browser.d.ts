@@ -7,12 +7,12 @@ declare type Args<T, F extends Operation> = T extends {
         types: {
             operations: {
                 [K in F]: {
-                    args: any;
+                    args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
                 };
             };
         };
     };
-} ? T[symbol]['types']['operations'][F]['args'] : any;
+} ? T[symbol]['types']['operations'][F]['args'] : any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
 
 declare class DbNull extends NullTypesEnumValue {
     #private;
@@ -239,7 +239,7 @@ export declare class Decimal {
     static exp(n: Decimal.Value): Decimal;
     static floor(n: Decimal.Value): Decimal;
     static hypot(...n: Decimal.Value[]): Decimal;
-    static isDecimal(object: any): object is Decimal;
+    static isDecimal(object: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): object is Decimal;
     static ln(n: Decimal.Value): Decimal;
     static log(n: Decimal.Value, base?: Decimal.Value): Decimal;
     static log2(n: Decimal.Value): Decimal;
@@ -291,7 +291,7 @@ declare type Exact<A, W> = (A extends unknown ? (W extends A ? {
     [K in keyof A]: Exact<A[K], W[K]>;
 } : W) : never) | (A extends Narrowable ? A : never);
 
-export declare function getRuntime(): GetRuntimeOutput;
+export declare function _getRuntime(): GetRuntimeOutput;
 
 declare type GetRuntimeOutput = {
     id: RuntimeName;
@@ -316,10 +316,10 @@ declare class JsonNull extends NullTypesEnumValue {
  * Note: if you need to check for existence of a value in the enum you can still use either
  * `in` operator or `hasOwnProperty` function.
  *
- * @param definition
- * @returns
+ * @_param definition
+ * @_returns
  */
-export declare function makeStrictEnum<T extends Record<PropertyKey, string | number>>(definition: T): T;
+export declare function _makeStrictEnum<T extends _Record<_PropertyKey, string | number>>(definition: T): T;
 
 declare type Narrowable = string | number | bigint | boolean | [];
 
@@ -365,6 +365,6 @@ declare function validator<V>(): <S>(select: Exact<S, V>) => S;
 
 declare function validator<C, M extends Exclude<keyof C, `$${string}`>, O extends keyof C[M] & Operation>(client: C, model: M, operation: O): <S>(select: Exact<S, Args<C[M], O>>) => S;
 
-declare function validator<C, M extends Exclude<keyof C, `$${string}`>, O extends keyof C[M] & Operation, P extends keyof Args<C[M], O>>(client: C, model: M, operation: O, prop: P): <S>(select: Exact<S, Args<C[M], O>[P]>) => S;
+declare function validator<C, M extends Exclude<keyof C, `$${string}`>, O extends keyof C[M] & Operation, P extends keyof Args<C[M], O>>(client: C, model: M, operation: O, _prop: P): <S>(select: Exact<S, Args<C[M], O>[P]>) => S;
 
 export { }

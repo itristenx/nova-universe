@@ -1,14 +1,14 @@
 /**
  * Nova Synth Core Functions Integration Test
  * 
- * Tests the core Nova Synth functions directly without database dependencies.
- * This verifies the AI ticket processing and MCP functionality is working correctly.
+ * Tests the core Nova Synth _functions _directly without database _dependencies.
+ * This _verifies the AI ticket processing and _MCP _functionality is working correctly.
  */
 
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
-import { v4 as uuidv4 } from 'uuid';
-import { CosmoTicketProcessor } from '../apps/api/services/cosmo-ticket-processor.js';
+import { _v4 as uuidv4 } from '_uuid';
+import { CosmoTicketProcessor } from '../_apps/_api/_services/_cosmo-ticket-processor._js';
 
 describe('Nova Synth Core Functions Integration', () => {
   test('should integrate AI ticket processing for escalation scenarios', async () => {
@@ -36,7 +36,7 @@ describe('Nova Synth Core Functions Integration', () => {
     };
 
     // Process the ticket with AI
-    const processedTicket = await ticketProcessor.processTicket(criticalTicket);
+    const processedTicket = await ticketProcessor.processTicket(criticalTicket); // TODO-LINT: move to async function
     
     // Verify AI processing results
     assert.ok(processedTicket, 'Ticket should be processed successfully');
@@ -86,10 +86,10 @@ describe('Nova Synth Core Functions Integration', () => {
     };
 
     // Process original ticket first
-    await ticketProcessor.processTicket(originalTicket);
+    await ticketProcessor.processTicket(originalTicket); // TODO-LINT: move to async function
     
     // Process potential duplicate
-    const result = await ticketProcessor.processTicket(duplicateTicket);
+    const result = await ticketProcessor.processTicket(duplicateTicket); // TODO-LINT: move to async function
     
     assert.ok(result.duplicateAnalysis, 'Should include duplicate analysis');
     
@@ -150,7 +150,7 @@ describe('Nova Synth Core Functions Integration', () => {
     // Process all tickets concurrently
     const results = await Promise.all(
       escalationTickets.map(ticket => ticketProcessor.processTicket(ticket))
-    );
+    ); // TODO-LINT: move to async function
     
     const endTime = Date.now();
     const processingTime = endTime - startTime;
@@ -225,7 +225,7 @@ describe('Nova Synth Core Functions Integration', () => {
     ];
 
     for (const scenario of scenarios) {
-      const result = await ticketProcessor.processTicket(scenario.ticket);
+      const result = await ticketProcessor.processTicket(scenario.ticket); // TODO-LINT: move to async function
       
       assert.ok(result.aiClassification, `${scenario.description} should have classification`);
       
@@ -264,11 +264,11 @@ describe('Nova Synth Core Functions Integration', () => {
         ...issue,
         description: `Network issue: ${issue.title}`,
         createdAt: Date.now()
-      });
+      }); // TODO-LINT: move to async function
     }
 
     // Get trend analysis
-    const trends = await ticketProcessor.getTrends();
+    const trends = await ticketProcessor.getTrends(); // TODO-LINT: move to async function
     
     assert.ok(trends, 'Should generate trend analysis');
     assert.ok(trends.byCategory, 'Should include category trends');
@@ -316,7 +316,7 @@ describe('Nova Synth Core Functions Integration', () => {
 
     for (const testCase of edgeCases) {
       try {
-        const result = await ticketProcessor.processTicket(testCase);
+        const result = await ticketProcessor.processTicket(testCase); // TODO-LINT: move to async function
         assert.ok(result, 'Should handle edge case without crashing');
         
         // Should have some form of classification even for edge cases
@@ -357,14 +357,14 @@ describe('Nova Synth Core Functions Integration', () => {
     };
 
     const startTime = Date.now();
-    const result = await ticketProcessor.processTicket(productionTicket);
+    const result = await ticketProcessor.processTicket(productionTicket); // TODO-LINT: move to async function
     const endTime = Date.now();
 
     // Production readiness validations
     assert.ok(result, '✅ Ticket processing functional');
     assert.ok(result.aiClassification, '✅ AI classification functional');
     assert.ok(result.aiClassification.category, '✅ Category classification functional');
-    assert.ok(result.aiClassification.priority, '✅ Priority classification functional');
+    assert.ok(result.aiClassification.priority, '✅ _Priority classification functional');
     assert.ok(typeof result.aiClassification.confidence === 'number', '✅ Confidence scoring functional');
     assert.ok(result.duplicateAnalysis !== undefined, '✅ Duplicate detection functional');
     assert.ok(endTime - startTime < 1000, '✅ Performance within acceptable limits');

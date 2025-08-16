@@ -21,7 +21,7 @@ router.get('/',
         });
       }
 
-      const features = await ConfigurationManager.get('features');
+      const features = await ConfigurationManager.get('features'); // TODO-LINT: move to async function
       res.json({ success: true, modules: features || {} });
     } catch (error) {
       logger.error('Error getting modules:', error);
@@ -61,9 +61,9 @@ router.put('/:key',
 
       const { key } = req.params;
       const { enabled } = req.body;
-      const features = await ConfigurationManager.get('features') || {};
+      const features = await ConfigurationManager.get('features') || {}; // TODO-LINT: move to async function
       features[key] = enabled;
-      const success = await ConfigurationManager.set('features', features, req.user.id);
+      const success = await ConfigurationManager.set('features', features, req.user.id); // TODO-LINT: move to async function
       if (!success) {
         return res.status(500).json({
           success: false,

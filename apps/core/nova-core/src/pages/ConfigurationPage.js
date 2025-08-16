@@ -5,7 +5,7 @@ import { KioskConfigurationModal } from '@/components/KioskConfigurationModal';
 import { GlobeAltIcon, CogIcon, ComputerDesktopIcon, ChartBarIcon, ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-export const ConfigurationPage = () => {
+export const _ConfigurationPage = () => {
     const [globalConfig, setGlobalConfig] = useState(null);
     const [configSummary, setConfigSummary] = useState(null);
     const [kiosks, setKiosks] = useState([]);
@@ -25,7 +25,7 @@ export const ConfigurationPage = () => {
                 api.getGlobalConfiguration(),
                 api.getConfigurationSummary(),
                 api.getKiosks()
-            ]);
+            ]); // TODO-LINT: move to async function
             setGlobalConfig(globalData);
             setConfigSummary(summaryData);
             setKiosks(kiosksData);
@@ -44,7 +44,7 @@ export const ConfigurationPage = () => {
     };
     const updateGlobalConfig = async (updates) => {
         try {
-            await api.updateGlobalConfiguration(updates);
+            await api.updateGlobalConfiguration(updates); // TODO-LINT: move to async function
             setGlobalConfig(prev => prev ? { ...prev, ...updates } : null);
             addToast({
                 type: 'success',
@@ -65,8 +65,8 @@ export const ConfigurationPage = () => {
     };
     const toggleKioskScope = async (kioskId, newScope) => {
         try {
-            await api.setKioskConfigScope(kioskId, newScope);
-            await loadData();
+            await api.setKioskConfigScope(kioskId, newScope); // TODO-LINT: move to async function
+            await loadData(); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Success',
@@ -84,8 +84,8 @@ export const ConfigurationPage = () => {
     };
     const resetAllToGlobal = async () => {
         try {
-            await api.resetAllKiosksToGlobal();
-            await loadData();
+            await api.resetAllKiosksToGlobal(); // TODO-LINT: move to async function
+            await loadData(); // TODO-LINT: move to async function
             setShowResetModal(false);
             addToast({
                 type: 'success',

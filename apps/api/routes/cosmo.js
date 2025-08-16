@@ -31,7 +31,7 @@ router.post('/query', kioskOrAuth, async (req, res) => {
       preferences: options,
       metadata: { source: 'cosmo_api' },
       timestamp: new Date(),
-    });
+    }); // TODO-LINT: move to async function
 
     res.json({ success: true, result: response.result, metadata: response.metadata, provider: response.provider });
   } catch (error) {

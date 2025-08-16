@@ -3,8 +3,8 @@ import { CheckCircleIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import { Button } from '../../ui/Button';
 
 interface WelcomeStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  onUpdate: (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
   onComplete: () => void;
   errors: Record<string, string>;
   isLoading: boolean;

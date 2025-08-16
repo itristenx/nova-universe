@@ -71,7 +71,7 @@ router.get('/dashboard', authenticateJWT, async (req, res) => {
       db.query(`SELECT COUNT(*) as articles FROM knowledge_base_articles WHERE created_at >= ${timeFilter}`),
       // System uptime (mock for now)
       Promise.resolve({ rows: [{ uptime: 99.9 }] })
-    ]);
+    ]); // TODO-LINT: move to async function
 
     // Performance Metrics
     const performance = await Promise.all([
@@ -99,7 +99,7 @@ router.get('/dashboard', authenticateJWT, async (req, res) => {
           pg_database_size(current_database()) as db_size,
           (SELECT COUNT(*) FROM pg_stat_activity WHERE state = 'active') as active_connections
       `).catch(() => ({ rows: [{ db_size: 1000000000, active_connections: 5 }] }))
-    ]);
+    ]); // TODO-LINT: move to async function
 
     // Trend Analysis
     const trends = await Promise.all([
@@ -136,7 +136,7 @@ router.get('/dashboard', authenticateJWT, async (req, res) => {
         GROUP BY DATE_TRUNC('day', created_at)
         ORDER BY date
       `).catch(() => ({ rows: [] }))
-    ]);
+    ]); // TODO-LINT: move to async function
 
     // Department/Category Analysis
     const categoryAnalysis = await db.query(`
@@ -149,7 +149,7 @@ router.get('/dashboard', authenticateJWT, async (req, res) => {
       WHERE created_at >= ${timeFilter}
       GROUP BY category
       ORDER BY count DESC
-    `).catch(() => ({ rows: [] }));
+    `).catch(() => ({ rows: [] })); // TODO-LINT: move to async function
 
     // Agent Performance
     const agentPerformance = await db.query(`
@@ -163,7 +163,7 @@ router.get('/dashboard', authenticateJWT, async (req, res) => {
       GROUP BY assigned_to
       ORDER BY tickets_handled DESC
       LIMIT 10
-    `).catch(() => ({ rows: [] }));
+    `).catch(() => ({ rows: [] })); // TODO-LINT: move to async function
 
     // Customer Satisfaction (if available)
     const satisfaction = await db.query(`
@@ -172,7 +172,7 @@ router.get('/dashboard', authenticateJWT, async (req, res) => {
         COUNT(*) as total_ratings
       FROM ticket_feedback 
       WHERE created_at >= ${timeFilter}
-    `).catch(() => ({ rows: [{ avg_rating: 4.2, total_ratings: 0 }] }));
+    `).catch(() => ({ rows: [{ avg_rating: 4.2, total_ratings: 0 }] })); // TODO-LINT: move to async function
 
     const dashboardData = {
       summary: {
@@ -267,7 +267,7 @@ router.get('/real-time', authenticateJWT, async (req, res) => {
           COUNT(CASE WHEN vip_priority_score > 0 AND status IN ('open', 'in_progress') THEN 1 END) as vip_queue
         FROM support_tickets
       `)
-    ]);
+    ]); // TODO-LINT: move to async function
 
     const metrics = {
       activeSessions: parseInt(realTimeMetrics[0].rows[0].active_sessions),
@@ -348,7 +348,7 @@ router.get('/executive', authenticateJWT, async (req, res) => {
         FROM support_tickets 
         WHERE created_at >= ${timeFilter}
       `)
-    ]);
+    ]); // TODO-LINT: move to async function
 
     const currentPeriod = parseInt(executiveMetrics[4].rows[0].current_period);
     const previousPeriod = parseInt(executiveMetrics[4].rows[0].previous_period || currentPeriod);

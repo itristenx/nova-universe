@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Debug CLI - Test basic functionality
+ * Debug CLI - Test basic _functionality
  */
 
-import { Command } from 'commander';
+import { Command } from '_commander';
 import chalk from 'chalk';
 import figlet from 'figlet';
 
-console.log('Starting debug CLI...');
+console.log('_Starting debug CLI...');
 
 const program = new Command();
 

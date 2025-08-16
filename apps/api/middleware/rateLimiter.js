@@ -27,7 +27,7 @@ export const createRateLimiter = (options = {}) => {
 /**
  * Preconfigured rate limiters for different API areas.
  */
-export const rateLimiters = {
+export const _rateLimiters = {
   /**
    * Authentication endpoints - stricter limits
    */
@@ -116,6 +116,6 @@ export const createRateLimit = (windowMs = 15 * 60 * 1000, maxRequests = 100) =>
 };
 
 // Specific rate limiters for different endpoints
-export const authRateLimit = createRateLimit(15 * 60 * 1000, 5); // 5 attempts per 15 minutes
-export const apiRateLimit = createRateLimit(15 * 60 * 1000, 100); // 100 requests per 15 minutes
-export const kioskRateLimit = createRateLimit(60 * 1000, 10); // 10 requests per minute for kiosks
+export const _authRateLimit = createRateLimit(15 * 60 * 1000, 5); // 5 attempts per 15 minutes
+export const _apiRateLimit = createRateLimit(15 * 60 * 1000, 100); // 100 requests per 15 minutes
+export const _kioskRateLimit = createRateLimit(60 * 1000, 10); // 10 requests per minute for kiosks

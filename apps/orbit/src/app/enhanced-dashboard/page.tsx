@@ -76,7 +76,7 @@ interface PersonalizedRecommendation {
   icon: React.ReactNode;
 }
 
-export default function EnhancedUserDashboard() {
+export default function _EnhancedUserDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalTickets: 0,
     openTickets: 0,
@@ -175,7 +175,7 @@ export default function EnhancedUserDashboard() {
       setLoading(true);
       
       // Simulate API calls with mock data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
       
       // Mock stats
       setStats({

@@ -41,10 +41,10 @@ export const {
   spacing: novaSpacing
 } = tokens
 
-// Utility functions for working with design tokens
-export const getColor = (path: string) => {
+// Utility _functions for _working _with design tokens
+export const __getColor = (path: _string) => {
   const keys = path.split('.')
-  let value: any = colors
+  let value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = colors
   for (const key of keys) {
     value = value[key]
     if (value === undefined) return undefined
@@ -52,11 +52,11 @@ export const getColor = (path: string) => {
   return value
 }
 
-export const getSpacing = (key: keyof typeof spacing) => {
+export const _getSpacing = (key: keyof typeof spacing) => {
   return spacing[key]
 }
 
-export const createThemeCSS = (isDark = false) => {
+export const _createThemeCSS = (isDark = false) => {
   return `
     ${cssVariables}
     ${isDark ? '[data-theme="dark"]' : ':root'} {

@@ -27,17 +27,19 @@ program
   .description('Nova Universe CLI - Progressive test')
   .version('2.0.0');
 
-// Test with just one command first
-try {
-  console.log('Importing setup command...');
-  const { setupCommand } = await import('./commands/setup.js');
-  program.addCommand(setupCommand);
-  console.log('✅ Setup command imported successfully');
-} catch (error) {
-  console.error('❌ Failed to import setup command:', error.message);
-}
+// Test with just one command first in async wrapper
+(async () => {
+  try {
+    console.log('Importing setup command...');
+    const { setupCommand } = await import('./commands/setup.js');
+    program.addCommand(setupCommand);
+    console.log('✅ Setup command imported successfully');
+  } catch (_error) {
+    console.error('❌ Failed to import setup command:', _error.message);
+  }
 
-// If running directly (not imported)
-if (import.meta.url === `file://${process.argv[1]}`) {
-  program.parse();
-}
+  // If running directly (not imported)
+  if (import.meta.url === `file://${process.argv[1]}`) {
+    program.parse();
+  }
+})().catch(console.error);

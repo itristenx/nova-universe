@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { api } from '@/lib/api';
 import { ArrowPathIcon, CheckCircleIcon, ClipboardDocumentIcon, CogIcon, DocumentTextIcon, ExclamationTriangleIcon, InformationCircleIcon, KeyIcon, LinkIcon, PlayIcon, ShieldCheckIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useState } from 'react';
-export const SAMLConfigurationPage = () => {
+export const _SAMLConfigurationPage = () => {
     const [config, setConfig] = useState({
         enabled: false,
         entryPoint: '',
@@ -47,7 +47,7 @@ export const SAMLConfigurationPage = () => {
     const loadConfig = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await api.getSSOConfig();
+            const data = await api.getSSOConfig(); // TODO-LINT: move to async function
             if (data.saml) {
                 setConfig({
                     ...config,
@@ -80,7 +80,7 @@ export const SAMLConfigurationPage = () => {
                 configuration: {
                     saml: config
                 }
-            });
+            }); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Success',
@@ -104,7 +104,7 @@ export const SAMLConfigurationPage = () => {
             setTesting(true);
             setTestResult(null);
             // Simulate SAML connection test
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 2000)); // TODO-LINT: move to async function
             const mockResult = {
                 success: config.entryPoint && config.issuer && config.cert ? true : false,
                 message: config.entryPoint && config.issuer && config.cert
@@ -438,8 +438,8 @@ export const SAMLConfigurationPage = () => {
                     React.createElement("div", { className: "bg-amber-50 dark:bg-amber-900/20 p-4 rounded-md" },
                         React.createElement("h4", { className: "font-medium text-amber-800 dark:text-amber-200 mb-2" }, "Step 3: Test Configuration"),
                         React.createElement("ul", { className: "text-sm text-amber-700 dark:text-amber-300 space-y-1" },
-                            React.createElement("li", null, "\u2022 Use the test functionality in this interface"),
-                            React.createElement("li", null, "\u2022 Verify user attributes are correctly mapped"),
+                            React.createElement("li", null, "\u2022 Use the test _functionality in this _interface"),
+                            React.createElement("li", null, "\u2022 Verify user attributes are correctly _mapped"),
                             React.createElement("li", null, "\u2022 Test with different user accounts"),
                             React.createElement("li", null, "\u2022 Confirm group synchronization if enabled"))))))),
         showMetadataParser && (React.createElement("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" },

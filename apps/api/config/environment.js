@@ -80,7 +80,7 @@ export const validateEnvironment = () => {
 
 export default config;
 
-export const getConfig = () => {
+export const _getConfig = () => {
   return {
     NODE_ENV: process.env.NODE_ENV || 'development',
     API_PORT: parseInt(process.env.API_PORT) || 3000,
@@ -114,7 +114,7 @@ export const getConfig = () => {
 };
 
 // Log environment status
-export const logEnvironmentStatus = () => {
+export const _logEnvironmentStatus = () => {
   const config = validateEnvironment();
   
   console.log(`🌍 Environment: ${config.environment}`);

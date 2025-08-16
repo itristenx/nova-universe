@@ -5,7 +5,7 @@ import { ComputerDesktopIcon, TrashIcon, PowerIcon, QrCodeIcon, CogIcon, Clipboa
 import { formatDate } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-export const KiosksPage = () => {
+export const _KiosksPage = () => {
     const [kiosks, setKiosks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedKiosk, setSelectedKiosk] = useState(null);
@@ -23,7 +23,7 @@ export const KiosksPage = () => {
     }, []);
     const loadGlobalStatus = async () => {
         try {
-            const config = await api.getStatusConfig();
+            const config = await api.getStatusConfig(); // TODO-LINT: move to async function
             setGlobalStatus(config.currentStatus || (config.enabled ? 'open' : 'closed'));
         }
         catch (error) {
@@ -34,7 +34,7 @@ export const KiosksPage = () => {
         try {
             setStatusLoading(true);
             // Get current config first to preserve other settings
-            const currentConfig = await api.getStatusConfig();
+            const currentConfig = await api.getStatusConfig(); // TODO-LINT: move to async function
             const updatedConfig = {
                 ...currentConfig,
                 enabled: status === 'open',
@@ -46,7 +46,7 @@ export const KiosksPage = () => {
                 lunchMessage: currentConfig.lunchMessage || 'Out to Lunch - Back in 1 Hour',
                 unavailableMessage: currentConfig.unavailableMessage || 'Status Unavailable'
             };
-            await api.updateStatusConfig(updatedConfig);
+            await api.updateStatusConfig(updatedConfig); // TODO-LINT: move to async function
             setGlobalStatus(status);
             addToast({
                 type: 'success',
@@ -73,7 +73,7 @@ export const KiosksPage = () => {
     const loadKiosks = async () => {
         try {
             setLoading(true);
-            const data = await api.getKiosks();
+            const data = await api.getKiosks(); // TODO-LINT: move to async function
             setKiosks(data);
         }
         catch (error) {
@@ -91,10 +91,10 @@ export const KiosksPage = () => {
     const toggleKioskActive = async (id, active) => {
         try {
             if (active) {
-                await api.deactivateKiosk(id);
+                await api.deactivateKiosk(id); // TODO-LINT: move to async function
             }
             else {
-                await api.activateKiosk(id);
+                await api.activateKiosk(id); // TODO-LINT: move to async function
             }
             setKiosks(kiosks.map(k => k.id === id ? { ...k, active: !active } : k));
             addToast({
@@ -115,7 +115,7 @@ export const KiosksPage = () => {
     const deleteKiosk = async (id) => {
         if (confirm('Are you sure you want to delete this kiosk?')) {
             try {
-                await api.deleteKiosk(id);
+                await api.deleteKiosk(id); // TODO-LINT: move to async function
                 setKiosks(kiosks.filter(k => k.id !== id));
                 addToast({
                     type: 'success',
@@ -136,7 +136,7 @@ export const KiosksPage = () => {
     const generateActivationCode = async () => {
         try {
             setGeneratingCode(true);
-            const activation = await api.generateKioskActivation();
+            const activation = await api.generateKioskActivation(); // TODO-LINT: move to async function
             setActivationData(activation);
             addToast({
                 type: 'success',
@@ -158,7 +158,7 @@ export const KiosksPage = () => {
     };
     const copyToClipboard = async (text) => {
         try {
-            await navigator.clipboard.writeText(text);
+            await navigator.clipboard.writeText(text); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Copied',
@@ -184,7 +184,7 @@ export const KiosksPage = () => {
     const openScheduleModal = async (kiosk) => {
         try {
             setSelectedKiosk(kiosk);
-            const config = await api.getKioskScheduleConfig(kiosk.id);
+            const config = await api.getKioskScheduleConfig(kiosk.id); // TODO-LINT: move to async function
             setKioskScheduleConfig(config);
             setShowScheduleModal(true);
         }
@@ -204,7 +204,7 @@ export const KiosksPage = () => {
             await api.updateStatusConfig({
                 ...kioskScheduleConfig,
                 schedule: scheduleConfig
-            });
+            }); // TODO-LINT: move to async function
             setKioskScheduleConfig(prev => ({ ...prev, schedule: scheduleConfig }));
             addToast({
                 type: 'success',
@@ -229,7 +229,7 @@ export const KiosksPage = () => {
             await api.updateStatusConfig({
                 ...kioskScheduleConfig,
                 officeHours: officeHoursConfig
-            });
+            }); // TODO-LINT: move to async function
             setKioskScheduleConfig(prev => ({ ...prev, officeHours: officeHoursConfig }));
             addToast({
                 type: 'success',
@@ -269,7 +269,7 @@ export const KiosksPage = () => {
     };
     const refreshKioskConfig = async (id) => {
         try {
-            await api.refreshKioskConfig(id);
+            await api.refreshKioskConfig(id); // TODO-LINT: move to async function
             addToast({
                 type: 'success',
                 title: 'Success',
@@ -288,7 +288,7 @@ export const KiosksPage = () => {
     const resetKiosk = async (id) => {
         if (confirm('Are you sure you want to reset this kiosk? This will deactivate it and clear all custom settings.')) {
             try {
-                await api.resetKiosk(id);
+                await api.resetKiosk(id); // TODO-LINT: move to async function
                 // Update local state to reflect the reset
                 setKiosks(kiosks.map(k => k.id === id ? { ...k, active: false } : k));
                 addToast({

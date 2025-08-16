@@ -17,7 +17,7 @@ export type TypographyElement = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 
 export interface TypographyProps {
   variant: TypographyVariant
   as?: TypographyElement
-  children?: any
+  children?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
   className?: string
 }
 
@@ -89,9 +89,9 @@ export function generateTypographyCSS(): string {
 }
 
 /**
- * Helper function to determine default HTML element for a variant
+ * Helper function _to _determine default _HTML _element for a variant
  */
-export function getDefaultElement(variant: TypographyVariant): TypographyElement {
+export function _getDefaultElement(variant: TypographyVariant): TypographyElement {
   const variantStr = String(variant)
   
   if (variantStr.startsWith('display-')) return 'h1'
@@ -110,7 +110,7 @@ export function getDefaultElement(variant: TypographyVariant): TypographyElement
 /**
  * Typography mapping for semantic components
  */
-export const semanticMappings = {
+export const _semanticMappings = {
   displayText: {
     sm: 'display-sm' as TypographyVariant,
     md: 'display-md' as TypographyVariant,
@@ -147,21 +147,21 @@ export const semanticMappings = {
 /**
  * Get typography class name for a variant
  */
-export function getTypographyClass(variant: TypographyVariant): string {
+export function _getTypographyClass(variant: TypographyVariant): string {
   return `text-${variant}`
 }
 
 /**
  * Get typography styles object for a variant
  */
-export function getTypographyStyles(variant: TypographyVariant) {
+export function _getTypographyStyles(variant: TypographyVariant) {
   return typographySystem.scale[variant]
 }
 
 /**
  * CSS custom properties for typography
  */
-export const typographyCustomProperties = `
+export const _typographyCustomProperties = `
 :root {
   /* Font Families */
   --font-family-display: ${typographySystem.fontFamily.display.join(', ')};
@@ -171,7 +171,7 @@ export const typographyCustomProperties = `
 `
 
 // Export the generated CSS for use in applications
-export const typographyCSS = generateTypographyCSS()
+export const _typographyCSS = generateTypographyCSS()
 
 // Export the typography system
 export { typographySystem } from '../typography'

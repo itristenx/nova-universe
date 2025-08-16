@@ -21,7 +21,7 @@ export class NotificationService {
   async initialize() {
     try {
       // Initialize email transporter
-      await this.initializeEmailTransporter();
+      await this.initializeEmailTransporter(); // TODO-LINT: move to async function
       
       this.isInitialized = true;
       logger.info('Notification service initialized');
@@ -46,7 +46,7 @@ export class NotificationService {
 
       // Test email connection
       if (process.env.SMTP_USER) {
-        await this.emailTransporter.verify();
+        await this.emailTransporter.verify(); // TODO-LINT: move to async function
         logger.info('Email transporter configured successfully');
       }
     } catch (error) {
@@ -112,7 +112,7 @@ export class NotificationService {
         timestamp: new Date().toISOString()
       };
 
-      const result = await this.sendNotification(providerData, testMessage);
+      const result = await this.sendNotification(providerData, testMessage); // TODO-LINT: move to async function
       return { success: true, result };
     } catch (error) {
       logger.error('Notification test failed:', error);
@@ -129,17 +129,17 @@ export class NotificationService {
 
     switch (type) {
       case 'email':
-        return await this.sendEmailNotification(config, message);
+        return await this.sendEmailNotification(config, message); // TODO-LINT: move to async function
       case 'slack':
-        return await this.sendSlackNotification(config, message);
+        return await this.sendSlackNotification(config, message); // TODO-LINT: move to async function
       case 'discord':
-        return await this.sendDiscordNotification(config, message);
+        return await this.sendDiscordNotification(config, message); // TODO-LINT: move to async function
       case 'webhook':
-        return await this.sendWebhookNotification(config, message);
+        return await this.sendWebhookNotification(config, message); // TODO-LINT: move to async function
       case 'telegram':
-        return await this.sendTelegramNotification(config, message);
+        return await this.sendTelegramNotification(config, message); // TODO-LINT: move to async function
       case 'teams':
-        return await this.sendTeamsNotification(config, message);
+        return await this.sendTeamsNotification(config, message); // TODO-LINT: move to async function
       default:
         throw new Error(`Unsupported notification type: ${type}`);
     }
@@ -160,7 +160,7 @@ export class NotificationService {
       html: html
     };
 
-    const result = await this.emailTransporter.sendMail(mailOptions);
+    const result = await this.emailTransporter.sendMail(mailOptions); // TODO-LINT: move to async function
     return { messageId: result.messageId, accepted: result.accepted };
   }
 
@@ -185,7 +185,7 @@ export class NotificationService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    });
+    }); // TODO-LINT: move to async function
 
     if (!response.ok) {
       throw new Error(`Slack notification failed: ${response.statusText}`);
@@ -211,7 +211,7 @@ export class NotificationService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    });
+    }); // TODO-LINT: move to async function
 
     if (!response.ok) {
       throw new Error(`Discord notification failed: ${response.statusText}`);
@@ -237,7 +237,7 @@ export class NotificationService {
         ...config.headers
       },
       body: JSON.stringify(payload)
-    });
+    }); // TODO-LINT: move to async function
 
     if (!response.ok) {
       throw new Error(`Webhook notification failed: ${response.statusText}`);
@@ -260,7 +260,7 @@ export class NotificationService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    });
+    }); // TODO-LINT: move to async function
 
     if (!response.ok) {
       throw new Error(`Telegram notification failed: ${response.statusText}`);
@@ -287,7 +287,7 @@ export class NotificationService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    });
+    }); // TODO-LINT: move to async function
 
     if (!response.ok) {
       throw new Error(`Teams notification failed: ${response.statusText}`);
@@ -302,7 +302,7 @@ export class NotificationService {
 
   async notifyStatusPageSubscribers(statusPageId, notification) {
     try {
-      const subscribers = await this.database.getSubscribers(statusPageId, notification.type);
+      const subscribers = await this.database.getSubscribers(statusPageId, notification.type); // TODO-LINT: move to async function
       
       if (subscribers.length === 0) {
         logger.debug(`No subscribers for status page ${statusPageId}`);
@@ -325,7 +325,7 @@ export class NotificationService {
             timestamp: new Date().toISOString()
           };
 
-          await this.sendEmailNotification(emailConfig, message);
+          await this.sendEmailNotification(emailConfig, message); // TODO-LINT: move to async function
           results.push({ email: subscriber.email, status: 'sent' });
         } catch (error) {
           logger.error(`Failed to notify subscriber ${subscriber.email}:`, error);
@@ -386,7 +386,7 @@ export class NotificationService {
         html: html
       };
 
-      await this.emailTransporter.sendMail(mailOptions);
+      await this.emailTransporter.sendMail(mailOptions); // TODO-LINT: move to async function
       logger.info(`Subscription confirmation sent to ${email}`);
     } catch (error) {
       logger.error('Failed to send subscription confirmation:', error);
@@ -410,7 +410,7 @@ export class NotificationService {
 
       for (const provider of providers) {
         try {
-          const result = await this.sendNotification(provider, message);
+          const result = await this.sendNotification(provider, message); // TODO-LINT: move to async function
           results.push({ provider: provider.name, status: 'sent', result });
         } catch (error) {
           logger.error(`Failed to send notification via ${provider.name}:`, error);

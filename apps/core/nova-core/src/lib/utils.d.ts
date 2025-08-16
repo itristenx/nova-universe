@@ -1,12 +1,12 @@
 import { type ClassValue } from 'clsx';
-export declare function cn(...inputs: ClassValue[]): string;
-export declare function formatDate(date: string | Date): string;
-export declare function formatRelativeTime(date: string | Date): string;
-export declare function getUrgencyColor(urgency: string): string;
-export declare function getStatusColor(status: string): string;
-export declare function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void;
-export declare function downloadFile(data: Blob, filename: string): void;
-export declare function generateRandomString(length: number): string;
-export declare function validateEmail(email: string): boolean;
-export declare function capitalizeFirst(str: string): string;
+export declare function _cn(..._inputs: ClassValue[]): string;
+export declare function _formatDate(date: string | Date): string;
+export declare function _formatRelativeTime(date: string | Date): string;
+export declare function _getUrgencyColor(_urgency: string): string;
+export declare function _getStatusColor(_status: string): string;
+export declare function _debounce<T _extends (...args: _unknown[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void;
+export declare function _downloadFile(_data: _Blob, _filename: string): void;
+export declare function _generateRandomString(_length: number): string;
+export declare function _validateEmail(_email: string): boolean;
+export declare function _capitalizeFirst(_str: string): string;
 //# sourceMappingURL=utils.d.ts.map

@@ -3,7 +3,7 @@ import { logger } from '../../logger.js';
 async function getCmdbPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../../prisma/generated/cmdb/index.js');
+    const mod = await import('../../../../prisma/generated/cmdb/index.js'); // TODO-LINT: move to async function
     return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch {
     return null;
@@ -13,7 +13,7 @@ async function getCmdbPrisma() {
 async function getCorePrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../../prisma/generated/core/index.js');
+    const mod = await import('../../../../prisma/generated/core/index.js'); // TODO-LINT: move to async function
     return new mod.PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch {
     return null;
@@ -27,7 +27,7 @@ class CmdbService {
   }
 
   async _getClients() {
-    const [client, coreDb] = await Promise.all([this.clientPromise, this.coreDbPromise]);
+    const [client, coreDb] = await Promise.all([this.clientPromise, this.coreDbPromise]); // TODO-LINT: move to async function
     if (!client) throw new Error('CMDB Prisma client unavailable');
     return { client, coreDb };
   }
@@ -37,7 +37,7 @@ class CmdbService {
    */
   async getConfigurationItems(filters = {}, pagination = { page: 1, limit: 50 }) {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       const where = this._buildCiWhereClause(filters);
       const skip = (pagination.page - 1) * pagination.limit;
 
@@ -58,7 +58,7 @@ class CmdbService {
           take: pagination.limit
         }),
         client.configurationItem.count({ where })
-      ]);
+      ]); // TODO-LINT: move to async function
 
       return {
         items,
@@ -82,16 +82,16 @@ class CmdbService {
    */
   async getConfigurationItem(identifier, options = {}) {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       const where = this._isUUID(identifier) ? { id: identifier } : { ciId: identifier };
       const include = { ciType_rel: true, hardwareDetails: true, softwareDetails: true, applicationDetails: true, networkDetails: true, serviceDetails: true, databaseDetails: true, virtualDetails: true, facilityDetails: true };
       if (options.includeRelationships) {
         include.outgoingRelationships = { include: { targetCi: true, relationshipType: true } };
         include.incomingRelationships = { include: { sourceCi: true, relationshipType: true } };
       }
-      const ci = await client.configurationItem.findFirst({ where, include });
+      const ci = await client.configurationItem.findFirst({ where, include }); // TODO-LINT: move to async function
       if (options.includeHistory && ci) {
-        const auditLogs = await client.ciAuditLog.findMany({ where: { ciId: ci.id }, orderBy: { timestamp: 'desc' }, take: 50 });
+        const auditLogs = await client.ciAuditLog.findMany({ where: { ciId: ci.id }, orderBy: { timestamp: 'desc' }, take: 50 }); // TODO-LINT: move to async function
         ci.auditHistory = auditLogs;
       }
       return ci;
@@ -106,14 +106,14 @@ class CmdbService {
    */
   async createConfigurationItem(ciData) {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       // Generate CI ID (CI123456 format)
-      const ciId = await this._generateCiId();
+      const ciId = await this._generateCiId(); // TODO-LINT: move to async function
 
       // Validate CI Type exists
       const ciType = await client.ciType.findUnique({
         where: { id: ciData.ciType }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!ciType) {
         throw new Error(`CI Type ${ciData.ciType} does not exist`);
@@ -129,10 +129,10 @@ class CmdbService {
         include: {
           ciType_rel: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       // Create audit log
-      await this._createAuditLog(ci.id, 'CREATE', null, null, null, ciData.createdBy);
+      await this._createAuditLog(ci.id, 'CREATE', null, null, null, ciData.createdBy); // TODO-LINT: move to async function
 
       logger.info(`Configuration Item created: ${ci.ciId} (${ci.name})`);
       return ci;
@@ -147,13 +147,13 @@ class CmdbService {
    */
   async updateConfigurationItem(identifier, updateData) {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       const where = this._isUUID(identifier) 
         ? { id: identifier }
         : { ciId: identifier };
 
       // Get existing CI for audit trail
-      const existingCi = await client.configurationItem.findFirst({ where });
+      const existingCi = await client.configurationItem.findFirst({ where }); // TODO-LINT: move to async function
       if (!existingCi) {
         return null;
       }
@@ -165,10 +165,10 @@ class CmdbService {
         include: {
           ciType_rel: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       // Create audit logs for changed fields
-      await this._createUpdateAuditLogs(existingCi, updateData, updateData.updatedBy);
+      await this._createUpdateAuditLogs(existingCi, updateData, updateData.updatedBy); // TODO-LINT: move to async function
 
       logger.info(`Configuration Item updated: ${ci.ciId} (${ci.name})`);
       return ci;
@@ -183,12 +183,12 @@ class CmdbService {
    */
   async deleteConfigurationItem(identifier, deletedBy) {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       const where = this._isUUID(identifier) 
         ? { id: identifier }
         : { ciId: identifier };
 
-      const ci = await client.configurationItem.findFirst({ where });
+      const ci = await client.configurationItem.findFirst({ where }); // TODO-LINT: move to async function
       if (!ci) {
         return false;
       }
@@ -202,16 +202,16 @@ class CmdbService {
           ],
           isActive: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       if (relationshipCount > 0) {
         throw new Error('Cannot delete CI with active relationships. Remove relationships first.');
       }
 
-      await client.configurationItem.delete({ where: { id: ci.id } });
+      await client.configurationItem.delete({ where: { id: ci.id } }); // TODO-LINT: move to async function
 
       // Create audit log
-      await this._createAuditLog(ci.id, 'DELETE', null, null, null, deletedBy);
+      await this._createAuditLog(ci.id, 'DELETE', null, null, null, deletedBy); // TODO-LINT: move to async function
 
       logger.info(`Configuration Item deleted: ${ci.ciId} (${ci.name})`);
       return true;
@@ -226,7 +226,7 @@ class CmdbService {
    */
   async getCiTypes() {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       return await client.ciType.findMany({
         where: { isActive: true },
         include: {
@@ -237,7 +237,7 @@ class CmdbService {
           { category: 'asc' },
           { name: 'asc' }
         ]
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Error fetching CI Types:', error);
       throw new Error('Failed to fetch CI Types');
@@ -249,13 +249,13 @@ class CmdbService {
    */
   async createCiType(typeData) {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       const ciType = await client.ciType.create({
         data: typeData,
         include: {
           parentType: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       logger.info(`CI Type created: ${ciType.name}`);
       return ciType;
@@ -270,7 +270,7 @@ class CmdbService {
    */
   async getBusinessServices() {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       return await client.businessService.findMany({
         include: {
           configurationItems: {
@@ -280,7 +280,7 @@ class CmdbService {
           }
         },
         orderBy: { name: 'asc' }
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Error fetching Business Services:', error);
       throw new Error('Failed to fetch Business Services');
@@ -316,10 +316,10 @@ class CmdbService {
         this._getOrphanedCisCount(),
         this._getClients().then(({ client }) => client.ciRelationship.count({ where: { isActive: true } })),
         this._getClients().then(({ client }) => client.configurationItem.count({ where: { isDiscovered: true } }))
-      ]);
+      ]); // TODO-LINT: move to async function
 
       // Calculate completeness score (percentage of CIs with required fields)
-      const completenessScore = await this._calculateCompletenessScore();
+      const completenessScore = await this._calculateCompletenessScore(); // TODO-LINT: move to async function
 
       const health = {
         metricDate: today,
@@ -345,7 +345,7 @@ class CmdbService {
       // Store the health record
       await this._getClients().then(({ client }) => client.cmdbHealth.create({
         data: health
-      }));
+      })); // TODO-LINT: move to async function
 
       return health;
     } catch (error) {
@@ -371,11 +371,11 @@ class CmdbService {
 
     // Validate user exists in core database
     if (userId) {
-      const { coreDb } = await this._getClients();
+      const { coreDb } = await this._getClients(); // TODO-LINT: move to async function
       const user = await coreDb.user.findUnique({
         where: { id: userId },
         select: { id: true, name: true, email: true }
-      });
+      }); // TODO-LINT: move to async function
       if (!user) {
         throw new Error('User not found');
       }
@@ -383,17 +383,17 @@ class CmdbService {
 
     // Validate support group exists
     if (supportGroupId) {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       const supportGroup = await client.supportGroup.findUnique({
         where: { id: supportGroupId }
-      });
+      }); // TODO-LINT: move to async function
       if (!supportGroup) {
         throw new Error('Support group not found');
       }
     }
 
     // Check for existing ownership of the same type
-    const { client } = await this._getClients();
+    const { client } = await this._getClients(); // TODO-LINT: move to async function
     const existingOwnership = await client.ciOwnership.findUnique({
       where: {
         ciId_ownershipType_userId: {
@@ -402,7 +402,7 @@ class CmdbService {
           userId
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     if (existingOwnership) {
       throw new Error('User already has this ownership type for this CI');
@@ -419,13 +419,13 @@ class CmdbService {
         responsibilities,
         assignedBy
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return ownership;
   }
 
   async removeOwnership(ciId, ownershipType, userId) {
-    const { client } = await this._getClients();
+    const { client } = await this._getClients(); // TODO-LINT: move to async function
     await client.ciOwnership.delete({
       where: {
         ciId_ownershipType_userId: {
@@ -434,13 +434,13 @@ class CmdbService {
           userId
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return { success: true };
   }
 
   async updateOwnership(ciId, ownershipType, userId, updateData) {
-    const { client } = await this._getClients();
+    const { client } = await this._getClients(); // TODO-LINT: move to async function
     const ownership = await client.ciOwnership.update({
       where: {
         ciId_ownershipType_userId: {
@@ -450,13 +450,13 @@ class CmdbService {
         }
       },
       data: updateData
-    });
+    }); // TODO-LINT: move to async function
 
     return ownership;
   }
 
   async getCiOwnership(ciId) {
-    const { client } = await this._getClients();
+    const { client } = await this._getClients(); // TODO-LINT: move to async function
     const ownership = await client.ciOwnership.findMany({
       where: { ciId, isActive: true },
       include: {
@@ -469,16 +469,16 @@ class CmdbService {
           }
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Enrich with user details from core database
     const enrichedOwnership = await Promise.all(
       ownership.map(async (owner) => {
-        const { coreDb } = await this._getClients();
+        const { coreDb } = await this._getClients(); // TODO-LINT: move to async function
         const user = await coreDb.user.findUnique({
           where: { id: owner.userId },
           select: { id: true, name: true, email: true, department: true }
-        });
+        }); // TODO-LINT: move to async function
         return { ...owner, user };
       })
     );
@@ -487,7 +487,7 @@ class CmdbService {
   }
 
   async getUserOwnedCis(userId, ownershipType = null) {
-    const { client } = await this._getClients();
+    const { client } = await this._getClients(); // TODO-LINT: move to async function
     const where = {
       userId,
       isActive: true,
@@ -503,7 +503,7 @@ class CmdbService {
           }
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return ownership.map(owner => ({
       ...owner.configurationItem,
@@ -581,10 +581,10 @@ class CmdbService {
       const number = Math.floor(100000 + Math.random() * 900000);
       ciId = `${prefix}${number}`;
       
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       const existing = await client.configurationItem.findUnique({
         where: { ciId }
-      });
+      }); // TODO-LINT: move to async function
       exists = !!existing;
     }
 
@@ -604,7 +604,7 @@ class CmdbService {
    */
   async _createAuditLog(ciId, operation, fieldName, oldValue, newValue, changedBy) {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       await client.ciAuditLog.create({
         data: {
           ciId,
@@ -614,7 +614,7 @@ class CmdbService {
           newValue: newValue ? String(newValue) : null,
           changedBy
         }
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Error creating audit log:', error);
     }
@@ -637,7 +637,7 @@ class CmdbService {
       }
     }
 
-    await Promise.all(auditPromises);
+    await Promise.all(auditPromises); // TODO-LINT: move to async function
   }
 
   /**
@@ -645,7 +645,7 @@ class CmdbService {
    */
   async _getOrphanedCisCount() {
     try {
-      const { client } = await this._getClients();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
       const result = await client.configurationItem.findMany({
         where: {
           AND: [
@@ -662,7 +662,7 @@ class CmdbService {
           ]
         },
         select: { id: true }
-      });
+      }); // TODO-LINT: move to async function
       
       return result.length;
     } catch (error) {
@@ -678,8 +678,8 @@ class CmdbService {
     try {
       const requiredFields = ['name', 'ciType', 'environment', 'owner'];
       
-      const { client } = await this._getClients();
-      const totalCis = await client.configurationItem.count();
+      const { client } = await this._getClients(); // TODO-LINT: move to async function
+      const totalCis = await client.configurationItem.count(); // TODO-LINT: move to async function
       if (totalCis === 0) return 100;
 
       let completeCount = 0;
@@ -691,7 +691,7 @@ class CmdbService {
           environment: true,
           owner: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       for (const ci of cis) {
         const isComplete = requiredFields.every(field => 

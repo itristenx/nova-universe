@@ -10,7 +10,7 @@ import path from 'path';
 import Conf from 'conf';
 
 // Configuration store
-export const config = new Conf({
+export const _config = new Conf({
   projectName: 'nova-cli',
   schema: {
     apiUrl: {
@@ -37,7 +37,7 @@ export const config = new Conf({
 });
 
 // Logging utilities
-export const logger = {
+export const _logger = {
   info: (message) => {
     if (!process.env.NOVA_QUIET) {
       console.log(chalk.blue('ℹ'), message);
@@ -62,7 +62,7 @@ export const logger = {
 };
 
 // Spinner utilities
-export function createSpinner(text, options = {}) {
+export function _createSpinner(text, options = {}) {
   return ora({
     text,
     color: 'cyan',
@@ -72,7 +72,7 @@ export function createSpinner(text, options = {}) {
 }
 
 // Process management
-export async function runCommand(command, args = [], options = {}) {
+export async function _runCommand(command, args = [], options = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       stdio: options.silent ? 'pipe' : 'inherit',
@@ -106,7 +106,7 @@ export async function runCommand(command, args = [], options = {}) {
 }
 
 // Check if Nova services are running
-export async function checkServiceStatus() {
+export async function _checkServiceStatus() {
   const services = {
     api: { port: 3000, name: 'Nova API' },
     admin: { port: 5173, name: 'Nova Admin UI' },
@@ -137,7 +137,7 @@ export async function checkServiceStatus() {
 }
 
 // Get project root directory
-export function getProjectRoot() {
+export function _getProjectRoot() {
   let current = process.cwd();
   
   while (current !== path.parse(current).root) {
@@ -154,7 +154,7 @@ export function getProjectRoot() {
 }
 
 // Format duration
-export function formatDuration(ms) {
+export function _formatDuration(ms) {
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
@@ -175,7 +175,7 @@ export function isValidEmail(email) {
 }
 
 // Generate secure password
-export function generatePassword(length = 12) {
+export function _generatePassword(length = 12) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let password = '';
   for (let i = 0; i < length; i++) {
@@ -185,7 +185,7 @@ export function generatePassword(length = 12) {
 }
 
 // Validate password strength
-export function validatePassword(password) {
+export function _validatePassword(password) {
   const minLength = 8;
   const hasUpper = /[A-Z]/.test(password);
   const hasLower = /[a-z]/.test(password);
@@ -230,15 +230,15 @@ export function formatBytes(bytes, decimals = 2) {
 }
 
 // Format file size (alias for formatBytes for consistency)
-export const formatFileSize = formatBytes;
+export const _formatFileSize = formatBytes;
 
 // Sleep utility
-export function sleep(ms) {
+export function _sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Check if running in CI
-export function isCI() {
+export function _isCI() {
   return Boolean(
     process.env.CI ||
     process.env.CONTINUOUS_INTEGRATION ||
@@ -250,7 +250,7 @@ export function isCI() {
 }
 
 // Database connection (simplified for CLI)
-export async function connectDatabase() {
+export async function _connectDatabase() {
   // This is a placeholder for database connection
   // In a real implementation, this would connect to the actual database
   // For now, we'll simulate it
@@ -261,10 +261,10 @@ export async function connectDatabase() {
 }
 
 // Validate email (alias for isValidEmail for consistency)
-export const validateEmail = isValidEmail;
+export const _validateEmail = isValidEmail;
 
 // Format date
-export function formatDate(date, format = 'short') {
+export function _formatDate(date, format = 'short') {
   const d = new Date(date);
   
   if (format === 'short') {
@@ -279,7 +279,7 @@ export function formatDate(date, format = 'short') {
 }
 
 // Validate URL
-export function validateUrl(url) {
+export function _validateUrl(url) {
   try {
     new URL(url);
     return true;
@@ -289,7 +289,7 @@ export function validateUrl(url) {
 }
 
 // Validate port
-export function validatePort(port) {
+export function _validatePort(port) {
   const num = parseInt(port, 10);
   return !isNaN(num) && num > 0 && num <= 65535;
 }

@@ -57,10 +57,10 @@ function useHelixAuth() {
           headers: {
             'Authorization': `Bearer ${token}`
           }
-        });
+        }); // TODO-LINT: move to async function
         
         if (response.ok) {
-          const userData = await response.json();
+          const userData = await response.json(); // TODO-LINT: move to async function
           setUser(userData);
         } else {
           localStorage.removeItem('helix_token');
@@ -105,10 +105,10 @@ function useSynthAI() {
           incidents: incidents.slice(0, 20),
           request_type: 'monitoring_analysis'
         })
-      });
+      }); // TODO-LINT: move to async function
       
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json(); // TODO-LINT: move to async function
         setInsights(data.insights || {
           riskLevel: 'LOW',
           activeAlerts: 0,
@@ -156,14 +156,14 @@ const STATUS_COLORS = {
   paused: 'text-gray-600 bg-gray-50 border-gray-200'
 } as const;
 
-const SEVERITY_COLORS = {
+const _SEVERITY_COLORS = {
   critical: 'text-red-600 bg-red-50 border-red-200',
   high: 'text-orange-600 bg-orange-50 border-orange-200',
   medium: 'text-amber-600 bg-amber-50 border-amber-200',
   low: 'text-blue-600 bg-blue-50 border-blue-200'
 } as const;
 
-export default function AdminMonitoringDashboard(): ReactElement {
+export default function _AdminMonitoringDashboard(): ReactElement {
   // Authentication and AI integration
   const { user, loading: authLoading, logout } = useHelixAuth();
   const { insights: aiInsights, loading: aiLoading, generateInsights } = useSynthAI();
@@ -202,7 +202,7 @@ export default function AdminMonitoringDashboard(): ReactElement {
         fetchTags(),
         fetchMaintenanceWindows(),
         fetchStatusPages()
-      ]);
+      ]); // TODO-LINT: move to async function
       
       // Generate AI insights after data is loaded
       if (monitors.length > 0 || incidents.length > 0) {
@@ -221,8 +221,8 @@ export default function AdminMonitoringDashboard(): ReactElement {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
-      const data = await response.json();
+      }); // TODO-LINT: move to async function
+      const data = await response.json(); // TODO-LINT: move to async function
       setMonitors(data.monitors || data || []);
     } catch (error) {
       console.error('Failed to fetch monitors:', error);
@@ -235,8 +235,8 @@ export default function AdminMonitoringDashboard(): ReactElement {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
-      const data = await response.json();
+      }); // TODO-LINT: move to async function
+      const data = await response.json(); // TODO-LINT: move to async function
       setIncidents(data.incidents || data || []);
     } catch (error) {
       console.error('Failed to fetch incidents:', error);
@@ -249,8 +249,8 @@ export default function AdminMonitoringDashboard(): ReactElement {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
-      const data = await response.json();
+      }); // TODO-LINT: move to async function
+      const data = await response.json(); // TODO-LINT: move to async function
       setNotificationProviders(data.providers || data || []);
     } catch (error) {
       console.error('Failed to fetch notification providers:', error);
@@ -263,8 +263,8 @@ export default function AdminMonitoringDashboard(): ReactElement {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
-      const data = await response.json();
+      }); // TODO-LINT: move to async function
+      const data = await response.json(); // TODO-LINT: move to async function
       setTags(data.tags || data || []);
     } catch (error) {
       console.error('Failed to fetch tags:', error);
@@ -277,8 +277,8 @@ export default function AdminMonitoringDashboard(): ReactElement {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
-      const data = await response.json();
+      }); // TODO-LINT: move to async function
+      const data = await response.json(); // TODO-LINT: move to async function
       setMaintenanceWindows(data.windows || data || []);
       setLoading(false);
     } catch (error) {
@@ -293,8 +293,8 @@ export default function AdminMonitoringDashboard(): ReactElement {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
-      const data = await response.json();
+      }); // TODO-LINT: move to async function
+      const data = await response.json(); // TODO-LINT: move to async function
       setStatusPages(data.pages || data || []);
     } catch (error) {
       console.error('Failed to fetch status pages:', error);

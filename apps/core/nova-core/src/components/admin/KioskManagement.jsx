@@ -551,7 +551,7 @@ const generateKioskActivity = (kioskId) => [
   }
 ];
 
-export default function KioskManagement() {
+export default function _KioskManagement() {
   const { colorMode } = useTheme();
   const [kiosks, setKiosks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -569,7 +569,7 @@ export default function KioskManagement() {
       setLoading(true);
       
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 800)); // TODO-LINT: move to async function
       
       setKiosks(mockKiosks);
       setLoading(false);

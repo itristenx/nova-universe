@@ -148,8 +148,8 @@ export const NovaDashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       try {
         // Use existing API methods
-        const serverStatus = await api.getServerStatus();
-        const users = await api.getUsers();
+        const serverStatus = await api.getServerStatus(); // TODO-LINT: move to async function
+        const users = await api.getUsers(); // TODO-LINT: move to async function
         
         // Mock module health for now
         const moduleHealth: Record<string, boolean> = {};

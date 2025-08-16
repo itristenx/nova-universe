@@ -8,7 +8,7 @@ import { encrypt, decrypt } from '../utils/encryption.js';
 async function getPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../prisma/generated/core/index.js');
+    const mod = await import('../../../prisma/generated/core/index.js'); // TODO-LINT: move to async function
     const PrismaClient = mod.PrismaClient;
     return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch (e) {
@@ -18,7 +18,7 @@ async function getPrisma() {
 }
 
 let prisma;
-(async ()=>{ prisma = await getPrisma(); })();
+(async ()=>{ prisma = await getPrisma(); // TODO-LINT: move to async function })();
 
 export class HelixKioskIntegrationService {
   constructor() {
@@ -43,7 +43,7 @@ export class HelixKioskIntegrationService {
             take: 5
           }
         }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!asset) {
         throw new Error(`Asset with ID ${assetId} not found`);
@@ -52,7 +52,7 @@ export class HelixKioskIntegrationService {
       // Validate kiosk exists
       const kiosk = await this.db.kiosk.findUnique({
         where: { id: kioskId }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!kiosk) {
         throw new Error(`Kiosk with ID ${kioskId} not found`);
@@ -112,13 +112,13 @@ export class HelixKioskIntegrationService {
           updated_by = EXCLUDED.updated_by,
           last_check_in = CURRENT_TIMESTAMP
         RETURNING *
-      `;
+      `; // TODO-LINT: move to async function
 
       // Sync with Helix APIs
-      const helixSyncResult = await this.syncWithHelix(kioskId, assetId, asset, kioskMetadata);
+      const helixSyncResult = await this.syncWithHelix(kioskId, assetId, asset, kioskMetadata); // TODO-LINT: move to async function
 
       // Update registry with sync results
-      await this.updateHelixSyncStatus(kioskId, assetId, helixSyncResult);
+      await this.updateHelixSyncStatus(kioskId, assetId, helixSyncResult); // TODO-LINT: move to async function
 
       logger.info(`Asset ${asset.asset_tag} successfully registered with kiosk ${kioskId}`);
 
@@ -187,7 +187,7 @@ export class HelixKioskIntegrationService {
       };
 
       // Make API call to Helix
-      const helixResponse = await this.callHelixAPI('/identity/kiosk-assets', 'POST', helixPayload);
+      const helixResponse = await this.callHelixAPI('/identity/kiosk-assets', 'POST', helixPayload); // TODO-LINT: move to async function
 
       if (helixResponse.success) {
         logger.info(`Successfully synced asset ${asset.asset_tag} with Helix`);
@@ -227,7 +227,7 @@ export class HelixKioskIntegrationService {
           helix_last_sync = ${timestamp}::timestamp,
           helix_error_message = ${errorMessage}
         WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
-      `;
+      `; // TODO-LINT: move to async function
 
     } catch (error) {
       logger.error('Failed to update Helix sync status:', error);
@@ -254,7 +254,7 @@ export class HelixKioskIntegrationService {
         JOIN kiosks k ON kar.kiosk_id = k.id
         WHERE kar.kiosk_id = ${kioskId}
         ORDER BY kar.registration_date DESC
-      `;
+      `; // TODO-LINT: move to async function
 
       // Decrypt metadata for each asset
       const decryptedAssets = kioskAssets.map(asset => {
@@ -300,7 +300,7 @@ export class HelixKioskIntegrationService {
       const registration = await this.db.$queryRaw`
         SELECT * FROM kiosk_asset_registry 
         WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
-      `;
+      `; // TODO-LINT: move to async function
 
       if (registration.length === 0) {
         throw new Error('Asset registration not found for this kiosk');
@@ -308,14 +308,14 @@ export class HelixKioskIntegrationService {
 
       // Notify Helix about unregistration
       if (registration[0].helix_sync_status === 'synced') {
-        await this.notifyHelixUnregistration(kioskId, assetId, options);
+        await this.notifyHelixUnregistration(kioskId, assetId, options); // TODO-LINT: move to async function
       }
 
       // Remove from registry
       await this.db.$executeRaw`
         DELETE FROM kiosk_asset_registry 
         WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
-      `;
+      `; // TODO-LINT: move to async function
 
       logger.info(`Asset ${assetId} successfully unregistered from kiosk ${kioskId}`);
 
@@ -349,7 +349,7 @@ export class HelixKioskIntegrationService {
         userId: options.userId || 'system'
       };
 
-      await this.callHelixAPI(`/identity/kiosk-assets/${kioskId}-${assetId}`, 'DELETE', payload);
+      await this.callHelixAPI(`/identity/kiosk-assets/${kioskId}-${assetId}`, 'DELETE', payload); // TODO-LINT: move to async function
       logger.info(`Notified Helix about asset ${assetId} unregistration`);
 
     } catch (error) {
@@ -378,7 +378,7 @@ export class HelixKioskIntegrationService {
         WHERE kar.helix_sync_status IN ('pending', 'failed')
         ORDER BY kar.registration_date DESC
         LIMIT ${options.limit || 100}
-      `;
+      `; // TODO-LINT: move to async function
 
       const results = {
         total: pendingSync.length,
@@ -410,10 +410,10 @@ export class HelixKioskIntegrationService {
               department: entry.department
             },
             metadata
-          );
+          ); // TODO-LINT: move to async function
 
           // Update sync status
-          await this.updateHelixSyncStatus(entry.kiosk_id, entry.asset_id, syncResult);
+          await this.updateHelixSyncStatus(entry.kiosk_id, entry.asset_id, syncResult); // TODO-LINT: move to async function
 
           if (syncResult.status === 'synced') {
             results.synced++;
@@ -459,7 +459,7 @@ export class HelixKioskIntegrationService {
         FROM kiosk_asset_registry 
         GROUP BY helix_sync_status
         ORDER BY count DESC
-      `;
+      `; // TODO-LINT: move to async function
 
       const recentErrors = await this.db.$queryRaw`
         SELECT 
@@ -473,7 +473,7 @@ export class HelixKioskIntegrationService {
         WHERE kar.helix_sync_status = 'failed'
         ORDER BY kar.helix_last_sync DESC
         LIMIT 10
-      `;
+      `; // TODO-LINT: move to async function
 
       return {
         summary: statusSummary,
@@ -508,8 +508,8 @@ export class HelixKioskIntegrationService {
         options.body = JSON.stringify(data);
       }
 
-      const response = await fetch(url, options);
-      const responseData = await response.json();
+      const response = await fetch(url, options); // TODO-LINT: move to async function
+      const responseData = await response.json(); // TODO-LINT: move to async function
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${responseData.error || 'Unknown error'}`);
@@ -560,7 +560,7 @@ export class HelixKioskIntegrationService {
           last_check_in = CURRENT_TIMESTAMP,
           status = ${status}
         WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
-      `;
+      `; // TODO-LINT: move to async function
 
       // Optionally sync check-in with Helix
       if (this.helixApiKey) {
@@ -573,7 +573,7 @@ export class HelixKioskIntegrationService {
         };
 
         try {
-          await this.callHelixAPI('/identity/kiosk-assets/checkin', 'POST', payload);
+          await this.callHelixAPI('/identity/kiosk-assets/checkin', 'POST', payload); // TODO-LINT: move to async function
         } catch (error) {
           logger.warn('Failed to sync check-in with Helix:', error.message);
         }

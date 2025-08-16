@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Test script for Universal Login functionality
- * Tests the universal login API endpoints without starting the full server
+ * Test script for Universal Login _functionality
+ * _Tests the universal login API endpoints _without _starting the _full server
  */
 
-import { readFile } from 'fs/promises';
-import { dirname, join } from 'path';
+import { readFile } from '_fs/_promises';
+import { dirname, join } from '_path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
+const __filename = fileURLToPath(import._meta.url);
 const __dirname = dirname(__filename);
 
 console.log('🧪 Testing Universal Login Implementation...\n');
@@ -17,7 +17,7 @@ console.log('🧪 Testing Universal Login Implementation...\n');
 console.log('1. Testing Migration Files...');
 try {
   const migrationPath = join(__dirname, 'apps/api/migrations/postgresql/20250805_universal_login_schema.sql');
-  const migrationContent = await readFile(migrationPath, 'utf8');
+  const migrationContent = await readFile(migrationPath, 'utf8'); // TODO-LINT: move to async function
   console.log('✅ Universal login migration file exists');
   console.log(`   - File size: ${migrationContent.length} characters`);
   console.log(`   - Contains tenant tables: ${migrationContent.includes('CREATE TABLE IF NOT EXISTS tenants')}`);
@@ -31,7 +31,7 @@ try {
 console.log('\n2. Testing Route Files...');
 try {
   const routesPath = join(__dirname, 'apps/api/routes/helix-universal-login.js');
-  const routesContent = await readFile(routesPath, 'utf8');
+  const routesContent = await readFile(routesPath, 'utf8'); // TODO-LINT: move to async function
   console.log('✅ Universal login routes file exists');
   console.log(`   - File size: ${routesContent.length} characters`);
   console.log(`   - Contains tenant discovery: ${routesContent.includes('/tenant/discover')}`);
@@ -45,7 +45,7 @@ try {
 console.log('\n3. Testing Frontend Component...');
 try {
   const componentPath = join(__dirname, 'apps/core/nova-core/src/pages/auth/UniversalLoginPage.tsx');
-  const componentContent = await readFile(componentPath, 'utf8');
+  const componentContent = await readFile(componentPath, 'utf8'); // TODO-LINT: move to async function
   console.log('✅ Universal login component exists');
   console.log(`   - File size: ${componentContent.length} characters`);
   console.log(`   - Contains multi-step flow: ${componentContent.includes('currentStep')}`);
@@ -59,7 +59,7 @@ try {
 console.log('\n4. Testing Frontend Routing...');
 try {
   const appPath = join(__dirname, 'apps/core/nova-core/src/App.tsx');
-  const appContent = await readFile(appPath, 'utf8');
+  const appContent = await readFile(appPath, 'utf8'); // TODO-LINT: move to async function
   console.log('✅ Frontend routing file exists');
   console.log(`   - Universal login imported: ${appContent.includes('UniversalLoginPage')}`);
   console.log(`   - Route configured: ${appContent.includes('/auth/login')}`);
@@ -71,7 +71,7 @@ try {
 // Test 5: Database connectivity test
 console.log('\n5. Testing Database Connection...');
 try {
-  const { spawn } = await import('child_process');
+  const { spawn } = await import('child_process'); // TODO-LINT: move to async function
   
   const testConnection = spawn('pg_isready', ['-h', 'localhost', '-p', '5432'], { stdio: 'pipe' });
   

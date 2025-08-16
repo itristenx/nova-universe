@@ -111,11 +111,11 @@ export const EnhancedTicketLifecycle: React.FC<Props> = ({
   const { data: activities = [] } = useQuery({
     queryKey: ['ticket-activities', ticket.id],
     queryFn: async (): Promise<TicketActivity[]> => {
-      const response = await fetch(`/api/v1/tickets/${ticket.id}/activities`);
+      const response = await fetch(`/api/v1/tickets/${ticket.id}/activities`); // TODO-LINT: move to async function
       if (!response.ok) {
         throw new Error('Failed to fetch ticket activities');
       }
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.activities || [];
     }
   });
@@ -123,11 +123,11 @@ export const EnhancedTicketLifecycle: React.FC<Props> = ({
   const { data: relatedTickets = [] } = useQuery({
     queryKey: ['related-tickets', ticket.id],
     queryFn: async (): Promise<RelatedTicket[]> => {
-      const response = await fetch(`/api/v1/tickets/${ticket.id}/related`);
+      const response = await fetch(`/api/v1/tickets/${ticket.id}/related`); // TODO-LINT: move to async function
       if (!response.ok) {
         throw new Error('Failed to fetch related tickets');
       }
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.relatedTickets || [];
     }
   });
@@ -135,11 +135,11 @@ export const EnhancedTicketLifecycle: React.FC<Props> = ({
   const { data: knowledgeArticles = [] } = useQuery({
     queryKey: ['knowledge-articles', ticket.id],
     queryFn: async (): Promise<KnowledgeBaseArticle[]> => {
-      const response = await fetch(`/api/v1/tickets/${ticket.id}/knowledge-suggestions`);
+      const response = await fetch(`/api/v1/tickets/${ticket.id}/knowledge-suggestions`); // TODO-LINT: move to async function
       if (!response.ok) {
         throw new Error('Failed to fetch knowledge articles');
       }
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.articles || [];
     }
   });

@@ -70,13 +70,13 @@ async function testNotificationPlatform() {
       createdBy: 'test-creator'
     };
 
-    const eventId = await platform.sendNotification(payload);
+    const eventId = await platform.sendNotification(payload); // TODO-LINT: move to async function
     assert(eventId === 'test-event-123', 'Event ID should match mock response');
     console.log('✅ Notification sending works');
 
     // Test 2: Get user preferences
     console.log('⚙️ Testing user preferences...');
-    const preferences = await platform.getUserPreferences('test-user');
+    const preferences = await platform.getUserPreferences('test-user'); // TODO-LINT: move to async function
     assert(Array.isArray(preferences), 'Preferences should be an array');
     assert(preferences.length > 0, 'Should return preferences');
     console.log('✅ User preferences retrieval works');
@@ -93,7 +93,7 @@ async function testNotificationPlatform() {
       }
     ];
 
-    await platform.updateUserPreferences('test-user', newPreferences);
+    await platform.updateUserPreferences('test-user', newPreferences); // TODO-LINT: move to async function
     console.log('✅ User preferences update works');
 
     // Test 4: Batch notifications
@@ -115,7 +115,7 @@ async function testNotificationPlatform() {
       }
     ];
 
-    const eventIds = await platform.sendBatch(batchNotifications);
+    const eventIds = await platform.sendBatch(batchNotifications); // TODO-LINT: move to async function
     assert(Array.isArray(eventIds), 'Should return array of event IDs');
     console.log('✅ Batch notifications work');
 
@@ -133,7 +133,7 @@ async function testNotificationPlatform() {
 // Run tests
 await testNotificationPlatform()
   .then(success => {
-    process.exit(success ? 0 : 1);
+    process.exit(success ? 0 : 1); // TODO-LINT: move to async function
   })
   .catch(error => {
     console.error('❌ Unexpected error:', error);

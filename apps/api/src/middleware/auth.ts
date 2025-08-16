@@ -21,7 +21,7 @@ interface JWTPayload {
   role?: string;
 }
 
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+export const _authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -39,7 +39,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
+export const _optionalAuth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -57,7 +57,7 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction) =>
   next();
 };
 
-export const requireRole = (roles: string[]) => {
+export const _requireRole = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });

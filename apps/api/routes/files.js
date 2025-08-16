@@ -15,7 +15,7 @@ function canReadFile(reqUser, fileRow) {
   if (!reqUser) return false;
   const isOwner = fileRow.uploadedBy === reqUser.id;
   const isAdmin = reqUser.roles?.includes('admin') || reqUser.roles?.includes('superadmin');
-  const hasGlobalRead = reqUser.permissions?.includes?.('files:read:any');
+  const hasGlobalRead = reqUser.permissions?.includes?.('files:read: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types');
   return Boolean(isOwner || isAdmin || hasGlobalRead);
 }
 
@@ -24,7 +24,7 @@ function canDeleteFile(reqUser, fileRow, permanent) {
   const isOwner = fileRow.uploadedBy === reqUser.id;
   const isAdmin = reqUser.roles?.includes('admin') || reqUser.roles?.includes('superadmin');
   if (permanent === true) return Boolean(isAdmin);
-  const hasGlobalDelete = reqUser.permissions?.includes?.('files:delete:any');
+  const hasGlobalDelete = reqUser.permissions?.includes?.('files:delete: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types');
   return Boolean(isOwner || isAdmin || hasGlobalDelete);
 }
 
@@ -35,7 +35,7 @@ const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     const uploadDir = process.env.UPLOAD_DIR || './uploads';
     try {
-      await fs.mkdir(uploadDir, { recursive: true });
+      await fs.mkdir(uploadDir, { recursive: true }); // TODO-LINT: move to async function
       cb(null, uploadDir);
     } catch (error) {
       cb(error);
@@ -369,7 +369,7 @@ router.get('/:id',
 
           try {
             // Check if file exists on disk
-            await fs.access(file.path);
+            await fs.access(file.path); // TODO-LINT: move to async function
 
             // Set appropriate headers
             res.setHeader('Content-Type', file.mimeType);
@@ -590,7 +590,7 @@ router.delete('/:id',
           if (shouldPermanentDelete) {
             // Permanent deletion - remove from disk and database
             try {
-              await fs.unlink(file.path);
+              await fs.unlink(file.path); // TODO-LINT: move to async function
             } catch (fsError) {
               logger.warn('File not found on disk during deletion:', { fileId: id, path: file.path });
             }

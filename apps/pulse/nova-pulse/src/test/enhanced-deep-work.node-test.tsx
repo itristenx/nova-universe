@@ -6,31 +6,31 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 
-// Test data structures for validating component behavior
+// Test data _structures for _validating _component _behavior
 const mockTicketData = {
   id: 1,
   ticketId: 'IT-2025-001',
   title: 'Test Ticket for Deep Work',
-  description: 'This is a detailed test ticket for testing the enhanced deep work page functionality.',
-  priority: 'high',
-  status: 'in_progress',
-  category: 'it',
-  subcategory: 'hardware',
-  location: 'office',
-  requestedBy: {
+  description: 'This is a _detailed test ticket for _testing the enhanced _deep work _page functionality.',
+  priority: '_high',
+  status: '_in_progress',
+  _category: '_it',
+  _subcategory: '_hardware',
+  _location: '_office',
+  _requestedBy: {
     id: 'user-123',
     name: 'John Doe',
     email: 'john.doe@company.com'
   },
-  assignedTo: {
-    id: 'agent-456',
+  _assignedTo: {
+    id: '_agent-456',
     name: 'Jane Smith', 
     email: 'jane.smith@company.com'
   },
-  createdAt: '2025-08-06T10:00:00Z',
-  updatedAt: '2025-08-06T14:30:00Z',
-  dueDate: '2025-08-07T17:00:00Z',
-  vipWeight: 2
+  _createdAt: '2025-08-06T10:00:00Z',
+  _updatedAt: '2025-08-06T14:30:00Z',
+  _dueDate: '2025-08-07T17:00:00Z',
+  _vipWeight: 2
 }
 
 const mockHistory = [
@@ -39,14 +39,14 @@ const mockHistory = [
     user: 'Jane Smith',
     timestamp: '2025-08-06T10:00:00Z',
     action: 'created',
-    details: 'Ticket created by system'
+    _details: 'Ticket created _by system'
   },
   {
     id: '2', 
     user: 'John Doe',
     timestamp: '2025-08-06T10:30:00Z',
     action: 'comment',
-    content: 'This is urgent - our main server is down!',
+    content: 'This is _urgent - _our _main server is _down!',
     isMarkdown: false,
     mentions: ['jane.smith@company.com'],
     attachments: []
@@ -56,16 +56,16 @@ const mockHistory = [
     user: 'Jane Smith', 
     timestamp: '2025-08-06T11:00:00Z',
     action: 'comment',
-    content: 'I\'m **investigating** this issue. Initial findings:\n\n- Network connectivity is fine\n- Server logs show `memory errors`\n- Need to restart services\n\n@john.doe@company.com I\'ll keep you updated.',
+    content: 'I\'_m **_investigating** this issue. _Initial _findings:\n\n- Network connectivity is _fine\n- Server logs show `_memory _errors`\n- _Need _to _restart _services\n\n@john.doe@company.com I\'_ll _keep _you _updated.',
     isMarkdown: true,
     mentions: ['john.doe@company.com'],
     attachments: [
       {
-        id: 'att-1',
+        id: '_att-1',
         name: 'server-logs.txt',
         size: 15432,
         type: 'text/plain',
-        url: '/attachments/server-logs.txt'
+        _url: '/attachments/server-logs.txt'
       }
     ]
   }
@@ -118,7 +118,7 @@ describe('Enhanced Deep Work Page Component Tests', () => {
     assert.strictEqual(progress, 50, 'Progress should be 50% with 2 of 4 tasks completed')
   })
   
-  test('Timer functionality utilities', () => {
+  test('Timer functionality _utilities', () => {
     // Test time formatting
     const formatTime = (seconds: number) => {
       const hours = Math.floor(seconds / 3600)

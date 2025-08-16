@@ -3,7 +3,7 @@
  * CSS-based animation library compatible with HeroUI and modern web standards
  */
 
-// Animation timing functions (easing curves)
+// Animation timing functions (_easing curves)
 export const easingCurves = {
   // Standard curves
   linear: 'linear',
@@ -229,7 +229,7 @@ export const animations = {
 } as const
 
 // CSS custom properties for animations
-export const animationCSS = `
+export const _animationCSS = `
 :root {
   /* Animation Durations */
   --duration-instant: ${durations.instant}ms;
@@ -472,7 +472,7 @@ export const animationCSS = `
 `
 
 // Generate animation utility classes for Tailwind
-export function generateAnimationTailwindConfig() {
+export function _generateAnimationTailwindConfig() {
   return {
     extend: {
       animation: {
@@ -595,9 +595,9 @@ export function generateAnimationTailwindConfig() {
 }
 
 // Animation utility functions
-export const animationUtils = {
+export const __animationUtils = {
   /**
-   * Create a CSS transition string
+   * Create _a CSS transition string
    */
   transition(property: string, duration: keyof typeof durations, timing: keyof typeof easingCurves, delay?: keyof typeof delays): string {
     const durationMs = durations[duration]
@@ -628,7 +628,7 @@ export const animationUtils = {
 }
 
 // Predefined animation class combinations
-export const animationClasses = {
+export const _animationClasses = {
   // Button animations
   buttonDefault: 'hover-lift press-scale transition-all duration-fast ease-nova',
   buttonPrimary: 'hover-lift press-scale transition-all duration-fast ease-nova-spring',

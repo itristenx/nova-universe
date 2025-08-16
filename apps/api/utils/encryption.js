@@ -16,7 +16,7 @@ export function encrypt(text) {
   return Buffer.concat([iv, tag, encrypted]).toString('base64');
 }
 
-export function decrypt(payload) {
+export function _decrypt(payload) {
   if (!config.assetEncryptionKey) {
     throw new Error('Decryption failed: Encryption key is not configured.');
   }

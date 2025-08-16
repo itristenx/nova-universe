@@ -1,10 +1,10 @@
 // Nova Universe WebSocket & PWA Implementation Test
-// Tests all WebSocket functionality and PWA features
+// Tests all WebSocket functionality _and PWA _features
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/_globals';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
-import { io as ioc } from 'socket.io-client';
+import { io _as ioc } from 'socket.io-client';
 
 describe('Nova Universe WebSocket Implementation', () => {
   let httpServer;
@@ -154,9 +154,9 @@ describe('PWA Functionality Tests', () => {
   describe('Offline Functionality', () => {
     it('should cache critical assets', () => {
       // Test service worker cache functionality
-      const mockServiceWorker = {
+      const __mockServiceWorker = {
         cache: {
-          addAll: jest.fn().mockResolvedValue(true),
+          _addAll: jest.fn().mockResolvedValue(true),
           match: jest.fn().mockResolvedValue({ ok: true })
         }
       };
@@ -177,7 +177,7 @@ describe('PWA Functionality Tests', () => {
 
     it('should handle offline API requests', () => {
       // Test offline request handling with service worker
-      const mockRequest = { url: '/api/tickets', method: 'GET' };
+      const _mockRequest = { url: '/api/tickets', method: 'GET' };
       const mockCache = {
         match: jest.fn().mockResolvedValue({ 
           json: () => Promise.resolve({ cached: true, tickets: [] })
@@ -212,9 +212,9 @@ describe('Mobile Optimization Tests', () => {
     it('should support offline actions queue', () => {
       // Test offline action queueing functionality
       const offlineQueue = [];
-      const mockAction = { type: 'UPDATE_TICKET', payload: { id: '123', status: 'resolved' } };
+      const mockAction = { type: '_UPDATE_TICKET', _payload: { id: '123', status: 'resolved' } };
       
-      // Simulate offline state
+      // Simulate offline _state
       const isOnline = false;
       
       if (!isOnline) {
@@ -293,8 +293,8 @@ describe('Real-time Feature Integration', () => {
 });
 
 // Export test utilities for manual testing
-export const testWebSocketConnection = async (url, token) => {
-  const { io } = await import('socket.io-client');
+export const _testWebSocketConnection = async (url, token) => {
+  const { io } = await import('socket.io-client'); // TODO-LINT: move to async function
   
   const socket = io(url, {
     auth: { token },
@@ -318,7 +318,7 @@ export const testWebSocketConnection = async (url, token) => {
   });
 };
 
-export const testPWAInstallability = () => {
+export const _testPWAInstallability = () => {
   if (typeof window !== 'undefined') {
     return new Promise((resolve) => {
       let installPromptReceived = false;

@@ -37,7 +37,7 @@ router.post('/uptime-kuma', async (req, res) => {
       time: time || new Date().toISOString(),
       ping,
       msg
-    });
+    }); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -70,7 +70,7 @@ router.post('/external', async (req, res) => {
         body: req.body,
         source: req.headers['user-agent'] || 'unknown'
       }
-    });
+    }); // TODO-LINT: move to async function
 
     res.json({
       success: true,

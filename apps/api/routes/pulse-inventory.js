@@ -15,7 +15,7 @@ import { encrypt, decrypt } from '../utils/encryption.js';
 async function getPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../prisma/generated/core/index.js');
+    const mod = await import('../../../prisma/generated/core/index.js'); // TODO-LINT: move to async function
     return new mod.PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch (e) {
     logger.warn('Prisma unavailable in pulse-inventory routes', { error: e?.message });
@@ -178,7 +178,7 @@ router.get('/assets',
         orderBy: { updated_at: 'desc' },
         take: parseInt(limit),
         skip: parseInt(offset)
-      });
+      }); // TODO-LINT: move to async function
 
       // Get warranty alerts for these assets
       const assetIds = assets.map(a => a.id);
@@ -193,7 +193,7 @@ router.get('/assets',
         WHERE asset_id = ANY(${assetIds}) 
           AND dismissed = false
         ORDER BY asset_id, days_remaining ASC
-      `;
+      `; // TODO-LINT: move to async function
 
       // Get ticket history if requested
       let ticketHistory = [];
@@ -215,7 +215,7 @@ router.get('/assets',
           WHERE ath.asset_id = ANY(${assetIds})
             AND ath.ended_at IS NULL
           ORDER BY ath.created_at DESC
-        `;
+        `; // TODO-LINT: move to async function
       }
 
       // Group alerts and history by asset_id
@@ -283,7 +283,7 @@ router.get('/assets',
       });
 
       // Get total count for pagination
-      const totalCount = await prismaPromise.inventoryAsset.count({ where });
+      const totalCount = await prismaPromise.inventoryAsset.count({ where }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -361,7 +361,7 @@ router.get('/assets/:assetId',
             }
           }
         }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!asset) {
         return res.status(404).json({
@@ -387,7 +387,7 @@ router.get('/assets/:assetId',
         FROM asset_warranty_alerts 
         WHERE asset_id = ${parseInt(assetId)}
         ORDER BY alert_date DESC
-      `;
+      `; // TODO-LINT: move to async function
 
       // Get ticket history
       const ticketHistory = await prismaPromise.$queryRaw`
@@ -410,7 +410,7 @@ router.get('/assets/:assetId',
         LEFT JOIN users u ON st.user_id = u.id
         WHERE ath.asset_id = ${parseInt(assetId)}
         ORDER BY ath.created_at DESC
-      `;
+      `; // TODO-LINT: move to async function
 
       // Get kiosk registry info
       const kioskRegistrations = await prismaPromise.$queryRaw`
@@ -427,7 +427,7 @@ router.get('/assets/:assetId',
         JOIN kiosks k ON kar.kiosk_id = k.id
         WHERE kar.asset_id = ${parseInt(assetId)}
         ORDER BY kar.registration_date DESC
-      `;
+      `; // TODO-LINT: move to async function
 
       // Decrypt sensitive fields
       const enhancedAsset = {
@@ -527,7 +527,7 @@ router.post('/assets/:assetId/tickets',
       // Verify asset exists
       const asset = await prismaPromise.inventoryAsset.findUnique({
         where: { id: parseInt(assetId) }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!asset) {
         return res.status(404).json({
@@ -540,7 +540,7 @@ router.post('/assets/:assetId/tickets',
       // Verify ticket exists
       const ticket = await prismaPromise.supportTicket.findUnique({
         where: { id: parseInt(ticketId) }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!ticket) {
         return res.status(404).json({
@@ -554,7 +554,7 @@ router.post('/assets/:assetId/tickets',
       await prismaPromise.$executeRaw`
         INSERT INTO asset_ticket_history (asset_id, ticket_id, relationship_type, created_by, notes)
         VALUES (${parseInt(assetId)}, ${parseInt(ticketId)}, ${relationshipType}, ${userId}, ${notes || null})
-      `;
+      `; // TODO-LINT: move to async function
 
       logger.info(`Asset ${asset.asset_tag} linked to ticket ${ticket.id} by ${userId}`);
 
@@ -622,7 +622,7 @@ router.get('/assets/:id/tickets',
           }
         },
         orderBy: { createdAt: 'desc' }
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -711,13 +711,13 @@ router.get('/warranty-alerts',
         ${whereClause}
         ORDER BY awa.days_remaining ASC, awa.alert_date DESC
         LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
-      `;
+      `; // TODO-LINT: move to async function
 
       const totalCount = await prismaPromise.$queryRaw`
         SELECT COUNT(*) as count
         FROM asset_warranty_alerts awa
         ${whereClause}
-      `;
+      `; // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -772,7 +772,7 @@ router.post('/warranty-alerts/:alertId/dismiss',
             dismissed_by = ${userId},
             dismissed_at = CURRENT_TIMESTAMP
         WHERE id = ${parseInt(alertId)}
-      `;
+      `; // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -860,13 +860,13 @@ router.get('/kiosk-assets',
         ${whereClause}
         ORDER BY kar.registration_date DESC
         LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
-      `;
+      `; // TODO-LINT: move to async function
 
       const totalCount = await prismaPromise.$queryRaw`
         SELECT COUNT(*) as count
         FROM kiosk_asset_registry kar
         ${whereClause}
-      `;
+      `; // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -923,7 +923,7 @@ router.post('/import',
       if (validateOnly) {
         // Perform validation only
         const records = inventoryService.parseCsvData(csvData);
-        const validationResults = await inventoryService.validateRecords(records, 'validation-only');
+        const validationResults = await inventoryService.validateRecords(records, 'validation-only'); // TODO-LINT: move to async function
         
         res.json({
           success: true,
@@ -936,7 +936,7 @@ router.post('/import',
         });
       } else {
         // Perform full import
-        const importResult = await inventoryService.importAssets(csvData, filename, userId);
+        const importResult = await inventoryService.importAssets(csvData, filename, userId); // TODO-LINT: move to async function
         
         res.json({
           success: importResult.success,
@@ -981,7 +981,7 @@ router.post('/import/:batchId/rollback',
       const { batchId } = req.params;
       const userId = req.user.id;
 
-      const rollbackResult = await inventoryService.rollbackImport(batchId, userId);
+      const rollbackResult = await inventoryService.rollbackImport(batchId, userId); // TODO-LINT: move to async function
 
       res.json({
         success: rollbackResult.success,
@@ -1015,7 +1015,7 @@ router.post('/helix/sync',
     try {
       const { limit = 100 } = req.body;
 
-      const syncResults = await helixKioskIntegration.bulkSyncWithHelix({ limit });
+      const syncResults = await helixKioskIntegration.bulkSyncWithHelix({ limit }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1046,7 +1046,7 @@ router.get('/helix/status',
   authenticateJWT,
   async (req, res) => {
     try {
-      const syncStatus = await helixKioskIntegration.getHelixSyncStatus();
+      const syncStatus = await helixKioskIntegration.getHelixSyncStatus(); // TODO-LINT: move to async function
 
       res.json({
         success: true,

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * Hook for managing focus within a component for accessibility
  */
-export function useFocusManagement(shouldFocus = false) {
+export function _useFocusManagement(shouldFocus = _false) {
   const focusRef = useRef(null);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function useFocusManagement(shouldFocus = false) {
 /**
  * Hook for announcing content to screen readers
  */
-export function useAnnouncer() {
+export function _useAnnouncer() {
   const announcerRef = useRef(null);
 
   const announce = (message, priority = 'polite') => {
@@ -44,7 +44,7 @@ export function useAnnouncer() {
 /**
  * Hook for managing keyboard navigation
  */
-export function useKeyboardNavigation(items, onSelect) {
+export function _useKeyboardNavigation(items, onSelect) {
   const [focusedIndex, setFocusedIndex] = useState(-1);
 
   const handleKeyDown = (event) => {
@@ -80,7 +80,7 @@ export function useKeyboardNavigation(items, onSelect) {
 /**
  * Hook for managing ARIA attributes
  */
-export function useAriaAttributes(options = {}) {
+export function _useAriaAttributes(options = {}) {
   const {
     role,
     labelledBy,
@@ -109,7 +109,7 @@ export function useAriaAttributes(options = {}) {
 /**
  * Hook for managing skip links
  */
-export function useSkipLinks() {
+export function _useSkipLinks() {
   const skipLinkRef = useRef(null);
 
   const SkipLink = ({ href, children }) => (
@@ -131,7 +131,7 @@ export function useSkipLinks() {
 /**
  * Hook for color contrast checking (development tool)
  */
-export function useColorContrast() {
+export function _useColorContrast() {
   const checkContrast = (foreground, background) => {
     // Simple contrast ratio calculation
     const getLuminance = (color) => {

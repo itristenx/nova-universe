@@ -40,7 +40,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
   const loadPasskeys = async () => {
     try {
       setLoading(true);
-      const data = await api.getPasskeys();
+      const data = await api.getPasskeys(); // TODO-LINT: move to async function
       setPasskeys(data);
     } catch (error) {
       console.error('Failed to load passkeys:', error);
@@ -64,7 +64,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
       }
 
       // Get registration options from server
-      const options = await api.beginPasskeyRegistration({});
+      const options = await api.beginPasskeyRegistration({}); // TODO-LINT: move to async function
 
       // Convert base64url to ArrayBuffer for the challenge
       const challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
@@ -79,7 +79,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
             id: userIdBuffer
           }
         }
-      }) as PublicKeyCredential;
+      }) as PublicKeyCredential; // TODO-LINT: move to async function
 
       if (!credential) {
         throw new Error('Failed to create credential');
@@ -99,7 +99,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
       };
 
       // Register with server
-      await api.completePasskeyRegistration(credentialData);
+      await api.completePasskeyRegistration(credentialData); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -107,8 +107,8 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
         description: 'Your passkey has been successfully registered'
       });
 
-      await loadPasskeys();
-    } catch (error: any) {
+      await loadPasskeys(); // TODO-LINT: move to async function
+    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
       console.error('Failed to register passkey:', error);
       addToast({
         type: 'error',
@@ -122,7 +122,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
 
   const deletePasskey = async (passkey: Passkey) => {
     try {
-      await api.deletePasskey(passkey.id);
+      await api.deletePasskey(passkey.id); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -130,7 +130,7 @@ export const PasskeyManagement: React.FC<PasskeyManagementProps> = ({
         description: 'The passkey has been removed from your account'
       });
 
-      await loadPasskeys();
+      await loadPasskeys(); // TODO-LINT: move to async function
       setDeleteModal({ isOpen: false });
     } catch (error) {
       console.error('Failed to delete passkey:', error);

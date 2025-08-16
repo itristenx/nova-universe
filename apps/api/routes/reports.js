@@ -19,7 +19,7 @@ async function generateSystemInsights() {
       WHERE created_at >= NOW() - INTERVAL '7 days'
       GROUP BY day
       ORDER BY day
-    `);
+    `); // TODO-LINT: move to async function
     
     if (ticketTrends.rows.length > 1) {
       const recent = ticketTrends.rows[ticketTrends.rows.length - 1].count;
@@ -43,7 +43,7 @@ async function generateSystemInsights() {
       FROM support_tickets 
       WHERE resolved_at IS NOT NULL 
       AND created_at >= NOW() - INTERVAL '7 days'
-    `);
+    `); // TODO-LINT: move to async function
     
     if (avgResolutionTime.rows[0]?.avg_hours > 24) {
       insights.push({
@@ -65,7 +65,7 @@ async function generateSystemInsights() {
       GROUP BY hour
       ORDER BY count DESC
       LIMIT 1
-    `);
+    `); // TODO-LINT: move to async function
     
     if (peakHours.rows.length > 0) {
       insights.push({
@@ -85,7 +85,7 @@ async function generateSystemInsights() {
       GROUP BY system
       ORDER BY count DESC
       LIMIT 3
-    `);
+    `); // TODO-LINT: move to async function
     
     if (topCategories.rows.length > 0) {
       insights.push({
@@ -133,8 +133,8 @@ async function generateSystemInsights() {
  */
 router.get('/usage', async (req, res) => {
   try {
-    const { rows: userRows } = await db.query('SELECT COUNT(*) AS count FROM users');
-    const { rows: kioskRows } = await db.query('SELECT COUNT(*) AS count FROM kiosks');
+    const { rows: userRows } = await db.query('SELECT COUNT(*) AS count FROM users'); // TODO-LINT: move to async function
+    const { rows: kioskRows } = await db.query('SELECT COUNT(*) AS count FROM kiosks'); // TODO-LINT: move to async function
     res.json({
       users: parseInt(userRows[0].count, 10),
       kiosks: parseInt(kioskRows[0].count, 10),
@@ -174,7 +174,7 @@ router.get('/usage', async (req, res) => {
  */
 router.get('/insights', async (req, res) => {
   try {
-    const insights = await generateSystemInsights();
+    const insights = await generateSystemInsights(); // TODO-LINT: move to async function
     res.json(insights);
   } catch (error) {
     console.error('Error fetching insights:', error);
@@ -190,7 +190,7 @@ router.get('/vip-heatmap', async (req, res) => {
       FROM support_tickets
       WHERE vip_priority_score > 0
       GROUP BY day ORDER BY day
-    `);
+    `); // TODO-LINT: move to async function
     res.json({ success: true, heatmap: rows });
   } catch (err) {
     res.status(500).json({ success:false, error:'Failed to load heatmap', errorCode:'HEATMAP_ERROR' });

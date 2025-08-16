@@ -20,7 +20,7 @@ export class NovaNotificationPlatform {
       : [{ type: 'in_app' }];
 
     for (const channel of channels) {
-      const result = await this.sendToChannel(channel, notification);
+      const result = await this.sendToChannel(channel, notification); // TODO-LINT: move to async function
       results.push(result);
     }
 
@@ -38,7 +38,7 @@ export class NovaNotificationPlatform {
       const batch = list.slice(i, i + this.config.batchSize);
       const batchResults = await Promise.allSettled(
         batch.map(notification => this.sendNotification(notification))
-      );
+      ); // TODO-LINT: move to async function
       results.push(...batchResults);
     }
     return results;

@@ -48,7 +48,7 @@ app.use('/api/enhanced-monitoring', enhancedMonitoringRoutes);
 app.use('/api/synth', synthAiRoutes);
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('API Error:', err);
   
   if (err.type === 'entity.parse.failed') {

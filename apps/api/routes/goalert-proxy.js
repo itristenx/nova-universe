@@ -47,10 +47,10 @@ async function makeGoAlertRequest(endpoint, options = {}) {
     ...options,
     headers,
     timeout: 30000
-  });
+  }); // TODO-LINT: move to async function
 
   if (!response.ok) {
-    const error = await response.text();
+    const error = await response.text(); // TODO-LINT: move to async function
     logger.error(`GoAlert API Error: ${response.status} - ${error}`);
     throw new Error(`GoAlert API request failed: ${response.status} ${response.statusText}`);
   }
@@ -68,7 +68,7 @@ async function storeHelixUserPreference(userId, key, value) {
       VALUES (?, ?, ?, datetime('now'), datetime('now'))
       ON CONFLICT(user_id, preference_key) 
       DO UPDATE SET preference_value = ?, updated_at = datetime('now')
-    `, [userId, key, JSON.stringify(value), JSON.stringify(value)]);
+    `, [userId, key, JSON.stringify(value), JSON.stringify(value)]); // TODO-LINT: move to async function
   } catch (error) {
     logger.error('Failed to store Helix user preference:', error);
   }
@@ -77,12 +77,12 @@ async function storeHelixUserPreference(userId, key, value) {
 /**
  * Get user preferences from Helix
  */
-async function getHelixUserPreference(userId, key, defaultValue = null) {
+async function getHelixUserPreference(userId, key, defaultValue = _null) {
   try {
     const result = await db.get(`
       SELECT preference_value FROM helix_user_preferences 
       WHERE user_id = ? AND preference_key = ?
-    `, [userId, key]);
+    `, [userId, key]); // TODO-LINT: move to async function
     
     return result ? JSON.parse(result.preference_value) : defaultValue;
   } catch (error) {
@@ -114,7 +114,7 @@ router.get('/services',
       if (search) endpoint += `&search=${encodeURIComponent(search)}`;
       if (favorite) endpoint += `&favorite=${favorite}`;
 
-      const services = await makeGoAlertRequest(endpoint);
+      const services = await makeGoAlertRequest(endpoint); // TODO-LINT: move to async function
 
       // Enrich with Nova metadata and user preferences
       const enrichedServices = await Promise.all(
@@ -123,7 +123,7 @@ router.get('/services',
             req.user.id, 
             `goalert.service.${service.id}.favorite`, 
             false
-          );
+          ); // TODO-LINT: move to async function
           
           return {
             ...service,
@@ -132,7 +132,7 @@ router.get('/services',
               req.user.id, 
               `goalert.service.${service.id}.lastAccessed`
             )
-          };
+          }; // TODO-LINT: move to async function
         })
       );
 
@@ -193,7 +193,7 @@ router.post('/services',
           description,
           escalationPolicyID
         })
-      });
+      }); // TODO-LINT: move to async function
 
       // Store user preference for favorite
       if (favorite) {
@@ -201,7 +201,7 @@ router.post('/services',
           req.user.id, 
           `goalert.service.${service.id}.favorite`, 
           true
-        );
+        ); // TODO-LINT: move to async function
       }
 
       // Store last accessed
@@ -209,7 +209,7 @@ router.post('/services',
         req.user.id, 
         `goalert.service.${service.id}.lastAccessed`, 
         new Date().toISOString()
-      );
+      ); // TODO-LINT: move to async function
 
       res.status(201).json({
         success: true,
@@ -246,21 +246,21 @@ router.get('/services/:id',
     try {
       const { id } = req.params;
 
-      const service = await makeGoAlertRequest(`/api/v2/services/${id}`);
+      const service = await makeGoAlertRequest(`/api/v2/services/${id}`); // TODO-LINT: move to async function
 
       // Update last accessed
       await storeHelixUserPreference(
         req.user.id, 
         `goalert.service.${id}.lastAccessed`, 
         new Date().toISOString()
-      );
+      ); // TODO-LINT: move to async function
 
       // Get user preferences
       const userFavorite = await getHelixUserPreference(
         req.user.id, 
         `goalert.service.${id}.favorite`, 
         false
-      );
+      ); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -308,7 +308,7 @@ router.put('/services/:id',
       const service = await makeGoAlertRequest(`/api/v2/services/${id}`, {
         method: 'PUT',
         body: JSON.stringify(serviceData)
-      });
+      }); // TODO-LINT: move to async function
 
       // Update user preference for favorite
       if (typeof favorite === 'boolean') {
@@ -316,7 +316,7 @@ router.put('/services/:id',
           req.user.id, 
           `goalert.service.${id}.favorite`, 
           favorite
-        );
+        ); // TODO-LINT: move to async function
       }
 
       res.json({
@@ -330,7 +330,7 @@ router.put('/services/:id',
           )
         },
         timestamp: new Date().toISOString()
-      });
+      }); // TODO-LINT: move to async function
 
     } catch (error) {
       logger.error('Service update failed:', error);
@@ -361,13 +361,13 @@ router.delete('/services/:id',
 
       await makeGoAlertRequest(`/api/v2/services/${id}`, {
         method: 'DELETE'
-      });
+      }); // TODO-LINT: move to async function
 
       // Clean up user preferences
       await db.run(`
         DELETE FROM helix_user_preferences 
         WHERE user_id = ? AND preference_key LIKE 'goalert.service.' || ? || '.%'
-      `, [req.user.id, id]);
+      `, [req.user.id, id]); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -407,7 +407,7 @@ router.get('/escalation-policies',
       let endpoint = `/api/v2/escalation-policies?limit=${limit}&offset=${offset}`;
       if (search) endpoint += `&search=${encodeURIComponent(search)}`;
 
-      const policies = await makeGoAlertRequest(endpoint);
+      const policies = await makeGoAlertRequest(endpoint); // TODO-LINT: move to async function
 
       // Enrich with user preferences
       const enrichedPolicies = await Promise.all(
@@ -416,7 +416,7 @@ router.get('/escalation-policies',
             req.user.id, 
             `goalert.escalation-policy.${policy.id}.favorite`, 
             false
-          );
+          ); // TODO-LINT: move to async function
           
           return {
             ...policy,
@@ -475,7 +475,7 @@ router.post('/escalation-policies',
           repeat,
           steps
         })
-      });
+      }); // TODO-LINT: move to async function
 
       res.status(201).json({
         success: true,
@@ -515,7 +515,7 @@ router.get('/schedules',
       let endpoint = `/api/v2/schedules?limit=${limit}&offset=${offset}`;
       if (search) endpoint += `&search=${encodeURIComponent(search)}`;
 
-      const schedules = await makeGoAlertRequest(endpoint);
+      const schedules = await makeGoAlertRequest(endpoint); // TODO-LINT: move to async function
 
       // Enrich with user preferences and current on-call
       const enrichedSchedules = await Promise.all(
@@ -524,11 +524,11 @@ router.get('/schedules',
             req.user.id, 
             `goalert.schedule.${schedule.id}.favorite`, 
             false
-          );
+          ); // TODO-LINT: move to async function
 
           // Get current on-call for this schedule
           try {
-            const onCall = await makeGoAlertRequest(`/api/v2/schedules/${schedule.id}/on-call`);
+            const onCall = await makeGoAlertRequest(`/api/v2/schedules/${schedule.id}/on-call`); // TODO-LINT: move to async function
             schedule.currentOnCall = onCall;
           } catch (onCallError) {
             logger.debug('Failed to fetch on-call data:', onCallError);
@@ -589,7 +589,7 @@ router.post('/schedules',
           description,
           timeZone
         })
-      });
+      }); // TODO-LINT: move to async function
 
       // Store user preference for favorite
       if (favorite) {
@@ -597,7 +597,7 @@ router.post('/schedules',
           req.user.id, 
           `goalert.schedule.${schedule.id}.favorite`, 
           true
-        );
+        ); // TODO-LINT: move to async function
       }
 
       res.status(201).json({
@@ -635,7 +635,7 @@ router.get('/schedules/:id/on-call',
     try {
       const { id } = req.params;
 
-      const onCall = await makeGoAlertRequest(`/api/v2/schedules/${id}/on-call`);
+      const onCall = await makeGoAlertRequest(`/api/v2/schedules/${id}/on-call`); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -680,7 +680,7 @@ router.get('/schedules/:id/assignments',
       if (end) params.append('end', end);
       if (params.toString()) endpoint += `?${params.toString()}`;
 
-      const assignments = await makeGoAlertRequest(endpoint);
+      const assignments = await makeGoAlertRequest(endpoint); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -729,7 +729,7 @@ router.post('/schedules/:id/overrides',
           start,
           end
         })
-      });
+      }); // TODO-LINT: move to async function
 
       res.status(201).json({
         success: true,
@@ -769,7 +769,7 @@ router.get('/users',
       let endpoint = `/api/v2/users?limit=${limit}&offset=${offset}`;
       if (search) endpoint += `&search=${encodeURIComponent(search)}`;
 
-      const users = await makeGoAlertRequest(endpoint);
+      const users = await makeGoAlertRequest(endpoint); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -804,7 +804,7 @@ router.get('/users/:id/contact-methods',
     try {
       const { id } = req.params;
 
-      const contactMethods = await makeGoAlertRequest(`/api/v2/users/${id}/contact-methods`);
+      const contactMethods = await makeGoAlertRequest(`/api/v2/users/${id}/contact-methods`); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -853,14 +853,14 @@ router.post('/users/:id/contact-methods',
           type,
           value
         })
-      });
+      }); // TODO-LINT: move to async function
 
       // Store in Helix for user preference tracking
       await storeHelixUserPreference(
         req.user.id, 
         `goalert.contact-methods.${contactMethod.id}`, 
         { name, type, value, createdAt: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
 
       res.status(201).json({
         success: true,
@@ -894,7 +894,7 @@ router.get('/users/:id/notification-rules',
     try {
       const { id } = req.params;
 
-      const notificationRules = await makeGoAlertRequest(`/api/v2/users/${id}/notification-rules`);
+      const notificationRules = await makeGoAlertRequest(`/api/v2/users/${id}/notification-rules`); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -941,14 +941,14 @@ router.post('/users/:id/notification-rules',
           contactMethodID,
           delayMinutes
         })
-      });
+      }); // TODO-LINT: move to async function
 
       // Store in Helix for user preference tracking
       await storeHelixUserPreference(
         req.user.id, 
         `goalert.notification-rules.${notificationRule.id}`, 
         { contactMethodID, delayMinutes, createdAt: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
 
       res.status(201).json({
         success: true,
@@ -998,14 +998,14 @@ router.get('/alerts',
       if (start) endpoint += `&start=${encodeURIComponent(start)}`;
       if (end) endpoint += `&end=${encodeURIComponent(end)}`;
 
-      const alerts = await makeGoAlertRequest(endpoint);
+      const alerts = await makeGoAlertRequest(endpoint); // TODO-LINT: move to async function
 
       // Store user's alert viewing preferences
       await storeHelixUserPreference(
         req.user.id, 
         'goalert.alerts.lastViewFilter', 
         { serviceID, status, limit, start, end, timestamp: new Date().toISOString() }
-      );
+      ); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1053,7 +1053,7 @@ router.post('/alerts',
           summary,
           details
         })
-      });
+      }); // TODO-LINT: move to async function
 
       res.status(201).json({
         success: true,
@@ -1091,14 +1091,14 @@ router.post('/alerts/:id/acknowledge',
 
       await makeGoAlertRequest(`/api/v2/alerts/${id}/acknowledge`, {
         method: 'POST'
-      });
+      }); // TODO-LINT: move to async function
 
       // Store acknowledgment in Helix for tracking
       await storeHelixUserPreference(
         req.user.id, 
         `goalert.alerts.${id}.acknowledged`, 
         { acknowledgedAt: new Date().toISOString(), acknowledgedBy: req.user.id }
-      );
+      ); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1136,14 +1136,14 @@ router.post('/alerts/:id/close',
 
       await makeGoAlertRequest(`/api/v2/alerts/${id}/close`, {
         method: 'POST'
-      });
+      }); // TODO-LINT: move to async function
 
       // Store closure in Helix for tracking
       await storeHelixUserPreference(
         req.user.id, 
         `goalert.alerts.${id}.closed`, 
         { closedAt: new Date().toISOString(), closedBy: req.user.id }
-      );
+      ); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1183,7 +1183,7 @@ router.get('/heartbeat-monitors',
       let endpoint = `/api/v2/heartbeat-monitors?limit=${limit}&offset=${offset}`;
       if (serviceID) endpoint += `&serviceID=${serviceID}`;
 
-      const monitors = await makeGoAlertRequest(endpoint);
+      const monitors = await makeGoAlertRequest(endpoint); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1231,7 +1231,7 @@ router.post('/heartbeat-monitors',
           name,
           timeoutMinutes
         })
-      });
+      }); // TODO-LINT: move to async function
 
       res.status(201).json({
         success: true,
@@ -1269,7 +1269,7 @@ router.get('/services/:serviceID/integration-keys',
     try {
       const { serviceID } = req.params;
 
-      const integrationKeys = await makeGoAlertRequest(`/api/v2/services/${serviceID}/integration-keys`);
+      const integrationKeys = await makeGoAlertRequest(`/api/v2/services/${serviceID}/integration-keys`); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -1316,7 +1316,7 @@ router.post('/services/:serviceID/integration-keys',
           name,
           type
         })
-      });
+      }); // TODO-LINT: move to async function
 
       res.status(201).json({
         success: true,
@@ -1355,7 +1355,7 @@ router.get('/user/preferences',
         FROM helix_user_preferences 
         WHERE user_id = ? AND preference_key LIKE 'goalert.%'
         ORDER BY updated_at DESC
-      `, [req.user.id]);
+      `, [req.user.id]); // TODO-LINT: move to async function
 
       const formattedPreferences = {};
       preferences.forEach(pref => {
@@ -1406,7 +1406,7 @@ router.post('/user/preferences',
           req.user.id, 
           `goalert.${key}`, 
           value
-        );
+        ); // TODO-LINT: move to async function
       }
 
       res.json({

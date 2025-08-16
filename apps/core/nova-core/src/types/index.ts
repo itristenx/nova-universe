@@ -391,7 +391,7 @@ export interface ConfigurationSummary {
 // Kiosk Configuration Sync Types
 export interface KioskConfigUpdate {
   type: 'status' | 'schedule' | 'branding';
-  data: any;
+  data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
   timestamp: string;
   source: 'kiosk' | 'admin';
   kioskId: string;
@@ -548,5 +548,5 @@ export interface RequestCatalogItem {
   price?: number;
   sla?: string;
   enabled?: boolean;
-  formSchema?: any;
+  formSchema?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
 }

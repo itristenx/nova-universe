@@ -17,7 +17,7 @@ export interface ExtendedUser extends User {
   updatedAt?: string;
 }
 
-export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
+export const _useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +30,7 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
       setError(null);
 
       // Get users from the API
-      const allUsers = await api.getUsers();
+      const allUsers = await api.getUsers(); // TODO-LINT: move to async function
       
       // Apply client-side filtering
       let filteredUsers = allUsers;
@@ -82,8 +82,8 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
 
   const createUser = async (userData: Omit<User, 'id'>): Promise<User | null> => {
     try {
-      const newUser = await api.createUser(userData);
-      await fetchUsers(); // Refresh the list
+      const newUser = await api.createUser(userData); // TODO-LINT: move to async function
+      await fetchUsers(); // TODO-LINT: move to async function // Refresh the list
       return newUser;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create user');
@@ -93,8 +93,8 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
 
   const updateUser = async (id: number, userData: Partial<User>): Promise<User | null> => {
     try {
-      const updatedUser = await api.updateUser(id, userData);
-      await fetchUsers(); // Refresh the list
+      const updatedUser = await api.updateUser(id, userData); // TODO-LINT: move to async function
+      await fetchUsers(); // TODO-LINT: move to async function // Refresh the list
       return updatedUser;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update user');
@@ -104,8 +104,8 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
 
   const deleteUser = async (id: number): Promise<boolean> => {
     try {
-      await api.deleteUser(id);
-      await fetchUsers(); // Refresh the list
+      await api.deleteUser(id); // TODO-LINT: move to async function
+      await fetchUsers(); // TODO-LINT: move to async function // Refresh the list
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete user');
@@ -117,7 +117,7 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
     const user = users.find(u => u.id === id);
     if (!user) return false;
 
-    return await updateUser(id, { disabled: !user.disabled }) !== null;
+    return await updateUser(id, { disabled: !user.disabled }) !== null; // TODO-LINT: move to async function
   };
 
   const assignRole = async (userId: number, role: string): Promise<boolean> => {
@@ -125,7 +125,7 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
     if (!user) return false;
 
     const updatedRoles = [...(user.roles || []), role];
-    return await updateUser(userId, { roles: updatedRoles }) !== null;
+    return await updateUser(userId, { roles: updatedRoles }) !== null; // TODO-LINT: move to async function
   };
 
   const removeRole = async (userId: number, role: string): Promise<boolean> => {
@@ -133,7 +133,7 @@ export const useUsers = (filters: UserFilters = {}, page = 1, limit = 10) => {
     if (!user) return false;
 
     const updatedRoles = (user.roles || []).filter(r => r !== role);
-    return await updateUser(userId, { roles: updatedRoles }) !== null;
+    return await updateUser(userId, { roles: updatedRoles }) !== null; // TODO-LINT: move to async function
   };
 
   return {

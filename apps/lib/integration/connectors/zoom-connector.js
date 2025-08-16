@@ -45,10 +45,10 @@ export class ZoomConnector extends IConnector {
       });
 
       // Authenticate based on auth type
-      await this.authenticate();
+      await this.authenticate(); // TODO-LINT: move to async function
       
       // Test the connection
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
       
       console.log('Zoom connector initialized successfully');
     } catch (error) {
@@ -65,12 +65,12 @@ export class ZoomConnector extends IConnector {
       const startTime = Date.now();
       
       // Ensure we have a valid token
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
       
       // Test user access
       const userResponse = await this.client.get('/users/me', {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
       
       const apiLatency = Date.now() - startTime;
 
@@ -82,7 +82,7 @@ export class ZoomConnector extends IConnector {
         const meetingsStartTime = Date.now();
         await this.client.get('/users/me/meetings?type=scheduled&page_size=1', {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
         meetingsLatency = Date.now() - meetingsStartTime;
       } catch (error) {
         meetingsStatus = 'degraded';
@@ -96,7 +96,7 @@ export class ZoomConnector extends IConnector {
         const accountStartTime = Date.now();
         await this.client.get('/accounts/me', {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
         accountLatency = Date.now() - accountStartTime;
       } catch (error) {
         accountStatus = 'degraded';
@@ -157,17 +157,17 @@ export class ZoomConnector extends IConnector {
       console.log(`Starting ${syncType} sync from Zoom...`);
 
       // Ensure valid authentication
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
 
       // Sync users
-      const usersResult = await this.syncUsers(options);
+      const usersResult = await this.syncUsers(options); // TODO-LINT: move to async function
       totalRecords += usersResult.totalRecords;
       successCount += usersResult.successCount;
       errorCount += usersResult.errorCount;
       errors.push(...usersResult.errors);
 
       // Sync meetings
-      const meetingsResult = await this.syncMeetings(options);
+      const meetingsResult = await this.syncMeetings(options); // TODO-LINT: move to async function
       totalRecords += meetingsResult.totalRecords;
       successCount += meetingsResult.successCount;
       errorCount += meetingsResult.errorCount;
@@ -175,7 +175,7 @@ export class ZoomConnector extends IConnector {
 
       // Sync webinars (if enabled)
       if (options.includeWebinars) {
-        const webinarsResult = await this.syncWebinars(options);
+        const webinarsResult = await this.syncWebinars(options); // TODO-LINT: move to async function
         totalRecords += webinarsResult.totalRecords;
         successCount += webinarsResult.successCount;
         errorCount += webinarsResult.errorCount;
@@ -222,7 +222,7 @@ export class ZoomConnector extends IConnector {
       const fromDate = since.toISOString().split('T')[0];
       const toDate = new Date().toISOString().split('T')[0];
       
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
       
       const events = [];
       
@@ -231,7 +231,7 @@ export class ZoomConnector extends IConnector {
         const meetingResponse = await this.client.get(
           `/metrics/meetings?type=past&from=${fromDate}&to=${toDate}&page_size=100`, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         for (const meeting of meetingResponse.data.meetings || []) {
           const meetingTime = new Date(meeting.start_time);
@@ -273,26 +273,26 @@ export class ZoomConnector extends IConnector {
     try {
       const { action: actionType, target, parameters } = action;
 
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
 
       switch (actionType) {
         case 'create_meeting':
-          return await this.createMeeting(target, parameters);
+          return await this.createMeeting(target, parameters); // TODO-LINT: move to async function
         
         case 'update_meeting':
-          return await this.updateMeeting(target, parameters);
+          return await this.updateMeeting(target, parameters); // TODO-LINT: move to async function
         
         case 'delete_meeting':
-          return await this.deleteMeeting(target);
+          return await this.deleteMeeting(target); // TODO-LINT: move to async function
         
         case 'create_webinar':
-          return await this.createWebinar(target, parameters);
+          return await this.createWebinar(target, parameters); // TODO-LINT: move to async function
         
         case 'send_invitation':
-          return await this.sendMeetingInvitation(target, parameters);
+          return await this.sendMeetingInvitation(target, parameters); // TODO-LINT: move to async function
         
         case 'update_user_settings':
-          return await this.updateUserSettings(target, parameters);
+          return await this.updateUserSettings(target, parameters); // TODO-LINT: move to async function
         
         default:
           throw new Error(`Unsupported action: ${actionType}`);
@@ -430,9 +430,9 @@ export class ZoomConnector extends IConnector {
       const authType = this.config.credentials?.authType || 'oauth';
 
       if (authType === 'oauth') {
-        await this.authenticateOAuth();
+        await this.authenticateOAuth(); // TODO-LINT: move to async function
       } else if (authType === 'jwt') {
-        await this.authenticateJWT();
+        await this.authenticateJWT(); // TODO-LINT: move to async function
       } else {
         throw new Error('Unsupported authentication type');
       }
@@ -466,7 +466,7 @@ export class ZoomConnector extends IConnector {
 
   async ensureValidToken() {
     if (!this.accessToken || !this.tokenExpiry || new Date() >= this.tokenExpiry) {
-      await this.authenticate();
+      await this.authenticate(); // TODO-LINT: move to async function
     }
   }
 
@@ -474,7 +474,7 @@ export class ZoomConnector extends IConnector {
     try {
       const response = await this.client.get('/users/me', {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
       
       if (response.status !== 200) {
         throw new Error('Failed to connect to Zoom API');
@@ -506,7 +506,7 @@ export class ZoomConnector extends IConnector {
 
         const response = await this.client.get(`/users?${params}`, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         const users = response.data.users || [];
         totalRecords += users.length;
@@ -514,7 +514,7 @@ export class ZoomConnector extends IConnector {
         // Process each user
         for (const user of users) {
           try {
-            await this.processUser(user);
+            await this.processUser(user); // TODO-LINT: move to async function
             successCount++;
           } catch (error) {
             errorCount++;
@@ -528,7 +528,7 @@ export class ZoomConnector extends IConnector {
         nextPageToken = response.data.next_page_token || '';
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
 
       } while (nextPageToken);
 
@@ -572,7 +572,7 @@ export class ZoomConnector extends IConnector {
 
         const response = await this.client.get(`/users/me/meetings?${params}`, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         const meetings = response.data.meetings || [];
         totalRecords += meetings.length;
@@ -580,7 +580,7 @@ export class ZoomConnector extends IConnector {
         // Process each meeting
         for (const meeting of meetings) {
           try {
-            await this.processMeeting(meeting);
+            await this.processMeeting(meeting); // TODO-LINT: move to async function
             successCount++;
           } catch (error) {
             errorCount++;
@@ -594,7 +594,7 @@ export class ZoomConnector extends IConnector {
         nextPageToken = response.data.next_page_token || '';
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
 
       } while (nextPageToken);
 
@@ -636,7 +636,7 @@ export class ZoomConnector extends IConnector {
 
         const response = await this.client.get(`/users/me/webinars?${params}`, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         const webinars = response.data.webinars || [];
         totalRecords += webinars.length;
@@ -644,7 +644,7 @@ export class ZoomConnector extends IConnector {
         // Process each webinar
         for (const webinar of webinars) {
           try {
-            await this.processWebinar(webinar);
+            await this.processWebinar(webinar); // TODO-LINT: move to async function
             successCount++;
           } catch (error) {
             errorCount++;
@@ -658,7 +658,7 @@ export class ZoomConnector extends IConnector {
         nextPageToken = response.data.next_page_token || '';
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
 
       } while (nextPageToken);
 
@@ -814,7 +814,7 @@ export class ZoomConnector extends IConnector {
 
       const response = await this.client.post(`/users/${userId}/meetings`, meetingData, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -835,7 +835,7 @@ export class ZoomConnector extends IConnector {
     try {
       const response = await this.client.patch(`/meetings/${meetingId}`, parameters, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -851,7 +851,7 @@ export class ZoomConnector extends IConnector {
     try {
       await this.client.delete(`/meetings/${meetingId}`, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -867,7 +867,7 @@ export class ZoomConnector extends IConnector {
     try {
       const response = await this.client.post(`/users/${userId}/webinars`, parameters, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -892,7 +892,7 @@ export class ZoomConnector extends IConnector {
       
       return {
         success: true,
-        message: 'Invitation functionality noted (requires email integration)',
+        message: 'Invitation _functionality _noted (_requires email integration)',
         data: { meetingId, recipients: email_addresses }
       };
     } catch (error) {
@@ -904,7 +904,7 @@ export class ZoomConnector extends IConnector {
     try {
       const response = await this.client.patch(`/users/${userId}/settings`, parameters, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,

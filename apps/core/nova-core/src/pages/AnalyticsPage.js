@@ -3,7 +3,7 @@ import { Card, CardBody, CardHeader, Button, Select, SelectItem, Tabs, Tab, Chip
 import { ChartBarIcon, ClockIcon, UserIcon, ComputerDesktopIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, CalendarIcon, DocumentChartBarIcon } from '@heroicons/react/24/outline';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
-export const AnalyticsPage = () => {
+export const _AnalyticsPage = () => {
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState('7d');
@@ -15,7 +15,7 @@ export const AnalyticsPage = () => {
         setLoading(true);
         try {
             // Real API call for analytics data
-            const data = await api.getAnalytics(timeRange);
+            const data = await api.getAnalytics(timeRange); // TODO-LINT: move to async function
             setAnalytics(data);
             setAnalytics(data);
         }

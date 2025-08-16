@@ -41,7 +41,7 @@ class MockCosmoTicketProcessor {
       customerMatch: await this._matchCustomer(ticketData),
       duplicateAnalysis: await this._analyzeForDuplicates(ticketData),
       suggestions: this._generateSuggestions(ticketData)
-    };
+    }; // TODO-LINT: move to async function
 
     this.tickets.set(ticketData.id, result);
     this.isProcessing = false;
@@ -326,7 +326,7 @@ describe('AI Ticket Processing System', () => {
       priority: 'high',
       location: 'New York',
       department: 'IT'
-    });
+    }); // TODO-LINT: move to async function
 
     await processor.addCustomer({
       name: 'TechStart Inc',
@@ -336,7 +336,7 @@ describe('AI Ticket Processing System', () => {
       priority: 'medium',
       location: 'California',
       department: 'Engineering'
-    });
+    }); // TODO-LINT: move to async function
 
     // Sample test tickets
     testTickets = [
@@ -386,7 +386,7 @@ describe('AI Ticket Processing System', () => {
   describe('Ticket Classification', () => {
     test('should classify hardware tickets correctly', async () => {
       const ticket = testTickets[0]; // Computer not booting
-      const processed = await processor.processTicket(ticket);
+      const processed = await processor.processTicket(ticket); // TODO-LINT: move to async function
 
       assert.ok(processed.aiClassification, 'Should have AI classification');
       assert.strictEqual(processed.aiClassification.category, 'hardware', 'Should classify as hardware');
@@ -395,7 +395,7 @@ describe('AI Ticket Processing System', () => {
 
     test('should classify network tickets correctly', async () => {
       const ticket = testTickets[1]; // Network connectivity
-      const processed = await processor.processTicket(ticket);
+      const processed = await processor.processTicket(ticket); // TODO-LINT: move to async function
 
       assert.strictEqual(processed.aiClassification.category, 'network', 'Should classify as network');
       assert.ok(processed.aiClassification.categoryConfidence > 0.5, 'Should have reasonable confidence');
@@ -403,7 +403,7 @@ describe('AI Ticket Processing System', () => {
 
     test('should classify software tickets correctly', async () => {
       const ticket = testTickets[2]; // Email/Outlook issue
-      const processed = await processor.processTicket(ticket);
+      const processed = await processor.processTicket(ticket); // TODO-LINT: move to async function
 
       assert.ok(['software', 'email'].includes(processed.aiClassification.category), 'Should classify as software or email');
       assert.ok(processed.aiClassification.categoryConfidence > 0.3, 'Should have some confidence');
@@ -411,7 +411,7 @@ describe('AI Ticket Processing System', () => {
 
     test('should classify security tickets with high priority', async () => {
       const ticket = testTickets[3]; // Security breach
-      const processed = await processor.processTicket(ticket);
+      const processed = await processor.processTicket(ticket); // TODO-LINT: move to async function
 
       assert.strictEqual(processed.aiClassification.category, 'security', 'Should classify as security');
       assert.ok(['high', 'critical'].includes(processed.aiClassification.priority), 'Should have high/critical priority');
@@ -419,7 +419,7 @@ describe('AI Ticket Processing System', () => {
 
     test('should classify low priority requests correctly', async () => {
       const ticket = testTickets[4]; // Password reset
-      const processed = await processor.processTicket(ticket);
+      const processed = await processor.processTicket(ticket); // TODO-LINT: move to async function
 
       assert.strictEqual(processed.aiClassification.priority, 'low', 'Should classify as low priority');
     });
@@ -428,7 +428,7 @@ describe('AI Ticket Processing System', () => {
   describe('Customer Matching', () => {
     test('should match customers by email domain', async () => {
       const ticket = testTickets[0]; // john.doe@acme.com
-      const processed = await processor.processTicket(ticket);
+      const processed = await processor.processTicket(ticket); // TODO-LINT: move to async function
 
       assert.ok(processed.customerMatch, 'Should have customer match');
       assert.ok(processed.customerMatch.customer, 'Should find customer');
@@ -438,7 +438,7 @@ describe('AI Ticket Processing System', () => {
 
     test('should match customers by exact email', async () => {
       const ticket = testTickets[2]; // help@techstart.com
-      const processed = await processor.processTicket(ticket);
+      const processed = await processor.processTicket(ticket); // TODO-LINT: move to async function
 
       assert.ok(processed.customerMatch.customer, 'Should find customer');
       assert.strictEqual(processed.customerMatch.customer.name, 'TechStart Inc', 'Should match TechStart Inc');
@@ -453,7 +453,7 @@ describe('AI Ticket Processing System', () => {
         requesterEmail: 'unknown@unknown.com'
       };
 
-      const processed = await processor.processTicket(unknownTicket);
+      const processed = await processor.processTicket(unknownTicket); // TODO-LINT: move to async function
 
       assert.ok(processed.customerMatch, 'Should have customer match result');
       assert.strictEqual(processed.customerMatch.customer, null, 'Should not find customer');
@@ -465,7 +465,7 @@ describe('AI Ticket Processing System', () => {
     test('should detect duplicate tickets', async () => {
       // First, process a ticket
       const originalTicket = testTickets[0];
-      await processor.processTicket(originalTicket);
+      await processor.processTicket(originalTicket); // TODO-LINT: move to async function
 
       // Create a very similar ticket
       const duplicateTicket = {
@@ -475,7 +475,7 @@ describe('AI Ticket Processing System', () => {
         requesterEmail: 'different@acme.com'
       };
 
-      const processed = await processor.processTicket(duplicateTicket);
+      const processed = await processor.processTicket(duplicateTicket); // TODO-LINT: move to async function
 
       assert.ok(processed.duplicateAnalysis, 'Should have duplicate analysis');
       assert.ok(processed.duplicateAnalysis.isDuplicate || processed.duplicateAnalysis.similarTickets.length > 0, 
@@ -484,7 +484,7 @@ describe('AI Ticket Processing System', () => {
 
     test('should find similar tickets', async () => {
       // Process multiple network-related tickets first
-      await processor.processTicket(testTickets[1]); // Network connectivity issues
+      await processor.processTicket(testTickets[1]); // TODO-LINT: move to async function // Network connectivity issues
       
       const similarTicket = {
         id: 'similar-1',
@@ -493,21 +493,21 @@ describe('AI Ticket Processing System', () => {
         requesterEmail: 'test@example.com'
       };
 
-      const processed = await processor.processTicket(similarTicket);
+      const processed = await processor.processTicket(similarTicket); // TODO-LINT: move to async function
 
       assert.ok(processed.duplicateAnalysis.similarTickets.length > 0, 'Should find similar tickets');
     });
 
     test('should search for similar tickets independently', async () => {
       // Add some tickets first
-      await processor.processTicket(testTickets[0]);
-      await processor.processTicket(testTickets[1]);
+      await processor.processTicket(testTickets[0]); // TODO-LINT: move to async function
+      await processor.processTicket(testTickets[1]); // TODO-LINT: move to async function
 
       const results = await processor.searchSimilarTickets(
         'Hardware failure',
         'Computer hardware issue with power supply',
         5
-      );
+      ); // TODO-LINT: move to async function
 
       assert.ok(Array.isArray(results), 'Should return array');
       // May or may not find results depending on similarity threshold
@@ -523,7 +523,7 @@ describe('AI Ticket Processing System', () => {
         requesterEmail: 'test@acme.com'
       };
 
-      const processed = await processor.processTicket(ticket);
+      const processed = await processor.processTicket(ticket); // TODO-LINT: move to async function
 
       assert.ok(processed.suggestions, 'Should have suggestions');
       const categorySuggestion = processed.suggestions.find(s => s.type === 'category');
@@ -542,7 +542,7 @@ describe('AI Ticket Processing System', () => {
         requesterEmail: 'ceo@acme.com'
       };
 
-      const processed = await processor.processTicket(urgentTicket);
+      const processed = await processor.processTicket(urgentTicket); // TODO-LINT: move to async function
 
       const prioritySuggestion = processed.suggestions.find(s => s.type === 'priority');
       
@@ -559,7 +559,7 @@ describe('AI Ticket Processing System', () => {
         requesterEmail: 'support@acme.com' // Acme is high priority customer
       };
 
-      const processed = await processor.processTicket(acmeTicket);
+      const processed = await processor.processTicket(acmeTicket); // TODO-LINT: move to async function
 
       const escalationSuggestion = processed.suggestions.find(s => s.type === 'escalation');
       
@@ -573,7 +573,7 @@ describe('AI Ticket Processing System', () => {
     test('should track ticket statistics', async () => {
       // Process several tickets to generate trends
       for (const ticket of testTickets) {
-        await processor.processTicket(ticket);
+        await processor.processTicket(ticket); // TODO-LINT: move to async function
       }
 
       const stats = processor.getStats();
@@ -610,7 +610,7 @@ describe('AI Ticket Processing System', () => {
       ];
 
       for (const ticket of networkTickets) {
-        await processor.processTicket(ticket);
+        await processor.processTicket(ticket); // TODO-LINT: move to async function
       }
 
       const trends = processor.getTrends();
@@ -648,7 +648,7 @@ describe('AI Ticket Processing System', () => {
         requesterEmail: 'invalid-email' // Invalid email
       };
 
-      const processed = await processor.processTicket(badTicket);
+      const processed = await processor.processTicket(badTicket); // TODO-LINT: move to async function
 
       // Should still process but may have limited AI analysis
       assert.ok(processed, 'Should return processed ticket');
@@ -663,7 +663,7 @@ describe('AI Ticket Processing System', () => {
       }));
 
       const promises = concurrentTickets.map(ticket => processor.processTicket(ticket));
-      const results = await Promise.all(promises);
+      const results = await Promise.all(promises); // TODO-LINT: move to async function
 
       assert.strictEqual(results.length, concurrentTickets.length, 'Should process all tickets');
       results.forEach(result => {
@@ -684,7 +684,7 @@ describe('AI Ticket Processing System', () => {
       }));
 
       for (const ticket of manyTickets) {
-        await processor.processTicket(ticket);
+        await processor.processTicket(ticket); // TODO-LINT: move to async function
       }
 
       const endTime = Date.now();
@@ -706,7 +706,7 @@ describe('AI Ticket Processing System', () => {
         emails: ['admin@testco.com'],
         contract: 'premium',
         priority: 'high'
-      });
+      }); // TODO-LINT: move to async function
 
       assert.ok(newCustomer.id, 'Should create customer with ID');
       assert.strictEqual(newCustomer.name, 'Test Company', 'Should set customer name');
@@ -719,7 +719,7 @@ describe('AI Ticket Processing System', () => {
         requesterEmail: 'admin@testco.com'
       };
 
-      const processed = await processor.processTicket(ticket);
+      const processed = await processor.processTicket(ticket); // TODO-LINT: move to async function
       
       assert.strictEqual(processed.customerMatch.customer.name, 'Test Company', 'Should match new customer');
     });

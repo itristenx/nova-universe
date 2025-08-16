@@ -64,7 +64,7 @@ interface NotificationProvider {
 
 interface SystemSettings {
   [key: string]: {
-    value: any;
+    value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
     type: string;
     description: string;
   };
@@ -92,9 +92,9 @@ const SentinelAdminPanel: React.FC = () => {
     queryFn: async () => {
       const response = await fetch('http://localhost:3002/api/v1/analytics/system', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch system stats');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.analytics;
     },
     refetchInterval: 30000
@@ -106,9 +106,9 @@ const SentinelAdminPanel: React.FC = () => {
     queryFn: async (): Promise<Monitor[]> => {
       const response = await fetch('http://localhost:3002/api/v1/monitors?admin=true', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch monitors');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.monitors;
     },
     enabled: activeTab === 'monitors'
@@ -120,9 +120,9 @@ const SentinelAdminPanel: React.FC = () => {
     queryFn: async (): Promise<StatusPage[]> => {
       const response = await fetch('http://localhost:3002/api/v1/status-pages?admin=true', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch status pages');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.statusPages;
     },
     enabled: activeTab === 'status-pages'
@@ -134,9 +134,9 @@ const SentinelAdminPanel: React.FC = () => {
     queryFn: async (): Promise<NotificationProvider[]> => {
       const response = await fetch('http://localhost:3002/api/v1/notifications?admin=true', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch notifications');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.providers;
     },
     enabled: activeTab === 'notifications'
@@ -148,9 +148,9 @@ const SentinelAdminPanel: React.FC = () => {
     queryFn: async (): Promise<SystemSettings> => {
       const response = await fetch('http://localhost:3002/api/v1/settings', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch settings');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.settings;
     },
     enabled: activeTab === 'settings'
@@ -162,9 +162,9 @@ const SentinelAdminPanel: React.FC = () => {
     queryFn: async (): Promise<User[]> => {
       const response = await fetch('/api/v1/helix/users', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch users');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.users.filter((user: User) => user.roles.some(role => role.startsWith('sentinel')));
     },
     enabled: activeTab === 'users'
@@ -176,7 +176,7 @@ const SentinelAdminPanel: React.FC = () => {
       const response = await fetch(`http://localhost:3002/api/v1/monitors/${monitorId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to delete monitor');
       return response.json();
     },
@@ -196,7 +196,7 @@ const SentinelAdminPanel: React.FC = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({ settings: newSettings })
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to update settings');
       return response.json();
     },

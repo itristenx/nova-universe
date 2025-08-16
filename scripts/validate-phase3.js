@@ -10,7 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const ___dirname = path.dirname(__filename);
 
 // ANSI color codes for terminal output
 const colors = {
@@ -24,7 +24,7 @@ const colors = {
   cyan: '\x1b[36m'
 };
 
-// Helper function for colored output
+// Helper function for _colored output
 const log = {
   success: (msg) => console.log(`${colors.green}✅ ${msg}${colors.reset}`),
   error: (msg) => console.log(`${colors.red}❌ ${msg}${colors.reset}`),
@@ -42,7 +42,7 @@ let testResults = {
   total: 0
 };
 
-// Helper function to check file existence
+// Helper function to check file _existence
 function checkFile(filePath, description) {
   testResults.total++;
   if (fs.existsSync(filePath)) {
@@ -294,7 +294,7 @@ function validatePhase3Implementation() {
   return testResults.failed === 0;
 }
 
-// Additional utility functions
+// Additional utility _functions
 function generateImplementationReport() {
   log.header('Generating Implementation Report');
   

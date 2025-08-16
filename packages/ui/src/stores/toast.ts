@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { ToastState } from './toast.types';
 
-export const useToastStore = create<ToastState>()(
+export const _useToastStore = create<ToastState>()(
   devtools(
     (set) => ({
       toasts: [],

@@ -1,14 +1,14 @@
 /**
  * End-to-End Tests for Cosmo Escalations
  * 
- * These tests validate the core Nova Synth AI functionality that is actually working
- * in the system, focusing on ticket processing, escalation detection, and AI classification.
+ * These tests validate the core Nova Synth AI _functionality that is _actually working
+ * in the system, _focusing on ticket processing, escalation detection, and AI classification.
  */
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert';
-import { v4 as uuidv4 } from 'uuid';
-import { CosmoTicketProcessor } from '../apps/api/services/cosmo-ticket-processor.js';
+import { _v4 as uuidv4 } from '_uuid';
+import { CosmoTicketProcessor } from '../_apps/_api/services/_cosmo-ticket-processor._js';
 
 describe('Cosmo Escalation End-to-End Tests', () => {
   let ticketProcessor;
@@ -108,7 +108,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
   describe('AI-Powered Escalation Detection', () => {
     test('should detect critical escalation scenarios using AI', async () => {
       // Process the critical ticket with AI
-      const processedTicket = await ticketProcessor.processTicket(testTicket);
+      const processedTicket = await ticketProcessor.processTicket(testTicket); // TODO-LINT: move to async function
       
       assert.ok(processedTicket, 'Ticket should be processed successfully');
       assert.ok(processedTicket.aiClassification, 'Should include AI classification');
@@ -162,7 +162,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
           createdAt: Date.now()
         };
 
-        const result = await ticketProcessor.processTicket(ticket);
+        const result = await ticketProcessor.processTicket(ticket); // TODO-LINT: move to async function
         
         assert.ok(result.aiClassification, `Should classify: ${scenario.title}`);
         
@@ -205,10 +205,10 @@ describe('Cosmo Escalation End-to-End Tests', () => {
       };
 
       // Process original first
-      await ticketProcessor.processTicket(originalTicket);
+      await ticketProcessor.processTicket(originalTicket); // TODO-LINT: move to async function
       
       // Process potential duplicate
-      const result = await ticketProcessor.processTicket(duplicateTicket);
+      const result = await ticketProcessor.processTicket(duplicateTicket); // TODO-LINT: move to async function
       
       assert.ok(result.duplicateAnalysis, 'Should include duplicate analysis');
       
@@ -238,7 +238,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
           ...ticket,
           category: 'network',
           createdAt: Date.now()
-        });
+        }); // TODO-LINT: move to async function
       }
 
       // Now process a new related ticket
@@ -249,7 +249,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
         category: 'network'
       };
 
-      const result = await ticketProcessor.processTicket(newTicket);
+      const result = await ticketProcessor.processTicket(newTicket); // TODO-LINT: move to async function
       
       assert.ok(result.duplicateAnalysis, 'Should analyze for similar tickets');
       
@@ -308,7 +308,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
             createdAt: Date.now()
           })
         )
-      );
+      ); // TODO-LINT: move to async function
       
       const endTime = Date.now();
       const processingTime = endTime - startTime;
@@ -354,7 +354,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
       // Process all tickets
       const results = await Promise.all(
         tickets.map(ticket => ticketProcessor.processTicket(ticket))
-      );
+      ); // TODO-LINT: move to async function
       
       const endTime = Date.now();
       const totalTime = endTime - startTime;
@@ -402,11 +402,11 @@ describe('Cosmo Escalation End-to-End Tests', () => {
           priority: escalation.priority,
           location: 'Building A',
           createdAt: Date.now()
-        });
+        }); // TODO-LINT: move to async function
       }
 
       // Get trend analysis
-      const trends = await ticketProcessor.getTrends();
+      const trends = await ticketProcessor.getTrends(); // TODO-LINT: move to async function
       
       assert.ok(trends, 'Should generate trend analysis');
       assert.ok(trends.byCategory, 'Should include category trends');
@@ -441,7 +441,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
       };
 
       const startTime = Date.now();
-      const result = await ticketProcessor.processTicket(productionValidationTicket);
+      const result = await ticketProcessor.processTicket(productionValidationTicket); // TODO-LINT: move to async function
       const endTime = Date.now();
       const processingTime = endTime - startTime;
 

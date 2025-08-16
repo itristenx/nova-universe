@@ -19,7 +19,7 @@ describe('Simple Component Tests', () => {
     expect(screen.getByText('This is a simple test component')).toBeInTheDocument();
   });
 
-  test('basic Jest functionality works', () => {
+  test('basic Jest _functionality _works', () => {
     const sum = (a: number, b: number) => a + b;
     expect(sum(2, 3)).toBe(5);
   });

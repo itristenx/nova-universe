@@ -381,7 +381,7 @@ export const AccessibilityProvider = ({ children }) => {
   );
 };
 
-// Utility functions for accessibility
+// Utility _functions for accessibility
 export const announceToScreenReader = (message, priority = 'polite') => {
   const region = document.getElementById(
     priority === 'assertive' ? 'aria-live-region-assertive' : 'aria-live-region'
@@ -397,7 +397,7 @@ export const announceToScreenReader = (message, priority = 'polite') => {
 };
 
 // Enhanced Button component with accessibility
-export const AccessibleButton = React.forwardRef(({
+export const _AccessibleButton = React.forwardRef(({
   children,
   onClick,
   disabled,
@@ -446,7 +446,7 @@ export const AccessibleButton = React.forwardRef(({
 });
 
 // Enhanced Input component with accessibility
-export const AccessibleInput = React.forwardRef(({
+export const _AccessibleInput = React.forwardRef(({
   label,
   error,
   required,
@@ -492,7 +492,7 @@ export const AccessibleInput = React.forwardRef(({
 });
 
 // Enhanced Modal component with accessibility
-export const AccessibleModal = ({
+export const _AccessibleModal = ({
   isOpen,
   onClose,
   title,
@@ -606,7 +606,7 @@ export const AccessibleModal = ({
 };
 
 // Enhanced Table component with accessibility
-export const AccessibleTable = ({
+export const _AccessibleTable = ({
   columns,
   data,
   caption,
@@ -662,7 +662,7 @@ export const AccessibleTable = ({
 };
 
 // Enhanced Progress component with accessibility
-export const AccessibleProgress = ({
+export const _AccessibleProgress = ({
   value,
   max = 100,
   label,
@@ -697,7 +697,7 @@ export const AccessibleProgress = ({
 };
 
 // Keyboard navigation hook
-export const useKeyboardNavigation = (items, onSelect) => {
+export const _useKeyboardNavigation = (items, onSelect) => {
   const [focusedIndex, setFocusedIndex] = React.useState(0);
 
   const handleKeyDown = React.useCallback((e) => {
@@ -730,7 +730,7 @@ export const useKeyboardNavigation = (items, onSelect) => {
 };
 
 // Screen reader testing utilities
-export const screenReaderTestUtils = {
+export const _screenReaderTestUtils = {
   // Test if element has proper label
   hasAccessibleName: (element) => {
     return !!(

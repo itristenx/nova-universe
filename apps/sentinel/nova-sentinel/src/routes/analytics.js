@@ -31,7 +31,7 @@ router.get('/system', async (req, res) => {
   try {
     const { period = '24h' } = req.query;
 
-    const analytics = await req.services.analytics.getSystemAnalytics(period);
+    const analytics = await req.services.analytics.getSystemAnalytics(period); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -66,7 +66,7 @@ router.get('/monitors/:id',
       const { id } = req.params;
       const { period = '24h' } = req.query;
 
-      const analytics = await req.services.analytics.getMonitorAnalytics(id, period);
+      const analytics = await req.services.analytics.getMonitorAnalytics(id, period); // TODO-LINT: move to async function
 
       res.json({
         success: true,

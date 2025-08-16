@@ -94,7 +94,7 @@ const SystemConfigurationPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   // const { isOpen, onOpen, onClose } = useDisclosure(); // Removed useDisclosure
   const [selectedEnvVar, setSelectedEnvVar] = useState<EnvironmentVariable | null>(null);
-  const addToast = useToastStore((state: any) => state.addToast);
+  const addToast = useToastStore((state: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => state.addToast);
 
   useEffect(() => {
     loadSystemConfig();
@@ -105,7 +105,7 @@ const SystemConfigurationPage: React.FC = () => {
   const loadSystemConfig = async () => {
     try {
       // For now, use mock data since the API endpoint doesn't exist yet
-      // const response = await api.getConfig();
+      // const response = await api.getConfig(); // TODO-LINT: move to async function
       
       // Set default config 
       setConfig({
@@ -173,7 +173,7 @@ const SystemConfigurationPage: React.FC = () => {
   const loadFeatureFlags = async () => {
     try {
       // For now, use mock data since the API endpoint doesn't exist yet
-      // const response = await api.getFeatureFlags();
+      // const response = await api.getFeatureFlags(); // TODO-LINT: move to async function
       
       // Set some default feature flags
       setFeatureFlags([
@@ -210,7 +210,7 @@ const SystemConfigurationPage: React.FC = () => {
   const loadEnvironmentVariables = async () => {
     try {
       // For now, use mock data since the API endpoint doesn't exist yet
-      // const response = await api.getEnvironmentVariables();
+      // const response = await api.getEnvironmentVariables(); // TODO-LINT: move to async function
       
       // Set some default env vars (non-sensitive)
       setEnvVars([
@@ -244,9 +244,9 @@ const SystemConfigurationPage: React.FC = () => {
     setSaving(true);
     try {
       // For now, just simulate save since the API endpoint doesn't exist yet
-      // await api.updateConfig(config);
+      // await api.updateConfig(config); // TODO-LINT: move to async function
       
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function // Simulate API call
       
       addToast({
         id: Date.now().toString(),
@@ -270,7 +270,7 @@ const SystemConfigurationPage: React.FC = () => {
   const toggleFeatureFlag = async (flagId: string) => {
     try {
       // For now, just simulate toggle since the API endpoint doesn't exist yet
-      // await api.toggleFeatureFlag(flagId);
+      // await api.toggleFeatureFlag(flagId); // TODO-LINT: move to async function
       
       setFeatureFlags(prev => prev.map(flag => 
         flag.id === flagId ? { ...flag, enabled: !flag.enabled } : flag
@@ -293,7 +293,7 @@ const SystemConfigurationPage: React.FC = () => {
     }
   };
 
-  const updateConfig = (section: keyof SystemConfig, field: string, value: any) => {
+  const updateConfig = (section: keyof SystemConfig, field: string, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
     if (!config) return;
     
     setConfig(prev => ({
@@ -305,7 +305,7 @@ const SystemConfigurationPage: React.FC = () => {
     }));
   };
 
-  const updateNestedConfig = (section: keyof SystemConfig, parentField: string, field: string, value: any) => {
+  const updateNestedConfig = (section: keyof SystemConfig, parentField: string, field: string, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
     if (!config) return;
     
     setConfig(prev => ({

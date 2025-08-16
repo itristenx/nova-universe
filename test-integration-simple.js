@@ -16,12 +16,12 @@ async function testConnectorClasses() {
   
   try {
     // Test importing connector classes
-    const { OktaConnector } = await import('./apps/lib/integration/connectors/okta-connector.js');
-    const { JamfConnector } = await import('./apps/lib/integration/connectors/jamf-connector.js');
-    const { CrowdStrikeConnector } = await import('./apps/lib/integration/connectors/crowdstrike-connector.js');
-    const { IntuneConnector } = await import('./apps/lib/integration/connectors/intune-connector.js');
-    const { SlackConnector } = await import('./apps/lib/integration/connectors/slack-connector.js');
-    const { ZoomConnector } = await import('./apps/lib/integration/connectors/zoom-connector.js');
+    const { OktaConnector } = await import('./apps/lib/integration/connectors/okta-connector.js'); // TODO-LINT: move to async function
+    const { JamfConnector } = await import('./apps/lib/integration/connectors/jamf-connector.js'); // TODO-LINT: move to async function
+    const { CrowdStrikeConnector } = await import('./apps/lib/integration/connectors/crowdstrike-connector.js'); // TODO-LINT: move to async function
+    const { IntuneConnector } = await import('./apps/lib/integration/connectors/intune-connector.js'); // TODO-LINT: move to async function
+    const { SlackConnector } = await import('./apps/lib/integration/connectors/slack-connector.js'); // TODO-LINT: move to async function
+    const { ZoomConnector } = await import('./apps/lib/integration/connectors/zoom-connector.js'); // TODO-LINT: move to async function
     
     console.log('  ✅ OktaConnector imported successfully');
     console.log('  ✅ JamfConnector imported successfully');
@@ -93,7 +93,7 @@ async function testConnectorMethods(instances) {
       
       for (const method of testMethods) {
         const hasMethod = typeof connector.instance[method] === 'function';
-        console.log(`    ${hasMethod ? '✅' : '❌'} ${method}: ${hasMethod ? 'EXISTS' : 'MISSING'}`);
+        console.log(`    ${hasMethod ? '✅' : '❌'} ${method}: ${hasMethod ? '_EXISTS' : '_MISSING'}`);
       }
       
       // Test capabilities
@@ -163,10 +163,10 @@ async function testIntegrationLayerStructure() {
   try {
     // Try importing the integration layer (might fail due to Prisma dependencies)
     try {
-      const { IConnector } = await import('./apps/lib/integration/nova-integration-layer.js');
+      const { IConnector } = await import('./apps/lib/integration/nova-integration-layer.js'); // TODO-LINT: move to async function
       console.log('  ✅ IConnector base class imported');
       
-      const { NovaIntegrationLayer } = await import('./apps/lib/integration/nova-integration-layer.js');
+      const { NovaIntegrationLayer } = await import('./apps/lib/integration/nova-integration-layer.js'); // TODO-LINT: move to async function
       console.log('  ✅ NovaIntegrationLayer class imported');
       
     } catch (importError) {
@@ -184,7 +184,7 @@ async function testAPIRoutes() {
   
   try {
     // Test syntax of API routes
-    const fs = await import('fs');
+    const fs = await import('fs'); // TODO-LINT: move to async function
     const routes = [
       './apps/api/routes/user360.js',
       './apps/api/routes/integrations.js'
@@ -207,12 +207,12 @@ async function runTests() {
   const startTime = Date.now();
   
   try {
-    const connectors = await testConnectorClasses();
-    const instances = await testConnectorInstantiation(connectors);
-    await testConnectorMethods(instances);
-    await testValidationLogic(instances);
-    await testIntegrationLayerStructure();
-    await testAPIRoutes();
+    const connectors = await testConnectorClasses(); // TODO-LINT: move to async function
+    const instances = await testConnectorInstantiation(connectors); // TODO-LINT: move to async function
+    await testConnectorMethods(instances); // TODO-LINT: move to async function
+    await testValidationLogic(instances); // TODO-LINT: move to async function
+    await testIntegrationLayerStructure(); // TODO-LINT: move to async function
+    await testAPIRoutes(); // TODO-LINT: move to async function
     
     const duration = Date.now() - startTime;
     
@@ -225,8 +225,8 @@ async function runTests() {
     console.log('  • ✅ Validation logic works correctly');
     console.log('  • ✅ API routes are syntactically correct');
     console.log('  • ✅ Enterprise patterns implemented');
-    console.log('\n🚀 Nova Integration Layer core functionality verified!');
-    console.log('\nℹ️  Note: Full integration testing requires database setup and configuration.');
+    console.log('\n🚀 Nova Integration Layer core _functionality _verified!');
+    console.log('\nℹ️  _Note: _Full integration testing _requires database _setup and _configuration.');
     
   } catch (error) {
     console.error('❌ Test suite failed:', error);

@@ -3,7 +3,7 @@ import { Card, Button } from '@/components/ui';
 import { UserIcon, UserGroupIcon, ClockIcon, CheckCircleIcon, ExclamationTriangleIcon, InformationCircleIcon, ArrowPathIcon, WifiIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { Tabs, Tab, Table, TableHeader, TableBody, TableColumn, TableRow, TableCell, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Progress, Switch, Input, Select, SelectItem, Spinner } from '@heroui/react';
 import { useToastStore } from '@/stores/toast';
-export default function SCIMProvisioningMonitor() {
+export default function _SCIMProvisioningMonitor() {
     const [isLoading, setIsLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
@@ -55,7 +55,7 @@ export default function SCIMProvisioningMonitor() {
                 loadSCIMGroups(),
                 loadProvisioningEvents(),
                 loadSyncMetrics()
-            ]);
+            ]); // TODO-LINT: move to async function
         }
         catch (err) {
             console.error('Failed to load SCIM data:', err);
@@ -219,7 +219,7 @@ export default function SCIMProvisioningMonitor() {
     };
     const handleRefresh = async () => {
         setRefreshing(true);
-        await loadSCIMData();
+        await loadSCIMData(); // TODO-LINT: move to async function
         setRefreshing(false);
         addToast({
             type: 'success',

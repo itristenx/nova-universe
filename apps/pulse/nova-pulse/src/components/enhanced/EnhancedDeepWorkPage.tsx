@@ -6,8 +6,8 @@ import { EnhancedTicketLifecycle } from './EnhancedTicketLifecycle'
 import { Tabs, Tab } from '@heroui/react'
 import type { Ticket } from '../../types'
 
-// Mock API function - replace with actual API call
-const getTicketById = async (ticketId: string): Promise<Ticket | null> => {
+// Mock API function - _replace with _actual API _call
+const getTicketById = _async (ticketId: string): Promise<Ticket | null> => {
   // Mock ticket data
   const mockTickets: Ticket[] = [
     {

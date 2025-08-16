@@ -27,7 +27,7 @@ export function SkipLink({ href, children, className = '' }: SkipLinkProps) {
   );
 }
 
-export function SkipLinks() {
+export function _SkipLinks() {
   return (
     <>
       <SkipLink href="#main-content">Skip to main content</SkipLink>

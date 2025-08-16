@@ -14,7 +14,7 @@ describe('SentimentAnalysisEngine', () => {
   describe('analyzeSentiment', () => {
     test('should detect frustrated emotion correctly', async () => {
       const text = "I'm really frustrated with this system. It's been down for hours and I can't get any work done.";
-      const result = await engine.analyzeSentiment(text);
+      const result = await engine.analyzeSentiment(text); // TODO-LINT: move to async function
       
       expect(result.primaryEmotion).toBe('frustrated');
       expect(result.emotionalFactors.frustration).toBeGreaterThan(0.5);
@@ -24,7 +24,7 @@ describe('SentimentAnalysisEngine', () => {
 
     test('should detect angry emotion with escalation triggers', async () => {
       const text = "This is unacceptable! I want to speak to a manager immediately. This is the worst service I've ever experienced.";
-      const result = await engine.analyzeSentiment(text);
+      const result = await engine.analyzeSentiment(text); // TODO-LINT: move to async function
       
       expect(result.primaryEmotion).toBe('angry');
       expect(result.escalationTriggers).toContain('speak to a manager');
@@ -35,7 +35,7 @@ describe('SentimentAnalysisEngine', () => {
 
     test('should detect confused emotion', async () => {
       const text = "I'm really confused about how to set this up. I don't understand the instructions and I'm not sure what to do next.";
-      const result = await engine.analyzeSentiment(text);
+      const result = await engine.analyzeSentiment(text); // TODO-LINT: move to async function
       
       expect(result.primaryEmotion).toBe('confused');
       expect(result.emotionalFactors.confusion).toBeGreaterThan(0.5);
@@ -44,7 +44,7 @@ describe('SentimentAnalysisEngine', () => {
 
     test('should detect urgent requests', async () => {
       const text = "URGENT: Our production server is down and we need this fixed ASAP. This is critical for our business.";
-      const result = await engine.analyzeSentiment(text);
+      const result = await engine.analyzeSentiment(text); // TODO-LINT: move to async function
       
       expect(result.primaryEmotion).toBe('urgent');
       expect(result.emotionalFactors.urgency).toBeGreaterThan(0.7);
@@ -53,7 +53,7 @@ describe('SentimentAnalysisEngine', () => {
 
     test('should detect satisfied customers', async () => {
       const text = "Thank you so much for your help! This is working perfectly now. I really appreciate the excellent service.";
-      const result = await engine.analyzeSentiment(text);
+      const result = await engine.analyzeSentiment(text); // TODO-LINT: move to async function
       
       expect(result.primaryEmotion).toBe('satisfied');
       expect(result.emotionalFactors.satisfaction).toBeGreaterThan(0.5);
@@ -62,7 +62,7 @@ describe('SentimentAnalysisEngine', () => {
 
     test('should detect calm, patient customers', async () => {
       const text = "Hi there, I have a small issue when you have time. No rush, whenever you get a chance to look at it would be great.";
-      const result = await engine.analyzeSentiment(text);
+      const result = await engine.analyzeSentiment(text); // TODO-LINT: move to async function
       
       expect(result.primaryEmotion).toBe('calm');
       expect(result.emotionalFactors.urgency).toBeLessThan(0.3);
@@ -86,7 +86,7 @@ describe('SentimentAnalysisEngine', () => {
         }
       ];
 
-      const profile = await engine.getEmotionalState(ticketHistory);
+      const profile = await engine.getEmotionalState(ticketHistory); // TODO-LINT: move to async function
       
       expect(profile.customerType).toBeDefined();
       expect(profile.communicationPreference).toBeDefined();
@@ -96,7 +96,7 @@ describe('SentimentAnalysisEngine', () => {
     });
 
     test('should return default profile for empty history', async () => {
-      const profile = await engine.getEmotionalState([]);
+      const profile = await engine.getEmotionalState([]); // TODO-LINT: move to async function
       
       expect(profile.customerType).toBe('regular_user');
       expect(profile.communicationPreference).toBe('professional');
@@ -126,7 +126,7 @@ describe('SentimentAnalysisEngine', () => {
         reopenCount: 2
       };
 
-      const risk = await engine.predictEscalationRisk(sentimentResult, metadata);
+      const risk = await engine.predictEscalationRisk(sentimentResult, metadata); // TODO-LINT: move to async function
       
       expect(risk.riskScore).toBeGreaterThan(0.7);
       expect(risk.riskLevel).toBe('critical');
@@ -154,7 +154,7 @@ describe('SentimentAnalysisEngine', () => {
         reopenCount: 0
       };
 
-      const risk = await engine.predictEscalationRisk(sentimentResult, metadata);
+      const risk = await engine.predictEscalationRisk(sentimentResult, metadata); // TODO-LINT: move to async function
       
       expect(risk.riskScore).toBeLessThan(0.3);
       expect(risk.riskLevel).toBe('low');
@@ -181,7 +181,7 @@ describe('SentimentAnalysisEngine', () => {
         reopenCount: 1
       };
 
-      const risk = await engine.predictEscalationRisk(sentimentResult, metadata);
+      const risk = await engine.predictEscalationRisk(sentimentResult, metadata); // TODO-LINT: move to async function
       
       expect(risk.riskScore).toBeGreaterThan(0.3);
       expect(risk.riskScore).toBeLessThan(0.7);
@@ -296,18 +296,18 @@ describe('SentimentAnalysisEngine', () => {
 
   describe('error handling', () => {
     test('should handle invalid input gracefully', async () => {
-      const result = await engine.analyzeSentiment('');
+      const result = await engine.analyzeSentiment(''); // TODO-LINT: move to async function
       expect(result).toBeDefined();
       expect(result.primaryEmotion).toBeDefined();
     });
 
     test('should handle null context', async () => {
-      const result = await engine.analyzeSentiment('Test message', null);
+      const result = await engine.analyzeSentiment('Test message', null); // TODO-LINT: move to async function
       expect(result).toBeDefined();
     });
 
     test('should handle empty ticket history', async () => {
-      const profile = await engine.getEmotionalState([]);
+      const profile = await engine.getEmotionalState([]); // TODO-LINT: move to async function
       expect(profile).toBeDefined();
       expect(profile.customerType).toBe('regular_user');
     });
@@ -317,13 +317,13 @@ describe('SentimentAnalysisEngine', () => {
     test('should handle complete angry customer escalation scenario', async () => {
       const text = "This is absolutely unacceptable! Your system has been down for 3 hours and I need to speak to a manager right now. This is costing us money and I'm considering switching providers.";
       
-      const sentiment = await engine.analyzeSentiment(text);
+      const sentiment = await engine.analyzeSentiment(text); // TODO-LINT: move to async function
       const risk = await engine.predictEscalationRisk(sentiment, {
         customerTier: 'enterprise',
         previousEscalations: 1,
         ticketAge: 48,
         reopenCount: 1
-      });
+      }); // TODO-LINT: move to async function
 
       expect(sentiment.primaryEmotion).toBe('angry');
       expect(sentiment.escalationTriggers.length).toBeGreaterThan(2);
@@ -339,8 +339,8 @@ describe('SentimentAnalysisEngine', () => {
         { content: "Everything is working perfectly now. Great service!", context: {} }
       ];
 
-      const profile = await engine.getEmotionalState(ticketHistory);
-      const latestSentiment = await engine.analyzeSentiment(ticketHistory[2].content);
+      const profile = await engine.getEmotionalState(ticketHistory); // TODO-LINT: move to async function
+      const latestSentiment = await engine.analyzeSentiment(ticketHistory[2].content); // TODO-LINT: move to async function
 
       expect(profile.historicalSatisfaction).toBeGreaterThan(0.6);
       expect(profile.churnRisk).toBeLessThan(0.4);

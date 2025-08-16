@@ -148,6 +148,6 @@ function testConfigurationManagement() {
 import test from 'node:test';
 
 await test('Configuration Management Component', async () => {
-  const success = testConfigurationManagement();
+  const success = testConfigurationManagement(); // TODO-LINT: move to async function
   if (!success) throw new Error('Configuration Management Component test failed');
 });

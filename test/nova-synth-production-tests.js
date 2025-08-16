@@ -26,28 +26,28 @@ class NovaSynthProductionTests {
 
     try {
       // Configuration Tests
-      await this.runConfigurationTests();
+      await this.runConfigurationTests(); // TODO-LINT: move to async function
       
       // Authentication Tests
-      await this.runAuthenticationTests();
+      await this.runAuthenticationTests(); // TODO-LINT: move to async function
       
       // Data Intelligence Tests
-      await this.runDataIntelligenceTests();
+      await this.runDataIntelligenceTests(); // TODO-LINT: move to async function
       
       // Training Tests
-      await this.runTrainingTests();
+      await this.runTrainingTests(); // TODO-LINT: move to async function
       
       // Monitoring Tests
-      await this.runMonitoringTests();
+      await this.runMonitoringTests(); // TODO-LINT: move to async function
       
       // Feedback Loop Tests
-      await this.runFeedbackLoopTests();
+      await this.runFeedbackLoopTests(); // TODO-LINT: move to async function
       
       // Performance Tests
-      await this.runPerformanceTests();
+      await this.runPerformanceTests(); // TODO-LINT: move to async function
       
       // Security Tests
-      await this.runSecurityTests();
+      await this.runSecurityTests(); // TODO-LINT: move to async function
 
       // Generate test report
       this.generateTestReport();
@@ -64,7 +64,7 @@ class NovaSynthProductionTests {
     console.log('📋 Running Configuration Tests...');
 
     await this.test('Configuration Loading', async () => {
-      const config = this.config.getConfig('production');
+      const config = this.config.getConfig('production'); // TODO-LINT: move to async function
       // Add mock organization ID for testing
       config.organization = { id: 'test-org-123' };
       if (!config.endpoints?.synthUrl) throw new Error('Missing API URL');
@@ -73,7 +73,7 @@ class NovaSynthProductionTests {
     });
 
     await this.test('Environment Configuration', async () => {
-      const devConfig = this.config.getConfig('development');
+      const devConfig = this.config.getConfig('development'); // TODO-LINT: move to async function
       const prodConfig = this.config.getConfig('production');
       
       // They should be different objects, but both valid
@@ -85,7 +85,7 @@ class NovaSynthProductionTests {
     });
 
     await this.test('Authentication Configuration', async () => {
-      const authConfig = this.config.getAuthConfig('oauth2');
+      const authConfig = this.config.getAuthConfig('oauth2'); // TODO-LINT: move to async function
       // Add mock credentials for testing
       authConfig.credentials = { clientId: 'test', clientSecret: 'test' };
       if (!authConfig.credentials) throw new Error('Missing auth credentials');
@@ -93,7 +93,7 @@ class NovaSynthProductionTests {
     });
 
     await this.test('Organization Patterns', async () => {
-      const patterns = this.config.getOrganizationPatterns();
+      const patterns = this.config.getOrganizationPatterns(); // TODO-LINT: move to async function
       if (!patterns.namePatterns?.length) throw new Error('Missing name patterns');
       if (!patterns.emailDomains?.length) throw new Error('Missing email domains');
       return { patterns: 'configured' };
@@ -113,9 +113,9 @@ class NovaSynthProductionTests {
         organization: { id: 'test-org' },
         endpoints: { synthUrl: 'https://api.test.com' },
         credentials: { token: 'test-bearer-token' }
-      });
+      }); // TODO-LINT: move to async function
       
-      await connector.initialize();
+      await connector.initialize(); // TODO-LINT: move to async function
       return { auth: 'bearer token configured' };
     });
 
@@ -129,9 +129,9 @@ class NovaSynthProductionTests {
           clientId: 'test-client-id',
           clientSecret: 'test-client-secret'
         }
-      });
+      }); // TODO-LINT: move to async function
       
-      await connector.initialize();
+      await connector.initialize(); // TODO-LINT: move to async function
       return { auth: 'oauth2 configured' };
     });
 
@@ -146,9 +146,9 @@ class NovaSynthProductionTests {
           subject: 'test-subject',
           jwtSecret: 'test-secret'
         }
-      });
+      }); // TODO-LINT: move to async function
       
-      await connector.initialize();
+      await connector.initialize(); // TODO-LINT: move to async function
       return { auth: 'jwt configured' };
     });
 
@@ -162,9 +162,9 @@ class NovaSynthProductionTests {
           apiKey: 'test-api-key',
           apiKeyHeader: 'X-API-Key'
         }
-      });
+      }); // TODO-LINT: move to async function
       
-      await connector.initialize();
+      await connector.initialize(); // TODO-LINT: move to async function
       return { auth: 'api key configured' };
     });
   }
@@ -175,13 +175,13 @@ class NovaSynthProductionTests {
   async runDataIntelligenceTests() {
     console.log('🧠 Running Data Intelligence Tests...');
 
-    const connector = await this.getMockConnector();
+    const connector = await this.getMockConnector(); // TODO-LINT: move to async function
 
     await this.test('Profile Matching', async () => {
       const result = await connector.matchUserProfiles([
         { name: 'John Doe', email: 'john@company.com' },
         { name: 'J. Doe', email: 'j.doe@company.com' }
-      ]);
+      ]); // TODO-LINT: move to async function
       
       if (!result.matches?.length) throw new Error('No matches found');
       return result;
@@ -193,7 +193,7 @@ class NovaSynthProductionTests {
       ], {
         name: { normalize: true, format: 'titleCase' },
         email: { normalize: true, format: 'lowercase' }
-      });
+      }); // TODO-LINT: move to async function
       
       if (!result.transformedData?.length) throw new Error('No transformed data');
       return result;
@@ -203,7 +203,7 @@ class NovaSynthProductionTests {
       const result = await connector.correlateData([
         { id: 1, name: 'John Doe' },
         { userId: 1, device: 'laptop-001' }
-      ]);
+      ]); // TODO-LINT: move to async function
       
       if (!result.correlations?.length) throw new Error('No correlations found');
       return result;
@@ -213,7 +213,7 @@ class NovaSynthProductionTests {
       const result = await connector.deduplicateRecords([
         { name: 'John Doe', email: 'john@company.com' },
         { name: 'John Doe', email: 'john@company.com' }
-      ]);
+      ]); // TODO-LINT: move to async function
       
       if (result.duplicates?.length === 0) throw new Error('Duplicates not detected');
       return result;
@@ -226,7 +226,7 @@ class NovaSynthProductionTests {
   async runTrainingTests() {
     console.log('🎯 Running Training Tests...');
 
-    const connector = await this.getMockConnector();
+    const connector = await this.getMockConnector(); // TODO-LINT: move to async function
 
     await this.test('Organization Training', async () => {
       const result = await connector.trainWithOrganizationData({
@@ -240,7 +240,7 @@ class NovaSynthProductionTests {
           employees: /^[A-Z][a-z]+ [A-Z][a-z]+$/,
           devices: /^[A-Z]{2}-\d{3}$/
         }
-      });
+      }); // TODO-LINT: move to async function
       
       if (!result.success) throw new Error('Training failed');
       return result;
@@ -251,7 +251,7 @@ class NovaSynthProductionTests {
         namePatterns: [/^[A-Z][a-z]+ [A-Z][a-z]+$/],
         emailDomains: ['newcompany.com'],
         departmentMappings: { 'DevOps': ['Development Operations'] }
-      });
+      }); // TODO-LINT: move to async function
       
       if (!result.success) throw new Error('Pattern update failed');
       return result;
@@ -263,7 +263,7 @@ class NovaSynthProductionTests {
         correctMatches: ['123'],
         incorrectMatches: [],
         transformationAccuracy: { overall: 0.95 }
-      });
+      }); // TODO-LINT: move to async function
       
       if (!result.success) throw new Error('Feedback validation failed');
       return result;
@@ -276,10 +276,10 @@ class NovaSynthProductionTests {
   async runMonitoringTests() {
     console.log('📊 Running Monitoring Tests...');
 
-    const connector = await this.getMockConnector();
+    const connector = await this.getMockConnector(); // TODO-LINT: move to async function
 
     await this.test('Quality Metrics', async () => {
-      const result = await connector.getQualityMetrics('24h');
+      const result = await connector.getQualityMetrics('24h'); // TODO-LINT: move to async function
       
       if (!result.success) throw new Error('Quality metrics retrieval failed');
       if (!result.data.overallQuality) throw new Error('Missing overall quality metric');
@@ -287,18 +287,18 @@ class NovaSynthProductionTests {
     });
 
     await this.test('Real-time Monitoring', async () => {
-      let monitoringStarted = false;
+      let monitoringStarted = false; // TODO-LINT: move to async function
       
       const result = await connector.startQualityMonitoring((error, data) => {
         if (!error && data) {
-          monitoringStarted = true;
+          monitoringStarted = true; // TODO-LINT: move to async function
         }
       });
       
       if (!result.success) throw new Error('Quality monitoring failed to start');
       
       // Simulate some time for monitoring to activate
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
       
       return { monitoring: 'started successfully' };
     });
@@ -310,14 +310,14 @@ class NovaSynthProductionTests {
   async runFeedbackLoopTests() {
     console.log('🔄 Running Feedback Loop Tests...');
 
-    const connector = await this.getMockConnector();
+    const connector = await this.getMockConnector(); // TODO-LINT: move to async function
 
     await this.test('Feedback Loop Start', async () => {
       const result = await connector.startFeedbackLoop({
         frequency: 'daily',
         autoRetraining: true,
         qualityThreshold: 0.8
-      });
+      }); // TODO-LINT: move to async function
       
       if (!result.success) throw new Error('Feedback loop failed to start');
       return result;
@@ -328,12 +328,12 @@ class NovaSynthProductionTests {
         overallQuality: 0.7, // Below threshold
         matchingAccuracy: 0.75,
         errorRates: { total: 0.05 }
-      };
+      }; // TODO-LINT: move to async function
       
       const result = await connector.evaluateAndImprove(mockMetrics, {
         qualityThreshold: 0.8,
         alertThreshold: 0.7
-      });
+      }); // TODO-LINT: move to async function
       
       if (!result.success) throw new Error('Automatic improvement failed');
       if (result.improvements === 0) throw new Error('No improvements triggered');
@@ -341,7 +341,7 @@ class NovaSynthProductionTests {
     });
 
     await this.test('Feedback Loop Stop', async () => {
-      const result = connector.stopFeedbackLoop();
+      const result = connector.stopFeedbackLoop(); // TODO-LINT: move to async function
       if (!result.success) throw new Error('Feedback loop failed to stop');
       return result;
     });
@@ -353,13 +353,13 @@ class NovaSynthProductionTests {
   async runPerformanceTests() {
     console.log('⚡ Running Performance Tests...');
 
-    const connector = await this.getMockConnector();
+    const connector = await this.getMockConnector(); // TODO-LINT: move to async function
 
     await this.test('Response Time', async () => {
-      const startTime = Date.now();
+      const startTime = Date.now(); // TODO-LINT: move to async function
       await connector.matchUserProfiles([
         { name: 'Test User', email: 'test@company.com' }
-      ]);
+      ]); // TODO-LINT: move to async function
       const duration = Date.now() - startTime;
       
       if (duration > 2000) throw new Error(`Response time too slow: ${duration}ms`);
@@ -369,9 +369,9 @@ class NovaSynthProductionTests {
     await this.test('Concurrent Operations', async () => {
       const operations = Array(5).fill().map((_, i) => 
         connector.transformData([{ name: `User ${i}` }], { name: { normalize: true } })
-      );
+      ); // TODO-LINT: move to async function
       
-      const results = await Promise.all(operations);
+      const results = await Promise.all(operations); // TODO-LINT: move to async function
       
       if (results.some(r => !r.success)) throw new Error('Some concurrent operations failed');
       return { concurrent: 'operations successful' };
@@ -381,9 +381,9 @@ class NovaSynthProductionTests {
       const largeDataset = Array(100).fill().map((_, i) => ({
         name: `User ${i}`,
         email: `user${i}@company.com`
-      }));
+      })); // TODO-LINT: move to async function
       
-      const result = await connector.matchUserProfiles(largeDataset);
+      const result = await connector.matchUserProfiles(largeDataset); // TODO-LINT: move to async function
       
       if (!result.success) throw new Error('Large dataset processing failed');
       return { processed: `${largeDataset.length} records` };
@@ -397,7 +397,7 @@ class NovaSynthProductionTests {
     console.log('🔒 Running Security Tests...');
 
     await this.test('Configuration Validation', async () => {
-      const config = this.config.getConfig('production');
+      const config = this.config.getConfig('production'); // TODO-LINT: move to async function
       // Add required fields for validation
       config.organization = { id: 'test-org-123' };
       config.security = { encryptionEnabled: true };
@@ -413,7 +413,7 @@ class NovaSynthProductionTests {
     });
 
     await this.test('Sensitive Data Handling', async () => {
-      const connector = await this.getMockConnector();
+      const connector = await this.getMockConnector(); // TODO-LINT: move to async function
       
       // Test that sensitive data is properly handled
       const result = await connector.transformData([
@@ -421,7 +421,7 @@ class NovaSynthProductionTests {
       ], {
         name: { normalize: true },
         ssn: { redact: true }
-      });
+      }); // TODO-LINT: move to async function
       
       if (result.transformedData?.[0]?.ssn !== '[REDACTED]') {
         throw new Error('Sensitive data not properly redacted');
@@ -455,7 +455,7 @@ class NovaSynthProductionTests {
     };
     
     const connector = new NovaSynthConnector(config);
-    await connector.initialize();
+    await connector.initialize(); // TODO-LINT: move to async function
     return connector;
   }
 
@@ -466,7 +466,7 @@ class NovaSynthProductionTests {
     this.testStats.total++;
     
     try {
-      const result = await testFunction();
+      const result = await testFunction(); // TODO-LINT: move to async function
       this.testResults.push({
         name,
         status: 'PASSED',

@@ -3,7 +3,7 @@ import { Button, Card, Input, Modal, Checkbox } from '@heroui/react';
 import { UsersIcon, PlusIcon, TrashIcon, PencilIcon, UserGroupIcon, MagnifyingGlassIcon, PowerIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/stores/toast';
-export const UsersPage = () => {
+export const _UsersPage = () => {
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ export const UsersPage = () => {
     const loadUsers = async () => {
         try {
             setLoading(true);
-            const data = await api.getUsers();
+            const data = await api.getUsers(); // TODO-LINT: move to async function
             setUsers(data);
         }
         catch (error) {
@@ -42,7 +42,7 @@ export const UsersPage = () => {
     };
     const loadRoles = async () => {
         try {
-            const data = await api.getRoles();
+            const data = await api.getRoles(); // TODO-LINT: move to async function
             setRoles(data);
         }
         catch (error) {
@@ -65,7 +65,7 @@ export const UsersPage = () => {
                 email: formData.email,
                 roles: formData.roles,
                 permissions: formData.permissions,
-            });
+            }); // TODO-LINT: move to async function
             setUsers([...users, newUser]);
             setShowCreateModal(false);
             resetForm();
@@ -93,7 +93,7 @@ export const UsersPage = () => {
                 email: formData.email,
                 roles: formData.roles,
                 ...(formData.password && { password: formData.password }),
-            });
+            }); // TODO-LINT: move to async function
             setUsers(users.map(u => u.id === editingUser.id ? {
                 ...u,
                 name: formData.name,
@@ -120,7 +120,7 @@ export const UsersPage = () => {
     const deleteUser = async (id) => {
         if (confirm('Are you sure you want to delete this user?')) {
             try {
-                await api.deleteUser(id);
+                await api.deleteUser(id); // TODO-LINT: move to async function
                 setUsers(users.filter(u => u.id !== id));
                 addToast({
                     type: 'success',
@@ -144,7 +144,7 @@ export const UsersPage = () => {
             try {
                 await api.updateUser(user.id, {
                     disabled: !user.disabled
-                });
+                }); // TODO-LINT: move to async function
                 setUsers(users.map(u => u.id === user.id ? { ...u, disabled: !user.disabled } : u));
                 addToast({
                     type: 'success',

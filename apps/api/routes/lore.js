@@ -176,7 +176,7 @@ router.get('/articles',
           take: parseInt(limit)
         }),
         prisma.kbArticle.count({ where })
-      ]);
+      ]); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -261,7 +261,7 @@ router.get('/articles/:kbId',
         query += ` AND (kb.visibility = 'public' OR kb.visibility = 'internal')`;
       }
 
-      const row = await prisma.$queryRaw(query, params);
+      const row = await prisma.$queryRaw(query, params); // TODO-LINT: move to async function
 
       if (!row) {
         return res.status(404).json({
@@ -394,7 +394,7 @@ router.post('/articles',
       let slug = slugBase;
       let i = 1;
       while (await prisma.kbArticle.findUnique({ where: { slug } })) {
-        slug = `${slugBase}-${i++}`;
+        slug = `${slugBase}-${i++}`; // TODO-LINT: move to async function
       }
       // Create article and initial version
       const article = await prisma.kbArticle.create({
@@ -417,7 +417,7 @@ router.post('/articles',
           author: { select: { id: true, name: true } },
           versions: true
         }
-      });
+      }); // TODO-LINT: move to async function
       res.status(201).json({
         success: true,
         article: {
@@ -505,7 +505,7 @@ router.post('/articles/:kbId/feedback',
       const { helpful, comment } = req.body;
 
       // Check if article exists
-      const article = await db.oneOrNone('SELECT id FROM kb_articles WHERE kb_id = $1 AND deleted_at IS NULL', [kbId]);
+      const article = await db.oneOrNone('SELECT id FROM kb_articles WHERE kb_id = $1 AND deleted_at IS NULL', [kbId]); // TODO-LINT: move to async function
 
       if (!article) {
         return res.status(404).json({
@@ -517,7 +517,7 @@ router.post('/articles/:kbId/feedback',
 
       // Update feedback counts
       const updateField = helpful ? 'helpful_count' : 'unhelpful_count';
-      await db.none(`UPDATE kb_articles SET ${updateField} = ${updateField} + 1 WHERE id = $1`, [article.id]);
+      await db.none(`UPDATE kb_articles SET ${updateField} = ${updateField} + 1 WHERE id = $1`, [article.id]); // TODO-LINT: move to async function
 
       // If there's a comment, store it in the feedback table
       if (comment) {
@@ -629,7 +629,7 @@ router.get('/search',
       query += ` ORDER BY relevance_score DESC, kb.helpful_count DESC, kb.updated_at DESC LIMIT $7`;
       params.push(parseInt(limit));
 
-      const rows = await db.any(query, params);
+      const rows = await db.any(query, params); // TODO-LINT: move to async function
 
       const results = (rows || []).map(row => ({
         id: row.id,
@@ -677,7 +677,7 @@ router.get('/articles/:articleId/versions', authenticateJWT, async (req, res) =>
       where: { articleId: parseInt(articleId) },
       include: { author: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' }
-    });
+    }); // TODO-LINT: move to async function
     res.json({ success: true, versions });
   } catch (error) {
     logger.error('Error fetching article versions:', error);
@@ -692,7 +692,7 @@ router.get('/articles/:articleId/versions/:versionId', authenticateJWT, async (r
     const version = await prisma.kbArticleVersion.findUnique({
       where: { id: parseInt(versionId) },
       include: { author: { select: { id: true, name: true } } }
-    });
+    }); // TODO-LINT: move to async function
     if (!version) return res.status(404).json({ success: false, error: 'Version not found' });
     res.json({ success: true, version });
   } catch (error) {
@@ -722,7 +722,7 @@ router.post('/articles/:articleId/versions', authenticateJWT, [
     const lastVersion = await prisma.kbArticleVersion.findFirst({
       where: { articleId: parseInt(articleId) },
       orderBy: { version: 'desc' }
-    });
+    }); // TODO-LINT: move to async function
     const newVersionNum = lastVersion ? lastVersion.version + 1 : 1;
     const version = await prisma.kbArticleVersion.create({
       data: {
@@ -733,7 +733,7 @@ router.post('/articles/:articleId/versions', authenticateJWT, [
         isApproved: false
       },
       include: { author: { select: { id: true, name: true } } }
-    });
+    }); // TODO-LINT: move to async function
     res.status(201).json({ success: true, version });
   } catch (error) {
     logger.error('Error creating article version:', error);
@@ -750,7 +750,7 @@ router.get('/articles/:articleId/comments', authenticateJWT, async (req, res) =>
       where: { articleId: parseInt(articleId) },
       include: { user: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'asc' }
-    });
+    }); // TODO-LINT: move to async function
     res.json({ success: true, comments });
   } catch (error) {
     logger.error('Error fetching comments:', error);
@@ -777,7 +777,7 @@ router.post('/articles/:articleId/comments', authenticateJWT, [
         content
       },
       include: { user: { select: { id: true, name: true } } }
-    });
+    }); // TODO-LINT: move to async function
     res.status(201).json({ success: true, comment });
   } catch (error) {
     logger.error('Error creating comment:', error);

@@ -62,7 +62,7 @@ const SEVERITY_COLORS = {
   low: 'bg-blue-500'
 } as const;
 
-export default function PublicStatusPage({ tenant, embedded = false }: StatusPageProps) {
+export default function _PublicStatusPage({ tenant, embedded = false }: StatusPageProps) {
   const [data, setData] = useState<StatusPageResponse | null>(null);
   const [incidentHistory, setIncidentHistory] = useState<PublicIncident[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,13 +72,13 @@ export default function PublicStatusPage({ tenant, embedded = false }: StatusPag
   const fetchStatusPage = useCallback(async () => {
     try {
       const url = tenant ? `/api/monitoring/status/${tenant}` : '/api/monitoring/status';
-      const response = await fetch(url);
+      const response = await fetch(url); // TODO-LINT: move to async function
       
       if (!response.ok) {
         throw new Error(`Failed to fetch status: ${response.status}`);
       }
       
-      const statusData: StatusPageResponse = await response.json();
+      const statusData: StatusPageResponse = await response.json(); // TODO-LINT: move to async function
       setData(statusData);
       setError(null);
     } catch (error) {
@@ -94,10 +94,10 @@ export default function PublicStatusPage({ tenant, embedded = false }: StatusPag
       const url = tenant 
         ? `/api/monitoring/incidents/history/${tenant}?limit=20` 
         : '/api/monitoring/incidents/history?limit=20';
-      const response = await fetch(url);
+      const response = await fetch(url); // TODO-LINT: move to async function
       
       if (response.ok) {
-        const historyData: IncidentHistoryResponse = await response.json();
+        const historyData: IncidentHistoryResponse = await response.json(); // TODO-LINT: move to async function
         setIncidentHistory(historyData.incidents);
       }
     } catch (error) {

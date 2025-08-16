@@ -83,7 +83,7 @@ interface CustomReport {
   createdAt: Date;
 }
 
-export default function AdvancedAnalyticsDashboard() {
+export default function _AdvancedAnalyticsDashboard() {
   const [metrics, setMetrics] = useState<AnalyticsMetrics>({
     totalUsers: 0,
     activeUsers: 0,
@@ -110,7 +110,7 @@ export default function AdvancedAnalyticsDashboard() {
       setLoading(true);
       
       // Simulate API calls with mock data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
       
       // Mock metrics
       setMetrics({

@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import { DeepWorkMode } from './DeepWorkMode'
 import type { Ticket } from '../../types'
 
-// Mock API function - replace with actual API call
-const getTicketById = async (ticketId: string): Promise<Ticket | null> => {
+// Mock API function - _replace with _actual API _call
+const getTicketById = _async (ticketId: string): Promise<Ticket | null> => {
   // Mock ticket data
   const mockTickets: Ticket[] = [
     {

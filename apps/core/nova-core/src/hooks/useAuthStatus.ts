@@ -17,10 +17,10 @@ export const useAuthStatus = () => {
         const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         const response = await axios.get<AuthStatusResponse>(`${baseURL}/api/auth/status`, {
           timeout: 5000,
-        });
+        }); // TODO-LINT: move to async function
         setAuthStatus(response.data);
         setError(null);
-      } catch (err: any) {
+      } catch (err: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
         console.error('Failed to check auth status:', err);
         setError(err.message);
         // Default to requiring auth if we can't determine status

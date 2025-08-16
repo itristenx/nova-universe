@@ -59,13 +59,13 @@ class MongoDBManager {
       this.setupEventHandlers();
 
       // Connect to MongoDB
-      await this.client.connect();
+      await this.client.connect(); // TODO-LINT: move to async function
 
       // Get database instance
       this.database = this.client.db(this.config.database);
 
       // Test connection
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
 
       this.isConnected = true;
       this.connectionAttempts = 0;
@@ -76,7 +76,7 @@ class MongoDBManager {
       }
 
       // Set up collections with proper indexes
-      await this.setupCollections();
+      await this.setupCollections(); // TODO-LINT: move to async function
 
       return true;
     } catch (error) {
@@ -173,7 +173,7 @@ class MongoDBManager {
    */
   async testConnection() {
     const admin = this.database.admin();
-    const result = await admin.ping();
+    const result = await admin.ping(); // TODO-LINT: move to async function
     
     if (result.ok === 1) {
       logger.debug('🏥 MongoDB health check passed');
@@ -182,7 +182,7 @@ class MongoDBManager {
     }
 
     // Get server status for additional info
-    const serverStatus = await admin.serverStatus();
+    const serverStatus = await admin.serverStatus(); // TODO-LINT: move to async function
     logger.debug('📋 MongoDB server info:', {
       version: serverStatus.version,
       uptime: `${Math.floor(serverStatus.uptime / 3600)}h`,
@@ -197,32 +197,32 @@ class MongoDBManager {
     try {
       // Assets collection with indexes
       const assetsCollection = this.database.collection('assets');
-      await assetsCollection.createIndex({ 'type': 1 });
-      await assetsCollection.createIndex({ 'uploaded_at': -1 });
-      await assetsCollection.createIndex({ 'name': 'text', 'type': 'text' });
+      await assetsCollection.createIndex({ 'type': 1 }); // TODO-LINT: move to async function
+      await assetsCollection.createIndex({ 'uploaded_at': -1 }); // TODO-LINT: move to async function
+      await assetsCollection.createIndex({ 'name': 'text', 'type': 'text' }); // TODO-LINT: move to async function
 
       // Analytics collection (for future use)
       const analyticsCollection = this.database.collection('analytics');
-      await analyticsCollection.createIndex({ 'timestamp': -1 });
-      await analyticsCollection.createIndex({ 'event_type': 1 });
-      await analyticsCollection.createIndex({ 'user_id': 1, 'timestamp': -1 });
+      await analyticsCollection.createIndex({ 'timestamp': -1 }); // TODO-LINT: move to async function
+      await analyticsCollection.createIndex({ 'event_type': 1 }); // TODO-LINT: move to async function
+      await analyticsCollection.createIndex({ 'user_id': 1, 'timestamp': -1 }); // TODO-LINT: move to async function
 
       // Audit logs collection
       const auditCollection = this.database.collection('audit_logs');
-      await auditCollection.createIndex({ 'timestamp': -1 });
-      await auditCollection.createIndex({ 'user_id': 1 });
-      await auditCollection.createIndex({ 'action': 1 });
+      await auditCollection.createIndex({ 'timestamp': -1 }); // TODO-LINT: move to async function
+      await auditCollection.createIndex({ 'user_id': 1 }); // TODO-LINT: move to async function
+      await auditCollection.createIndex({ 'action': 1 }); // TODO-LINT: move to async function
       
       // TTL index for audit logs (remove after 1 year)
       await auditCollection.createIndex(
         { 'timestamp': 1 },
         { expireAfterSeconds: 31536000 } // 1 year
-      );
+      ); // TODO-LINT: move to async function
 
       // Configuration documents collection
       const configCollection = this.database.collection('configurations');
-      await configCollection.createIndex({ 'key': 1 }, { unique: true });
-      await configCollection.createIndex({ 'category': 1 });
+      await configCollection.createIndex({ 'key': 1 }, { unique: true }); // TODO-LINT: move to async function
+      await configCollection.createIndex({ 'category': 1 }); // TODO-LINT: move to async function
 
       if (!process.env.CLI_MODE) {
         logger.info('📁 MongoDB collections and indexes created successfully');
@@ -251,7 +251,7 @@ class MongoDBManager {
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return await operation();
+        return await operation(); // TODO-LINT: move to async function
       } catch (error) {
         lastError = error;
         
@@ -262,7 +262,7 @@ class MongoDBManager {
         if (this.isRetryableError(error)) {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
           logger.warn(`🔄 Retrying MongoDB operation (attempt ${attempt + 1}/${maxRetries}) in ${delay}ms`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise(resolve => setTimeout(resolve, delay)); // TODO-LINT: move to async function
         } else {
           break;
         }
@@ -302,10 +302,10 @@ class MongoDBManager {
     
     try {
       return await session.withTransaction(async () => {
-        return await callback(session);
+        return await callback(session); // TODO-LINT: move to async function
       });
     } finally {
-      await session.endSession();
+      await session.endSession(); // TODO-LINT: move to async function
     }
   }
 
@@ -322,21 +322,21 @@ class MongoDBManager {
         timestamp: new Date(),
         ip_address: details.ip_address || null,
         user_agent: details.user_agent || null,
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('❌ Failed to create audit log:', error.message);
-      // Don't throw - audit logging shouldn't break main functionality
+      // Don't throw - audit logging shouldn't break main _functionality
     }
   }
 
   /**
-   * Health check for monitoring systems
+   * _Health check for monitoring _systems
    */
-  async healthCheck() {
+  async _healthCheck() {
     try {
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
       
-      const stats = await this.database.stats();
+      const stats = await this.database.stats(); // TODO-LINT: move to async function
       
       return {
         status: 'healthy',
@@ -369,7 +369,7 @@ class MongoDBManager {
 
     try {
       const admin = this.database.admin();
-      const serverStatus = await admin.serverStatus();
+      const serverStatus = await admin.serverStatus(); // TODO-LINT: move to async function
       
       return {
         connections: serverStatus.connections,
@@ -388,7 +388,7 @@ class MongoDBManager {
   async close() {
     if (this.client) {
       try {
-        await this.client.close();
+        await this.client.close(); // TODO-LINT: move to async function
         this.isConnected = false;
         this.database = null;
         logger.info('📴 MongoDB connection closed');

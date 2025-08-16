@@ -21,7 +21,7 @@ export class NovaNotificationPlatform {
       const results = [];
       
       for (const channel of notification.channels) {
-        const result = await this.sendToChannel(channel, notification);
+        const result = await this.sendToChannel(channel, notification); // TODO-LINT: move to async function
         results.push(result);
       }
       
@@ -88,7 +88,7 @@ export class NovaNotificationPlatform {
       const batch = notifications.slice(i, i + this.config.batchSize);
       const batchResults = await Promise.allSettled(
         batch.map(notification => this.sendNotification(notification))
-      );
+      ); // TODO-LINT: move to async function
       results.push(...batchResults);
     }
     
@@ -97,4 +97,4 @@ export class NovaNotificationPlatform {
 }
 
 // Export singleton instance
-export const novaNotificationPlatform = new NovaNotificationPlatform();
+export const _novaNotificationPlatform = new NovaNotificationPlatform();

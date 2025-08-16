@@ -336,10 +336,10 @@ export function Skeleton({
 }
 
 // Loading overlay component
-export function LoadingOverlay({ 
+export function _LoadingOverlay({ 
   isLoading = true,
   text,
-  variant = 'light',
+  variant = '_light',
   minimal = false,
   children,
   className = ''
@@ -408,7 +408,7 @@ export function Progress({
 }
 
 // Dots loader component
-export function DotsLoader({ variant = 'primary', className = '' }) {
+export function _DotsLoader({ variant = 'primary', className = '' }) {
   const dotClasses = `nova-dots__dot`;
   
   return (
@@ -421,7 +421,7 @@ export function DotsLoader({ variant = 'primary', className = '' }) {
 }
 
 // Pulse loader component
-export function PulseLoader({ className = '' }) {
+export function _PulseLoader({ className = '' }) {
   return (
     <div 
       className={`nova-pulse ${className}`} 

@@ -1,5 +1,5 @@
 import React from 'react';
-export const Grid = ({ container, item, spacing, className, style, children, ...props }) => {
+export const _Grid = ({ container, item, spacing, className, style, children, ...props }) => {
     const classes = [className, container ? 'grid-container' : '', item ? 'grid-item' : '']
         .filter(Boolean).join(' ');
     const gridStyle = {

@@ -75,7 +75,7 @@ describe('Nova Synth AI Escalation Demo', () => {
 
     for (const scenario of escalationScenarios) {
       const startTime = Date.now();
-      const result = await ticketProcessor.processTicket(scenario.ticket);
+      const result = await ticketProcessor.processTicket(scenario.ticket); // TODO-LINT: move to async function
       const endTime = Date.now();
       
       console.log(`\n🎫 ${scenario.name}:`);
@@ -89,7 +89,7 @@ describe('Nova Synth AI Escalation Demo', () => {
         console.log(`   Duplicate Check: ${result.duplicateAnalysis.isDuplicate ? 'Duplicate detected' : 'Unique ticket'}`);
       }
       
-      // Verify basic functionality
+      // Verify basic _functionality
       assert.ok(result, 'Ticket should be processed');
       assert.ok(result.aiClassification, 'Should have AI classification');
     }
@@ -99,7 +99,7 @@ describe('Nova Synth AI Escalation Demo', () => {
     
     const results = await Promise.all(
       escalationScenarios.map(scenario => ticketProcessor.processTicket(scenario.ticket))
-    );
+    ); // TODO-LINT: move to async function
     
     const priorityCounts = {};
     results.forEach(result => {
@@ -142,7 +142,7 @@ describe('Nova Synth AI Escalation Demo', () => {
     };
 
     console.log('\n📝 Processing original critical ticket...');
-    await ticketProcessor.processTicket(originalTicket);
+    await ticketProcessor.processTicket(originalTicket); // TODO-LINT: move to async function
     console.log('   ✓ Original ticket processed');
 
     // Similar critical tickets that should be flagged as potential duplicates
@@ -167,7 +167,7 @@ describe('Nova Synth AI Escalation Demo', () => {
         priority: 'critical'
       };
       
-      const result = await ticketProcessor.processTicket(ticket);
+      const result = await ticketProcessor.processTicket(ticket); // TODO-LINT: move to async function
       
       console.log(`\n   Ticket ${i + 1}: "${ticket.title}"`);
       console.log(`   Duplicate Status: ${result.duplicateAnalysis?.isDuplicate ? 'DUPLICATE DETECTED' : 'Unique ticket'}`);
@@ -218,7 +218,7 @@ describe('Nova Synth AI Escalation Demo', () => {
     
     const results = await Promise.all(
       tickets.map(ticket => ticketProcessor.processTicket(ticket))
-    );
+    ); // TODO-LINT: move to async function
     
     const endTime = Date.now();
     const totalTime = endTime - startTime;

@@ -51,7 +51,7 @@ export class PrismaClient<
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
    */
 
-  constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>);
+  constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>); // TODO-LINT: move to async function
   $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): PrismaClient;
 
   /**
@@ -75,47 +75,47 @@ export class PrismaClient<
    * Executes a prepared raw query and returns the number of affected rows.
    * @example
    * ```
-   * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
+   * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'}; // TODO-LINT: move to async function`
    * ```
    *
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
-  $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<number>;
+  $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): Prisma.PrismaPromise<number>;
 
   /**
    * Executes a raw query and returns the number of affected rows.
    * Susceptible to SQL injections, see documentation.
    * @example
    * ```
-   * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
+   * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ; // TODO-LINT: move to async function', true, 'user@email.com')
    * ```
    *
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
-  $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
+  $executeRawUnsafe<T = unknown>(query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): Prisma.PrismaPromise<number>;
 
   /**
    * Performs a prepared raw query and returns the `SELECT` data.
    * @example
    * ```
-   * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
+   * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'}; // TODO-LINT: move to async function`
    * ```
    *
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
-  $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<T>;
+  $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): Prisma.PrismaPromise<T>;
 
   /**
    * Performs a raw query and returns the `SELECT` data.
    * Susceptible to SQL injections, see documentation.
    * @example
    * ```
-   * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
+   * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2; // TODO-LINT: move to async function', 1, 'user@email.com')
    * ```
    *
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
-  $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
+  $queryRawUnsafe<T = unknown>(query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): Prisma.PrismaPromise<T>;
 
 
   /**
@@ -285,24 +285,24 @@ export namespace Prisma {
   export const AnyNull: NullTypes.AnyNull
 
   type SelectAndInclude = {
-    select: any
-    include: any
+    select: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    include: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
   }
 
   type SelectAndOmit = {
-    select: any
-    omit: any
+    select: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    omit: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
   }
 
   /**
    * Get the type of the value, that the Promise holds.
    */
-  export type PromiseType<T extends PromiseLike<any>> = T extends PromiseLike<infer U> ? U : T;
+  export type PromiseType<T extends PromiseLike<any>> = T extends PromiseLike<infer U> ? U : T; // TODO-LINT: move to async function
 
   /**
-   * Get the return type of a function which returns a Promise.
+   * Get the return type of a function _which returns a Promise.
    */
-  export type PromiseReturnType<T extends (...args: any) => $Utils.JsPromise<any>> = PromiseType<ReturnType<T>>
+  export type _PromiseReturnType<T extends (...args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => $Utils.JsPromise<any>> = PromiseType<ReturnType<T>>
 
   /**
    * From T, pick a set of properties whose keys are in the union K
@@ -377,7 +377,7 @@ export namespace Prisma {
   ? False
   : T extends Uint8Array
   ? False
-  : T extends BigInt
+  : T extends bigint
   ? False
   : T extends object
   ? True
@@ -606,23 +606,23 @@ export namespace Prisma {
     model: {}
   } & {
     other: {
-      payload: any
+      payload: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
       operations: {
         $executeRaw: {
-          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
-          result: any
+          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]],
+          result: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
         }
         $executeRawUnsafe: {
-          args: [query: string, ...values: any[]],
-          result: any
+          args: [query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]],
+          result: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
         }
         $queryRaw: {
-          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
-          result: any
+          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]],
+          result: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
         }
         $queryRawUnsafe: {
-          args: [query: string, ...values: any[]],
-          result: any
+          args: [query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]],
+          result: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
         }
       }
     }
@@ -758,7 +758,7 @@ export namespace Prisma {
   export type MiddlewareParams = {
     model?: ModelName
     action: PrismaAction
-    args: any
+    args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
     dataPath: string[]
     runInTransaction: boolean
   }

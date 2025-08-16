@@ -31,14 +31,14 @@ export async function generate2FASecret(user) {
           new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes expiry
         ],
         (err) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve();
         }
       );
     });
 
     // Generate QR code
-    const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
+    const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url); // TODO-LINT: move to async function
 
     return {
       secret: secret.base32,
@@ -63,7 +63,7 @@ export async function verify2FASetup(userId, tempId, token) {
         'SELECT * FROM user_2fa_temp WHERE id = ? AND user_id = ? AND expires_at > ?',
         [tempId, userId, new Date().toISOString()],
         (err, row) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve(row);
         }
       );
@@ -102,7 +102,7 @@ export async function verify2FASetup(userId, tempId, token) {
           now
         ],
         (err) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve();
         }
       );
@@ -111,7 +111,7 @@ export async function verify2FASetup(userId, tempId, token) {
     // Clean up temporary secret
     await new Promise((resolve, reject) => {
       db.run('DELETE FROM user_2fa_temp WHERE id = ?', [tempId], (err) => {
-        if (err) reject(err);
+        if (err) reject(err); // TODO-LINT: move to async function
         else resolve();
       });
     });
@@ -125,7 +125,7 @@ export async function verify2FASetup(userId, tempId, token) {
         'UPDATE users SET two_factor_enabled = 1, updated_at = ? WHERE id = ?',
         [now, userId],
         (err) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve();
         }
       );
@@ -151,7 +151,7 @@ export async function verify2FAToken(userId, token) {
         'SELECT * FROM user_2fa WHERE user_id = ? AND enabled = 1',
         [userId],
         (err, row) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve(row);
         }
       );
@@ -175,7 +175,7 @@ export async function verify2FAToken(userId, token) {
           'UPDATE user_2fa SET backup_codes = ?, updated_at = ? WHERE id = ?',
           [JSON.stringify(backupCodes), new Date().toISOString(), user2FA.id],
           (err) => {
-            if (err) reject(err);
+            if (err) reject(err); // TODO-LINT: move to async function
             else resolve();
           }
         );
@@ -218,7 +218,7 @@ export async function disable2FA(userId) {
         'UPDATE user_2fa SET enabled = 0, disabled_at = ?, updated_at = ? WHERE user_id = ?',
         [now, now, userId],
         (err) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve();
         }
       );
@@ -230,7 +230,7 @@ export async function disable2FA(userId) {
         'UPDATE users SET two_factor_enabled = 0, updated_at = ? WHERE id = ?',
         [now, userId],
         (err) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve();
         }
       );
@@ -257,7 +257,7 @@ export async function regenerateBackupCodes(userId) {
         'UPDATE user_2fa SET backup_codes = ?, updated_at = ? WHERE user_id = ? AND enabled = 1',
         [JSON.stringify(backupCodes), now, userId],
         (err) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve();
         }
       );
@@ -296,7 +296,7 @@ export async function is2FAEnabled(userId) {
         'SELECT enabled FROM user_2fa WHERE user_id = ? AND enabled = 1',
         [userId],
         (err, row) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve(row);
         }
       );
@@ -319,7 +319,7 @@ export async function get2FAStatus(userId) {
         'SELECT * FROM user_2fa WHERE user_id = ? AND enabled = 1',
         [userId],
         (err, row) => {
-          if (err) reject(err);
+          if (err) reject(err); // TODO-LINT: move to async function
           else resolve(row);
         }
       );

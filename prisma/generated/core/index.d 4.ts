@@ -285,7 +285,7 @@ export class PrismaClient<
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
    */
 
-  constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>);
+  constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>); // TODO-LINT: move to async function
   $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): PrismaClient;
 
   /**
@@ -309,47 +309,47 @@ export class PrismaClient<
    * Executes a prepared raw query and returns the number of affected rows.
    * @example
    * ```
-   * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
+   * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'}; // TODO-LINT: move to async function`
    * ```
    *
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
-  $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<number>;
+  $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): Prisma.PrismaPromise<number>;
 
   /**
    * Executes a raw query and returns the number of affected rows.
    * Susceptible to SQL injections, see documentation.
    * @example
    * ```
-   * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
+   * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ; // TODO-LINT: move to async function', true, 'user@email.com')
    * ```
    *
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
-  $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
+  $executeRawUnsafe<T = unknown>(query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): Prisma.PrismaPromise<number>;
 
   /**
    * Performs a prepared raw query and returns the `SELECT` data.
    * @example
    * ```
-   * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
+   * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'}; // TODO-LINT: move to async function`
    * ```
    *
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
-  $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<T>;
+  $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): Prisma.PrismaPromise<T>;
 
   /**
    * Performs a raw query and returns the `SELECT` data.
    * Susceptible to SQL injections, see documentation.
    * @example
    * ```
-   * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
+   * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2; // TODO-LINT: move to async function', 1, 'user@email.com')
    * ```
    *
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
-  $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
+  $queryRawUnsafe<T = unknown>(query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): Prisma.PrismaPromise<T>;
 
 
   /**
@@ -382,7 +382,7 @@ export class PrismaClient<
     * const users = await prisma.user.findMany()
     * ```
     */
-  get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
+  get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.role`: Exposes CRUD operations for the **Role** model.
@@ -392,7 +392,7 @@ export class PrismaClient<
     * const roles = await prisma.role.findMany()
     * ```
     */
-  get role(): Prisma.RoleDelegate<ExtArgs, ClientOptions>;
+  get role(): Prisma.RoleDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.permission`: Exposes CRUD operations for the **Permission** model.
@@ -402,7 +402,7 @@ export class PrismaClient<
     * const permissions = await prisma.permission.findMany()
     * ```
     */
-  get permission(): Prisma.PermissionDelegate<ExtArgs, ClientOptions>;
+  get permission(): Prisma.PermissionDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.userRole`: Exposes CRUD operations for the **UserRole** model.
@@ -412,7 +412,7 @@ export class PrismaClient<
     * const userRoles = await prisma.userRole.findMany()
     * ```
     */
-  get userRole(): Prisma.UserRoleDelegate<ExtArgs, ClientOptions>;
+  get userRole(): Prisma.UserRoleDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.rolePermission`: Exposes CRUD operations for the **RolePermission** model.
@@ -422,7 +422,7 @@ export class PrismaClient<
     * const rolePermissions = await prisma.rolePermission.findMany()
     * ```
     */
-  get rolePermission(): Prisma.RolePermissionDelegate<ExtArgs, ClientOptions>;
+  get rolePermission(): Prisma.RolePermissionDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.passkey`: Exposes CRUD operations for the **Passkey** model.
@@ -432,7 +432,7 @@ export class PrismaClient<
     * const passkeys = await prisma.passkey.findMany()
     * ```
     */
-  get passkey(): Prisma.PasskeyDelegate<ExtArgs, ClientOptions>;
+  get passkey(): Prisma.PasskeyDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.log`: Exposes CRUD operations for the **Log** model.
@@ -442,7 +442,7 @@ export class PrismaClient<
     * const logs = await prisma.log.findMany()
     * ```
     */
-  get log(): Prisma.LogDelegate<ExtArgs, ClientOptions>;
+  get log(): Prisma.LogDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.config`: Exposes CRUD operations for the **Config** model.
@@ -452,7 +452,7 @@ export class PrismaClient<
     * const configs = await prisma.config.findMany()
     * ```
     */
-  get config(): Prisma.ConfigDelegate<ExtArgs, ClientOptions>;
+  get config(): Prisma.ConfigDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.configHistory`: Exposes CRUD operations for the **ConfigHistory** model.
@@ -462,7 +462,7 @@ export class PrismaClient<
     * const configHistories = await prisma.configHistory.findMany()
     * ```
     */
-  get configHistory(): Prisma.ConfigHistoryDelegate<ExtArgs, ClientOptions>;
+  get configHistory(): Prisma.ConfigHistoryDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.configTemplate`: Exposes CRUD operations for the **ConfigTemplate** model.
@@ -472,7 +472,7 @@ export class PrismaClient<
     * const configTemplates = await prisma.configTemplate.findMany()
     * ```
     */
-  get configTemplate(): Prisma.ConfigTemplateDelegate<ExtArgs, ClientOptions>;
+  get configTemplate(): Prisma.ConfigTemplateDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.kiosk`: Exposes CRUD operations for the **Kiosk** model.
@@ -482,7 +482,7 @@ export class PrismaClient<
     * const kiosks = await prisma.kiosk.findMany()
     * ```
     */
-  get kiosk(): Prisma.KioskDelegate<ExtArgs, ClientOptions>;
+  get kiosk(): Prisma.KioskDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.feedback`: Exposes CRUD operations for the **Feedback** model.
@@ -492,7 +492,7 @@ export class PrismaClient<
     * const feedbacks = await prisma.feedback.findMany()
     * ```
     */
-  get feedback(): Prisma.FeedbackDelegate<ExtArgs, ClientOptions>;
+  get feedback(): Prisma.FeedbackDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
@@ -502,7 +502,7 @@ export class PrismaClient<
     * const notifications = await prisma.notification.findMany()
     * ```
     */
-  get notification(): Prisma.NotificationDelegate<ExtArgs, ClientOptions>;
+  get notification(): Prisma.NotificationDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.directoryIntegration`: Exposes CRUD operations for the **DirectoryIntegration** model.
@@ -512,7 +512,7 @@ export class PrismaClient<
     * const directoryIntegrations = await prisma.directoryIntegration.findMany()
     * ```
     */
-  get directoryIntegration(): Prisma.DirectoryIntegrationDelegate<ExtArgs, ClientOptions>;
+  get directoryIntegration(): Prisma.DirectoryIntegrationDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.asset`: Exposes CRUD operations for the **Asset** model.
@@ -522,7 +522,7 @@ export class PrismaClient<
     * const assets = await prisma.asset.findMany()
     * ```
     */
-  get asset(): Prisma.AssetDelegate<ExtArgs, ClientOptions>;
+  get asset(): Prisma.AssetDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.kioskActivation`: Exposes CRUD operations for the **KioskActivation** model.
@@ -532,7 +532,7 @@ export class PrismaClient<
     * const kioskActivations = await prisma.kioskActivation.findMany()
     * ```
     */
-  get kioskActivation(): Prisma.KioskActivationDelegate<ExtArgs, ClientOptions>;
+  get kioskActivation(): Prisma.KioskActivationDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.ssoConfiguration`: Exposes CRUD operations for the **SsoConfiguration** model.
@@ -542,7 +542,7 @@ export class PrismaClient<
     * const ssoConfigurations = await prisma.ssoConfiguration.findMany()
     * ```
     */
-  get ssoConfiguration(): Prisma.SsoConfigurationDelegate<ExtArgs, ClientOptions>;
+  get ssoConfiguration(): Prisma.SsoConfigurationDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.adminPin`: Exposes CRUD operations for the **AdminPin** model.
@@ -552,7 +552,7 @@ export class PrismaClient<
     * const adminPins = await prisma.adminPin.findMany()
     * ```
     */
-  get adminPin(): Prisma.AdminPinDelegate<ExtArgs, ClientOptions>;
+  get adminPin(): Prisma.AdminPinDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.kbArticle`: Exposes CRUD operations for the **KbArticle** model.
@@ -562,7 +562,7 @@ export class PrismaClient<
     * const kbArticles = await prisma.kbArticle.findMany()
     * ```
     */
-  get kbArticle(): Prisma.KbArticleDelegate<ExtArgs, ClientOptions>;
+  get kbArticle(): Prisma.KbArticleDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.kbArticleVersion`: Exposes CRUD operations for the **KbArticleVersion** model.
@@ -572,7 +572,7 @@ export class PrismaClient<
     * const kbArticleVersions = await prisma.kbArticleVersion.findMany()
     * ```
     */
-  get kbArticleVersion(): Prisma.KbArticleVersionDelegate<ExtArgs, ClientOptions>;
+  get kbArticleVersion(): Prisma.KbArticleVersionDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.kbArticleComment`: Exposes CRUD operations for the **KbArticleComment** model.
@@ -582,7 +582,7 @@ export class PrismaClient<
     * const kbArticleComments = await prisma.kbArticleComment.findMany()
     * ```
     */
-  get kbArticleComment(): Prisma.KbArticleCommentDelegate<ExtArgs, ClientOptions>;
+  get kbArticleComment(): Prisma.KbArticleCommentDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.supportTicket`: Exposes CRUD operations for the **SupportTicket** model.
@@ -592,7 +592,7 @@ export class PrismaClient<
     * const supportTickets = await prisma.supportTicket.findMany()
     * ```
     */
-  get supportTicket(): Prisma.SupportTicketDelegate<ExtArgs, ClientOptions>;
+  get supportTicket(): Prisma.SupportTicketDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.inventoryAsset`: Exposes CRUD operations for the **InventoryAsset** model.
@@ -602,7 +602,7 @@ export class PrismaClient<
     * const inventoryAssets = await prisma.inventoryAsset.findMany()
     * ```
     */
-  get inventoryAsset(): Prisma.InventoryAssetDelegate<ExtArgs, ClientOptions>;
+  get inventoryAsset(): Prisma.InventoryAssetDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.assetStatusLog`: Exposes CRUD operations for the **AssetStatusLog** model.
@@ -612,7 +612,7 @@ export class PrismaClient<
     * const assetStatusLogs = await prisma.assetStatusLog.findMany()
     * ```
     */
-  get assetStatusLog(): Prisma.AssetStatusLogDelegate<ExtArgs, ClientOptions>;
+  get assetStatusLog(): Prisma.AssetStatusLogDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.assetAssignment`: Exposes CRUD operations for the **AssetAssignment** model.
@@ -622,7 +622,7 @@ export class PrismaClient<
     * const assetAssignments = await prisma.assetAssignment.findMany()
     * ```
     */
-  get assetAssignment(): Prisma.AssetAssignmentDelegate<ExtArgs, ClientOptions>;
+  get assetAssignment(): Prisma.AssetAssignmentDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.assetTicketHistory`: Exposes CRUD operations for the **AssetTicketHistory** model.
@@ -632,7 +632,7 @@ export class PrismaClient<
     * const assetTicketHistories = await prisma.assetTicketHistory.findMany()
     * ```
     */
-  get assetTicketHistory(): Prisma.AssetTicketHistoryDelegate<ExtArgs, ClientOptions>;
+  get assetTicketHistory(): Prisma.AssetTicketHistoryDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.assetWarrantyAlert`: Exposes CRUD operations for the **AssetWarrantyAlert** model.
@@ -642,7 +642,7 @@ export class PrismaClient<
     * const assetWarrantyAlerts = await prisma.assetWarrantyAlert.findMany()
     * ```
     */
-  get assetWarrantyAlert(): Prisma.AssetWarrantyAlertDelegate<ExtArgs, ClientOptions>;
+  get assetWarrantyAlert(): Prisma.AssetWarrantyAlertDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.assetImportBatch`: Exposes CRUD operations for the **AssetImportBatch** model.
@@ -652,7 +652,7 @@ export class PrismaClient<
     * const assetImportBatches = await prisma.assetImportBatch.findMany()
     * ```
     */
-  get assetImportBatch(): Prisma.AssetImportBatchDelegate<ExtArgs, ClientOptions>;
+  get assetImportBatch(): Prisma.AssetImportBatchDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.assetValidationLog`: Exposes CRUD operations for the **AssetValidationLog** model.
@@ -662,7 +662,7 @@ export class PrismaClient<
     * const assetValidationLogs = await prisma.assetValidationLog.findMany()
     * ```
     */
-  get assetValidationLog(): Prisma.AssetValidationLogDelegate<ExtArgs, ClientOptions>;
+  get assetValidationLog(): Prisma.AssetValidationLogDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.kioskAssetRegistry`: Exposes CRUD operations for the **KioskAssetRegistry** model.
@@ -672,7 +672,7 @@ export class PrismaClient<
     * const kioskAssetRegistries = await prisma.kioskAssetRegistry.findMany()
     * ```
     */
-  get kioskAssetRegistry(): Prisma.KioskAssetRegistryDelegate<ExtArgs, ClientOptions>;
+  get kioskAssetRegistry(): Prisma.KioskAssetRegistryDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.helixSyncFailure`: Exposes CRUD operations for the **HelixSyncFailure** model.
@@ -682,7 +682,7 @@ export class PrismaClient<
     * const helixSyncFailures = await prisma.helixSyncFailure.findMany()
     * ```
     */
-  get helixSyncFailure(): Prisma.HelixSyncFailureDelegate<ExtArgs, ClientOptions>;
+  get helixSyncFailure(): Prisma.HelixSyncFailureDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.kioskOrganizationAssignment`: Exposes CRUD operations for the **KioskOrganizationAssignment** model.
@@ -692,7 +692,7 @@ export class PrismaClient<
     * const kioskOrganizationAssignments = await prisma.kioskOrganizationAssignment.findMany()
     * ```
     */
-  get kioskOrganizationAssignment(): Prisma.KioskOrganizationAssignmentDelegate<ExtArgs, ClientOptions>;
+  get kioskOrganizationAssignment(): Prisma.KioskOrganizationAssignmentDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.kioskMetadataLog`: Exposes CRUD operations for the **KioskMetadataLog** model.
@@ -702,7 +702,7 @@ export class PrismaClient<
     * const kioskMetadataLogs = await prisma.kioskMetadataLog.findMany()
     * ```
     */
-  get kioskMetadataLog(): Prisma.KioskMetadataLogDelegate<ExtArgs, ClientOptions>;
+  get kioskMetadataLog(): Prisma.KioskMetadataLogDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.xpEvent`: Exposes CRUD operations for the **XpEvent** model.
@@ -712,7 +712,7 @@ export class PrismaClient<
     * const xpEvents = await prisma.xpEvent.findMany()
     * ```
     */
-  get xpEvent(): Prisma.XpEventDelegate<ExtArgs, ClientOptions>;
+  get xpEvent(): Prisma.XpEventDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.leaderboard`: Exposes CRUD operations for the **Leaderboard** model.
@@ -722,7 +722,7 @@ export class PrismaClient<
     * const leaderboards = await prisma.leaderboard.findMany()
     * ```
     */
-  get leaderboard(): Prisma.LeaderboardDelegate<ExtArgs, ClientOptions>;
+  get leaderboard(): Prisma.LeaderboardDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.scimMapping`: Exposes CRUD operations for the **ScimMapping** model.
@@ -732,7 +732,7 @@ export class PrismaClient<
     * const scimMappings = await prisma.scimMapping.findMany()
     * ```
     */
-  get scimMapping(): Prisma.ScimMappingDelegate<ExtArgs, ClientOptions>;
+  get scimMapping(): Prisma.ScimMappingDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.scimLog`: Exposes CRUD operations for the **ScimLog** model.
@@ -742,7 +742,7 @@ export class PrismaClient<
     * const scimLogs = await prisma.scimLog.findMany()
     * ```
     */
-  get scimLog(): Prisma.ScimLogDelegate<ExtArgs, ClientOptions>;
+  get scimLog(): Prisma.ScimLogDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.mailroomPackage`: Exposes CRUD operations for the **MailroomPackage** model.
@@ -752,7 +752,7 @@ export class PrismaClient<
     * const mailroomPackages = await prisma.mailroomPackage.findMany()
     * ```
     */
-  get mailroomPackage(): Prisma.MailroomPackageDelegate<ExtArgs, ClientOptions>;
+  get mailroomPackage(): Prisma.MailroomPackageDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.deliveryEvent`: Exposes CRUD operations for the **DeliveryEvent** model.
@@ -762,7 +762,7 @@ export class PrismaClient<
     * const deliveryEvents = await prisma.deliveryEvent.findMany()
     * ```
     */
-  get deliveryEvent(): Prisma.DeliveryEventDelegate<ExtArgs, ClientOptions>;
+  get deliveryEvent(): Prisma.DeliveryEventDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.proxyAuthorization`: Exposes CRUD operations for the **ProxyAuthorization** model.
@@ -772,7 +772,7 @@ export class PrismaClient<
     * const proxyAuthorizations = await prisma.proxyAuthorization.findMany()
     * ```
     */
-  get proxyAuthorization(): Prisma.ProxyAuthorizationDelegate<ExtArgs, ClientOptions>;
+  get proxyAuthorization(): Prisma.ProxyAuthorizationDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.requestCatalogItem`: Exposes CRUD operations for the **RequestCatalogItem** model.
@@ -782,7 +782,7 @@ export class PrismaClient<
     * const requestCatalogItems = await prisma.requestCatalogItem.findMany()
     * ```
     */
-  get requestCatalogItem(): Prisma.RequestCatalogItemDelegate<ExtArgs, ClientOptions>;
+  get requestCatalogItem(): Prisma.RequestCatalogItemDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.rITM`: Exposes CRUD operations for the **RITM** model.
@@ -792,7 +792,7 @@ export class PrismaClient<
     * const rITMS = await prisma.rITM.findMany()
     * ```
     */
-  get rITM(): Prisma.RITMDelegate<ExtArgs, ClientOptions>;
+  get rITM(): Prisma.RITMDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.vipProxy`: Exposes CRUD operations for the **VipProxy** model.
@@ -802,7 +802,7 @@ export class PrismaClient<
     * const vipProxies = await prisma.vipProxy.findMany()
     * ```
     */
-  get vipProxy(): Prisma.VipProxyDelegate<ExtArgs, ClientOptions>;
+  get vipProxy(): Prisma.VipProxyDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.vipSlaHistory`: Exposes CRUD operations for the **VipSlaHistory** model.
@@ -812,7 +812,7 @@ export class PrismaClient<
     * const vipSlaHistories = await prisma.vipSlaHistory.findMany()
     * ```
     */
-  get vipSlaHistory(): Prisma.VipSlaHistoryDelegate<ExtArgs, ClientOptions>;
+  get vipSlaHistory(): Prisma.VipSlaHistoryDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.agentAvailability`: Exposes CRUD operations for the **AgentAvailability** model.
@@ -822,7 +822,7 @@ export class PrismaClient<
     * const agentAvailabilities = await prisma.agentAvailability.findMany()
     * ```
     */
-  get agentAvailability(): Prisma.AgentAvailabilityDelegate<ExtArgs, ClientOptions>;
+  get agentAvailability(): Prisma.AgentAvailabilityDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.queueMetrics`: Exposes CRUD operations for the **QueueMetrics** model.
@@ -832,7 +832,7 @@ export class PrismaClient<
     * const queueMetrics = await prisma.queueMetrics.findMany()
     * ```
     */
-  get queueMetrics(): Prisma.QueueMetricsDelegate<ExtArgs, ClientOptions>;
+  get queueMetrics(): Prisma.QueueMetricsDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 
   /**
    * `prisma.queueAlert`: Exposes CRUD operations for the **QueueAlert** model.
@@ -842,7 +842,7 @@ export class PrismaClient<
     * const queueAlerts = await prisma.queueAlert.findMany()
     * ```
     */
-  get queueAlert(): Prisma.QueueAlertDelegate<ExtArgs, ClientOptions>;
+  get queueAlert(): Prisma.QueueAlertDelegate<ExtArgs, ClientOptions>; // TODO-LINT: move to async function
 }
 
 export namespace Prisma {
@@ -987,13 +987,13 @@ export namespace Prisma {
   export const AnyNull: NullTypes.AnyNull
 
   type SelectAndInclude = {
-    select: any
-    include: any
+    select: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    include: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
   }
 
   type SelectAndOmit = {
-    select: any
-    omit: any
+    select: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    omit: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
   }
 
   /**
@@ -1004,7 +1004,7 @@ export namespace Prisma {
   /**
    * Get the return type of a function which returns a Promise.
    */
-  export type PromiseReturnType<T extends (...args: any) => $Utils.JsPromise<any>> = PromiseType<ReturnType<T>>
+  export type _PromiseReturnType<T extends (...args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => $Utils.JsPromise<any>> = PromiseType<ReturnType<T>>
 
   /**
    * From T, pick a set of properties whose keys are in the union K
@@ -1079,7 +1079,7 @@ export namespace Prisma {
   ? False
   : T extends Uint8Array
   ? False
-  : T extends BigInt
+  : T extends bigint
   ? False
   : T extends object
   ? True
@@ -4833,23 +4833,23 @@ export namespace Prisma {
     }
   } & {
     other: {
-      payload: any
+      payload: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
       operations: {
         $executeRaw: {
-          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
-          result: any
+          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]],
+          result: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
         }
         $executeRawUnsafe: {
-          args: [query: string, ...values: any[]],
-          result: any
+          args: [query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]],
+          result: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
         }
         $queryRaw: {
-          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
-          result: any
+          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]],
+          result: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
         }
         $queryRawUnsafe: {
-          args: [query: string, ...values: any[]],
-          result: any
+          args: [query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]],
+          result: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
         }
       }
     }
@@ -5020,7 +5020,7 @@ export namespace Prisma {
   export type MiddlewareParams = {
     model?: ModelName
     action: PrismaAction
-    args: any
+    args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
     dataPath: string[]
     runInTransaction: boolean
   }
@@ -6567,7 +6567,7 @@ export namespace Prisma {
   /**
    * Fields of the User model
    */
-  readonly fields: UserFieldRefs;
+  readonly fields: UserFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -6604,13 +6604,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -8160,7 +8160,7 @@ export namespace Prisma {
   /**
    * Fields of the Role model
    */
-  readonly fields: RoleFieldRefs;
+  readonly fields: RoleFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -8179,13 +8179,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -9301,7 +9301,7 @@ export namespace Prisma {
   /**
    * Fields of the Permission model
    */
-  readonly fields: PermissionFieldRefs;
+  readonly fields: PermissionFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -9319,13 +9319,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -10393,7 +10393,7 @@ export namespace Prisma {
   /**
    * Fields of the UserRole model
    */
-  readonly fields: UserRoleFieldRefs;
+  readonly fields: UserRoleFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -10412,13 +10412,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -11471,7 +11471,7 @@ export namespace Prisma {
   /**
    * Fields of the RolePermission model
    */
-  readonly fields: RolePermissionFieldRefs;
+  readonly fields: RolePermissionFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -11490,13 +11490,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -12626,7 +12626,7 @@ export namespace Prisma {
   /**
    * Fields of the Passkey model
    */
-  readonly fields: PasskeyFieldRefs;
+  readonly fields: PasskeyFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -12644,13 +12644,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -13783,7 +13783,7 @@ export namespace Prisma {
   /**
    * Fields of the Log model
    */
-  readonly fields: LogFieldRefs;
+  readonly fields: LogFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -13801,13 +13801,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -15035,7 +15035,7 @@ export namespace Prisma {
   /**
    * Fields of the Config model
    */
-  readonly fields: ConfigFieldRefs;
+  readonly fields: ConfigFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -15053,13 +15053,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -16179,7 +16179,7 @@ export namespace Prisma {
   /**
    * Fields of the ConfigHistory model
    */
-  readonly fields: ConfigHistoryFieldRefs;
+  readonly fields: ConfigHistoryFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -16197,13 +16197,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -17303,7 +17303,7 @@ export namespace Prisma {
   /**
    * Fields of the ConfigTemplate model
    */
-  readonly fields: ConfigTemplateFieldRefs;
+  readonly fields: ConfigTemplateFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -17320,13 +17320,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -18476,7 +18476,7 @@ export namespace Prisma {
   /**
    * Fields of the Kiosk model
    */
-  readonly fields: KioskFieldRefs;
+  readonly fields: KioskFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -18498,13 +18498,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -19692,7 +19692,7 @@ export namespace Prisma {
   /**
    * Fields of the Feedback model
    */
-  readonly fields: FeedbackFieldRefs;
+  readonly fields: FeedbackFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -19710,13 +19710,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -20813,7 +20813,7 @@ export namespace Prisma {
   /**
    * Fields of the Notification model
    */
-  readonly fields: NotificationFieldRefs;
+  readonly fields: NotificationFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -20830,13 +20830,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -21852,7 +21852,7 @@ export namespace Prisma {
   /**
    * Fields of the DirectoryIntegration model
    */
-  readonly fields: DirectoryIntegrationFieldRefs;
+  readonly fields: DirectoryIntegrationFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -21869,13 +21869,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -22922,7 +22922,7 @@ export namespace Prisma {
   /**
    * Fields of the Asset model
    */
-  readonly fields: AssetFieldRefs;
+  readonly fields: AssetFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -22939,13 +22939,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -23970,7 +23970,7 @@ export namespace Prisma {
   /**
    * Fields of the KioskActivation model
    */
-  readonly fields: KioskActivationFieldRefs;
+  readonly fields: KioskActivationFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -23988,13 +23988,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -25066,7 +25066,7 @@ export namespace Prisma {
   /**
    * Fields of the SsoConfiguration model
    */
-  readonly fields: SsoConfigurationFieldRefs;
+  readonly fields: SsoConfigurationFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -25083,13 +25083,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -26079,7 +26079,7 @@ export namespace Prisma {
   /**
    * Fields of the AdminPin model
    */
-  readonly fields: AdminPinFieldRefs;
+  readonly fields: AdminPinFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -26096,13 +26096,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -27184,7 +27184,7 @@ export namespace Prisma {
   /**
    * Fields of the KbArticle model
    */
-  readonly fields: KbArticleFieldRefs;
+  readonly fields: KbArticleFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -27205,13 +27205,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -28437,7 +28437,7 @@ export namespace Prisma {
   /**
    * Fields of the KbArticleVersion model
    */
-  readonly fields: KbArticleVersionFieldRefs;
+  readonly fields: KbArticleVersionFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -28457,13 +28457,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -29613,7 +29613,7 @@ export namespace Prisma {
   /**
    * Fields of the KbArticleComment model
    */
-  readonly fields: KbArticleCommentFieldRefs;
+  readonly fields: KbArticleCommentFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -29632,13 +29632,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -30790,7 +30790,7 @@ export namespace Prisma {
   /**
    * Fields of the SupportTicket model
    */
-  readonly fields: SupportTicketFieldRefs;
+  readonly fields: SupportTicketFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -30812,13 +30812,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -32371,7 +32371,7 @@ export namespace Prisma {
   /**
    * Fields of the InventoryAsset model
    */
-  readonly fields: InventoryAssetFieldRefs;
+  readonly fields: InventoryAssetFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -32397,13 +32397,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -33737,7 +33737,7 @@ export namespace Prisma {
   /**
    * Fields of the AssetStatusLog model
    */
-  readonly fields: AssetStatusLogFieldRefs;
+  readonly fields: AssetStatusLogFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -33755,13 +33755,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -34903,7 +34903,7 @@ export namespace Prisma {
   /**
    * Fields of the AssetAssignment model
    */
-  readonly fields: AssetAssignmentFieldRefs;
+  readonly fields: AssetAssignmentFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -34921,13 +34921,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -36051,7 +36051,7 @@ export namespace Prisma {
   /**
    * Fields of the AssetTicketHistory model
    */
-  readonly fields: AssetTicketHistoryFieldRefs;
+  readonly fields: AssetTicketHistoryFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -36070,13 +36070,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -37227,7 +37227,7 @@ export namespace Prisma {
   /**
    * Fields of the AssetWarrantyAlert model
    */
-  readonly fields: AssetWarrantyAlertFieldRefs;
+  readonly fields: AssetWarrantyAlertFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -37245,13 +37245,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -38404,7 +38404,7 @@ export namespace Prisma {
   /**
    * Fields of the AssetImportBatch model
    */
-  readonly fields: AssetImportBatchFieldRefs;
+  readonly fields: AssetImportBatchFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -38423,13 +38423,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -39602,7 +39602,7 @@ export namespace Prisma {
   /**
    * Fields of the AssetValidationLog model
    */
-  readonly fields: AssetValidationLogFieldRefs;
+  readonly fields: AssetValidationLogFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -39621,13 +39621,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -40813,7 +40813,7 @@ export namespace Prisma {
   /**
    * Fields of the KioskAssetRegistry model
    */
-  readonly fields: KioskAssetRegistryFieldRefs;
+  readonly fields: KioskAssetRegistryFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -40832,13 +40832,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -41972,7 +41972,7 @@ export namespace Prisma {
   /**
    * Fields of the HelixSyncFailure model
    */
-  readonly fields: HelixSyncFailureFieldRefs;
+  readonly fields: HelixSyncFailureFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -41991,13 +41991,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -43141,7 +43141,7 @@ export namespace Prisma {
   /**
    * Fields of the KioskOrganizationAssignment model
    */
-  readonly fields: KioskOrganizationAssignmentFieldRefs;
+  readonly fields: KioskOrganizationAssignmentFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -43159,13 +43159,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -44239,7 +44239,7 @@ export namespace Prisma {
   /**
    * Fields of the KioskMetadataLog model
    */
-  readonly fields: KioskMetadataLogFieldRefs;
+  readonly fields: KioskMetadataLogFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -44257,13 +44257,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -45335,7 +45335,7 @@ export namespace Prisma {
   /**
    * Fields of the XpEvent model
    */
-  readonly fields: XpEventFieldRefs;
+  readonly fields: XpEventFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -45353,13 +45353,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -46391,7 +46391,7 @@ export namespace Prisma {
   /**
    * Fields of the Leaderboard model
    */
-  readonly fields: LeaderboardFieldRefs;
+  readonly fields: LeaderboardFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -46409,13 +46409,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -47446,7 +47446,7 @@ export namespace Prisma {
   /**
    * Fields of the ScimMapping model
    */
-  readonly fields: ScimMappingFieldRefs;
+  readonly fields: ScimMappingFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -47464,13 +47464,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -48604,7 +48604,7 @@ export namespace Prisma {
   /**
    * Fields of the ScimLog model
    */
-  readonly fields: ScimLogFieldRefs;
+  readonly fields: ScimLogFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -48621,13 +48621,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -49848,7 +49848,7 @@ export namespace Prisma {
   /**
    * Fields of the MailroomPackage model
    */
-  readonly fields: MailroomPackageFieldRefs;
+  readonly fields: MailroomPackageFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -49870,13 +49870,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -51091,7 +51091,7 @@ export namespace Prisma {
   /**
    * Fields of the DeliveryEvent model
    */
-  readonly fields: DeliveryEventFieldRefs;
+  readonly fields: DeliveryEventFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -51110,13 +51110,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -52217,7 +52217,7 @@ export namespace Prisma {
   /**
    * Fields of the ProxyAuthorization model
    */
-  readonly fields: ProxyAuthorizationFieldRefs;
+  readonly fields: ProxyAuthorizationFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -52237,13 +52237,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -53296,7 +53296,7 @@ export namespace Prisma {
   /**
    * Fields of the RequestCatalogItem model
    */
-  readonly fields: RequestCatalogItemFieldRefs;
+  readonly fields: RequestCatalogItemFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -53314,13 +53314,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -54406,7 +54406,7 @@ export namespace Prisma {
   /**
    * Fields of the RITM model
    */
-  readonly fields: RITMFieldRefs;
+  readonly fields: RITMFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -54425,13 +54425,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -55505,7 +55505,7 @@ export namespace Prisma {
   /**
    * Fields of the VipProxy model
    */
-  readonly fields: VipProxyFieldRefs;
+  readonly fields: VipProxyFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -55524,13 +55524,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -56594,7 +56594,7 @@ export namespace Prisma {
   /**
    * Fields of the VipSlaHistory model
    */
-  readonly fields: VipSlaHistoryFieldRefs;
+  readonly fields: VipSlaHistoryFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -56612,13 +56612,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -57738,7 +57738,7 @@ export namespace Prisma {
   /**
    * Fields of the AgentAvailability model
    */
-  readonly fields: AgentAvailabilityFieldRefs;
+  readonly fields: AgentAvailabilityFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -57756,13 +57756,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -58976,7 +58976,7 @@ export namespace Prisma {
   /**
    * Fields of the QueueMetrics model
    */
-  readonly fields: QueueMetricsFieldRefs;
+  readonly fields: QueueMetricsFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -58993,13 +58993,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -60013,7 +60013,7 @@ export namespace Prisma {
   /**
    * Fields of the QueueAlert model
    */
-  readonly fields: QueueAlertFieldRefs;
+  readonly fields: QueueAlertFieldRefs; // TODO-LINT: move to async function
   }
 
   /**
@@ -60030,13 +60030,13 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.

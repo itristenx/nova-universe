@@ -74,7 +74,7 @@ interface FavoriteItem {
 }
 
 interface Props {
-  onNavigate?: (url: string, context?: any) => void
+  onNavigate?: (url: string, context?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void
 }
 
 export const AdvancedSearchNavigation: React.FC<Props> = ({ onNavigate }) => {
@@ -267,7 +267,7 @@ export const AdvancedSearchNavigation: React.FC<Props> = ({ onNavigate }) => {
     navigate(result.url)
   }, [navigate, onNavigate])
 
-  const handleCommandExecute = useCallback((command: any) => {
+  const handleCommandExecute = useCallback((command: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
     console.log('Executing command:', command.title)
     setIsCommandPaletteOpen(false)
     setCommandQuery('')

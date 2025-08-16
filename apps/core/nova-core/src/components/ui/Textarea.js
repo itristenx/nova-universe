@@ -1,5 +1,5 @@
 import React from 'react';
-export const Textarea = ({ label, value, onChange, placeholder, error, helperText, required = false, disabled = false, rows = 4, className = '', }) => {
+export const _Textarea = ({ label, value, onChange, placeholder, error, helperText, required = false, disabled = false, rows = 4, className = '', }) => {
     return (React.createElement("div", { className: `space-y-1 ${className}` },
         label && (React.createElement("label", { className: "block text-sm font-medium text-gray-700" },
             label,

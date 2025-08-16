@@ -24,7 +24,7 @@ router.get('/support-groups', async (req, res) => {
       limit: parseInt(req.query.limit) || 50
     };
 
-    const result = await supportGroupService.listSupportGroups(filters);
+    const result = await supportGroupService.listSupportGroups(filters); // TODO-LINT: move to async function
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -34,7 +34,7 @@ router.get('/support-groups', async (req, res) => {
 // Get support group by ID
 router.get('/support-groups/:id', async (req, res) => {
   try {
-    const supportGroup = await supportGroupService.getSupportGroup(req.params.id);
+    const supportGroup = await supportGroupService.getSupportGroup(req.params.id); // TODO-LINT: move to async function
     res.json(supportGroup);
   } catch (error) {
     res.status(404).json({ error: error.message });
@@ -47,7 +47,7 @@ router.post('/support-groups', async (req, res) => {
     const supportGroup = await supportGroupService.createSupportGroup({
       ...req.body,
       createdBy: req.user?.id
-    });
+    }); // TODO-LINT: move to async function
     res.status(201).json(supportGroup);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -60,7 +60,7 @@ router.put('/support-groups/:id', async (req, res) => {
     const supportGroup = await supportGroupService.updateSupportGroup(req.params.id, {
       ...req.body,
       updatedBy: req.user?.id
-    });
+    }); // TODO-LINT: move to async function
     res.json(supportGroup);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -70,7 +70,7 @@ router.put('/support-groups/:id', async (req, res) => {
 // Delete support group
 router.delete('/support-groups/:id', async (req, res) => {
   try {
-    await supportGroupService.deleteSupportGroup(req.params.id);
+    await supportGroupService.deleteSupportGroup(req.params.id); // TODO-LINT: move to async function
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -83,7 +83,7 @@ router.post('/support-groups/:id/members', async (req, res) => {
     const member = await supportGroupService.addMember(req.params.id, {
       ...req.body,
       assignedBy: req.user?.id
-    });
+    }); // TODO-LINT: move to async function
     res.status(201).json(member);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -93,7 +93,7 @@ router.post('/support-groups/:id/members', async (req, res) => {
 // Remove member from support group
 router.delete('/support-groups/:id/members/:userId', async (req, res) => {
   try {
-    await supportGroupService.removeMember(req.params.id, req.params.userId);
+    await supportGroupService.removeMember(req.params.id, req.params.userId); // TODO-LINT: move to async function
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -107,7 +107,7 @@ router.put('/support-groups/:id/members/:userId', async (req, res) => {
       req.params.id, 
       req.params.userId, 
       req.body
-    );
+    ); // TODO-LINT: move to async function
     res.json(member);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -120,7 +120,7 @@ router.post('/support-groups/:id/permissions', async (req, res) => {
     const permission = await supportGroupService.addPermission(req.params.id, {
       ...req.body,
       grantedBy: req.user?.id
-    });
+    }); // TODO-LINT: move to async function
     res.status(201).json(permission);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -134,7 +134,7 @@ router.delete('/support-groups/:id/permissions/:resource/:action', async (req, r
       req.params.id, 
       req.params.resource, 
       req.params.action
-    );
+    ); // TODO-LINT: move to async function
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -144,7 +144,7 @@ router.delete('/support-groups/:id/permissions/:resource/:action', async (req, r
 // Get user permissions
 router.get('/users/:userId/permissions', async (req, res) => {
   try {
-    const permissions = await supportGroupService.getUserPermissions(req.params.userId);
+    const permissions = await supportGroupService.getUserPermissions(req.params.userId); // TODO-LINT: move to async function
     res.json(permissions);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -160,7 +160,7 @@ router.post('/users/:userId/permissions/check', async (req, res) => {
       resource,
       action,
       context
-    );
+    ); // TODO-LINT: move to async function
     res.json({ hasPermission });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -174,7 +174,7 @@ router.post('/users/:userId/permissions/check', async (req, res) => {
 // Get CI ownership
 router.get('/cis/:ciId/ownership', async (req, res) => {
   try {
-    const ownership = await cmdbService.getCiOwnership(req.params.ciId);
+    const ownership = await cmdbService.getCiOwnership(req.params.ciId); // TODO-LINT: move to async function
     res.json(ownership);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -187,7 +187,7 @@ router.post('/cis/:ciId/ownership', async (req, res) => {
     const ownership = await cmdbService.assignOwnership(req.params.ciId, {
       ...req.body,
       assignedBy: req.user?.id
-    });
+    }); // TODO-LINT: move to async function
     res.status(201).json(ownership);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -201,7 +201,7 @@ router.delete('/cis/:ciId/ownership/:ownershipType/:userId', async (req, res) =>
       req.params.ciId,
       req.params.ownershipType,
       req.params.userId
-    );
+    ); // TODO-LINT: move to async function
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -216,7 +216,7 @@ router.put('/cis/:ciId/ownership/:ownershipType/:userId', async (req, res) => {
       req.params.ownershipType,
       req.params.userId,
       req.body
-    );
+    ); // TODO-LINT: move to async function
     res.json(ownership);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -227,7 +227,7 @@ router.put('/cis/:ciId/ownership/:ownershipType/:userId', async (req, res) => {
 router.get('/users/:userId/owned-cis', async (req, res) => {
   try {
     const ownershipType = req.query.ownershipType;
-    const cis = await cmdbService.getUserOwnedCis(req.params.userId, ownershipType);
+    const cis = await cmdbService.getUserOwnedCis(req.params.userId, ownershipType); // TODO-LINT: move to async function
     res.json(cis);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -250,7 +250,7 @@ router.get('/inventory-mappings', async (req, res) => {
       limit: parseInt(req.query.limit) || 50
     };
 
-    const result = await integrationService.listMappings(filters);
+    const result = await integrationService.listMappings(filters); // TODO-LINT: move to async function
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -260,7 +260,7 @@ router.get('/inventory-mappings', async (req, res) => {
 // Get mapping by ID
 router.get('/inventory-mappings/:id', async (req, res) => {
   try {
-    const mapping = await integrationService.getMapping(req.params.id);
+    const mapping = await integrationService.getMapping(req.params.id); // TODO-LINT: move to async function
     res.json(mapping);
   } catch (error) {
     res.status(404).json({ error: error.message });
@@ -273,7 +273,7 @@ router.post('/inventory-mappings', async (req, res) => {
     const mapping = await integrationService.createMapping({
       ...req.body,
       createdBy: req.user?.id
-    });
+    }); // TODO-LINT: move to async function
     res.status(201).json(mapping);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -283,7 +283,7 @@ router.post('/inventory-mappings', async (req, res) => {
 // Update mapping
 router.put('/inventory-mappings/:id', async (req, res) => {
   try {
-    const mapping = await integrationService.updateMapping(req.params.id, req.body);
+    const mapping = await integrationService.updateMapping(req.params.id, req.body); // TODO-LINT: move to async function
     res.json(mapping);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -293,7 +293,7 @@ router.put('/inventory-mappings/:id', async (req, res) => {
 // Delete mapping
 router.delete('/inventory-mappings/:id', async (req, res) => {
   try {
-    await integrationService.deleteMapping(req.params.id);
+    await integrationService.deleteMapping(req.params.id); // TODO-LINT: move to async function
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -303,7 +303,7 @@ router.delete('/inventory-mappings/:id', async (req, res) => {
 // Sync mapping
 router.post('/inventory-mappings/:id/sync', async (req, res) => {
   try {
-    const result = await integrationService.syncMapping(req.params.id);
+    const result = await integrationService.syncMapping(req.params.id); // TODO-LINT: move to async function
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -313,7 +313,7 @@ router.post('/inventory-mappings/:id/sync', async (req, res) => {
 // Sync all mappings
 router.post('/inventory-mappings/sync-all', async (req, res) => {
   try {
-    const result = await integrationService.syncAllMappings();
+    const result = await integrationService.syncAllMappings(); // TODO-LINT: move to async function
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -323,7 +323,7 @@ router.post('/inventory-mappings/sync-all', async (req, res) => {
 // Analyze integration opportunities
 router.get('/inventory-integration/analyze', async (req, res) => {
   try {
-    const analysis = await integrationService.analyzeIntegrationOpportunities();
+    const analysis = await integrationService.analyzeIntegrationOpportunities(); // TODO-LINT: move to async function
     res.json(analysis);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -339,7 +339,7 @@ router.post('/inventory-mappings/bulk', async (req, res) => {
         ...mapping,
         createdBy: req.user?.id
       }))
-    );
+    ); // TODO-LINT: move to async function
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -349,7 +349,7 @@ router.post('/inventory-mappings/bulk', async (req, res) => {
 // Generate integration report
 router.get('/inventory-integration/report', async (req, res) => {
   try {
-    const report = await integrationService.generateIntegrationReport();
+    const report = await integrationService.generateIntegrationReport(); // TODO-LINT: move to async function
     res.json(report);
   } catch (error) {
     res.status(500).json({ error: error.message });

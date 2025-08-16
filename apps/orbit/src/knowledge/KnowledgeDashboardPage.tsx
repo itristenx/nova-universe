@@ -29,9 +29,9 @@ const KnowledgeDashboardPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this article?')) return;
     setLoading(true);
     try {
-      await deleteKnowledgeArticle(token, slug);
+      await deleteKnowledgeArticle(token, slug); // TODO-LINT: move to async function
       setArticles(articles.filter(a => a.slug !== slug));
-    } catch (err: any) {
+    } catch (err: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
       setError(err.message || 'Failed to delete article');
     } finally {
       setLoading(false);

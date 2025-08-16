@@ -138,9 +138,9 @@ const NovaSentinelDashboard: React.FC = () => {
     queryFn: async (): Promise<SystemStats> => {
       const response = await fetch('http://localhost:3002/api/v1/analytics/system', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch system stats');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.analytics;
     },
     refetchInterval: 30000
@@ -157,9 +157,9 @@ const NovaSentinelDashboard: React.FC = () => {
 
       const response = await fetch(`http://localhost:3002/api/v1/monitors?${params}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch monitors');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.monitors;
     },
     refetchInterval: 30000
@@ -171,9 +171,9 @@ const NovaSentinelDashboard: React.FC = () => {
     queryFn: async (): Promise<StatusPage[]> => {
       const response = await fetch('http://localhost:3002/api/v1/status-pages', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch status pages');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.statusPages;
     },
     enabled: activeTab === 'status-pages'
@@ -185,9 +185,9 @@ const NovaSentinelDashboard: React.FC = () => {
     queryFn: async (): Promise<Maintenance[]> => {
       const response = await fetch('http://localhost:3002/api/v1/maintenance', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch maintenance');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.maintenance;
     },
     enabled: activeTab === 'maintenance'
@@ -199,7 +199,7 @@ const NovaSentinelDashboard: React.FC = () => {
       const response = await fetch(`http://localhost:3002/api/v1/monitors/${monitorId}/${action}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error(`Failed to ${action} monitor`);
       return response.json();
     },
@@ -215,7 +215,7 @@ const NovaSentinelDashboard: React.FC = () => {
       const response = await fetch(`http://localhost:3002/api/v1/monitors/${monitorId}/${endpoint}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to update favorite');
       return response.json();
     },

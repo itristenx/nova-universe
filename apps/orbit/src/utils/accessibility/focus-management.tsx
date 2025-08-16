@@ -75,7 +75,7 @@ export class FocusManager {
 }
 
 // Hook for auto-focus management
-export function useAutoFocus(enabled: boolean = true) {
+export function _useAutoFocus(enabled: boolean = true) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export function useAutoFocus(enabled: boolean = true) {
 }
 
 // Hook for focus trap
-export function useFocusTrap(active: boolean = true) {
+export function _useFocusTrap(active: boolean = true) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -106,7 +106,7 @@ export function useFocusTrap(active: boolean = true) {
 }
 
 // Hook for managing focus stack
-export function useFocusStack() {
+export function _useFocusStack() {
   const push = (element: HTMLElement) => {
     FocusManager.pushFocus(element);
   };
@@ -125,7 +125,7 @@ interface AnnouncementProps {
   children?: React.ReactNode;
 }
 
-export function LiveAnnouncement({ message, priority = 'polite', children }: AnnouncementProps) {
+export function _LiveAnnouncement({ message, priority = 'polite', children }: AnnouncementProps) {
   if (priority === 'assertive') {
     return (
       <div role="alert" aria-live="assertive" aria-atomic="true" className="sr-only">
@@ -143,7 +143,7 @@ export function LiveAnnouncement({ message, priority = 'polite', children }: Ann
 }
 
 // Hook for keyboard navigation
-export function useKeyboardNavigation(
+export function _useKeyboardNavigation(
   onArrowUp?: () => void,
   onArrowDown?: () => void,
   onArrowLeft?: () => void,

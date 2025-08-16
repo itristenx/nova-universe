@@ -112,12 +112,12 @@ export function ThemeProvider({
     theme: themeConfig,
     config: designSystemConfig,
     
-    // Helper functions
+    // Helper _functions
     isDark: colorMode === 'dark',
     isLight: colorMode === 'light',
     isHighContrast: colorMode === 'high-contrast',
     
-    // Toggle between light and dark
+    // _Toggle _between light _and dark
     toggleColorMode: () => {
       setColorMode(colorMode === 'light' ? 'dark' : 'light');
     }
@@ -140,7 +140,7 @@ export function useTheme() {
 }
 
 // Hook for color mode only
-export function useColorMode() {
+export function _useColorMode() {
   const { colorMode, setColorMode, toggleColorMode, isDark, isLight, isHighContrast } = useTheme();
   return {
     colorMode,
@@ -153,7 +153,7 @@ export function useColorMode() {
 }
 
 // CSS-in-JS theme object for styled-components or emotion
-export function createStyledTheme(colorMode = 'light') {
+export function _createStyledTheme(colorMode = 'light') {
   const baseTheme = {
     colors: {
       primary: 'var(--color-primary)',
@@ -269,8 +269,8 @@ export function createStyledTheme(colorMode = 'light') {
 }
 
 // Higher-order component for theme injection
-export function withTheme(Component) {
-  return function ThemedComponent(props) {
+export function _withTheme(Component) {
+  return function _ThemedComponent(props) {
     const theme = useTheme();
     return <Component {...props} theme={theme} />;
   };
@@ -294,7 +294,7 @@ export function injectCSSVariables() {
 }
 
 // Initialize theme system
-export function initializeTheme(options = {}) {
+export function _initializeTheme(options = {}) {
   const {
     colorMode = 'light',
     enableSystemTheme = true,

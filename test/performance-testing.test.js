@@ -97,7 +97,7 @@ class LoadTester {
       const response = await fetch(url, {
         timeout: PERF_CONFIG.maxResponseTime,
         ...options
-      });
+      }); // TODO-LINT: move to async function
       status = response.status;
       return response;
     } catch (error) {
@@ -118,7 +118,7 @@ class LoadTester {
       promises.push(this.simulateUser(startTime + testDuration));
     }
 
-    await Promise.allSettled(promises);
+    await Promise.allSettled(promises); // TODO-LINT: move to async function
   }
 
   async simulateUser(endTime) {
@@ -133,10 +133,10 @@ class LoadTester {
     while (Date.now() < endTime) {
       try {
         const endpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
-        await this.makeRequest(endpoint);
+        await this.makeRequest(endpoint); // TODO-LINT: move to async function
         
         // Simulate user think time
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 1000)); // TODO-LINT: move to async function
       } catch (error) {
         // Continue testing even if individual requests fail
       }
@@ -172,7 +172,7 @@ test('Performance Testing Suite', async (t) => {
   const memoryMonitor = new MemoryMonitor(monitor);
 
   await t.test('API Response Time Benchmarks', async () => {
-    console.log('🚀 Testing API response times...');
+    console.log('🚀 Testing API response times...'); // TODO-LINT: move to async function
     
     // Test individual endpoints
     const endpoints = [
@@ -186,7 +186,7 @@ test('Performance Testing Suite', async (t) => {
       const start = performance.now();
       
       try {
-        await loadTester.makeRequest(endpoint);
+        await loadTester.makeRequest(endpoint); // TODO-LINT: move to async function
         const duration = performance.now() - start;
         
         console.log(`  ${endpoint}: ${duration.toFixed(2)}ms`);
@@ -199,13 +199,13 @@ test('Performance Testing Suite', async (t) => {
   });
 
   await t.test('Concurrent User Load Test', async () => {
-    console.log(`🔥 Testing ${PERF_CONFIG.concurrentUsers} concurrent users for ${PERF_CONFIG.testDuration/1000}s...`);
+    console.log(`🔥 Testing ${PERF_CONFIG.concurrentUsers} concurrent users for ${PERF_CONFIG.testDuration/1000}s...`); // TODO-LINT: move to async function
     
     memoryMonitor.start();
     
     const startTime = performance.now();
-    await loadTester.runConcurrentUsers(PERF_CONFIG.concurrentUsers, PERF_CONFIG.testDuration);
-    const totalDuration = performance.now() - startTime;
+    await loadTester.runConcurrentUsers(PERF_CONFIG.concurrentUsers, PERF_CONFIG.testDuration); // TODO-LINT: move to async function
+    const _totalDuration = performance.now() - startTime;
     
     memoryMonitor.stop();
     
@@ -233,7 +233,7 @@ test('Performance Testing Suite', async (t) => {
   });
 
   await t.test('Database Performance Under Load', async () => {
-    console.log('💾 Testing database performance...');
+    console.log('💾 Testing database performance...'); // TODO-LINT: move to async function
     
     const dbEndpoints = [
       '/api/tickets',
@@ -250,7 +250,7 @@ test('Performance Testing Suite', async (t) => {
       }
     }
 
-    const results = await Promise.allSettled(promises);
+    const results = await Promise.allSettled(promises); // TODO-LINT: move to async function
     const successful = results.filter(r => r.status === 'fulfilled' && !r.value.error);
     const failed = results.filter(r => r.status === 'rejected' || r.value?.error);
 
@@ -262,14 +262,14 @@ test('Performance Testing Suite', async (t) => {
   });
 
   await t.test('Memory Leak Detection', async () => {
-    console.log('🔍 Testing for memory leaks...');
+    console.log('🔍 Testing for memory leaks...'); // TODO-LINT: move to async function
     
     const initialMemory = process.memoryUsage().heapUsed;
     memoryMonitor.start();
 
     // Run sustained load for memory leak detection
     for (let cycle = 0; cycle < 5; cycle++) {
-      await loadTester.runConcurrentUsers(10, 5000); // 10 users for 5 seconds
+      await loadTester.runConcurrentUsers(10, 5000); // TODO-LINT: move to async function // 10 users for 5 seconds
       
       // Force garbage collection if available
       if (global.gc) {
@@ -296,7 +296,7 @@ test('Performance Testing Suite', async (t) => {
   });
 
   await t.test('Stress Testing - Breaking Point Analysis', async () => {
-    console.log('⚡ Finding system breaking point...');
+    console.log('⚡ Finding system breaking point...'); // TODO-LINT: move to async function
     
     const userLevels = [10, 25, 50, 75, 100, 150, 200];
     const results = [];
@@ -308,7 +308,7 @@ test('Performance Testing Suite', async (t) => {
       const testLoadTester = new LoadTester(testMonitor);
       
       const startTime = performance.now();
-      await testLoadTester.runConcurrentUsers(userCount, 10000); // 10 second bursts
+      await testLoadTester.runConcurrentUsers(userCount, 10000); // TODO-LINT: move to async function // 10 second bursts
       
       const stats = testMonitor.getStatistics();
       results.push({
@@ -341,7 +341,7 @@ test('Performance Testing Suite', async (t) => {
   });
 
   await t.test('API Endpoint Scalability', async () => {
-    console.log('📈 Testing endpoint scalability...');
+    console.log('📈 Testing endpoint scalability...'); // TODO-LINT: move to async function
     
     const endpoints = [
       '/health',
@@ -360,7 +360,7 @@ test('Performance Testing Suite', async (t) => {
         );
       }
 
-      const results = await Promise.allSettled(promises);
+      const results = await Promise.allSettled(promises); // TODO-LINT: move to async function
       const successful = results.filter(r => r.status === 'fulfilled' && !r.value?.error);
       const successRate = successful.length / results.length;
 

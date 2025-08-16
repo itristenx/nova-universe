@@ -34,7 +34,7 @@ describe('PermissionManager', () => {
     const firstSwitch = switches[0];
     const initialState = firstSwitch.getAttribute('aria-checked');
     
-    await userEvent.click(firstSwitch);
+    await userEvent.click(firstSwitch); // TODO-LINT: move to async function
     
     // State should change
     expect(firstSwitch).toHaveAttribute('aria-checked', initialState === 'true' ? 'false' : 'true');
@@ -57,7 +57,7 @@ describe('PermissionManager', () => {
       switches[0].focus();
       expect(switches[0]).toHaveFocus();
 
-      await userEvent.tab();
+      await userEvent.tab(); // TODO-LINT: move to async function
       expect(switches[1]).toHaveFocus();
     }
   });
@@ -106,13 +106,13 @@ describe('SecureAuthFlow', () => {
     const passwordInput = passwordInputs[0];
     
     // Type a password to trigger strength indicator
-    await userEvent.type(passwordInput, 'weak');
+    await userEvent.type(passwordInput, 'weak'); // TODO-LINT: move to async function
     
     // Should show password strength feedback
     await waitFor(() => {
       const strengthIndicator = screen.queryByText(/password strength/i) || 
                               screen.queryByText(/weak/i) || 
-                              document.querySelector('[data-testid*="strength"]');
+                              document.querySelector('[data-testid*="strength"]'); // TODO-LINT: move to async function
       if (strengthIndicator) {
         expect(strengthIndicator).toBeInTheDocument();
       }
@@ -125,11 +125,11 @@ describe('SecureAuthFlow', () => {
     const continueButton = screen.getByRole('button', { name: /continue/i });
     
     // Try to submit without filling fields
-    await userEvent.click(continueButton);
+    await userEvent.click(continueButton); // TODO-LINT: move to async function
 
     // Should show validation errors
     await waitFor(() => {
-      const errorMessages = screen.queryAllByText(/required/i);
+      const errorMessages = screen.queryAllByText(/required/i); // TODO-LINT: move to async function
       if (errorMessages.length > 0) {
         expect(errorMessages[0]).toBeInTheDocument();
       }
@@ -155,7 +155,7 @@ describe('SecureAuthFlow', () => {
     emailInput.focus();
     expect(emailInput).toHaveFocus();
 
-    await userEvent.tab();
+    await userEvent.tab(); // TODO-LINT: move to async function
     expect(passwordInputs[0]).toHaveFocus();
   });
 
@@ -208,7 +208,7 @@ describe('DataPrivacyDashboard', () => {
       
       // Only test if switch is not disabled
       if (!firstSwitch.hasAttribute('disabled')) {
-        await userEvent.click(firstSwitch);
+        await userEvent.click(firstSwitch); // TODO-LINT: move to async function
         
         // State should change
         expect(firstSwitch).toHaveAttribute('aria-checked', initialState === 'true' ? 'false' : 'true');
@@ -255,7 +255,7 @@ describe('DataPrivacyDashboard', () => {
       switches[0].focus();
       expect(switches[0]).toHaveFocus();
 
-      await userEvent.tab();
+      await userEvent.tab(); // TODO-LINT: move to async function
       expect(switches[1]).toHaveFocus();
     }
   });

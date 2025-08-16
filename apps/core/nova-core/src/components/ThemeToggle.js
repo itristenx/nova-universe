@@ -2,7 +2,7 @@ import React from 'react';
 import { SunIcon, MoonIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui';
-export const ThemeToggle = () => {
+export const _ThemeToggle = () => {
     const { mode, toggleTheme } = useTheme();
     const getIcon = () => {
         switch (mode) {

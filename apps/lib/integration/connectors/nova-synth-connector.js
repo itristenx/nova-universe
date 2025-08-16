@@ -40,7 +40,7 @@ export class NovaSynthConnector extends IConnector {
       this.validateNovaSynthConfig(config);
       
       // Setup authentication strategy
-      const authHeaders = await this.setupAuthentication(config);
+      const authHeaders = await this.setupAuthentication(config); // TODO-LINT: move to async function
       
       // Initialize Nova Synth Data Intelligence API client
       this.client = axios.create({
@@ -64,13 +64,13 @@ export class NovaSynthConnector extends IConnector {
       }
       
       // Initialize transformation rules
-      await this.loadTransformationRules();
+      await this.loadTransformationRules(); // TODO-LINT: move to async function
       
       // Initialize organization-specific patterns
-      await this.loadOrganizationPatterns(config);
+      await this.loadOrganizationPatterns(config); // TODO-LINT: move to async function
       
       // Test the connection
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
       
       console.log('Nova Synth Data Intelligence connector initialized successfully');
     } catch (error) {
@@ -89,7 +89,7 @@ export class NovaSynthConnector extends IConnector {
       // Test core matching endpoints
       const matchResponse = await this.client.get('/matching/health', {
         timeout: 5000
-      });
+      }); // TODO-LINT: move to async function
       
       const apiLatency = Date.now() - startTime;
 
@@ -102,7 +102,7 @@ export class NovaSynthConnector extends IConnector {
         await this.client.post('/transform/test', {
           data: { test: 'value' },
           rules: []
-        });
+        }); // TODO-LINT: move to async function
         transformationLatency = Date.now() - transformationStartTime;
       } catch (error) {
         transformationStatus = 'degraded';
@@ -116,7 +116,7 @@ export class NovaSynthConnector extends IConnector {
         const correlationStartTime = Date.now();
         await this.client.post('/correlate/test', {
           profiles: [{ id: 'test', attributes: {} }]
-        });
+        }); // TODO-LINT: move to async function
         correlationLatency = Date.now() - correlationStartTime;
       } catch (error) {
         correlationStatus = 'degraded';
@@ -185,21 +185,21 @@ export class NovaSynthConnector extends IConnector {
       console.log(`Starting ${syncType} sync for Nova Synth Data Intelligence...`);
 
       // Update transformation rules
-      const rulesResult = await this.syncTransformationRules(options);
+      const rulesResult = await this.syncTransformationRules(options); // TODO-LINT: move to async function
       totalRecords += rulesResult.totalRecords;
       successCount += rulesResult.successCount;
       errorCount += rulesResult.errorCount;
       errors.push(...rulesResult.errors);
 
       // Update matching algorithms
-      const matchingResult = await this.syncMatchingAlgorithms(options);
+      const matchingResult = await this.syncMatchingAlgorithms(options); // TODO-LINT: move to async function
       totalRecords += matchingResult.totalRecords;
       successCount += matchingResult.successCount;
       errorCount += matchingResult.errorCount;
       errors.push(...matchingResult.errors);
 
       // Update correlation models
-      const correlationResult = await this.syncCorrelationModels(options);
+      const correlationResult = await this.syncCorrelationModels(options); // TODO-LINT: move to async function
       totalRecords += correlationResult.totalRecords;
       successCount += correlationResult.successCount;
       errorCount += correlationResult.errorCount;
@@ -244,7 +244,7 @@ export class NovaSynthConnector extends IConnector {
       const since = new Date(Date.now() - 5 * 60 * 1000); // Last 5 minutes
       
       // Get recent data intelligence events
-      const eventsResponse = await this.client.get(`/events?since=${since.toISOString()}&limit=100`);
+      const eventsResponse = await this.client.get(`/events?since=${since.toISOString()}&limit=100`); // TODO-LINT: move to async function
       const events = [];
       
       for (const event of eventsResponse.data.events || []) {
@@ -265,7 +265,7 @@ export class NovaSynthConnector extends IConnector {
       }
 
       // Get potential matching candidates
-      const matchingCandidates = await this.client.get(`/matching/candidates?since=${since.toISOString()}`);
+      const matchingCandidates = await this.client.get(`/matching/candidates?since=${since.toISOString()}`); // TODO-LINT: move to async function
       
       for (const candidate of matchingCandidates.data.candidates || []) {
         events.push({
@@ -301,28 +301,28 @@ export class NovaSynthConnector extends IConnector {
 
       switch (actionType) {
         case 'match_profiles':
-          return await this.matchProfiles(target, parameters);
+          return await this.matchProfiles(target, parameters); // TODO-LINT: move to async function
         
         case 'transform_data':
-          return await this.transformData(target, parameters);
+          return await this.transformData(target, parameters); // TODO-LINT: move to async function
         
         case 'correlate_entities':
-          return await this.correlateEntities(target, parameters);
+          return await this.correlateEntities(target, parameters); // TODO-LINT: move to async function
         
         case 'merge_profiles':
-          return await this.mergeProfiles(target, parameters);
+          return await this.mergeProfiles(target, parameters); // TODO-LINT: move to async function
         
         case 'deduplicate_data':
-          return await this.deduplicateData(target, parameters);
+          return await this.deduplicateData(target, parameters); // TODO-LINT: move to async function
         
         case 'validate_profile':
-          return await this.validateProfile(target, parameters);
+          return await this.validateProfile(target, parameters); // TODO-LINT: move to async function
         
         case 'normalize_attributes':
-          return await this.normalizeAttributes(target, parameters);
+          return await this.normalizeAttributes(target, parameters); // TODO-LINT: move to async function
         
         case 'calculate_confidence':
-          return await this.calculateConfidence(target, parameters);
+          return await this.calculateConfidence(target, parameters); // TODO-LINT: move to async function
         
         default:
           throw new Error(`Unsupported action: ${actionType}`);
@@ -510,26 +510,30 @@ export class NovaSynthConnector extends IConnector {
     const strategy = config.authentication?.strategy || 'bearer';
     
     switch (strategy) {
-      case 'bearer':
-        const bearerToken = config.credentials.token || config.credentials.apiToken;
+      case 'bearer': {
+        const 
+        bearerToken = config.credentials.token || config.credentials.apiToken;
         return {
           'Authorization': `Bearer ${bearerToken}`
         };
       
-      case 'oauth2':
-        const accessToken = await this.getOAuth2Token(config);
+      case 'oauth2': {
+        const 
+        accessToken = await this.getOAuth2Token(config); // TODO-LINT: move to async function
         return {
           'Authorization': `Bearer ${accessToken}`
         };
       
-      case 'jwt':
-        const jwtToken = await this.generateJWTToken(config);
+      case 'jwt': {
+        const 
+        jwtToken = await this.generateJWTToken(config); // TODO-LINT: move to async function
         return {
           'Authorization': `Bearer ${jwtToken}`
         };
       
-      case 'api_key':
-        const apiKey = config.credentials.apiKey;
+      case 'api_key': {
+        const 
+        apiKey = config.credentials.apiKey;
         const headerName = config.credentials.apiKeyHeader || 'X-API-Key';
         return {
           [headerName]: apiKey
@@ -765,7 +769,7 @@ export class NovaSynthConnector extends IConnector {
         // Handle auth errors with refresh
         if (error.response?.status === 401) {
           try {
-            await this.refreshAuthentication();
+            await this.refreshAuthentication(); // TODO-LINT: move to async function
             // Retry the original request
             return this.client.request(error.config);
           } catch (refreshError) {
@@ -799,7 +803,7 @@ export class NovaSynthConnector extends IConnector {
       if (!orgId) return;
 
       // Load organization-specific data patterns
-      const response = await this.client.get(`/organization/${orgId}/patterns`);
+      const response = await this.client.get(`/organization/${orgId}/patterns`); // TODO-LINT: move to async function
       const patterns = response.data.patterns || {};
 
       // Store patterns for use in data operations
@@ -826,7 +830,7 @@ export class NovaSynthConnector extends IConnector {
         return;
       }
 
-      const response = await this.client.get('/health');
+      const response = await this.client.get('/health'); // TODO-LINT: move to async function
       
       if (response.status !== 200) {
         throw new Error('Failed to connect to Nova Synth Data Intelligence API');
@@ -853,7 +857,7 @@ export class NovaSynthConnector extends IConnector {
         return;
       }
 
-      const response = await this.client.get('/transformation/rules');
+      const response = await this.client.get('/transformation/rules'); // TODO-LINT: move to async function
       const rules = response.data.rules || [];
       
       for (const rule of rules) {
@@ -873,7 +877,7 @@ export class NovaSynthConnector extends IConnector {
     let totalRecords = 0;
 
     try {
-      const response = await this.client.get('/transformation/rules');
+      const response = await this.client.get('/transformation/rules'); // TODO-LINT: move to async function
       const rules = response.data.rules || [];
       totalRecords = rules.length;
 
@@ -914,13 +918,13 @@ export class NovaSynthConnector extends IConnector {
     let totalRecords = 0;
 
     try {
-      const response = await this.client.get('/matching/algorithms');
+      const response = await this.client.get('/matching/algorithms'); // TODO-LINT: move to async function
       const algorithms = response.data.algorithms || [];
       totalRecords = algorithms.length;
 
       for (const algorithm of algorithms) {
         try {
-          await this.processMatchingAlgorithm(algorithm);
+          await this.processMatchingAlgorithm(algorithm); // TODO-LINT: move to async function
           successCount++;
         } catch (error) {
           errorCount++;
@@ -955,13 +959,13 @@ export class NovaSynthConnector extends IConnector {
     let totalRecords = 0;
 
     try {
-      const response = await this.client.get('/correlation/models');
+      const response = await this.client.get('/correlation/models'); // TODO-LINT: move to async function
       const models = response.data.models || [];
       totalRecords = models.length;
 
       for (const model of models) {
         try {
-          await this.processCorrelationModel(model);
+          await this.processCorrelationModel(model); // TODO-LINT: move to async function
           successCount++;
         } catch (error) {
           errorCount++;
@@ -1012,7 +1016,7 @@ export class NovaSynthConnector extends IConnector {
         targetProfiles: targetProfiles || [],
         criteria: matchingCriteria || {},
         threshold: confidenceThreshold || 0.8
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1045,7 +1049,7 @@ export class NovaSynthConnector extends IConnector {
         data: processedData,
         rules: transformationRules || [],
         format: outputFormat || 'nova_standard'
-      });
+      }); // TODO-LINT: move to async function
 
       let transformedData = response.data.result || response.data.transformedData || [];
       
@@ -1111,7 +1115,7 @@ export class NovaSynthConnector extends IConnector {
         entities: entities || [],
         rules: correlationRules || {},
         context: context || {}
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1136,7 +1140,7 @@ export class NovaSynthConnector extends IConnector {
         secondary: secondaryProfile,
         strategy: mergeStrategy || 'intelligent',
         preserveConflicts: preserveConflicts !== false
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1160,7 +1164,7 @@ export class NovaSynthConnector extends IConnector {
         data: dataset,
         rules: deduplicationRules || {},
         threshold: similarityThreshold || 0.9
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1184,7 +1188,7 @@ export class NovaSynthConnector extends IConnector {
         profile,
         rules: validationRules || {},
         strict: strictMode !== false
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1209,7 +1213,7 @@ export class NovaSynthConnector extends IConnector {
         attributes,
         rules: normalizationRules || {},
         format: targetFormat || 'nova_standard'
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1232,7 +1236,7 @@ export class NovaSynthConnector extends IConnector {
         data,
         model: confidenceModel || 'default',
         context: context || {}
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1259,7 +1263,7 @@ export class NovaSynthConnector extends IConnector {
     const result = await this.matchProfiles(profiles[0], {
       targetProfiles: profiles.slice(1),
       ...options
-    });
+    }); // TODO-LINT: move to async function
     // Return data in expected format for tests
     return {
       ...result,
@@ -1273,7 +1277,7 @@ export class NovaSynthConnector extends IConnector {
    * Convenience method for correlating data (alias for correlateEntities)
    */
   async correlateData(data, options = {}) {
-    const result = await this.correlateEntities(data, options);
+    const result = await this.correlateEntities(data, options); // TODO-LINT: move to async function
     // Return data in expected format for tests
     return {
       ...result,
@@ -1287,7 +1291,7 @@ export class NovaSynthConnector extends IConnector {
    * Convenience method for deduplicating records (alias for deduplicateData)
    */
   async deduplicateRecords(records, options = {}) {
-    const result = await this.deduplicateData(records, options);
+    const result = await this.deduplicateData(records, options); // TODO-LINT: move to async function
     // Return data in expected format for tests
     return {
       ...result,
@@ -1320,7 +1324,7 @@ export class NovaSynthConnector extends IConnector {
           validateBefore: true,
           createBackup: true
         }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1353,7 +1357,7 @@ export class NovaSynthConnector extends IConnector {
           transformationRules: patterns.transformationRules || {}
         },
         updateMode: 'merge' // 'replace' or 'merge'
-      });
+      }); // TODO-LINT: move to async function
 
       // Update local patterns cache
       this.organizationPatterns = {
@@ -1387,7 +1391,7 @@ export class NovaSynthConnector extends IConnector {
           userFeedback: validationData.userFeedback || []
         },
         improvementSuggestions: validationData.improvementSuggestions || []
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1412,7 +1416,7 @@ export class NovaSynthConnector extends IConnector {
    */
   async getQualityMetrics(timeRange = '24h') {
     try {
-      const response = await this.client.get(`/metrics/quality?range=${timeRange}&org=${this.config.organization?.id}`);
+      const response = await this.client.get(`/metrics/quality?range=${timeRange}&org=${this.config.organization?.id}`); // TODO-LINT: move to async function
       
       return {
         success: true,
@@ -1471,7 +1475,7 @@ export class NovaSynthConnector extends IConnector {
         {
           headers: await this.setupAuthentication(this.config)
         }
-      );
+      ); // TODO-LINT: move to async function
 
       eventSource.onmessage = (event) => {
         try {
@@ -1507,7 +1511,7 @@ export class NovaSynthConnector extends IConnector {
         client_id: config.credentials.clientId,
         client_secret: config.credentials.clientSecret,
         scope: config.authentication.scope || 'data-intelligence'
-      });
+      }); // TODO-LINT: move to async function
 
       this.accessToken = tokenResponse.data.access_token;
       this.tokenExpiry = new Date(Date.now() + (tokenResponse.data.expires_in * 1000));
@@ -1546,7 +1550,7 @@ export class NovaSynthConnector extends IConnector {
 
   async refreshAuthentication() {
     try {
-      const newHeaders = await this.setupAuthentication(this.config);
+      const newHeaders = await this.setupAuthentication(this.config); // TODO-LINT: move to async function
       Object.assign(this.client.defaults.headers, newHeaders);
       console.log('Authentication refreshed successfully');
     } catch (error) {
@@ -1611,8 +1615,8 @@ export class NovaSynthConnector extends IConnector {
       // Setup automated quality monitoring
       const qualityMonitor = setInterval(async () => {
         try {
-          const metrics = await this.getQualityMetrics('1h');
-          await this.evaluateAndImprove(metrics.data, feedbackConfig);
+          const metrics = await this.getQualityMetrics('1h'); // TODO-LINT: move to async function
+          await this.evaluateAndImprove(metrics.data, feedbackConfig); // TODO-LINT: move to async function
         } catch (error) {
           console.error('Automated feedback loop error:', error);
         }
@@ -1622,7 +1626,7 @@ export class NovaSynthConnector extends IConnector {
       if (feedbackConfig.autoRetraining) {
         const retrainingSchedule = setInterval(async () => {
           try {
-            await this.performAutomaticRetraining();
+            await this.performAutomaticRetraining(); // TODO-LINT: move to async function
           } catch (error) {
             console.error('Automated retraining error:', error);
           }
@@ -1698,7 +1702,7 @@ export class NovaSynthConnector extends IConnector {
 
       // Implement improvements
       for (const improvement of improvements) {
-        await this.implementImprovement(improvement);
+        await this.implementImprovement(improvement); // TODO-LINT: move to async function
       }
 
       return {
@@ -1718,13 +1722,13 @@ export class NovaSynthConnector extends IConnector {
     try {
       switch (improvement.action) {
         case 'retrain_model':
-          await this.triggerRetraining(improvement);
+          await this.triggerRetraining(improvement); // TODO-LINT: move to async function
           break;
         case 'update_matching_rules':
-          await this.updateMatchingRules(improvement);
+          await this.updateMatchingRules(improvement); // TODO-LINT: move to async function
           break;
         case 'investigate_errors':
-          await this.investigateErrors(improvement);
+          await this.investigateErrors(improvement); // TODO-LINT: move to async function
           break;
         default:
           console.warn(`Unknown improvement action: ${improvement.action}`);
@@ -1750,7 +1754,7 @@ export class NovaSynthConnector extends IConnector {
         trigger: improvement.reason,
         priority: improvement.priority,
         retrainingType: 'incremental'
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -1768,7 +1772,7 @@ export class NovaSynthConnector extends IConnector {
   async updateMatchingRules(improvement) {
     try {
       // Analyze recent matching failures and update rules
-      const failureAnalysis = await this.client.get('/analysis/matching-failures?days=7');
+      const failureAnalysis = await this.client.get('/analysis/matching-failures?days=7'); // TODO-LINT: move to async function
       
       const updatedRules = this.generateImprovedMatchingRules(failureAnalysis.data);
       
@@ -1776,7 +1780,7 @@ export class NovaSynthConnector extends IConnector {
         organizationId: this.config.organization?.id,
         rules: updatedRules,
         reason: improvement.reason
-      });
+      }); // TODO-LINT: move to async function
 
       return { success: true, rulesUpdated: Object.keys(updatedRules).length };
     } catch (error) {
@@ -1789,7 +1793,7 @@ export class NovaSynthConnector extends IConnector {
    */
   async investigateErrors(improvement) {
     try {
-      const errorAnalysis = await this.client.get('/analysis/errors?days=1');
+      const errorAnalysis = await this.client.get('/analysis/errors?days=1'); // TODO-LINT: move to async function
       
       const categorizedErrors = this.categorizeErrors(errorAnalysis.data);
       
@@ -1798,7 +1802,7 @@ export class NovaSynthConnector extends IConnector {
         organizationId: this.config.organization?.id,
         errorCategories: categorizedErrors,
         priority: improvement.priority
-      });
+      }); // TODO-LINT: move to async function
 
       return { success: true, errorsAnalyzed: errorAnalysis.data.length };
     } catch (error) {
@@ -1889,7 +1893,7 @@ export class NovaSynthConnector extends IConnector {
   async performAutomaticRetraining() {
     try {
       // Get recent feedback data
-      const feedbackData = await this.client.get('/feedback/recent?days=7');
+      const feedbackData = await this.client.get('/feedback/recent?days=7'); // TODO-LINT: move to async function
       
       if (feedbackData.data.length < 10) {
         console.log('Insufficient feedback data for retraining');
@@ -1901,7 +1905,7 @@ export class NovaSynthConnector extends IConnector {
         userProfiles: feedbackData.data.filter(f => f.type === 'user_profile'),
         devicePatterns: feedbackData.data.filter(f => f.type === 'device_pattern'),
         customMappings: feedbackData.data.filter(f => f.type === 'custom_mapping')
-      });
+      }); // TODO-LINT: move to async function
 
       console.log('Automatic retraining completed successfully');
     } catch (error) {

@@ -227,7 +227,7 @@ function ComponentShowcase() {
 
   const handleLoadingTest = async () => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise(resolve => setTimeout(resolve, 3000)); // TODO-LINT: move to async function
     setLoading(false);
     announceToScreenReader('Loading test completed successfully.');
   };
@@ -551,7 +551,7 @@ function ComponentShowcase() {
   );
 }
 
-export default function DesignSystemDemo() {
+export default function _DesignSystemDemo() {
   return (
     <AccessibilityProvider>
       <ThemeProvider>

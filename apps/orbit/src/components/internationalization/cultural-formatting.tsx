@@ -188,7 +188,7 @@ export function NumberDisplay({ value, format = 'number', className = '' }: Numb
 }
 
 // Timezone selector component
-export function TimezoneSelector() {
+export function _TimezoneSelector() {
   const locale = useLocale();
   const [selectedTimezone, setSelectedTimezone] = React.useState(
     CULTURAL_INFO[locale]?.timezone || 'UTC'
@@ -259,7 +259,7 @@ export function TimezoneSelector() {
 }
 
 // Cultural preferences component
-export function CulturalPreferences() {
+export function _CulturalPreferences() {
   const locale = useLocale();
   const culturalInfo = CULTURAL_INFO[locale] || CULTURAL_INFO.en;
 

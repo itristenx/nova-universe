@@ -1,5 +1,5 @@
 // Production-ready data structures with comprehensive mock data for development
-export const mockUsers = [
+export const _mockUsers = [
     {
         id: 1,
         name: 'Administrator',
@@ -84,7 +84,7 @@ export const mockUsers = [
         timezone: 'America/New_York'
     }
 ];
-export const mockKiosks = [
+export const _mockKiosks = [
     {
         id: 'kiosk-001',
         name: 'Main Lobby Kiosk',
@@ -259,7 +259,7 @@ export const mockKiosks = [
     }
 ];
 
-export const mockLogs = [
+export const _mockLogs = [
     {
         id: 1,
         ticketId: 'NOV-2024-001',
@@ -369,7 +369,7 @@ export const mockLogs = [
         priority: 'high'
     }
 ];
-export const mockConfig = {
+export const _mockConfig = {
     // Brand Configuration
     organizationName: 'Nova Universe Corporation',
     logoUrl: 'https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=Nova+Universe',
@@ -438,7 +438,7 @@ export const mockConfig = {
     auditRetentionDays: 1095, // 3 years
     encryptionEnabled: true
 };
-export const mockIntegrations = [
+export const _mockIntegrations = [
     {
         id: 1,
         name: 'Nova Universe SMTP Server',
@@ -594,7 +594,7 @@ export const mockIntegrations = [
         }
     }
 ];
-export const mockEmailAccounts = [
+export const _mockEmailAccounts = [
     {
         id: 1,
         queue: 'IT',
@@ -607,14 +607,14 @@ export const mockEmailAccounts = [
         lastSynced: new Date().toISOString(),
     },
 ];
-export const mockModules = {
+export const _mockModules = {
     pulse: true,
     orbit: true,
     comms: false,
     beacon: true,
     synth: false,
 };
-export const mockRoles = [
+export const _mockRoles = [
     { 
         id: 1, 
         name: 'admin',
@@ -697,7 +697,7 @@ export const mockRoles = [
         created: new Date(Date.now() - 86400000 * 30).toISOString()
     }
 ];
-export const mockPermissions = [
+export const _mockPermissions = [
     // User Management
     { id: 1, name: 'users.create', category: 'User Management', description: 'Create new user accounts' },
     { id: 2, name: 'users.edit', category: 'User Management', description: 'Edit existing user accounts' },
@@ -757,7 +757,7 @@ export const mockPermissions = [
     { id: 36, name: 'api.access', category: 'API Access', description: 'Access to API endpoints' },
     { id: 37, name: 'backup.manage', category: 'System Administration', description: 'Manage system backups' }
 ];
-export const mockNotifications = [
+export const _mockNotifications = [
     {
         id: 1,
         title: 'High Priority Ticket Submitted',
@@ -861,7 +861,7 @@ export const mockNotifications = [
         backupLocation: 'Azure Blob Storage - Region: East US'
     }
 ];
-export const mockDashboardStats = {
+export const _mockDashboardStats = {
     // Core Metrics
     totalTickets: 2847,
     openTickets: 89,
@@ -993,7 +993,7 @@ export const mockDashboardStats = {
 };
 
 // Additional Mock Data for Asset Management
-export const mockAssets = [
+export const _mockAssets = [
     {
         id: 1,
         assetTag: 'NV-LAP-001',
@@ -1027,7 +1027,7 @@ export const mockAssets = [
 ];
 
 // Additional Mock Data for Knowledge Base
-export const mockKnowledgeBase = [
+export const _mockKnowledgeBase = [
     {
         id: 1,
         title: 'How to Reset Your Password',
@@ -1057,7 +1057,7 @@ export const mockKnowledgeBase = [
 ];
 
 // Additional Mock Data for Audit Logs
-export const mockAuditLogs = [
+export const _mockAuditLogs = [
     {
         id: 1,
         timestamp: new Date().toISOString(),
@@ -1084,22 +1084,22 @@ export const mockAuditLogs = [
     }
 ];
 
-// Helper function to simulate API delay with realistic timing
+// Helper function to simulate API delay with realistic _timing
 export const delay = (ms = 200 + Math.random() * 800) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper function to simulate API errors with configurable error rate
-export const shouldSimulateError = (errorRate = 0.05) => Math.random() < errorRate;
+// Helper function to simulate API _errors with _configurable _error rate
+export const __shouldSimulateError = (errorRate = 0.05) => Math.random() < errorRate;
 
-// Helper function to generate realistic timestamps
-export const generateTimestamp = (hoursAgo = 0) => {
+// Helper function to generate realistic _timestamps
+export const __generateTimestamp = (hoursAgo = 0) => {
     return new Date(Date.now() - (hoursAgo * 3600000)).toISOString();
 };
 
-// Helper function to generate random IDs
-export const generateId = () => Date.now() + Math.floor(Math.random() * 1000);
+// Helper function to generate random _IDs
+export const __generateId = () => Date.now() + Math.floor(Math.random() * 1000);
 
-// Helper function to format mock data responses
-export const mockApiResponse = (data, status = 'success', message = null) => ({
+// Helper function to _format mock data _responses
+export const __mockApiResponse = (data, status = 'success', message = null) => ({
     status,
     data,
     message,
@@ -1108,7 +1108,7 @@ export const mockApiResponse = (data, status = 'success', message = null) => ({
 });
 
 // Helper function to simulate pagination
-export const paginateMockData = (data, page = 1, limit = 10) => {
+export const __paginateMockData = (data, page = 1, limit = 10) => {
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
     const paginatedData = data.slice(startIndex, endIndex);
@@ -1127,7 +1127,7 @@ export const paginateMockData = (data, page = 1, limit = 10) => {
 };
 
 // Helper function to filter mock data
-export const filterMockData = (data, filters = {}) => {
+export const __filterMockData = (data, filters = {}) => {
     return data.filter(item => {
         return Object.entries(filters).every(([key, value]) => {
             if (!value) return true;
@@ -1141,7 +1141,7 @@ export const filterMockData = (data, filters = {}) => {
 };
 
 // Helper function to sort mock data
-export const sortMockData = (data, sortBy = 'id', sortOrder = 'asc') => {
+export const __sortMockData = (data, sortBy = 'id', sortOrder = '_asc') => {
     return [...data].sort((a, b) => {
         const aValue = a[sortBy];
         const bValue = b[sortBy];

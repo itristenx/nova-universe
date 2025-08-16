@@ -44,10 +44,10 @@ export class IntuneConnector extends IConnector {
       });
 
       // Authenticate and get bearer token
-      await this.authenticate();
+      await this.authenticate(); // TODO-LINT: move to async function
       
       // Test the connection
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
       
       console.log('Intune connector initialized successfully');
     } catch (error) {
@@ -64,12 +64,12 @@ export class IntuneConnector extends IConnector {
       const startTime = Date.now();
       
       // Ensure we have a valid token
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
       
       // Test device management endpoints
       const devicesResponse = await this.client.get('/deviceManagement/managedDevices?$top=1', {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
       
       const apiLatency = Date.now() - startTime;
 
@@ -81,7 +81,7 @@ export class IntuneConnector extends IConnector {
         const appsStartTime = Date.now();
         await this.client.get('/deviceAppManagement/mobileApps?$top=1', {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
         appsLatency = Date.now() - appsStartTime;
       } catch (error) {
         appsStatus = 'degraded';
@@ -95,7 +95,7 @@ export class IntuneConnector extends IConnector {
         const complianceStartTime = Date.now();
         await this.client.get('/deviceManagement/deviceCompliancePolicies?$top=1', {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
         complianceLatency = Date.now() - complianceStartTime;
       } catch (error) {
         complianceStatus = 'degraded';
@@ -156,24 +156,24 @@ export class IntuneConnector extends IConnector {
       console.log(`Starting ${syncType} sync from Intune...`);
 
       // Ensure valid authentication
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
 
       // Sync managed devices
-      const devicesResult = await this.syncDevices(options);
+      const devicesResult = await this.syncDevices(options); // TODO-LINT: move to async function
       totalRecords += devicesResult.totalRecords;
       successCount += devicesResult.successCount;
       errorCount += devicesResult.errorCount;
       errors.push(...devicesResult.errors);
 
       // Sync mobile apps
-      const appsResult = await this.syncApps(options);
+      const appsResult = await this.syncApps(options); // TODO-LINT: move to async function
       totalRecords += appsResult.totalRecords;
       successCount += appsResult.successCount;
       errorCount += appsResult.errorCount;
       errors.push(...appsResult.errors);
 
       // Sync compliance policies
-      const complianceResult = await this.syncCompliance(options);
+      const complianceResult = await this.syncCompliance(options); // TODO-LINT: move to async function
       totalRecords += complianceResult.totalRecords;
       successCount += complianceResult.successCount;
       errorCount += complianceResult.errorCount;
@@ -217,14 +217,14 @@ export class IntuneConnector extends IConnector {
     try {
       const since = new Date(Date.now() - 5 * 60 * 1000); // Last 5 minutes
       
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
       
       // Get recent device compliance changes
       const filter = `lastSyncDateTime ge ${since.toISOString()}`;
       const devicesResponse = await this.client.get(
         `/deviceManagement/managedDevices?$filter=${encodeURIComponent(filter)}&$top=100`, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       const events = [];
       
@@ -280,29 +280,29 @@ export class IntuneConnector extends IConnector {
     try {
       const { action: actionType, target, parameters } = action;
 
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
 
       switch (actionType) {
         case 'remote_wipe':
-          return await this.remoteWipe(target, parameters);
+          return await this.remoteWipe(target, parameters); // TODO-LINT: move to async function
         
         case 'remote_lock':
-          return await this.remoteLock(target);
+          return await this.remoteLock(target); // TODO-LINT: move to async function
         
         case 'retire':
-          return await this.retireDevice(target);
+          return await this.retireDevice(target); // TODO-LINT: move to async function
         
         case 'sync':
-          return await this.syncDevice(target);
+          return await this.syncDevice(target); // TODO-LINT: move to async function
         
         case 'reset_passcode':
-          return await this.resetPasscode(target);
+          return await this.resetPasscode(target); // TODO-LINT: move to async function
         
         case 'locate_device':
-          return await this.locateDevice(target);
+          return await this.locateDevice(target); // TODO-LINT: move to async function
         
         case 'assign_app':
-          return await this.assignApp(target, parameters);
+          return await this.assignApp(target, parameters); // TODO-LINT: move to async function
         
         default:
           throw new Error(`Unsupported action: ${actionType}`);
@@ -448,7 +448,7 @@ export class IntuneConnector extends IConnector {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
-      });
+      }); // TODO-LINT: move to async function
 
       this.accessToken = response.data.access_token;
       this.tokenExpiry = new Date(Date.now() + (response.data.expires_in * 1000));
@@ -461,7 +461,7 @@ export class IntuneConnector extends IConnector {
 
   async ensureValidToken() {
     if (!this.accessToken || !this.tokenExpiry || new Date() >= this.tokenExpiry) {
-      await this.authenticate();
+      await this.authenticate(); // TODO-LINT: move to async function
     }
   }
 
@@ -469,7 +469,7 @@ export class IntuneConnector extends IConnector {
     try {
       const response = await this.client.get('/deviceManagement', {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
       
       if (response.status !== 200) {
         throw new Error('Failed to connect to Intune API');
@@ -497,7 +497,7 @@ export class IntuneConnector extends IConnector {
       while (nextLink) {
         const response = await this.client.get(nextLink, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         const devices = response.data.value || [];
         totalRecords += devices.length;
@@ -505,7 +505,7 @@ export class IntuneConnector extends IConnector {
         // Process each device
         for (const device of devices) {
           try {
-            await this.processDevice(device);
+            await this.processDevice(device); // TODO-LINT: move to async function
             successCount++;
           } catch (error) {
             errorCount++;
@@ -523,7 +523,7 @@ export class IntuneConnector extends IConnector {
         }
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
       }
 
       return {
@@ -555,7 +555,7 @@ export class IntuneConnector extends IConnector {
       while (nextLink) {
         const response = await this.client.get(nextLink, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         const apps = response.data.value || [];
         totalRecords += apps.length;
@@ -563,7 +563,7 @@ export class IntuneConnector extends IConnector {
         // Process each app
         for (const app of apps) {
           try {
-            await this.processApp(app);
+            await this.processApp(app); // TODO-LINT: move to async function
             successCount++;
           } catch (error) {
             errorCount++;
@@ -580,7 +580,7 @@ export class IntuneConnector extends IConnector {
         }
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
       }
 
       return {
@@ -609,7 +609,7 @@ export class IntuneConnector extends IConnector {
     try {
       const response = await this.client.get('/deviceManagement/deviceCompliancePolicies', {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       const policies = response.data.value || [];
       totalRecords = policies.length;
@@ -617,7 +617,7 @@ export class IntuneConnector extends IConnector {
       // Process each compliance policy
       for (const policy of policies) {
         try {
-          await this.processCompliancePolicy(policy);
+          await this.processCompliancePolicy(policy); // TODO-LINT: move to async function
           successCount++;
         } catch (error) {
           errorCount++;
@@ -742,7 +742,7 @@ export class IntuneConnector extends IConnector {
         keepUserData
       }, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -758,7 +758,7 @@ export class IntuneConnector extends IConnector {
     try {
       await this.client.post(`/deviceManagement/managedDevices/${deviceId}/remoteLock`, {}, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -774,7 +774,7 @@ export class IntuneConnector extends IConnector {
     try {
       await this.client.post(`/deviceManagement/managedDevices/${deviceId}/retire`, {}, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -790,7 +790,7 @@ export class IntuneConnector extends IConnector {
     try {
       await this.client.post(`/deviceManagement/managedDevices/${deviceId}/syncDevice`, {}, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -806,7 +806,7 @@ export class IntuneConnector extends IConnector {
     try {
       await this.client.post(`/deviceManagement/managedDevices/${deviceId}/resetPasscode`, {}, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -822,7 +822,7 @@ export class IntuneConnector extends IConnector {
     try {
       await this.client.post(`/deviceManagement/managedDevices/${deviceId}/locateDevice`, {}, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,

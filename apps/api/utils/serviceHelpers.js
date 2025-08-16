@@ -53,7 +53,7 @@ export function getM365Config() {
  * Determines email sending strategy based on configuration
  * @returns {Object} Email strategy configuration
  */
-export function getEmailStrategy() {
+export function _getEmailStrategy() {
   const helpScoutConfig = getHelpScoutConfig();
   const m365Config = getM365Config();
   const sendViaHelpScout = !!helpScoutConfig;

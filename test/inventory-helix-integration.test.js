@@ -9,7 +9,7 @@ import { InventoryService } from '../apps/api/services/inventory.js';
 import { HelixKioskIntegrationService } from '../apps/api/services/helixKioskIntegration.js';
 
 // Mock Helix API responses
-const mockHelixResponses = {
+const _mockHelixResponses = {
   success: {
     success: true,
     entityId: 'helix-entity-123',
@@ -97,7 +97,7 @@ describe('Enhanced Helix Integration Tests', () => {
         timestamp: new Date().toISOString()
       });
 
-      const result = await inventoryService.syncAssetWithKiosk(assetId, kioskId, metadata);
+      const result = await inventoryService.syncAssetWithKiosk(assetId, kioskId, metadata); // TODO-LINT: move to async function
 
       expect(result.success).toBe(true);
       expect(result.syncStatus).toBe('synced');
@@ -133,7 +133,7 @@ describe('Enhanced Helix Integration Tests', () => {
         timestamp: new Date().toISOString()
       });
 
-      const result = await inventoryService.syncAssetWithKiosk(assetId, kioskId, {});
+      const result = await inventoryService.syncAssetWithKiosk(assetId, kioskId, {}); // TODO-LINT: move to async function
 
       expect(result.success).toBe(true); // Asset sync should still succeed
       expect(result.syncStatus).toBe('failed');
@@ -167,7 +167,7 @@ describe('Enhanced Helix Integration Tests', () => {
         timestamp: new Date().toISOString()
       });
 
-      const result = await inventoryService.syncAssetWithKiosk(assetId, kioskId, {});
+      const result = await inventoryService.syncAssetWithKiosk(assetId, kioskId, {}); // TODO-LINT: move to async function
 
       expect(result.success).toBe(true);
       expect(result.syncStatus).toBe('skipped');
@@ -183,7 +183,7 @@ describe('Enhanced Helix Integration Tests', () => {
 
       mockPrismaClient.$executeRaw.mockResolvedValue([]);
 
-      await inventoryService.logHelixSyncFailure(kioskId, assetId, errorMessage, metadata);
+      await inventoryService.logHelixSyncFailure(kioskId, assetId, errorMessage, metadata); // TODO-LINT: move to async function
 
       expect(mockPrismaClient.$executeRaw).toHaveBeenCalledWith(
         expect.stringContaining('INSERT INTO helix_sync_failures')
@@ -219,7 +219,7 @@ describe('Enhanced Helix Integration Tests', () => {
 
       mockPrismaClient.$executeRaw.mockResolvedValue([]);
 
-      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 });
+      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 }); // TODO-LINT: move to async function
 
       expect(result.total).toBe(1);
       expect(result.successful).toBe(1);
@@ -248,7 +248,7 @@ describe('Enhanced Helix Integration Tests', () => {
         new Error('Persistent API failure')
       );
 
-      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 });
+      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 }); // TODO-LINT: move to async function
 
       expect(result.total).toBe(1);
       expect(result.successful).toBe(0);
@@ -281,7 +281,7 @@ describe('Enhanced Helix Integration Tests', () => {
         kioskId,
         orgData,
         assignedBy
-      );
+      ); // TODO-LINT: move to async function
 
       expect(result.success).toBe(true);
       expect(result.kioskId).toBe(kioskId);
@@ -351,7 +351,7 @@ describe('Enhanced Helix Integration Tests', () => {
       mockPrismaClient.kiosk.findUnique.mockResolvedValue(mockKiosk);
       mockPrismaClient.$executeRaw.mockResolvedValue([]);
 
-      const result = await inventoryService.collectKioskMetadata(kioskId, 'system');
+      const result = await inventoryService.collectKioskMetadata(kioskId, 'system'); // TODO-LINT: move to async function
 
       expect(result.success).toBe(true);
       expect(result.kioskId).toBe(kioskId);
@@ -394,7 +394,7 @@ describe('Enhanced Helix Integration Tests', () => {
       mockPrismaClient.$queryRaw.mockResolvedValue([]);
       mockPrismaClient.$executeRaw.mockResolvedValue([]);
 
-      const result = await inventoryService.collectKioskMetadata(kioskId, 'assets');
+      const result = await inventoryService.collectKioskMetadata(kioskId, 'assets'); // TODO-LINT: move to async function
 
       expect(result.success).toBe(true);
       expect(result.collectedMetadata.assets).toBeDefined();
@@ -426,7 +426,7 @@ describe('Enhanced Helix Integration Tests', () => {
 
       mockPrismaClient.$executeRaw.mockResolvedValue([]);
 
-      const result = await inventoryService.collectKioskMetadata(kioskId, 'performance');
+      const result = await inventoryService.collectKioskMetadata(kioskId, 'performance'); // TODO-LINT: move to async function
 
       expect(result.success).toBe(true);
       expect(result.collectedMetadata.performance).toBeDefined();
@@ -469,7 +469,7 @@ describe('Enhanced Helix Integration Tests', () => {
 
       await expect(
         inventoryService.collectKioskMetadata(kioskId, 'system')
-      ).rejects.toThrow('Kiosk kiosk-inactive is not active');
+      ).rejects.toThrow('Kiosk kiosk-inactive is not active'); // TODO-LINT: move to async function
     });
   });
 
@@ -514,7 +514,7 @@ describe('Enhanced Helix Integration Tests', () => {
         kioskId,
         orgData,
         'admin-user'
-      );
+      ); // TODO-LINT: move to async function
       expect(assignResult.success).toBe(true);
 
       // Step 2: Sync asset with kiosk
@@ -522,12 +522,12 @@ describe('Enhanced Helix Integration Tests', () => {
         assetId,
         kioskId,
         { department: orgData.department }
-      );
+      ); // TODO-LINT: move to async function
       expect(syncResult.success).toBe(true);
       expect(syncResult.syncStatus).toBe('synced');
 
       // Step 3: Collect metadata
-      const metadataResult = await inventoryService.collectKioskMetadata(kioskId, 'all');
+      const metadataResult = await inventoryService.collectKioskMetadata(kioskId, 'all'); // TODO-LINT: move to async function
       expect(metadataResult.success).toBe(true);
     });
   });

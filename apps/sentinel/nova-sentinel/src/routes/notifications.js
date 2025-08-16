@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
     const { type, active } = req.query;
     const tenantId = req.user.tenantId;
 
-    const providers = await req.services.notifications.getNotificationProviders(tenantId);
+    const providers = await req.services.notifications.getNotificationProviders(tenantId); // TODO-LINT: move to async function
     
     // Apply filters
     let filteredProviders = providers;
@@ -92,7 +92,7 @@ router.post('/',
         tenantId: req.user.tenantId,
         createdBy: req.user.id,
         uptimeKumaId: crypto.randomUUID()
-      });
+      }); // TODO-LINT: move to async function
 
       res.status(201).json({
         success: true,
@@ -128,7 +128,7 @@ router.post('/:id/test',
       // Get provider from database
       const provider = await req.services.database.db.prepare(`
         SELECT * FROM notifications WHERE id = ? AND tenant_id = ?
-      `).get(id, req.user.tenantId);
+      `).get(id, req.user.tenantId); // TODO-LINT: move to async function
 
       if (!provider) {
         return res.status(404).json({
@@ -142,7 +142,7 @@ router.post('/:id/test',
         config: JSON.parse(provider.config)
       };
 
-      const result = await req.services.notifications.testNotificationProvider(providerData);
+      const result = await req.services.notifications.testNotificationProvider(providerData); // TODO-LINT: move to async function
 
       res.json({
         success: result.success,

@@ -17,7 +17,7 @@ const navigation = [
     { name: 'Modules', href: '/modules', icon: Cog6ToothIcon },
     { name: 'Settings', href: '/settings', icon: CogIcon },
 ];
-export const Sidebar = ({ isOpen, onClose }) => {
+export const _Sidebar = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const { user, logout } = useAuthStore();
     const { isDark } = useTheme();

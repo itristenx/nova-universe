@@ -35,7 +35,7 @@ backupCommand
   .option('--compress', 'Compress backup files', true)
   .action(async (options) => {
     try {
-      await createBackup(options);
+      await createBackup(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to create backup: ${error.message}`);
       process.exit(1);
@@ -52,7 +52,7 @@ backupCommand
   .option('--sort <field>', 'Sort by: name, date, size', 'date')
   .action(async (options) => {
     try {
-      await listBackups(options);
+      await listBackups(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to list backups: ${error.message}`);
       process.exit(1);
@@ -70,7 +70,7 @@ backupCommand
   .option('--dry-run', 'Show what would be restored without doing it')
   .action(async (backup, options) => {
     try {
-      await restoreBackup(backup, options);
+      await restoreBackup(backup, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to restore backup: ${error.message}`);
       process.exit(1);
@@ -84,7 +84,7 @@ backupCommand
   .option('-j, --json', 'Output in JSON format')
   .action(async (backup, options) => {
     try {
-      await showBackupInfo(backup, options);
+      await showBackupInfo(backup, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to get backup info: ${error.message}`);
       process.exit(1);
@@ -99,7 +99,7 @@ backupCommand
   .option('--force', 'Skip confirmation')
   .action(async (backup, options) => {
     try {
-      await deleteBackup(backup, options);
+      await deleteBackup(backup, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to delete backup: ${error.message}`);
       process.exit(1);
@@ -116,7 +116,7 @@ backupCommand
   .option('--force', 'Skip confirmation')
   .action(async (options) => {
     try {
-      await cleanupBackups(options);
+      await cleanupBackups(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to cleanup backups: ${error.message}`);
       process.exit(1);
@@ -133,7 +133,7 @@ backupCommand
   .option('--show', 'Show current schedule')
   .action(async (options) => {
     try {
-      await manageSchedule(options);
+      await manageSchedule(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to manage schedule: ${error.message}`);
       process.exit(1);
@@ -193,7 +193,7 @@ async function createBackup(options) {
     spinner.start();
 
     try {
-      await task.handler();
+      await task.handler(); // TODO-LINT: move to async function
       spinner.succeed(`${task.name} backup complete`);
     } catch (error) {
       spinner.fail(`${task.name} backup failed`);
@@ -210,7 +210,7 @@ async function createBackup(options) {
       files: includeFiles,
       config: includeConfig
     }
-  });
+  }); // TODO-LINT: move to async function
 
   // Compress if requested
   if (options.compress) {
@@ -219,8 +219,8 @@ async function createBackup(options) {
 
     try {
       const archivePath = `${backupPath}.tar.gz`;
-      await runCommand('tar', ['-czf', archivePath, '-C', backupDir, backupName]);
-      await runCommand('rm', ['-rf', backupPath]);
+      await runCommand('tar', ['-czf', archivePath, '-C', backupDir, backupName]); // TODO-LINT: move to async function
+      await runCommand('rm', ['-rf', backupPath]); // TODO-LINT: move to async function
       
       spinner.succeed('Backup compressed');
       
@@ -233,7 +233,7 @@ async function createBackup(options) {
       throw error;
     }
   } else {
-    const stats = await getFolderSize(backupPath);
+    const stats = await getFolderSize(backupPath); // TODO-LINT: move to async function
     logger.success(`\n✅ Backup created successfully`);
     console.log(chalk.green(`   Location: ${backupPath}`));
     console.log(chalk.gray(`   Size: ${formatFileSize(stats)}`));
@@ -253,26 +253,26 @@ async function backupDatabase(backupPath) {
 
     if (dbUrl.includes('postgresql://')) {
       // PostgreSQL backup
-      await runCommand('pg_dump', [dbUrl, '-f', dbBackupPath], { silent: true });
+      await runCommand('pg_dump', [dbUrl, '-f', dbBackupPath], { silent: true }); // TODO-LINT: move to async function
     } else if (dbUrl.includes('mongodb://')) {
       // MongoDB backup
       const dbBackupDir = path.join(backupPath, 'mongodb');
       mkdirSync(dbBackupDir, { recursive: true });
-      await runCommand('mongodump', ['--uri', dbUrl, '--out', dbBackupDir], { silent: true });
+      await runCommand('mongodump', ['--uri', dbUrl, '--out', dbBackupDir], { silent: true }); // TODO-LINT: move to async function
     } else {
       throw new Error('Unsupported database type');
     }
   } catch (error) {
     // Fallback: try to export from application
     try {
-      const db = await connectDatabase();
+      const db = await connectDatabase(); // TODO-LINT: move to async function
       const collections = ['users', 'sessions', 'logs'];
       const dbBackupPath = path.join(backupPath, 'database.json');
       
       const data = {};
       for (const collection of collections) {
         try {
-          data[collection] = await db.collection(collection).find({}).toArray();
+          data[collection] = await db.collection(collection).find({}).toArray(); // TODO-LINT: move to async function
         } catch {
           // Collection might not exist
           data[collection] = [];
@@ -305,7 +305,7 @@ async function backupFiles(backupPath, projectRoot) {
     const destPath = path.join(filesBackupPath, file.replace('/', '-'));
 
     if (existsSync(sourcePath)) {
-      await runCommand('cp', ['-r', sourcePath, destPath], { silent: true });
+      await runCommand('cp', ['-r', sourcePath, destPath], { silent: true }); // TODO-LINT: move to async function
     }
   }
 }
@@ -335,7 +335,7 @@ async function backupConfig(backupPath, projectRoot) {
     const destPath = path.join(configBackupPath, file.replace('/', '-'));
 
     if (existsSync(sourcePath)) {
-      await runCommand('cp', [sourcePath, destPath], { silent: true });
+      await runCommand('cp', [sourcePath, destPath], { silent: true }); // TODO-LINT: move to async function
     }
   }
 }
@@ -404,7 +404,7 @@ async function listBackups(options) {
       }
 
       if (backup.type === 'directory') {
-        backup.size = await getFolderSize(itemPath);
+        backup.size = await getFolderSize(itemPath); // TODO-LINT: move to async function
       }
 
       backups.push(backup);
@@ -462,7 +462,7 @@ async function restoreBackup(backupName, options) {
         message: `This will restore from backup ${chalk.yellow(backupName)}. This may overwrite existing data. Continue?`,
         default: false
       }
-    ]);
+    ]); // TODO-LINT: move to async function
 
     if (!confirm) {
       logger.info('Restore cancelled');
@@ -480,8 +480,8 @@ async function restoreBackup(backupName, options) {
       spinner.start();
 
       const extractDir = path.join(path.dirname(backupPath), 'temp-restore');
-      await runCommand('mkdir', ['-p', extractDir]);
-      await runCommand('tar', ['-xzf', backupPath, '-C', extractDir]);
+      await runCommand('mkdir', ['-p', extractDir]); // TODO-LINT: move to async function
+      await runCommand('tar', ['-xzf', backupPath, '-C', extractDir]); // TODO-LINT: move to async function
       
       // Find the extracted directory
       const extracted = readdirSync(extractDir)[0];
@@ -502,27 +502,27 @@ async function restoreBackup(backupName, options) {
 
   // Restore components
   if (!options.files && !options.config && (options.database || !manifest)) {
-    await restoreDatabase(workingPath, options.dryRun);
+    await restoreDatabase(workingPath, options.dryRun); // TODO-LINT: move to async function
   }
 
   if (!options.database && !options.config && (options.files || !manifest)) {
-    await restoreFiles(workingPath, projectRoot, options.dryRun);
+    await restoreFiles(workingPath, projectRoot, options.dryRun); // TODO-LINT: move to async function
   }
 
   if (!options.database && !options.files && (options.config || !manifest)) {
-    await restoreConfig(workingPath, projectRoot, options.dryRun);
+    await restoreConfig(workingPath, projectRoot, options.dryRun); // TODO-LINT: move to async function
   }
 
   if (manifest && !options.database && !options.files && !options.config) {
     // Restore everything
     if (manifest.includes.database) {
-      await restoreDatabase(workingPath, options.dryRun);
+      await restoreDatabase(workingPath, options.dryRun); // TODO-LINT: move to async function
     }
     if (manifest.includes.files) {
-      await restoreFiles(workingPath, projectRoot, options.dryRun);
+      await restoreFiles(workingPath, projectRoot, options.dryRun); // TODO-LINT: move to async function
     }
     if (manifest.includes.config) {
-      await restoreConfig(workingPath, projectRoot, options.dryRun);
+      await restoreConfig(workingPath, projectRoot, options.dryRun); // TODO-LINT: move to async function
     }
   }
 
@@ -557,23 +557,23 @@ async function restoreDatabase(backupPath, dryRun = false) {
       // PostgreSQL restore
       const dbUrl = process.env.CORE_DATABASE_URL || process.env.DATABASE_URL;
       if (dbUrl && dbUrl.includes('postgresql://')) {
-        await runCommand('psql', [dbUrl, '-f', dbSqlPath], { silent: true });
+        await runCommand('psql', [dbUrl, '-f', dbSqlPath], { silent: true }); // TODO-LINT: move to async function
       }
     } else if (existsSync(mongoPath)) {
       // MongoDB restore
       const dbUrl = process.env.AUDIT_DATABASE_URL || process.env.DATABASE_URL;
       if (dbUrl && dbUrl.includes('mongodb://')) {
-        await runCommand('mongorestore', ['--uri', dbUrl, '--drop', mongoPath], { silent: true });
+        await runCommand('mongorestore', ['--uri', dbUrl, '--drop', mongoPath], { silent: true }); // TODO-LINT: move to async function
       }
     } else if (existsSync(dbJsonPath)) {
       // JSON restore
       const data = JSON.parse(require('fs').readFileSync(dbJsonPath, 'utf8'));
-      const db = await connectDatabase();
+      const db = await connectDatabase(); // TODO-LINT: move to async function
       
       for (const [collection, documents] of Object.entries(data)) {
         if (documents.length > 0) {
-          await db.collection(collection).deleteMany({});
-          await db.collection(collection).insertMany(documents);
+          await db.collection(collection).deleteMany({}); // TODO-LINT: move to async function
+          await db.collection(collection).insertMany(documents); // TODO-LINT: move to async function
         }
       }
     }
@@ -614,7 +614,7 @@ async function restoreFiles(backupPath, projectRoot, dryRun = false) {
         mkdirSync(destDir, { recursive: true });
       }
       
-      await runCommand('cp', ['-r', sourcePath, destPath], { silent: true });
+      await runCommand('cp', ['-r', sourcePath, destPath], { silent: true }); // TODO-LINT: move to async function
     }
 
     spinner.succeed('Files restored');
@@ -653,7 +653,7 @@ async function restoreConfig(backupPath, projectRoot, dryRun = false) {
         mkdirSync(destDir, { recursive: true });
       }
       
-      await runCommand('cp', [sourcePath, destPath], { silent: true });
+      await runCommand('cp', [sourcePath, destPath], { silent: true }); // TODO-LINT: move to async function
     }
 
     spinner.succeed('Configuration restored');
@@ -688,7 +688,7 @@ async function showBackupInfo(backupName, options) {
     size: isArchive ? stats.size : await getFolderSize(backupPath),
     created: stats.mtime,
     modified: stats.mtime
-  };
+  }; // TODO-LINT: move to async function
 
   // Try to read manifest
   if (!isArchive) {
@@ -732,7 +732,7 @@ async function deleteBackup(backupName, options) {
         message: `Are you sure you want to delete backup ${chalk.yellow(backupName)}?`,
         default: false
       }
-    ]);
+    ]); // TODO-LINT: move to async function
 
     if (!confirm) {
       logger.info('Deletion cancelled');
@@ -744,7 +744,7 @@ async function deleteBackup(backupName, options) {
   spinner.start();
 
   try {
-    await runCommand('rm', ['-rf', backupPath]);
+    await runCommand('rm', ['-rf', backupPath]); // TODO-LINT: move to async function
     spinner.succeed('Backup deleted');
   } catch (error) {
     spinner.fail('Failed to delete backup');
@@ -820,7 +820,7 @@ async function cleanupBackups(options) {
           message: `Delete ${toDelete.length} backup(s)?`,
           default: false
         }
-      ]);
+      ]); // TODO-LINT: move to async function
 
       if (!confirm) {
         logger.info('Cleanup cancelled');
@@ -830,7 +830,7 @@ async function cleanupBackups(options) {
 
     // Delete backups
     for (const backup of toDelete) {
-      await runCommand('rm', ['-rf', backup.path], { silent: true });
+      await runCommand('rm', ['-rf', backup.path], { silent: true }); // TODO-LINT: move to async function
     }
 
     logger.success(`✅ Cleaned up ${toDelete.length} backup(s)`);
@@ -877,7 +877,7 @@ async function manageSchedule(options) {
 // Helper: Get folder size
 async function getFolderSize(folderPath) {
   try {
-    const { stdout } = await runCommand('du', ['-sb', folderPath], { silent: true });
+    const { stdout } = await runCommand('du', ['-sb', folderPath], { silent: true }); // TODO-LINT: move to async function
     return parseInt(stdout.split('\t')[0]);
   } catch {
     return 0;

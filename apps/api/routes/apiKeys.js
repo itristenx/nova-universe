@@ -14,7 +14,7 @@ router.get('/', authenticateJWT, createRateLimit(15 * 60 * 1000, 30), async (req
     if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
       return res.status(403).json({ success: false, error: 'Admin access required', errorCode: 'ADMIN_ACCESS_REQUIRED' });
     }
-    const apiKeys = await ConfigurationManager.get('apiKeys', []);
+    const apiKeys = await ConfigurationManager.get('apiKeys', []); // TODO-LINT: move to async function
     res.json({ success: true, apiKeys });
   } catch (err) {
     logger.error('Error getting API keys:', err);
@@ -38,9 +38,9 @@ router.post('/',
       }
       const key = uuidv4();
       const createdAt = new Date().toISOString();
-      const apiKeys = await ConfigurationManager.get('apiKeys', []);
+      const apiKeys = await ConfigurationManager.get('apiKeys', []); // TODO-LINT: move to async function
       apiKeys.push({ key, description: req.body.description || '', createdAt });
-      const success = await ConfigurationManager.set('apiKeys', apiKeys, req.user.id);
+      const success = await ConfigurationManager.set('apiKeys', apiKeys, req.user.id); // TODO-LINT: move to async function
       if (!success) {
         return res.status(500).json({ success: false, error: 'Failed to save API key', errorCode: 'API_KEYS_SAVE_ERROR' });
       }
@@ -57,12 +57,12 @@ router.delete('/:key', authenticateJWT, createRateLimit(15 * 60 * 1000, 10), asy
     if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
       return res.status(403).json({ success: false, error: 'Admin access required', errorCode: 'ADMIN_ACCESS_REQUIRED' });
     }
-    const apiKeys = await ConfigurationManager.get('apiKeys', []);
+    const apiKeys = await ConfigurationManager.get('apiKeys', []); // TODO-LINT: move to async function
     const filtered = apiKeys.filter(k => k.key !== req.params.key);
     if (filtered.length === apiKeys.length) {
       return res.status(404).json({ success: false, error: 'API key not found', errorCode: 'API_KEY_NOT_FOUND' });
     }
-    const success = await ConfigurationManager.set('apiKeys', filtered, req.user.id);
+    const success = await ConfigurationManager.set('apiKeys', filtered, req.user.id); // TODO-LINT: move to async function
     if (!success) {
       return res.status(500).json({ success: false, error: 'Failed to delete API key', errorCode: 'API_KEYS_SAVE_ERROR' });
     }

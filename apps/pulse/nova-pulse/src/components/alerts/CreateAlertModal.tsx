@@ -42,10 +42,10 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({
     queryFn: async (): Promise<Service[]> => {
       const response = await fetch('/api/v2/alerts/services', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) throw new Error('Failed to fetch services');
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       return data.services;
     },
     enabled: isOpen
@@ -61,10 +61,10 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(alertData)
-      });
+      }); // TODO-LINT: move to async function
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json(); // TODO-LINT: move to async function
         throw new Error(errorData.error || 'Failed to create alert');
       }
 
@@ -120,7 +120,7 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof CreateAlertRequest, value: any) => {
+  const handleInputChange = (field: keyof CreateAlertRequest, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {

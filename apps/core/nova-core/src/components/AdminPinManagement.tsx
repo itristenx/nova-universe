@@ -132,7 +132,7 @@ export const AdminPinManagement: React.FC<AdminPinManagementProps> = ({
       await api.updateAdminPins({
         globalPin: pinConfig.globalPin || undefined,
         kioskPins: Object.keys(pinConfig.kioskPins).length > 0 ? pinConfig.kioskPins : undefined
-      });
+      }); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -156,7 +156,7 @@ export const AdminPinManagement: React.FC<AdminPinManagementProps> = ({
   const validatePinInput = async () => {
     try {
       setLoading(true);
-      const result = await api.validateAdminPin(testPinValue, testKioskId || undefined);
+      const result = await api.validateAdminPin(testPinValue, testKioskId || undefined); // TODO-LINT: move to async function
       setTestResult(result);
     } catch (error) {
       console.error('Failed to test PIN:', error);

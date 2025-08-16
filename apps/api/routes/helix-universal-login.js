@@ -104,7 +104,7 @@ router.post('/tenant/discover', [
                 t.sso_enabled, t.mfa_required
          FROM users u LEFT JOIN tenants t ON u.tenant_id = t.id WHERE u.email = $1`,
         [email]
-      );
+      ); // TODO-LINT: move to async function
       
       if (user.rows.length > 0) {
         const row = user.rows[0];
@@ -125,7 +125,7 @@ router.post('/tenant/discover', [
         const domainResult = await db.query(
           'SELECT * FROM tenants WHERE domain = $1 AND active = true',
           [emailDomain]
-        );
+        ); // TODO-LINT: move to async function
         
         if (domainResult.rows.length > 0) {
           tenant = domainResult.rows[0];
@@ -136,7 +136,7 @@ router.post('/tenant/discover', [
       const domainResult = await db.query(
         'SELECT * FROM tenants WHERE (domain = $1 OR subdomain = $1) AND active = true',
         [domain]
-      );
+      ); // TODO-LINT: move to async function
       
       if (domainResult.rows.length > 0) {
         tenant = domainResult.rows[0];
@@ -148,7 +148,7 @@ router.post('/tenant/discover', [
       const defaultResult = await db.query(
         'SELECT * FROM tenants WHERE domain = $1 AND active = true',
         ['localhost']
-      );
+      ); // TODO-LINT: move to async function
       
       if (defaultResult.rows.length > 0) {
         tenant = defaultResult.rows[0];
@@ -175,7 +175,7 @@ router.post('/tenant/discover', [
       const ssoConfigs = await db.query(
         'SELECT provider, provider_name, enabled FROM sso_configs WHERE tenant_id = $1 AND enabled = true',
         [tenant.id]
-      );
+      ); // TODO-LINT: move to async function
       
       for (const sso of ssoConfigs.rows) {
         authMethods.push({
@@ -192,7 +192,7 @@ router.post('/tenant/discover', [
       const passkeyResult = await db.query(
         'SELECT COUNT(*) as count FROM passkeys WHERE user_id = $1',
         [user.rows[0].user_id]
-      );
+      ); // TODO-LINT: move to async function
       
       if (parseInt(passkeyResult.rows[0].count) > 0) {
         authMethods.push({
@@ -234,7 +234,7 @@ router.post('/tenant/discover', [
           redirectUrl: redirectUrl || null 
         })
       ]
-    );
+    ); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -315,7 +315,7 @@ router.post('/authenticate', loginRateLimit, [
        AND created_at > NOW() - INTERVAL '10 minutes'
        ORDER BY created_at DESC LIMIT 1`,
       [discoveryToken]
-    );
+    ); // TODO-LINT: move to async function
 
     if (auditResult.rows.length === 0) {
       return res.status(400).json({
@@ -340,7 +340,7 @@ router.post('/authenticate', loginRateLimit, [
        LEFT JOIN tenants t ON u.tenant_id = t.id 
        WHERE u.email = $1`,
       [email]
-    );
+    ); // TODO-LINT: move to async function
 
     console.log('DEBUG: User query result:', JSON.stringify(userResult.rows, null, 2));
 
@@ -348,7 +348,7 @@ router.post('/authenticate', loginRateLimit, [
       console.log('DEBUG: User not found for email:', email);
       await logAuthEvent(null, null, 'login_failure', 'authentication', 
         'User not found', req.ip, req.get('User-Agent'), false, 
-        { email, authMethod, error: 'user_not_found' });
+        { email, authMethod, error: 'user_not_found' }); // TODO-LINT: move to async function
       
       return res.status(401).json({
         success: false,
@@ -375,7 +375,7 @@ router.post('/authenticate', loginRateLimit, [
     if (user.disabled) {
       await logAuthEvent(tenantId, user.id, 'login_failure', 'authentication',
         'Account disabled', req.ip, req.get('User-Agent'), false,
-        { email, authMethod, error: 'account_disabled' });
+        { email, authMethod, error: 'account_disabled' }); // TODO-LINT: move to async function
       
       return res.status(401).json({
         success: false,
@@ -384,7 +384,7 @@ router.post('/authenticate', loginRateLimit, [
     }
 
     // Rate limiting check
-    const rateLimitResult = await checkRateLimit(email, req.ip);
+    const rateLimitResult = await checkRateLimit(email, req.ip); // TODO-LINT: move to async function
     if (!rateLimitResult.allowed) {
       return res.status(429).json({
         success: false,
@@ -413,7 +413,7 @@ router.post('/authenticate', loginRateLimit, [
         console.log('DEBUG: Password hash from DB:', user.password_hash);
         console.log('DEBUG: User object:', JSON.stringify(user, null, 2));
         
-        authSuccess = await bcrypt.compare(password, user.password_hash);
+        authSuccess = await bcrypt.compare(password, user.password_hash); // TODO-LINT: move to async function
         
         console.log('DEBUG: bcrypt comparison result:', authSuccess);
         
@@ -436,7 +436,7 @@ router.post('/authenticate', loginRateLimit, [
       const ssoConfig = await db.query(
         'SELECT * FROM sso_configs WHERE tenant_id = $1 AND provider = $2 AND enabled = true',
         [tenantId, ssoProvider]
-      );
+      ); // TODO-LINT: move to async function
 
       if (ssoConfig.rows.length === 0) {
         return res.status(400).json({
@@ -447,13 +447,13 @@ router.post('/authenticate', loginRateLimit, [
 
       // Generate SSO state token
       const ssoState = uuidv4();
-      const ssoUrl = await generateSSOUrl(ssoConfig.rows[0], ssoState, redirectUrl);
+      const ssoUrl = await generateSSOUrl(ssoConfig.rows[0], ssoState, redirectUrl); // TODO-LINT: move to async function
 
       // Store SSO state
       await db.query(
         'INSERT INTO mfa_challenges (user_id, session_temp_id, challenge_type, expires_at) VALUES ($1, $2, $3, $4)',
         [user.id, ssoState, 'sso_state', new Date(Date.now() + 10 * 60 * 1000)] // 10 minutes
-      );
+      ); // TODO-LINT: move to async function
 
       return res.json({
         success: true,
@@ -464,10 +464,10 @@ router.post('/authenticate', loginRateLimit, [
     }
 
     if (!authSuccess) {
-      await incrementRateLimit(email, req.ip);
+      await incrementRateLimit(email, req.ip); // TODO-LINT: move to async function
       await logAuthEvent(tenantId, user.id, 'login_failure', 'authentication',
         authError, req.ip, req.get('User-Agent'), false,
-        { email, authMethod, error: authError });
+        { email, authMethod, error: authError }); // TODO-LINT: move to async function
 
       return res.status(401).json({
         success: false,
@@ -478,7 +478,7 @@ router.post('/authenticate', loginRateLimit, [
     // Check if MFA is required
     const mfaRequired = user.two_factor_enabled || 
                        await checkTenantMfaRequirement(tenantId) ||
-                       await checkRiskBasedMfaRequirement(user.id, req);
+                       await checkRiskBasedMfaRequirement(user.id, req); // TODO-LINT: move to async function
 
     if (mfaRequired) {
       // Generate temporary session for MFA
@@ -488,29 +488,29 @@ router.post('/authenticate', loginRateLimit, [
         `INSERT INTO mfa_challenges (user_id, session_temp_id, challenge_type, expires_at)
          VALUES ($1, $2, $3, $4)`,
         [user.id, tempSessionId, 'login_pending', new Date(Date.now() + 10 * 60 * 1000)]
-      );
+      ); // TODO-LINT: move to async function
 
       await logAuthEvent(tenantId, user.id, 'mfa_challenge', 'authentication',
         'MFA challenge initiated', req.ip, req.get('User-Agent'), true,
-        { email, authMethod, tempSessionId });
+        { email, authMethod, tempSessionId }); // TODO-LINT: move to async function
 
       return res.json({
         success: true,
         requiresMFA: true,
         tempSessionId,
         availableMfaMethods: await getAvailableMfaMethods(user.id)
-      });
+      }); // TODO-LINT: move to async function
     }
 
     // Create full session
-    const session = await createAuthSession(user, tenantId, authMethod, req);
+    const session = await createAuthSession(user, tenantId, authMethod, req); // TODO-LINT: move to async function
     
     await logAuthEvent(tenantId, user.id, 'login_success', 'authentication',
       'Successful login', req.ip, req.get('User-Agent'), true,
-      { email, authMethod, sessionId: session.id });
+      { email, authMethod, sessionId: session.id }); // TODO-LINT: move to async function
 
     // Update user last login
-    await db.query('UPDATE users SET "lastLoginAt" = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+    await db.query('UPDATE users SET "lastLoginAt" = CURRENT_TIMESTAMP WHERE id = $1', [user.id]); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -563,7 +563,7 @@ router.post('/mfa/challenge', mfaRateLimit, [
        WHERE session_temp_id = $1 AND challenge_type = 'login_pending' 
        AND expires_at > CURRENT_TIMESTAMP`,
       [tempSessionId]
-    );
+    ); // TODO-LINT: move to async function
 
     if (tempSession.rows.length === 0) {
       return res.status(400).json({
@@ -578,7 +578,7 @@ router.post('/mfa/challenge', mfaRateLimit, [
     const mfaConfig = await db.query(
       'SELECT * FROM mfa_methods WHERE user_id = $1 AND method_type = $2 AND is_active = true',
       [userId, mfaMethod]
-    );
+    ); // TODO-LINT: move to async function
 
     if (mfaConfig.rows.length === 0) {
       return res.status(400).json({
@@ -596,14 +596,14 @@ router.post('/mfa/challenge', mfaRateLimit, [
     } else if (mfaMethod === 'sms' || mfaMethod === 'email') {
       // Generate and send challenge code
       const challengeCode = crypto.randomInt(100000, 999999).toString();
-      const challengeHash = await bcrypt.hash(challengeCode, 10);
+      const challengeHash = await bcrypt.hash(challengeCode, 10); // TODO-LINT: move to async function
 
       // Store challenge
       await db.query(
         `INSERT INTO mfa_challenges (user_id, session_temp_id, challenge_type, challenge_code_hash, expires_at)
          VALUES ($1, $2, $3, $4, $5)`,
         [userId, tempSessionId, mfaMethod, challengeHash, new Date(Date.now() + 5 * 60 * 1000)]
-      );
+      ); // TODO-LINT: move to async function
 
       if (mfaMethod === 'sms') {
         // Implement SMS sending via configured SMS provider
@@ -621,7 +621,7 @@ router.post('/mfa/challenge', mfaRateLimit, [
               body: `Your Nova Universe verification code is: ${challengeCode}. This code expires in 5 minutes.`,
               from: process.env.TWILIO_PHONE_NUMBER,
               to: decrypt(config.phone_number_encrypted)
-            });
+            }); // TODO-LINT: move to async function
             
             logger.info(`SMS verification code sent to ${maskedPhone} for user ${userId}`);
           } else {
@@ -683,7 +683,7 @@ router.post('/mfa/challenge', mfaRateLimit, [
             to: userEmail,
             subject: 'Nova Universe - Verification Code',
             html: emailTemplate
-          });
+          }); // TODO-LINT: move to async function
           
           logger.info(`Email verification code sent to ${maskedEmail} for user ${userId}`);
           challengeResponse.message = 'Verification code sent to your email';
@@ -740,7 +740,7 @@ router.post('/mfa/verify', mfaRateLimit, [
        WHERE session_temp_id = $1 AND challenge_type = 'login_pending' 
        AND expires_at > CURRENT_TIMESTAMP`,
       [tempSessionId]
-    );
+    ); // TODO-LINT: move to async function
 
     if (tempSession.rows.length === 0) {
       return res.status(400).json({
@@ -755,7 +755,7 @@ router.post('/mfa/verify', mfaRateLimit, [
     const userResult = await db.query(
       'SELECT u.*, t.id as tenant_id FROM users u LEFT JOIN tenants t ON u.tenant_id = t.id WHERE u.id = $1',
       [userId]
-    );
+    ); // TODO-LINT: move to async function
 
     if (userResult.rows.length === 0) {
       return res.status(400).json({
@@ -775,7 +775,7 @@ router.post('/mfa/verify', mfaRateLimit, [
       const mfaConfig = await db.query(
         'SELECT * FROM mfa_methods WHERE user_id = $1 AND method_type = $2 AND is_active = true',
         [userId, 'totp']
-      );
+      ); // TODO-LINT: move to async function
 
       if (mfaConfig.rows.length === 0) {
         mfaError = 'TOTP not configured';
@@ -799,12 +799,12 @@ router.post('/mfa/verify', mfaRateLimit, [
          WHERE user_id = $1 AND session_temp_id = $2 AND challenge_type = $3 
          AND expires_at > CURRENT_TIMESTAMP`,
         [userId, tempSessionId, mfaMethod]
-      );
+      ); // TODO-LINT: move to async function
 
       if (challenge.rows.length === 0) {
         mfaError = 'Challenge expired or not found';
       } else {
-        mfaValid = await bcrypt.compare(code, challenge.rows[0].challenge_code_hash);
+        mfaValid = await bcrypt.compare(code, challenge.rows[0].challenge_code_hash); // TODO-LINT: move to async function
         if (!mfaValid) {
           mfaError = 'Invalid verification code';
         }
@@ -814,7 +814,7 @@ router.post('/mfa/verify', mfaRateLimit, [
       const mfaConfig = await db.query(
         'SELECT * FROM mfa_methods WHERE user_id = $1 AND method_type = $2 AND is_active = true',
         [userId, 'backup_codes']
-      );
+      ); // TODO-LINT: move to async function
 
       if (mfaConfig.rows.length === 0) {
         mfaError = 'Backup codes not configured';
@@ -830,7 +830,7 @@ router.post('/mfa/verify', mfaRateLimit, [
           await db.query(
             'UPDATE mfa_methods SET backup_codes_used = $1 WHERE id = $2',
             [JSON.stringify(usedCodes), mfaConfig.rows[0].id]
-          );
+          ); // TODO-LINT: move to async function
         } else {
           mfaError = 'Invalid or already used backup code';
         }
@@ -840,7 +840,7 @@ router.post('/mfa/verify', mfaRateLimit, [
     if (!mfaValid) {
       await logAuthEvent(tenantId, userId, 'mfa_failure', 'authentication',
         mfaError, req.ip, req.get('User-Agent'), false,
-        { mfaMethod, tempSessionId, error: mfaError });
+        { mfaMethod, tempSessionId, error: mfaError }); // TODO-LINT: move to async function
 
       return res.status(401).json({
         success: false,
@@ -849,20 +849,20 @@ router.post('/mfa/verify', mfaRateLimit, [
     }
 
     // MFA successful - create full session
-    const session = await createAuthSession(user, tenantId, 'mfa', req);
+    const session = await createAuthSession(user, tenantId, 'mfa', req); // TODO-LINT: move to async function
 
     // Clean up temporary session
     await db.query(
       'DELETE FROM mfa_challenges WHERE session_temp_id = $1',
       [tempSessionId]
-    );
+    ); // TODO-LINT: move to async function
 
     await logAuthEvent(tenantId, userId, 'mfa_success', 'authentication',
       'MFA verification successful', req.ip, req.get('User-Agent'), true,
-      { mfaMethod, sessionId: session.id });
+      { mfaMethod, sessionId: session.id }); // TODO-LINT: move to async function
 
     // Update user last login
-    await db.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [userId]);
+    await db.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [userId]); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -915,7 +915,7 @@ router.post('/token/refresh', [
        WHERE s.refresh_token = $1 AND s.is_active = true 
        AND s.refresh_expires_at > CURRENT_TIMESTAMP`,
       [refreshToken]
-    );
+    ); // TODO-LINT: move to async function
 
     if (sessionResult.rows.length === 0) {
       return res.status(401).json({
@@ -929,7 +929,7 @@ router.post('/token/refresh', [
 
     // Check if user is still active
     if (user.disabled) {
-      await db.query('UPDATE auth_sessions SET is_active = false WHERE id = $1', [session.id]);
+      await db.query('UPDATE auth_sessions SET is_active = false WHERE id = $1', [session.id]); // TODO-LINT: move to async function
       return res.status(401).json({
         success: false,
         error: 'Account is disabled'
@@ -946,11 +946,11 @@ router.post('/token/refresh', [
        SET access_token_hash = $1, last_accessed_at = CURRENT_TIMESTAMP
        WHERE id = $2`,
       [newAccessTokenHash, session.id]
-    );
+    ); // TODO-LINT: move to async function
 
     await logAuthEvent(session.tenant_id, user.id, 'token_refresh', 'session',
       'Access token refreshed', req.ip, req.get('User-Agent'), true,
-      { sessionId: session.id });
+      { sessionId: session.id }); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -989,7 +989,7 @@ router.post('/logout', authenticateJWT, async (req, res) => {
     const sessionResult = await db.query(
       'SELECT * FROM auth_sessions WHERE access_token_hash = $1 AND is_active = true',
       [tokenHash]
-    );
+    ); // TODO-LINT: move to async function
 
     if (sessionResult.rows.length > 0) {
       const session = sessionResult.rows[0];
@@ -997,11 +997,11 @@ router.post('/logout', authenticateJWT, async (req, res) => {
       await db.query(
         'UPDATE auth_sessions SET is_active = false WHERE id = $1',
         [session.id]
-      );
+      ); // TODO-LINT: move to async function
 
       await logAuthEvent(session.tenant_id, session.user_id, 'logout', 'session',
         'User logout', req.ip, req.get('User-Agent'), true,
-        { sessionId: session.id });
+        { sessionId: session.id }); // TODO-LINT: move to async function
     }
 
     res.json({
@@ -1039,7 +1039,7 @@ router.get('/sso/initiate/:provider', async (req, res) => {
     const ssoConfig = await db.query(
       'SELECT * FROM sso_configs WHERE tenant_id = $1 AND provider = $2 AND enabled = true',
       [tenant, provider]
-    );
+    ); // TODO-LINT: move to async function
 
     if (ssoConfig.rows.length === 0) {
       return res.status(404).json({
@@ -1051,11 +1051,11 @@ router.get('/sso/initiate/:provider', async (req, res) => {
     const config = ssoConfig.rows[0];
     
     if (config.provider === 'saml') {
-      const samlUrl = await initiateSAMLLogin(config, state, redirectUrl);
+      const samlUrl = await initiateSAMLLogin(config, state, redirectUrl); // TODO-LINT: move to async function
       logger.info('SAML login initiated', { provider: config.name, state });
       res.redirect(samlUrl);
     } else if (config.provider === 'oidc') {
-      const oidcUrl = await initiateOIDCLogin(config, state, redirectUrl);
+      const oidcUrl = await initiateOIDCLogin(config, state, redirectUrl); // TODO-LINT: move to async function
       logger.info('OIDC login initiated', { provider: config.name, state });
       res.redirect(oidcUrl);
     } else {
@@ -1090,7 +1090,7 @@ router.post('/sso/callback/:provider', async (req, res) => {
     logger.info('SSO callback received', { provider, state });
 
     // Verify state parameter to prevent CSRF attacks
-    const stateData = await verifyStateParameter(state);
+    const stateData = await verifyStateParameter(state); // TODO-LINT: move to async function
     if (!stateData) {
       return res.status(400).json({
         success: false,
@@ -1101,9 +1101,9 @@ router.post('/sso/callback/:provider', async (req, res) => {
     let userProfile;
     
     if (provider === 'saml') {
-      userProfile = await processSAMLResponse(req.body);
+      userProfile = await processSAMLResponse(req.body); // TODO-LINT: move to async function
     } else if (provider === 'oidc') {
-      userProfile = await processOIDCResponse(req.body);
+      userProfile = await processOIDCResponse(req.body); // TODO-LINT: move to async function
     } else {
       return res.status(400).json({
         success: false,
@@ -1119,7 +1119,7 @@ router.post('/sso/callback/:provider', async (req, res) => {
     }
 
     // Find or create user based on SSO profile
-    const user = await findOrCreateSSOUser(userProfile, stateData.tenantId);
+    const user = await findOrCreateSSOUser(userProfile, stateData.tenantId); // TODO-LINT: move to async function
     
     if (!user) {
       return res.status(500).json({
@@ -1152,10 +1152,10 @@ router.post('/sso/callback/:provider', async (req, res) => {
       req.headers['user-agent'],
       true,
       { provider, ssoUserId: userProfile.nameID || userProfile.sub }
-    );
+    ); // TODO-LINT: move to async function
 
     // Clean up state
-    await cleanupStateParameter(state);
+    await cleanupStateParameter(state); // TODO-LINT: move to async function
 
     // Redirect to original URL or default dashboard
     const redirectUrl = stateData.redirectUrl || '/dashboard';
@@ -1234,12 +1234,12 @@ router.get('/audit', authenticateJWT, async (req, res) => {
        ORDER BY l.created_at DESC
        LIMIT $${++paramCount} OFFSET $${++paramCount}`,
       [...params, limit, offset]
-    );
+    ); // TODO-LINT: move to async function
 
     const countResult = await db.query(
       `SELECT COUNT(*) as total FROM auth_audit_logs WHERE ${whereClause}`,
       params
-    );
+    ); // TODO-LINT: move to async function
 
     res.json({
       success: true,
@@ -1271,7 +1271,7 @@ async function logAuthEvent(tenantId, userId, eventType, eventCategory, descript
         ip_address, user_agent, success, metadata
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [tenantId, userId, eventType, eventCategory, description, ipAddress, userAgent, success, JSON.stringify(metadata)]
-    );
+    ); // TODO-LINT: move to async function
   } catch (error) {
     logger.error('Failed to log auth event:', error);
   }
@@ -1288,7 +1288,7 @@ async function checkRateLimit(email, ipAddress) {
     const result = await db.query(
       'SELECT * FROM login_rate_limits WHERE identifier = $1 AND identifier_type = $2',
       [check.identifier, check.type]
-    );
+    ); // TODO-LINT: move to async function
 
     if (result.rows.length > 0) {
       const limit = result.rows[0];
@@ -1328,7 +1328,7 @@ async function incrementRateLimit(email, ipAddress) {
            ELSE NULL
          END`,
       [check.identifier, check.type]
-    );
+    ); // TODO-LINT: move to async function
   }
 }
 
@@ -1356,7 +1356,7 @@ async function createAuthSession(user, tenantId, loginMethod, req) {
       new Date(Date.now() + 12 * 60 * 60 * 1000), // 12 hours
       new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
     ]
-  );
+  ); // TODO-LINT: move to async function
 
   return {
     id: sessionId,
@@ -1403,7 +1403,7 @@ async function getAvailableMfaMethods(userId) {
   const methods = await db.query(
     'SELECT method_type, method_name, is_primary FROM mfa_methods WHERE user_id = $1 AND is_active = true',
     [userId]
-  );
+  ); // TODO-LINT: move to async function
 
   return methods.rows.map(m => ({
     type: m.method_type,
@@ -1413,7 +1413,7 @@ async function getAvailableMfaMethods(userId) {
 }
 
 async function checkTenantMfaRequirement(tenantId) {
-  const result = await db.query('SELECT mfa_required FROM tenants WHERE id = $1', [tenantId]);
+  const result = await db.query('SELECT mfa_required FROM tenants WHERE id = $1', [tenantId]); // TODO-LINT: move to async function
   return result.rows.length > 0 ? result.rows[0].mfa_required : false;
 }
 
@@ -1437,7 +1437,7 @@ async function checkRiskBasedMfaRequirement(userId, req) {
        ORDER BY created_at DESC 
        LIMIT 20`,
       [userId]
-    );
+    ); // TODO-LINT: move to async function
 
     let riskScore = 0;
 
@@ -1482,7 +1482,7 @@ async function checkRiskBasedMfaRequirement(userId, req) {
        AND event_type = 'login_failure' 
        AND created_at > NOW() - INTERVAL '1 hour'`,
       [userId, ipAddress]
-    );
+    ); // TODO-LINT: move to async function
 
     if (parseInt(recentFailures.rows[0].count) > 3) {
       riskScore += 25;
@@ -1503,7 +1503,7 @@ async function checkRiskBasedMfaRequirement(userId, req) {
 
 async function initiateSAMLLogin(config, state, redirectUrl) {
   try {
-    const { SamlStrategy } = await import('@node-saml/passport-saml');
+    const { SamlStrategy } = await import('@node-saml/passport-saml'); // TODO-LINT: move to async function
     
     const samlConfig = {
       entryPoint: config.metadata.entryPoint || config.metadata.sso_url,
@@ -1530,7 +1530,7 @@ async function initiateSAMLLogin(config, state, redirectUrl) {
           method: 'GET' 
         },
         (err, user, info) => {
-          if (err) return reject(err);
+          if (err) return reject(err); // TODO-LINT: move to async function
           if (info && info.redirectUrl) {
             resolve(info.redirectUrl);
           } else {
@@ -1593,7 +1593,7 @@ async function initiateOIDCLogin(config, state, redirectUrl) {
 
 async function processSAMLResponse(requestBody) {
   try {
-    const { SamlStrategy } = await import('@node-saml/passport-saml');
+    const { SamlStrategy } = await import('@node-saml/passport-saml'); // TODO-LINT: move to async function
     
     // This would typically be configured based on the specific SAML provider
     // For now, we'll extract user information from the SAML response
@@ -1632,7 +1632,7 @@ async function processOIDCResponse(requestBody) {
     }
 
     // Get the OIDC configuration for token exchange
-    const stateData = await verifyStateParameter(state);
+    const stateData = await verifyStateParameter(state); // TODO-LINT: move to async function
     if (!stateData) {
       throw new Error('Invalid state parameter');
     }
@@ -1640,7 +1640,7 @@ async function processOIDCResponse(requestBody) {
     const ssoConfig = await db.query(
       'SELECT * FROM sso_configurations WHERE tenant_id = $1 AND provider = $2 AND active = true',
       [stateData.tenantId, 'oidc']
-    );
+    ); // TODO-LINT: move to async function
 
     if (ssoConfig.rows.length === 0) {
       throw new Error('OIDC configuration not found');
@@ -1662,13 +1662,13 @@ async function processOIDCResponse(requestBody) {
         client_id: config.metadata.client_id,
         client_secret: config.metadata.client_secret
       })
-    });
+    }); // TODO-LINT: move to async function
 
     if (!tokenResponse.ok) {
       throw new Error('Token exchange failed');
     }
 
-    const tokens = await tokenResponse.json();
+    const tokens = await tokenResponse.json(); // TODO-LINT: move to async function
 
     // Get user info from userinfo endpoint
     const userInfoResponse = await fetch(config.metadata.userinfo_endpoint, {
@@ -1676,13 +1676,13 @@ async function processOIDCResponse(requestBody) {
         'Authorization': `Bearer ${tokens.access_token}`,
         'Accept': 'application/json'
       }
-    });
+    }); // TODO-LINT: move to async function
 
     if (!userInfoResponse.ok) {
       throw new Error('Failed to fetch user info');
     }
 
-    const userInfo = await userInfoResponse.json();
+    const userInfo = await userInfoResponse.json(); // TODO-LINT: move to async function
 
     return {
       sub: userInfo.sub,
@@ -1704,7 +1704,7 @@ async function findOrCreateSSOUser(userProfile, tenantId) {
     const existingUser = await db.query(
       'SELECT * FROM users WHERE email = $1 AND tenant_id = $2',
       [userProfile.email, tenantId]
-    );
+    ); // TODO-LINT: move to async function
 
     if (existingUser.rows.length > 0) {
       const user = existingUser.rows[0];
@@ -1718,7 +1718,7 @@ async function findOrCreateSSOUser(userProfile, tenantId) {
              updated_at = NOW()
          WHERE id = $3`,
         [userProfile.provider, userProfile.nameID || userProfile.sub, user.id]
-      );
+      ); // TODO-LINT: move to async function
 
       return user;
     }
@@ -1737,13 +1737,13 @@ async function findOrCreateSSOUser(userProfile, tenantId) {
         userProfile.provider,
         userProfile.nameID || userProfile.sub
       ]
-    );
+    ); // TODO-LINT: move to async function
 
     // Assign default roles for SSO users
     await db.query(
       'INSERT INTO user_roles (user_id, role_id) SELECT $1, id FROM roles WHERE name = $2 AND tenant_id = $3',
       [newUser.rows[0].id, 'user', tenantId]
-    );
+    ); // TODO-LINT: move to async function
 
     logger.info('New SSO user created', { 
       userId: newUser.rows[0].id, 
@@ -1765,7 +1765,7 @@ async function verifyStateParameter(state) {
     const stateResult = await db.query(
       'SELECT * FROM auth_states WHERE state = $1 AND expires_at > NOW()',
       [state]
-    );
+    ); // TODO-LINT: move to async function
 
     if (stateResult.rows.length === 0) {
       return null;
@@ -1780,7 +1780,7 @@ async function verifyStateParameter(state) {
 
 async function cleanupStateParameter(state) {
   try {
-    await db.query('DELETE FROM auth_states WHERE state = $1', [state]);
+    await db.query('DELETE FROM auth_states WHERE state = $1', [state]); // TODO-LINT: move to async function
   } catch (error) {
     logger.error('State cleanup error:', error);
   }

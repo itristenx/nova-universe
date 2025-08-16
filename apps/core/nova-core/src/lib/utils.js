@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-export function cn(...inputs) {
+export function _cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 export function formatDate(date) {
@@ -12,7 +12,7 @@ export function formatDate(date) {
         minute: '2-digit',
     });
 }
-export function formatRelativeTime(date) {
+export function _formatRelativeTime(date) {
     const now = new Date();
     const target = new Date(date);
     const diffMs = now.getTime() - target.getTime();
@@ -29,7 +29,7 @@ export function formatRelativeTime(date) {
         return `${diffDays}d ago`;
     return formatDate(date);
 }
-export function getUrgencyColor(urgency) {
+export function _getUrgencyColor(urgency) {
     switch (urgency.toLowerCase()) {
         case 'urgent':
             return 'bg-red-100 text-red-800 border-red-200';
@@ -43,7 +43,7 @@ export function getUrgencyColor(urgency) {
             return 'bg-gray-100 text-gray-800 border-gray-200';
     }
 }
-export function getStatusColor(status) {
+export function _getStatusColor(status) {
     switch (status.toLowerCase()) {
         case 'success':
             return 'bg-green-100 text-green-800 border-green-200';
@@ -60,14 +60,14 @@ export function getStatusColor(status) {
             return 'bg-gray-100 text-gray-800 border-gray-200';
     }
 }
-export function debounce(func, wait) {
+export function _debounce(func, wait) {
     let timeout;
     return (...args) => {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(null, args), wait);
     };
 }
-export function downloadFile(data, filename) {
+export function _downloadFile(data, filename) {
     const url = window.URL.createObjectURL(data);
     const a = document.createElement('a');
     a.href = url;
@@ -77,7 +77,7 @@ export function downloadFile(data, filename) {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
 }
-export function generateRandomString(length) {
+export function _generateRandomString(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
     for (let i = 0; i < length; i++) {
@@ -85,10 +85,10 @@ export function generateRandomString(length) {
     }
     return result;
 }
-export function validateEmail(email) {
+export function _validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
-export function capitalizeFirst(str) {
+export function _capitalizeFirst(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }

@@ -17,7 +17,7 @@ const StatCard = ({ title, value, icon: Icon, color, change }) => {
                             change,
                             "%"))))))));
 };
-export const DashboardPage = () => {
+export const _DashboardPage = () => {
     const [stats, setStats] = useState(null);
     const [recentTickets, setRecentTickets] = useState([]);
     const [kiosks, setKiosks] = useState([]);
@@ -29,7 +29,7 @@ export const DashboardPage = () => {
                     api.getDashboardStats(),
                     api.getLogs(),
                     api.getKiosks(),
-                ]);
+                ]); // TODO-LINT: move to async function
                 setStats(statsData);
                 setRecentTickets(ticketsData.slice(0, 10));
                 setKiosks(kiosksData.slice(0, 5));

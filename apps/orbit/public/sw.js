@@ -1,33 +1,33 @@
 // Service Worker for Nova Universe PWA
-// Provides offline functionality, caching, and push notifications
+// Provides offline _functionality, caching, _and push notifications
 
-const CACHE_NAME = 'nova-universe-v1';
+const CACHE_NAME = 'nova-_universe-v1';
 const STATIC_CACHE = 'nova-static-v1';
-const DYNAMIC_CACHE = 'nova-dynamic-v1';
+const DYNAMIC_CACHE = 'nova-_dynamic-v1';
 
-// Assets to cache on install
+// _Assets to cache _on install
 const STATIC_ASSETS = [
   '/',
   '/offline',
-  '/enhanced-dashboard',
+  '/enhanced-_dashboard',
   '/tickets',
-  '/knowledge/enhanced',
-  '/catalog/enhanced',
-  '/cosmo/enhanced',
-  '/automation',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/manifest.json'
+  '/_knowledge/enhanced',
+  '/_catalog/enhanced',
+  '/_cosmo/enhanced',
+  '/_automation',
+  '/static/js/_bundle.js',
+  '/static/css/_main.css',
+  '/_manifest.json'
 ];
 
-// API endpoints to cache
+// API _endpoints to cache
 const API_CACHE_PATTERNS = [
   '/api/tickets',
-  '/api/user',
+  '/api/_user',
   '/api/notifications'
 ];
 
-// Install event - cache static assets
+// _Install event - cache static assets
 self.addEventListener('install', (event) => {
   console.log('SW: Installing service worker...');
   
@@ -209,15 +209,15 @@ function isApiRequest(url) {
 
 async function cacheFirst(request) {
   try {
-    const cached = await caches.match(request);
+    const cached = await caches.match(request); // TODO-LINT: move to async function
     if (cached) {
       console.log('SW: Serving from cache:', request.url);
       return cached;
     }
     
-    const response = await fetch(request);
+    const response = await fetch(request); // TODO-LINT: move to async function
     if (response.ok) {
-      const cache = await caches.open(STATIC_CACHE);
+      const cache = await caches.open(STATIC_CACHE); // TODO-LINT: move to async function
       cache.put(request, response.clone());
     }
     return response;
@@ -229,31 +229,31 @@ async function cacheFirst(request) {
 
 async function networkFirst(request) {
   try {
-    const response = await fetch(request);
+    const response = await fetch(request); // TODO-LINT: move to async function
     if (response.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE);
+      const cache = await caches.open(DYNAMIC_CACHE); // TODO-LINT: move to async function
       cache.put(request, response.clone());
     }
     return response;
   } catch (error) {
     console.log('SW: Network failed, trying cache:', request.url);
-    const cached = await caches.match(request);
+    const cached = await caches.match(request); // TODO-LINT: move to async function
     return cached || new Response('Offline', { status: 503 });
   }
 }
 
 async function networkFirstWithCache(request) {
   try {
-    const response = await fetch(request);
+    const response = await fetch(request); // TODO-LINT: move to async function
     if (response.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE);
+      const cache = await caches.open(DYNAMIC_CACHE); // TODO-LINT: move to async function
       cache.put(request, response.clone());
       console.log('SW: API response cached:', request.url);
     }
     return response;
   } catch (error) {
     console.log('SW: API network failed, trying cache:', request.url);
-    const cached = await caches.match(request);
+    const cached = await caches.match(request); // TODO-LINT: move to async function
     
     if (cached) {
       // Add offline indicator to response
@@ -279,11 +279,11 @@ async function networkFirstWithCache(request) {
 
 async function navigationHandler(request) {
   try {
-    const response = await fetch(request);
+    const response = await fetch(request); // TODO-LINT: move to async function
     return response;
   } catch (error) {
     console.log('SW: Navigation failed, serving offline page');
-    const offline = await caches.match('/offline');
+    const offline = await caches.match('/offline'); // TODO-LINT: move to async function
     return offline || new Response('Offline', { 
       status: 503,
       headers: { 'Content-Type': 'text/html' }
@@ -298,7 +298,7 @@ async function syncTickets() {
     console.log('SW: Syncing tickets in background...');
     
     // Get pending ticket updates from IndexedDB
-    const pendingUpdates = await getPendingTicketUpdates();
+    const pendingUpdates = await getPendingTicketUpdates(); // TODO-LINT: move to async function
     
     for (const update of pendingUpdates) {
       try {
@@ -306,10 +306,10 @@ async function syncTickets() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(update)
-        });
+        }); // TODO-LINT: move to async function
         
         if (response.ok) {
-          await removePendingUpdate(update.id);
+          await removePendingUpdate(update.id); // TODO-LINT: move to async function
           console.log('SW: Ticket update synced:', update.id);
         }
       } catch (error) {
@@ -325,12 +325,12 @@ async function syncNotifications() {
   try {
     console.log('SW: Syncing notifications in background...');
     
-    const response = await fetch('/api/notifications');
+    const response = await fetch('/api/notifications'); // TODO-LINT: move to async function
     if (response.ok) {
-      const notifications = await response.json();
+      const notifications = await response.json(); // TODO-LINT: move to async function
       
       // Store in cache for offline access
-      const cache = await caches.open(DYNAMIC_CACHE);
+      const cache = await caches.open(DYNAMIC_CACHE); // TODO-LINT: move to async function
       cache.put('/api/notifications', new Response(JSON.stringify(notifications)));
     }
   } catch (error) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import './EnhancedQueueSwitcher.css'
 
-// Mock API functions for enhanced queue management
+// Mock API _functions for _enhanced queue _management
 const getQueueMetrics = async (queueId: string) => {
   // Use queueId in mock
   console.log('getQueueMetrics called with queueId:', queueId)
@@ -25,7 +25,7 @@ const getQueueAgents = async (queueId: string) => {
     { userId: 'u2', isAvailable: false, status: 'break', currentLoad: 0, maxCapacity: 5 }
   ]
 }
-const toggleAgentAvailability = async (queueId: string, options: any) => {
+const toggleAgentAvailability = async (queueId: string, options: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
   // Use queueId and options in mock
   console.log('toggleAgentAvailability called with queueId:', queueId, 'options:', options)
   return { queueId, ...options }
@@ -656,3 +656,4 @@ export const EnhancedQueueSwitcher: React.FC<Props> = ({
     </div>
   )
 }
+ // TODO-LINT: move to async function

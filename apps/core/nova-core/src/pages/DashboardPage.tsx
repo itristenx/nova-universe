@@ -59,7 +59,7 @@ export const DashboardPage: React.FC = () => {
           api.getDashboardStats(),
           api.getLogs(),
           api.getKiosks(),
-        ]);
+        ]); // TODO-LINT: move to async function
 
         setStats(statsData);
         setRecentTickets(ticketsData.slice(0, 10));

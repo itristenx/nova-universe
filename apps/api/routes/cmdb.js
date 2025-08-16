@@ -94,7 +94,7 @@ router.get('/cis', authenticateJWT, [
       limit: parseInt(req.query.limit) || 50
     };
 
-    const result = await cmdbService.getConfigurationItems(filters, pagination);
+    const result = await cmdbService.getConfigurationItems(filters, pagination); // TODO-LINT: move to async function
     res.json({
       success: true,
       data: result.items,
@@ -153,7 +153,7 @@ router.get('/cis/:id', authenticateJWT, [
       includeHistory: req.query.includeHistory === 'true'
     };
 
-    const ci = await cmdbService.getConfigurationItem(req.params.id, options);
+    const ci = await cmdbService.getConfigurationItem(req.params.id, options); // TODO-LINT: move to async function
     
     if (!ci) {
       return res.status(404).json({
@@ -249,7 +249,7 @@ router.post('/cis', authenticateJWT, [
       createdBy: req.user.id
     };
 
-    const ci = await cmdbService.createConfigurationItem(ciData);
+    const ci = await cmdbService.createConfigurationItem(ciData); // TODO-LINT: move to async function
     
     res.status(201).json({
       success: true,
@@ -305,7 +305,7 @@ router.put('/cis/:id', authenticateJWT, [
       updatedBy: req.user.id
     };
 
-    const ci = await cmdbService.updateConfigurationItem(req.params.id, updateData);
+    const ci = await cmdbService.updateConfigurationItem(req.params.id, updateData); // TODO-LINT: move to async function
     
     if (!ci) {
       return res.status(404).json({
@@ -352,7 +352,7 @@ router.delete('/cis/:id', authenticateJWT, [
   param('id').isString().notEmpty()
 ], validateRequest, async (req, res) => {
   try {
-    const deleted = await cmdbService.deleteConfigurationItem(req.params.id, req.user.id);
+    const deleted = await cmdbService.deleteConfigurationItem(req.params.id, req.user.id); // TODO-LINT: move to async function
     
     if (!deleted) {
       return res.status(404).json({
@@ -392,7 +392,7 @@ router.delete('/cis/:id', authenticateJWT, [
  */
 router.get('/ci-types', authenticateJWT, async (req, res) => {
   try {
-    const ciTypes = await cmdbService.getCiTypes();
+    const ciTypes = await cmdbService.getCiTypes(); // TODO-LINT: move to async function
     res.json({
       success: true,
       data: ciTypes
@@ -448,7 +448,7 @@ router.post('/ci-types', authenticateJWT, [
   body('attributeSchema').optional().isObject()
 ], validateRequest, async (req, res) => {
   try {
-    const ciType = await cmdbService.createCiType(req.body);
+    const ciType = await cmdbService.createCiType(req.body); // TODO-LINT: move to async function
     res.status(201).json({
       success: true,
       data: ciType,
@@ -505,7 +505,7 @@ router.get('/cis/:id/relationships', authenticateJWT, [
       relationshipType: req.query.relationshipType
     };
 
-    const relationships = await relationshipService.getCiRelationships(req.params.id, options);
+    const relationships = await relationshipService.getCiRelationships(req.params.id, options); // TODO-LINT: move to async function
     res.json({
       success: true,
       data: relationships
@@ -564,7 +564,7 @@ router.post('/relationships', authenticateJWT, [
       createdBy: req.user.id
     };
 
-    const relationship = await relationshipService.createRelationship(relationshipData);
+    const relationship = await relationshipService.createRelationship(relationshipData); // TODO-LINT: move to async function
     res.status(201).json({
       success: true,
       data: relationship,
@@ -616,7 +616,7 @@ router.post('/discovery/run', authenticateJWT, [
     const discoveryRun = await discoveryService.startDiscoveryRun({
       ...req.body,
       initiatedBy: req.user.id
-    });
+    }); // TODO-LINT: move to async function
 
     res.status(202).json({
       success: true,
@@ -645,7 +645,7 @@ router.post('/discovery/run', authenticateJWT, [
  */
 router.get('/discovery/runs', authenticateJWT, async (req, res) => {
   try {
-    const runs = await discoveryService.getDiscoveryRuns();
+    const runs = await discoveryService.getDiscoveryRuns(); // TODO-LINT: move to async function
     res.json({
       success: true,
       data: runs
@@ -676,7 +676,7 @@ router.get('/discovery/runs', authenticateJWT, async (req, res) => {
  */
 router.get('/business-services', authenticateJWT, async (req, res) => {
   try {
-    const services = await cmdbService.getBusinessServices();
+    const services = await cmdbService.getBusinessServices(); // TODO-LINT: move to async function
     res.json({
       success: true,
       data: services
@@ -707,7 +707,7 @@ router.get('/business-services', authenticateJWT, async (req, res) => {
  */
 router.get('/health', authenticateJWT, async (req, res) => {
   try {
-    const health = await cmdbService.getCmdbHealth();
+    const health = await cmdbService.getCmdbHealth(); // TODO-LINT: move to async function
     res.json({
       success: true,
       data: health
@@ -752,7 +752,7 @@ router.post('/reports/impact-analysis', authenticateJWT, [
 ], validateRequest, async (req, res) => {
   try {
     const { ciId, depth = 3 } = req.body;
-    const impact = await relationshipService.performImpactAnalysis(ciId, depth);
+    const impact = await relationshipService.performImpactAnalysis(ciId, depth); // TODO-LINT: move to async function
     
     res.json({
       success: true,

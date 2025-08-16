@@ -27,28 +27,28 @@ class EnhancedMonitoringService {
       logger.info('Initializing Enhanced Monitoring System with Uptime Kuma parity...');
 
       // Verify database schema
-      await this.verifyDatabaseSchema();
+      await this.verifyDatabaseSchema(); // TODO-LINT: move to async function
 
       // Initialize notification providers
-      await this.initializeNotificationProviders();
+      await this.initializeNotificationProviders(); // TODO-LINT: move to async function
 
       // Initialize monitor scheduling
-      await this.initializeMonitorScheduling();
+      await this.initializeMonitorScheduling(); // TODO-LINT: move to async function
 
       // Initialize maintenance window scheduler
-      await this.initializeMaintenanceScheduler();
+      await this.initializeMaintenanceScheduler(); // TODO-LINT: move to async function
 
       // Initialize status page generator
-      await this.initializeStatusPages();
+      await this.initializeStatusPages(); // TODO-LINT: move to async function
 
       // Start background services
-      await this.startBackgroundServices();
+      await this.startBackgroundServices(); // TODO-LINT: move to async function
 
       this.isInitialized = true;
       logger.info('Enhanced Monitoring System initialized successfully');
       
       // Log feature summary
-      await this.logFeatureSummary();
+      await this.logFeatureSummary(); // TODO-LINT: move to async function
 
     } catch (error) {
       logger.error('Failed to initialize Enhanced Monitoring System:', error);
@@ -84,7 +84,7 @@ class EnhancedMonitoringService {
 
     for (const table of requiredTables) {
       try {
-        await database.query(`SELECT 1 FROM ${table} LIMIT 1`);
+        await database.query(`SELECT 1 FROM ${table} LIMIT 1`); // TODO-LINT: move to async function
         logger.debug(`✓ Table ${table} exists`);
       } catch (error) {
         logger.error(`✗ Table ${table} missing or inaccessible:`, error.message);
@@ -98,11 +98,11 @@ class EnhancedMonitoringService {
     const partitionTable = `nova_monitor_results_${currentYear}_${currentMonth}`;
 
     try {
-      await database.query(`SELECT 1 FROM ${partitionTable} LIMIT 1`);
+      await database.query(`SELECT 1 FROM ${partitionTable} LIMIT 1`); // TODO-LINT: move to async function
       logger.debug(`✓ Partition table ${partitionTable} exists`);
     } catch (error) {
       logger.warn(`Partition table ${partitionTable} not found, creating...`);
-      await this.createMonthlyPartition(currentYear, currentMonth);
+      await this.createMonthlyPartition(currentYear, currentMonth); // TODO-LINT: move to async function
     }
 
     logger.info('Database schema verification completed');
@@ -121,7 +121,7 @@ class EnhancedMonitoringService {
     await database.query(`
       CREATE TABLE IF NOT EXISTS ${tableName} (
         CHECK (timestamp >= DATE '${startDate}' AND timestamp < DATE '${endDate}')
-      ) INHERITS (nova_monitor_results);
+      ) INHERITS (nova_monitor_results); // TODO-LINT: move to async function
       
       CREATE INDEX IF NOT EXISTS ${tableName}_monitor_id_timestamp_idx 
       ON ${tableName} (monitor_id, timestamp DESC);
@@ -145,7 +145,7 @@ class EnhancedMonitoringService {
 
     // Test notification provider service
     try {
-      await notificationProviderService.healthCheck();
+      await notificationProviderService.healthCheck(); // TODO-LINT: move to async function
       logger.info('✓ Notification provider service is healthy');
     } catch (error) {
       logger.warn('⚠ Notification provider service health check failed:', error.message);
@@ -163,13 +163,13 @@ class EnhancedMonitoringService {
       SELECT id, name, type, interval_seconds, status 
       FROM nova_monitors 
       WHERE status = 'active'
-    `);
+    `); // TODO-LINT: move to async function
 
     logger.info(`Found ${monitors.rows.length} active monitors to schedule`);
 
     // Schedule each monitor
     for (const monitor of monitors.rows) {
-      await this.scheduleMonitor(monitor);
+      await this.scheduleMonitor(monitor); // TODO-LINT: move to async function
     }
 
     logger.info('Monitor scheduling initialized');
@@ -185,7 +185,7 @@ class EnhancedMonitoringService {
 
     const interval = setInterval(async () => {
       try {
-        await this.performMonitorCheck(monitor.id);
+        await this.performMonitorCheck(monitor.id); // TODO-LINT: move to async function
       } catch (error) {
         logger.error(`Failed to check monitor ${monitor.name}:`, error);
       }
@@ -204,7 +204,7 @@ class EnhancedMonitoringService {
       const monitorResult = await database.query(
         'SELECT * FROM nova_monitors WHERE id = $1',
         [monitorId]
-      );
+      ); // TODO-LINT: move to async function
 
       if (monitorResult.rows.length === 0) {
         logger.warn(`Monitor ${monitorId} not found`);
@@ -214,7 +214,7 @@ class EnhancedMonitoringService {
       const monitor = monitorResult.rows[0];
 
       // Check if in maintenance
-      const inMaintenance = await advancedFeaturesService.isMonitorInMaintenance(monitorId);
+      const inMaintenance = await advancedFeaturesService.isMonitorInMaintenance(monitorId); // TODO-LINT: move to async function
       if (inMaintenance) {
         logger.debug(`Monitor ${monitor.name} is in maintenance, skipping check`);
         return;
@@ -251,17 +251,17 @@ class EnhancedMonitoringService {
           timeout: monitor.timeout_seconds
         };
 
-        result = await extendedMonitorService.runMonitorCheck(check);
+        result = await extendedMonitorService.runMonitorCheck(check); // TODO-LINT: move to async function
       } else {
         // Use basic monitoring for standard types
-        result = await this.performBasicCheck(monitor);
+        result = await this.performBasicCheck(monitor); // TODO-LINT: move to async function
       }
 
       // Store result
-      await this.storeMonitorResult(monitorId, result);
+      await this.storeMonitorResult(monitorId, result); // TODO-LINT: move to async function
 
       // Handle status changes and notifications
-      await this.handleMonitorStatusChange(monitor, result);
+      await this.handleMonitorStatusChange(monitor, result); // TODO-LINT: move to async function
 
     } catch (error) {
       logger.error(`Monitor check failed for ${monitorId}:`, error);
@@ -286,10 +286,10 @@ class EnhancedMonitoringService {
       result.statusCode, 
       result.message, 
       JSON.stringify(result.data)
-    ]);
+    ]); // TODO-LINT: move to async function
 
     // Update monitor summary
-    await this.updateMonitorSummary(monitorId);
+    await this.updateMonitorSummary(monitorId); // TODO-LINT: move to async function
   }
 
   /**
@@ -302,7 +302,7 @@ class EnhancedMonitoringService {
       WHERE monitor_id = $1 
       ORDER BY timestamp DESC 
       OFFSET 1 LIMIT 1
-    `, [monitor.id]);
+    `, [monitor.id]); // TODO-LINT: move to async function
 
     const statusChanged = lastResult.rows.length === 0 || 
                          lastResult.rows[0].success !== result.success;
@@ -312,11 +312,11 @@ class EnhancedMonitoringService {
       logger.info(`Monitor ${monitor.name} status changed to ${status}`);
 
       // Send notifications
-      await this.sendMonitorNotifications(monitor, status, result);
+      await this.sendMonitorNotifications(monitor, status, result); // TODO-LINT: move to async function
 
       // Create incident if monitor went down
       if (!result.success) {
-        await this.createIncident(monitor, result);
+        await this.createIncident(monitor, result); // TODO-LINT: move to async function
       }
     }
   }
@@ -330,7 +330,7 @@ class EnhancedMonitoringService {
       const channels = await database.query(`
         SELECT * FROM nova_notification_channels 
         WHERE tenant_id = $1 AND is_active = true
-      `, [monitor.tenant_id]);
+      `, [monitor.tenant_id]); // TODO-LINT: move to async function
 
       const message = {
         title: `Monitor ${status.toUpperCase()}: ${monitor.name}`,
@@ -349,7 +349,7 @@ class EnhancedMonitoringService {
             name: channel.name,
             type: channel.type,
             config: JSON.parse(channel.config)
-          }, message);
+          }, message); // TODO-LINT: move to async function
 
           logger.debug(`Sent ${status} notification for ${monitor.name} via ${channel.type}`);
         } catch (error) {
@@ -379,7 +379,7 @@ class EnhancedMonitoringService {
       'medium',
       `${monitor.name} is down`,
       result.message
-    ]);
+    ]); // TODO-LINT: move to async function
 
     logger.info(`Created incident ${incidentId} for monitor ${monitor.name}`);
   }
@@ -393,7 +393,7 @@ class EnhancedMonitoringService {
     // Schedule maintenance window checks every minute
     this.maintenanceScheduler = setInterval(async () => {
       try {
-        await advancedFeaturesService.processMaintenanceWindows();
+        await advancedFeaturesService.processMaintenanceWindows(); // TODO-LINT: move to async function
       } catch (error) {
         logger.error('Failed to process maintenance windows:', error);
       }
@@ -409,7 +409,7 @@ class EnhancedMonitoringService {
     logger.info('Initializing status page generator...');
 
     try {
-      await statusPageService.healthCheck();
+      await statusPageService.healthCheck(); // TODO-LINT: move to async function
       logger.info('✓ Status page service is healthy');
     } catch (error) {
       logger.warn('⚠ Status page service health check failed:', error.message);
@@ -425,7 +425,7 @@ class EnhancedMonitoringService {
     // Certificate expiry checker (daily)
     setInterval(async () => {
       try {
-        await this.checkCertificateExpiry();
+        await this.checkCertificateExpiry(); // TODO-LINT: move to async function
       } catch (error) {
         logger.error('Certificate expiry check failed:', error);
       }
@@ -434,7 +434,7 @@ class EnhancedMonitoringService {
     // Cleanup old data (daily)
     setInterval(async () => {
       try {
-        await this.cleanupOldData();
+        await this.cleanupOldData(); // TODO-LINT: move to async function
       } catch (error) {
         logger.error('Data cleanup failed:', error);
       }
@@ -443,7 +443,7 @@ class EnhancedMonitoringService {
     // Monitor summary updater (every 5 minutes)
     setInterval(async () => {
       try {
-        await this.updateAllMonitorSummaries();
+        await this.updateAllMonitorSummaries(); // TODO-LINT: move to async function
       } catch (error) {
         logger.error('Monitor summary update failed:', error);
       }
@@ -462,7 +462,7 @@ class EnhancedMonitoringService {
       JOIN nova_monitors m ON ci.monitor_id = m.id
       WHERE ci.days_remaining <= 30 AND ci.days_remaining > 0
       AND m.status = 'active'
-    `);
+    `); // TODO-LINT: move to async function
 
     for (const cert of expiringCerts.rows) {
       logger.warn(`Certificate expiring for ${cert.monitor_name} in ${cert.days_remaining} days`);
@@ -471,7 +471,7 @@ class EnhancedMonitoringService {
       const channels = await database.query(`
         SELECT * FROM nova_notification_channels 
         WHERE tenant_id = $1 AND is_active = true
-      `, [cert.tenant_id]);
+      `, [cert.tenant_id]); // TODO-LINT: move to async function
 
       const message = {
         title: `SSL Certificate Expiring: ${cert.monitor_name}`,
@@ -489,7 +489,7 @@ class EnhancedMonitoringService {
             name: channel.name,
             type: channel.type,
             config: JSON.parse(channel.config)
-          }, message);
+          }, message); // TODO-LINT: move to async function
         } catch (error) {
           logger.error(`Failed to send certificate expiry notification:`, error);
         }
@@ -513,7 +513,7 @@ class EnhancedMonitoringService {
       FROM pg_tables 
       WHERE tablename LIKE 'nova_monitor_results_%' 
       AND schemaname = 'public'
-    `);
+    `); // TODO-LINT: move to async function
 
     for (const partition of oldPartitions.rows) {
       const [, , year, month] = partition.tablename.split('_');
@@ -521,7 +521,7 @@ class EnhancedMonitoringService {
       
       if (partitionDate < cutoffDate) {
         logger.info(`Dropping old partition: ${partition.tablename}`);
-        await database.query(`DROP TABLE IF EXISTS ${partition.tablename}`);
+        await database.query(`DROP TABLE IF EXISTS ${partition.tablename}`); // TODO-LINT: move to async function
       }
     }
 
@@ -529,7 +529,7 @@ class EnhancedMonitoringService {
     await database.query(`
       DELETE FROM nova_heartbeats 
       WHERE created_at < NOW() - INTERVAL '30 days'
-    `);
+    `); // TODO-LINT: move to async function
 
     logger.info('Data cleanup completed');
   }
@@ -565,7 +565,7 @@ class EnhancedMonitoringService {
         last_check_time = EXCLUDED.last_check_time,
         is_up = EXCLUDED.is_up,
         updated_at = NOW()
-    `);
+    `); // TODO-LINT: move to async function
   }
 
   /**
@@ -600,7 +600,7 @@ class EnhancedMonitoringService {
         last_check_time = EXCLUDED.last_check_time,
         is_up = EXCLUDED.is_up,
         updated_at = NOW()
-    `, [monitorId]);
+    `, [monitorId]); // TODO-LINT: move to async function
   }
 
   /**

@@ -59,7 +59,7 @@ class PostgreSQLManager {
       this.setupPoolEventHandlers();
       
       // Test the connection
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
       
       this.isConnected = true;
       this.connectionAttempts = 0;
@@ -77,7 +77,7 @@ class PostgreSQLManager {
       if (this.connectionAttempts < this.maxConnectionAttempts) {
         logger.info(`🔄 Retrying PostgreSQL connection in ${this.reconnectDelay / 1000} seconds...`);
         // Use a non-recursive approach for retries
-        await new Promise(resolve => setTimeout(resolve, this.reconnectDelay));
+        await new Promise(resolve => setTimeout(resolve, this.reconnectDelay)); // TODO-LINT: move to async function
         return this.initialize();
       } else {
         logger.error('💀 PostgreSQL connection failed after maximum attempts');
@@ -137,9 +137,9 @@ class PostgreSQLManager {
    * Test database connection
    */
   async testConnection() {
-    const client = await this.pool.connect();
+    const client = await this.pool.connect(); // TODO-LINT: move to async function
     try {
-      const result = await client.query('SELECT NOW() as current_time, version() as postgres_version');
+      const result = await client.query('SELECT NOW() as current_time, version() as postgres_version'); // TODO-LINT: move to async function
       logger.debug('🏥 PostgreSQL health check passed:', {
         current_time: result.rows[0].current_time,
         version: result.rows[0].postgres_version.split(' ')[0]
@@ -166,13 +166,13 @@ class PostgreSQLManager {
         activeClient = client;
       } else {
         logger.debug('Attempting to acquire client from pool...');
-        activeClient = await this.pool.connect();
+        activeClient = await this.pool.connect(); // TODO-LINT: move to async function
         logger.debug('Client acquired from pool.');
         shouldReleaseClient = true;
       }
 
       logger.debug('Executing query:', text.substring(0, 100));
-      const result = await activeClient.query(text, params);
+      const result = await activeClient.query(text, params); // TODO-LINT: move to async function
       logger.debug('Query executed successfully.');
       const duration = Date.now() - startTime;
       if (duration > 1000) {
@@ -205,17 +205,17 @@ class PostgreSQLManager {
       throw new Error('PostgreSQL not connected. Call initialize() first.');
     }
 
-    const client = await this.pool.connect();
+    const client = await this.pool.connect(); // TODO-LINT: move to async function
     
     try {
-      await client.query('BEGIN');
+      await client.query('BEGIN'); // TODO-LINT: move to async function
       
-      const result = await callback(client);
+      const result = await callback(client); // TODO-LINT: move to async function
       
-      await client.query('COMMIT');
+      await client.query('COMMIT'); // TODO-LINT: move to async function
       return result;
     } catch (error) {
-      await client.query('ROLLBACK');
+      await client.query('ROLLBACK'); // TODO-LINT: move to async function
       logger.error('❌ PostgreSQL transaction failed:', error.message);
       throw error;
     } finally {
@@ -244,7 +244,7 @@ class PostgreSQLManager {
    */
   async healthCheck() {
     try {
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
       const stats = this.getPoolStats();
       
       return {
@@ -269,7 +269,7 @@ class PostgreSQLManager {
   async close() {
     if (this.pool) {
       try {
-        await this.pool.end();
+        await this.pool.end(); // TODO-LINT: move to async function
         this.isConnected = false;
         logger.info('📴 PostgreSQL connection pool closed');
       } catch (error) {
@@ -282,9 +282,9 @@ class PostgreSQLManager {
    * Execute raw SQL from migration files
    */
   async executeSQL(sql) {
-    // Execute the entire SQL as a single statement to support dollar-quoted functions/triggers
+    // Execute the entire SQL as a single statement to support dollar-quoted _functions/_triggers
     return this.transaction(async (client) => {
-      return await this.query(sql, [], { client });
+      return await this.query(sql, [], { client }); // TODO-LINT: move to async function
     });
   }
 }

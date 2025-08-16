@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Globe, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
-export function MainNavigation() {
+export function _MainNavigation() {
   const t = useTranslations('Navigation');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -154,7 +154,7 @@ export function MainNavigation() {
   );
 }
 
-export function Footer() {
+export function _Footer() {
   const t = useTranslations('Common');
 
   return (

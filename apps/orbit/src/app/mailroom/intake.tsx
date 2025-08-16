@@ -32,7 +32,7 @@ const IntakePage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, flags: form.flags.split(',').map(f => f.trim()) }),
-      });
+      }); // TODO-LINT: move to async function
       if (!res.ok) throw new Error('Failed to create package');
       setSuccess(true);
       setForm({

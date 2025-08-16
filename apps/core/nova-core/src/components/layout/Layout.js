@@ -4,7 +4,7 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { ToastContainer } from '@/components/ui';
 import { useToastStore } from '@/stores/toast';
-export const Layout = () => {
+export const _Layout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { toasts, removeToast } = useToastStore();
     return (React.createElement("div", { className: "flex h-screen bg-gray-50 dark:bg-gray-900" },

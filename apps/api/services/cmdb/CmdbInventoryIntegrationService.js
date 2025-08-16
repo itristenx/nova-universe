@@ -3,7 +3,7 @@ import { logger } from '../../logger.js';
 async function getCorePrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../../prisma/generated/core/index.js');
+    const mod = await import('../../../../prisma/generated/core/index.js'); // TODO-LINT: move to async function
     return new mod.PrismaClient();
   } catch { return null; }
 }
@@ -11,7 +11,7 @@ async function getCorePrisma() {
 async function getCmdbPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../../prisma/generated/cmdb/index.js');
+    const mod = await import('../../../../prisma/generated/cmdb/index.js'); // TODO-LINT: move to async function
     return new mod.PrismaClient();
   } catch { return null; }
 }
@@ -45,7 +45,7 @@ class CmdbInventoryIntegrationService {
     // Validate CI exists
     const ci = await this.cmdbDb.configurationItem.findUnique({
       where: { id: ciId }
-    });
+    }); // TODO-LINT: move to async function
     if (!ci) {
       throw new Error('Configuration Item not found');
     }
@@ -53,7 +53,7 @@ class CmdbInventoryIntegrationService {
     // Validate inventory asset exists
     const asset = await this.coreDb.inventoryAsset.findUnique({
       where: { id: inventoryAssetId }
-    });
+    }); // TODO-LINT: move to async function
     if (!asset) {
       throw new Error('Inventory Asset not found');
     }
@@ -70,11 +70,11 @@ class CmdbInventoryIntegrationService {
         fieldMapping,
         createdBy
       }
-    });
+    }); // TODO-LINT: move to async function
 
     // Perform initial sync if enabled
     if (syncEnabled) {
-      await this.syncMapping(mapping.id);
+      await this.syncMapping(mapping.id); // TODO-LINT: move to async function
     }
 
     return mapping;
@@ -98,7 +98,7 @@ class CmdbInventoryIntegrationService {
         conflictResolution,
         fieldMapping
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return mapping;
   }
@@ -106,7 +106,7 @@ class CmdbInventoryIntegrationService {
   async deleteMapping(id) {
     await this.cmdbDb.cmdbInventoryMapping.delete({
       where: { id }
-    });
+    }); // TODO-LINT: move to async function
 
     return { success: true };
   }
@@ -121,7 +121,7 @@ class CmdbInventoryIntegrationService {
           }
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     if (!mapping) {
       throw new Error('Mapping not found');
@@ -138,7 +138,7 @@ class CmdbInventoryIntegrationService {
           orderBy: { assignedDate: 'desc' }
         }
       }
-    });
+    }); // TODO-LINT: move to async function
 
     return {
       ...mapping,
@@ -182,7 +182,7 @@ class CmdbInventoryIntegrationService {
         orderBy: { createdAt: 'desc' }
       }),
       this.cmdbDb.cmdbInventoryMapping.count({ where })
-    ]);
+    ]); // TODO-LINT: move to async function
 
     // Enrich with inventory asset details
     const enrichedMappings = await Promise.all(
@@ -197,7 +197,7 @@ class CmdbInventoryIntegrationService {
             status: true,
             assignedToUserId: true
           }
-        });
+        }); // TODO-LINT: move to async function
         return { ...mapping, inventoryAsset };
       })
     );
@@ -223,7 +223,7 @@ class CmdbInventoryIntegrationService {
       include: {
         configurationItem: true
       }
-    });
+    }); // TODO-LINT: move to async function
 
     if (!mapping) {
       throw new Error('Mapping not found');
@@ -236,19 +236,19 @@ class CmdbInventoryIntegrationService {
     try {
       const inventoryAsset = await this.coreDb.inventoryAsset.findUnique({
         where: { id: mapping.inventoryAssetId }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!inventoryAsset) {
         throw new Error('Inventory asset not found');
       }
 
-      const updateData = await this.mapInventoryToCmdb(inventoryAsset, mapping);
+      const updateData = await this.mapInventoryToCmdb(inventoryAsset, mapping); // TODO-LINT: move to async function
       
       // Update CI with mapped data
       await this.cmdbDb.configurationItem.update({
         where: { id: mapping.ciId },
         data: updateData
-      });
+      }); // TODO-LINT: move to async function
 
       // Update mapping sync status
       await this.cmdbDb.cmdbInventoryMapping.update({
@@ -258,7 +258,7 @@ class CmdbInventoryIntegrationService {
           syncStatus: 'success',
           syncErrors: null
         }
-      });
+      }); // TODO-LINT: move to async function
 
       return { success: true, syncedAt: new Date() };
     } catch (error) {
@@ -270,7 +270,7 @@ class CmdbInventoryIntegrationService {
           syncStatus: 'failed',
           syncErrors: error.message
         }
-      });
+      }); // TODO-LINT: move to async function
 
       throw error;
     }
@@ -279,12 +279,12 @@ class CmdbInventoryIntegrationService {
   async syncAllMappings() {
     const mappings = await this.cmdbDb.cmdbInventoryMapping.findMany({
       where: { syncEnabled: true }
-    });
+    }); // TODO-LINT: move to async function
 
     const results = [];
     for (const mapping of mappings) {
       try {
-        await this.syncMapping(mapping.id);
+        await this.syncMapping(mapping.id); // TODO-LINT: move to async function
         results.push({ mappingId: mapping.id, status: 'success' });
       } catch (error) {
         results.push({ 
@@ -368,7 +368,7 @@ class CmdbInventoryIntegrationService {
       },
       take: 100,
       orderBy: { createdAt: 'desc' }
-    });
+    }); // TODO-LINT: move to async function
 
     // Find CIs without inventory mapping
     const unmappedCis = await this.cmdbDb.configurationItem.findMany({
@@ -386,12 +386,12 @@ class CmdbInventoryIntegrationService {
       },
       take: 100,
       orderBy: { createdAt: 'desc' }
-    });
+    }); // TODO-LINT: move to async function
 
     // Suggest potential mappings based on matching criteria
     const suggestions = [];
     for (const asset of unmappedAssets) {
-      const potentialCis = await this.findPotentialCiMatches(asset);
+      const potentialCis = await this.findPotentialCiMatches(asset); // TODO-LINT: move to async function
       if (potentialCis.length > 0) {
         suggestions.push({
           inventoryAsset: asset,
@@ -406,7 +406,7 @@ class CmdbInventoryIntegrationService {
       unmappedCis: unmappedCis.length,
       suggestions: suggestions.slice(0, 20), // Top 20 suggestions
       totalMappings: await this.cmdbDb.cmdbInventoryMapping.count()
-    };
+    }; // TODO-LINT: move to async function
   }
 
   async findPotentialCiMatches(inventoryAsset) {
@@ -459,7 +459,7 @@ class CmdbInventoryIntegrationService {
         ciType_rel: true
       },
       take: 10
-    });
+    }); // TODO-LINT: move to async function
 
     return potentialCis;
   }
@@ -514,7 +514,7 @@ class CmdbInventoryIntegrationService {
     
     for (const data of mappingData) {
       try {
-        const mapping = await this.createMapping(data);
+        const mapping = await this.createMapping(data); // TODO-LINT: move to async function
         results.push({ 
           success: true, 
           mapping,
@@ -567,7 +567,7 @@ class CmdbInventoryIntegrationService {
       }),
       this.analyzeIntegrationOpportunities().then(result => result.unmappedAssets),
       this.analyzeIntegrationOpportunities().then(result => result.unmappedCis)
-    ]);
+    ]); // TODO-LINT: move to async function
 
     return {
       summary: {

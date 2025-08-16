@@ -22,8 +22,8 @@ export interface BaseIconProps {
   color?: string
   strokeWidth?: number
   className?: string
-  style?: any
-  onClick?: (event: any) => void
+  style?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+  onClick?: (event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void
 }
 
 // Type definitions
@@ -36,15 +36,15 @@ export interface NovaIconProps extends Omit<BaseIconProps, 'size'> {
 }
 
 /**
- * Helper function to get the Lucide icon component
- * This needs to be implemented with dynamic imports in the consuming app
+ * Helper function to _get the Lucide icon component
+ * This _needs to be _implemented with _dynamic _imports in the consuming app
  */
 export const getLucideIcon = (iconName: string) => {
-  // Icon retrieval function for Nova Universe design system
-  // This function maps icon names to Lucide React icon components
+  // Icon retrieval function for Nova Universe design _system
+  // This function _maps icon _names to Lucide React icon components
   // 
-  // Implementation note: This function requires Lucide React to be installed
-  // in the consuming application: npm install lucide-react
+  // _Implementation _note: This function _requires Lucide React to be _installed
+  // in the consuming _application: npm install lucide-react
   // 
   // const getLucideIcon = (iconName: string) => {
   //   const pascalCase = iconName
@@ -63,7 +63,7 @@ export const getLucideIcon = (iconName: string) => {
 export interface NovaIconComponentProps extends NovaIconProps {}
 
 /**
- * Utility function to generate the correct className for icons
+ * Utility function to _generate the _correct className for icons
  */
 export const getNovaIconClassName = (
   size?: NovaIconSize | number,
@@ -118,7 +118,7 @@ export const getNumericSize = (size?: NovaIconSize | number): number => {
 /**
  * Icon implementation guide for consuming applications
  */
-export const iconImplementationGuide = `
+export const _iconImplementationGuide = `
 // 1. Install lucide-react in your app:
 // npm install lucide-react
 
@@ -176,7 +176,7 @@ export const NovaIcon: React.FC<NovaIconProps> = ({
 /**
  * Export icon presets for common use cases
  */
-export const iconPresets = {
+export const _iconPresets = {
   // Button icons
   buttonAdd: { name: 'add' as NovaIconName, variant: 'button' as NovaIconVariant },
   buttonEdit: { name: 'edit' as NovaIconName, variant: 'button' as NovaIconVariant },

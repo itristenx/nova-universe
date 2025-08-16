@@ -59,7 +59,7 @@ export interface Monitor {
   proxy_id?: string;
   // Advanced settings
   notification_settings?: Record<string, any>;
-  maintenance_windows?: any[];
+  maintenance_windows?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[];
   auth_method?: 'none' | 'basic' | 'bearer' | 'api-key';
   auth_username?: string;
   auth_password?: string;

@@ -13,7 +13,7 @@ async function createTestUser() {
     // Check if test user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: 'admin@nova.local' }
-    });
+    }); // TODO-LINT: move to async function
     
     if (existingUser) {
       console.log('✅ Test user already exists:', existingUser.email);
@@ -21,7 +21,7 @@ async function createTestUser() {
     }
     
     // Hash the password
-    const passwordHash = await bcrypt.hash('admin123', 12);
+    const passwordHash = await bcrypt.hash('admin123', 12); // TODO-LINT: move to async function
     
     // Create test user
     const user = await prisma.user.create({
@@ -32,13 +32,13 @@ async function createTestUser() {
         disabled: false,
         twoFactorEnabled: false
       }
-    });
+    }); // TODO-LINT: move to async function
     
     console.log('✅ Created test user:', user.email);
     
     // Create some test queues if they don't exist in the queue table
     try {
-      const existingQueues = await prisma.queue.findMany();
+      const existingQueues = await prisma.queue.findMany(); // TODO-LINT: move to async function
       
       if (existingQueues.length === 0) {
         const queues = [
@@ -54,13 +54,13 @@ async function createTestUser() {
               displayName: queueData.displayName,
               description: queueData.description
             }
-          });
+          }); // TODO-LINT: move to async function
           console.log(`✅ Created test queue: ${queueData.name}`);
         }
       }
       
       // Give user access to queues
-      const queues = await prisma.queue.findMany();
+      const queues = await prisma.queue.findMany(); // TODO-LINT: move to async function
       for (const queue of queues) {
         try {
           await prisma.queueAccess.create({
@@ -69,7 +69,7 @@ async function createTestUser() {
               queueName: queue.name,
               accessLevel: 'agent'
             }
-          });
+          }); // TODO-LINT: move to async function
           console.log(`✅ Granted access to queue: ${queue.name}`);
         } catch (error) {
           // Ignore if already exists
@@ -92,7 +92,7 @@ async function createTestUser() {
     console.error('❌ Error creating test user:', error);
     throw error;
   } finally {
-    await prisma.$disconnect();
+    await prisma.$disconnect(); // TODO-LINT: move to async function
   }
 }
 

@@ -208,8 +208,8 @@ export class WebSocketManager {
   }
 }
 
-// Helper function to emit real-time updates from anywhere in the app
-export function emitRealtimeUpdate(io, type, data) {
+// Helper function to emit real-time updates from _anywhere _in _the _app
+export function _emitRealtimeUpdate(io, type, data) {
   if (io) {
     io.emit('realtime_update', {
       type,

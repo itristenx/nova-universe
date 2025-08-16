@@ -1,20 +1,20 @@
 // User Acceptance Testing (UAT) Suite for Nova Universe
-// Tests business workflows, user experience, and feature functionality from end-user perspective
+// Tests business workflows, user experience, and feature _functionality from end-user perspective
 
 import test from 'node:test';
 import assert from 'node:assert';
 import fetch from 'node-fetch';
 
-// UAT Configuration
+// UAT _Configuration
 const UAT_CONFIG = {
-  apiUrl: process.env.TEST_API_URL || 'http://localhost:3000',
-  frontendUrl: process.env.TEST_FRONTEND_URL || 'http://localhost:3001',
+  apiUrl: process.env._TEST_API_URL || 'http://localhost:3000',
+  _frontendUrl: process.env._TEST_FRONTEND_URL || 'http://localhost:3001',
   timeout: 60000,
-  maxRetries: 3
+  _maxRetries: 3
 };
 
-// UAT Testing Utilities
-class UATHelper {
+// UAT Testing _Utilities
+_class UATHelper {
   static async makeRequest(endpoint, options = {}) {
     const url = `${UAT_CONFIG.apiUrl}${endpoint}`;
     const defaultOptions = {
@@ -25,7 +25,7 @@ class UATHelper {
       timeout: UAT_CONFIG.timeout
     };
     
-    const response = await fetch(url, { ...defaultOptions, ...options });
+    const response = await fetch(url, { ...defaultOptions, ...options }); // TODO-LINT: move to async function
     
     return {
       status: response.status,
@@ -78,7 +78,7 @@ class UATHelper {
     const response = await UATHelper.makeRequest('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData)
-    });
+    }); // TODO-LINT: move to async function
 
     if (!response.ok) {
       throw new Error(`Failed to create user: ${response.status}`);
@@ -91,13 +91,13 @@ class UATHelper {
     const response = await UATHelper.makeRequest('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password })
-    });
+    }); // TODO-LINT: move to async function
 
     if (!response.ok) {
       throw new Error(`Failed to login user: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json(); // TODO-LINT: move to async function
     return data.token;
   }
 
@@ -108,7 +108,7 @@ class UATHelper {
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(ticketData)
-    });
+    }); // TODO-LINT: move to async function
 
     if (!response.ok) {
       throw new Error(`Failed to create ticket: ${response.status}`);
@@ -125,22 +125,22 @@ test('End User Workflows', async (t) => {
   let testTicket = null;
 
   await t.test('User Registration and Login', async () => {
-    console.log('👤 Testing end user registration and login workflow...');
+    console.log('👤 Testing end user registration and login workflow...'); // TODO-LINT: move to async function
     
     // Register new end user
-    const user = await UATHelper.createUser(testData.endUser);
+    const user = await UATHelper.createUser(testData.endUser); // TODO-LINT: move to async function
     assert.ok(user.id, 'User should be created with an ID');
     assert.strictEqual(user.email, testData.endUser.email, 'User email should match');
     
     // Login with new credentials
-    endUserToken = await UATHelper.loginUser(testData.endUser.email, testData.endUser.password);
+    endUserToken = await UATHelper.loginUser(testData.endUser.email, testData.endUser.password); // TODO-LINT: move to async function
     assert.ok(endUserToken, 'Should receive authentication token');
     
     console.log('  ✅ User registration and login successful');
   });
 
   await t.test('Ticket Creation - End User Journey', async () => {
-    console.log('🎫 Testing ticket creation from end user perspective...');
+    console.log('🎫 Testing ticket creation from end user perspective...'); // TODO-LINT: move to async function
     
     const ticketData = {
       title: 'UAT Test: Computer Running Slowly',
@@ -151,7 +151,7 @@ test('End User Workflows', async (t) => {
       impact: 'medium'
     };
 
-    testTicket = await UATHelper.createTicket(endUserToken, ticketData);
+    testTicket = await UATHelper.createTicket(endUserToken, ticketData); // TODO-LINT: move to async function
     
     assert.ok(testTicket.id, 'Ticket should be created with an ID');
     assert.strictEqual(testTicket.title, ticketData.title, 'Ticket title should match');
@@ -162,18 +162,18 @@ test('End User Workflows', async (t) => {
   });
 
   await t.test('Ticket Status Tracking', async () => {
-    console.log('📊 Testing ticket status tracking for end users...');
+    console.log('📊 Testing ticket status tracking for end users...'); // TODO-LINT: move to async function
     
     // End user checks their ticket status
     const response = await UATHelper.makeRequest(`/api/tickets/${testTicket.id}`, {
       headers: {
         'Authorization': `Bearer ${endUserToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'End user should be able to view their own ticket');
     
-    const ticket = await response.json();
+    const ticket = await response.json(); // TODO-LINT: move to async function
     assert.strictEqual(ticket.id, testTicket.id, 'Should retrieve the correct ticket');
     assert.ok(ticket.created_at, 'Ticket should have creation timestamp');
     
@@ -181,7 +181,7 @@ test('End User Workflows', async (t) => {
   });
 
   await t.test('Ticket Communication - End User Side', async () => {
-    console.log('💬 Testing ticket communication from end user perspective...');
+    console.log('💬 Testing ticket communication from end user perspective...'); // TODO-LINT: move to async function
     
     const commentData = {
       content: 'I tried restarting my computer but the issue persists. The problem is particularly noticeable when using Chrome browser.',
@@ -194,11 +194,11 @@ test('End User Workflows', async (t) => {
         'Authorization': `Bearer ${endUserToken}`
       },
       body: JSON.stringify(commentData)
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'End user should be able to add comments to their ticket');
     
-    const comment = await response.json();
+    const comment = await response.json(); // TODO-LINT: move to async function
     assert.strictEqual(comment.content, commentData.content, 'Comment content should match');
     assert.strictEqual(comment.type, 'public', 'End user comments should be public');
     
@@ -213,22 +213,22 @@ test('Support Agent Workflows', async (t) => {
   let agentTicket = null;
 
   await t.test('Agent Login and Dashboard Access', async () => {
-    console.log('🔧 Testing support agent login and dashboard access...');
+    console.log('🔧 Testing support agent login and dashboard access...'); // TODO-LINT: move to async function
     
     // Create and login as support agent
-    await UATHelper.createUser(testData.agent);
-    agentToken = await UATHelper.loginUser(testData.agent.email, testData.agent.password);
+    await UATHelper.createUser(testData.agent); // TODO-LINT: move to async function
+    agentToken = await UATHelper.loginUser(testData.agent.email, testData.agent.password); // TODO-LINT: move to async function
     
     // Access agent dashboard
     const response = await UATHelper.makeRequest('/api/analytics/dashboard', {
       headers: {
         'Authorization': `Bearer ${agentToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'Agent should be able to access dashboard');
     
-    const dashboard = await response.json();
+    const dashboard = await response.json(); // TODO-LINT: move to async function
     assert.ok(dashboard.summary, 'Dashboard should contain summary data');
     assert.ok(typeof dashboard.summary.totalTickets === 'number', 'Should show total tickets');
     
@@ -236,7 +236,7 @@ test('Support Agent Workflows', async (t) => {
   });
 
   await t.test('Ticket Assignment and Management', async () => {
-    console.log('📋 Testing ticket assignment and management workflow...');
+    console.log('📋 Testing ticket assignment and management workflow...'); // TODO-LINT: move to async function
     
     // Create a ticket that needs agent attention
     const ticketData = {
@@ -248,7 +248,7 @@ test('Support Agent Workflows', async (t) => {
       impact: 'high'
     };
 
-    agentTicket = await UATHelper.createTicket(agentToken, ticketData);
+    agentTicket = await UATHelper.createTicket(agentToken, ticketData); // TODO-LINT: move to async function
     
     // Agent assigns ticket to themselves
     const assignResponse = await UATHelper.makeRequest(`/api/tickets/${agentTicket.id}`, {
@@ -260,11 +260,11 @@ test('Support Agent Workflows', async (t) => {
         assigned_to: testData.agent.email,
         status: 'in_progress'
       })
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(assignResponse.ok, 'Agent should be able to assign and update tickets');
     
-    const updatedTicket = await assignResponse.json();
+    const updatedTicket = await assignResponse.json(); // TODO-LINT: move to async function
     assert.strictEqual(updatedTicket.status, 'in_progress', 'Ticket status should be updated');
     assert.strictEqual(updatedTicket.assigned_to, testData.agent.email, 'Ticket should be assigned to agent');
     
@@ -272,7 +272,7 @@ test('Support Agent Workflows', async (t) => {
   });
 
   await t.test('Agent Communication and Documentation', async () => {
-    console.log('📝 Testing agent communication and documentation...');
+    console.log('📝 Testing agent communication and documentation...'); // TODO-LINT: move to async function
     
     // Agent adds internal note
     const internalNoteData = {
@@ -286,7 +286,7 @@ test('Support Agent Workflows', async (t) => {
         'Authorization': `Bearer ${agentToken}`
       },
       body: JSON.stringify(internalNoteData)
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(internalResponse.ok, 'Agent should be able to add internal notes');
     
@@ -302,18 +302,18 @@ test('Support Agent Workflows', async (t) => {
         'Authorization': `Bearer ${agentToken}`
       },
       body: JSON.stringify(publicResponseData)
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(publicResponse.ok, 'Agent should be able to add public responses');
     
-    const publicComment = await publicResponse.json();
+    const publicComment = await publicResponse.json(); // TODO-LINT: move to async function
     assert.strictEqual(publicComment.type, 'public', 'Comment should be marked as public');
     
     console.log('  ✅ Agent can document work and communicate effectively');
   });
 
   await t.test('Ticket Resolution Workflow', async () => {
-    console.log('✅ Testing ticket resolution workflow...');
+    console.log('✅ Testing ticket resolution workflow...'); // TODO-LINT: move to async function
     
     // Agent resolves the ticket
     const resolutionData = {
@@ -327,11 +327,11 @@ test('Support Agent Workflows', async (t) => {
         'Authorization': `Bearer ${agentToken}`
       },
       body: JSON.stringify(resolutionData)
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'Agent should be able to resolve tickets');
     
-    const resolvedTicket = await response.json();
+    const resolvedTicket = await response.json(); // TODO-LINT: move to async function
     assert.strictEqual(resolvedTicket.status, 'resolved', 'Ticket should be marked as resolved');
     assert.ok(resolvedTicket.resolved_at, 'Ticket should have resolution timestamp');
     
@@ -345,22 +345,22 @@ test('Manager Workflows', async (t) => {
   let managerToken = null;
 
   await t.test('Manager Analytics and Reporting Access', async () => {
-    console.log('📊 Testing manager analytics and reporting access...');
+    console.log('📊 Testing manager analytics and reporting access...'); // TODO-LINT: move to async function
     
     // Create and login as manager
-    await UATHelper.createUser(testData.manager);
-    managerToken = await UATHelper.loginUser(testData.manager.email, testData.manager.password);
+    await UATHelper.createUser(testData.manager); // TODO-LINT: move to async function
+    managerToken = await UATHelper.loginUser(testData.manager.email, testData.manager.password); // TODO-LINT: move to async function
     
     // Access executive reporting
     const response = await UATHelper.makeRequest('/api/analytics/executive', {
       headers: {
         'Authorization': `Bearer ${managerToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'Manager should be able to access executive reports');
     
-    const report = await response.json();
+    const report = await response.json(); // TODO-LINT: move to async function
     assert.ok(report.kpis, 'Report should contain KPIs');
     assert.ok(report.trends, 'Report should contain trend data');
     assert.ok(Array.isArray(report.insights), 'Report should contain insights');
@@ -369,18 +369,18 @@ test('Manager Workflows', async (t) => {
   });
 
   await t.test('Team Performance Monitoring', async () => {
-    console.log('👥 Testing team performance monitoring...');
+    console.log('👥 Testing team performance monitoring...'); // TODO-LINT: move to async function
     
     // Access real-time metrics
     const response = await UATHelper.makeRequest('/api/analytics/realtime', {
       headers: {
         'Authorization': `Bearer ${managerToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'Manager should be able to access real-time metrics');
     
-    const metrics = await response.json();
+    const metrics = await response.json(); // TODO-LINT: move to async function
     assert.ok(metrics.currentLoad, 'Should show current system load');
     assert.ok(typeof metrics.currentLoad.activeUsers === 'number', 'Should show active user count');
     assert.ok(typeof metrics.currentLoad.ticketsPerHour === 'number', 'Should show tickets per hour');
@@ -389,18 +389,18 @@ test('Manager Workflows', async (t) => {
   });
 
   await t.test('SLA and Performance Tracking', async () => {
-    console.log('⏱️ Testing SLA and performance tracking...');
+    console.log('⏱️ Testing SLA and performance tracking...'); // TODO-LINT: move to async function
     
     // Get performance dashboard
     const response = await UATHelper.makeRequest('/api/analytics/dashboard', {
       headers: {
         'Authorization': `Bearer ${managerToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'Manager should be able to access performance dashboard');
     
-    const dashboard = await response.json();
+    const dashboard = await response.json(); // TODO-LINT: move to async function
     assert.ok(dashboard.performance, 'Dashboard should contain performance metrics');
     assert.ok(dashboard.trends, 'Dashboard should contain trend analysis');
     
@@ -419,22 +419,22 @@ test('Admin Workflows', async (t) => {
   let adminToken = null;
 
   await t.test('System Administration Access', async () => {
-    console.log('⚙️ Testing system administration access...');
+    console.log('⚙️ Testing system administration access...'); // TODO-LINT: move to async function
     
     // Create and login as admin
-    await UATHelper.createUser(testData.admin);
-    adminToken = await UATHelper.loginUser(testData.admin.email, testData.admin.password);
+    await UATHelper.createUser(testData.admin); // TODO-LINT: move to async function
+    adminToken = await UATHelper.loginUser(testData.admin.email, testData.admin.password); // TODO-LINT: move to async function
     
     // Access system health monitoring
     const response = await UATHelper.makeRequest('/api/monitoring/health', {
       headers: {
         'Authorization': `Bearer ${adminToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'Admin should be able to access system health monitoring');
     
-    const health = await response.json();
+    const health = await response.json(); // TODO-LINT: move to async function
     assert.ok(health.status, 'Health check should return status');
     assert.ok(health.database, 'Health check should include database status');
     
@@ -442,36 +442,36 @@ test('Admin Workflows', async (t) => {
   });
 
   await t.test('System Performance Monitoring', async () => {
-    console.log('🔍 Testing system performance monitoring...');
+    console.log('🔍 Testing system performance monitoring...'); // TODO-LINT: move to async function
     
     // Access performance metrics
     const response = await UATHelper.makeRequest('/api/monitoring/performance', {
       headers: {
         'Authorization': `Bearer ${adminToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'Admin should be able to access performance metrics');
     
-    const performance = await response.json();
+    const performance = await response.json(); // TODO-LINT: move to async function
     assert.ok(performance.metrics, 'Performance data should contain metrics');
     
     console.log('  ✅ Admin can monitor system performance');
   });
 
   await t.test('Alert Management', async () => {
-    console.log('🚨 Testing alert management...');
+    console.log('🚨 Testing alert management...'); // TODO-LINT: move to async function
     
     // Access system alerts
     const response = await UATHelper.makeRequest('/api/monitoring/alerts', {
       headers: {
         'Authorization': `Bearer ${adminToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(response.ok, 'Admin should be able to access system alerts');
     
-    const alerts = await response.json();
+    const alerts = await response.json(); // TODO-LINT: move to async function
     assert.ok(Array.isArray(alerts.activeAlerts), 'Should return array of active alerts');
     
     console.log('  ✅ Admin can manage system alerts');
@@ -487,17 +487,17 @@ test('Cross-Role Integration Workflows', async (t) => {
   let escalatedTicket = null;
 
   await t.test('Setup Test Users for Integration', async () => {
-    console.log('🔧 Setting up test users for cross-role integration testing...');
+    console.log('🔧 Setting up test users for cross-role integration testing...'); // TODO-LINT: move to async function
     
     // Create all user types
-    await UATHelper.createUser(testData.endUser);
-    await UATHelper.createUser(testData.agent);
-    await UATHelper.createUser(testData.manager);
+    await UATHelper.createUser(testData.endUser); // TODO-LINT: move to async function
+    await UATHelper.createUser(testData.agent); // TODO-LINT: move to async function
+    await UATHelper.createUser(testData.manager); // TODO-LINT: move to async function
     
     // Login all users
-    endUserToken = await UATHelper.loginUser(testData.endUser.email, testData.endUser.password);
-    agentToken = await UATHelper.loginUser(testData.agent.email, testData.agent.password);
-    managerToken = await UATHelper.loginUser(testData.manager.email, testData.manager.password);
+    endUserToken = await UATHelper.loginUser(testData.endUser.email, testData.endUser.password); // TODO-LINT: move to async function
+    agentToken = await UATHelper.loginUser(testData.agent.email, testData.agent.password); // TODO-LINT: move to async function
+    managerToken = await UATHelper.loginUser(testData.manager.email, testData.manager.password); // TODO-LINT: move to async function
     
     assert.ok(endUserToken && agentToken && managerToken, 'All test users should be logged in');
     
@@ -505,7 +505,7 @@ test('Cross-Role Integration Workflows', async (t) => {
   });
 
   await t.test('End-to-End Ticket Escalation Workflow', async () => {
-    console.log('🔄 Testing complete ticket escalation workflow...');
+    console.log('🔄 Testing complete ticket escalation workflow...'); // TODO-LINT: move to async function
     
     // 1. End user creates critical ticket
     const criticalTicketData = {
@@ -517,7 +517,7 @@ test('Cross-Role Integration Workflows', async (t) => {
       impact: 'critical'
     };
 
-    escalatedTicket = await UATHelper.createTicket(endUserToken, criticalTicketData);
+    escalatedTicket = await UATHelper.createTicket(endUserToken, criticalTicketData); // TODO-LINT: move to async function
     assert.ok(escalatedTicket.id, 'Critical ticket should be created');
     
     // 2. Agent picks up and starts working on ticket
@@ -530,7 +530,7 @@ test('Cross-Role Integration Workflows', async (t) => {
         assigned_to: testData.agent.email,
         status: 'in_progress'
       })
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(agentAssignResponse.ok, 'Agent should be able to assign ticket to themselves');
     
@@ -544,7 +544,7 @@ test('Cross-Role Integration Workflows', async (t) => {
         content: 'Initial assessment: Database server appears to be down. This requires immediate escalation to infrastructure team.',
         type: 'internal'
       })
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(assessmentResponse.ok, 'Agent should be able to add assessment');
     
@@ -558,7 +558,7 @@ test('Cross-Role Integration Workflows', async (t) => {
         priority: 'critical',
         vip_priority_score: 100
       })
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(escalateResponse.ok, 'Agent should be able to escalate ticket priority');
     
@@ -566,18 +566,18 @@ test('Cross-Role Integration Workflows', async (t) => {
   });
 
   await t.test('Manager Oversight and Reporting Validation', async () => {
-    console.log('👔 Testing manager oversight of escalated ticket...');
+    console.log('👔 Testing manager oversight of escalated ticket...'); // TODO-LINT: move to async function
     
     // Manager views dashboard to see critical tickets
     const dashboardResponse = await UATHelper.makeRequest('/api/analytics/dashboard', {
       headers: {
         'Authorization': `Bearer ${managerToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(dashboardResponse.ok, 'Manager should be able to view dashboard');
     
-    const dashboard = await dashboardResponse.json();
+    const dashboard = await dashboardResponse.json(); // TODO-LINT: move to async function
     
     // Manager should see the escalated ticket in metrics
     assert.ok(dashboard.summary.totalTickets >= 1, 'Dashboard should show ticket count');
@@ -587,7 +587,7 @@ test('Cross-Role Integration Workflows', async (t) => {
       headers: {
         'Authorization': `Bearer ${managerToken}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
     assert.ok(execResponse.ok, 'Manager should be able to view executive report');
     
@@ -595,7 +595,7 @@ test('Cross-Role Integration Workflows', async (t) => {
   });
 
   await t.test('Real-time System Monitoring Integration', async () => {
-    console.log('⚡ Testing real-time system monitoring integration...');
+    console.log('⚡ Testing real-time system monitoring integration...'); // TODO-LINT: move to async function
     
     // Check that all roles can access appropriate real-time data
     const roles = [
@@ -608,11 +608,11 @@ test('Cross-Role Integration Workflows', async (t) => {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      });
+      }); // TODO-LINT: move to async function
 
       assert.ok(response.ok, `${role} should be able to access real-time metrics`);
       
-      const metrics = await response.json();
+      const metrics = await response.json(); // TODO-LINT: move to async function
       assert.ok(metrics.currentLoad, `Real-time metrics should be available for ${role}`);
     }
     
@@ -623,13 +623,13 @@ test('Cross-Role Integration Workflows', async (t) => {
 // Accessibility and Usability Validation
 test('Accessibility and Usability Validation', async (t) => {
   await t.test('API Response Accessibility', async () => {
-    console.log('♿ Testing API response accessibility and usability...');
+    console.log('♿ Testing API response accessibility and usability...'); // TODO-LINT: move to async function
     
     // Test response structure for screen readers and assistive technologies
-    const response = await UATHelper.makeRequest('/api/tickets');
+    const response = await UATHelper.makeRequest('/api/tickets'); // TODO-LINT: move to async function
     
     if (response.ok) {
-      const data = await response.json();
+      const data = await response.json(); // TODO-LINT: move to async function
       
       // Check for consistent data structure
       if (Array.isArray(data)) {
@@ -645,7 +645,7 @@ test('Accessibility and Usability Validation', async (t) => {
   });
 
   await t.test('Error Message Usability', async () => {
-    console.log('💬 Testing error message usability...');
+    console.log('💬 Testing error message usability...'); // TODO-LINT: move to async function
     
     // Test user-friendly error messages
     const response = await UATHelper.makeRequest('/api/tickets', {
@@ -654,10 +654,10 @@ test('Accessibility and Usability Validation', async (t) => {
         title: '', // Invalid: empty title
         description: ''
       })
-    });
+    }); // TODO-LINT: move to async function
 
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorText = await response.text(); // TODO-LINT: move to async function
       
       // Error messages should be helpful, not technical
       assert.ok(!errorText.includes('Error:'), 'Should not expose technical error details');
@@ -671,7 +671,7 @@ test('Accessibility and Usability Validation', async (t) => {
 // Business Logic Validation
 test('Business Logic Validation', async (t) => {
   await t.test('VIP Priority System Business Rules', async () => {
-    console.log('⭐ Testing VIP priority system business rules...');
+    console.log('⭐ Testing VIP priority system business rules...'); // TODO-LINT: move to async function
     
     // Create VIP user
     const vipData = {
@@ -682,8 +682,8 @@ test('Business Logic Validation', async (t) => {
       password: 'VIPCustomer123!'
     };
 
-    await UATHelper.createUser(vipData);
-    const vipToken = await UATHelper.loginUser(vipData.email, vipData.password);
+    await UATHelper.createUser(vipData); // TODO-LINT: move to async function
+    const vipToken = await UATHelper.loginUser(vipData.email, vipData.password); // TODO-LINT: move to async function
     
     // VIP creates ticket
     const vipTicket = await UATHelper.createTicket(vipToken, {
@@ -691,7 +691,7 @@ test('Business Logic Validation', async (t) => {
       description: 'Issue requiring priority attention',
       priority: 'medium',
       category: 'technical'
-    });
+    }); // TODO-LINT: move to async function
 
     // VIP ticket should have elevated priority score
     assert.ok(vipTicket.vip_priority_score > 0, 'VIP ticket should have elevated priority score');
@@ -701,19 +701,19 @@ test('Business Logic Validation', async (t) => {
   });
 
   await t.test('SLA and Time Tracking Validation', async () => {
-    console.log('⏱️ Testing SLA and time tracking business logic...');
+    console.log('⏱️ Testing SLA and time tracking business logic...'); // TODO-LINT: move to async function
     
     // Create ticket with specific SLA requirements
     const testData = UATHelper.generateTestData();
-    await UATHelper.createUser(testData.endUser);
-    const userToken = await UATHelper.loginUser(testData.endUser.email, testData.endUser.password);
+    await UATHelper.createUser(testData.endUser); // TODO-LINT: move to async function
+    const userToken = await UATHelper.loginUser(testData.endUser.email, testData.endUser.password); // TODO-LINT: move to async function
     
     const slaTicket = await UATHelper.createTicket(userToken, {
       title: 'SLA Test Ticket',
       description: 'Testing SLA calculation',
       priority: 'high',
       category: 'critical'
-    });
+    }); // TODO-LINT: move to async function
 
     // Ticket should have creation timestamp for SLA calculation
     assert.ok(slaTicket.created_at, 'Ticket should have creation timestamp for SLA tracking');

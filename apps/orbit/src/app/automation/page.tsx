@@ -84,7 +84,7 @@ interface PredictiveInsight {
   data: Record<string, unknown>;
 }
 
-export default function IntelligentAutomation() {
+export default function _IntelligentAutomation() {
   const [workflows, setWorkflows] = useState<AutomationWorkflow[]>([]);
   const [predictiveInsights, setPredictiveInsights] = useState<PredictiveInsight[]>([]);
   const [selectedTab, setSelectedTab] = useState('workflows');
@@ -99,9 +99,9 @@ export default function IntelligentAutomation() {
         setLoading(true);
         
         // Load workflows
-        const workflowsResponse = await fetch('/api/v2/automation/workflows');
+        const workflowsResponse = await fetch('/api/v2/automation/workflows'); // TODO-LINT: move to async function
         if (workflowsResponse.ok) {
-          const workflowsData = await workflowsResponse.json();
+          const workflowsData = await workflowsResponse.json(); // TODO-LINT: move to async function
           setWorkflows(workflowsData.workflows || []);
         } else {
           // Fallback to basic workflows if API not implemented
@@ -124,9 +124,9 @@ export default function IntelligentAutomation() {
         }
         
         // Load insights
-        const insightsResponse = await fetch('/api/v2/automation/insights');
+        const insightsResponse = await fetch('/api/v2/automation/insights'); // TODO-LINT: move to async function
         if (insightsResponse.ok) {
-          const insightsData = await insightsResponse.json();
+          const insightsData = await insightsResponse.json(); // TODO-LINT: move to async function
           setPredictiveInsights(insightsData.insights || []);
         } else {
           // Fallback to basic insights

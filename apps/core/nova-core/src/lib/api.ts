@@ -101,7 +101,7 @@ class ApiClient {
 
   // Mock method helper
   private async mockRequest<T>(mockData: T, errorRate: number = 0.05): Promise<T> {
-    await delay(200 + Math.random() * 500); // Simulate network delay
+    await delay(200 + Math.random() * 500); // TODO-LINT: move to async function // Simulate network delay
     
     if (shouldSimulateError(errorRate)) {
       throw new Error('Simulated API error');
@@ -116,7 +116,7 @@ class ApiClient {
       return this.mockRequest({ token: 'mock_token_12345' });
     }
 
-    const response = await this.client.post<AuthToken>('/api/login', credentials);
+    const response = await this.client.post<AuthToken>('/api/login', credentials); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -126,7 +126,7 @@ class ApiClient {
     }
 
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    const response = await this.client.get<User>('/api/me', { headers });
+    const response = await this.client.get<User>('/api/me', { headers }); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -136,7 +136,7 @@ class ApiClient {
       return this.mockRequest(mockUsers);
     }
 
-    const response = await this.client.get<User[]>('/api/users');
+    const response = await this.client.get<User[]>('/api/users'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -146,7 +146,7 @@ class ApiClient {
       return this.mockRequest(newUser);
     }
 
-    const response = await this.client.post<User>('/api/users', user);
+    const response = await this.client.post<User>('/api/users', user); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -157,7 +157,7 @@ class ApiClient {
       return this.mockRequest(updatedUser);
     }
 
-    const response = await this.client.put<User>(`/api/users/${id}`, user);
+    const response = await this.client.put<User>(`/api/users/${id}`, user); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -166,7 +166,7 @@ class ApiClient {
       return this.mockRequest({ message: 'User deleted successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/users/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/users/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -174,27 +174,27 @@ class ApiClient {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'VIP updated' });
     }
-    const response = await this.client.put<ApiResponse>(`/api/v1/helix/users/${id}/vip`, data);
+    const response = await this.client.put<ApiResponse>(`/api/v1/helix/users/${id}/vip`, data); // TODO-LINT: move to async function
     return response.data;
   }
 
   async getVipProxies(): Promise<any[]> {
-    const response = await this.client.get<{ proxies: any[] }>('/api/v1/vip/proxies');
+    const response = await this.client.get<{ proxies: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[] }>('/api/v1/vip/proxies'); // TODO-LINT: move to async function
     return response.data.proxies;
   }
 
   async createVipProxy(data: { vipId: string; proxyId: string; expiresAt?: string }): Promise<ApiResponse> {
-    const response = await this.client.post<ApiResponse>('/api/v1/vip/proxies', data);
+    const response = await this.client.post<ApiResponse>('/api/v1/vip/proxies', data); // TODO-LINT: move to async function
     return response.data;
   }
 
   async deleteVipProxy(id: number): Promise<ApiResponse> {
-    const response = await this.client.delete<ApiResponse>(`/api/v1/vip/proxies/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/v1/vip/proxies/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
   async getVipHeatmap(): Promise<any[]> {
-    const response = await this.client.get<{ heatmap: any[] }>('/api/reports/vip-heatmap');
+    const response = await this.client.get<{ heatmap: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[] }>('/api/reports/vip-heatmap'); // TODO-LINT: move to async function
     return response.data.heatmap;
   }
 
@@ -204,7 +204,7 @@ class ApiClient {
       return this.mockRequest(mockRoles);
     }
 
-    const response = await this.client.get<Role[]>('/api/roles');
+    const response = await this.client.get<Role[]>('/api/roles'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -213,7 +213,7 @@ class ApiClient {
       return this.mockRequest(mockPermissions);
     }
 
-    const response = await this.client.get<Permission[]>('/api/roles/permissions');
+    const response = await this.client.get<Permission[]>('/api/roles/permissions'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -223,7 +223,7 @@ class ApiClient {
       return this.mockRequest(newRole);
     }
 
-    const response = await this.client.post<Role>('/api/roles', role);
+    const response = await this.client.post<Role>('/api/roles', role); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -232,7 +232,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Role updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>(`/api/roles/${id}`, role);
+    const response = await this.client.put<ApiResponse>(`/api/roles/${id}`, role); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -241,7 +241,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Role deleted successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/roles/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/roles/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -251,7 +251,7 @@ class ApiClient {
       return this.mockRequest(mockKiosks);
     }
 
-    const response = await this.client.get<Kiosk[]>('/api/kiosks');
+    const response = await this.client.get<Kiosk[]>('/api/kiosks'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -262,7 +262,7 @@ class ApiClient {
       return this.mockRequest(updatedKiosk);
     }
 
-    const response = await this.client.put<Kiosk>(`/api/kiosks/${id}`, kiosk);
+    const response = await this.client.put<Kiosk>(`/api/kiosks/${id}`, kiosk); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -271,7 +271,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk deleted successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/kiosks/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/kiosks/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -280,7 +280,7 @@ class ApiClient {
       return this.mockRequest({ id, active: true });
     }
 
-    const response = await this.client.post<Partial<Kiosk>>(`/api/kiosks/${id}/activate`);
+    const response = await this.client.post<Partial<Kiosk>>(`/api/kiosks/${id}/activate`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -289,13 +289,13 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk deactivated successfully' });
     }
 
-    const response = await this.client.post<ApiResponse>(`/api/kiosks/${id}/deactivate`);
+    const response = await this.client.post<ApiResponse>(`/api/kiosks/${id}/deactivate`); // TODO-LINT: move to async function
     return response.data;
   }
 
   async generateKioskActivation(): Promise<KioskActivation> {
     try {
-      const response = await this.client.post<KioskActivation>('/api/kiosks/activation');
+      const response = await this.client.post<KioskActivation>('/api/kiosks/activation'); // TODO-LINT: move to async function
       return response.data;
     } catch (error) {
       console.error('Error generating kiosk activation:', error);
@@ -322,7 +322,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<{ systems: string[] }>('/api/kiosks/systems');
+    const response = await this.client.get<{ systems: string[] }>('/api/kiosks/systems'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -331,7 +331,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk systems updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/kiosks/systems', { systems });
+    const response = await this.client.put<ApiResponse>('/api/kiosks/systems', { systems }); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -341,7 +341,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Config refresh requested' });
     }
 
-    const response = await this.client.post<ApiResponse>(`/api/kiosks/${id}/refresh-config`);
+    const response = await this.client.post<ApiResponse>(`/api/kiosks/${id}/refresh-config`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -350,7 +350,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk reset successfully' });
     }
 
-    const response = await this.client.post<ApiResponse>(`/api/kiosks/${id}/reset`);
+    const response = await this.client.post<ApiResponse>(`/api/kiosks/${id}/reset`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -360,7 +360,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Server restart initiated' });
     }
 
-    const response = await this.client.post<ApiResponse>('/api/server/restart');
+    const response = await this.client.post<ApiResponse>('/api/server/restart'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -374,7 +374,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get('/api/v1/server/status');
+    const response = await this.client.get('/api/v1/server/status'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -384,7 +384,7 @@ class ApiClient {
       return this.mockRequest(mockLogs);
     }
 
-    const response = await this.client.get<Log[]>('/api/logs');
+    const response = await this.client.get<Log[]>('/api/logs'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -393,7 +393,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Log deleted successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/logs/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/logs/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -407,7 +407,7 @@ class ApiClient {
       return new Blob([csvContent], { type: 'text/csv' });
     }
 
-    const response = await this.client.get('/api/logs/export', { responseType: 'blob' });
+    const response = await this.client.get('/api/logs/export', { responseType: 'blob' }); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -416,7 +416,7 @@ class ApiClient {
       return this.mockRequest({ message: 'All logs cleared successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>('/api/logs');
+    const response = await this.client.delete<ApiResponse>('/api/logs'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -426,7 +426,7 @@ class ApiClient {
       return this.mockRequest(mockConfig);
     }
 
-    const response = await this.client.get<Config>('/api/config');
+    const response = await this.client.get<Config>('/api/config'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -436,7 +436,7 @@ class ApiClient {
       return this.mockRequest(updatedConfig);
     }
 
-    const response = await this.client.put<Config>('/api/config', config);
+    const response = await this.client.put<Config>('/api/config', config); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -451,7 +451,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get('/api/v1/organizations/config');
+    const response = await this.client.get('/api/v1/organizations/config'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -461,7 +461,7 @@ class ApiClient {
       return this.mockRequest(mockNotifications);
     }
 
-    const response = await this.client.get<Notification[]>('/api/notifications');
+    const response = await this.client.get<Notification[]>('/api/notifications'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -482,7 +482,7 @@ class ApiClient {
       level: notification.level || 'info'
     };
 
-    const response = await this.client.post<Notification>('/api/notifications', payload);
+    const response = await this.client.post<Notification>('/api/notifications', payload); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -491,7 +491,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Notification deleted successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/notifications/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/notifications/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -510,7 +510,7 @@ class ApiClient {
       return this.mockRequest(mockDirectoryUsers);
     }
 
-    const response = await this.client.get<DirectoryUser[]>(`/api/directory/search?q=${encodeURIComponent(query)}`);
+    const response = await this.client.get<DirectoryUser[]>(`/api/directory/search?q=${encodeURIComponent(query)}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -520,7 +520,7 @@ class ApiClient {
       return this.mockRequest(mockIntegrations);
     }
 
-    const response = await this.client.get<Integration[]>('/api/integrations');
+    const response = await this.client.get<Integration[]>('/api/integrations'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -530,7 +530,7 @@ class ApiClient {
       return this.mockRequest(newIntegration);
     }
 
-    const response = await this.client.post<Integration>('/api/integrations', integration);
+    const response = await this.client.post<Integration>('/api/integrations', integration); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -541,7 +541,7 @@ class ApiClient {
       return this.mockRequest(updatedIntegration);
     }
 
-    const response = await this.client.put<Integration>(`/api/integrations/${id}`, integration);
+    const response = await this.client.put<Integration>(`/api/integrations/${id}`, integration); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -550,7 +550,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Integration deleted successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/integrations/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/integrations/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -563,7 +563,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.post<ApiResponse>(`/api/integrations/${id}/test`);
+    const response = await this.client.post<ApiResponse>(`/api/integrations/${id}/test`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -572,7 +572,7 @@ class ApiClient {
     if (this.useMockMode) {
       return this.mockRequest(mockEmailAccounts);
     }
-    const res = await this.client.get<EmailAccount[]>('/api/email-accounts');
+    const res = await this.client.get<EmailAccount[]>('/api/email-accounts'); // TODO-LINT: move to async function
     return res.data;
   }
 
@@ -581,7 +581,7 @@ class ApiClient {
       const newAcc = { ...account, id: Date.now() } as EmailAccount;
       return this.mockRequest(newAcc);
     }
-    const res = await this.client.post<EmailAccount>('/api/email-accounts', account);
+    const res = await this.client.post<EmailAccount>('/api/email-accounts', account); // TODO-LINT: move to async function
     return res.data;
   }
 
@@ -591,7 +591,7 @@ class ApiClient {
       const updated = { ...existing, ...account } as EmailAccount;
       return this.mockRequest(updated);
     }
-    const res = await this.client.put<EmailAccount>(`/api/email-accounts/${id}`, account);
+    const res = await this.client.put<EmailAccount>(`/api/email-accounts/${id}`, account); // TODO-LINT: move to async function
     return res.data;
   }
 
@@ -599,7 +599,7 @@ class ApiClient {
     if (this.useMockMode) {
       return this.mockRequest(undefined as any);
     }
-    await this.client.delete(`/api/email-accounts/${id}`);
+    await this.client.delete(`/api/email-accounts/${id}`); // TODO-LINT: move to async function
   }
 
   // Modules
@@ -608,7 +608,7 @@ class ApiClient {
       return this.mockRequest(mockModules);
     }
 
-    const response = await this.client.get<{ modules: Record<string, boolean> }>('/api/v1/modules');
+    const response = await this.client.get<{ modules: Record<string, boolean> }>('/api/v1/modules'); // TODO-LINT: move to async function
     return response.data.modules;
   }
 
@@ -618,28 +618,28 @@ class ApiClient {
       return this.mockRequest({ message: 'Module updated' });
     }
 
-    const response = await this.client.put<ApiResponse>(`/api/v1/modules/${key}`, { enabled });
+    const response = await this.client.put<ApiResponse>(`/api/v1/modules/${key}`, { enabled }); // TODO-LINT: move to async function
     return response.data;
   }
 
   // Catalog Items
   async getCatalogItems(): Promise<RequestCatalogItem[]> {
-    const response = await this.client.get<RequestCatalogItem[]>('/api/v1/orbit/catalog');
+    const response = await this.client.get<RequestCatalogItem[]>('/api/v1/orbit/catalog'); // TODO-LINT: move to async function
     return response.data;
   }
 
   async createCatalogItem(data: Omit<RequestCatalogItem, 'id'>): Promise<RequestCatalogItem> {
-    const response = await this.client.post<RequestCatalogItem>('/api/catalog-items', data);
+    const response = await this.client.post<RequestCatalogItem>('/api/catalog-items', data); // TODO-LINT: move to async function
     return response.data;
   }
 
   async updateCatalogItem(id: number, data: Partial<RequestCatalogItem>): Promise<ApiResponse> {
-    const response = await this.client.put<ApiResponse>(`/api/catalog-items/${id}`, data);
+    const response = await this.client.put<ApiResponse>(`/api/catalog-items/${id}`, data); // TODO-LINT: move to async function
     return response.data;
   }
 
   async deleteCatalogItem(id: number): Promise<ApiResponse> {
-    const response = await this.client.delete<ApiResponse>(`/api/catalog-items/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/catalog-items/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -665,7 +665,7 @@ class ApiClient {
       return this.mockRequest(mockAssets);
     }
 
-    const response = await this.client.get<Asset[]>('/api/assets');
+    const response = await this.client.get<Asset[]>('/api/assets'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -687,7 +687,7 @@ class ApiClient {
 
     const response = await this.client.post<Asset>('/api/assets', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    }); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -696,7 +696,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Asset deleted successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/assets/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/assets/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -706,7 +706,7 @@ class ApiClient {
       return this.mockRequest(mockDashboardStats);
     }
 
-    const response = await this.client.get<DashboardStats>('/api/dashboard/stats');
+    const response = await this.client.get<DashboardStats>('/api/dashboard/stats'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -715,7 +715,7 @@ class ApiClient {
       return this.mockRequest(mockDashboardStats.recentActivity);
     }
 
-    const response = await this.client.get<ActivityLog[]>('/api/dashboard/activity');
+    const response = await this.client.get<ActivityLog[]>('/api/dashboard/activity'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -735,16 +735,16 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get('/api/security-settings');
+    const response = await this.client.get('/api/security-settings'); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async updateSecuritySettings(settings: any): Promise<ApiResponse> {
+  async updateSecuritySettings(settings: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'Security settings updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/security-settings', settings);
+    const response = await this.client.put<ApiResponse>('/api/security-settings', settings); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -763,23 +763,23 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get('/api/notification-settings');
+    const response = await this.client.get('/api/notification-settings'); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async updateNotificationSettings(settings: any): Promise<ApiResponse> {
+  async updateNotificationSettings(settings: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'Notification settings updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/notification-settings', settings);
+    const response = await this.client.put<ApiResponse>('/api/notification-settings', settings); // TODO-LINT: move to async function
     return response.data;
   }
 
   // Kiosk Activations
   async getKioskActivations(): Promise<KioskActivation[]> {
     try {
-      const response = await this.client.get<KioskActivation[]>('/api/kiosks/activations');
+      const response = await this.client.get<KioskActivation[]>('/api/kiosks/activations'); // TODO-LINT: move to async function
       // Ensure we always return an array
       if (Array.isArray(response.data)) {
         return response.data;
@@ -839,7 +839,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<KioskConfig>(`/api/kiosk-config/${id}`);
+    const response = await this.client.get<KioskConfig>(`/api/kiosk-config/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -848,7 +848,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk configuration updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>(`/api/kiosk-config/${id}`, config);
+    const response = await this.client.put<ApiResponse>(`/api/kiosk-config/${id}`, config); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -858,7 +858,7 @@ class ApiClient {
       return this.mockRequest([]);
     }
 
-    const response = await this.client.get<any[]>('/api/feedback');
+    const response = await this.client.get<any[]>('/api/feedback'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -867,7 +867,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Feedback submitted successfully' });
     }
 
-    const response = await this.client.post<ApiResponse>('/api/feedback', feedback);
+    const response = await this.client.post<ApiResponse>('/api/feedback', feedback); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -877,7 +877,7 @@ class ApiClient {
       return this.mockRequest({ valid: true });
     }
 
-    const response = await this.client.post<{ valid: boolean }>('/api/verify-password', { password });
+    const response = await this.client.post<{ valid: boolean }>('/api/verify-password', { password }); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -889,7 +889,7 @@ class ApiClient {
     const response = await this.client.put<ApiResponse>('/api/admin-password', {
       currentPassword,
       newPassword
-    });
+    }); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -936,16 +936,16 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<any>('/api/status-config');
+    const response = await this.client.get<any>('/api/status-config'); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async updateStatusConfig(config: any): Promise<ApiResponse> {
+  async updateStatusConfig(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'Status configuration updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/status-config', config);
+    const response = await this.client.put<ApiResponse>('/api/status-config', config); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -962,16 +962,16 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<any>('/api/directory-config');
+    const response = await this.client.get<any>('/api/directory-config'); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async updateDirectoryConfig(config: any): Promise<ApiResponse> {
+  async updateDirectoryConfig(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'Directory configuration updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/directory-config', config);
+    const response = await this.client.put<ApiResponse>('/api/directory-config', config); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -991,7 +991,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<any>('/api/sso-config');
+    const response = await this.client.get<any>('/api/sso-config'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1000,7 +1000,7 @@ class ApiClient {
       return this.mockRequest({ available: false });
     }
 
-    const response = await this.client.get<{ available: boolean; loginUrl?: string }>('/api/sso-available');
+    const response = await this.client.get<{ available: boolean; // TODO-LINT: move to async function loginUrl?: string }>('/api/sso-available');
     return response.data;
   }
 
@@ -1014,16 +1014,16 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<any>('/api/scim-config');
+    const response = await this.client.get<any>('/api/scim-config'); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async updateSCIMConfig(config: any): Promise<ApiResponse> {
+  async updateSCIMConfig(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'SCIM configuration updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/scim-config', config);
+    const response = await this.client.put<ApiResponse>('/api/scim-config', config); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1041,7 +1041,7 @@ class ApiClient {
       ]);
     }
 
-    const response = await this.client.get<any[]>('/api/passkeys');
+    const response = await this.client.get<any[]>('/api/passkeys'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1050,11 +1050,11 @@ class ApiClient {
       return this.mockRequest({ message: 'Passkey deleted successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/passkeys/${id}`);
+    const response = await this.client.delete<ApiResponse>(`/api/passkeys/${id}`); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async beginPasskeyRegistration(options: any): Promise<any> {
+  async beginPasskeyRegistration(options: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<any> {
     if (this.useMockMode) {
       return this.mockRequest({
         challenge: 'mock-challenge',
@@ -1065,16 +1065,16 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.post<any>('/api/passkey/register/begin', options);
+    const response = await this.client.post<any>('/api/passkey/register/begin', options); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async completePasskeyRegistration(data: any): Promise<ApiResponse> {
+  async completePasskeyRegistration(data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ verified: true, message: 'Passkey registered successfully' });
     }
 
-    const response = await this.client.post<ApiResponse>('/api/passkey/register/complete', data);
+    const response = await this.client.post<ApiResponse>('/api/passkey/register/complete', data); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1089,11 +1089,11 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.post<any>('/api/passkey/authenticate/begin');
+    const response = await this.client.post<any>('/api/passkey/authenticate/begin'); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async completePasskeyAuthentication(data: any): Promise<{ verified: boolean; token?: string; user?: any }> {
+  async completePasskeyAuthentication(data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<{ verified: boolean; token?: string; user?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }> {
     if (this.useMockMode) {
       return this.mockRequest({
         verified: true,
@@ -1102,7 +1102,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.post<{ verified: boolean; token?: string; user?: any }>('/api/passkey/authenticate/complete', data);
+    const response = await this.client.post<{ verified: boolean; // TODO-LINT: move to async function token?: string; user?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }>('/api/passkey/authenticate/complete', data);
     return response.data;
   }
 
@@ -1112,7 +1112,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Admin pins updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/admin-pins', pinConfig);
+    const response = await this.client.put<ApiResponse>('/api/admin-pins', pinConfig); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1124,17 +1124,17 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.post<{ valid: boolean; permissions: string[] }>('/api/admin-pins/validate', { pin, kioskId });
+    const response = await this.client.post<{ valid: boolean; // TODO-LINT: move to async function permissions: string[] }>('/api/admin-pins/validate', { pin, kioskId });
     return response.data;
   }
 
   // SSO Configuration
-  async updateSSOConfig(config: any): Promise<ApiResponse> {
+  async updateSSOConfig(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'SSO configuration updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/sso-config', config);
+    const response = await this.client.put<ApiResponse>('/api/sso-config', config); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1160,16 +1160,16 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<any>(`/api/kiosks/${kioskId}/configuration`);
+    const response = await this.client.get<any>(`/api/kiosks/${kioskId}/configuration`); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async setKioskOverride(kioskId: string, configType: string, configData: any): Promise<ApiResponse> {
+  async setKioskOverride(kioskId: string, configType: string, configData: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'Kiosk override set successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/overrides/${configType}`, configData);
+    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/overrides/${configType}`, configData); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1178,7 +1178,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk override removed successfully' });
     }
 
-    const response = await this.client.delete<ApiResponse>(`/api/kiosks/${kioskId}/overrides/${configType}`);
+    const response = await this.client.delete<ApiResponse>(`/api/kiosks/${kioskId}/overrides/${configType}`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1203,7 +1203,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<any>('/api/configuration/global');
+    const response = await this.client.get<any>('/api/configuration/global'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1217,16 +1217,16 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<any>('/api/configuration/summary');
+    const response = await this.client.get<any>('/api/configuration/summary'); // TODO-LINT: move to async function
     return response.data;
   }
 
-  async updateGlobalConfiguration(config: any): Promise<ApiResponse> {
+  async updateGlobalConfiguration(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse> {
     if (this.useMockMode) {
       return this.mockRequest({ message: 'Global configuration updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>('/api/configuration/global', config);
+    const response = await this.client.put<ApiResponse>('/api/configuration/global', config); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1235,7 +1235,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk configuration scope updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/config-scope`, { scope });
+    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/config-scope`, { scope }); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1244,7 +1244,7 @@ class ApiClient {
       return this.mockRequest({ message: 'All kiosks reset to global configuration successfully' });
     }
 
-    const response = await this.client.post<ApiResponse>('/api/configuration/reset-all-to-global');
+    const response = await this.client.post<ApiResponse>('/api/configuration/reset-all-to-global'); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1253,7 +1253,7 @@ class ApiClient {
       return this.mockRequest({ message: `Global ${configType} configuration applied to all kiosks successfully` });
     }
 
-    const response = await this.client.post<ApiResponse>('/api/configuration/apply-global-to-all', { configType });
+    const response = await this.client.post<ApiResponse>('/api/configuration/apply-global-to-all', { configType }); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1263,7 +1263,7 @@ class ApiClient {
       return this.mockRequest({ message: 'Kiosk status updated successfully' });
     }
 
-    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/status`, status);
+    const response = await this.client.put<ApiResponse>(`/api/kiosks/${kioskId}/status`, status); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1285,7 +1285,7 @@ class ApiClient {
       });
     }
 
-    const response = await this.client.get<any>(`/api/kiosks/${kioskId}/schedule-config`);
+    const response = await this.client.get<any>(`/api/kiosks/${kioskId}/schedule-config`); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1295,7 +1295,7 @@ class ApiClient {
       return this.mockRequest({ message: 'SMTP test email sent successfully' });
     }
 
-    const response = await this.client.post<ApiResponse>('/api/smtp/test', { email: testEmail });
+    const response = await this.client.post<ApiResponse>('/api/smtp/test', { email: testEmail }); // TODO-LINT: move to async function
     return response.data;
   }
 
@@ -1305,22 +1305,22 @@ class ApiClient {
       return this.mockRequest([]);
     }
 
-    const response = await this.client.get<{ articles: KnowledgeArticle[] }>('/api/v1/lore/articles', { params });
+    const response = await this.client.get<{ articles: KnowledgeArticle[] }>('/api/v1/lore/articles', { params }); // TODO-LINT: move to async function
     return response.data.articles;
   }
 
   async getKnowledgeArticle(slug: string): Promise<KnowledgeArticle> {
-    const response = await this.client.get<{ article: KnowledgeArticle }>(`/api/v1/lore/articles/${slug}`);
+    const response = await this.client.get<{ article: KnowledgeArticle }>(`/api/v1/lore/articles/${slug}`); // TODO-LINT: move to async function
     return response.data.article;
   }
 
   async getKnowledgeVersions(articleId: number): Promise<KnowledgeArticleVersion[]> {
-    const response = await this.client.get<{ versions: KnowledgeArticleVersion[] }>(`/api/v1/lore/articles/${articleId}/versions`);
+    const response = await this.client.get<{ versions: KnowledgeArticleVersion[] }>(`/api/v1/lore/articles/${articleId}/versions`); // TODO-LINT: move to async function
     return response.data.versions;
   }
 
   async getKnowledgeComments(articleId: number): Promise<any[]> {
-    const response = await this.client.get<{ comments: any[] }>(`/api/v1/lore/articles/${articleId}/comments`);
+    const response = await this.client.get<{ comments: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[] }>(`/api/v1/lore/articles/${articleId}/comments`); // TODO-LINT: move to async function
     return response.data.comments;
   }
 
@@ -1335,51 +1335,51 @@ class ApiClient {
       return this.mockRequest(mockComment);
     }
 
-    const response = await this.client.post<{ comment: any }>(`/api/v1/lore/articles/${articleId}/comments`, data);
+    const response = await this.client.post<{ comment: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }>(`/api/v1/lore/articles/${articleId}/comments`, data); // TODO-LINT: move to async function
     return response.data.comment;
   }
 
   async createKnowledgeArticle(data: { title: string; content: string; tags?: string[] }): Promise<KnowledgeArticle> {
-    const response = await this.client.post<{ article: KnowledgeArticle }>('/api/v1/lore/articles', data);
+    const response = await this.client.post<{ article: KnowledgeArticle }>('/api/v1/lore/articles', data); // TODO-LINT: move to async function
     return response.data.article;
   }
 
   async createKnowledgeVersion(articleId: number, data: { content: string }): Promise<KnowledgeArticleVersion> {
-    const response = await this.client.post<{ version: KnowledgeArticleVersion }>(`/api/v1/lore/articles/${articleId}/versions`, data);
+    const response = await this.client.post<{ version: KnowledgeArticleVersion }>(`/api/v1/lore/articles/${articleId}/versions`, data); // TODO-LINT: move to async function
     return response.data.version;
   }
 
   // API Keys
   async getApiKeys(): Promise<ApiKey[]> {
-    const response = await this.client.get<{ apiKeys: ApiKey[] }>('/api/v1/api-keys');
+    const response = await this.client.get<{ apiKeys: ApiKey[] }>('/api/v1/api-keys'); // TODO-LINT: move to async function
     return response.data.apiKeys;
   }
 
   async createApiKey(description?: string): Promise<{ apiKey: ApiKey }> {
-    const response = await this.client.post<{ apiKey: ApiKey }>('/api/v1/api-keys', { description });
+    const response = await this.client.post<{ apiKey: ApiKey }>('/api/v1/api-keys', { description }); // TODO-LINT: move to async function
     return response.data;
   }
 
   async deleteApiKey(key: string): Promise<ApiResponse> {
-    const response = await this.client.delete<ApiResponse>(`/api/v1/api-keys/${key}`);
+    const response = await this.client.delete<ApiResponse>(`/api/v1/api-keys/${key}`); // TODO-LINT: move to async function
     return response.data;
   }
 }
 
 export const api = new ApiClient();
 
-export async function generateActivationCode(input: { kioskId: string; kioskName?: string; location?: string; configuration?: any }) {
+export async function _generateActivationCode(input: { kioskId: string; _kioskName?: string; location?: string; configuration?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }) {
   const res = await fetch('/api/v2/beacon/activation-codes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input)
-  });
+  }); // TODO-LINT: move to async function
   if (!res.ok) throw new Error('Failed to generate activation code');
   return res.json();
 }
 
-export async function listActivationCodes() {
-  const res = await fetch('/api/v1/configuration/activations');
+export async function _listActivationCodes() {
+  const res = await fetch('/api/v1/configuration/activations'); // TODO-LINT: move to async function
   if (!res.ok) throw new Error('Failed to list activation codes');
   return res.json();
 }

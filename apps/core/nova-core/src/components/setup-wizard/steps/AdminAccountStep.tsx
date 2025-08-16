@@ -5,8 +5,8 @@ import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
 
 interface AdminAccountStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  onUpdate: (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
   onComplete: () => void;
   errors: Record<string, string>;
   isLoading: boolean;

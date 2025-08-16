@@ -342,7 +342,7 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleElement);
 }
 
-export default function KioskStatusDisplay() {
+export default function _KioskStatusDisplay() {
   const { colorMode } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [systemMetrics, setSystemMetrics] = useState({

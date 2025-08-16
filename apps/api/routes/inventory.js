@@ -9,7 +9,7 @@ const router = express.Router();
 // List all assets
 router.get('/', authenticateJWT, async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM inventory_assets ORDER BY id');
+    const { rows } = await db.query('SELECT * FROM inventory_assets ORDER BY id'); // TODO-LINT: move to async function
     const assets = rows.map(a => ({
       ...a,
       serial_number: a.serial_number_enc ? decrypt(a.serial_number_enc) : null
@@ -23,7 +23,7 @@ router.get('/', authenticateJWT, async (req, res) => {
 // Assets by user
 router.get('/user/:userId', authenticateJWT, async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM inventory_assets WHERE assigned_to_user_id = $1', [req.params.userId]);
+    const { rows } = await db.query('SELECT * FROM inventory_assets WHERE assigned_to_user_id = $1', [req.params.userId]); // TODO-LINT: move to async function
     const assets = rows.map(a => ({
       ...a,
       serial_number: a.serial_number_enc ? decrypt(a.serial_number_enc) : null
@@ -37,7 +37,7 @@ router.get('/user/:userId', authenticateJWT, async (req, res) => {
 // Get single asset
 router.get('/:id', authenticateJWT, async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM inventory_assets WHERE id = $1', [req.params.id]);
+    const { rows } = await db.query('SELECT * FROM inventory_assets WHERE id = $1', [req.params.id]); // TODO-LINT: move to async function
     if (!rows[0]) return res.status(404).json({ success: false, error: 'Not found' });
     const asset = {
       ...rows[0],
@@ -89,7 +89,7 @@ router.post('/', authenticateJWT, async (req, res) => {
     const { rows } = await db.query(
       `INSERT INTO inventory_assets (${fields.join(',')}) VALUES (${placeholders}) RETURNING *`,
       values
-    );
+    ); // TODO-LINT: move to async function
     res.json({ success: true, asset: rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to create asset', errorCode: 'INVENTORY_ERROR' });
@@ -129,7 +129,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
     const { rows } = await db.query(
       `UPDATE inventory_assets SET ${set} WHERE id = $${fields.length+1} RETURNING *`,
       values
-    );
+    ); // TODO-LINT: move to async function
     res.json({ success: true, asset: rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to update asset', errorCode: 'INVENTORY_ERROR' });
@@ -139,7 +139,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
 // Delete asset
 router.delete('/:id', authenticateJWT, async (req, res) => {
   try {
-    await db.query('DELETE FROM inventory_assets WHERE id = $1', [req.params.id]);
+    await db.query('DELETE FROM inventory_assets WHERE id = $1', [req.params.id]); // TODO-LINT: move to async function
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to delete asset', errorCode: 'INVENTORY_ERROR' });
@@ -149,7 +149,7 @@ router.delete('/:id', authenticateJWT, async (req, res) => {
 // Asset history
 router.get('/:id/history', authenticateJWT, async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM asset_status_logs WHERE asset_id = $1 ORDER BY timestamp DESC', [req.params.id]);
+    const { rows } = await db.query('SELECT * FROM asset_status_logs WHERE asset_id = $1 ORDER BY timestamp DESC', [req.params.id]); // TODO-LINT: move to async function
     res.json({ success: true, history: rows });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to fetch history', errorCode: 'INVENTORY_ERROR' });
@@ -164,7 +164,7 @@ router.post('/:id/status', authenticateJWT, async (req, res) => {
       `INSERT INTO asset_status_logs (asset_id, previous_status, new_status, changed_by_user_id, notes)
        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
       [req.params.id, previous_status, new_status, req.user.id, notes]
-    );
+    ); // TODO-LINT: move to async function
     res.json({ success: true, log: rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to log status', errorCode: 'INVENTORY_ERROR' });
@@ -183,8 +183,8 @@ router.post('/:id/assign', authenticateJWT, async (req, res) => {
       `INSERT INTO asset_assignments (asset_id, user_id, org_id, customer_id, assigned_by, expected_return, manager_id)
        VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
       [req.params.id, user_id, org_id, customer_id, assigned_by || req.user.id, expected_return, manager_id]
-    );
-    await db.query('UPDATE inventory_assets SET assigned_to_user_id=$1 WHERE id=$2', [user_id, req.params.id]);
+    ); // TODO-LINT: move to async function
+    await db.query('UPDATE inventory_assets SET assigned_to_user_id=$1 WHERE id=$2', [user_id, req.params.id]); // TODO-LINT: move to async function
     res.json({ success: true, assignment: rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to assign asset', errorCode: 'INVENTORY_ERROR' });
@@ -231,17 +231,17 @@ router.post('/import', authenticateJWT, async (req, res) => {
       }
     }
 
-    await db.query('BEGIN');
+    await db.query('BEGIN'); // TODO-LINT: move to async function
     try {
       for (const rec of records) {
         await db.query(
           'INSERT INTO inventory_assets (asset_tag, serial_number_enc) VALUES ($1,$2)',
           [rec.asset_tag, rec.serial_number ? encrypt(rec.serial_number) : null]
-        );
+        ); // TODO-LINT: move to async function
       }
-      await db.query('COMMIT');
+      await db.query('COMMIT'); // TODO-LINT: move to async function
     } catch (e) {
-      await db.query('ROLLBACK');
+      await db.query('ROLLBACK'); // TODO-LINT: move to async function
       throw e;
     }
 

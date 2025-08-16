@@ -341,7 +341,7 @@ export interface ConfigurationSummary {
 }
 export interface KioskConfigUpdate {
     type: 'status' | 'schedule' | 'branding';
-    data: any;
+    data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
     timestamp: string;
     source: 'kiosk' | 'admin';
     kioskId: string;

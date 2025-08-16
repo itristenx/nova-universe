@@ -11,7 +11,7 @@ import HelixKioskIntegrationService from './helixKioskIntegration.js';
 async function getPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../prisma/generated/core/index.js');
+    const mod = await import('../../../prisma/generated/core/index.js'); // TODO-LINT: move to async function
     const PrismaClient = mod.PrismaClient;
     return new PrismaClient({ datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch (e) {
@@ -23,7 +23,7 @@ async function getPrisma() {
 let prisma;
 // Lazy initialization for Prisma client to avoid race conditions
 let prismaInstancePromise = null;
-function getPrismaInstance() {
+function _getPrismaInstance() {
   if (!prismaInstancePromise) {
     prismaInstancePromise = getPrisma();
   }
@@ -96,14 +96,14 @@ export class InventoryService {
       const records = this.parseCsvData(csvData);
       
       // Create import batch record
-      importBatch = await this.createImportBatch(batchId, filename, importedBy, records.length);
+      importBatch = await this.createImportBatch(batchId, filename, importedBy, records.length); // TODO-LINT: move to async function
       
       // Validate all records
-      const validationResults = await this.validateRecords(records, batchId);
+      const validationResults = await this.validateRecords(records, batchId); // TODO-LINT: move to async function
       
       // Check if validation passed
       if (validationResults.hasErrors) {
-        await this.updateBatchStatus(batchId, 'invalid', validationResults.errorSummary);
+        await this.updateBatchStatus(batchId, 'invalid', validationResults.errorSummary); // TODO-LINT: move to async function
         return {
           success: false,
           batchId,
@@ -116,10 +116,10 @@ export class InventoryService {
       }
       
       // Import valid records
-      const importResults = await this.importValidatedRecords(records, batchId, validationResults.validatedData);
+      const importResults = await this.importValidatedRecords(records, batchId, validationResults.validatedData); // TODO-LINT: move to async function
       
       // Update batch status
-      await this.updateBatchStatus(batchId, 'valid', null, importResults.successCount, importResults.failureCount);
+      await this.updateBatchStatus(batchId, 'valid', null, importResults.successCount, importResults.failureCount); // TODO-LINT: move to async function
       
       logger.info(`Asset import completed: ${importResults.successCount} successful, ${importResults.failureCount} failed`);
       
@@ -137,7 +137,7 @@ export class InventoryService {
       logger.error('Asset import failed:', error);
       
       if (importBatch) {
-        await this.updateBatchStatus(batchId, 'failed', error.message);
+        await this.updateBatchStatus(batchId, 'failed', error.message); // TODO-LINT: move to async function
       }
       
       throw new Error(`Import failed: ${error.message}`);
@@ -169,7 +169,7 @@ export class InventoryService {
     return await this.db.$executeRaw`
       INSERT INTO asset_import_batches (id, filename, imported_by, total_records)
       VALUES (${batchId}, ${filename}, ${importedBy}, ${totalRecords})
-    `;
+    `; // TODO-LINT: move to async function
   }
 
   /**
@@ -183,7 +183,7 @@ export class InventoryService {
           successful_records = ${successCount},
           failed_records = ${failureCount}
       WHERE id = ${batchId}
-    `;
+    `; // TODO-LINT: move to async function
   }
 
   /**
@@ -197,7 +197,7 @@ export class InventoryService {
     let hasErrors = false;
 
     // Get existing asset tags for uniqueness validation
-    const existingAssetTags = await this.getExistingAssetTags();
+    const existingAssetTags = await this.getExistingAssetTags(); // TODO-LINT: move to async function
     const newAssetTags = new Set();
 
     for (let i = 0; i < records.length; i++) {
@@ -240,7 +240,7 @@ export class InventoryService {
 
       // Log validation issues
       for (const error of rowErrors) {
-        await this.logValidationIssue(batchId, null, rowNumber, error.level, error.field, error.message, record);
+        await this.logValidationIssue(batchId, null, rowNumber, error.level, error.field, error.message, record); // TODO-LINT: move to async function
         if (error.level === 'error') {
           errorCount++;
           hasErrors = true;
@@ -248,7 +248,7 @@ export class InventoryService {
       }
 
       for (const warning of rowWarnings) {
-        await this.logValidationIssue(batchId, null, rowNumber, 'warning', warning.field, warning.message, record);
+        await this.logValidationIssue(batchId, null, rowNumber, 'warning', warning.field, warning.message, record); // TODO-LINT: move to async function
       }
 
       errors.push(...rowErrors);
@@ -413,7 +413,7 @@ export class InventoryService {
   async getExistingAssetTags() {
     const assets = await this.db.$queryRaw`
       SELECT UPPER(asset_tag) as asset_tag FROM inventory_assets
-    `;
+    `; // TODO-LINT: move to async function
     
     return new Set(assets.map(a => a.asset_tag));
   }
@@ -470,7 +470,7 @@ export class InventoryService {
         // Insert asset
         const asset = await this.db.inventoryAsset.create({
           data: record
-        });
+        }); // TODO-LINT: move to async function
 
         importedAssets.push(asset);
         successCount++;
@@ -490,7 +490,7 @@ export class InventoryService {
           'import',
           `Import failed: ${error.message}`,
           record
-        );
+        ); // TODO-LINT: move to async function
       }
     }
 
@@ -505,7 +505,7 @@ export class InventoryService {
       await this.db.$executeRaw`
         INSERT INTO asset_validation_logs (batch_id, asset_id, row_number, validation_level, field_name, message, raw_data)
         VALUES (${batchId}, ${assetId}, ${rowNumber || 0}, ${level}, ${fieldName}, ${message}, ${JSON.stringify(rawData)}::jsonb)
-      `;
+      `; // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Failed to log validation issue:', error);
     }
@@ -521,7 +521,7 @@ export class InventoryService {
       // Get the batch info
       const batch = await this.db.$queryRaw`
         SELECT * FROM asset_import_batches WHERE id = ${batchId}
-      `;
+      `; // TODO-LINT: move to async function
 
       if (batch.length === 0) {
         throw new Error('Import batch not found');
@@ -534,7 +534,7 @@ export class InventoryService {
       // Get all assets imported in this batch
       const assetsToDelete = await this.db.$queryRaw`
         SELECT id, asset_tag FROM inventory_assets WHERE import_batch_id = ${batchId}
-      `;
+      `; // TODO-LINT: move to async function
 
       const deletedAssets = [];
 
@@ -542,14 +542,14 @@ export class InventoryService {
       await this.db.$transaction(async (tx) => {
         for (const asset of assetsToDelete) {
           // Delete related records first (foreign key constraints)
-          await tx.$executeRaw`DELETE FROM asset_ticket_history WHERE asset_id = ${asset.id}`;
-          await tx.$executeRaw`DELETE FROM asset_warranty_alerts WHERE asset_id = ${asset.id}`;
-          await tx.$executeRaw`DELETE FROM asset_assignments WHERE asset_id = ${asset.id}`;
-          await tx.$executeRaw`DELETE FROM asset_status_logs WHERE asset_id = ${asset.id}`;
-          await tx.$executeRaw`DELETE FROM kiosk_asset_registry WHERE asset_id = ${asset.id}`;
+          await tx.$executeRaw`DELETE FROM asset_ticket_history WHERE asset_id = ${asset.id}`; // TODO-LINT: move to async function
+          await tx.$executeRaw`DELETE FROM asset_warranty_alerts WHERE asset_id = ${asset.id}`; // TODO-LINT: move to async function
+          await tx.$executeRaw`DELETE FROM asset_assignments WHERE asset_id = ${asset.id}`; // TODO-LINT: move to async function
+          await tx.$executeRaw`DELETE FROM asset_status_logs WHERE asset_id = ${asset.id}`; // TODO-LINT: move to async function
+          await tx.$executeRaw`DELETE FROM kiosk_asset_registry WHERE asset_id = ${asset.id}`; // TODO-LINT: move to async function
           
           // Delete the asset
-          await tx.$executeRaw`DELETE FROM inventory_assets WHERE id = ${asset.id}`;
+          await tx.$executeRaw`DELETE FROM inventory_assets WHERE id = ${asset.id}`; // TODO-LINT: move to async function
           
           deletedAssets.push(asset.asset_tag);
         }
@@ -561,7 +561,7 @@ export class InventoryService {
               rollback_date = CURRENT_TIMESTAMP,
               rollback_by = ${rolledBackBy}
           WHERE id = ${batchId}
-        `;
+        `; // TODO-LINT: move to async function
       });
 
       logger.info(`Rollback completed: ${deletedAssets.length} assets deleted`);
@@ -584,7 +584,7 @@ export class InventoryService {
   async getImportBatchDetails(batchId) {
     const batch = await this.db.$queryRaw`
       SELECT * FROM asset_import_batches WHERE id = ${batchId}
-    `;
+    `; // TODO-LINT: move to async function
 
     if (batch.length === 0) {
       throw new Error('Import batch not found');
@@ -594,14 +594,14 @@ export class InventoryService {
       SELECT * FROM asset_validation_logs 
       WHERE batch_id = ${batchId}
       ORDER BY row_number, validation_level DESC
-    `;
+    `; // TODO-LINT: move to async function
 
     const importedAssets = await this.db.$queryRaw`
       SELECT id, asset_tag, status, created_at 
       FROM inventory_assets 
       WHERE import_batch_id = ${batchId}
       ORDER BY created_at
-    `;
+    `; // TODO-LINT: move to async function
 
     return {
       batch: batch[0],
@@ -629,7 +629,7 @@ export class InventoryService {
       FROM asset_import_batches 
       ORDER BY import_date DESC
       LIMIT ${limit} OFFSET ${offset}
-    `;
+    `; // TODO-LINT: move to async function
 
     return batches;
   }
@@ -667,7 +667,7 @@ export class InventoryService {
     try {
       const asset = await this.db.inventoryAsset.findUnique({
         where: { id: assetId }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!asset) {
         throw new Error('Asset not found');
@@ -685,7 +685,7 @@ export class InventoryService {
           encrypted_metadata = EXCLUDED.encrypted_metadata,
           helix_sync_status = 'pending',
           last_check_in = CURRENT_TIMESTAMP
-      `;
+      `; // TODO-LINT: move to async function
 
       // Integrate with Helix APIs for identity sync
       let helixSyncResult = null;
@@ -698,7 +698,7 @@ export class InventoryService {
           assetId, 
           asset, 
           metadata
-        );
+        ); // TODO-LINT: move to async function
         
         if (helixSyncResult.status === 'synced') {
           finalSyncStatus = 'synced';
@@ -719,13 +719,13 @@ export class InventoryService {
               helix_error_message = ${helixError.message},
               helix_last_sync = CURRENT_TIMESTAMP
           WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
-        `;
+        `; // TODO-LINT: move to async function
         
         // Log the failure for retry processing
         await this.logHelixSyncFailure(kioskId, assetId, helixError.message, {
           asset_tag: asset.asset_tag,
           retry_count: 0
-        });
+        }); // TODO-LINT: move to async function
         
         // Don't throw error here - asset registration should succeed even if Helix sync fails
         finalSyncStatus = 'failed';
@@ -739,7 +739,7 @@ export class InventoryService {
               helix_last_sync = CURRENT_TIMESTAMP,
               helix_error_message = NULL
           WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
-        `;
+        `; // TODO-LINT: move to async function
       } else if (finalSyncStatus === 'skipped') {
         await this.db.$executeRaw`
           UPDATE kiosk_asset_registry 
@@ -747,7 +747,7 @@ export class InventoryService {
               helix_last_sync = CURRENT_TIMESTAMP,
               helix_error_message = ${helixSyncResult?.reason || 'API key not configured'}
           WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
-        `;
+        `; // TODO-LINT: move to async function
       }
 
       logger.info(`Asset ${asset.asset_tag} synced with kiosk ${kioskId}`);
@@ -771,7 +771,7 @@ export class InventoryService {
           SET helix_sync_status = 'failed',
               helix_error_message = ${error.message}
           WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
-        `;
+        `; // TODO-LINT: move to async function
       }
 
       throw error;
@@ -798,7 +798,7 @@ export class InventoryService {
           AND (a.last_warranty_alert_sent IS NULL 
                OR a.last_warranty_alert_sent < CURRENT_DATE - INTERVAL '7 days')
           AND a.warranty_expiry <= CURRENT_DATE + INTERVAL '1 day' * COALESCE(a.warranty_alert_days, 30)
-      `;
+      `; // TODO-LINT: move to async function
 
       const alertsCreated = [];
 
@@ -811,14 +811,14 @@ export class InventoryService {
           INSERT INTO asset_warranty_alerts (asset_id, alert_type, expiry_date, days_remaining)
           VALUES (${asset.id}, ${alertType}, ${asset.warranty_expiry}, ${asset.days_remaining})
           ON CONFLICT DO NOTHING
-        `;
+        `; // TODO-LINT: move to async function
 
         // Update last alert sent timestamp
         await this.db.$executeRaw`
           UPDATE inventory_assets 
           SET last_warranty_alert_sent = CURRENT_TIMESTAMP
           WHERE id = ${asset.id}
-        `;
+        `; // TODO-LINT: move to async function
 
         alertsCreated.push({
           assetTag: asset.asset_tag,
@@ -898,7 +898,7 @@ export class InventoryService {
             ELSE ${new Date(Date.now() + 24 * 60 * 60 * 1000)} -- 24 hour delay after 3 failures
           END,
           updated_at = CURRENT_TIMESTAMP
-      `;
+      `; // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Failed to log Helix sync failure:', error);
     }
@@ -927,7 +927,7 @@ export class InventoryService {
           AND hsf.retry_count < 5 -- Maximum 5 retries
         ORDER BY hsf.next_retry_at ASC
         LIMIT ${maxRetries}
-      `;
+      `; // TODO-LINT: move to async function
 
       const results = {
         total: failedSyncs.length,
@@ -940,11 +940,11 @@ export class InventoryService {
         try {
           const asset = await this.db.inventoryAsset.findUnique({
             where: { id: failedSync.asset_id }
-          });
+          }); // TODO-LINT: move to async function
 
           if (!asset) {
             logger.warn(`Asset ${failedSync.asset_id} no longer exists, removing from retry queue`);
-            await this.removeFromRetryQueue(failedSync.kiosk_id, failedSync.asset_id);
+            await this.removeFromRetryQueue(failedSync.kiosk_id, failedSync.asset_id); // TODO-LINT: move to async function
             continue;
           }
 
@@ -962,7 +962,7 @@ export class InventoryService {
             failedSync.asset_id,
             asset,
             metadata
-          );
+          ); // TODO-LINT: move to async function
 
           if (syncResult.status === 'synced') {
             // Success - update registry and remove from retry queue
@@ -972,9 +972,9 @@ export class InventoryService {
                   helix_last_sync = CURRENT_TIMESTAMP,
                   helix_error_message = NULL
               WHERE kiosk_id = ${failedSync.kiosk_id} AND asset_id = ${failedSync.asset_id}
-            `;
+            `; // TODO-LINT: move to async function
 
-            await this.removeFromRetryQueue(failedSync.kiosk_id, failedSync.asset_id);
+            await this.removeFromRetryQueue(failedSync.kiosk_id, failedSync.asset_id); // TODO-LINT: move to async function
             results.successful++;
             
             logger.info(`Retry successful for asset ${asset.asset_tag} on kiosk ${failedSync.kiosk_id}`);
@@ -991,7 +991,7 @@ export class InventoryService {
             failedSync.asset_id, 
             retryError.message,
             failedSync.metadata
-          );
+          ); // TODO-LINT: move to async function
 
           results.failed++;
           results.errors.push({
@@ -1020,7 +1020,7 @@ export class InventoryService {
       await this.db.$executeRaw`
         DELETE FROM helix_sync_failures 
         WHERE kiosk_id = ${kioskId} AND asset_id = ${assetId}
-      `;
+      `; // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Failed to remove from retry queue:', error);
     }
@@ -1036,7 +1036,7 @@ export class InventoryService {
       // Validate kiosk exists
       const kiosk = await this.db.kiosk.findUnique({
         where: { id: kioskId }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!kiosk) {
         throw new Error(`Kiosk with ID ${kioskId} not found`);
@@ -1078,7 +1078,7 @@ export class InventoryService {
           assignment_metadata = EXCLUDED.assignment_metadata,
           updated_at = CURRENT_TIMESTAMP
         RETURNING *
-      `;
+      `; // TODO-LINT: move to async function
 
       // Update kiosk metadata if needed
       if (validatedOrgData.updateKioskMetadata) {
@@ -1088,7 +1088,7 @@ export class InventoryService {
             // Add any kiosk-specific organization fields here if they exist in the schema
             updatedAt: new Date()
           }
-        });
+        }); // TODO-LINT: move to async function
       }
 
       logger.info(`Kiosk ${kioskId} successfully assigned to organization`);
@@ -1174,7 +1174,7 @@ export class InventoryService {
             }
           }
         }
-      });
+      }); // TODO-LINT: move to async function
 
       if (!kiosk) {
         throw new Error(`Kiosk with ID ${kioskId} not found`);
@@ -1219,7 +1219,7 @@ export class InventoryService {
 
       // Collect performance metadata
       if (metadataType === 'all' || metadataType === 'performance') {
-        collectedMetadata.performance = await this.collectKioskPerformanceMetadata(kioskId);
+        collectedMetadata.performance = await this.collectKioskPerformanceMetadata(kioskId); // TODO-LINT: move to async function
       }
 
       // Encrypt and store metadata
@@ -1228,7 +1228,7 @@ export class InventoryService {
       await this.db.$executeRaw`
         INSERT INTO kiosk_metadata_logs (kiosk_id, metadata_type, encrypted_metadata, collection_timestamp)
         VALUES (${kioskId}, ${metadataType}, ${encryptedMetadata}, CURRENT_TIMESTAMP)
-      `;
+      `; // TODO-LINT: move to async function
 
       logger.info(`Metadata collection completed for kiosk ${kioskId}`);
 
@@ -1286,7 +1286,7 @@ export class InventoryService {
         FROM kiosk_asset_registry kar
         WHERE kar.kiosk_id = ${kioskId}
           AND kar.last_check_in > CURRENT_TIMESTAMP - INTERVAL '30 days'
-      `;
+      `; // TODO-LINT: move to async function
 
       // Get sync performance
       const syncMetrics = await this.db.$queryRaw`
@@ -1297,7 +1297,7 @@ export class InventoryService {
         FROM kiosk_asset_registry
         WHERE kiosk_id = ${kioskId}
         GROUP BY helix_sync_status
-      `;
+      `; // TODO-LINT: move to async function
 
       return {
         interactions: recentMetrics[0] || {},

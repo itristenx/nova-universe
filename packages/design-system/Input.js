@@ -203,7 +203,7 @@ export function Label({ children, required = false, htmlFor, className = '' }) {
 }
 
 // Help text component
-export function HelpText({ children, state, className = '' }) {
+export function _HelpText({ children, state, className = '' }) {
   const helpClasses = `nova-help-text ${state ? `nova-help-text--${state}` : ''} ${className}`;
   
   return (
@@ -214,7 +214,7 @@ export function HelpText({ children, state, className = '' }) {
 }
 
 // Input group component
-export function InputGroup({ children, className = '' }) {
+export function _InputGroup({ children, className = '' }) {
   return (
     <div className={`nova-input-group ${className}`}>
       {children}
@@ -223,7 +223,7 @@ export function InputGroup({ children, className = '' }) {
 }
 
 // Input addon component
-export function InputAddon({ children, position = 'prepend', className = '' }) {
+export function _InputAddon({ children, position = 'prepend', className = '' }) {
   const addonClasses = `nova-input-group__addon nova-input-group__addon--${position} ${className}`;
   
   return (

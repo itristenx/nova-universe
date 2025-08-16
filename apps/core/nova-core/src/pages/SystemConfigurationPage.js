@@ -20,7 +20,7 @@ const SystemConfigurationPage = () => {
     const loadSystemConfig = async () => {
         try {
             // For now, use mock data since the API endpoint doesn't exist yet
-            // const response = await api.getConfig();
+            // const response = await api.getConfig(); // TODO-LINT: move to async function
             // Set default config 
             setConfig({
                 general: {
@@ -88,7 +88,7 @@ const SystemConfigurationPage = () => {
     const loadFeatureFlags = async () => {
         try {
             // For now, use mock data since the API endpoint doesn't exist yet
-            // const response = await api.getFeatureFlags();
+            // const response = await api.getFeatureFlags(); // TODO-LINT: move to async function
             // Set some default feature flags
             setFeatureFlags([
                 {
@@ -124,7 +124,7 @@ const SystemConfigurationPage = () => {
     const loadEnvironmentVariables = async () => {
         try {
             // For now, use mock data since the API endpoint doesn't exist yet
-            // const response = await api.getEnvironmentVariables();
+            // const response = await api.getEnvironmentVariables(); // TODO-LINT: move to async function
             // Set some default env vars (non-sensitive)
             setEnvVars([
                 {
@@ -157,8 +157,8 @@ const SystemConfigurationPage = () => {
         setSaving(true);
         try {
             // For now, just simulate save since the API endpoint doesn't exist yet
-            // await api.updateConfig(config);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+            // await api.updateConfig(config); // TODO-LINT: move to async function
+            await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function // Simulate API call
             addToast({
                 id: Date.now().toString(),
                 type: 'success',
@@ -182,7 +182,7 @@ const SystemConfigurationPage = () => {
     const toggleFeatureFlag = async (flagId) => {
         try {
             // For now, just simulate toggle since the API endpoint doesn't exist yet
-            // await api.toggleFeatureFlag(flagId);
+            // await api.toggleFeatureFlag(flagId); // TODO-LINT: move to async function
             setFeatureFlags(prev => prev.map(flag => flag.id === flagId ? { ...flag, enabled: !flag.enabled } : flag));
             addToast({
                 id: Date.now().toString(),

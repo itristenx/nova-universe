@@ -7,7 +7,7 @@ const router = express.Router();
 
 async function getIntegrationLayer() {
   try {
-    const mod = await import('../../lib/integration/nova-integration-layer.js');
+    const mod = await import('../../lib/integration/nova-integration-layer.js'); // TODO-LINT: move to async function
     return mod.novaIntegrationLayer;
   } catch (e) {
     logger.warn('Integration layer unavailable; skipping NIL-dependent route', { error: e?.message });
@@ -243,7 +243,7 @@ router.delete('/:id', async (req, res) => {
   }
 
   try {
-    const changes = await deleteConfigByKey(key);
+    const changes = await deleteConfigByKey(key); // TODO-LINT: move to async function
 
     if (changes === 0) {
       return res.status(404).json({ error: 'Integration not found', errorCode: 'NOT_FOUND' });
@@ -320,7 +320,7 @@ router.post('/:id/test', async (req, res, next) => {
   const key = `integration_${integrationId}`;
 
   try {
-    const config = await fetchConfigByKey(key);
+    const config = await fetchConfigByKey(key); // TODO-LINT: move to async function
 
     if (!config) {
       return res.status(404).json({
@@ -359,10 +359,10 @@ router.post('/:id/test', async (req, res, next) => {
  */
 router.get('/connectors/health', async (req, res) => {
   try {
-    const layer = await getIntegrationLayer();
+    const layer = await getIntegrationLayer(); // TODO-LINT: move to async function
     if (!layer) return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
 
-    const healthStatuses = await layer.getConnectorHealth();
+    const healthStatuses = await layer.getConnectorHealth(); // TODO-LINT: move to async function
     
     res.json({
       connectors: healthStatuses,
@@ -395,10 +395,10 @@ router.post('/connectors/:id/sync', async (req, res) => {
     const { id } = req.params;
     const { type = 'incremental', dryRun = false } = req.body;
 
-    const layer = await getIntegrationLayer();
+    const layer = await getIntegrationLayer(); // TODO-LINT: move to async function
     if (!layer) return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
 
-    const result = await layer.executeSync(id, { type, dryRun });
+    const result = await layer.executeSync(id, { type, dryRun }); // TODO-LINT: move to async function
     
     res.json({
       success: true,
@@ -451,7 +451,7 @@ router.post('/actions', async (req, res) => {
       });
     }
 
-    const layer = await getIntegrationLayer();
+    const layer = await getIntegrationLayer(); // TODO-LINT: move to async function
     if (!layer) return res.status(503).json({ error: 'Integration layer unavailable', code: 'NIL_UNAVAILABLE' });
     
     const result = await layer.executeAction({
@@ -460,7 +460,7 @@ router.post('/actions', async (req, res) => {
       target,
       parameters,
       requestedBy: req.user?.id || 'api'
-    });
+    }); // TODO-LINT: move to async function
     
     res.json({
       success: result.success,

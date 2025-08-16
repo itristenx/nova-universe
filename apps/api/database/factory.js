@@ -29,11 +29,11 @@ class DatabaseFactory {
     logger.info('🚀 Initializing database connections...');
 
     try {
-      await this.initializePostgreSQL();
-      await this.initializeAuthPostgreSQL();
+      await this.initializePostgreSQL(); // TODO-LINT: move to async function
+      await this.initializeAuthPostgreSQL(); // TODO-LINT: move to async function
 
       if (process.env.MONGO_ENABLED === 'true') {
-        await this.initializeMongoDB();
+        await this.initializeMongoDB(); // TODO-LINT: move to async function
       }
 
       // Ensure we have at least one working database
@@ -55,7 +55,7 @@ class DatabaseFactory {
    */
   async initializePostgreSQL() {
     try {
-      const success = await this.coreDb.initialize();
+      const success = await this.coreDb.initialize(); // TODO-LINT: move to async function
       if (success) {
         this.primaryDb = this.coreDb;
         this.availableDatabases.add('core_db');
@@ -71,7 +71,7 @@ class DatabaseFactory {
 
   async initializeAuthPostgreSQL() {
     try {
-      const success = await this.authDb.initialize();
+      const success = await this.authDb.initialize(); // TODO-LINT: move to async function
       if (success) {
         this.availableDatabases.add('auth_db');
         logger.info('✅ Auth PostgreSQL initialized');
@@ -86,7 +86,7 @@ class DatabaseFactory {
    */
   async initializeMongoDB() {
     try {
-      const success = await this.auditDb.initialize();
+      const success = await this.auditDb.initialize(); // TODO-LINT: move to async function
       if (success) {
         this.availableDatabases.add('audit_db');
         logger.info('✅ MongoDB audit database initialized');
@@ -148,7 +148,7 @@ class DatabaseFactory {
     // Check PostgreSQL health
     if (this.isDatabaseAvailable('core_db')) {
       try {
-        status.health_checks.postgresql = await this.coreDb.healthCheck();
+        status.health_checks.postgresql = await this.coreDb.healthCheck(); // TODO-LINT: move to async function
       } catch (error) {
         status.health_checks.postgresql = {
           status: 'error',
@@ -160,7 +160,7 @@ class DatabaseFactory {
     // Check MongoDB health
     if (this.isDatabaseAvailable('audit_db')) {
       try {
-        status.health_checks.mongodb = await this.auditDb.healthCheck();
+        status.health_checks.mongodb = await this.auditDb.healthCheck(); // TODO-LINT: move to async function
       } catch (error) {
         status.health_checks.mongodb = {
           status: 'error',
@@ -180,7 +180,7 @@ class DatabaseFactory {
 
     try {
       if (primaryDb === postgresManager) {
-        return await primaryDb.query(sql, params);
+        return await primaryDb.query(sql, params); // TODO-LINT: move to async function
       } else {
         throw new Error('Unsupported primary database type');
       }
@@ -191,7 +191,7 @@ class DatabaseFactory {
       if (primaryDb !== this.auditDb && this.isDatabaseAvailable('audit_db')) {
         logger.warn('🔄 Falling back to MongoDB');
         const collectionName = sql.split(' ')[2]; // Extract collection name from SQL (naive approach)
-        return await this.getDocuments(collectionName, params[0]);
+        return await this.getDocuments(collectionName, params[0]); // TODO-LINT: move to async function
       }
       
       throw error;
@@ -211,7 +211,7 @@ class DatabaseFactory {
       ...document,
       created_at: new Date(),
       updated_at: new Date()
-    });
+    }); // TODO-LINT: move to async function
   }
 
   /**
@@ -223,7 +223,7 @@ class DatabaseFactory {
     }
 
     const mongoCollection = this.auditDb.collection(collection);
-    return await mongoCollection.find(filter, options).toArray();
+    return await mongoCollection.find(filter, options).toArray(); // TODO-LINT: move to async function
   }
 
   /**
@@ -231,14 +231,14 @@ class DatabaseFactory {
    */
   async createAuditLog(action, userId, details = {}) {
     if (this.isDatabaseAvailable('audit_db')) {
-      await this.auditDb.logAudit(action, userId, details);
+      await this.auditDb.logAudit(action, userId, details); // TODO-LINT: move to async function
     } else {
       // Fallback to primary database audit table
       try {
         await this.query(
           'INSERT INTO audit_logs (action, user_id, details, timestamp) VALUES ($1, $2, $3, $4)',
           [action, userId, JSON.stringify(details), new Date().toISOString()]
-        );
+        ); // TODO-LINT: move to async function
       } catch (error) {
         logger.error('❌ Failed to create audit log:', error.message);
       }
@@ -265,7 +265,7 @@ class DatabaseFactory {
       closePromises.push(this.auditDb.close());
     }
 
-    await Promise.all(closePromises);
+    await Promise.all(closePromises); // TODO-LINT: move to async function
     this.initialized = false;
     logger.info('✅ All database connections closed');
   }

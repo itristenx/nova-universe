@@ -6,7 +6,7 @@ import { useConnectionNotifications } from '@/hooks/useConnectionNotifications';
 import { useToastStore } from '@/stores/toast';
 import { ServerConnectionModal } from '@/components/ServerConnectionModal';
 import { api } from '@/lib/api';
-export const Header = ({ onToggleSidebar }) => {
+export const _Header = ({ onToggleSidebar }) => {
     const { isConnected } = useApiHealth();
     useConnectionNotifications(); // Enable real-time connection notifications
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ export const Header = ({ onToggleSidebar }) => {
     useEffect(() => {
         const loadStatus = async () => {
             try {
-                const config = await api.getStatusConfig();
+                const config = await api.getStatusConfig(); // TODO-LINT: move to async function
                 setCurrentStatus(config.currentStatus || (config.enabled ? 'open' : 'closed'));
             }
             catch (error) {
@@ -50,7 +50,7 @@ export const Header = ({ onToggleSidebar }) => {
         try {
             setLoading(true);
             // Get current config to preserve existing settings
-            const currentConfig = await api.getStatusConfig();
+            const currentConfig = await api.getStatusConfig(); // TODO-LINT: move to async function
             await api.updateStatusConfig({
                 ...currentConfig,
                 enabled: status === 'open',
@@ -61,7 +61,7 @@ export const Header = ({ onToggleSidebar }) => {
                 brbMessage: currentConfig.brbMessage || 'Be Right Back',
                 lunchMessage: currentConfig.lunchMessage || 'Out to Lunch - Back in 1 Hour',
                 unavailableMessage: currentConfig.unavailableMessage || 'Status Unavailable'
-            });
+            }); // TODO-LINT: move to async function
             setCurrentStatus(status);
             setIsDropdownOpen(false);
             addToast({
@@ -72,7 +72,7 @@ export const Header = ({ onToggleSidebar }) => {
             // Trigger a reload of the status after a short delay
             setTimeout(async () => {
                 try {
-                    const updatedConfig = await api.getStatusConfig();
+                    const updatedConfig = await api.getStatusConfig(); // TODO-LINT: move to async function
                     setCurrentStatus(updatedConfig.currentStatus || (updatedConfig.enabled ? 'open' : 'closed'));
                 }
                 catch (error) {

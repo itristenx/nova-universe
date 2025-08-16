@@ -107,7 +107,7 @@ export const SAMLConfigurationPage: React.FC = () => {
   const loadConfig = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await api.getSSOConfig();
+      const data = await api.getSSOConfig(); // TODO-LINT: move to async function
       if (data.saml) {
         setConfig({
           ...config,
@@ -141,7 +141,7 @@ export const SAMLConfigurationPage: React.FC = () => {
         configuration: {
           saml: config
         }
-      });
+      }); // TODO-LINT: move to async function
       
       addToast({
         type: 'success',
@@ -166,7 +166,7 @@ export const SAMLConfigurationPage: React.FC = () => {
       setTestResult(null);
       
       // Simulate SAML connection test
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000)); // TODO-LINT: move to async function
       
       const mockResult: TestResult = {
         success: config.entryPoint && config.issuer && config.cert ? true : false,
@@ -869,10 +869,10 @@ export const SAMLConfigurationPage: React.FC = () => {
               <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-md">
                 <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-2">Step 3: Test Configuration</h4>
                 <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-                  <li>• Use the test functionality in this interface</li>
-                  <li>• Verify user attributes are correctly mapped</li>
-                  <li>• Test with different user accounts</li>
-                  <li>• Confirm group synchronization if enabled</li>
+                  <li>• Use the test _functionality in this interface</li>
+                  <li>• Verify user attributes are correctly _mapped</li>
+                  <li>• Test with _different user accounts</li>
+                  <li>• Confirm group _synchronization if enabled</li>
                 </ul>
               </div>
             </div>
@@ -880,7 +880,7 @@ export const SAMLConfigurationPage: React.FC = () => {
         </div>
       )}
 
-      {/* Metadata Parser Modal */}
+      {/* Metadata _Parser Modal */}
       {showMetadataParser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4">

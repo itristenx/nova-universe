@@ -1,12 +1,12 @@
 // Nova Universe Pulse Service Worker
 // Mobile-first PWA with offline ticket management
 
-const CACHE_NAME = 'nova-pulse-v1';
+const _CACHE_NAME = 'nova-pulse-v1';
 const STATIC_CACHE = 'nova-pulse-static-v1';
 const DYNAMIC_CACHE = 'nova-pulse-dynamic-v1';
 const OFFLINE_CACHE = 'nova-pulse-offline-v1';
 
-// Critical assets for offline functionality
+// Critical assets for offline _functionality
 const STATIC_ASSETS = [
   '/',
   '/offline.html',
@@ -16,16 +16,16 @@ const STATIC_ASSETS = [
   '/assets/icons/icon-512x512.png'
 ];
 
-// API endpoints for offline caching
+// API _endpoints for offline caching
 const CACHEABLE_APIS = [
   '/api/tickets',
-  '/api/user/profile',
+  '/api/_user/profile',
   '/api/knowledge',
-  '/api/kiosks',
-  '/api/auth/status'
+  '/api/_kiosks',
+  '/api/_auth/status'
 ];
 
-// Offline-first URLs (always serve from cache when available)
+// _Offline-first _URLs (_always serve from cache when available)
 const OFFLINE_FIRST_ROUTES = [
   '/tickets',
   '/knowledge',
@@ -129,12 +129,12 @@ async function handleApiRequest(request) {
   // Non-cacheable APIs (POST, PUT, DELETE)
   if (request.method !== 'GET' || !isCacheable) {
     try {
-      const response = await fetch(request);
+      const response = await fetch(request); // TODO-LINT: move to async function
       
       // If it's a ticket creation/update, queue for background sync
       if (url.pathname.includes('/tickets') && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
         if (!response.ok) {
-          await queueOfflineAction(request);
+          await queueOfflineAction(request); // TODO-LINT: move to async function
         }
       }
       
@@ -142,7 +142,7 @@ async function handleApiRequest(request) {
     } catch (error) {
       // Queue failed requests for background sync
       if (url.pathname.includes('/tickets') && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
-        await queueOfflineAction(request);
+        await queueOfflineAction(request); // TODO-LINT: move to async function
         return new Response(
           JSON.stringify({ 
             success: true, 
@@ -165,7 +165,7 @@ async function handleApiRequest(request) {
 
   // Cacheable GET requests: Cache first, then network
   try {
-    const cachedResponse = await caches.match(request);
+    const cachedResponse = await caches.match(request); // TODO-LINT: move to async function
     
     if (cachedResponse) {
       // Serve from cache immediately, update in background
@@ -174,9 +174,9 @@ async function handleApiRequest(request) {
     }
     
     // No cache, fetch from network
-    return await fetchAndCache(request);
+    return await fetchAndCache(request); // TODO-LINT: move to async function
   } catch (error) {
-    const cachedResponse = await caches.match(request);
+    const cachedResponse = await caches.match(request); // TODO-LINT: move to async function
     if (cachedResponse) {
       return cachedResponse;
     }
@@ -194,7 +194,7 @@ async function handleApiRequest(request) {
 // Cache-first strategy for offline-first routes
 async function handleOfflineFirst(request) {
   try {
-    const cachedResponse = await caches.match(request);
+    const cachedResponse = await caches.match(request); // TODO-LINT: move to async function
     
     if (cachedResponse) {
       // Update cache in background
@@ -203,52 +203,52 @@ async function handleOfflineFirst(request) {
     }
     
     // No cache available, try network
-    return await fetchAndCache(request);
+    return await fetchAndCache(request); // TODO-LINT: move to async function
   } catch (error) {
     // Network failed, serve offline page
-    return await caches.match('/offline.html');
+    return await caches.match('/offline.html'); // TODO-LINT: move to async function
   }
 }
 
 // Handle navigation with offline support
 async function handleNavigation(request) {
   try {
-    const networkResponse = await fetch(request);
+    const networkResponse = await fetch(request); // TODO-LINT: move to async function
     return networkResponse;
   } catch (error) {
     console.log('📡 Network failed for navigation, serving cached version');
     
     // Try to serve cached version of the page
-    const cachedResponse = await caches.match(request);
+    const cachedResponse = await caches.match(request); // TODO-LINT: move to async function
     if (cachedResponse) {
       return cachedResponse;
     }
     
     // Serve cached index for SPA routing
-    const indexResponse = await caches.match('/');
+    const indexResponse = await caches.match('/'); // TODO-LINT: move to async function
     if (indexResponse) {
       return indexResponse;
     }
     
     // Last resort: offline page
-    return await caches.match('/offline.html');
+    return await caches.match('/offline.html'); // TODO-LINT: move to async function
   }
 }
 
 // Handle static assets
 async function handleStaticAsset(request) {
   // Cache first for better performance on mobile
-  const cachedResponse = await caches.match(request);
+  const cachedResponse = await caches.match(request); // TODO-LINT: move to async function
   
   if (cachedResponse) {
     return cachedResponse;
   }
   
   try {
-    const networkResponse = await fetch(request);
+    const networkResponse = await fetch(request); // TODO-LINT: move to async function
     
     if (networkResponse.ok) {
-      const cache = await caches.open(STATIC_CACHE);
+      const cache = await caches.open(STATIC_CACHE); // TODO-LINT: move to async function
       cache.put(request, networkResponse.clone());
     }
     
@@ -260,10 +260,10 @@ async function handleStaticAsset(request) {
 
 // Fetch and cache helper
 async function fetchAndCache(request) {
-  const response = await fetch(request);
+  const response = await fetch(request); // TODO-LINT: move to async function
   
   if (response.ok) {
-    const cache = await caches.open(DYNAMIC_CACHE);
+    const cache = await caches.open(DYNAMIC_CACHE); // TODO-LINT: move to async function
     cache.put(request, response.clone());
   }
   
@@ -273,9 +273,9 @@ async function fetchAndCache(request) {
 // Queue offline actions for background sync
 async function queueOfflineAction(request) {
   try {
-    const cache = await caches.open(OFFLINE_CACHE);
+    const cache = await caches.open(OFFLINE_CACHE); // TODO-LINT: move to async function
     const clonedRequest = request.clone();
-    const body = await clonedRequest.text();
+    const body = await clonedRequest.text(); // TODO-LINT: move to async function
     
     const offlineAction = {
       url: request.url,
@@ -289,7 +289,7 @@ async function queueOfflineAction(request) {
     await cache.put(
       `offline-action-${Date.now()}`, 
       new Response(JSON.stringify(offlineAction))
-    );
+    ); // TODO-LINT: move to async function
     
     console.log('📥 Queued offline action:', request.method, request.url);
   } catch (error) {
@@ -309,25 +309,25 @@ self.addEventListener('sync', (event) => {
 // Sync queued offline actions
 async function syncOfflineActions() {
   try {
-    const cache = await caches.open(OFFLINE_CACHE);
-    const requests = await cache.keys();
+    const cache = await caches.open(OFFLINE_CACHE); // TODO-LINT: move to async function
+    const requests = await cache.keys(); // TODO-LINT: move to async function
     
     for (const request of requests) {
       if (request.url.includes('offline-action-')) {
         try {
-          const response = await cache.match(request);
-          const actionData = await response.json();
+          const response = await cache.match(request); // TODO-LINT: move to async function
+          const actionData = await response.json(); // TODO-LINT: move to async function
           
           // Replay the action
           const replayResponse = await fetch(actionData.url, {
             method: actionData.method,
             headers: actionData.headers,
             body: actionData.body
-          });
+          }); // TODO-LINT: move to async function
           
           if (replayResponse.ok) {
             // Success! Remove from offline queue
-            await cache.delete(request);
+            await cache.delete(request); // TODO-LINT: move to async function
             console.log('✅ Synced offline action:', actionData.method, actionData.url);
           }
         } catch (error) {

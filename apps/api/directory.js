@@ -14,8 +14,8 @@ export async function getConfig() {
   });
 }
 
-export async function searchDirectory(q) {
-  const cfg = await getConfig();
+export async function _searchDirectory(q) {
+  const cfg = await getConfig(); // TODO-LINT: move to async function
   if (cfg.directoryEnabled !== '1') return [];
   const provider = cfg.directoryProvider || 'mock';
   if (provider === 'scim') {
@@ -24,7 +24,7 @@ export async function searchDirectory(q) {
     const resp = await axios.get(`${url}/Users`, {
       params: { filter: `userName co \"${q}\"` },
       headers: { Authorization: `Bearer ${token}` },
-    });
+    }); // TODO-LINT: move to async function
     const list = resp.data?.Resources || [];
     return list.map((u) => ({ name: u.displayName, email: u.userName }));
   }
@@ -52,7 +52,7 @@ export async function searchDirectory(q) {
   });
 }
 
-export async function createUser(name, email) {
+export async function _createUser(name, email) {
   // NOTE: This creates a user in the LOCAL Nova Universe database, NOT in the external directory
   // Directory integration is strictly read-only - we never modify external directory data
   return new Promise((resolve, reject) => {

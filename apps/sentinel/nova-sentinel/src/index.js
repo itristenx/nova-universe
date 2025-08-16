@@ -123,15 +123,15 @@ async function initializeServices() {
 
     // Initialize database
     services.database = new DatabaseService(CONFIG.database);
-    await services.database.initialize();
+    await services.database.initialize(); // TODO-LINT: move to async function
 
     // Initialize Helix authentication
     services.helix = new HelixAuthService(CONFIG.helix);
-    await services.helix.initialize();
+    await services.helix.initialize(); // TODO-LINT: move to async function
 
     // Initialize Uptime Kuma adapter
     services.uptimeKuma = new UptimeKumaAdapter(CONFIG.uptimeKuma);
-    await services.uptimeKuma.initialize();
+    await services.uptimeKuma.initialize(); // TODO-LINT: move to async function
 
     // Initialize core services
     services.monitoring = new MonitoringService(services.database, services.uptimeKuma);
@@ -145,7 +145,7 @@ async function initializeServices() {
       services.notifications.initialize(),
       services.statusPages.initialize(),
       services.analytics.initialize()
-    ]);
+    ]); // TODO-LINT: move to async function
 
     logger.info('All Nova Sentinel services initialized successfully');
   } catch (error) {
@@ -166,7 +166,7 @@ async function authenticateRequest(req, res, next) {
       });
     }
 
-    const user = await services.helix.validateToken(token);
+    const user = await services.helix.validateToken(token); // TODO-LINT: move to async function
     if (!user) {
       return res.status(401).json({ 
         success: false, 
@@ -203,7 +203,7 @@ app.get('/health', async (req, res) => {
         uptimeKuma: await services.uptimeKuma?.healthCheck() || false,
         helix: await services.helix?.healthCheck() || false
       }
-    };
+    }; // TODO-LINT: move to async function
 
     // Check overall health
     const servicesHealthy = Object.values(health.services).every(status => status === true);
@@ -266,7 +266,7 @@ io.on('connection', async (socket) => {
   // Authenticate WebSocket connection
   socket.on('authenticate', async (token) => {
     try {
-      const user = await services.helix.validateToken(token);
+      const user = await services.helix.validateToken(token); // TODO-LINT: move to async function
       if (user) {
         socket.user = user;
         socket.join(`user_${user.id}`);
@@ -310,7 +310,7 @@ async function startBackgroundServices() {
   // Start monitor checking loop
   setInterval(async () => {
     try {
-      await services.monitoring.runMonitorChecks();
+      await services.monitoring.runMonitorChecks(); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Monitor check loop error:', error);
     }
@@ -319,7 +319,7 @@ async function startBackgroundServices() {
   // Start status page updates
   setInterval(async () => {
     try {
-      await services.statusPages.updateAllStatusPages();
+      await services.statusPages.updateAllStatusPages(); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Status page update error:', error);
     }
@@ -328,7 +328,7 @@ async function startBackgroundServices() {
   // Start analytics collection
   setInterval(async () => {
     try {
-      await services.analytics.collectMetrics();
+      await services.analytics.collectMetrics(); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Analytics collection error:', error);
     }
@@ -365,7 +365,7 @@ process.on('SIGTERM', async () => {
   
   // Close database connections
   if (services.database) {
-    await services.database.close();
+    await services.database.close(); // TODO-LINT: move to async function
   }
   
   process.exit(0);
@@ -374,7 +374,7 @@ process.on('SIGTERM', async () => {
 // Start the server
 async function startServer() {
   try {
-    await initializeServices();
+    await initializeServices(); // TODO-LINT: move to async function
     
     server.listen(CONFIG.port, () => {
       logger.info(`🌌 Nova Sentinel running on port ${CONFIG.port}`);
@@ -385,7 +385,7 @@ async function startServer() {
     });
 
     // Start background services
-    await startBackgroundServices();
+    await startBackgroundServices(); // TODO-LINT: move to async function
     
   } catch (error) {
     logger.error('Failed to start server:', error);

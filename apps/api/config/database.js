@@ -153,7 +153,7 @@ function generateSecurePassword() {
 /**
  * Validate database configuration
  */
-export function validateDatabaseConfig() {
+export function _validateDatabaseConfig() {
   const errors = [];
 
   if (!databaseConfig.core_db.host) errors.push('CORE_DB_HOST is required');

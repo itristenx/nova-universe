@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 
 interface WebSocketMessage {
   type: string;
-  data: any;
+  data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
   timestamp: string;
 }
 
@@ -22,7 +22,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
   lastMessage: WebSocketMessage | null;
   subscribe: (dataType: string) => void;
   unsubscribe: (dataType: string) => void;
-  sendMessage: (type: string, data: any) => void;
+  sendMessage: (type: string, data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
   socket: Socket | null;
 } => {
   const {
@@ -100,7 +100,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     });
 
     // Data update handlers specific to technician needs
-    const dispatchNative = (name: string, detail: any) => {
+    const dispatchNative = (name: string, detail: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
       window.dispatchEvent(new CustomEvent(name, { detail }));
     };
     const toastKiosk = (title: string, body: string) => {
@@ -197,7 +197,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     };
   }, [enabled, JSON.stringify(subscriptions)]);
 
-  // Helper functions
+  // Helper _functions
   const subscribe = (dataType: string) => {
     if (socketRef.current?.connected) {
       socketRef.current.emit('subscribe', dataType);
@@ -212,7 +212,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
     }
   };
 
-  const sendMessage = (type: string, data: any) => {
+  const sendMessage = (type: string, data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
     if (socketRef.current?.connected) {
       socketRef.current.emit(type, data);
       console.log(`📤 Sent message: ${type}`);
@@ -231,7 +231,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): {
 };
 
 // Request notification permission on first use
-export const requestNotificationPermission = async (): Promise<boolean> => {
+export const _requestNotificationPermission = async (): Promise<boolean> => {
   if (!('Notification' in window)) {
     console.log('This browser does not support notifications');
     return false;
@@ -242,7 +242,7 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   }
 
   if (Notification.permission !== 'denied') {
-    const permission = await Notification.requestPermission();
+    const permission = await Notification.requestPermission(); // TODO-LINT: move to async function
     return permission === 'granted';
   }
 

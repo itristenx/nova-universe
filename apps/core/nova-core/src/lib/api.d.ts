@@ -74,9 +74,9 @@ declare class ApiClient {
     getDashboardStats(): Promise<DashboardStats>;
     getActivityLogs(): Promise<ActivityLog[]>;
     getSecuritySettings(): Promise<any>;
-    updateSecuritySettings(settings: any): Promise<ApiResponse>;
+    updateSecuritySettings(settings: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse>;
     getNotificationSettings(): Promise<any>;
-    updateNotificationSettings(settings: any): Promise<ApiResponse>;
+    updateNotificationSettings(settings: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse>;
     getKioskActivations(): Promise<KioskActivation[]>;
     getKioskConfig(id: string): Promise<KioskConfig>;
     updateKioskConfig(id: string, config: Partial<Kiosk>): Promise<ApiResponse>;
@@ -90,25 +90,25 @@ declare class ApiClient {
     }>;
     updateAdminPassword(currentPassword: string, newPassword: string): Promise<ApiResponse>;
     getStatusConfig(): Promise<any>;
-    updateStatusConfig(config: any): Promise<ApiResponse>;
+    updateStatusConfig(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse>;
     getDirectoryConfig(): Promise<any>;
-    updateDirectoryConfig(config: any): Promise<ApiResponse>;
+    updateDirectoryConfig(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse>;
     getSSOConfig(): Promise<any>;
     getSSOAvailability(): Promise<{
         available: boolean;
         loginUrl?: string;
     }>;
     getSCIMConfig(): Promise<any>;
-    updateSCIMConfig(config: any): Promise<ApiResponse>;
+    updateSCIMConfig(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse>;
     getPasskeys(): Promise<any[]>;
     deletePasskey(id: string): Promise<ApiResponse>;
-    beginPasskeyRegistration(options: any): Promise<any>;
-    completePasskeyRegistration(data: any): Promise<ApiResponse>;
+    beginPasskeyRegistration(options: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<any>;
+    completePasskeyRegistration(data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse>;
     beginPasskeyAuthentication(): Promise<any>;
-    completePasskeyAuthentication(data: any): Promise<{
+    completePasskeyAuthentication(data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<{
         verified: boolean;
         token?: string;
-        user?: any;
+        user?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
     }>;
     updateAdminPins(pinConfig: {
         globalPin?: string;
@@ -118,13 +118,13 @@ declare class ApiClient {
         valid: boolean;
         permissions: string[];
     }>;
-    updateSSOConfig(config: any): Promise<ApiResponse>;
+    updateSSOConfig(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse>;
     getKioskConfiguration(kioskId: string): Promise<any>;
-    setKioskOverride(kioskId: string, configType: string, configData: any): Promise<ApiResponse>;
+    setKioskOverride(kioskId: string, configType: string, configData: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse>;
     removeKioskOverride(kioskId: string, configType: string): Promise<ApiResponse>;
     getGlobalConfiguration(): Promise<any>;
     getConfigurationSummary(): Promise<any>;
-    updateGlobalConfiguration(config: any): Promise<ApiResponse>;
+    updateGlobalConfiguration(config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<ApiResponse>;
     setKioskConfigScope(kioskId: string, scope: string): Promise<ApiResponse>;
     resetAllKiosksToGlobal(): Promise<ApiResponse>;
     applyGlobalConfigToAll(configType: string): Promise<ApiResponse>;

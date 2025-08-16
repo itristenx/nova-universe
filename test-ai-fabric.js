@@ -18,7 +18,7 @@ async function testAIFabric() {
   try {
     // Test 1: AI Fabric Initialization
     console.log('1️⃣  Testing AI Fabric initialization...');
-    await aiFabric.initialize();
+    await aiFabric.initialize(); // TODO-LINT: move to async function
     const fabricStatus = aiFabric.getStatus();
     console.log(`   ✅ AI Fabric initialized: ${fabricStatus.isInitialized}`);
     console.log(`   📊 Providers: ${fabricStatus.providers?.length || 0}`);
@@ -26,7 +26,7 @@ async function testAIFabric() {
 
     // Test 2: RAG Engine
     console.log('2️⃣  Testing RAG Engine...');
-    await ragEngine.initialize();
+    await ragEngine.initialize(); // TODO-LINT: move to async function
     
     // Add test documents
     const testDocuments = [
@@ -50,7 +50,7 @@ async function testAIFabric() {
       }
     ];
 
-    await ragEngine.addDocuments(testDocuments);
+    await ragEngine.addDocuments(testDocuments); // TODO-LINT: move to async function
     console.log(`   ✅ Added ${testDocuments.length} test documents`);
 
     // Test RAG query
@@ -61,7 +61,7 @@ async function testAIFabric() {
         hybridSearch: true
       },
       metadata: {}
-    });
+    }); // TODO-LINT: move to async function
 
     console.log(`   🔍 RAG Query Results: ${ragResult.chunks.length} chunks found`);
     console.log(`   ⏱️  Retrieval time: ${ragResult.retrievalTime}ms`);
@@ -69,7 +69,7 @@ async function testAIFabric() {
 
     // Test 3: AI Monitoring System
     console.log('3️⃣  Testing AI Monitoring System...');
-    await aiMonitoringSystem.initialize();
+    await aiMonitoringSystem.initialize(); // TODO-LINT: move to async function
 
     // Record test metrics
     await aiMonitoringSystem.recordMetric({
@@ -80,7 +80,7 @@ async function testAIFabric() {
       unit: 'milliseconds',
       metadata: { test: true },
       tags: ['test']
-    });
+    }); // TODO-LINT: move to async function
 
     // Record test audit event
     await aiMonitoringSystem.recordAuditEvent({
@@ -90,7 +90,7 @@ async function testAIFabric() {
       metadata: { test: true },
       complianceFlags: [],
       riskScore: 0.1
-    });
+    }); // TODO-LINT: move to async function
 
     const dashboardData = aiMonitoringSystem.getDashboardData();
     console.log('   ✅ Monitoring system initialized');
@@ -98,7 +98,7 @@ async function testAIFabric() {
 
     // Test 4: MCP Server
     console.log('4️⃣  Testing MCP Server...');
-    await novaMCPServer.start();
+    await novaMCPServer.start(); // TODO-LINT: move to async function
     console.log(`   ✅ MCP Server started on port ${novaMCPServer.serverPort}`);
     console.log(`   🔧 Server running: ${novaMCPServer.isServerRunning}`);
     
@@ -121,7 +121,7 @@ async function testAIFabric() {
       timestamp: new Date()
     };
 
-    const aiResponse = await aiFabric.processRequest(testRequest);
+    const aiResponse = await aiFabric.processRequest(testRequest); // TODO-LINT: move to async function
     console.log(`   ✅ AI Request processed successfully`);
     console.log(`   🔄 Provider: ${aiResponse.provider}`);
     console.log(`   ⏱️  Processing time: ${aiResponse.processingTime}ms`);
@@ -139,7 +139,7 @@ async function testAIFabric() {
       context: { userId: 'test-user', module: 'test' },
       timestamp: new Date(),
       quality: 0.8
-    });
+    }); // TODO-LINT: move to async function
     console.log('   ✅ Learning event recorded\n');
 
     // Test Summary
@@ -169,10 +169,10 @@ async function testAIFabric() {
 async function cleanup() {
   console.log('\n🧹 Cleaning up test resources...');
   try {
-    await novaMCPServer.stop();
-    await aiFabric.shutdown();
-    await ragEngine.shutdown();
-    await aiMonitoringSystem.shutdown();
+    await novaMCPServer.stop(); // TODO-LINT: move to async function
+    await aiFabric.shutdown(); // TODO-LINT: move to async function
+    await ragEngine.shutdown(); // TODO-LINT: move to async function
+    await aiMonitoringSystem.shutdown(); // TODO-LINT: move to async function
     console.log('✅ Cleanup completed');
   } catch (error) {
     console.error('⚠️  Cleanup error:', error);
@@ -182,13 +182,13 @@ async function cleanup() {
 // Handle process termination
 process.on('SIGINT', async () => {
   console.log('\n⏸️  Received SIGINT, shutting down gracefully...');
-  await cleanup();
+  await cleanup(); // TODO-LINT: move to async function
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   console.log('\n⏸️  Received SIGTERM, shutting down gracefully...');
-  await cleanup();
+  await cleanup(); // TODO-LINT: move to async function
   process.exit(0);
 });
 
@@ -204,7 +204,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     })
     .catch(async (error) => {
       console.error('\n💥 Test failed:', error);
-      await cleanup();
+      await cleanup(); // TODO-LINT: move to async function
       process.exit(1);
     });
 }

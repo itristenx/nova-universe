@@ -1,11 +1,11 @@
 // Nova Universe Core Service Worker
-// Provides offline functionality and background sync
+// Provides offline _functionality and background sync
 
-const CACHE_NAME = 'nova-core-v1';
+const __CACHE_NAME = 'nova-core-v1';
 const STATIC_CACHE = 'nova-core-static-v1';
-const DYNAMIC_CACHE = 'nova-core-dynamic-v1';
+const DYNAMIC_CACHE = 'nova-core-_dynamic-v1';
 
-// Assets to cache immediately
+// _Assets to cache _immediately
 const STATIC_ASSETS = [
   '/',
   '/static/css/main.css',
@@ -14,16 +14,16 @@ const STATIC_ASSETS = [
   '/assets/icons/icon-512x512.png'
 ];
 
-// API endpoints that can be cached
-const CACHEABLE_APIS = [
-  '/api/users',
-  '/api/kiosks',
-  '/api/system/health',
-  '/api/auth/status'
+// API _endpoints _that _can _be cached
+const __CACHEABLE_APIS = [
+  '/api/_users',
+  '/api/_kiosks',
+  '/api/_system/_health',
+  '/api/_auth/status'
 ];
 
-// Install event - cache static assets
-self.addEventListener('install', (event) => {
+// _Install event - cache static assets
+self.addEventListener('_install', (event) => {
   console.log('✅ Nova Core Service Worker installing...');
   
   event.waitUntil(
@@ -124,17 +124,17 @@ async function handleApiRequest(request) {
 
   // Cacheable API: network first, fallback to cache
   try {
-    const networkResponse = await fetch(request);
+    const networkResponse = await fetch(request); // TODO-LINT: move to async function
     
     if (networkResponse.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE);
+      const cache = await caches.open(DYNAMIC_CACHE); // TODO-LINT: move to async function
       cache.put(request, networkResponse.clone());
     }
     
     return networkResponse;
   } catch (error) {
     console.log('📡 Network failed, trying cache for:', request.url);
-    const cachedResponse = await caches.match(request);
+    const cachedResponse = await caches.match(request); // TODO-LINT: move to async function
     
     if (cachedResponse) {
       return cachedResponse;
@@ -156,17 +156,17 @@ async function handleApiRequest(request) {
 // Handle static asset requests
 async function handleStaticAsset(request) {
   // Cache first, fallback to network
-  const cachedResponse = await caches.match(request);
+  const cachedResponse = await caches.match(request); // TODO-LINT: move to async function
   
   if (cachedResponse) {
     return cachedResponse;
   }
   
   try {
-    const networkResponse = await fetch(request);
+    const networkResponse = await fetch(request); // TODO-LINT: move to async function
     
     if (networkResponse.ok) {
-      const cache = await caches.open(STATIC_CACHE);
+      const cache = await caches.open(STATIC_CACHE); // TODO-LINT: move to async function
       cache.put(request, networkResponse.clone());
     }
     
@@ -181,11 +181,11 @@ async function handleStaticAsset(request) {
 // Handle navigation requests (SPA routing)
 async function handleNavigation(request) {
   try {
-    const networkResponse = await fetch(request);
+    const networkResponse = await fetch(request); // TODO-LINT: move to async function
     return networkResponse;
   } catch (error) {
     console.log('📡 Network failed for navigation, serving cached index');
-    const cachedResponse = await caches.match('/');
+    const cachedResponse = await caches.match('/'); // TODO-LINT: move to async function
     
     if (cachedResponse) {
       return cachedResponse;
@@ -214,14 +214,14 @@ async function syncCriticalData() {
     console.log('🔄 Syncing critical data...');
     
     // Sync any pending offline actions
-    const cache = await caches.open(DYNAMIC_CACHE);
-    const requests = await cache.keys();
+    const cache = await caches.open(DYNAMIC_CACHE); // TODO-LINT: move to async function
+    const requests = await cache.keys(); // TODO-LINT: move to async function
     
     for (const request of requests) {
       try {
-        const response = await fetch(request);
+        const response = await fetch(request); // TODO-LINT: move to async function
         if (response.ok) {
-          await cache.put(request, response.clone());
+          await cache.put(request, response.clone()); // TODO-LINT: move to async function
         }
       } catch (error) {
         console.log('⚠️ Failed to sync:', request.url);

@@ -19,7 +19,7 @@ export class AnalyticsService {
   async initialize() {
     try {
       // Initialize analytics collections
-      await this.setupMetricsCollection();
+      await this.setupMetricsCollection(); // TODO-LINT: move to async function
       
       this.isInitialized = true;
       logger.info('Analytics service initialized');
@@ -32,11 +32,11 @@ export class AnalyticsService {
   async setupMetricsCollection() {
     // Set up periodic metrics collection
     setInterval(async () => {
-      await this.collectSystemMetrics();
+      await this.collectSystemMetrics(); // TODO-LINT: move to async function
     }, 300000); // Every 5 minutes
 
     setInterval(async () => {
-      await this.calculateDailyStats();
+      await this.calculateDailyStats(); // TODO-LINT: move to async function
     }, 3600000); // Every hour
   }
 
@@ -51,7 +51,7 @@ export class AnalyticsService {
         this.calculateUptimeMetrics(),
         this.calculateResponseTimeMetrics(),
         this.collectUsageMetrics()
-      ]);
+      ]); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Error collecting metrics:', error);
     }
@@ -75,7 +75,7 @@ export class AnalyticsService {
             SELECT MAX(h2.time) FROM heartbeats h2 WHERE h2.monitor_id = h1.monitor_id
           )
         ) h ON m.uptime_kuma_id = h.monitor_id
-      `).get();
+      `).get(); // TODO-LINT: move to async function
 
       // Get heartbeat counts
       const heartbeatStats = await this.database.db.prepare(`
@@ -85,7 +85,7 @@ export class AnalyticsService {
           AVG(ping) as avg_response_time
         FROM heartbeats
         WHERE time > datetime('now', '-24 hours')
-      `).get();
+      `).get(); // TODO-LINT: move to async function
 
       // Store system metrics
       await this.database.logEvent({
@@ -97,7 +97,7 @@ export class AnalyticsService {
           memory_usage: process.memoryUsage(),
           uptime: process.uptime()
         }
-      });
+      }); // TODO-LINT: move to async function
 
       this.metricsCache.set('system', {
         ...monitorStats,
@@ -112,14 +112,14 @@ export class AnalyticsService {
 
   async calculateUptimeMetrics() {
     try {
-      const monitors = await this.database.getAllMonitors();
+      const monitors = await this.database.getAllMonitors(); // TODO-LINT: move to async function
       const periods = ['1h', '24h', '7d', '30d'];
       
       for (const monitor of monitors) {
         const uptimeStats = {};
         
         for (const period of periods) {
-          const stats = await this.calculateMonitorUptime(monitor.uptime_kuma_id, period);
+          const stats = await this.calculateMonitorUptime(monitor.uptime_kuma_id, period); // TODO-LINT: move to async function
           uptimeStats[period] = stats;
         }
 
@@ -209,7 +209,7 @@ export class AnalyticsService {
       const responseTimeStats = {};
 
       for (const period of periods) {
-        const stats = await this.getResponseTimeStats(period);
+        const stats = await this.getResponseTimeStats(period); // TODO-LINT: move to async function
         responseTimeStats[period] = stats;
       }
 
@@ -283,7 +283,7 @@ export class AnalyticsService {
         FROM analytics_events
         WHERE timestamp > datetime('now', '-24 hours')
         GROUP BY event_type
-      `).all();
+      `).all(); // TODO-LINT: move to async function
 
       const formattedStats = {};
       usageStats.forEach(stat => {
@@ -309,7 +309,7 @@ export class AnalyticsService {
       today.setHours(0, 0, 0, 0);
 
       // Calculate daily uptime for all monitors
-      const monitors = await this.database.getAllMonitors();
+      const monitors = await this.database.getAllMonitors(); // TODO-LINT: move to async function
       
       for (const monitor of monitors) {
         const dailyStats = await this.database.db.prepare(`
@@ -321,7 +321,7 @@ export class AnalyticsService {
           WHERE monitor_id = ? 
           AND time >= ? 
           AND time < ?
-        `).get(monitor.uptime_kuma_id, yesterday.toISOString(), today.toISOString());
+        `).get(monitor.uptime_kuma_id, yesterday.toISOString(), today.toISOString()); // TODO-LINT: move to async function
 
         if (dailyStats.total_checks > 0) {
           await this.database.logEvent({
@@ -335,7 +335,7 @@ export class AnalyticsService {
               downChecks: dailyStats.total_checks - dailyStats.up_checks,
               avgResponseTime: dailyStats.avg_response_time
             }
-          });
+          }); // TODO-LINT: move to async function
         }
       }
     } catch (error) {
@@ -349,9 +349,9 @@ export class AnalyticsService {
 
   async getMonitorAnalytics(monitorId, period = '24h') {
     try {
-      const uptimeStats = await this.calculateMonitorUptime(monitorId, period);
-      const responseTimeStats = await this.getMonitorResponseTimes(monitorId, period);
-      const incidentStats = await this.getMonitorIncidents(monitorId, period);
+      const uptimeStats = await this.calculateMonitorUptime(monitorId, period); // TODO-LINT: move to async function
+      const responseTimeStats = await this.getMonitorResponseTimes(monitorId, period); // TODO-LINT: move to async function
+      const incidentStats = await this.getMonitorIncidents(monitorId, period); // TODO-LINT: move to async function
 
       return {
         monitorId,
@@ -468,13 +468,13 @@ export class AnalyticsService {
       const usageStats = this.metricsCache.get('usage') || { stats: {} };
 
       // Get top performing monitors
-      const topMonitors = await this.getTopPerformingMonitors(period, 10);
+      const topMonitors = await this.getTopPerformingMonitors(period, 10); // TODO-LINT: move to async function
       
       // Get slowest monitors
-      const slowestMonitors = await this.getSlowestMonitors(period, 10);
+      const slowestMonitors = await this.getSlowestMonitors(period, 10); // TODO-LINT: move to async function
       
       // Get recent incidents
-      const recentIncidents = await this.getRecentIncidents(period);
+      const recentIncidents = await this.getRecentIncidents(period); // TODO-LINT: move to async function
 
       return {
         period,
@@ -652,7 +652,7 @@ export class AnalyticsService {
   }
 
   async healthCheck() {
-    return this.isInitialized && this.database && await this.database.healthCheck();
+    return this.isInitialized && this.database && await this.database.healthCheck(); // TODO-LINT: move to async function
   }
 
   async close() {

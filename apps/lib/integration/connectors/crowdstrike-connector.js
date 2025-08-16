@@ -44,10 +44,10 @@ export class CrowdStrikeConnector extends IConnector {
       });
 
       // Authenticate and get bearer token
-      await this.authenticate();
+      await this.authenticate(); // TODO-LINT: move to async function
       
       // Test the connection
-      await this.testConnection();
+      await this.testConnection(); // TODO-LINT: move to async function
       
       console.log('CrowdStrike connector initialized successfully');
     } catch (error) {
@@ -64,12 +64,12 @@ export class CrowdStrikeConnector extends IConnector {
       const startTime = Date.now();
       
       // Ensure we have a valid token
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
       
       // Test CrowdStrike API endpoints
       const hostsResponse = await this.client.get('/devices/queries/devices/v1?limit=1', {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
       
       const apiLatency = Date.now() - startTime;
 
@@ -81,7 +81,7 @@ export class CrowdStrikeConnector extends IConnector {
         const detectionsStartTime = Date.now();
         await this.client.get('/detects/queries/detects/v1?limit=1', {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
         detectionsLatency = Date.now() - detectionsStartTime;
       } catch (error) {
         detectionsStatus = 'degraded';
@@ -137,17 +137,17 @@ export class CrowdStrikeConnector extends IConnector {
       console.log(`Starting ${syncType} sync from CrowdStrike...`);
 
       // Ensure valid authentication
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
 
       // Sync hosts (endpoints)
-      const hostsResult = await this.syncHosts(options);
+      const hostsResult = await this.syncHosts(options); // TODO-LINT: move to async function
       totalRecords += hostsResult.totalRecords;
       successCount += hostsResult.successCount;
       errorCount += hostsResult.errorCount;
       errors.push(...hostsResult.errors);
 
       // Sync detections
-      const detectionsResult = await this.syncDetections(options);
+      const detectionsResult = await this.syncDetections(options); // TODO-LINT: move to async function
       totalRecords += detectionsResult.totalRecords;
       successCount += detectionsResult.successCount;
       errorCount += detectionsResult.errorCount;
@@ -191,13 +191,13 @@ export class CrowdStrikeConnector extends IConnector {
     try {
       const since = new Date(Date.now() - 5 * 60 * 1000); // Last 5 minutes
       
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
       
       // Get recent detections
       const filter = `created_timestamp:>'${since.toISOString()}'`;
       const detectionsResponse = await this.client.get(`/detects/queries/detects/v1?filter=${encodeURIComponent(filter)}&limit=100`, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       const detectionIds = detectionsResponse.data.resources || [];
       
@@ -210,7 +210,7 @@ export class CrowdStrikeConnector extends IConnector {
         ids: detectionIds
       }, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       const events = [];
       
@@ -248,23 +248,23 @@ export class CrowdStrikeConnector extends IConnector {
     try {
       const { action: actionType, target, parameters } = action;
 
-      await this.ensureValidToken();
+      await this.ensureValidToken(); // TODO-LINT: move to async function
 
       switch (actionType) {
         case 'quarantine':
-          return await this.quarantineHost(target);
+          return await this.quarantineHost(target); // TODO-LINT: move to async function
         
         case 'release':
-          return await this.releaseHost(target);
+          return await this.releaseHost(target); // TODO-LINT: move to async function
         
         case 'contain':
-          return await this.containHost(target);
+          return await this.containHost(target); // TODO-LINT: move to async function
         
         case 'lift_containment':
-          return await this.liftContainment(target);
+          return await this.liftContainment(target); // TODO-LINT: move to async function
         
         case 'update_detection':
-          return await this.updateDetection(target, parameters);
+          return await this.updateDetection(target, parameters); // TODO-LINT: move to async function
         
         default:
           throw new Error(`Unsupported action: ${actionType}`);
@@ -397,7 +397,7 @@ export class CrowdStrikeConnector extends IConnector {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
-      });
+      }); // TODO-LINT: move to async function
 
       this.accessToken = response.data.access_token;
       this.tokenExpiry = new Date(Date.now() + (response.data.expires_in * 1000));
@@ -410,7 +410,7 @@ export class CrowdStrikeConnector extends IConnector {
 
   async ensureValidToken() {
     if (!this.accessToken || !this.tokenExpiry || new Date() >= this.tokenExpiry) {
-      await this.authenticate();
+      await this.authenticate(); // TODO-LINT: move to async function
     }
   }
 
@@ -418,7 +418,7 @@ export class CrowdStrikeConnector extends IConnector {
     try {
       const response = await this.client.get('/devices/queries/devices/v1?limit=1', {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
       
       if (response.status !== 200) {
         throw new Error('Failed to connect to CrowdStrike API');
@@ -443,7 +443,7 @@ export class CrowdStrikeConnector extends IConnector {
         // Get host IDs
         const hostsResponse = await this.client.get(`/devices/queries/devices/v1?limit=${limit}&offset=${offset}`, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         const hostIds = hostsResponse.data.resources || [];
         totalRecords += hostIds.length;
@@ -457,12 +457,12 @@ export class CrowdStrikeConnector extends IConnector {
           ids: hostIds
         }, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         // Process each host
         for (const host of detailsResponse.data.resources || []) {
           try {
-            await this.processHost(host);
+            await this.processHost(host); // TODO-LINT: move to async function
             successCount++;
           } catch (error) {
             errorCount++;
@@ -477,7 +477,7 @@ export class CrowdStrikeConnector extends IConnector {
         offset += limit;
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
       }
 
       return {
@@ -519,7 +519,7 @@ export class CrowdStrikeConnector extends IConnector {
         const detectionsResponse = await this.client.get(
           `/detects/queries/detects/v1?limit=${limit}&offset=${offset}${filter ? `&filter=${encodeURIComponent(filter)}` : ''}`, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         const detectionIds = detectionsResponse.data.resources || [];
         totalRecords += detectionIds.length;
@@ -533,12 +533,12 @@ export class CrowdStrikeConnector extends IConnector {
           ids: detectionIds
         }, {
           headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        }); // TODO-LINT: move to async function
 
         // Process each detection
         for (const detection of detailsResponse.data.resources || []) {
           try {
-            await this.processDetection(detection);
+            await this.processDetection(detection); // TODO-LINT: move to async function
             successCount++;
           } catch (error) {
             errorCount++;
@@ -553,7 +553,7 @@ export class CrowdStrikeConnector extends IConnector {
         offset += limit;
 
         // Respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
       }
 
       return {
@@ -627,7 +627,7 @@ export class CrowdStrikeConnector extends IConnector {
         ids: [hostId]
       }, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -646,7 +646,7 @@ export class CrowdStrikeConnector extends IConnector {
         ids: [hostId]
       }, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -665,7 +665,7 @@ export class CrowdStrikeConnector extends IConnector {
         ids: [hostId]
       }, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -684,7 +684,7 @@ export class CrowdStrikeConnector extends IConnector {
         ids: [hostId]
       }, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,
@@ -706,7 +706,7 @@ export class CrowdStrikeConnector extends IConnector {
         comment: comment || 'Updated via Nova Integration Layer'
       }, {
         headers: { 'Authorization': `Bearer ${this.accessToken}` }
-      });
+      }); // TODO-LINT: move to async function
 
       return {
         success: true,

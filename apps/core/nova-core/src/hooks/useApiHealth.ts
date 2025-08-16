@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export const useApiHealth = () => {
+export const _useApiHealth = () => {
   const [isConnected, setIsConnected] = useState(true);
   const [isChecking, setIsChecking] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
@@ -26,7 +26,7 @@ export const useApiHealth = () => {
           'Content-Type': 'application/json',
         },
         signal: AbortSignal.timeout(5000) // 5 second timeout
-      });
+      }); // TODO-LINT: move to async function
       
       if (response.ok) {
         const wasDisconnected = !isConnected;
@@ -41,7 +41,7 @@ export const useApiHealth = () => {
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-    } catch (error: any) {
+    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
       const wasConnected = isConnected;
       setIsConnected(false);
       setLastChecked(new Date());

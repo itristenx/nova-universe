@@ -13,13 +13,13 @@ async function testAPIConnection() {
   
   try {
     console.log('1. Testing health endpoint...');
-    const healthResponse = await fetch(`${API_URL}/api/health`);
-    const health = await healthResponse.json();
+    const healthResponse = await fetch(`${API_URL}/api/health`); // TODO-LINT: move to async function
+    const health = await healthResponse.json(); // TODO-LINT: move to async function
     console.log('✅ Health:', health);
 
     console.log('2. Testing auth status...');
-    const authStatusResponse = await fetch(`${API_URL}/api/auth/status`);
-    const authStatus = await authStatusResponse.json();
+    const authStatusResponse = await fetch(`${API_URL}/api/auth/status`); // TODO-LINT: move to async function
+    const authStatus = await authStatusResponse.json(); // TODO-LINT: move to async function
     console.log('✅ Auth Status:', authStatus);
 
     console.log('3. Testing login...');
@@ -32,15 +32,15 @@ async function testAPIConnection() {
         email: 'admin@example.com',
         password: 'admin'
       })
-    });
+    }); // TODO-LINT: move to async function
 
     if (!loginResponse.ok) {
-      const error = await loginResponse.json();
+      const error = await loginResponse.json(); // TODO-LINT: move to async function
       console.error('❌ Login failed:', error);
       return;
     }
 
-    const loginResult = await loginResponse.json();
+    const loginResult = await loginResponse.json(); // TODO-LINT: move to async function
     console.log('✅ Login successful:', loginResult);
 
     // Store token and test profile
@@ -51,9 +51,9 @@ async function testAPIConnection() {
       headers: {
         'Authorization': `Bearer ${loginResult.token}`
       }
-    });
+    }); // TODO-LINT: move to async function
 
-    const profile = await profileResponse.json();
+    const profile = await profileResponse.json(); // TODO-LINT: move to async function
     console.log('✅ Profile:', profile);
 
     console.log('🎉 All tests passed! You should be able to login now.');

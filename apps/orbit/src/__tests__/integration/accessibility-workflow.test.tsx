@@ -20,23 +20,23 @@ describe('Accessibility Workflow Integration Tests', () => {
         </div>
       );
 
-      // Test skip links functionality
+      // Test skip links _functionality
       const skipToMain = screen.getByText(/skip to main content/i);
       skipToMain.focus();
-      await userEvent.keyboard('{Enter}');
+      await userEvent.keyboard('{Enter}'); // TODO-LINT: move to async function
 
       // Main content should receive focus
       const mainContent = document.getElementById('main-content');
       expect(mainContent).toHaveFocus();
 
       // Test keyboard navigation through components
-      await userEvent.tab();
+      await userEvent.tab(); // TODO-LINT: move to async function
       const languageSwitcher = screen.getByRole('button', { name: /language/i });
       expect(languageSwitcher).toHaveFocus();
 
       // Navigate to permission switches
-      await userEvent.tab();
-      await userEvent.tab();
+      await userEvent.tab(); // TODO-LINT: move to async function
+      await userEvent.tab(); // TODO-LINT: move to async function
       const switches = screen.getAllByRole('switch');
       if (switches.length > 0) {
         expect(switches[0]).toHaveFocus();
@@ -58,14 +58,14 @@ describe('Accessibility Workflow Integration Tests', () => {
 
       // Use skip to navigation
       const skipToNav = screen.getByText(/skip to navigation/i);
-      await userEvent.click(skipToNav);
+      await userEvent.click(skipToNav); // TODO-LINT: move to async function
 
       const navigation = document.getElementById('navigation');
       expect(navigation).toHaveFocus();
 
       // Change language and ensure focus is maintained
       const languageButton = screen.getByRole('button', { name: /language/i });
-      await userEvent.click(languageButton);
+      await userEvent.click(languageButton); // TODO-LINT: move to async function
 
       // Focus should be maintained within the component
       expect(document.activeElement).toBe(languageButton);
@@ -88,7 +88,7 @@ describe('Accessibility Workflow Integration Tests', () => {
       expect(languageButton).toHaveAttribute('aria-expanded', 'false');
 
       // Open language menu
-      await userEvent.click(languageButton);
+      await userEvent.click(languageButton); // TODO-LINT: move to async function
       expect(languageButton).toHaveAttribute('aria-expanded', 'true');
 
       // Language options should be accessible
@@ -101,7 +101,7 @@ describe('Accessibility Workflow Integration Tests', () => {
 
       // Select a language
       if (languageOptions.length > 1) {
-        await userEvent.click(languageOptions[1]);
+        await userEvent.click(languageOptions[1]); // TODO-LINT: move to async function
         
         // Focus should return to trigger button
         expect(languageButton).toHaveFocus();
@@ -118,24 +118,24 @@ describe('Accessibility Workflow Integration Tests', () => {
       );
 
       // Check initial accessibility
-      const results = await axe(container);
+      const results = await axe(container); // TODO-LINT: move to async function
       expect(results).toHaveNoViolations();
 
       // Change language
       const languageButton = screen.getByRole('button', { name: /language/i });
-      await userEvent.click(languageButton);
+      await userEvent.click(languageButton); // TODO-LINT: move to async function
 
       const languageOptions = screen.getAllByRole('menuitem');
       if (languageOptions.length > 1) {
-        await userEvent.click(languageOptions[1]);
+        await userEvent.click(languageOptions[1]); // TODO-LINT: move to async function
 
         // Wait for language change to complete
         await waitFor(() => {
-          expect(languageButton).toHaveFocus();
+          expect(languageButton).toHaveFocus(); // TODO-LINT: move to async function
         });
 
         // Check accessibility after language change
-        const resultsAfterChange = await axe(container);
+        const resultsAfterChange = await axe(container); // TODO-LINT: move to async function
         expect(resultsAfterChange).toHaveNoViolations();
       }
     });
@@ -153,7 +153,7 @@ describe('Accessibility Workflow Integration Tests', () => {
       );
 
       // Check overall accessibility
-      const results = await axe(container);
+      const results = await axe(container); // TODO-LINT: move to async function
       expect(results).toHaveNoViolations();
 
       // Test permission toggle workflow
@@ -167,11 +167,11 @@ describe('Accessibility Workflow Integration Tests', () => {
         expect(firstSwitch).toHaveFocus();
 
         // Toggle with keyboard
-        await userEvent.keyboard(' ');
+        await userEvent.keyboard(' '); // TODO-LINT: move to async function
         expect(firstSwitch).toHaveAttribute('aria-checked', initialState === 'true' ? 'false' : 'true');
 
         // Check accessibility after interaction
-        const resultsAfterToggle = await axe(container);
+        const resultsAfterToggle = await axe(container); // TODO-LINT: move to async function
         expect(resultsAfterToggle).toHaveNoViolations();
       }
     });
@@ -187,7 +187,7 @@ describe('Accessibility Workflow Integration Tests', () => {
       );
 
       // Check overall accessibility
-      const results = await axe(container);
+      const results = await axe(container); // TODO-LINT: move to async function
       expect(results).toHaveNoViolations();
 
       // Test tab navigation
@@ -196,11 +196,11 @@ describe('Accessibility Workflow Integration Tests', () => {
 
       // Navigate through tabs
       for (const tab of tabs) {
-        await userEvent.click(tab);
+        await userEvent.click(tab); // TODO-LINT: move to async function
         expect(tab).toHaveAttribute('aria-selected', 'true');
 
         // Check accessibility for each tab state
-        const tabResults = await axe(container);
+        const tabResults = await axe(container); // TODO-LINT: move to async function
         expect(tabResults).toHaveNoViolations();
       }
 
@@ -210,13 +210,13 @@ describe('Accessibility Workflow Integration Tests', () => {
         for (const switchEl of switches) {
           if (!switchEl.hasAttribute('disabled')) {
             const initialState = switchEl.getAttribute('aria-checked');
-            await userEvent.click(switchEl);
+            await userEvent.click(switchEl); // TODO-LINT: move to async function
             expect(switchEl).toHaveAttribute('aria-checked', initialState === 'true' ? 'false' : 'true');
           }
         }
 
         // Check accessibility after all interactions
-        const finalResults = await axe(container);
+        const finalResults = await axe(container); // TODO-LINT: move to async function
         expect(finalResults).toHaveNoViolations();
       }
     });
@@ -240,45 +240,45 @@ describe('Accessibility Workflow Integration Tests', () => {
 
       // Start with skip links
       const skipToMain = screen.getByText(/skip to main content/i);
-      await userEvent.click(skipToMain);
+      await userEvent.click(skipToMain); // TODO-LINT: move to async function
 
       const mainContent = document.getElementById('main-content');
       expect(mainContent).toHaveFocus();
 
       // Navigate to language switcher
       const skipToNav = screen.getByText(/skip to navigation/i);
-      await userEvent.click(skipToNav);
+      await userEvent.click(skipToNav); // TODO-LINT: move to async function
 
       const navigation = document.getElementById('navigation');
       expect(navigation).toHaveFocus();
 
       // Change language
       const languageButton = screen.getByRole('button', { name: /language/i });
-      await userEvent.click(languageButton);
+      await userEvent.click(languageButton); // TODO-LINT: move to async function
 
       const languageOptions = screen.getAllByRole('menuitem');
       if (languageOptions.length > 1) {
-        await userEvent.click(languageOptions[1]);
+        await userEvent.click(languageOptions[1]); // TODO-LINT: move to async function
       }
 
       // Navigate back to main content
-      await userEvent.click(skipToMain);
+      await userEvent.click(skipToMain); // TODO-LINT: move to async function
 
       // Interact with permission manager
       const permissionSwitches = screen.getAllByRole('switch');
       if (permissionSwitches.length > 0) {
         const firstSwitch = permissionSwitches[0];
-        await userEvent.click(firstSwitch);
+        await userEvent.click(firstSwitch); // TODO-LINT: move to async function
       }
 
       // Navigate to privacy dashboard tabs
       const tabs = screen.getAllByRole('tab');
       if (tabs.length > 1) {
-        await userEvent.click(tabs[1]); // Switch to second tab
+        await userEvent.click(tabs[1]); // TODO-LINT: move to async function // Switch to second tab
       }
 
       // Check final accessibility state
-      const finalResults = await axe(container);
+      const finalResults = await axe(container); // TODO-LINT: move to async function
       expect(finalResults).toHaveNoViolations();
     });
 
@@ -310,14 +310,14 @@ describe('Accessibility Workflow Integration Tests', () => {
 
       // Test that all elements are reachable via keyboard
       for (let i = 0; i < Math.min(allInteractiveElements.length, 10); i++) {
-        await userEvent.tab();
+        await userEvent.tab(); // TODO-LINT: move to async function
         // Ensure we can navigate to all elements
         expect(document.activeElement).toBeInstanceOf(Element);
       }
 
       // Test reverse navigation
       for (let i = 0; i < 5; i++) {
-        await userEvent.tab({ shift: true });
+        await userEvent.tab({ shift: true }); // TODO-LINT: move to async function
         expect(document.activeElement).toBeInstanceOf(Element);
       }
     });

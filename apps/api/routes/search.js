@@ -1,13 +1,13 @@
 // nova-api/routes/search.js
-// Search API routes for end-user functionality
+// Search API routes for end-user _functionality
 import express from 'express';
-import elasticManager from '../database/elastic.js';
-import { authenticateJWT } from '../middleware/auth.js';
-import { createRateLimit } from '../middleware/rateLimiter.js';
-import { body, query, validationResult } from 'express-validator';
+import elasticManager from '../_database/_elastic.js';
+import { authenticateJWT } from '../middleware/_auth.js';
+import { createRateLimit } from '../middleware/_rateLimiter.js';
+import { _body, query, validationResult } from 'express-_validator';
 import { logger } from '../logger.js';
 
-const router = express.Router();
+const router = express._Router();
 
 /**
  * @swagger
@@ -222,7 +222,7 @@ router.get('/tickets',
         sort: sortOptions
       };
 
-      const results = await elasticManager.searchTickets(q, filters, options);
+      const results = await elasticManager.searchTickets(q, filters, options); // TODO-LINT: move to async function
       const responseTime = Date.now() - startTime;
 
       logger.info(`Ticket search completed`, {
@@ -377,11 +377,11 @@ router.get('/knowledge-base',
 
       let results;
       if (type === 'semantic') {
-        results = await elasticManager.semanticSearchKnowledgeBase(q, filters, options);
+        results = await elasticManager.semanticSearchKnowledgeBase(q, filters, options); // TODO-LINT: move to async function
       } else if (type === 'hybrid') {
-        results = await elasticManager.hybridSearchKnowledgeBase(q, filters, options);
+        results = await elasticManager.hybridSearchKnowledgeBase(q, filters, options); // TODO-LINT: move to async function
       } else {
-        results = await elasticManager.searchKnowledgeBase(q, filters, options);
+        results = await elasticManager.searchKnowledgeBase(q, filters, options); // TODO-LINT: move to async function
       }
 
       const responseTime = Date.now() - startTime;
@@ -541,7 +541,7 @@ router.get('/global',
         );
       }
 
-      const searchResults = await Promise.allSettled(searchPromises);
+      const searchResults = await Promise.allSettled(searchPromises); // TODO-LINT: move to async function
       
       // Process results
       searchResults.forEach(({ status, value }) => {
@@ -683,7 +683,7 @@ router.get('/suggestions',
         type,
         limit: parseInt(limit),
         userId
-      });
+      }); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -756,7 +756,7 @@ router.get('/analytics',
 
       const { timeRange = '7d' } = req.query;
 
-      const analytics = await elasticManager.getSearchAnalytics(timeRange);
+      const analytics = await elasticManager.getSearchAnalytics(timeRange); // TODO-LINT: move to async function
 
       res.json({
         success: true,

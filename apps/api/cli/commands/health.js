@@ -33,7 +33,7 @@ healthCommand
   .option('--database', 'Check database only')
   .action(async (options) => {
     try {
-      await runHealthCheck(options);
+      await runHealthCheck(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Health check failed: ${error.message}`);
       process.exit(1);
@@ -47,7 +47,7 @@ healthCommand
   .option('-j, --json', 'Output in JSON format')
   .action(async (options) => {
     try {
-      await showSystemInfo(options);
+      await showSystemInfo(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to get system info: ${error.message}`);
       process.exit(1);
@@ -62,7 +62,7 @@ healthCommand
   .option('--alerts', 'Enable alerts for issues')
   .action(async (options) => {
     try {
-      await startMonitoring(options);
+      await startMonitoring(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Monitoring failed: ${error.message}`);
       process.exit(1);
@@ -76,7 +76,7 @@ healthCommand
   .option('--fix', 'Attempt to fix issues automatically')
   .action(async (options) => {
     try {
-      await runDiagnostics(options);
+      await runDiagnostics(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Diagnostics failed: ${error.message}`);
       process.exit(1);
@@ -124,7 +124,7 @@ async function runHealthCheck(options) {
     spinner.start();
 
     try {
-      const result = await check(options.verbose);
+      const result = await check(options.verbose); // TODO-LINT: move to async function
       results.checks[name] = result;
 
       if (result.status === 'healthy') {
@@ -221,7 +221,7 @@ async function checkSystemResources(verbose = false) {
   // Disk space
   try {
     const projectRoot = getProjectRoot();
-    const { stdout } = await runCommand('df', ['-h', projectRoot], { silent: true });
+    const { stdout } = await runCommand('df', ['-h', projectRoot], { silent: true }); // TODO-LINT: move to async function
     const lines = stdout.split('\n');
     const diskLine = lines[1];
     const parts = diskLine.split(/\s+/);
@@ -262,7 +262,7 @@ async function checkServices(verbose = false) {
   };
 
   try {
-    const serviceStatus = await checkServiceStatus();
+    const serviceStatus = await checkServiceStatus(); // TODO-LINT: move to async function
     
     for (const [key, service] of Object.entries(serviceStatus)) {
       const isRunning = service.status === 'running';
@@ -311,7 +311,7 @@ async function checkDatabase(verbose = false) {
 
   try {
     const startTime = Date.now();
-    const db = await connectDatabase();
+    const db = await connectDatabase(); // TODO-LINT: move to async function
     const connectionTime = Date.now() - startTime;
 
     result.details.push({
@@ -325,7 +325,7 @@ async function checkDatabase(verbose = false) {
 
     // Test basic operations
     try {
-      await db.admin().ping();
+      await db.admin().ping(); // TODO-LINT: move to async function
       result.details.push({
         status: 'ok',
         message: 'Database ping: successful'
@@ -340,7 +340,7 @@ async function checkDatabase(verbose = false) {
 
     // Check collections
     try {
-      const collections = await db.listCollections().toArray();
+      const collections = await db.listCollections().toArray(); // TODO-LINT: move to async function
       result.details.push({
         status: 'ok',
         message: `Collections: ${collections.length} found`
@@ -438,7 +438,7 @@ async function checkDependencies(verbose = false) {
     const nodeModulesPath = path.join(servicePath, 'node_modules');
 
     if (existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(require('fs').readFileSync(packageJsonPath, 'utf8'));
+      const _packageJson = JSON.parse(require('fs').readFileSync(packageJsonPath, 'utf8'));
       const hasNodeModules = existsSync(nodeModulesPath);
 
       result.details.push({
@@ -576,8 +576,8 @@ async function startMonitoring(options) {
       console.log(chalk.gray(`Last updated: ${new Date().toLocaleTimeString()}\n`));
 
       // Quick health check
-      const serviceStatus = await checkServiceStatus();
-      const systemCheck = await checkSystemResources();
+      const serviceStatus = await checkServiceStatus(); // TODO-LINT: move to async function
+      const systemCheck = await checkSystemResources(); // TODO-LINT: move to async function
 
       // Display services
       displayServiceStatus(serviceStatus);
@@ -608,7 +608,7 @@ async function startMonitoring(options) {
   };
 
   // Initial check
-  await checkHealth();
+  await checkHealth(); // TODO-LINT: move to async function
 
   // Set up interval
   const monitorInterval = setInterval(checkHealth, interval);
@@ -637,7 +637,7 @@ async function runDiagnostics(options) {
         
         for (const port of ports) {
           try {
-            const { stdout } = await runCommand('lsof', [`-i:${port}`], { silent: true });
+            const { stdout } = await runCommand('lsof', [`-i:${port}`], { silent: true }); // TODO-LINT: move to async function
             if (stdout.trim()) {
               conflicts.push(port);
             }
@@ -679,7 +679,7 @@ async function runDiagnostics(options) {
           
           if (!existsSync(nodeModules)) {
             console.log(chalk.blue(`Installing dependencies for ${service}...`));
-            await runCommand('npm', ['install'], { cwd: servicePath });
+            await runCommand('npm', ['install'], { cwd: servicePath }); // TODO-LINT: move to async function
           }
         }
         
@@ -690,7 +690,7 @@ async function runDiagnostics(options) {
       name: 'Database connection',
       check: async () => {
         try {
-          await connectDatabase();
+          await connectDatabase(); // TODO-LINT: move to async function
           return null;
         } catch (error) {
           return `Database connection failed: ${error.message}`;
@@ -710,7 +710,7 @@ async function runDiagnostics(options) {
     spinner.start();
 
     try {
-      const issue = await diagnostic.check();
+      const issue = await diagnostic.check(); // TODO-LINT: move to async function
       
       if (issue) {
         spinner.fail(issue);
@@ -743,7 +743,7 @@ async function runDiagnostics(options) {
           spinner.start();
           
           try {
-            const fixed = await issue.fix();
+            const fixed = await issue.fix(); // TODO-LINT: move to async function
             if (fixed) {
               spinner.succeed(`${issue.name} fixed`);
             } else {

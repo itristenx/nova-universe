@@ -122,7 +122,7 @@ export function SecureAuthFlow() {
   const handleNext = async () => {
     setIsLoading(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
     setCurrentStep(prev => prev + 1);
     setIsLoading(false);
 

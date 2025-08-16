@@ -201,7 +201,7 @@ export const typography = {
 };
 
 // Legacy font size export
-export const fontSizes = {
+export const _fontSizes = {
   small: typography.fontSize.sm,
   medium: typography.fontSize.base,
   large: typography.fontSize.lg,

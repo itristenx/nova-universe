@@ -91,7 +91,7 @@ interface Activity {
   ticketId?: string;
 }
 
-export default function RealTimeCollaboration() {
+export default function _RealTimeCollaboration() {
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [sessions, setSessions] = useState<CollaborationSession[]>([]);

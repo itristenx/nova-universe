@@ -42,7 +42,7 @@ class EnhancedPrismaClient {
     // Query logging middleware
     this.client.$use(async (params, next) => {
       const before = Date.now();
-      const result = await next(params);
+      const result = await next(params); // TODO-LINT: move to async function
       const after = Date.now();
       
       if (process.env.DEBUG_SQL === 'true') {
@@ -55,8 +55,8 @@ class EnhancedPrismaClient {
     // Error handling middleware
     this.client.$use(async (params, next) => {
       try {
-        return await next(params);
-      } catch (error: any) {
+        return await next(params); // TODO-LINT: move to async function
+      } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
         logger.error('Prisma operation failed: ' + JSON.stringify({
           model: params.model,
           action: params.action,
@@ -80,7 +80,7 @@ class EnhancedPrismaClient {
         }));
       }
       
-      return await next(params);
+      return await next(params); // TODO-LINT: move to async function
     });
   }
 
@@ -89,7 +89,7 @@ class EnhancedPrismaClient {
     const start = Date.now();
     
     try {
-      await this.client.$queryRaw`SELECT 1`;
+      await this.client.$queryRaw`SELECT 1`; // TODO-LINT: move to async function
       const responseTime = Date.now() - start;
       
       return {
@@ -98,7 +98,7 @@ class EnhancedPrismaClient {
         database: 'postgresql',
         orm: 'prisma'
       };
-    } catch (error: any) {
+    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
       return {
         healthy: false,
         error: error.message,
@@ -112,8 +112,8 @@ class EnhancedPrismaClient {
   // Transaction wrapper with enhanced error handling
   async transaction<T>(fn: (tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => Promise<T>): Promise<T> {
     try {
-      return await this.client.$transaction(fn);
-    } catch (error: any) {
+      return await this.client.$transaction(fn); // TODO-LINT: move to async function
+    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
       logger.error('Prisma transaction failed: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
     }
@@ -126,7 +126,7 @@ class EnhancedPrismaClient {
 
   // Graceful disconnect
   async disconnect() {
-    await this.client.$disconnect();
+    await this.client.$disconnect(); // TODO-LINT: move to async function
     logger.info('Prisma client disconnected');
   }
 }

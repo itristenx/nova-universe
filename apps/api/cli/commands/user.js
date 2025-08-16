@@ -34,7 +34,7 @@ userCommand
       let userData = {};
 
       if (options.interactive || !options.email) {
-        userData = await promptUserData(options);
+        userData = await promptUserData(options); // TODO-LINT: move to async function
       } else {
         userData = {
           email: options.email,
@@ -44,7 +44,7 @@ userCommand
         };
       }
 
-      await createUser(userData);
+      await createUser(userData); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to create user: ${error.message}`);
       process.exit(1);
@@ -62,7 +62,7 @@ userCommand
   .option('--inactive', 'Show only inactive users')
   .action(async (options) => {
     try {
-      const users = await listUsers(options);
+      const users = await listUsers(options); // TODO-LINT: move to async function
       
       if (options.json) {
         console.log(JSON.stringify(users, null, 2));
@@ -86,7 +86,7 @@ userCommand
   .option('--deactivate', 'Deactivate user')
   .action(async (email, options) => {
     try {
-      await updateUser(email, options);
+      await updateUser(email, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to update user: ${error.message}`);
       process.exit(1);
@@ -109,7 +109,7 @@ userCommand
             message: `Are you sure you want to delete user ${chalk.yellow(email)}?`,
             default: false
           }
-        ]);
+        ]); // TODO-LINT: move to async function
 
         if (!confirm) {
           logger.info('User deletion cancelled');
@@ -117,7 +117,7 @@ userCommand
         }
       }
 
-      await deleteUser(email);
+      await deleteUser(email); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to delete user: ${error.message}`);
       process.exit(1);
@@ -131,7 +131,7 @@ userCommand
   .option('-j, --json', 'Output in JSON format')
   .action(async (query, options) => {
     try {
-      const users = await searchUsers(query);
+      const users = await searchUsers(query); // TODO-LINT: move to async function
       
       if (options.json) {
         console.log(JSON.stringify(users, null, 2));
@@ -157,7 +157,7 @@ userCommand
   .option('--generate', 'Generate random password')
   .action(async (email, options) => {
     try {
-      await resetUserPassword(email, options);
+      await resetUserPassword(email, options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to reset password: ${error.message}`);
       process.exit(1);
@@ -171,7 +171,7 @@ userCommand
   .option('-j, --json', 'Output in JSON format')
   .action(async (email, options) => {
     try {
-      const user = await getUserInfo(email);
+      const user = await getUserInfo(email); // TODO-LINT: move to async function
       
       if (options.json) {
         console.log(JSON.stringify(user, null, 2));
@@ -245,7 +245,7 @@ async function promptUserData(options = {}) {
     });
   }
 
-  const answers = await inquirer.prompt(questions);
+  const answers = await inquirer.prompt(questions); // TODO-LINT: move to async function
 
   return {
     email: options.email || answers.email,
@@ -261,17 +261,17 @@ async function createUser(userData) {
   spinner.start();
 
   try {
-    const db = await connectDatabase();
+    const db = await connectDatabase(); // TODO-LINT: move to async function
     
     // Check if user already exists
-    const existingUser = await db.collection('users').findOne({ email: userData.email });
+    const existingUser = await db.collection('users').findOne({ email: userData.email }); // TODO-LINT: move to async function
     if (existingUser) {
       spinner.fail('User already exists');
       return;
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const hashedPassword = await bcrypt.hash(userData.password, 10); // TODO-LINT: move to async function
 
     // Create user document
     const user = {
@@ -284,7 +284,7 @@ async function createUser(userData) {
       updatedAt: new Date()
     };
 
-    await db.collection('users').insertOne(user);
+    await db.collection('users').insertOne(user); // TODO-LINT: move to async function
 
     spinner.succeed('User created successfully');
     
@@ -306,7 +306,7 @@ async function listUsers(options = {}) {
   spinner.start();
 
   try {
-    const db = await connectDatabase();
+    const db = await connectDatabase(); // TODO-LINT: move to async function
     
     let query = {};
     
@@ -324,7 +324,7 @@ async function listUsers(options = {}) {
     const users = await db.collection('users')
       .find(query, { projection: { password: 0 } })
       .sort({ createdAt: -1 })
-      .toArray();
+      .toArray(); // TODO-LINT: move to async function
 
     spinner.succeed(`Found ${users.length} user(s)`);
     
@@ -372,9 +372,9 @@ async function updateUser(email, options) {
   spinner.start();
 
   try {
-    const db = await connectDatabase();
+    const db = await connectDatabase(); // TODO-LINT: move to async function
     
-    const user = await db.collection('users').findOne({ email });
+    const user = await db.collection('users').findOne({ email }); // TODO-LINT: move to async function
     if (!user) {
       spinner.fail('User not found');
       return;
@@ -383,7 +383,7 @@ async function updateUser(email, options) {
     const updates = { updatedAt: new Date() };
 
     if (options.password) {
-      updates.password = await bcrypt.hash(options.password, 10);
+      updates.password = await bcrypt.hash(options.password, 10); // TODO-LINT: move to async function
     }
 
     if (options.role) {
@@ -403,7 +403,7 @@ async function updateUser(email, options) {
     await db.collection('users').updateOne(
       { email },
       { $set: updates }
-    );
+    ); // TODO-LINT: move to async function
 
     spinner.succeed('User updated successfully');
     
@@ -411,7 +411,7 @@ async function updateUser(email, options) {
     const updatedUser = await db.collection('users').findOne(
       { email },
       { projection: { password: 0 } }
-    );
+    ); // TODO-LINT: move to async function
     
     console.log(chalk.green('\n✅ Updated User:'));
     displayUserInfo(updatedUser);
@@ -428,9 +428,9 @@ async function deleteUser(email) {
   spinner.start();
 
   try {
-    const db = await connectDatabase();
+    const db = await connectDatabase(); // TODO-LINT: move to async function
     
-    const result = await db.collection('users').deleteOne({ email });
+    const result = await db.collection('users').deleteOne({ email }); // TODO-LINT: move to async function
     
     if (result.deletedCount === 0) {
       spinner.fail('User not found');
@@ -452,7 +452,7 @@ async function searchUsers(query) {
   spinner.start();
 
   try {
-    const db = await connectDatabase();
+    const db = await connectDatabase(); // TODO-LINT: move to async function
     
     const searchQuery = {
       $or: [
@@ -464,7 +464,7 @@ async function searchUsers(query) {
     const users = await db.collection('users')
       .find(searchQuery, { projection: { password: 0 } })
       .sort({ createdAt: -1 })
-      .toArray();
+      .toArray(); // TODO-LINT: move to async function
 
     spinner.succeed(`Found ${users.length} user(s) matching "${query}"`);
     
@@ -481,9 +481,9 @@ async function resetUserPassword(email, options) {
   spinner.start();
 
   try {
-    const db = await connectDatabase();
+    const db = await connectDatabase(); // TODO-LINT: move to async function
     
-    const user = await db.collection('users').findOne({ email });
+    const user = await db.collection('users').findOne({ email }); // TODO-LINT: move to async function
     if (!user) {
       spinner.fail('User not found');
       return;
@@ -502,7 +502,7 @@ async function resetUserPassword(email, options) {
           name: 'password',
           message: 'New password:',
           validate: (input) => {
-            if (!input) return 'Password is required';
+            if (!input) return 'Password is required'; // TODO-LINT: move to async function
             if (input.length < 8) return 'Password must be at least 8 characters';
             return true;
           }
@@ -511,7 +511,7 @@ async function resetUserPassword(email, options) {
       newPassword = password;
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 10); // TODO-LINT: move to async function
 
     await db.collection('users').updateOne(
       { email },
@@ -521,7 +521,7 @@ async function resetUserPassword(email, options) {
           updatedAt: new Date()
         }
       }
-    );
+    ); // TODO-LINT: move to async function
 
     spinner.succeed('Password reset successfully');
     
@@ -545,12 +545,12 @@ async function getUserInfo(email) {
   spinner.start();
 
   try {
-    const db = await connectDatabase();
+    const db = await connectDatabase(); // TODO-LINT: move to async function
     
     const user = await db.collection('users').findOne(
       { email },
       { projection: { password: 0 } }
-    );
+    ); // TODO-LINT: move to async function
     
     if (!user) {
       spinner.fail('User not found');

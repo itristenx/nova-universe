@@ -17,7 +17,7 @@ async function testEnhancedMonitoring() {
   try {
     // Test 1: Initialize the enhanced monitoring system
     console.log('\n📋 Test 1: Initializing Enhanced Monitoring System...');
-    await enhancedMonitoringService.initialize();
+    await enhancedMonitoringService.initialize(); // TODO-LINT: move to async function
     console.log('✅ Enhanced Monitoring System initialized successfully');
 
     // Test 2: Check notification provider support
@@ -41,7 +41,7 @@ async function testEnhancedMonitoring() {
           timeout: 5
         };
         // This would normally fail but we're just testing the service exists
-        await extendedMonitorService.runMonitorCheck(testCheck).catch(() => {});
+        await extendedMonitorService.runMonitorCheck(testCheck).catch(() => {}); // TODO-LINT: move to async function
         console.log(`   ✅ ${type} monitoring support verified`);
       } catch (error) {
         console.log(`   ⚠️  ${type} monitoring needs configuration`);
@@ -53,11 +53,11 @@ async function testEnhancedMonitoring() {
     
     // Test tag creation
     try {
-      const testTag = await advancedFeaturesService.createTag({
+      const _testTag = await advancedFeaturesService.createTag({
         name: 'test-tag-' + Date.now(),
         color: '#FF0000',
         description: 'Test tag for verification'
-      });
+      }); // TODO-LINT: move to async function
       console.log('   ✅ Tag system working');
     } catch (error) {
       console.log('   ⚠️  Tag system needs database setup');
@@ -66,7 +66,7 @@ async function testEnhancedMonitoring() {
     // Test 5: Test status page service
     console.log('\n📋 Test 5: Testing Status Page Service...');
     try {
-      await statusPageService.healthCheck();
+      await statusPageService.healthCheck(); // TODO-LINT: move to async function
       console.log('   ✅ Status page service operational');
     } catch (error) {
       console.log('   ⚠️  Status page service needs configuration');
@@ -74,7 +74,7 @@ async function testEnhancedMonitoring() {
 
     // Test 6: Get system health
     console.log('\n📋 Test 6: System Health Check...');
-    const health = await enhancedMonitoringService.getHealthStatus();
+    const health = await enhancedMonitoringService.getHealthStatus(); // TODO-LINT: move to async function
     console.log('   ✅ System Health:', {
       initialized: health.initialized,
       activeMonitors: health.activeMonitors,

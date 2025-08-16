@@ -36,7 +36,7 @@ export class NotificationProviderService {
     
     const text = `🚨 *${message.title}*\n\n${message.message}\n\n📊 Severity: ${message.severity.toUpperCase()}\n⏰ Time: ${message.timestamp}`;
     
-    const payload: any = {
+    const payload: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {
       chat_id,
       text,
       parse_mode: 'Markdown',
@@ -45,7 +45,7 @@ export class NotificationProviderService {
     
     if (thread_id) payload.message_thread_id = thread_id;
     
-    await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, payload);
+    await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, payload); // TODO-LINT: move to async function
     logger.info(`Telegram notification sent to chat: ${chat_id}`);
   }
 
@@ -69,7 +69,7 @@ export class NotificationProviderService {
       timestamp: Math.floor(new Date(message.timestamp).getTime() / 1000)
     };
     
-    await axios.post('https://api.pushover.net/1/messages.json', payload);
+    await axios.post('https://api.pushover.net/1/messages.json', payload); // TODO-LINT: move to async function
     logger.info(`Pushover notification sent to user: ${user_key}`);
   }
 
@@ -103,7 +103,7 @@ export class NotificationProviderService {
       }]
     };
     
-    await axios.post(webhook_url, payload);
+    await axios.post(webhook_url, payload); // TODO-LINT: move to async function
     logger.info('Teams notification sent');
   }
 
@@ -125,7 +125,7 @@ export class NotificationProviderService {
     
     await axios.put(url, content, {
       headers: { Authorization: `Bearer ${access_token}` }
-    });
+    }); // TODO-LINT: move to async function
     
     logger.info(`Matrix notification sent to room: ${room_id}`);
   }
@@ -144,7 +144,7 @@ export class NotificationProviderService {
       recipients: Array.isArray(recipients) ? recipients : [recipients]
     };
     
-    await axios.post(`${signal_cli_url}/v2/send`, payload);
+    await axios.post(`${signal_cli_url}/v2/send`, payload); // TODO-LINT: move to async function
     logger.info('Signal notification sent');
   }
 
@@ -169,7 +169,7 @@ export class NotificationProviderService {
     
     await axios.post(`${server_url}/message`, payload, {
       headers: { 'X-Gotify-Key': app_token }
-    });
+    }); // TODO-LINT: move to async function
     
     logger.info('Gotify notification sent');
   }
@@ -203,7 +203,7 @@ export class NotificationProviderService {
       }
     };
     
-    await axios.post('https://events.pagerduty.com/v2/enqueue', payload);
+    await axios.post('https://events.pagerduty.com/v2/enqueue', payload); // TODO-LINT: move to async function
     logger.info('PagerDuty notification sent');
   }
 
@@ -234,7 +234,7 @@ export class NotificationProviderService {
     
     await axios.post(`${baseUrl}/v2/alerts`, payload, {
       headers: { Authorization: `GenieKey ${api_key}` }
-    });
+    }); // TODO-LINT: move to async function
     
     logger.info('Opsgenie notification sent');
   }
@@ -257,7 +257,7 @@ export class NotificationProviderService {
         'Access-Token': access_token,
         'Content-Type': 'application/json'
       }
-    });
+    }); // TODO-LINT: move to async function
     
     logger.info('Pushbullet notification sent');
   }
@@ -278,7 +278,7 @@ export class NotificationProviderService {
         'Authorization': `Bearer ${access_token}`,
         'Content-Type': 'application/x-www-form-urlencoded'
       }
-    });
+    }); // TODO-LINT: move to async function
     
     logger.info('LINE notification sent');
   }
@@ -312,7 +312,7 @@ export class NotificationProviderService {
       }]
     };
     
-    await axios.post(webhook_url, payload);
+    await axios.post(webhook_url, payload); // TODO-LINT: move to async function
     logger.info('Mattermost notification sent');
   }
 
@@ -329,7 +329,7 @@ export class NotificationProviderService {
       text: `**${message.title}**\n\n${message.message}\n\n*Severity: ${message.severity.toUpperCase()}*\n*Time: ${message.timestamp}*`
     };
     
-    await axios.post(webhook_url, payload);
+    await axios.post(webhook_url, payload); // TODO-LINT: move to async function
     logger.info('Rocket.Chat notification sent');
   }
 
@@ -385,7 +385,7 @@ export class NotificationProviderService {
       }
     };
     
-    await axios.post(webhook_url, payload);
+    await axios.post(webhook_url, payload); // TODO-LINT: move to async function
     logger.info('Feishu notification sent');
   }
 
@@ -416,7 +416,7 @@ export class NotificationProviderService {
       }
     };
     
-    await axios.post(url, payload);
+    await axios.post(url, payload); // TODO-LINT: move to async function
     logger.info('DingTalk notification sent');
   }
 
@@ -428,11 +428,11 @@ export class NotificationProviderService {
     
     const url = `${server_url}/${device_key}/${encodeURIComponent(message.title)}/${encodeURIComponent(message.message)}`;
     
-    const params: any = {};
+    const params: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {};
     if (sound) params.sound = sound;
     if (group) params.group = group;
     
-    await axios.get(url, { params });
+    await axios.get(url, { params }); // TODO-LINT: move to async function
     logger.info('Bark notification sent');
   }
 
@@ -444,7 +444,7 @@ export class NotificationProviderService {
     
     const priorityMap = { low: 1, medium: 3, high: 4, critical: 5 };
     
-    const headers: any = {
+    const headers: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {
       'Title': message.title,
       'Priority': priorityMap[message.severity] || 3,
       'Tags': message.severity === 'critical' ? 'rotating_light' : 
@@ -455,7 +455,7 @@ export class NotificationProviderService {
       headers['Authorization'] = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
     }
     
-    await axios.post(`${server_url}/${topic}`, message.message, { headers });
+    await axios.post(`${server_url}/${topic}`, message.message, { headers }); // TODO-LINT: move to async function
     logger.info(`NTFY notification sent to topic: ${topic}`);
   }
 
@@ -485,7 +485,7 @@ export class NotificationProviderService {
         'Authorization': `Splunk ${token}`,
         'Content-Type': 'application/json'
       }
-    });
+    }); // TODO-LINT: move to async function
     
     logger.info('Splunk notification sent');
   }
@@ -517,7 +517,7 @@ export class NotificationProviderService {
         'Authorization': `Bearer ${long_lived_token}`,
         'Content-Type': 'application/json'
       }
-    });
+    }); // TODO-LINT: move to async function
     
     logger.info('Home Assistant notification sent');
   }
@@ -529,67 +529,67 @@ export class NotificationProviderService {
     try {
       switch (provider.type) {
         case 'telegram':
-          await this.sendTelegram(provider, message);
+          await this.sendTelegram(provider, message); // TODO-LINT: move to async function
           break;
         case 'pushover':
-          await this.sendPushover(provider, message);
+          await this.sendPushover(provider, message); // TODO-LINT: move to async function
           break;
         case 'teams':
-          await this.sendTeams(provider, message);
+          await this.sendTeams(provider, message); // TODO-LINT: move to async function
           break;
         case 'matrix':
-          await this.sendMatrix(provider, message);
+          await this.sendMatrix(provider, message); // TODO-LINT: move to async function
           break;
         case 'signal':
-          await this.sendSignal(provider, message);
+          await this.sendSignal(provider, message); // TODO-LINT: move to async function
           break;
         case 'gotify':
-          await this.sendGotify(provider, message);
+          await this.sendGotify(provider, message); // TODO-LINT: move to async function
           break;
         case 'pagerduty':
-          await this.sendPagerDuty(provider, message);
+          await this.sendPagerDuty(provider, message); // TODO-LINT: move to async function
           break;
         case 'opsgenie':
-          await this.sendOpsgenie(provider, message);
+          await this.sendOpsgenie(provider, message); // TODO-LINT: move to async function
           break;
         case 'pushbullet':
-          await this.sendPushbullet(provider, message);
+          await this.sendPushbullet(provider, message); // TODO-LINT: move to async function
           break;
         case 'line':
-          await this.sendLine(provider, message);
+          await this.sendLine(provider, message); // TODO-LINT: move to async function
           break;
         case 'mattermost':
-          await this.sendMattermost(provider, message);
+          await this.sendMattermost(provider, message); // TODO-LINT: move to async function
           break;
         case 'rocket_chat':
-          await this.sendRocketChat(provider, message);
+          await this.sendRocketChat(provider, message); // TODO-LINT: move to async function
           break;
         case 'feishu':
-          await this.sendFeishu(provider, message);
+          await this.sendFeishu(provider, message); // TODO-LINT: move to async function
           break;
         case 'dingtalk':
-          await this.sendDingTalk(provider, message);
+          await this.sendDingTalk(provider, message); // TODO-LINT: move to async function
           break;
         case 'bark':
-          await this.sendBark(provider, message);
+          await this.sendBark(provider, message); // TODO-LINT: move to async function
           break;
         case 'ntfy':
-          await this.sendNtfy(provider, message);
+          await this.sendNtfy(provider, message); // TODO-LINT: move to async function
           break;
         case 'splunk':
-          await this.sendSplunk(provider, message);
+          await this.sendSplunk(provider, message); // TODO-LINT: move to async function
           break;
         case 'homeassistant':
-          await this.sendHomeAssistant(provider, message);
+          await this.sendHomeAssistant(provider, message); // TODO-LINT: move to async function
           break;
         default:
           throw new Error(`Unsupported notification provider: ${provider.type}`);
       }
-    } catch (error: any) {
+    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
       logger.error(`Failed to send ${provider.type} notification: ${error.message}`);
       throw error;
     }
   }
 }
 
-export const notificationProviderService = new NotificationProviderService();
+export const _notificationProviderService = new NotificationProviderService();

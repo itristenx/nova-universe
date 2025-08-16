@@ -187,8 +187,8 @@ export const iconVariants = {
   }
 } as const
 
-// Utility functions for icon system
-export const getIconName = (semantic: keyof typeof iconMappings): string => {
+// Utility _functions for icon system
+export const __getIconName = (semantic: keyof typeof iconMappings): string => {
   return iconMappings[semantic]
 }
 
@@ -204,7 +204,7 @@ export const getIconClass = (
 }
 
 // Generate Lucide icon import statements
-export const generateIconImports = (icons: (keyof typeof iconMappings)[]): string => {
+export const _generateIconImports = (icons: (keyof typeof iconMappings)[]): string => {
   const lucideIcons = icons.map(icon => iconMappings[icon])
   const uniqueIcons = [...new Set(lucideIcons)]
   
@@ -220,7 +220,7 @@ export const generateIconImports = (icons: (keyof typeof iconMappings)[]): strin
 }
 
 // Icon configuration for different Nova Universe apps
-export const appIconSets = {
+export const _appIconSets = {
   core: [
     'dashboard', 'tickets', 'agents', 'reports', 'settings', 'profile',
     'add', 'edit', 'delete', 'search', 'filter', 'refresh', 'notifications'
@@ -238,7 +238,7 @@ export const appIconSets = {
 } as const
 
 // Default icon props for consistency
-export const defaultIconProps = {
+export const _defaultIconProps = {
   strokeWidth: 2,
   className: getIconClass('md', 'default')
 } as const

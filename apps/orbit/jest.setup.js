@@ -34,7 +34,7 @@ jest.mock('next-intl/server', () => ({
 }));
 
 jest.mock('@/i18n/navigation', () => ({
-  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+  Link: ({ children, ...props }: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => <a {...props}>{children}</a>,
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),

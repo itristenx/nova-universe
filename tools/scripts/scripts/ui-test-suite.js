@@ -9,7 +9,7 @@ const testCredentials = {
   password: 'admin'
 };
 
-// Utility functions
+// Utility _functions
 function waitFor(selector, timeout = 5000) {
   return new Promise((resolve, reject) => {
     const start = Date.now();
@@ -41,7 +41,7 @@ async function runUITests() {
     
     // Test 1: Login Form Presence
     console.log('\n1️⃣ Testing Login Form Presence...');
-    await waitFor('form', 3000);
+    await waitFor('form', 3000); // TODO-LINT: move to async function
     const loginForm = document.querySelector('form');
     const emailInput = document.querySelector('input[type="email"]');
     const passwordInput = document.querySelector('input[type="password"]');
@@ -65,8 +65,8 @@ async function runUITests() {
     // Test 3: API Connectivity Test
     console.log('\n3️⃣ Testing API Connectivity...');
     try {
-      const healthResponse = await fetch('/api/health');
-      const health = await healthResponse.json();
+      const healthResponse = await fetch('/api/health'); // TODO-LINT: move to async function
+      const health = await healthResponse.json(); // TODO-LINT: move to async function
       console.log('✅ API Health Check:', health);
     } catch (error) {
       throw new Error(`API connectivity failed: ${error.message}`);
@@ -81,14 +81,14 @@ async function runUITests() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(testCredentials)
-      });
+      }); // TODO-LINT: move to async function
       
       if (!loginResponse.ok) {
-        const error = await loginResponse.json();
+        const error = await loginResponse.json(); // TODO-LINT: move to async function
         throw new Error(`Login API failed: ${JSON.stringify(error)}`);
       }
       
-      const loginResult = await loginResponse.json();
+      const loginResult = await loginResponse.json(); // TODO-LINT: move to async function
       console.log('✅ Login API successful');
       
       // Store token for subsequent tests
@@ -105,7 +105,7 @@ async function runUITests() {
       submitButton.click();
       
       // Wait for potential navigation or state change
-      await sleep(2000);
+      await sleep(2000); // TODO-LINT: move to async function
       
       // Check if we're still on login page or redirected
       const currentUrl = window.location.pathname;
@@ -127,10 +127,10 @@ async function runUITests() {
           headers: {
             'Authorization': `Bearer ${authToken}`
           }
-        });
+        }); // TODO-LINT: move to async function
         
         if (profileResponse.ok) {
-          const profile = await profileResponse.json();
+          const profile = await profileResponse.json(); // TODO-LINT: move to async function
           console.log('✅ Profile API working:', profile);
         } else {
           console.warn('⚠️ Profile API failed');
@@ -144,7 +144,7 @@ async function runUITests() {
 
     // Test 7: Check for UI Elements After Login
     console.log('\n7️⃣ Testing Post-Login UI Elements...');
-    await sleep(1000);
+    await sleep(1000); // TODO-LINT: move to async function
     
     // Look for navigation or dashboard elements
     const navElements = document.querySelectorAll('nav, [role="navigation"]');

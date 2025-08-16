@@ -34,10 +34,10 @@ export class UptimeKumaAdapter extends EventEmitter {
     }
 
     try {
-      await this.connect();
-      await this.authenticate();
-      await this.setupEventHandlers();
-      await this.syncInitialData();
+      await this.connect(); // TODO-LINT: move to async function
+      await this.authenticate(); // TODO-LINT: move to async function
+      await this.setupEventHandlers(); // TODO-LINT: move to async function
+      await this.syncInitialData(); // TODO-LINT: move to async function
       
       logger.info('Uptime Kuma adapter initialized successfully');
     } catch (error) {
@@ -91,7 +91,7 @@ export class UptimeKumaAdapter extends EventEmitter {
         username: 'admin',
         password: this.config.apiKey,
         token: this.config.apiKey
-      });
+      }); // TODO-LINT: move to async function
     }
   }
 
@@ -124,13 +124,13 @@ export class UptimeKumaAdapter extends EventEmitter {
 
   async syncInitialData() {
     // Request initial data from Uptime Kuma
-    await this.sendMessage('getMonitorList');
-    await this.sendMessage('getStatusPageList');
-    await this.sendMessage('getIncidentList');
-    await this.sendMessage('getMaintenanceList');
+    await this.sendMessage('getMonitorList'); // TODO-LINT: move to async function
+    await this.sendMessage('getStatusPageList'); // TODO-LINT: move to async function
+    await this.sendMessage('getIncidentList'); // TODO-LINT: move to async function
+    await this.sendMessage('getMaintenanceList'); // TODO-LINT: move to async function
     
     // Wait a moment for data to sync
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2000)); // TODO-LINT: move to async function
   }
 
   handleMessage(message) {
@@ -207,9 +207,9 @@ export class UptimeKumaAdapter extends EventEmitter {
 
     setTimeout(async () => {
       try {
-        await this.connect();
-        await this.authenticate();
-        await this.syncInitialData();
+        await this.connect(); // TODO-LINT: move to async function
+        await this.authenticate(); // TODO-LINT: move to async function
+        await this.syncInitialData(); // TODO-LINT: move to async function
       } catch (error) {
         logger.error('Reconnection failed:', error);
       }
@@ -268,26 +268,26 @@ export class UptimeKumaAdapter extends EventEmitter {
       tag: monitorData.tags || []
     };
 
-    await this.sendMessage('add', monitor);
+    await this.sendMessage('add', monitor); // TODO-LINT: move to async function
     return monitor;
   }
 
   async updateMonitor(monitorId, monitorData) {
     const monitor = { id: monitorId, ...monitorData };
-    await this.sendMessage('editMonitor', monitor);
+    await this.sendMessage('editMonitor', monitor); // TODO-LINT: move to async function
     return monitor;
   }
 
   async deleteMonitor(monitorId) {
-    await this.sendMessage('deleteMonitor', monitorId);
+    await this.sendMessage('deleteMonitor', monitorId); // TODO-LINT: move to async function
   }
 
   async pauseMonitor(monitorId) {
-    await this.sendMessage('pauseMonitor', monitorId);
+    await this.sendMessage('pauseMonitor', monitorId); // TODO-LINT: move to async function
   }
 
   async resumeMonitor(monitorId) {
-    await this.sendMessage('resumeMonitor', monitorId);
+    await this.sendMessage('resumeMonitor', monitorId); // TODO-LINT: move to async function
   }
 
   async getMonitor(monitorId) {
@@ -300,7 +300,7 @@ export class UptimeKumaAdapter extends EventEmitter {
 
   async getMonitorHeartbeats(monitorId, period = '24h') {
     // Request heartbeat history
-    await this.sendMessage('getMonitorBeats', { monitorId, period });
+    await this.sendMessage('getMonitorBeats', { monitorId, period }); // TODO-LINT: move to async function
     // Return cached heartbeats for now
     return this.heartbeats.get(monitorId) || [];
   }
@@ -324,18 +324,18 @@ export class UptimeKumaAdapter extends EventEmitter {
       publicGroupList: statusPageData.publicGroupList || []
     };
 
-    await this.sendMessage('saveStatusPage', statusPage);
+    await this.sendMessage('saveStatusPage', statusPage); // TODO-LINT: move to async function
     return statusPage;
   }
 
   async updateStatusPage(statusPageId, statusPageData) {
     const statusPage = { id: statusPageId, ...statusPageData };
-    await this.sendMessage('saveStatusPage', statusPage);
+    await this.sendMessage('saveStatusPage', statusPage); // TODO-LINT: move to async function
     return statusPage;
   }
 
   async deleteStatusPage(statusPageId) {
-    await this.sendMessage('deleteStatusPage', statusPageId);
+    await this.sendMessage('deleteStatusPage', statusPageId); // TODO-LINT: move to async function
   }
 
   async getStatusPage(statusPageId) {
@@ -359,22 +359,22 @@ export class UptimeKumaAdapter extends EventEmitter {
       ...notificationData.config // Type-specific configuration
     };
 
-    await this.sendMessage('addNotification', notification);
+    await this.sendMessage('addNotification', notification); // TODO-LINT: move to async function
     return notification;
   }
 
   async updateNotification(notificationId, notificationData) {
     const notification = { id: notificationId, ...notificationData };
-    await this.sendMessage('editNotification', notification);
+    await this.sendMessage('editNotification', notification); // TODO-LINT: move to async function
     return notification;
   }
 
   async deleteNotification(notificationId) {
-    await this.sendMessage('deleteNotification', notificationId);
+    await this.sendMessage('deleteNotification', notificationId); // TODO-LINT: move to async function
   }
 
   async testNotification(notificationData) {
-    await this.sendMessage('testNotification', notificationData);
+    await this.sendMessage('testNotification', notificationData); // TODO-LINT: move to async function
   }
 
   // ========================================================================
@@ -393,26 +393,26 @@ export class UptimeKumaAdapter extends EventEmitter {
       statusPageList: maintenanceData.statusPageList || []
     };
 
-    await this.sendMessage('addMaintenance', maintenance);
+    await this.sendMessage('addMaintenance', maintenance); // TODO-LINT: move to async function
     return maintenance;
   }
 
   async updateMaintenance(maintenanceId, maintenanceData) {
     const maintenance = { id: maintenanceId, ...maintenanceData };
-    await this.sendMessage('editMaintenance', maintenance);
+    await this.sendMessage('editMaintenance', maintenance); // TODO-LINT: move to async function
     return maintenance;
   }
 
   async deleteMaintenance(maintenanceId) {
-    await this.sendMessage('deleteMaintenance', maintenanceId);
+    await this.sendMessage('deleteMaintenance', maintenanceId); // TODO-LINT: move to async function
   }
 
   async pauseMaintenance(maintenanceId) {
-    await this.sendMessage('pauseMaintenance', maintenanceId);
+    await this.sendMessage('pauseMaintenance', maintenanceId); // TODO-LINT: move to async function
   }
 
   async resumeMaintenance(maintenanceId) {
-    await this.sendMessage('resumeMaintenance', maintenanceId);
+    await this.sendMessage('resumeMaintenance', maintenanceId); // TODO-LINT: move to async function
   }
 
   // ========================================================================
@@ -427,18 +427,18 @@ export class UptimeKumaAdapter extends EventEmitter {
       statusPageList: incidentData.statusPageList || []
     };
 
-    await this.sendMessage('postIncident', incident);
+    await this.sendMessage('postIncident', incident); // TODO-LINT: move to async function
     return incident;
   }
 
   async updateIncident(incidentId, incidentData) {
     const incident = { id: incidentId, ...incidentData };
-    await this.sendMessage('editIncident', incident);
+    await this.sendMessage('editIncident', incident); // TODO-LINT: move to async function
     return incident;
   }
 
   async deleteIncident(incidentId) {
-    await this.sendMessage('deleteIncident', incidentId);
+    await this.sendMessage('deleteIncident', incidentId); // TODO-LINT: move to async function
   }
 
   // ========================================================================
@@ -451,18 +451,18 @@ export class UptimeKumaAdapter extends EventEmitter {
       color: tagData.color || '#007cba'
     };
 
-    await this.sendMessage('addTag', tag);
+    await this.sendMessage('addTag', tag); // TODO-LINT: move to async function
     return tag;
   }
 
   async updateTag(tagId, tagData) {
     const tag = { id: tagId, ...tagData };
-    await this.sendMessage('editTag', tag);
+    await this.sendMessage('editTag', tag); // TODO-LINT: move to async function
     return tag;
   }
 
   async deleteTag(tagId) {
-    await this.sendMessage('deleteTag', tagId);
+    await this.sendMessage('deleteTag', tagId); // TODO-LINT: move to async function
   }
 
   // ========================================================================
@@ -480,18 +480,18 @@ export class UptimeKumaAdapter extends EventEmitter {
       active: proxyData.active !== false
     };
 
-    await this.sendMessage('addProxy', proxy);
+    await this.sendMessage('addProxy', proxy); // TODO-LINT: move to async function
     return proxy;
   }
 
   async updateProxy(proxyId, proxyData) {
     const proxy = { id: proxyId, ...proxyData };
-    await this.sendMessage('editProxy', proxy);
+    await this.sendMessage('editProxy', proxy); // TODO-LINT: move to async function
     return proxy;
   }
 
   async deleteProxy(proxyId) {
-    await this.sendMessage('deleteProxy', proxyId);
+    await this.sendMessage('deleteProxy', proxyId); // TODO-LINT: move to async function
   }
 
   // ========================================================================
@@ -499,11 +499,11 @@ export class UptimeKumaAdapter extends EventEmitter {
   // ========================================================================
 
   async updateSettings(settingsData) {
-    await this.sendMessage('setSettings', settingsData);
+    await this.sendMessage('setSettings', settingsData); // TODO-LINT: move to async function
   }
 
   async getSettings() {
-    await this.sendMessage('getSettings');
+    await this.sendMessage('getSettings'); // TODO-LINT: move to async function
   }
 
   // ========================================================================
@@ -511,11 +511,11 @@ export class UptimeKumaAdapter extends EventEmitter {
   // ========================================================================
 
   async getDockerHosts() {
-    await this.sendMessage('getDockerHosts');
+    await this.sendMessage('getDockerHosts'); // TODO-LINT: move to async function
   }
 
   async testDockerHost(dockerHostData) {
-    await this.sendMessage('testDockerHost', dockerHostData);
+    await this.sendMessage('testDockerHost', dockerHostData); // TODO-LINT: move to async function
   }
 
   // ========================================================================
@@ -529,12 +529,12 @@ export class UptimeKumaAdapter extends EventEmitter {
       active: keyData.active !== false
     };
 
-    await this.sendMessage('addAPIKey', apiKey);
+    await this.sendMessage('addAPIKey', apiKey); // TODO-LINT: move to async function
     return apiKey;
   }
 
   async deleteAPIKey(keyId) {
-    await this.sendMessage('deleteAPIKey', keyId);
+    await this.sendMessage('deleteAPIKey', keyId); // TODO-LINT: move to async function
   }
 
   // ========================================================================

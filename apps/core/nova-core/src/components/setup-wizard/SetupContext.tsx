@@ -39,12 +39,12 @@ export interface SetupData {
     enableSSO?: boolean;
     ssoEnabled?: boolean;
     ssoProvider?: 'saml' | 'oauth' | 'ldap';
-    ssoConfig?: any;
+    ssoConfig?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
     ssoMetadataUrl?: string;
     ssoMetadataXml?: string;
     enableSCIM?: boolean;
     scimEnabled?: boolean;
-    scimConfig?: any;
+    scimConfig?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
     scimToken?: string;
     scimBaseUrl?: string;
     sessionTimeout?: number;
@@ -217,8 +217,9 @@ function setupReducer(state: SetupState, action: SetupAction): SetupState {
         },
       };
     
-    case 'CLEAR_ERROR':
-      const newErrors = { ...state.errors };
+    case 'CLEAR_ERROR': {
+        const 
+        newErrors = { ...state.errors };
       delete newErrors[action.payload];
       return { ...state, errors: newErrors };
     

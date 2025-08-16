@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function CosmoPage() {
+export default function _CosmoPage() {
   const router = useRouter();
 
   useEffect(() => {

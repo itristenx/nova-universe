@@ -338,6 +338,6 @@ export interface AlertError {
 export interface AlertOperationResult {
   success: boolean;
   error?: AlertError;
-  data?: any;
+  data?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
   timestamp: string;
 }

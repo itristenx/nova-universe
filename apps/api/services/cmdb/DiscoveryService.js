@@ -8,7 +8,7 @@ import net from 'net';
 async function getCmdbPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
   try {
-    const mod = await import('../../../../prisma/generated/cmdb/index.js');
+    const mod = await import('../../../../prisma/generated/cmdb/index.js'); // TODO-LINT: move to async function
     return new mod.PrismaClient({ datasources: { cmdb_db: { url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL } } });
   } catch { return null; }
 }
@@ -26,11 +26,11 @@ export class DiscoveryService {
    */
   async startDiscoveryRun(config) {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       const discoveryRun = await client.discoveryRun.create({
         data: { scheduleId: config.scheduleId, status: 'Running', startTime: new Date(), itemsDiscovered: 0, itemsUpdated: 0, itemsCreated: 0 }
-      });
+      }); // TODO-LINT: move to async function
       this._executeDiscovery(discoveryRun.id, config).catch(error => {
         logger.error('Discovery run failed:', error);
         this._updateDiscoveryRunStatus(discoveryRun.id, 'Failed', { error: error.message });
@@ -48,13 +48,13 @@ export class DiscoveryService {
    */
   async getDiscoveryRuns(limit = 50) {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       return await client.discoveryRun.findMany({
         orderBy: { startTime: 'desc' },
         take: limit,
         include: { discoveredItems: { take: 5, orderBy: { discoveredAt: 'desc' } } }
-      });
+      }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Error fetching discovery runs:', error);
       throw new Error('Failed to fetch discovery runs');
@@ -66,9 +66,9 @@ export class DiscoveryService {
    */
   async getDiscoveredItems(runId, status = 'New') {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
-      return await client.discoveredItem.findMany({ where: { runId, status }, orderBy: { discoveredAt: 'asc' } });
+      return await client.discoveredItem.findMany({ where: { runId, status }, orderBy: { discoveredAt: 'asc' } }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Error fetching discovered items:', error);
       throw new Error('Failed to fetch discovered items');
@@ -80,26 +80,26 @@ export class DiscoveryService {
    */
   async processDiscoveredItem(itemId, processingOptions = {}) {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
-      const item = await client.discoveredItem.findUnique({ where: { id: itemId } });
+      const item = await client.discoveredItem.findUnique({ where: { id: itemId } }); // TODO-LINT: move to async function
       if (!item) throw new Error('Discovered item not found');
       const discoveredData = item.discoveredData;
       let ci = null;
-      const existingCi = await this._findExistingCi(discoveredData);
+      const existingCi = await this._findExistingCi(discoveredData); // TODO-LINT: move to async function
       if (existingCi) {
-        ci = await this._updateExistingCi(existingCi, discoveredData);
-        await this._updateDiscoveredItemStatus(itemId, 'Processed', 'Updated existing CI', ci.id);
+        ci = await this._updateExistingCi(existingCi, discoveredData); // TODO-LINT: move to async function
+        await this._updateDiscoveredItemStatus(itemId, 'Processed', 'Updated existing CI', ci.id); // TODO-LINT: move to async function
       } else if (processingOptions.autoCreate !== false) {
-        ci = await this._createCiFromDiscoveredData(discoveredData);
-        await this._updateDiscoveredItemStatus(itemId, 'Processed', 'Created new CI', ci.id);
+        ci = await this._createCiFromDiscoveredData(discoveredData); // TODO-LINT: move to async function
+        await this._updateDiscoveredItemStatus(itemId, 'Processed', 'Created new CI', ci.id); // TODO-LINT: move to async function
       } else {
-        await this._updateDiscoveredItemStatus(itemId, 'New', 'Requires manual review');
+        await this._updateDiscoveredItemStatus(itemId, 'New', 'Requires manual review'); // TODO-LINT: move to async function
       }
       return ci;
     } catch (error) {
       logger.error('Error processing discovered item:', error);
-      await this._updateDiscoveredItemStatus(itemId, 'Error', `Processing failed: ${error.message}`);
+      await this._updateDiscoveredItemStatus(itemId, 'Error', `Processing failed: ${error.message}`); // TODO-LINT: move to async function
       throw new Error('Failed to process discovered item');
     }
   }
@@ -109,11 +109,11 @@ export class DiscoveryService {
    */
   async createDiscoverySchedule(scheduleData) {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       const schedule = await client.discoverySchedule.create({
         data: { ...scheduleData, nextRunDate: this._calculateNextRunDate(scheduleData.cronExpression) }
-      });
+      }); // TODO-LINT: move to async function
       logger.info(`Discovery schedule created: ${schedule.name}`);
       return schedule;
     } catch (error) {
@@ -127,9 +127,9 @@ export class DiscoveryService {
    */
   async getDiscoverySchedules() {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
-      return await client.discoverySchedule.findMany({ orderBy: { name: 'asc' } });
+      return await client.discoverySchedule.findMany({ orderBy: { name: 'asc' } }); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Error fetching discovery schedules:', error);
       throw new Error('Failed to fetch discovery schedules');
@@ -149,19 +149,19 @@ export class DiscoveryService {
 
       switch (config.discoveryType) {
         case 'Network':
-          discoveredItems = await this._discoverNetwork(config.scopeConfiguration);
+          discoveredItems = await this._discoverNetwork(config.scopeConfiguration); // TODO-LINT: move to async function
           break;
         case 'Windows':
-          discoveredItems = await this._discoverWindows(config.scopeConfiguration);
+          discoveredItems = await this._discoverWindows(config.scopeConfiguration); // TODO-LINT: move to async function
           break;
         case 'Linux':
-          discoveredItems = await this._discoverLinux(config.scopeConfiguration);
+          discoveredItems = await this._discoverLinux(config.scopeConfiguration); // TODO-LINT: move to async function
           break;
         case 'Cloud':
-          discoveredItems = await this._discoverCloud(config.scopeConfiguration);
+          discoveredItems = await this._discoverCloud(config.scopeConfiguration); // TODO-LINT: move to async function
           break;
         case 'Database':
-          discoveredItems = await this._discoverDatabase(config.scopeConfiguration);
+          discoveredItems = await this._discoverDatabase(config.scopeConfiguration); // TODO-LINT: move to async function
           break;
         default:
           throw new Error(`Unsupported discovery type: ${config.discoveryType}`);
@@ -169,7 +169,7 @@ export class DiscoveryService {
 
       // Store discovered items
       const createdItems = [];
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       for (const item of discoveredItems) {
         const discoveredItem = await client.discoveredItem.create({
@@ -179,20 +179,20 @@ export class DiscoveryService {
             fingerprint: this._generateFingerprint(item),
             status: 'New'
           }
-        });
+        }); // TODO-LINT: move to async function
         createdItems.push(discoveredItem);
       }
 
       // Update discovery run status
       await this._updateDiscoveryRunStatus(runId, 'Completed', {
         itemsDiscovered: discoveredItems.length
-      });
+      }); // TODO-LINT: move to async function
 
       logger.info(`Discovery completed: ${runId} - ${discoveredItems.length} items discovered`);
       return createdItems;
     } catch (error) {
       logger.error('Discovery execution failed:', error);
-      await this._updateDiscoveryRunStatus(runId, 'Failed', { error: error.message });
+      await this._updateDiscoveryRunStatus(runId, 'Failed', { error: error.message }); // TODO-LINT: move to async function
       throw error;
     }
   }
@@ -211,7 +211,7 @@ export class DiscoveryService {
       
       for (const ip of ipAddresses.slice(0, 10)) { // Limit for demo
         try {
-          const openPorts = await this._scanPorts(ip, scanPorts);
+          const openPorts = await this._scanPorts(ip, scanPorts); // TODO-LINT: move to async function
           const isAlive = openPorts.length > 0;
           if (isAlive) {
             const deviceData = {
@@ -394,9 +394,9 @@ export class DiscoveryService {
    */
   async _updateDiscoveryRunStatus(runId, status, updates = {}) {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) return;
-      await client.discoveryRun.update({ where: { id: runId }, data: { status, endTime: status === 'Completed' || status === 'Failed' ? new Date() : undefined, ...updates } });
+      await client.discoveryRun.update({ where: { id: runId }, data: { status, endTime: status === 'Completed' || status === 'Failed' ? new Date() : undefined, ...updates } }); // TODO-LINT: move to async function
     } catch (error) { logger.error('Error updating discovery run status:', error); }
   }
 
@@ -405,9 +405,9 @@ export class DiscoveryService {
    */
   async _updateDiscoveredItemStatus(itemId, status, notes, ciId = null) {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) return;
-      await client.discoveredItem.update({ where: { id: itemId }, data: { status, processingNotes: notes, processedAt: new Date(), ciId } });
+      await client.discoveredItem.update({ where: { id: itemId }, data: { status, processingNotes: notes, processedAt: new Date(), ciId } }); // TODO-LINT: move to async function
     } catch (error) { logger.error('Error updating discovered item status:', error); }
   }
 
@@ -436,18 +436,18 @@ export class DiscoveryService {
    */
   async _findExistingCi(discoveredData) {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) return null;
       if (discoveredData.serialNumber) {
-        const ci = await client.configurationItem.findFirst({ where: { serialNumber: discoveredData.serialNumber } });
+        const ci = await client.configurationItem.findFirst({ where: { serialNumber: discoveredData.serialNumber } }); // TODO-LINT: move to async function
         if (ci) return ci;
       }
       if (discoveredData.hostname) {
-        const ci = await client.configurationItem.findFirst({ where: { name: discoveredData.hostname } });
+        const ci = await client.configurationItem.findFirst({ where: { name: discoveredData.hostname } }); // TODO-LINT: move to async function
         if (ci) return ci;
       }
       if (discoveredData.ipAddress) {
-        const ci = await client.configurationItem.findFirst({ where: { networkDetails: { ipAddress: discoveredData.ipAddress } } });
+        const ci = await client.configurationItem.findFirst({ where: { networkDetails: { ipAddress: discoveredData.ipAddress } } }); // TODO-LINT: move to async function
         if (ci) return ci;
       }
       return null;
@@ -459,13 +459,13 @@ export class DiscoveryService {
    */
   async _updateExistingCi(existingCi, discoveredData) {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       const updateData = { lastDiscoveredDate: new Date(), isDiscovered: true, discoverySource: discoveredData.discoveryType };
       if (discoveredData.operatingSystem) {
         updateData.attributes = { ...existingCi.attributes, operatingSystem: discoveredData.operatingSystem, version: discoveredData.version };
       }
-      const updatedCi = await client.configurationItem.update({ where: { id: existingCi.id }, data: updateData });
+      const updatedCi = await client.configurationItem.update({ where: { id: existingCi.id }, data: updateData }); // TODO-LINT: move to async function
       logger.info(`Updated existing CI: ${updatedCi.ciId} from discovery`);
       return updatedCi;
     } catch (error) { logger.error('Error updating existing CI:', error); throw error; }
@@ -476,12 +476,12 @@ export class DiscoveryService {
    */
   async _createCiFromDiscoveredData(discoveredData) {
     try {
-      const client = await this.client;
+      const client = await this.client; // TODO-LINT: move to async function
       if (!client) throw new Error('CMDB Prisma client unavailable');
       const ciData = { name: discoveredData.hostname || discoveredData.name, displayName: discoveredData.name, description: `Discovered ${discoveredData.discoveryType} device`, ciType: this._mapToCiType(discoveredData.ciType), ciSubType: discoveredData.subType, serialNumber: discoveredData.serialNumber, manufacturer: discoveredData.manufacturer, model: discoveredData.model, isDiscovered: true, firstDiscoveredDate: new Date(), lastDiscoveredDate: new Date(), discoverySource: discoveredData.discoveryType, attributes: discoveredData };
-      const ciId = await this._generateCiId();
+      const ciId = await this._generateCiId(); // TODO-LINT: move to async function
       ciData.ciId = ciId;
-      const ci = await client.configurationItem.create({ data: ciData });
+      const ci = await client.configurationItem.create({ data: ciData }); // TODO-LINT: move to async function
       logger.info(`Created new CI from discovery: ${ci.ciId}`);
       return ci;
     } catch (error) { logger.error('Error creating CI from discovered data:', error); throw error; }
@@ -508,14 +508,14 @@ export class DiscoveryService {
    * Generate CI ID
    */
   async _generateCiId() {
-    const client = await this.client;
+    const client = await this.client; // TODO-LINT: move to async function
     if (!client) return 'CI000001';
     const prefix = 'CI';
     let ciId; let exists = true;
     while (exists) {
       const number = Math.floor(100000 + Math.random() * 900000);
       ciId = `${prefix}${number}`;
-      const existing = await client.configurationItem.findUnique({ where: { ciId } });
+      const existing = await client.configurationItem.findUnique({ where: { ciId } }); // TODO-LINT: move to async function
       exists = !!existing;
     }
     return ciId;
@@ -576,7 +576,7 @@ export class DiscoveryService {
       }
     });
 
-    const results = await Promise.all(ports.map((p) => tryPort(p)));
+    const results = await Promise.all(ports.map((p) => tryPort(p))); // TODO-LINT: move to async function
     return results.filter(r => r.open).map(r => r.port);
   }
 

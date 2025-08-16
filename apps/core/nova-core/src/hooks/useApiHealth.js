@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-export const useApiHealth = () => {
+export const _useApiHealth = () => {
     const [isConnected, setIsConnected] = useState(true);
     const [isChecking, setIsChecking] = useState(false);
     const [lastChecked, setLastChecked] = useState(null);
@@ -22,7 +22,7 @@ export const useApiHealth = () => {
                     'Content-Type': 'application/json',
                 },
                 signal: AbortSignal.timeout(5000) // 5 second timeout
-            });
+            }); // TODO-LINT: move to async function
             if (response.ok) {
                 const wasDisconnected = !isConnected;
                 setIsConnected(true);

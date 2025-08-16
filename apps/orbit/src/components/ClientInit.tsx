@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { PerformanceMonitor } from '../lib/performance';
 
-export function ClientInit() {
+export function _ClientInit() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       PerformanceMonitor.getInstance();

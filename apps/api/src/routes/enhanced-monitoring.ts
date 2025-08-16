@@ -167,7 +167,7 @@ const createTagSchema = z.object({
 // GET /api/enhanced-monitoring/monitors
 router.get('/monitors', authenticateToken, async (req, res) => {
   try {
-    const monitors = await getMonitors(req.user.id);
+    const monitors = await getMonitors(req.user.id); // TODO-LINT: move to async function
     res.json({ monitors });
   } catch (error) {
     console.error('Failed to fetch monitors:', error);
@@ -178,7 +178,7 @@ router.get('/monitors', authenticateToken, async (req, res) => {
 // GET /api/enhanced-monitoring/monitors/:id
 router.get('/monitors/:id', authenticateToken, async (req, res) => {
   try {
-    const monitor = await getMonitorById(req.params.id, req.user.id);
+    const monitor = await getMonitorById(req.params.id, req.user.id); // TODO-LINT: move to async function
     if (!monitor) {
       return res.status(404).json({ error: 'Monitor not found' });
     }
@@ -198,7 +198,7 @@ router.post('/monitors',
       const monitor = await createMonitor({
         ...req.body,
         user_id: req.user.id
-      });
+      }); // TODO-LINT: move to async function
       res.status(201).json({ monitor });
     } catch (error) {
       console.error('Failed to create monitor:', error);
@@ -213,7 +213,7 @@ router.put('/monitors/:id',
   validateRequest(updateMonitorSchema),
   async (req, res) => {
     try {
-      const monitor = await updateMonitor(req.params.id, req.body, req.user.id);
+      const monitor = await updateMonitor(req.params.id, req.body, req.user.id); // TODO-LINT: move to async function
       if (!monitor) {
         return res.status(404).json({ error: 'Monitor not found' });
       }
@@ -228,7 +228,7 @@ router.put('/monitors/:id',
 // DELETE /api/enhanced-monitoring/monitors/:id
 router.delete('/monitors/:id', authenticateToken, async (req, res) => {
   try {
-    await deleteMonitor(req.params.id, req.user.id);
+    await deleteMonitor(req.params.id, req.user.id); // TODO-LINT: move to async function
     res.status(204).send();
   } catch (error) {
     console.error('Failed to delete monitor:', error);
@@ -240,7 +240,7 @@ router.delete('/monitors/:id', authenticateToken, async (req, res) => {
 router.patch('/monitors/:id/status', authenticateToken, async (req, res) => {
   try {
     const { status } = req.body;
-    const monitor = await updateMonitorStatus(req.params.id, status, req.user.id);
+    const monitor = await updateMonitorStatus(req.params.id, status, req.user.id); // TODO-LINT: move to async function
     if (!monitor) {
       return res.status(404).json({ error: 'Monitor not found' });
     }
@@ -256,7 +256,7 @@ router.patch('/monitors/:id/status', authenticateToken, async (req, res) => {
 // GET /api/enhanced-monitoring/incidents
 router.get('/incidents', authenticateToken, async (req, res) => {
   try {
-    const incidents = await getIncidents(req.user.id);
+    const incidents = await getIncidents(req.user.id); // TODO-LINT: move to async function
     res.json({ incidents });
   } catch (error) {
     console.error('Failed to fetch incidents:', error);
@@ -267,7 +267,7 @@ router.get('/incidents', authenticateToken, async (req, res) => {
 // GET /api/enhanced-monitoring/incidents/:id
 router.get('/incidents/:id', authenticateToken, async (req, res) => {
   try {
-    const incident = await getIncidentById(req.params.id, req.user.id);
+    const incident = await getIncidentById(req.params.id, req.user.id); // TODO-LINT: move to async function
     if (!incident) {
       return res.status(404).json({ error: 'Incident not found' });
     }
@@ -287,7 +287,7 @@ router.post('/incidents',
       const incident = await createIncident({
         ...req.body,
         user_id: req.user.id
-      });
+      }); // TODO-LINT: move to async function
       res.status(201).json({ incident });
     } catch (error) {
       console.error('Failed to create incident:', error);
@@ -302,7 +302,7 @@ router.patch('/incidents/:id',
   validateRequest(updateIncidentSchema),
   async (req, res) => {
     try {
-      const incident = await updateIncident(req.params.id, req.body, req.user.id);
+      const incident = await updateIncident(req.params.id, req.body, req.user.id); // TODO-LINT: move to async function
       if (!incident) {
         return res.status(404).json({ error: 'Incident not found' });
       }
@@ -317,7 +317,7 @@ router.patch('/incidents/:id',
 // POST /api/enhanced-monitoring/incidents/:id/resolve
 router.post('/incidents/:id/resolve', authenticateToken, async (req, res) => {
   try {
-    const incident = await resolveIncident(req.params.id, req.user.id);
+    const incident = await resolveIncident(req.params.id, req.user.id); // TODO-LINT: move to async function
     if (!incident) {
       return res.status(404).json({ error: 'Incident not found' });
     }
@@ -333,7 +333,7 @@ router.post('/incidents/:id/resolve', authenticateToken, async (req, res) => {
 // GET /api/enhanced-monitoring/notification-providers
 router.get('/notification-providers', authenticateToken, async (req, res) => {
   try {
-    const providers = await getNotificationProviders(req.user.id);
+    const providers = await getNotificationProviders(req.user.id); // TODO-LINT: move to async function
     res.json({ notification_providers: providers });
   } catch (error) {
     console.error('Failed to fetch notification providers:', error);
@@ -350,7 +350,7 @@ router.post('/notification-providers',
       const provider = await createNotificationProvider({
         ...req.body,
         user_id: req.user.id
-      });
+      }); // TODO-LINT: move to async function
       res.status(201).json({ notification_provider: provider });
     } catch (error) {
       console.error('Failed to create notification provider:', error);
@@ -365,7 +365,7 @@ router.put('/notification-providers/:id',
   validateRequest(createNotificationProviderSchema.partial()),
   async (req, res) => {
     try {
-      const provider = await updateNotificationProvider(req.params.id, req.body, req.user.id);
+      const provider = await updateNotificationProvider(req.params.id, req.body, req.user.id); // TODO-LINT: move to async function
       if (!provider) {
         return res.status(404).json({ error: 'Notification provider not found' });
       }
@@ -380,7 +380,7 @@ router.put('/notification-providers/:id',
 // POST /api/enhanced-monitoring/notification-providers/:id/test
 router.post('/notification-providers/:id/test', authenticateToken, async (req, res) => {
   try {
-    const result = await testNotificationProvider(req.params.id, req.user.id);
+    const result = await testNotificationProvider(req.params.id, req.user.id); // TODO-LINT: move to async function
     res.json({ success: result });
   } catch (error) {
     console.error('Failed to test notification provider:', error);
@@ -393,7 +393,7 @@ router.post('/notification-providers/:id/test', authenticateToken, async (req, r
 // GET /api/enhanced-monitoring/status-pages
 router.get('/status-pages', authenticateToken, async (req, res) => {
   try {
-    const statusPages = await getStatusPages(req.user.id);
+    const statusPages = await getStatusPages(req.user.id); // TODO-LINT: move to async function
     res.json({ status_pages: statusPages });
   } catch (error) {
     console.error('Failed to fetch status pages:', error);
@@ -404,7 +404,7 @@ router.get('/status-pages', authenticateToken, async (req, res) => {
 // GET /api/enhanced-monitoring/status-pages/:slug (Public access)
 router.get('/status-pages/:slug', async (req, res) => {
   try {
-    const statusPage = await getPublicStatusPage(req.params.slug);
+    const statusPage = await getPublicStatusPage(req.params.slug); // TODO-LINT: move to async function
     if (!statusPage) {
       return res.status(404).json({ error: 'Status page not found' });
     }
@@ -424,7 +424,7 @@ router.post('/status-pages',
       const statusPage = await createStatusPage({
         ...req.body,
         user_id: req.user.id
-      });
+      }); // TODO-LINT: move to async function
       res.status(201).json({ status_page: statusPage });
     } catch (error) {
       console.error('Failed to create status page:', error);
@@ -439,7 +439,7 @@ router.put('/status-pages/:id',
   validateRequest(createStatusPageSchema.partial()),
   async (req, res) => {
     try {
-      const statusPage = await updateStatusPage(req.params.id, req.body, req.user.id);
+      const statusPage = await updateStatusPage(req.params.id, req.body, req.user.id); // TODO-LINT: move to async function
       if (!statusPage) {
         return res.status(404).json({ error: 'Status page not found' });
       }
@@ -456,7 +456,7 @@ router.put('/status-pages/:id',
 // GET /api/enhanced-monitoring/maintenance-windows
 router.get('/maintenance-windows', authenticateToken, async (req, res) => {
   try {
-    const maintenanceWindows = await getMaintenanceWindows(req.user.id);
+    const maintenanceWindows = await getMaintenanceWindows(req.user.id); // TODO-LINT: move to async function
     res.json({ maintenance_windows: maintenanceWindows });
   } catch (error) {
     console.error('Failed to fetch maintenance windows:', error);
@@ -473,7 +473,7 @@ router.post('/maintenance-windows',
       const maintenanceWindow = await createMaintenanceWindow({
         ...req.body,
         user_id: req.user.id
-      });
+      }); // TODO-LINT: move to async function
       res.status(201).json({ maintenance_window: maintenanceWindow });
     } catch (error) {
       console.error('Failed to create maintenance window:', error);
@@ -488,7 +488,7 @@ router.put('/maintenance-windows/:id',
   validateRequest(createMaintenanceWindowSchema.partial()),
   async (req, res) => {
     try {
-      const maintenanceWindow = await updateMaintenanceWindow(req.params.id, req.body, req.user.id);
+      const maintenanceWindow = await updateMaintenanceWindow(req.params.id, req.body, req.user.id); // TODO-LINT: move to async function
       if (!maintenanceWindow) {
         return res.status(404).json({ error: 'Maintenance window not found' });
       }
@@ -503,7 +503,7 @@ router.put('/maintenance-windows/:id',
 // DELETE /api/enhanced-monitoring/maintenance-windows/:id
 router.delete('/maintenance-windows/:id', authenticateToken, async (req, res) => {
   try {
-    await deleteMaintenanceWindow(req.params.id, req.user.id);
+    await deleteMaintenanceWindow(req.params.id, req.user.id); // TODO-LINT: move to async function
     res.status(204).send();
   } catch (error) {
     console.error('Failed to delete maintenance window:', error);
@@ -516,7 +516,7 @@ router.delete('/maintenance-windows/:id', authenticateToken, async (req, res) =>
 // GET /api/enhanced-monitoring/tags
 router.get('/tags', authenticateToken, async (req, res) => {
   try {
-    const tags = await getTags(req.user.id);
+    const tags = await getTags(req.user.id); // TODO-LINT: move to async function
     res.json({ tags });
   } catch (error) {
     console.error('Failed to fetch tags:', error);
@@ -533,7 +533,7 @@ router.post('/tags',
       const tag = await createTag({
         ...req.body,
         user_id: req.user.id
-      });
+      }); // TODO-LINT: move to async function
       res.status(201).json({ tag });
     } catch (error) {
       console.error('Failed to create tag:', error);
@@ -548,7 +548,7 @@ router.put('/tags/:id',
   validateRequest(createTagSchema.partial()),
   async (req, res) => {
     try {
-      const tag = await updateTag(req.params.id, req.body, req.user.id);
+      const tag = await updateTag(req.params.id, req.body, req.user.id); // TODO-LINT: move to async function
       if (!tag) {
         return res.status(404).json({ error: 'Tag not found' });
       }
@@ -563,7 +563,7 @@ router.put('/tags/:id',
 // DELETE /api/enhanced-monitoring/tags/:id
 router.delete('/tags/:id', authenticateToken, async (req, res) => {
   try {
-    await deleteTag(req.params.id, req.user.id);
+    await deleteTag(req.params.id, req.user.id); // TODO-LINT: move to async function
     res.status(204).send();
   } catch (error) {
     console.error('Failed to delete tag:', error);

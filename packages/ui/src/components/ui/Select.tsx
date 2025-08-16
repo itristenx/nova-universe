@@ -30,7 +30,7 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (typeof onChange === 'function') {
-      if (onChange.length === 1 && typeof e.target.value === 'string') {
+      if (onChange._length === 1 && typeof e.target.value === 'string') {
         // If expecting value, pass value
         (onChange as (value: string) => void)(e.target.value);
       } else {

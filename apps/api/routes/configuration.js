@@ -71,7 +71,7 @@ router.get('/',
         });
       }
 
-      const configuration = await ConfigurationManager.getFullConfig();
+      const configuration = await ConfigurationManager.getFullConfig(); // TODO-LINT: move to async function
 
       res.json({
         success: true,
@@ -118,7 +118,7 @@ router.get('/public',
   createRateLimit(15 * 60 * 1000, 100, 15 * 60 * 1000), // 100 requests per 15 minutes (no auth required)
   async (req, res) => {
     try {
-      const fullConfig = await ConfigurationManager.getFullConfig();
+      const fullConfig = await ConfigurationManager.getFullConfig(); // TODO-LINT: move to async function
       
       // Return only non-sensitive configuration
       const publicConfig = {
@@ -206,7 +206,7 @@ router.get('/:key',
       }
 
       const { key } = req.params;
-      const value = await ConfigurationManager.get(key);
+      const value = await ConfigurationManager.get(key); // TODO-LINT: move to async function
 
       if (value === null || value === undefined) {
         return res.status(404).json({
@@ -310,7 +310,7 @@ router.put('/:key',
       const { value } = req.body;
       const userId = req.user.id;
 
-      const success = await ConfigurationManager.set(key, value, userId);
+      const success = await ConfigurationManager.set(key, value, userId); // TODO-LINT: move to async function
 
       if (!success) {
         return res.status(400).json({
@@ -415,7 +415,7 @@ router.put('/bulk',
       // Process each update
       for (const [key, value] of Object.entries(updates)) {
         try {
-          const success = await ConfigurationManager.set(key, value, userId);
+          const success = await ConfigurationManager.set(key, value, userId); // TODO-LINT: move to async function
           results[key] = success;
           if (!success) {
             updateErrors.push({ key, error: 'Validation failed' });
@@ -491,7 +491,7 @@ router.get('/export',
         });
       }
 
-      const exportData = await ConfigurationManager.exportConfiguration();
+      const exportData = await ConfigurationManager.exportConfiguration(); // TODO-LINT: move to async function
 
       logger.info('Configuration exported', { 
         userId: req.user.id, 
@@ -584,7 +584,7 @@ router.post('/import',
       const { configData } = req.body;
       const userId = req.user.id;
 
-      const success = await ConfigurationManager.importConfiguration(configData, userId);
+      const success = await ConfigurationManager.importConfiguration(configData, userId); // TODO-LINT: move to async function
 
       if (!success) {
         return res.status(400).json({
@@ -629,7 +629,7 @@ router.get('/api/v1/config',
           errorCode: 'ADMIN_ACCESS_REQUIRED'
         });
       }
-      const configuration = await ConfigurationManager.getFullConfig();
+      const configuration = await ConfigurationManager.getFullConfig(); // TODO-LINT: move to async function
       res.json({
         success: true,
         configuration,

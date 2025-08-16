@@ -241,7 +241,7 @@ export class PerformanceMonitor {
 }
 
 // Hook for React components
-export function usePerformanceMonitor() {
+export function _usePerformanceMonitor() {
   const monitor = PerformanceMonitor.getInstance();
 
   return {
@@ -253,7 +253,7 @@ export function usePerformanceMonitor() {
 }
 
 // Image optimization utilities
-export function getOptimizedImageProps(src: string, alt: string, options: {
+export function _getOptimizedImageProps(src: string, alt: string, options: {
   width?: number;
   height?: number;
   quality?: number;
@@ -280,12 +280,12 @@ export function getOptimizedImageProps(src: string, alt: string, options: {
 }
 
 // Lazy loading utilities
-export function createLazyComponent<T>(importFn: () => Promise<{ default: React.ComponentType<T> }>) {
+export function _createLazyComponent<T>(importFn: () => Promise<{ default: React.ComponentType<T> }>) {
   return React.lazy(importFn);
 }
 
 // Bundle size tracking
-export function trackBundleSize() {
+export function _trackBundleSize() {
   if (typeof window !== 'undefined' && 'performance' in window) {
     const navigationEntries = performance.getEntriesByType('navigation');
     if (navigationEntries.length > 0) {

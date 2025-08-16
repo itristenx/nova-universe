@@ -267,7 +267,7 @@ export const APIDocumentationPage: React.FC = () => {
     try {
       setLoading(true);
       // For now, use mock data since the API endpoint doesn't exist yet
-      // const data = await api.getApiKeys();
+      // const data = await api.getApiKeys(); // TODO-LINT: move to async function
       
       // Generate mock API keys
       const mockKeys: ApiKey[] = [
@@ -296,7 +296,7 @@ export const APIDocumentationPage: React.FC = () => {
 
   const createKey = async () => {
     try {
-      // const { apiKey } = await api.createApiKey();
+      // const { apiKey } = await api.createApiKey(); // TODO-LINT: move to async function
       const newKey: ApiKey = {
         key: `nv_sk_live_${Math.random().toString(36).substring(2, 18)}`,
         createdAt: new Date().toISOString(),
@@ -315,7 +315,7 @@ export const APIDocumentationPage: React.FC = () => {
 
   const deleteKey = async (key: string) => {
     try {
-      // await api.deleteApiKey(key);
+      // await api.deleteApiKey(key); // TODO-LINT: move to async function
       setKeys(prev => prev.filter(k => k.key !== key));
       addToast({ type: 'success', title: 'Success', description: 'API key deleted successfully' });
     } catch (err) {

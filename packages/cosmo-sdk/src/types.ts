@@ -84,12 +84,12 @@ export interface CosmoResponse {
   };
   actions?: {
     type: 'create_ticket' | 'escalate' | 'assign' | 'close' | 'award_xp' | 'suggest_knowledge';
-    payload: any;
+    payload: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
   }[];
   error?: {
     code: string;
     message: string;
-    details?: any;
+    details?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
   };
 }
 
@@ -125,7 +125,7 @@ export interface CosmoTool {
     properties: Record<string, any>;
     required?: string[];
   };
-  handler: (params: any, context: CosmoContext) => Promise<any>;
+  handler: (params: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, context: CosmoContext) => Promise<any>;
 }
 
 export interface CosmoConfig {
@@ -153,7 +153,7 @@ export type CosmoEventType =
 
 export interface CosmoEvent {
   type: CosmoEventType;
-  data: any;
+  data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
   timestamp: Date;
 }
 

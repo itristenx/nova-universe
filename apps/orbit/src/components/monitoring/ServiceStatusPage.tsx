@@ -69,7 +69,7 @@ const ServiceStatusPage: React.FC<ServiceStatusPageProps> = ({
   const { data: statusData, isLoading, error, refetch } = useQuery({
     queryKey: ['status-page', tenantId],
     queryFn: async () => {
-      const response = await fetch(`/api/v2/monitoring/status/${tenantId}`);
+      const response = await fetch(`/api/v2/monitoring/status/${tenantId}`); // TODO-LINT: move to async function
       if (!response.ok) throw new Error('Failed to fetch status page data');
       return response.json();
     },

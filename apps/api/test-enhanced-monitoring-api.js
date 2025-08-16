@@ -4,7 +4,7 @@
 const { PrismaClient } = require('@prisma/client');
 
 // Mock Prisma since we don't have access to the real database right now
-const mockPrisma = {
+const _mockPrisma = {
   $queryRaw: jest.fn(),
   $executeRaw: jest.fn(),
   $executeRawUnsafe: jest.fn(),
@@ -12,19 +12,19 @@ const mockPrisma = {
 };
 
 // Import our controllers
-const monitorsController = require('./src/controllers/monitoring/monitors');
-const incidentsController = require('./src/controllers/monitoring/incidents');
-const notificationsController = require('./src/controllers/monitoring/notifications');
-const statusPagesController = require('./src/controllers/monitoring/status-pages');
-const maintenanceController = require('./src/controllers/monitoring/maintenance');
-const tagsController = require('./src/controllers/monitoring/tags');
+const _monitorsController = require('./src/controllers/monitoring/monitors');
+const _incidentsController = require('./src/controllers/monitoring/incidents');
+const _notificationsController = require('./src/controllers/monitoring/notifications');
+const _statusPagesController = require('./src/controllers/monitoring/status-pages');
+const _maintenanceController = require('./src/controllers/monitoring/maintenance');
+const _tagsController = require('./src/controllers/monitoring/tags');
 
 async function testControllers() {
   console.log('🚀 Testing Nova Enhanced Monitoring API Controllers...\n');
 
   // Test data
-  const testUserId = 'test-user-123';
-  const testMonitorId = 'monitor-456';
+  const _testUserId = 'test-user-123';
+  const _testMonitorId = 'monitor-456';
   
   try {
     console.log('✅ All controllers imported successfully');

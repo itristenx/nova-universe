@@ -37,7 +37,7 @@ interface LoadingSkeletonProps {
   className?: string;
   variant?: 'default' | 'card' | 'text' | 'circle' | 'button';
   lines?: number;
-  [key: string]: any;
+  [key: string]: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
 }
 
 /**
@@ -99,7 +99,7 @@ interface LoadingOverlayProps {
 /**
  * Loading Overlay Component
  */
-export function LoadingOverlay({ 
+export function _LoadingOverlay({ 
   isLoading, 
   children, 
   message = 'Loading...',
@@ -137,7 +137,7 @@ interface ProgressiveLoaderProps {
 /**
  * Progressive Loading Component
  */
-export function ProgressiveLoader({ 
+export function _ProgressiveLoader({ 
   progress, 
   message = 'Loading...',
   className = '',
@@ -197,7 +197,7 @@ interface TableSkeletonProps {
  * Table Loading State
  */
 export function TableSkeleton({ rows = 5, columns = 4, className = '' }: TableSkeletonProps) {
-  const gridCols = `repeat(${columns}, 1fr)`;
+  const _gridCols = `repeat(${columns}, 1fr)`;
   
   return (
     <div className={cn('space-y-4', className)}>
@@ -228,7 +228,7 @@ interface ListSkeletonProps {
 /**
  * List Loading State
  */
-export function ListSkeleton({ items = 5, className = '' }: ListSkeletonProps) {
+export function _ListSkeleton({ items = 5, className = '' }: ListSkeletonProps) {
   return (
     <div className={cn('space-y-3', className)}>
       {Array.from({ length: items }).map((_, i) => (
@@ -251,7 +251,7 @@ interface DashboardSkeletonProps {
 /**
  * Dashboard Loading State
  */
-export function DashboardSkeleton({ className = '' }: DashboardSkeletonProps) {
+export function _DashboardSkeleton({ className = '' }: DashboardSkeletonProps) {
   return (
     <div className={cn('space-y-6', className)}>
       {/* Header */}

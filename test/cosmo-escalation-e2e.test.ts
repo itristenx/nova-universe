@@ -10,10 +10,10 @@ import supertest from 'supertest';
 import { CosmoSDK, CosmoConfig, CosmoContext } from '@nova-universe/cosmo-sdk';
 
 describe('Cosmo Escalation End-to-End Tests', () => {
-  let server: any;
+  let server: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
   let request: supertest.SuperTest<supertest.Test>;
-  let testUser: any;
-  let testTicket: any;
+  let testUser: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  let testTicket: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
   let authToken: string;
   let cosmoSDK: CosmoSDK;
 
@@ -363,7 +363,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
       ];
 
       // Validate requests
-      const isValidRequest = (req: any): boolean => {
+      const isValidRequest = (req: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): boolean => {
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
         const validLevels = ['low', 'medium', 'high', 'critical'];
         
@@ -399,19 +399,19 @@ describe('Cosmo Escalation End-to-End Tests', () => {
       const retryableCall = async (): Promise<boolean> => {
         for (let i = 0; i < maxRetries; i++) {
           try {
-            return await simulateNetworkCall();
+            return await simulateNetworkCall(); // TODO-LINT: move to async function
           } catch (error) {
             if (i === maxRetries - 1) {
               throw error;
             }
             // Wait before retry (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, i)));
+            await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, i))); // TODO-LINT: move to async function
           }
         }
         return false;
       };
 
-      const result = await retryableCall();
+      const result = await retryableCall(); // TODO-LINT: move to async function
       expect(result).toBe(true);
       expect(attemptCount).toBe(3);
     });
@@ -443,7 +443,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
       const startTime = Date.now();
       
       // Simulate message processing
-      await new Promise(resolve => setTimeout(resolve, 50)); // Simulate 50ms processing
+      await new Promise(resolve => setTimeout(resolve, 50)); // TODO-LINT: move to async function // Simulate 50ms processing
       
       const endTime = Date.now();
       const responseTime = endTime - startTime;

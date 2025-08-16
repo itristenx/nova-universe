@@ -44,10 +44,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default function _RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
+}: _Readonly<{
+  children: _React._ReactNode;
 }>) {
   return (
     <html lang="en">

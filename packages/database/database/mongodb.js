@@ -52,17 +52,17 @@ export class MongoDBManager {
 
       // Connect to MongoDB
       this.client = new MongoClient(this.config.uri, options);
-      await this.client.connect();
+      await this.client.connect(); // TODO-LINT: move to async function
       
       // Get database instance
       const dbName = this.config.uri.split('/').pop().split('?')[0];
       this.db = this.client.db(dbName);
 
       // Test connection
-      await this.db.admin().ping();
+      await this.db.admin().ping(); // TODO-LINT: move to async function
 
       // Set up collections with validation
-      await this.setupCollections();
+      await this.setupCollections(); // TODO-LINT: move to async function
 
       this.isInitialized = true;
       logger.info('MongoDB connection initialized successfully');
@@ -91,31 +91,31 @@ export class MongoDBManager {
             }
           }
         }
-      });
+      }); // TODO-LINT: move to async function
 
       // Analytics collection with TTL index
-      await this.createCollectionIfNotExists('analytics');
+      await this.createCollectionIfNotExists('analytics'); // TODO-LINT: move to async function
       await this.db.collection('analytics').createIndex(
         { created_at: 1 }, 
         { expireAfterSeconds: 2592000 } // 30 days
-      );
+      ); // TODO-LINT: move to async function
 
       // Audit logs collection with TTL index
-      await this.createCollectionIfNotExists('audit_logs');
+      await this.createCollectionIfNotExists('audit_logs'); // TODO-LINT: move to async function
       await this.db.collection('audit_logs').createIndex(
         { created_at: 1 }, 
         { expireAfterSeconds: 7776000 } // 90 days
-      );
+      ); // TODO-LINT: move to async function
 
       // Sessions collection with TTL index
-      await this.createCollectionIfNotExists('sessions');
+      await this.createCollectionIfNotExists('sessions'); // TODO-LINT: move to async function
       await this.db.collection('sessions').createIndex(
         { expires_at: 1 }, 
         { expireAfterSeconds: 0 }
-      );
+      ); // TODO-LINT: move to async function
 
       // File chunks for GridFS-like storage
-      await this.createCollectionIfNotExists('file_chunks');
+      await this.createCollectionIfNotExists('file_chunks'); // TODO-LINT: move to async function
 
       logger.info('MongoDB collections setup completed');
     } catch (error) {
@@ -128,9 +128,9 @@ export class MongoDBManager {
    */
   async createCollectionIfNotExists(name, options = {}) {
     try {
-      const collections = await this.db.listCollections({ name }).toArray();
+      const collections = await this.db.listCollections({ name }).toArray(); // TODO-LINT: move to async function
       if (collections.length === 0) {
-        await this.db.createCollection(name, options);
+        await this.db.createCollection(name, options); // TODO-LINT: move to async function
         logger.debug(`Created MongoDB collection: ${name}`);
       }
     } catch (error) {
@@ -145,7 +145,7 @@ export class MongoDBManager {
    */
   async storeDocument(collection, document) {
     if (!this.isInitialized) {
-      await this.initialize();
+      await this.initialize(); // TODO-LINT: move to async function
     }
 
     try {
@@ -156,7 +156,7 @@ export class MongoDBManager {
         updated_at: timestamp
       };
 
-      const result = await this.db.collection(collection).insertOne(docWithTimestamp);
+      const result = await this.db.collection(collection).insertOne(docWithTimestamp); // TODO-LINT: move to async function
       
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Document inserted into ${collection}:`, result.insertedId);
@@ -174,12 +174,12 @@ export class MongoDBManager {
    */
   async findDocuments(collection, query = {}, options = {}) {
     if (!this.isInitialized) {
-      await this.initialize();
+      await this.initialize(); // TODO-LINT: move to async function
     }
 
     try {
       const cursor = this.db.collection(collection).find(query, options);
-      const documents = await cursor.toArray();
+      const documents = await cursor.toArray(); // TODO-LINT: move to async function
       
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Found ${documents.length} documents in ${collection}`);
@@ -197,7 +197,7 @@ export class MongoDBManager {
    */
   async updateDocuments(collection, query, update, options = {}) {
     if (!this.isInitialized) {
-      await this.initialize();
+      await this.initialize(); // TODO-LINT: move to async function
     }
 
     try {
@@ -209,7 +209,7 @@ export class MongoDBManager {
         }
       };
 
-      const result = await this.db.collection(collection).updateMany(query, updateWithTimestamp, options);
+      const result = await this.db.collection(collection).updateMany(query, updateWithTimestamp, options); // TODO-LINT: move to async function
       
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Updated ${result.modifiedCount} documents in ${collection}`);
@@ -227,11 +227,11 @@ export class MongoDBManager {
    */
   async deleteDocuments(collection, query) {
     if (!this.isInitialized) {
-      await this.initialize();
+      await this.initialize(); // TODO-LINT: move to async function
     }
 
     try {
-      const result = await this.db.collection(collection).deleteMany(query);
+      const result = await this.db.collection(collection).deleteMany(query); // TODO-LINT: move to async function
       
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Deleted ${result.deletedCount} documents from ${collection}`);
@@ -249,19 +249,19 @@ export class MongoDBManager {
    */
   async withTransaction(callback) {
     if (!this.isInitialized) {
-      await this.initialize();
+      await this.initialize(); // TODO-LINT: move to async function
     }
 
     const session = this.client.startSession();
     
     try {
-      const result = await session.withTransaction(callback);
+      const result = await session.withTransaction(callback); // TODO-LINT: move to async function
       return result;
     } catch (error) {
       logger.error('MongoDB transaction failed:', error);
       throw error;
     } finally {
-      await session.endSession();
+      await session.endSession(); // TODO-LINT: move to async function
     }
   }
 
@@ -279,7 +279,7 @@ export class MongoDBManager {
         timestamp: new Date()
       };
 
-      await this.storeDocument('audit_logs', auditEntry);
+      await this.storeDocument('audit_logs', auditEntry); // TODO-LINT: move to async function
     } catch (error) {
       logger.error('Error creating audit log:', error);
       // Don't throw - audit logging failures shouldn't break the main operation
@@ -294,13 +294,13 @@ export class MongoDBManager {
     
     try {
       if (!this.isInitialized) {
-        await this.initialize();
+        await this.initialize(); // TODO-LINT: move to async function
       }
 
-      await this.db.admin().ping();
+      await this.db.admin().ping(); // TODO-LINT: move to async function
       const responseTime = Date.now() - start;
       
-      const serverStatus = await this.db.admin().serverStatus();
+      const serverStatus = await this.db.admin().serverStatus(); // TODO-LINT: move to async function
       
       return {
         healthy: true,
@@ -325,7 +325,7 @@ export class MongoDBManager {
    */
   async close() {
     if (this.client) {
-      await this.client.close();
+      await this.client.close(); // TODO-LINT: move to async function
       this.isInitialized = false;
       logger.info('MongoDB connection closed');
     }

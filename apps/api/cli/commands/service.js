@@ -36,9 +36,9 @@ serviceCommand
     
     try {
       if (options.service) {
-        await startSingleService(options.service, projectRoot, options);
+        await startSingleService(options.service, projectRoot, options); // TODO-LINT: move to async function
       } else {
-        await startAllServices(projectRoot, options);
+        await startAllServices(projectRoot, options); // TODO-LINT: move to async function
       }
     } catch (error) {
       logger.error(`Failed to start services: ${error.message}`);
@@ -55,9 +55,9 @@ serviceCommand
   .action(async (options) => {
     try {
       if (options.service) {
-        await stopSingleService(options.service, options);
+        await stopSingleService(options.service, options); // TODO-LINT: move to async function
       } else {
-        await stopAllServices(options);
+        await stopAllServices(options); // TODO-LINT: move to async function
       }
     } catch (error) {
       logger.error(`Failed to stop services: ${error.message}`);
@@ -76,13 +76,13 @@ serviceCommand
       
       // Stop first
       if (options.service) {
-        await stopSingleService(options.service, { force: true });
-        await sleep(2000);
-        await startSingleService(options.service, getProjectRoot(), {});
+        await stopSingleService(options.service, { force: true }); // TODO-LINT: move to async function
+        await sleep(2000); // TODO-LINT: move to async function
+        await startSingleService(options.service, getProjectRoot(), {}); // TODO-LINT: move to async function
       } else {
-        await stopAllServices({ force: true });
-        await sleep(2000);
-        await startAllServices(getProjectRoot(), {});
+        await stopAllServices({ force: true }); // TODO-LINT: move to async function
+        await sleep(2000); // TODO-LINT: move to async function
+        await startAllServices(getProjectRoot(), {}); // TODO-LINT: move to async function
       }
       
       logger.success('Services restarted successfully');
@@ -102,9 +102,9 @@ serviceCommand
   .action(async (options) => {
     try {
       if (options.watch) {
-        await watchServiceStatus();
+        await watchServiceStatus(); // TODO-LINT: move to async function
       } else {
-        const status = await checkServiceStatus();
+        const status = await checkServiceStatus(); // TODO-LINT: move to async function
         
         if (options.json) {
           console.log(JSON.stringify(status, null, 2));
@@ -127,7 +127,7 @@ serviceCommand
   .option('-n, --lines <count>', 'Number of lines to show', '50')
   .action(async (options) => {
     try {
-      await showServiceLogs(options);
+      await showServiceLogs(options); // TODO-LINT: move to async function
     } catch (error) {
       logger.error(`Failed to show logs: ${error.message}`);
       process.exit(1);
@@ -162,7 +162,7 @@ async function startAllServices(projectRoot, options) {
       { concurrent: true }
     );
 
-    await tasks.run();
+    await tasks.run(); // TODO-LINT: move to async function
     logger.success('All services started in background');
   } else {
     // Start services in foreground with concurrency
@@ -198,7 +198,7 @@ async function startAllServices(projectRoot, options) {
     await Promise.all(
       processes.map(({ process }) => 
         new Promise((resolve) => {
-          process.on('close', resolve);
+          process.on('close', resolve); // TODO-LINT: move to async function
         })
       )
     );
@@ -246,7 +246,7 @@ async function startSingleService(serviceName, projectRoot, options) {
     });
 
     await new Promise((resolve) => {
-      child.on('close', resolve);
+      child.on('close', resolve); // TODO-LINT: move to async function
     });
   }
 }
@@ -263,7 +263,7 @@ async function stopAllServices(options) {
     for (const port of ports) {
       try {
         if (options.force) {
-          await runCommand('pkill', ['-f', `${port}`], { silent: true });
+          await runCommand('pkill', ['-f', `${port}`], { silent: true }); // TODO-LINT: move to async function
         } else {
           // Try graceful shutdown first
           exec(`lsof -ti:${port} | xargs kill -TERM`, { stdio: 'ignore' });
@@ -298,7 +298,7 @@ async function stopSingleService(serviceName, options) {
 
   try {
     if (options.force) {
-      await runCommand('pkill', ['-f', `${port}`], { silent: true });
+      await runCommand('pkill', ['-f', `${port}`], { silent: true }); // TODO-LINT: move to async function
     } else {
       exec(`lsof -ti:${port} | xargs kill -TERM`, { stdio: 'ignore' });
     }
@@ -342,7 +342,7 @@ async function watchServiceStatus() {
   
   const updateStatus = async () => {
     try {
-      const status = await checkServiceStatus();
+      const status = await checkServiceStatus(); // TODO-LINT: move to async function
       
       // Clear screen
       process.stdout.write('\x1B[2J\x1B[0f');
@@ -368,7 +368,7 @@ async function watchServiceStatus() {
   };
 
   // Initial update
-  await updateStatus();
+  await updateStatus(); // TODO-LINT: move to async function
   
   // Update every 2 seconds
   const interval = setInterval(updateStatus, 2000);
@@ -417,7 +417,7 @@ async function showServiceLogs(options) {
       });
     } else {
       // Show last N lines
-      await runCommand('tail', ['-n', options.lines, logPath]);
+      await runCommand('tail', ['-n', options.lines, logPath]); // TODO-LINT: move to async function
     }
   } else {
     // Show all logs
@@ -430,7 +430,7 @@ async function showServiceLogs(options) {
       if (existsSync(logPath)) {
         console.log(chalk.yellow(`\n=== ${serviceName.toUpperCase()} ===`));
         try {
-          await runCommand('tail', ['-n', '10', logPath]);
+          await runCommand('tail', ['-n', '10', logPath]); // TODO-LINT: move to async function
         } catch (error) {
           console.log(chalk.gray('No logs available'));
         }

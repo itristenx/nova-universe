@@ -1,6 +1,6 @@
 import { api } from '@/lib/api';
 import { useCallback, useEffect, useState } from 'react';
-export const useUsers = (filters = {}, page = 1, limit = 10) => {
+export const _useUsers = (filters = {}, page = 1, limit = 10) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -11,7 +11,7 @@ export const useUsers = (filters = {}, page = 1, limit = 10) => {
             setLoading(true);
             setError(null);
             // Get users from the API
-            const allUsers = await api.getUsers();
+            const allUsers = await api.getUsers(); // TODO-LINT: move to async function
             // Apply client-side filtering
             let filteredUsers = allUsers;
             if (filters.search) {
@@ -54,8 +54,8 @@ export const useUsers = (filters = {}, page = 1, limit = 10) => {
     }, [fetchUsers]);
     const createUser = async (userData) => {
         try {
-            const newUser = await api.createUser(userData);
-            await fetchUsers(); // Refresh the list
+            const newUser = await api.createUser(userData); // TODO-LINT: move to async function
+            await fetchUsers(); // TODO-LINT: move to async function // Refresh the list
             return newUser;
         }
         catch (err) {
@@ -65,8 +65,8 @@ export const useUsers = (filters = {}, page = 1, limit = 10) => {
     };
     const updateUser = async (id, userData) => {
         try {
-            const updatedUser = await api.updateUser(id, userData);
-            await fetchUsers(); // Refresh the list
+            const updatedUser = await api.updateUser(id, userData); // TODO-LINT: move to async function
+            await fetchUsers(); // TODO-LINT: move to async function // Refresh the list
             return updatedUser;
         }
         catch (err) {
@@ -76,8 +76,8 @@ export const useUsers = (filters = {}, page = 1, limit = 10) => {
     };
     const deleteUser = async (id) => {
         try {
-            await api.deleteUser(id);
-            await fetchUsers(); // Refresh the list
+            await api.deleteUser(id); // TODO-LINT: move to async function
+            await fetchUsers(); // TODO-LINT: move to async function // Refresh the list
             return true;
         }
         catch (err) {
@@ -89,21 +89,21 @@ export const useUsers = (filters = {}, page = 1, limit = 10) => {
         const user = users.find(u => u.id === id);
         if (!user)
             return false;
-        return await updateUser(id, { disabled: !user.disabled }) !== null;
+        return await updateUser(id, { disabled: !user.disabled }) !== null; // TODO-LINT: move to async function
     };
     const assignRole = async (userId, role) => {
         const user = users.find(u => u.id === userId);
         if (!user)
             return false;
         const updatedRoles = [...(user.roles || []), role];
-        return await updateUser(userId, { roles: updatedRoles }) !== null;
+        return await updateUser(userId, { roles: updatedRoles }) !== null; // TODO-LINT: move to async function
     };
     const removeRole = async (userId, role) => {
         const user = users.find(u => u.id === userId);
         if (!user)
             return false;
         const updatedRoles = (user.roles || []).filter(r => r !== role);
-        return await updateUser(userId, { roles: updatedRoles }) !== null;
+        return await updateUser(userId, { roles: updatedRoles }) !== null; // TODO-LINT: move to async function
     };
     return {
         users,

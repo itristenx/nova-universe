@@ -138,7 +138,7 @@ router.get('/tickets',
       query += ` ORDER BY t.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
       params.push(parseInt(limit), parseInt(offset));
 
-      const rows = await db.any(query, params);
+      const rows = await db.any(query, params); // TODO-LINT: move to async function
 
       const tickets = (rows || []).map(row => ({
         id: row.id,
@@ -681,7 +681,7 @@ router.get('/catalog',
   authenticateJWT,
   async (req, res) => {
     try {
-      const result = await db.query('SELECT id, name, form_schema, workflow_id FROM request_catalog_items');
+      const result = await db.query('SELECT id, name, form_schema, workflow_id FROM request_catalog_items'); // TODO-LINT: move to async function
       res.json({ success: true, items: result.rows });
     } catch (error) {
       logger.error('Error fetching catalog items:', error);
@@ -702,14 +702,14 @@ router.post('/catalog/:id',
       return res.status(400).json({ success: false, error: 'reqId is required in the request body' });
     }
     try {
-      const itemRes = await db.query('SELECT workflow_id FROM request_catalog_items WHERE id = $1', [catalogId]);
+      const itemRes = await db.query('SELECT workflow_id FROM request_catalog_items WHERE id = $1', [catalogId]); // TODO-LINT: move to async function
       if (itemRes.rowCount === 0) {
         return res.status(404).json({ success: false, error: 'Catalog item not found' });
       }
       const insert = await db.query(
         'INSERT INTO ritms (req_id, catalog_item_id, status) VALUES ($1,$2,$3) RETURNING id',
         [reqId || null, catalogId, 'open']
-      );
+      ); // TODO-LINT: move to async function
       const ritmId = insert.rows[0].id;
       const workflowId = itemRes.rows[0].workflow_id;
       // Ensure workflowId is a string before passing it to triggerWorkflow

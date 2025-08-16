@@ -53,7 +53,7 @@ interface LanguageSwitcherProps {
   showDirection?: boolean;
 }
 
-export function LanguageSwitcher({ 
+export function _LanguageSwitcher({ 
   variant = 'default', 
   showFlags = true,
   showDirection = false 
@@ -202,7 +202,7 @@ export function LanguageSwitcher({
 }
 
 // Hook for getting language information
-export function useLanguageInfo() {
+export function _useLanguageInfo() {
   const locale = useLocale();
   return {
     current: LANGUAGE_INFO[locale],
@@ -211,7 +211,7 @@ export function useLanguageInfo() {
 }
 
 // Component for displaying language direction context
-export function DirectionProvider({ children }: { children: React.ReactNode }) {
+export function _DirectionProvider({ children }: { children: React.ReactNode }) {
   const locale = useLocale();
   const direction = LANGUAGE_INFO[locale]?.direction || 'ltr';
 
@@ -229,7 +229,7 @@ interface RTLLayoutProps {
   className?: string;
 }
 
-export function RTLLayout({ children, className = '' }: RTLLayoutProps) {
+export function _RTLLayout({ children, className = '' }: RTLLayoutProps) {
   const locale = useLocale();
   const isRTL = LANGUAGE_INFO[locale]?.direction === 'rtl';
 

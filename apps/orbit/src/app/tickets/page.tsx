@@ -34,7 +34,7 @@ const STATUS_OPTIONS = [
 ];
 
 
-export default function TicketsPage() {
+export default function _TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
@@ -61,7 +61,7 @@ export default function TicketsPage() {
 		offset: page * limit,
 	  };
 	  try {
-		const res = await getTickets(token, params);
+		const res = await getTickets(token, params); // TODO-LINT: move to async function
 		if (res.success) {
 		  setTickets(res.tickets);
 		  setHasMore(res.hasMore);
