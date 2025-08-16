@@ -22,13 +22,13 @@ const KnowledgeDetailPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await getKnowledgeArticle(token, slug!); // TODO-LINT: move to async function
+        const res = await getKnowledgeArticle(token, slug!);
         setArticle(res.article);
-        const vRes = await getKnowledgeVersions(token, res.article.id); // TODO-LINT: move to async function
+        const vRes = await getKnowledgeVersions(token, res.article.id);
         setVersions(vRes.versions || []);
-        const cRes = await getKnowledgeComments(token, res.article.id); // TODO-LINT: move to async function
+        const cRes = await getKnowledgeComments(token, res.article.id);
         setComments(cRes.comments || []);
-      } catch (err: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+      } catch (err: any) {
         setError(err.message || 'Failed to load article');
       } finally {
         setLoading(false);
@@ -37,7 +37,7 @@ const KnowledgeDetailPage: React.FC = () => {
     if (slug) fetchData();
   }, [slug, token]);
 
-  async function handleCommentSubmit(e: React._FormEvent) {
+  async function handleCommentSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!commentText.trim()) return;
     setCommentLoading(true);
@@ -46,7 +46,7 @@ const KnowledgeDetailPage: React.FC = () => {
       // Call API to add comment
       setComments([...comments, { id: Date.now(), user: { name: 'You' }, content: commentText, createdAt: new Date().toISOString() }]);
       setCommentText('');
-    } catch (err: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (err: any) {
       setError(err.message || 'Failed to add comment');
     } finally {
       setCommentLoading(false);

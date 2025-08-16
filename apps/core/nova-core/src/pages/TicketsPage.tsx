@@ -53,9 +53,9 @@ export const TicketsPage: React.FC = () => {
   const loadTickets = async () => {
     try {
       setLoading(true);
-      const data = await api.getLogs(); // TODO-LINT: move to async function
+      const data = await api.getLogs();
       setTickets(data);
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       console.error('Failed to load tickets:', error);
       addToast({
         type: 'error',
@@ -70,14 +70,14 @@ export const TicketsPage: React.FC = () => {
   const deleteTicket = async (id: number) => {
     if (confirm('Are you sure you want to delete this ticket?')) {
       try {
-        await api.deleteLog(id); // TODO-LINT: move to async function
+        await api.deleteLog(id);
         setTickets(tickets.filter(t => t.id !== id));
         addToast({
           type: 'success',
           title: 'Ticket deleted',
           description: 'The ticket has been successfully deleted.',
         });
-      } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+      } catch (error: any) {
         console.error('Failed to delete ticket:', error);
         addToast({
           type: 'error',
@@ -91,14 +91,14 @@ export const TicketsPage: React.FC = () => {
   const clearAllTickets = async () => {
     if (confirm('Are you sure you want to clear all tickets? This action cannot be undone.')) {
       try {
-        await api.clearLogs(); // TODO-LINT: move to async function
+        await api.clearLogs();
         setTickets([]);
         addToast({
           type: 'success',
           title: 'All tickets cleared',
           description: 'All support tickets have been successfully deleted.',
         });
-      } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+      } catch (error: any) {
         console.error('Failed to clear tickets:', error);
         addToast({
           type: 'error',

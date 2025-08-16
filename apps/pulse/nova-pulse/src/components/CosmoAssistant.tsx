@@ -4,8 +4,8 @@ import { useCosmo, CosmoConfig, CosmoContext, CosmoMessage } from '@nova-univers
 
 interface CosmoAssistantProps {
   ticketId?: string;
-  onEscalation?: (escalation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
-  onXPAwarded?: (xp: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
+  onEscalation?: (escalation: any) => void;
+  onXPAwarded?: (xp: any) => void;
 }
 
 export const CosmoAssistant: React.FC<CosmoAssistantProps> = ({ 
@@ -79,19 +79,19 @@ export const CosmoAssistant: React.FC<CosmoAssistantProps> = ({
   } = useCosmo(config, context!, {
     autoStart: true,
     initialMessage: ticketId ? `I'm working on ticket ${ticketId}. How can you help me?` : undefined,
-    onEscalation: (escalationData: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+    onEscalation: (escalationData: any) => {
       console.log('Escalation created:', escalationData);
       if (onEscalation) {
         onEscalation(escalationData);
       }
     },
-    onXPAwarded: (xpData: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+    onXPAwarded: (xpData: any) => {
       console.log('XP awarded:', xpData);
       if (onXPAwarded) {
         onXPAwarded(xpData);
       }
     },
-    onError: (errorData: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+    onError: (errorData: any) => {
       console.error('Cosmo error:', errorData);
     }
   });
@@ -116,7 +116,7 @@ export const CosmoAssistant: React.FC<CosmoAssistantProps> = ({
     setInput('');
     
     try {
-      await sendMessage(message); // TODO-LINT: move to async function
+      await sendMessage(message);
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -124,7 +124,7 @@ export const CosmoAssistant: React.FC<CosmoAssistantProps> = ({
 
   const handleEscalate = async () => {
     try {
-      await triggerEscalation('User requested escalation from Pulse Deep Work view', 'medium'); // TODO-LINT: move to async function
+      await triggerEscalation('User requested escalation from Pulse Deep Work view', 'medium');
     } catch (error) {
       console.error('Error triggering escalation:', error);
     }

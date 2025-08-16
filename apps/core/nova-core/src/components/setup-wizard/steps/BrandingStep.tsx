@@ -5,8 +5,8 @@ import { Input } from '../../ui/Input';
 import { Switch } from '../../ui/Switch';
 
 interface BrandingStepProps {
-  data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-  onUpdate: (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
+  data: any;
+  onUpdate: (data: any) => void;
   onComplete: () => void;
   errors: Record<string, string>;
   isLoading: boolean;
@@ -54,7 +54,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const _faviconInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     onUpdate({
@@ -62,7 +62,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
     });
   }, [formData, onUpdate]);
 
-  const handleInputChange = (field: string, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -78,7 +78,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
     }
   };
 
-  const _handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       handleInputChange('customFavicon', file);
@@ -117,7 +117,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
     }
   ];
 
-  const applyPresetTheme = (theme: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  const applyPresetTheme = (theme: any) => {
     setFormData(prev => ({
       ...prev,
       primaryColor: theme.colors.primary,

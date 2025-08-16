@@ -41,7 +41,7 @@ interface WorkflowExecution {
   actions: {
     type: string;
     status: 'pending' | 'running' | 'completed' | 'failed';
-    result?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    result?: any;
     error?: string;
   }[];
   logs: string[];
@@ -71,17 +71,17 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     queryFn: async (): Promise<AlertWorkflowRule[]> => {
       const response = await fetch('/api/v2/alerts/workflow-rules', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      }); // TODO-LINT: move to async function
+      });
 
       if (!response.ok) throw new Error('Failed to fetch workflow rules');
-      const data = await response.json(); // TODO-LINT: move to async function
+      const data = await response.json();
       return data.rules;
     }
   });
 
   // Execute workflow mutation
   const executeWorkflowMutation = useMutation({
-    mutationFn: async ({ ruleId, ticketData: ticket }: { ruleId: string; ticketData: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }) => {
+    mutationFn: async ({ ruleId, ticketData: ticket }: { ruleId: string; ticketData: any }) => {
       const response = await fetch('/api/v2/alerts/workflow-execute', {
         method: 'POST',
         headers: {
@@ -92,7 +92,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
           ruleId,
           ticketData: ticket
         })
-      }); // TODO-LINT: move to async function
+      });
 
       if (!response.ok) throw new Error('Failed to execute workflow');
       return response.json();
@@ -104,7 +104,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
   });
 
   // Evaluate if ticket matches workflow rule conditions
-  const evaluateRule = (rule: AlertWorkflowRule, ticket: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): boolean => {
+  const evaluateRule = (rule: AlertWorkflowRule, ticket: any): boolean => {
     const conditions = rule.triggerConditions;
 
     // Priority check
@@ -195,7 +195,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
 
         // Execute the workflow
         try {
-          await executeWorkflow(execution, rule, ticketData); // TODO-LINT: move to async function
+          await executeWorkflow(execution, rule, ticketData);
         } catch (error) {
           console.error('Workflow execution failed:', error);
           updateExecutionStatus(execution.id, 'failed');
@@ -212,7 +212,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
   const executeWorkflow = async (
     execution: WorkflowExecution, 
     rule: AlertWorkflowRule, 
-    ticket: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    ticket: any
   ) => {
     updateExecutionStatus(execution.id, 'running');
     addExecutionLog(execution.id, 'Starting workflow execution...');
@@ -228,7 +228,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
         const result = await executeWorkflowMutation.mutateAsync({
           ruleId: rule.id,
           ticketData: ticket
-        }); // TODO-LINT: move to async function
+        });
 
         updateActionStatus(execution.id, 'create_alert', 'completed', result);
         addExecutionLog(execution.id, `Alert created: ${result.alertId}`);
@@ -248,7 +248,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
         const escalationResult = await executeWorkflowMutation.mutateAsync({
           ruleId: rule.id,
           ticketData: { ...ticket, escalateTo: actions.escalate_to }
-        }); // TODO-LINT: move to async function
+        });
 
         updateActionStatus(execution.id, 'escalate', 'completed', escalationResult);
         addExecutionLog(execution.id, `Escalated to ${actions.escalate_to}`);
@@ -296,7 +296,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
     addExecutionLog(execution.id, 'Workflow execution completed');
   };
 
-  // Helper _functions for execution _tracking
+  // Helper functions for execution tracking
   const updateExecutionStatus = (execId: string, status: WorkflowExecution['status']) => {
     setActiveExecutions(prev => prev.map(exec => 
       exec.id === execId 
@@ -308,8 +308,8 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
   const updateActionStatus = (
     execId: string, 
     actionType: string, 
-    status: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, 
-    result?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, 
+    status: any, 
+    result?: any, 
     error?: string
   ) => {
     setActiveExecutions(prev => prev.map(exec => 

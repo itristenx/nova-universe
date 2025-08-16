@@ -77,7 +77,7 @@ class ConfigurationManager {
       // 2. Check database configuration
       const dbConfig = await prisma.config.findUnique({
         where: { key }
-      }); // TODO-LINT: move to async function
+      });
 
       if (dbConfig && dbConfig.value !== null) {
         return {
@@ -121,11 +121,11 @@ class ConfigurationManager {
           { displayOrder: 'asc' },
           { key: 'asc' }
         ]
-      }); // TODO-LINT: move to async function
+      });
 
       const result = {};
       for (const config of configs) {
-        const resolved = await this.getValue(config.key); // TODO-LINT: move to async function
+        const resolved = await this.getValue(config.key);
         if (resolved) {
           result[config.key] = resolved;
         }
@@ -146,7 +146,7 @@ class ConfigurationManager {
       // Check if configuration exists and is UI editable
       const config = await prisma.config.findUnique({
         where: { key }
-      }); // TODO-LINT: move to async function
+      });
 
       if (!config) {
         throw new Error(`Configuration key '${key}' not found`);
@@ -157,13 +157,13 @@ class ConfigurationManager {
       }
 
       // Validate the value
-      const isValid = await validateConfigValue(key, value, config); // TODO-LINT: move to async function
+      const isValid = await validateConfigValue(key, value, config);
       if (!isValid.valid) {
         throw new Error(`Invalid value for '${key}': ${isValid.error}`);
       }
 
       // Get current value for audit trail
-      const currentValue = await this.getValue(key); // TODO-LINT: move to async function
+      const currentValue = await this.getValue(key);
       const oldValue = currentValue ? currentValue.value : null;
 
       // Convert value to string for storage
@@ -179,7 +179,7 @@ class ConfigurationManager {
             updatedBy: userId,
             updatedAt: new Date()
           }
-        }); // TODO-LINT: move to async function
+        });
 
         // Create audit trail
         await tx.configHistory.create({
@@ -190,7 +190,7 @@ class ConfigurationManager {
             changedBy: userId,
             changeReason: reason
           }
-        }); // TODO-LINT: move to async function
+        });
 
         return updatedConfig;
       });
@@ -258,7 +258,7 @@ router.get('/', async (req, res) => {
     
     let result;
     if (category) {
-      result = await ConfigurationManager.getByCategory(category, includeAdvanced === 'true'); // TODO-LINT: move to async function
+      result = await ConfigurationManager.getByCategory(category, includeAdvanced === 'true');
     } else {
       // Get all public configurations
       const configs = await prisma.config.findMany({
@@ -271,11 +271,11 @@ router.get('/', async (req, res) => {
           { displayOrder: 'asc' },
           { key: 'asc' }
         ]
-      }); // TODO-LINT: move to async function
+      });
 
       result = {};
       for (const config of configs) {
-        const resolved = await ConfigurationManager.getValue(config.key); // TODO-LINT: move to async function
+        const resolved = await ConfigurationManager.getValue(config.key);
         if (resolved) {
           result[config.key] = resolved.value;
         }
@@ -296,7 +296,7 @@ router.get('/admin', ensureAuth, async (req, res) => {
     
     let result;
     if (category) {
-      result = await ConfigurationManager.getByCategory(category, includeAdvanced === 'true'); // TODO-LINT: move to async function
+      result = await ConfigurationManager.getByCategory(category, includeAdvanced === 'true');
     } else {
       // Get all configurations with metadata
       const configs = await prisma.config.findMany({
@@ -305,11 +305,11 @@ router.get('/admin', ensureAuth, async (req, res) => {
           { displayOrder: 'asc' },
           { key: 'asc' }
         ]
-      }); // TODO-LINT: move to async function
+      });
 
       result = {};
       for (const config of configs) {
-        const resolved = await ConfigurationManager.getValue(config.key); // TODO-LINT: move to async function
+        const resolved = await ConfigurationManager.getValue(config.key);
         if (resolved) {
           result[config.key] = {
             value: resolved.value,
@@ -345,7 +345,7 @@ router.get('/:key', async (req, res) => {
     
     const config = await prisma.config.findUnique({
       where: { key }
-    }); // TODO-LINT: move to async function
+    });
 
     if (!config) {
       return res.status(404).json({ error: 'Configuration not found' });
@@ -356,7 +356,7 @@ router.get('/:key', async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const resolved = await ConfigurationManager.getValue(key); // TODO-LINT: move to async function
+    const resolved = await ConfigurationManager.getValue(key);
     if (!resolved) {
       return res.status(404).json({ error: 'Configuration value not found' });
     }
@@ -388,9 +388,9 @@ router.put('/:key', ensureAuth, async (req, res) => {
     const { value, reason } = req.body;
     const userId = req.user.id;
 
-    const updated = await ConfigurationManager.setValue(key, value, userId, reason); // TODO-LINT: move to async function
+    const updated = await ConfigurationManager.setValue(key, value, userId, reason);
     
-    const resolved = await ConfigurationManager.getValue(key); // TODO-LINT: move to async function
+    const resolved = await ConfigurationManager.getValue(key);
     
     res.json({
       success: true,
@@ -421,8 +421,8 @@ router.post('/bulk', ensureAuth, async (req, res) => {
 
     for (const { key, value } of configs) {
       try {
-        await ConfigurationManager.setValue(key, value, userId, reason); // TODO-LINT: move to async function
-        const resolved = await ConfigurationManager.getValue(key); // TODO-LINT: move to async function
+        await ConfigurationManager.setValue(key, value, userId, reason);
+        const resolved = await ConfigurationManager.getValue(key);
         results.push({
           key,
           value: resolved.value,
@@ -469,11 +469,11 @@ router.get('/:key/history', ensureAuth, async (req, res) => {
           }
         }
       }
-    }); // TODO-LINT: move to async function
+    });
 
     const total = await prisma.configHistory.count({
       where: { configKey: key }
-    }); // TODO-LINT: move to async function
+    });
 
     res.json({
       history,
@@ -501,7 +501,7 @@ router.get('/schema/validation', ensureAuth, async (req, res) => {
         isRequired: true,
         defaultValue: true
       }
-    }); // TODO-LINT: move to async function
+    });
 
     const schema = {};
     for (const config of configs) {
@@ -524,7 +524,7 @@ router.get('/templates', ensureAuth, async (req, res) => {
         { category: 'asc' },
         { name: 'asc' }
       ]
-    }); // TODO-LINT: move to async function
+    });
 
     res.json(templates);
   } catch (error) {
@@ -542,7 +542,7 @@ router.post('/templates/:id/apply', ensureAuth, async (req, res) => {
 
     const template = await prisma.configTemplate.findUnique({
       where: { id: parseInt(id) }
-    }); // TODO-LINT: move to async function
+    });
 
     if (!template) {
       return res.status(404).json({ error: 'Template not found' });
@@ -559,7 +559,7 @@ router.post('/templates/:id/apply', ensureAuth, async (req, res) => {
           value, 
           userId, 
           reason || `Applied template: ${template.name}`
-        ); // TODO-LINT: move to async function
+        );
         results.push({ key, value, success: true });
       } catch (error) {
         errors.push({ key, error: error.message });

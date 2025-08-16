@@ -42,7 +42,7 @@ export const IntegrationsPage: React.FC = () => {
   const loadIntegrations = async () => {
     try {
       setLoading(true);
-      const data = await api.getIntegrations(); // TODO-LINT: move to async function
+      const data = await api.getIntegrations();
       setIntegrations(data);
     } catch (error) {
       console.error('Failed to load integrations:', error);
@@ -62,7 +62,7 @@ export const IntegrationsPage: React.FC = () => {
         ...formData,
         type: formData.type as Integration['type'],
       };
-      const newIntegration = await api.updateIntegration(0, integrationData); // TODO-LINT: move to async function
+      const newIntegration = await api.updateIntegration(0, integrationData);
       setIntegrations([...integrations, newIntegration as Integration]);
       setShowCreateModal(false);
       resetForm();
@@ -89,7 +89,7 @@ export const IntegrationsPage: React.FC = () => {
         ...formData,
         type: formData.type as Integration['type'],
       };
-      await api.updateIntegration(editingIntegration.id, integrationData); // TODO-LINT: move to async function
+      await api.updateIntegration(editingIntegration.id, integrationData);
       setIntegrations(integrations.map(i => 
         i.id === editingIntegration.id 
           ? { ...i, ...integrationData } 
@@ -115,14 +115,14 @@ export const IntegrationsPage: React.FC = () => {
   const deleteIntegration = async (id: number) => {
     if (confirm('Are you sure you want to delete this integration?')) {
       try {
-        await api.deleteIntegration(id); // TODO-LINT: move to async function
+        await api.deleteIntegration(id);
         setIntegrations(integrations.filter(i => i.id !== id));
         addToast({
           type: 'success',
           title: 'Success',
           description: 'Integration deleted successfully',
         });
-      } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+      } catch (error: any) {
         console.error('Failed to delete integration:', error);
         addToast({
           type: 'error',
@@ -136,7 +136,7 @@ export const IntegrationsPage: React.FC = () => {
   const testIntegration = async (id: number) => {
     try {
       setTestingIntegration(id);
-      await api.testIntegration(id); // TODO-LINT: move to async function
+      await api.testIntegration(id);
       addToast({
         type: 'success',
         title: 'Success',

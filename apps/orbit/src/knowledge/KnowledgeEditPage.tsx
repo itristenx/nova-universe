@@ -35,22 +35,22 @@ const KnowledgeEditPage: React.FC = () => {
     return <div className="p-8 text-center text-destructive">You do not have permission to edit or create articles.</div>;
   }
 
-  async function handleSubmit(e: React._FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
       if (isEdit && slug) {
         // Add new version
-        await createKnowledgeVersion(token, slug, { content, tags }); // TODO-LINT: move to async function
+        await createKnowledgeVersion(token, slug, { content, tags });
       } else {
         // Create new article
-        const res = await createKnowledgeArticle(token, { title, content, tags }); // TODO-LINT: move to async function
+        const res = await createKnowledgeArticle(token, { title, content, tags });
         navigate(`/knowledge/${res.article.slug}`);
         return;
       }
       navigate(`/knowledge/${slug}`);
-    } catch (err: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (err: any) {
       setError(err.message || 'Failed to save article');
     } finally {
       setLoading(false);

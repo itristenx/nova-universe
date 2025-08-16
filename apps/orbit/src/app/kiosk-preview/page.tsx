@@ -3,9 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 
 interface Announcement { id: number|string; title: string; body: string; level: string; createdAt: string; }
 interface StatusSummary { success: boolean; status: string; components: {id:string; name:string; status:string;}[]; updatedAt: string; }
-interface Kiosk { id: string; name?: string; location?: string; active?: boolean; configuration?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; logoUrl?: string; bgUrl?: string; currentStatus?: string; }
+interface Kiosk { id: string; name?: string; location?: string; active?: boolean; configuration?: any; logoUrl?: string; bgUrl?: string; currentStatus?: string; }
 
-export default function _KioskPreviewPage() {
+export default function KioskPreviewPage() {
   const [ann, setAnn] = useState<Announcement[]>([]);
   const [status, setStatus] = useState<StatusSummary|null>(null);
   const [kiosks, setKiosks] = useState<Kiosk[]>([]);

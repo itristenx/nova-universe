@@ -116,7 +116,7 @@ describe('Inventory Enhancement Implementation', () => {
     });
 
     it('should validate CSV data correctly', async () => {
-      const _validRecord = {
+      const validRecord = {
         asset_tag: 'TEST001',
         serial_number: '12345678',
         model: 'Dell OptiPlex 3080',
@@ -183,7 +183,7 @@ describe('Inventory Enhancement Implementation', () => {
       const result = await inventoryService.syncAssetWithKiosk(1, 'kiosk-001', {
         location: 'Building A',
         floor: '2nd Floor'
-      }); // TODO-LINT: move to async function
+      });
 
       expect(result.success).toBe(true);
       expect(result.syncStatus).toBe('synced');
@@ -200,7 +200,7 @@ describe('Inventory Enhancement Implementation', () => {
       // Mock failed Helix sync
       mockHelixService.syncWithHelix.mockRejectedValue(new Error('Helix API unavailable'));
 
-      const result = await inventoryService.syncAssetWithKiosk(1, 'kiosk-001', {}); // TODO-LINT: move to async function
+      const result = await inventoryService.syncAssetWithKiosk(1, 'kiosk-001', {});
 
       expect(result.success).toBe(true);
       expect(result.syncStatus).toBe('failed');
@@ -217,7 +217,7 @@ describe('Inventory Enhancement Implementation', () => {
         timestamp: new Date().toISOString()
       });
 
-      const result = await inventoryService.syncAssetWithKiosk(1, 'kiosk-001', {}); // TODO-LINT: move to async function
+      const result = await inventoryService.syncAssetWithKiosk(1, 'kiosk-001', {});
 
       expect(result.success).toBe(true);
       expect(result.syncStatus).toBe('skipped');
@@ -228,7 +228,7 @@ describe('Inventory Enhancement Implementation', () => {
       // Mock failed Helix sync
       mockHelixService.syncWithHelix.mockRejectedValue(new Error('Network timeout'));
 
-      await inventoryService.syncAssetWithKiosk(1, 'kiosk-001', {}); // TODO-LINT: move to async function
+      await inventoryService.syncAssetWithKiosk(1, 'kiosk-001', {});
 
       // Verify that logHelixSyncFailure was called
       expect(mockPrismaClient.$executeRaw).toHaveBeenCalledWith(
@@ -261,7 +261,7 @@ describe('Inventory Enhancement Implementation', () => {
         helixEntityId: 'helix-123'
       });
 
-      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 }); // TODO-LINT: move to async function
+      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 });
 
       expect(result.total).toBe(1);
       expect(result.successful).toBe(1);
@@ -289,7 +289,7 @@ describe('Inventory Enhancement Implementation', () => {
       // Mock failed retry
       mockHelixService.syncWithHelix.mockRejectedValue(new Error('Still failing'));
 
-      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 }); // TODO-LINT: move to async function
+      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 });
 
       expect(result.total).toBe(1);
       expect(result.successful).toBe(0);
@@ -319,7 +319,7 @@ describe('Inventory Enhancement Implementation', () => {
         'kiosk-001',
         organizationData,
         'admin-user'
-      ); // TODO-LINT: move to async function
+      );
 
       expect(result.success).toBe(true);
       expect(result.kioskId).toBe('kiosk-001');
@@ -378,7 +378,7 @@ describe('Inventory Enhancement Implementation', () => {
         { total_interactions: 100, active_days: 30, avg_session_duration: 300 }
       ]);
 
-      const result = await inventoryService.collectKioskMetadata('kiosk-001', 'all'); // TODO-LINT: move to async function
+      const result = await inventoryService.collectKioskMetadata('kiosk-001', 'all');
 
       expect(result.success).toBe(true);
       expect(result.kioskId).toBe('kiosk-001');
@@ -398,7 +398,7 @@ describe('Inventory Enhancement Implementation', () => {
 
       await expect(
         inventoryService.collectKioskMetadata('kiosk-001')
-      ).rejects.toThrow('Kiosk kiosk-001 is not active'); // TODO-LINT: move to async function
+      ).rejects.toThrow('Kiosk kiosk-001 is not active');
     });
 
     it('should calculate kiosk uptime correctly', () => {
@@ -428,7 +428,7 @@ describe('Inventory Enhancement Implementation', () => {
 
       await expect(
         inventoryService.syncAssetWithKiosk(1, 'kiosk-001')
-      ).rejects.toThrow('Database connection failed'); // TODO-LINT: move to async function
+      ).rejects.toThrow('Database connection failed');
     });
 
     it('should handle missing assets appropriately', async () => {
@@ -436,7 +436,7 @@ describe('Inventory Enhancement Implementation', () => {
 
       await expect(
         inventoryService.syncAssetWithKiosk(999, 'kiosk-001')
-      ).rejects.toThrow('Asset not found'); // TODO-LINT: move to async function
+      ).rejects.toThrow('Asset not found');
     });
 
     it('should handle encryption failures properly', () => {
@@ -458,7 +458,7 @@ describe('Inventory Enhancement Implementation', () => {
     });
   });
 
-  describe('Integration _Tests', () => {
+  describe('Integration Tests', () => {
     it('should handle complete asset import workflow with Helix sync', async () => {
       const csvData = `asset_tag,serial_number,model,department,status
 TEST001,SN123456789,Dell OptiPlex 3080,IT,active
@@ -476,7 +476,7 @@ TEST002,SN987654321,HP ProDesk 400,Finance,active`;
         csvData,
         'test-import.csv',
         'test-user'
-      ); // TODO-LINT: move to async function
+      );
 
       expect(result.success).toBe(true);
       expect(result.validRecords).toBeGreaterThan(0);
@@ -494,7 +494,7 @@ TEST002,SN987654321,HP ProDesk 400,Finance,active`;
         }
       ];
 
-      const validationResult = await inventoryService.validateRecords(testData); // TODO-LINT: move to async function
+      const validationResult = await inventoryService.validateRecords(testData);
       
       expect(validationResult.isValid).toBe(false);
       expect(validationResult.errors.length).toBeGreaterThan(0);
@@ -517,7 +517,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
         totalRecords: 2
       });
 
-      const result = await inventoryService.importAssets(csvPath, 'test-user'); // TODO-LINT: move to async function
+      const result = await inventoryService.importAssets(csvPath, 'test-user');
       
       expect(mockPrismaClient.assetImportBatch.create).toHaveBeenCalled();
       expect(result.batchId).toBe('test-batch-id');
@@ -538,10 +538,10 @@ TEST-002,Another Device,SN789012,2025-06-15`;
       });
 
       mockPrismaClient.$transaction.mockImplementation(async (callback) => {
-        return await callback(mockPrismaClient); // TODO-LINT: move to async function
+        return await callback(mockPrismaClient);
       });
 
-      const result = await inventoryService.rollbackImport(batchId, 'test-user'); // TODO-LINT: move to async function
+      const result = await inventoryService.rollbackImport(batchId, 'test-user');
       
       expect(mockPrismaClient.inventoryAsset.deleteMany).toHaveBeenCalledWith({
         where: { importBatchId: batchId }
@@ -573,7 +573,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
         registrationData.assetId,
         registrationData.kioskId,
         { metadata: registrationData.metadata }
-      ); // TODO-LINT: move to async function
+      );
 
       expect(mockPrismaClient.kioskAssetRegistry.create).toHaveBeenCalled();
       expect(result.success).toBe(true);
@@ -600,7 +600,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
       // Mock successful registry creation but failed Helix sync
       mockPrismaClient.$executeRaw.mockResolvedValue({ insertId: 1 });
 
-      const result = await inventoryService.syncAssetWithKiosk(assetId, kioskId, {}); // TODO-LINT: move to async function
+      const result = await inventoryService.syncAssetWithKiosk(assetId, kioskId, {});
 
       expect(result.success).toBe(true);
       expect(['synced', 'failed', 'skipped']).toContain(result.syncStatus);
@@ -627,7 +627,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
         status: 'active'
       });
 
-      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 }); // TODO-LINT: move to async function
+      const result = await inventoryService.retryFailedHelixSyncs({ maxRetries: 10 });
 
       expect(result.total).toBe(1);
       expect(typeof result.successful).toBe('number');
@@ -657,7 +657,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
         kioskId,
         orgData,
         'admin-user'
-      ); // TODO-LINT: move to async function
+      );
 
       expect(result.success).toBe(true);
       expect(result.kioskId).toBe(kioskId);
@@ -717,7 +717,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
 
       mockPrismaClient.$executeRaw.mockResolvedValue([]);
 
-      const result = await inventoryService.collectKioskMetadata(kioskId, 'system'); // TODO-LINT: move to async function
+      const result = await inventoryService.collectKioskMetadata(kioskId, 'system');
 
       expect(result.success).toBe(true);
       expect(result.kioskId).toBe(kioskId);
@@ -748,7 +748,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
       mockPrismaClient.$queryRaw.mockResolvedValue([]);
       mockPrismaClient.$executeRaw.mockResolvedValue([]);
 
-      const result = await inventoryService.collectKioskMetadata(kioskId, 'assets'); // TODO-LINT: move to async function
+      const result = await inventoryService.collectKioskMetadata(kioskId, 'assets');
 
       expect(result.success).toBe(true);
       expect(result.collectedMetadata.assets).toBeDefined();
@@ -761,7 +761,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
         registrationData.assetId,
         registrationData.metadata,
         'test-user'
-      ); // TODO-LINT: move to async function
+      );
 
       expect(mockPrismaClient.kioskAssetRegistry.create).toHaveBeenCalled();
       expect(result.kioskId).toBe(registrationData.kioskId);
@@ -782,7 +782,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
         helixSyncStatus: 'synced'
       });
 
-      const result = await helixKioskService.syncWithHelix('kiosk-001'); // TODO-LINT: move to async function
+      const result = await helixKioskService.syncWithHelix('kiosk-001');
       
       expect(result.success).toBe(true);
       expect(result.syncedCount).toBeGreaterThan(0);
@@ -797,7 +797,7 @@ TEST-002,Another Device,SN789012,2025-06-15`;
       mockPrismaClient.kioskAssetRegistry.findMany.mockResolvedValue(registryEntries);
       mockPrismaClient.kioskAssetRegistry.update.mockResolvedValue({});
 
-      const result = await helixKioskService.bulkSyncWithHelix(); // TODO-LINT: move to async function
+      const result = await helixKioskService.bulkSyncWithHelix();
       
       expect(result.success).toBe(true);
       expect(result.processedKiosks).toHaveLength(2);
@@ -866,10 +866,10 @@ describe('Integration Requirements Validation', () => {
       'Kiosk registry with Helix APIs integration',
       'Encrypted sensitive asset fields using encryption.js',
       'Extended Pulse inventory endpoints with ticket/status history',
-      'Warranty alerts _functionality'
+      'Warranty alerts functionality'
     ];
 
-    // Verify file _existence for _each _requirement
+    // Verify file existence for each requirement
     const files = [
       'prisma/migrations/20250804000000_inventory_enhancements/migration.sql',
       'apps/api/services/inventory.js',

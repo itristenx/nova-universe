@@ -21,8 +21,8 @@ interface SmartAlertButtonProps {
     affectedUsers?: number;
   };
   className?: string;
-  onAlertCreated?: (alert: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
-  onAlertEscalated?: (escalation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
+  onAlertCreated?: (alert: any) => void;
+  onAlertEscalated?: (escalation: any) => void;
 }
 
 const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
@@ -54,7 +54,7 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
     if (!ticketData) return;
 
     try {
-      const analysis = await analyzeTicket(ticketData); // TODO-LINT: move to async function
+      const analysis = await analyzeTicket(ticketData);
       setShowSuggestion(true);
       
       // Auto-execute high confidence recommendations for critical issues
@@ -74,7 +74,7 @@ const SmartAlertButton: React.FC<SmartAlertButtonProps> = ({
 
   const handleExecuteRecommendation = async () => {
     try {
-      await executeRecommendation(); // TODO-LINT: move to async function
+      await executeRecommendation();
       setShowSuggestion(false);
     } catch (error) {
       console.error('Failed to execute recommendation:', error);

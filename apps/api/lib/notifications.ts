@@ -40,7 +40,7 @@ export interface NotificationEvent {
 
 class NotificationService {
   private emailTransporter: Transporter | null = null;
-  private twilioClient: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = null;
+  private twilioClient: any = null;
 
   constructor() {
     this.initializeEmailTransporter();
@@ -64,7 +64,7 @@ class NotificationService {
       } else {
         logger.warn('Email configuration not found, email notifications disabled');
       }
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       logger.error(`Failed to initialize email transporter: ${error.message}`);
     }
   }
@@ -77,7 +77,7 @@ class NotificationService {
       } else {
         logger.warn('Twilio configuration not found, SMS notifications disabled');
       }
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       logger.error(`Failed to initialize Twilio client: ${error.message}`);
     }
   }
@@ -87,14 +87,14 @@ class NotificationService {
    */
   async sendNotification(event: NotificationEvent): Promise<void> {
     try {
-      const subscriptions = await this.getRelevantSubscriptions(event); // TODO-LINT: move to async function
+      const subscriptions = await this.getRelevantSubscriptions(event);
       
       for (const subscription of subscriptions) {
-        await this.sendToSubscription(subscription, event); // TODO-LINT: move to async function
+        await this.sendToSubscription(subscription, event);
       }
       
       logger.info(`Notifications sent for event: ${event.type} to ${subscriptions.length} subscribers`);
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       logger.error(`Failed to send notifications: ${error.message} for event: ${event.type}`);
     }
   }
@@ -104,9 +104,9 @@ class NotificationService {
    */
   private async getRelevantSubscriptions(event: NotificationEvent): Promise<NotificationSubscription[]> {
     try {
-      const { default: db } = await import('../db.js'); // TODO-LINT: move to async function
+      const { default: db } = await import('../db.js');
       const conditions: string[] = ['tenant_id = $1', 'verified = true'];
-      const params: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[] = [event.tenant_id];
+      const params: any[] = [event.tenant_id];
       let idx = 2;
 
       if (event.monitor_id) {
@@ -126,8 +126,8 @@ class NotificationService {
         FROM monitor_subscriptions
         WHERE ${conditions.join(' AND ')}
       `;
-      const result = await db.query(query, params); // TODO-LINT: move to async function
-      return (result.rows || []).map((row: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => ({
+      const result = await db.query(query, params);
+      return (result.rows || []).map((row: any) => ({
         id: row.id,
         tenant_id: row.tenant_id,
         user_id: row.user_id,
@@ -139,7 +139,7 @@ class NotificationService {
         maintenance_notifications: row.maintenance_notifications || false,
         verified: row.verified
       }));
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       logger.warn(`Failed to load subscriptions: ${error.message}`);
       return [];
     }
@@ -155,22 +155,22 @@ class NotificationService {
       try {
         switch (channel.type) {
           case 'email':
-            await this.sendEmail(subscription.email!, event, channel); // TODO-LINT: move to async function
+            await this.sendEmail(subscription.email!, event, channel);
             break;
           case 'sms':
-            await this.sendSMS(subscription.phone!, event, channel); // TODO-LINT: move to async function
+            await this.sendSMS(subscription.phone!, event, channel);
             break;
           case 'webhook':
-            await this.sendWebhook(channel.endpoint, event, channel); // TODO-LINT: move to async function
+            await this.sendWebhook(channel.endpoint, event, channel);
             break;
           case 'slack':
-            await this.sendSlack(channel.endpoint, event, channel); // TODO-LINT: move to async function
+            await this.sendSlack(channel.endpoint, event, channel);
             break;
           case 'discord':
-            await this.sendDiscord(channel.endpoint, event, channel); // TODO-LINT: move to async function
+            await this.sendDiscord(channel.endpoint, event, channel);
             break;
         }
-      } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+      } catch (error: any) {
         logger.error(`Failed to send notification via channel: ${channel.type} error: ${error.message}`);
       }
     }
@@ -192,7 +192,7 @@ class NotificationService {
       subject: template.subject,
       html: template.html,
       text: template.text
-    }); // TODO-LINT: move to async function
+    });
 
     logger.info(`Email notification sent to: ${email} for event: ${event.type}`);
   }
@@ -211,7 +211,7 @@ class NotificationService {
       body: message,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: phone
-    }); // TODO-LINT: move to async function
+    });
 
     logger.info(`SMS notification sent to: ${phone} for event: ${event.type}`);
   }
@@ -242,7 +242,7 @@ class NotificationService {
     await axios.post(url, payload, {
       headers,
       timeout: 10000
-    }); // TODO-LINT: move to async function
+    });
 
     logger.info(`Webhook notification sent to: ${url} for event: ${event.type}`);
   }
@@ -275,7 +275,7 @@ class NotificationService {
       }]
     };
 
-    await axios.post(webhookUrl, payload); // TODO-LINT: move to async function
+    await axios.post(webhookUrl, payload);
     logger.info(`Slack notification sent for event: ${event.type}`);
   }
 
@@ -309,7 +309,7 @@ class NotificationService {
       }]
     };
 
-    await axios.post(webhookUrl, payload); // TODO-LINT: move to async function
+    await axios.post(webhookUrl, payload);
     logger.info(`Discord notification sent for event: ${event.type}`);
   }
 
@@ -408,8 +408,8 @@ This notification was sent by Nova Sentinel.
   /**
    * Generate webhook signature
    */
-  private generateSignature(payload: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, secret: string): string {
-    import crypto from 'crypto';
+  private generateSignature(payload: any, secret: string): string {
+    const crypto = require('crypto');
     const body = JSON.stringify(payload);
     return crypto.createHmac('sha256', secret).update(body).digest('hex');
   }
@@ -430,25 +430,25 @@ This notification was sent by Nova Sentinel.
     try {
       switch (channel.type) {
         case 'email':
-          await this.sendEmail(channel.endpoint, testEvent, channel); // TODO-LINT: move to async function
+          await this.sendEmail(channel.endpoint, testEvent, channel);
           break;
         case 'sms':
-          await this.sendSMS(channel.endpoint, testEvent, channel); // TODO-LINT: move to async function
+          await this.sendSMS(channel.endpoint, testEvent, channel);
           break;
         case 'webhook':
-          await this.sendWebhook(channel.endpoint, testEvent, channel); // TODO-LINT: move to async function
+          await this.sendWebhook(channel.endpoint, testEvent, channel);
           break;
         case 'slack':
-          await this.sendSlack(channel.endpoint, testEvent, channel); // TODO-LINT: move to async function
+          await this.sendSlack(channel.endpoint, testEvent, channel);
           break;
         case 'discord':
-          await this.sendDiscord(channel.endpoint, testEvent, channel); // TODO-LINT: move to async function
+          await this.sendDiscord(channel.endpoint, testEvent, channel);
           break;
         default:
           throw new Error(`Unsupported channel type: ${channel.type}`);
       }
       return true;
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       logger.error(`Test notification failed for channel: ${channel.type} error: ${error.message}`);
       return false;
     }
@@ -461,7 +461,7 @@ export const notificationService = new NotificationService();
 /**
  * Send incident notification
  */
-export async function _sendIncidentNotification(incident: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, type: '_created' | '_updated' | '_resolved'): Promise<void> {
+export async function sendIncidentNotification(incident: any, type: 'created' | 'updated' | 'resolved'): Promise<void> {
   const event: NotificationEvent = {
     type: `incident_${type}` as any,
     incident_id: incident.id,
@@ -479,13 +479,13 @@ export async function _sendIncidentNotification(incident: any // eslint-disable-
     }
   };
 
-  await notificationService.sendNotification(event); // TODO-LINT: move to async function
+  await notificationService.sendNotification(event);
 }
 
 /**
  * Send monitor status notification
  */
-export async function _sendMonitorNotification(monitor: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, status: '_up' | 'down'): Promise<void> {
+export async function sendMonitorNotification(monitor: any, status: 'up' | 'down'): Promise<void> {
   const event: NotificationEvent = {
     type: status === 'down' ? 'monitor_down' : 'monitor_up',
     monitor_id: monitor.id,
@@ -504,5 +504,5 @@ export async function _sendMonitorNotification(monitor: any // eslint-disable-li
     }
   };
 
-  await notificationService.sendNotification(event); // TODO-LINT: move to async function
+  await notificationService.sendNotification(event);
 }

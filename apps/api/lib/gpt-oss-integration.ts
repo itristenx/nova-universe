@@ -22,7 +22,7 @@ export interface GPTOSSConfig {
 export interface GPTOSSRequest {
   id: string;
   prompt: string;
-  context?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  context?: any;
   userId?: string;
   sessionId?: string;
   securityContext: {
@@ -59,7 +59,7 @@ export interface GPTOSSResponse {
     checkpoint: string;
     temperature: number;
   };
-  metadata: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  metadata: any;
 }
 
 export interface SecurityPolicy {
@@ -152,7 +152,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   private initializeEncryption(): void {
     if (this.config.encryptionEnabled) {
       // Generate or load encryption key
-      const _keyPath = path.join(this.config.modelPath, '.encryption.key');
+      const keyPath = path.join(this.config.modelPath, '.encryption.key');
       try {
         // In production, use proper key management (HSM, KMS, etc.)
         this.encryptionKey = crypto.randomBytes(32);
@@ -265,11 +265,11 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   private async initializeIsolation(): Promise<void> {
     try {
       if (this.config.isolationMode === 'container') {
-        await this.initializeContainerIsolation(); // TODO-LINT: move to async function
+        await this.initializeContainerIsolation();
       } else if (this.config.isolationMode === 'sandbox') {
-        await this.initializeSandboxIsolation(); // TODO-LINT: move to async function
+        await this.initializeSandboxIsolation();
       } else {
-        await this.initializeProcessIsolation(); // TODO-LINT: move to async function
+        await this.initializeProcessIsolation();
       }
 
       console.log(`GPT-OSS isolation initialized in ${this.config.isolationMode} mode`);
@@ -336,12 +336,12 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   private startHealthMonitoring(): void {
     // Health check every 30 seconds
     setInterval(async () => {
-      await this.performHealthCheck(); // TODO-LINT: move to async function
+      await this.performHealthCheck();
     }, 30000);
 
     // Container cleanup every 5 minutes
     setInterval(async () => {
-      await this.cleanupContainers(); // TODO-LINT: move to async function
+      await this.cleanupContainers();
     }, 5 * 60 * 1000);
   }
 
@@ -352,34 +352,34 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     const startTime = Date.now();
     
     // Security validation
-    await this.validateRequest(request); // TODO-LINT: move to async function
+    await this.validateRequest(request);
     
     // Apply rate limiting
     if (this.activeRequests >= this.config.maxConcurrentRequests) {
       this.requestQueue.push(request);
-      await this.waitForQueueProcessing(request.id); // TODO-LINT: move to async function
+      await this.waitForQueueProcessing(request.id);
     }
 
     this.activeRequests++;
 
     try {
       // Sanitize input
-      const sanitizedPrompt = await this.sanitizeInput(request); // TODO-LINT: move to async function
+      const sanitizedPrompt = await this.sanitizeInput(request);
       
       // Get available container
-      const container = await this.getAvailableContainer(); // TODO-LINT: move to async function
+      const container = await this.getAvailableContainer();
       
       // Process in isolated environment
       const rawResponse = await this.executeInIsolation(container, {
         ...request,
         prompt: sanitizedPrompt
-      }); // TODO-LINT: move to async function
+      });
       
       // Filter output
-      const filteredResponse = await this.filterOutput(rawResponse, request); // TODO-LINT: move to async function
+      const filteredResponse = await this.filterOutput(rawResponse, request);
       
       // Security assessment
-      const securityAssessment = await this.assessSecurity(request, filteredResponse); // TODO-LINT: move to async function
+      const securityAssessment = await this.assessSecurity(request, filteredResponse);
       
       const response: GPTOSSResponse = {
         id: request.id,
@@ -410,7 +410,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           processingTime: response.processingTime
         },
         riskLevel: securityAssessment.riskLevel
-      }); // TODO-LINT: move to async function
+      });
 
       // Record performance metric
       await aiMonitoringSystem.recordMetric({
@@ -420,7 +420,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           tokens: response.tokens.total,
           containerId: container.id
         }
-      }); // TODO-LINT: move to async function
+      });
 
       this.emit('requestProcessed', response);
       return response;
@@ -435,7 +435,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           securityLevel: request.securityContext.classification
         },
         riskLevel: 'high'
-      }); // TODO-LINT: move to async function
+      });
 
       throw error;
     } finally {
@@ -477,7 +477,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           userId: request.userId || 'system',
           details: { requestId: request.id, pattern: pattern.source },
           riskLevel: 'high'
-        }); // TODO-LINT: move to async function
+        });
         throw new Error('Request rejected: potentially malicious prompt detected');
       }
     }
@@ -507,7 +507,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
               userId: request.userId || 'system',
               details: { requestId: request.id, filter: filter.type },
               riskLevel: 'medium'
-            }); // TODO-LINT: move to async function
+            });
           }
           break;
       }
@@ -531,7 +531,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
 
     // Create new container if needed
     if (this.isolationContainers.size < this.config.maxConcurrentRequests) {
-      await this.initializeContainerIsolation(); // TODO-LINT: move to async function
+      await this.initializeContainerIsolation();
       return this.getAvailableContainer();
     }
 
@@ -563,7 +563,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
       };
 
       // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000)); // TODO-LINT: move to async function
+      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
 
       return mockResponse;
 
@@ -577,7 +577,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   /**
    * Encrypt request for secure transmission
    */
-  private encryptRequest(request: GPTOSSRequest): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types {
+  private encryptRequest(request: GPTOSSRequest): any {
     if (!this.config.encryptionEnabled || !this.encryptionKey) {
       return request;
     }
@@ -595,21 +595,20 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   /**
    * Filter model output according to security policy
    */
-  private async filterOutput(response: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, request: GPTOSSRequest): Promise<any> {
+  private async filterOutput(response: any, request: GPTOSSRequest): Promise<any> {
     let filteredContent = response.content;
     const policy = this.securityPolicies.get('nova-default')!;
 
     for (const filter of policy.rules.outputFilters) {
       switch (filter.type) {
         case 'pii':
-          filteredContent = await this.redactPII(filteredContent); // TODO-LINT: move to async function
+          filteredContent = await this.redactPII(filteredContent);
           break;
         case 'sensitive':
-          filteredContent = await this.flagSensitive(filteredContent, request); // TODO-LINT: move to async function
+          filteredContent = await this.flagSensitive(filteredContent, request);
           break;
-        case 'harmful': {
-        const 
-        isHarmful = await this.detectHarmful(filteredContent); // TODO-LINT: move to async function
+        case 'harmful':
+          const isHarmful = await this.detectHarmful(filteredContent);
           if (isHarmful && filter.action === 'block') {
             throw new Error('Response blocked: harmful content detected');
           }
@@ -655,7 +654,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           userId: request.userId || 'system',
           details: { requestId: request.id, pattern: pattern.source },
           riskLevel: 'medium'
-        }); // TODO-LINT: move to async function
+        });
       }
     }
 
@@ -680,7 +679,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
    */
   private async assessSecurity(
     request: GPTOSSRequest,
-    response: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    response: any
   ): Promise<GPTOSSResponse['securityAssessment']> {
     const issues: string[] = [];
     let riskLevel: 'low' | 'medium' | 'high' = 'low';
@@ -745,13 +744,13 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     try {
       // Check model availability
       if (this.modelStatus !== 'ready') {
-        await this.loadModel(); // TODO-LINT: move to async function
+        await this.loadModel();
       }
 
       // Check container health
       for (const container of this.isolationContainers.values()) {
         if (container.status === 'error') {
-          await this.restartContainer(container.id); // TODO-LINT: move to async function
+          await this.restartContainer(container.id);
         }
       }
 
@@ -764,7 +763,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
           modelStatus: this.modelStatus,
           activeContainers: this.isolationContainers.size
         }
-      }); // TODO-LINT: move to async function
+      });
 
     } catch (error) {
       console.error('GPT-OSS health check failed:', error);
@@ -774,7 +773,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
         userId: 'system',
         details: { error: error.message },
         riskLevel: 'high'
-      }); // TODO-LINT: move to async function
+      });
     }
   }
 
@@ -789,7 +788,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
       console.log('Loading GPT-OSS-20B model...');
       
       // Simulate model loading
-      await new Promise(resolve => setTimeout(resolve, 5000)); // TODO-LINT: move to async function
+      await new Promise(resolve => setTimeout(resolve, 5000));
       
       this.modelStatus = 'ready';
       console.log('GPT-OSS-20B model loaded successfully');
@@ -799,7 +798,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
         userId: 'system',
         details: { modelPath: this.config.modelPath },
         riskLevel: 'low'
-      }); // TODO-LINT: move to async function
+      });
 
     } catch (error) {
       this.modelStatus = 'error';
@@ -818,7 +817,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     
     try {
       // In production, restart actual container
-      await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       container.status = 'ready';
       container.lastUsed = new Date();
@@ -851,7 +850,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
   /**
    * Get system status
    */
-  getStatus(): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types {
+  getStatus(): any {
     return {
       modelStatus: this.modelStatus,
       activeRequests: this.activeRequests,
@@ -878,7 +877,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
     
     // Wait for active requests to complete
     while (this.activeRequests > 0) {
-      await new Promise(resolve => setTimeout(resolve, 100)); // TODO-LINT: move to async function
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     // Cleanup containers
@@ -892,7 +891,7 @@ export class SecureGPTOSSIntegration extends EventEmitter {
 }
 
 // Export singleton instance
-export const _secureGPTOSS = new SecureGPTOSSIntegration();
+export const secureGPTOSS = new SecureGPTOSSIntegration();
 
 // Register with AI Fabric
 aiFabric.registerProvider({

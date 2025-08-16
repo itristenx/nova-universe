@@ -11,7 +11,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [banner, setBanner] = useState<{ title: string; message: string } | null>(null);
 
   useEffect(() => {
-    const handler = (e: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+    const handler = (e: any) => {
       const msg = e?.detail || e;
       if (msg?.type === 'kiosk_activated') {
         setBanner({ title: 'Kiosk Paired', message: `Kiosk ${msg?.data?.kioskId || ''} paired successfully` });

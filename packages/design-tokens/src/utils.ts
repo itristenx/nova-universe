@@ -1,29 +1,29 @@
 /**
- * Utility functions for _Nova _Universe _Design _System
+ * Utility functions for Nova Universe Design System
  */
 
-import { _type ClassValue, clsx } from 'clsx'
+import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 /**
- * _Combines class _names _using clsx _and tailwind-merge
- * _Provides _optimal class _name _merging for _Tailwind _CSS
+ * Combines class names using clsx and tailwind-merge
+ * Provides optimal class name merging for Tailwind CSS
  */
-export function _cn(...inputs: ClassValue[]) {
+export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 /**
  * Checks if a value is defined (not null or undefined)
  */
-export function _isDefined<T>(value: T | null | undefined): value is T {
+export function isDefined<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined
 }
 
 /**
  * Safely access nested object properties
  */
-export function _get<T>(obj: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, path: string, defaultValue?: T): T {
+export function get<T>(obj: any, path: string, defaultValue?: T): T {
   const keys = path.split('.')
   let result = obj
   
@@ -40,7 +40,7 @@ export function _get<T>(obj: any // eslint-disable-line @typescript-eslint/no-ex
 /**
  * Converts pixel values to rem units
  */
-export function _pxToRem(px: number, baseFontSize: number = 16): string {
+export function pxToRem(px: number, baseFontSize: number = 16): string {
   return `${px / baseFontSize}rem`
 }
 
@@ -59,12 +59,12 @@ export const breakpoints = {
 /**
  * Creates media query strings for responsive design
  */
-export function _mediaQuery(breakpoint: _keyof typeof breakpoints): string {
+export function mediaQuery(breakpoint: keyof typeof breakpoints): string {
   return `@media (min-width: ${breakpoints[breakpoint]})`
 }
 
 /**
- * Color utility functions for WCAG _compliance
+ * Color utility functions for WCAG compliance
  */
 export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
@@ -75,7 +75,7 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
   } : null
 }
 
-export function _rgbToHex(r: number, g: number, b: number): string {
+export function rgbToHex(r: number, g: number, b: number): string {
   return "#" + [r, g, b].map(x => {
     const hex = x.toString(16)
     return hex.length === 1 ? "0" + hex : hex
@@ -101,7 +101,7 @@ export function getLuminance(hex: string): number {
 /**
  * Calculates contrast ratio between two colors
  */
-export function _getContrastRatio(color1: string, color2: string): number {
+export function getContrastRatio(color1: string, color2: string): number {
   const lum1 = getLuminance(color1)
   const lum2 = getLuminance(color2)
   const lighter = Math.max(lum1, lum2)
@@ -113,7 +113,7 @@ export function _getContrastRatio(color1: string, color2: string): number {
 /**
  * Debounce function for performance optimization
  */
-export function _debounce<T extends (...args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]) => any>(
+export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -128,7 +128,7 @@ export function _debounce<T extends (...args: any // eslint-disable-line @typesc
 /**
  * Throttle function for performance optimization
  */
-export function _throttle<T extends (...args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]) => any>(
+export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {

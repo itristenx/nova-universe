@@ -64,10 +64,10 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
           'Content-Type': 'application/json',
         },
         signal: AbortSignal.timeout(5000) // 5 second timeout
-      }); // TODO-LINT: move to async function
+      });
 
       if (response.ok) {
-        const data = await response.json(); // TODO-LINT: move to async function
+        const data = await response.json();
         setServerInfo({
           url,
           status: 'connected',
@@ -84,7 +84,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
       } else {
         throw new Error(`HTTP ${response.status}`);
       }
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       console.error('Connection test failed:', error);
       setServerInfo({
         url,

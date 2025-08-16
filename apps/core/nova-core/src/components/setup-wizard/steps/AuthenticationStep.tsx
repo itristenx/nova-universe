@@ -5,8 +5,8 @@ import { Input } from '../../ui/Input';
 import { Switch } from '../../ui/Switch';
 
 interface AuthenticationStepProps {
-  data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-  onUpdate: (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
+  data: any;
+  onUpdate: (data: any) => void;
   onComplete: () => void;
   errors: Record<string, string>;
   isLoading: boolean;
@@ -41,7 +41,7 @@ export const AuthenticationStep: React.FC<AuthenticationStepProps> = ({
     });
   }, [formData, onUpdate]);
 
-  const handleInputChange = (field: string, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  const handleInputChange = (field: string, value: any) => {
     if (field.startsWith('passwordPolicy.')) {
       const policyField = field.replace('passwordPolicy.', '');
       setFormData(prev => ({

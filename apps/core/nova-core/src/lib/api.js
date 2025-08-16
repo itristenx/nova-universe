@@ -49,7 +49,7 @@ class ApiClient {
     }
     // Mock method helper
     async mockRequest(mockData, errorRate = 0.05) {
-        await delay(200 + Math.random() * 500); // TODO-LINT: move to async function // Simulate network delay
+        await delay(200 + Math.random() * 500); // Simulate network delay
         if (shouldSimulateError(errorRate)) {
             throw new Error('Simulated API error');
         }
@@ -60,7 +60,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest({ token: 'mock_token_12345' });
         }
-        const response = await this.client.post('/api/login', credentials); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/login', credentials);
         return response.data;
     }
     async me(token) {
@@ -68,7 +68,7 @@ class ApiClient {
             return this.mockRequest(mockUsers[0]);
         }
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await this.client.get('/api/me', { headers }); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/me', { headers });
         return response.data;
     }
     // Users
@@ -76,7 +76,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest(mockUsers);
         }
-        const response = await this.client.get('/api/users'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/users');
         return response.data;
     }
     async createUser(user) {
@@ -84,7 +84,7 @@ class ApiClient {
             const newUser = { ...user, id: Date.now() };
             return this.mockRequest(newUser);
         }
-        const response = await this.client.post('/api/users', user); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/users', user);
         return response.data;
     }
     async updateUser(id, user) {
@@ -93,37 +93,37 @@ class ApiClient {
             const updatedUser = { ...existingUser, ...user };
             return this.mockRequest(updatedUser);
         }
-        const response = await this.client.put(`/api/users/${id}`, user); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/users/${id}`, user);
         return response.data;
     }
     async deleteUser(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'User deleted successfully' });
         }
-        const response = await this.client.delete(`/api/users/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/users/${id}`);
         return response.data;
     }
     async updateVipStatus(id, data) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'VIP updated' });
         }
-        const response = await this.client.put(`/api/v1/helix/users/${id}/vip`, data); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/v1/helix/users/${id}/vip`, data);
         return response.data;
     }
     async getVipProxies() {
-        const response = await this.client.get('/api/v1/vip/proxies'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/v1/vip/proxies');
         return response.data.proxies;
     }
     async createVipProxy(data) {
-        const response = await this.client.post('/api/v1/vip/proxies', data); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/v1/vip/proxies', data);
         return response.data;
     }
     async deleteVipProxy(id) {
-        const response = await this.client.delete(`/api/v1/vip/proxies/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/v1/vip/proxies/${id}`);
         return response.data;
     }
     async getVipHeatmap() {
-        const response = await this.client.get('/api/reports/vip-heatmap'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/reports/vip-heatmap');
         return response.data.heatmap;
     }
     // Roles and Permissions
@@ -131,14 +131,14 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest(mockRoles);
         }
-        const response = await this.client.get('/api/roles'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/roles');
         return response.data;
     }
     async getPermissions() {
         if (this.useMockMode) {
             return this.mockRequest(mockPermissions);
         }
-        const response = await this.client.get('/api/roles/permissions'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/roles/permissions');
         return response.data;
     }
     async createRole(role) {
@@ -146,21 +146,21 @@ class ApiClient {
             const newRole = { ...role, id: Date.now() };
             return this.mockRequest(newRole);
         }
-        const response = await this.client.post('/api/roles', role); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/roles', role);
         return response.data;
     }
     async updateRole(id, role) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Role updated successfully' });
         }
-        const response = await this.client.put(`/api/roles/${id}`, role); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/roles/${id}`, role);
         return response.data;
     }
     async deleteRole(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Role deleted successfully' });
         }
-        const response = await this.client.delete(`/api/roles/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/roles/${id}`);
         return response.data;
     }
     // Kiosks
@@ -168,7 +168,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest(mockKiosks);
         }
-        const response = await this.client.get('/api/kiosks'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/kiosks');
         return response.data;
     }
     async updateKiosk(id, kiosk) {
@@ -177,33 +177,33 @@ class ApiClient {
             const updatedKiosk = { ...existingKiosk, ...kiosk };
             return this.mockRequest(updatedKiosk);
         }
-        const response = await this.client.put(`/api/kiosks/${id}`, kiosk); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/kiosks/${id}`, kiosk);
         return response.data;
     }
     async deleteKiosk(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Kiosk deleted successfully' });
         }
-        const response = await this.client.delete(`/api/kiosks/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/kiosks/${id}`);
         return response.data;
     }
     async activateKiosk(id) {
         if (this.useMockMode) {
             return this.mockRequest({ id, active: true });
         }
-        const response = await this.client.post(`/api/kiosks/${id}/activate`); // TODO-LINT: move to async function
+        const response = await this.client.post(`/api/kiosks/${id}/activate`);
         return response.data;
     }
     async deactivateKiosk(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Kiosk deactivated successfully' });
         }
-        const response = await this.client.post(`/api/kiosks/${id}/deactivate`); // TODO-LINT: move to async function
+        const response = await this.client.post(`/api/kiosks/${id}/deactivate`);
         return response.data;
     }
     async generateKioskActivation() {
         try {
-            const response = await this.client.post('/api/kiosks/activation'); // TODO-LINT: move to async function
+            const response = await this.client.post('/api/kiosks/activation');
             return response.data;
         }
         catch (error) {
@@ -229,14 +229,14 @@ class ApiClient {
                 systems: ['Desktop', 'Laptop', 'Mobile', 'Network', 'Printer', 'Software', 'Account Access']
             });
         }
-        const response = await this.client.get('/api/kiosks/systems'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/kiosks/systems');
         return response.data;
     }
     async updateKioskSystems(systems) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Kiosk systems updated successfully' });
         }
-        const response = await this.client.put('/api/kiosks/systems', { systems }); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/kiosks/systems', { systems });
         return response.data;
     }
     // Remote Kiosk Management
@@ -244,14 +244,14 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Config refresh requested' });
         }
-        const response = await this.client.post(`/api/kiosks/${id}/refresh-config`); // TODO-LINT: move to async function
+        const response = await this.client.post(`/api/kiosks/${id}/refresh-config`);
         return response.data;
     }
     async resetKiosk(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Kiosk reset successfully' });
         }
-        const response = await this.client.post(`/api/kiosks/${id}/reset`); // TODO-LINT: move to async function
+        const response = await this.client.post(`/api/kiosks/${id}/reset`);
         return response.data;
     }
     // Server Management
@@ -259,7 +259,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Server restart initiated' });
         }
-        const response = await this.client.post('/api/server/restart'); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/server/restart');
         return response.data;
     }
     async getServerStatus() {
@@ -271,7 +271,7 @@ class ApiClient {
                 nodeVersion: 'v18.0.0'
             });
         }
-        const response = await this.client.get('/api/v1/server/status'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/v1/server/status');
         return response.data;
     }
     // Logs/Tickets
@@ -279,14 +279,14 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest(mockLogs);
         }
-        const response = await this.client.get('/api/logs'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/logs');
         return response.data;
     }
     async deleteLog(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Log deleted successfully' });
         }
-        const response = await this.client.delete(`/api/logs/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/logs/${id}`);
         return response.data;
     }
     async exportLogs() {
@@ -296,14 +296,14 @@ class ApiClient {
                 mockLogs.map(log => `${log.id},${log.ticketId},${log.name},${log.email},${log.title},${log.system},${log.urgency},${log.timestamp}`).join('\n');
             return new Blob([csvContent], { type: 'text/csv' });
         }
-        const response = await this.client.get('/api/logs/export', { responseType: 'blob' }); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/logs/export', { responseType: 'blob' });
         return response.data;
     }
     async clearLogs() {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'All logs cleared successfully' });
         }
-        const response = await this.client.delete('/api/logs'); // TODO-LINT: move to async function
+        const response = await this.client.delete('/api/logs');
         return response.data;
     }
     // Config
@@ -311,7 +311,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest(mockConfig);
         }
-        const response = await this.client.get('/api/config'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/config');
         return response.data;
     }
     async updateConfig(config) {
@@ -319,7 +319,7 @@ class ApiClient {
             const updatedConfig = { ...mockConfig, ...config };
             return this.mockRequest(updatedConfig);
         }
-        const response = await this.client.put('/api/config', config); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/config', config);
         return response.data;
     }
     async getOrganizationBranding() {
@@ -332,7 +332,7 @@ class ApiClient {
                 secondaryColor: '#9333EA'
             });
         }
-        const response = await this.client.get('/api/v1/organizations/config'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/v1/organizations/config');
         return response.data;
     }
     // Notifications
@@ -340,7 +340,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest(mockNotifications);
         }
-        const response = await this.client.get('/api/notifications'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/notifications');
         return response.data;
     }
     async createNotification(notification) {
@@ -358,14 +358,14 @@ class ApiClient {
             type: notification.type,
             level: notification.level || 'info'
         };
-        const response = await this.client.post('/api/notifications', payload); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/notifications', payload);
         return response.data;
     }
     async deleteNotification(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Notification deleted successfully' });
         }
-        const response = await this.client.delete(`/api/notifications/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/notifications/${id}`);
         return response.data;
     }
     // Directory
@@ -380,7 +380,7 @@ class ApiClient {
                 user.email.toLowerCase().includes(query.toLowerCase()));
             return this.mockRequest(mockDirectoryUsers);
         }
-        const response = await this.client.get(`/api/directory/search?q=${encodeURIComponent(query)}`); // TODO-LINT: move to async function
+        const response = await this.client.get(`/api/directory/search?q=${encodeURIComponent(query)}`);
         return response.data;
     }
     // Integrations
@@ -388,7 +388,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest(mockIntegrations);
         }
-        const response = await this.client.get('/api/integrations'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/integrations');
         return response.data;
     }
     async createIntegration(integration) {
@@ -396,7 +396,7 @@ class ApiClient {
             const newIntegration = { ...integration, id: Date.now() };
             return this.mockRequest(newIntegration);
         }
-        const response = await this.client.post('/api/integrations', integration); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/integrations', integration);
         return response.data;
     }
     async updateIntegration(id, integration) {
@@ -405,14 +405,14 @@ class ApiClient {
             const updatedIntegration = { ...existingIntegration, ...integration };
             return this.mockRequest(updatedIntegration);
         }
-        const response = await this.client.put(`/api/integrations/${id}`, integration); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/integrations/${id}`, integration);
         return response.data;
     }
     async deleteIntegration(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Integration deleted successfully' });
         }
-        const response = await this.client.delete(`/api/integrations/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/integrations/${id}`);
         return response.data;
     }
     async testIntegration(id) {
@@ -423,7 +423,7 @@ class ApiClient {
                 message: success ? 'Integration test successful' : 'Integration test failed'
             });
         }
-        const response = await this.client.post(`/api/integrations/${id}/test`); // TODO-LINT: move to async function
+        const response = await this.client.post(`/api/integrations/${id}/test`);
         return response.data;
     }
     // Email accounts
@@ -431,7 +431,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest(mockEmailAccounts);
         }
-        const res = await this.client.get('/api/email-accounts'); // TODO-LINT: move to async function
+        const res = await this.client.get('/api/email-accounts');
         return res.data;
     }
     async createEmailAccount(account) {
@@ -439,7 +439,7 @@ class ApiClient {
             const newAcc = { ...account, id: Date.now() };
             return this.mockRequest(newAcc);
         }
-        const res = await this.client.post('/api/email-accounts', account); // TODO-LINT: move to async function
+        const res = await this.client.post('/api/email-accounts', account);
         return res.data;
     }
     async updateEmailAccount(id, account) {
@@ -448,21 +448,21 @@ class ApiClient {
             const updated = { ...existing, ...account };
             return this.mockRequest(updated);
         }
-        const res = await this.client.put(`/api/email-accounts/${id}`, account); // TODO-LINT: move to async function
+        const res = await this.client.put(`/api/email-accounts/${id}`, account);
         return res.data;
     }
     async deleteEmailAccount(id) {
         if (this.useMockMode) {
             return this.mockRequest(undefined);
         }
-        await this.client.delete(`/api/email-accounts/${id}`); // TODO-LINT: move to async function
+        await this.client.delete(`/api/email-accounts/${id}`);
     }
     // Modules
     async getModules() {
         if (this.useMockMode) {
             return this.mockRequest(mockModules);
         }
-        const response = await this.client.get('/api/v1/modules'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/v1/modules');
         return response.data.modules;
     }
     async updateModule(key, enabled) {
@@ -470,24 +470,24 @@ class ApiClient {
             mockModules[key] = enabled;
             return this.mockRequest({ message: 'Module updated' });
         }
-        const response = await this.client.put(`/api/v1/modules/${key}`, { enabled }); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/v1/modules/${key}`, { enabled });
         return response.data;
     }
     // Catalog Items
     async getCatalogItems() {
-        const response = await this.client.get('/api/v1/orbit/catalog'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/v1/orbit/catalog');
         return response.data;
     }
     async createCatalogItem(data) {
-        const response = await this.client.post('/api/catalog-items', data); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/catalog-items', data);
         return response.data;
     }
     async updateCatalogItem(id, data) {
-        const response = await this.client.put(`/api/catalog-items/${id}`, data); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/catalog-items/${id}`, data);
         return response.data;
     }
     async deleteCatalogItem(id) {
-        const response = await this.client.delete(`/api/catalog-items/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/catalog-items/${id}`);
         return response.data;
     }
     // Assets
@@ -511,7 +511,7 @@ class ApiClient {
             ];
             return this.mockRequest(mockAssets);
         }
-        const response = await this.client.get('/api/assets'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/assets');
         return response.data;
     }
     async uploadAsset(file, type) {
@@ -530,14 +530,14 @@ class ApiClient {
         formData.append('type', type);
         const response = await this.client.post('/api/assets', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
-        }); // TODO-LINT: move to async function
+        });
         return response.data;
     }
     async deleteAsset(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Asset deleted successfully' });
         }
-        const response = await this.client.delete(`/api/assets/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/assets/${id}`);
         return response.data;
     }
     // Dashboard
@@ -545,14 +545,14 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest(mockDashboardStats);
         }
-        const response = await this.client.get('/api/dashboard/stats'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/dashboard/stats');
         return response.data;
     }
     async getActivityLogs() {
         if (this.useMockMode) {
             return this.mockRequest(mockDashboardStats.recentActivity);
         }
-        const response = await this.client.get('/api/dashboard/activity'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/dashboard/activity');
         return response.data;
     }
     // Security Settings
@@ -570,14 +570,14 @@ class ApiClient {
                 auditLogging: true
             });
         }
-        const response = await this.client.get('/api/security-settings'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/security-settings');
         return response.data;
     }
     async updateSecuritySettings(settings) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Security settings updated successfully' });
         }
-        const response = await this.client.put('/api/security-settings', settings); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/security-settings', settings);
         return response.data;
     }
     // Notification Settings
@@ -594,20 +594,20 @@ class ApiClient {
                 notificationRetention: '30'
             });
         }
-        const response = await this.client.get('/api/notification-settings'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/notification-settings');
         return response.data;
     }
     async updateNotificationSettings(settings) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Notification settings updated successfully' });
         }
-        const response = await this.client.put('/api/notification-settings', settings); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/notification-settings', settings);
         return response.data;
     }
     // Kiosk Activations
     async getKioskActivations() {
         try {
-            const response = await this.client.get('/api/kiosks/activations'); // TODO-LINT: move to async function
+            const response = await this.client.get('/api/kiosks/activations');
             // Ensure we always return an array
             if (Array.isArray(response.data)) {
                 return response.data;
@@ -667,14 +667,14 @@ class ApiClient {
                 }
             });
         }
-        const response = await this.client.get(`/api/kiosk-config/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.get(`/api/kiosk-config/${id}`);
         return response.data;
     }
     async updateKioskConfig(id, config) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Kiosk configuration updated successfully' });
         }
-        const response = await this.client.put(`/api/kiosk-config/${id}`, config); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/kiosk-config/${id}`, config);
         return response.data;
     }
     // Feedback
@@ -682,14 +682,14 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest([]);
         }
-        const response = await this.client.get('/api/feedback'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/feedback');
         return response.data;
     }
     async createFeedback(feedback) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Feedback submitted successfully' });
         }
-        const response = await this.client.post('/api/feedback', feedback); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/feedback', feedback);
         return response.data;
     }
     // Password Management
@@ -697,7 +697,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest({ valid: true });
         }
-        const response = await this.client.post('/api/verify-password', { password }); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/verify-password', { password });
         return response.data;
     }
     async updateAdminPassword(currentPassword, newPassword) {
@@ -707,7 +707,7 @@ class ApiClient {
         const response = await this.client.put('/api/admin-password', {
             currentPassword,
             newPassword
-        }); // TODO-LINT: move to async function
+        });
         return response.data;
     }
     // Status Configuration
@@ -752,14 +752,14 @@ class ApiClient {
                 }
             });
         }
-        const response = await this.client.get('/api/status-config'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/status-config');
         return response.data;
     }
     async updateStatusConfig(config) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Status configuration updated successfully' });
         }
-        const response = await this.client.put('/api/status-config', config); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/status-config', config);
         return response.data;
     }
     // Directory Configuration
@@ -774,14 +774,14 @@ class ApiClient {
                 bindPassword: ''
             });
         }
-        const response = await this.client.get('/api/directory-config'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/directory-config');
         return response.data;
     }
     async updateDirectoryConfig(config) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Directory configuration updated successfully' });
         }
-        const response = await this.client.put('/api/directory-config', config); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/directory-config', config);
         return response.data;
     }
     // SSO Configuration
@@ -799,14 +799,14 @@ class ApiClient {
                 }
             });
         }
-        const response = await this.client.get('/api/sso-config'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/sso-config');
         return response.data;
     }
     async getSSOAvailability() {
         if (this.useMockMode) {
             return this.mockRequest({ available: false });
         }
-        const response = await this.client.get('/api/sso-available'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/sso-available');
         return response.data;
     }
     // SCIM Configuration
@@ -818,14 +818,14 @@ class ApiClient {
                 endpoint: '/scim/v2'
             });
         }
-        const response = await this.client.get('/api/scim-config'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/scim-config');
         return response.data;
     }
     async updateSCIMConfig(config) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'SCIM configuration updated successfully' });
         }
-        const response = await this.client.put('/api/scim-config', config); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/scim-config', config);
         return response.data;
     }
     // Passkey Management
@@ -841,14 +841,14 @@ class ApiClient {
                 }
             ]);
         }
-        const response = await this.client.get('/api/passkeys'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/passkeys');
         return response.data;
     }
     async deletePasskey(id) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Passkey deleted successfully' });
         }
-        const response = await this.client.delete(`/api/passkeys/${id}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/passkeys/${id}`);
         return response.data;
     }
     async beginPasskeyRegistration(options) {
@@ -861,14 +861,14 @@ class ApiClient {
                 timeout: 60000
             });
         }
-        const response = await this.client.post('/api/passkey/register/begin', options); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/passkey/register/begin', options);
         return response.data;
     }
     async completePasskeyRegistration(data) {
         if (this.useMockMode) {
             return this.mockRequest({ verified: true, message: 'Passkey registered successfully' });
         }
-        const response = await this.client.post('/api/passkey/register/complete', data); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/passkey/register/complete', data);
         return response.data;
     }
     async beginPasskeyAuthentication() {
@@ -881,7 +881,7 @@ class ApiClient {
                 challengeKey: 'mock-challenge-key'
             });
         }
-        const response = await this.client.post('/api/passkey/authenticate/begin'); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/passkey/authenticate/begin');
         return response.data;
     }
     async completePasskeyAuthentication(data) {
@@ -892,7 +892,7 @@ class ApiClient {
                 user: { id: 1, name: 'Mock User', email: 'mock@example.com' }
             });
         }
-        const response = await this.client.post('/api/passkey/authenticate/complete', data); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/passkey/authenticate/complete', data);
         return response.data;
     }
     // Admin Pin Management
@@ -900,7 +900,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Admin pins updated successfully' });
         }
-        const response = await this.client.put('/api/admin-pins', pinConfig); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/admin-pins', pinConfig);
         return response.data;
     }
     async validateAdminPin(pin, kioskId) {
@@ -910,7 +910,7 @@ class ApiClient {
                 permissions: ['admin', 'override_status', 'manage_settings']
             });
         }
-        const response = await this.client.post('/api/admin-pins/validate', { pin, kioskId }); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/admin-pins/validate', { pin, kioskId });
         return response.data;
     }
     // SSO Configuration
@@ -918,7 +918,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'SSO configuration updated successfully' });
         }
-        const response = await this.client.put('/api/sso-config', config); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/sso-config', config);
         return response.data;
     }
     // Kiosk Configuration Management
@@ -942,21 +942,21 @@ class ApiClient {
                 }
             });
         }
-        const response = await this.client.get(`/api/kiosks/${kioskId}/configuration`); // TODO-LINT: move to async function
+        const response = await this.client.get(`/api/kiosks/${kioskId}/configuration`);
         return response.data;
     }
     async setKioskOverride(kioskId, configType, configData) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Kiosk override set successfully' });
         }
-        const response = await this.client.put(`/api/kiosks/${kioskId}/overrides/${configType}`, configData); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/kiosks/${kioskId}/overrides/${configType}`, configData);
         return response.data;
     }
     async removeKioskOverride(kioskId, configType) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Kiosk override removed successfully' });
         }
-        const response = await this.client.delete(`/api/kiosks/${kioskId}/overrides/${configType}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/kiosks/${kioskId}/overrides/${configType}`);
         return response.data;
     }
     // Global Configuration Management
@@ -979,7 +979,7 @@ class ApiClient {
                 }
             });
         }
-        const response = await this.client.get('/api/configuration/global'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/configuration/global');
         return response.data;
     }
     async getConfigurationSummary() {
@@ -991,35 +991,35 @@ class ApiClient {
                 lastUpdated: new Date().toISOString()
             });
         }
-        const response = await this.client.get('/api/configuration/summary'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/configuration/summary');
         return response.data;
     }
     async updateGlobalConfiguration(config) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Global configuration updated successfully' });
         }
-        const response = await this.client.put('/api/configuration/global', config); // TODO-LINT: move to async function
+        const response = await this.client.put('/api/configuration/global', config);
         return response.data;
     }
     async setKioskConfigScope(kioskId, scope) {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Kiosk configuration scope updated successfully' });
         }
-        const response = await this.client.put(`/api/kiosks/${kioskId}/config-scope`, { scope }); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/kiosks/${kioskId}/config-scope`, { scope });
         return response.data;
     }
     async resetAllKiosksToGlobal() {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'All kiosks reset to global configuration successfully' });
         }
-        const response = await this.client.post('/api/configuration/reset-all-to-global'); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/configuration/reset-all-to-global');
         return response.data;
     }
     async applyGlobalConfigToAll(configType) {
         if (this.useMockMode) {
             return this.mockRequest({ message: `Global ${configType} configuration applied to all kiosks successfully` });
         }
-        const response = await this.client.post('/api/configuration/apply-global-to-all', { configType }); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/configuration/apply-global-to-all', { configType });
         return response.data;
     }
     // Kiosk Status Management
@@ -1027,7 +1027,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'Kiosk status updated successfully' });
         }
-        const response = await this.client.put(`/api/kiosks/${kioskId}/status`, status); // TODO-LINT: move to async function
+        const response = await this.client.put(`/api/kiosks/${kioskId}/status`, status);
         return response.data;
     }
     // Schedule Configuration
@@ -1047,7 +1047,7 @@ class ApiClient {
                 }
             });
         }
-        const response = await this.client.get(`/api/kiosks/${kioskId}/schedule-config`); // TODO-LINT: move to async function
+        const response = await this.client.get(`/api/kiosks/${kioskId}/schedule-config`);
         return response.data;
     }
     // SMTP Testing
@@ -1055,7 +1055,7 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest({ message: 'SMTP test email sent successfully' });
         }
-        const response = await this.client.post('/api/smtp/test', { email: testEmail }); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/smtp/test', { email: testEmail });
         return response.data;
     }
     // Knowledge Base (Nova Lore)
@@ -1063,19 +1063,19 @@ class ApiClient {
         if (this.useMockMode) {
             return this.mockRequest([]);
         }
-        const response = await this.client.get('/api/v1/lore/articles', { params }); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/v1/lore/articles', { params });
         return response.data.articles;
     }
     async getKnowledgeArticle(slug) {
-        const response = await this.client.get(`/api/v1/lore/articles/${slug}`); // TODO-LINT: move to async function
+        const response = await this.client.get(`/api/v1/lore/articles/${slug}`);
         return response.data.article;
     }
     async getKnowledgeVersions(articleId) {
-        const response = await this.client.get(`/api/v1/lore/articles/${articleId}/versions`); // TODO-LINT: move to async function
+        const response = await this.client.get(`/api/v1/lore/articles/${articleId}/versions`);
         return response.data.versions;
     }
     async getKnowledgeComments(articleId) {
-        const response = await this.client.get(`/api/v1/lore/articles/${articleId}/comments`); // TODO-LINT: move to async function
+        const response = await this.client.get(`/api/v1/lore/articles/${articleId}/comments`);
         return response.data.comments;
     }
     async addKnowledgeComment(articleId, data) {
@@ -1088,15 +1088,15 @@ class ApiClient {
             };
             return this.mockRequest(mockComment);
         }
-        const response = await this.client.post(`/api/v1/lore/articles/${articleId}/comments`, data); // TODO-LINT: move to async function
+        const response = await this.client.post(`/api/v1/lore/articles/${articleId}/comments`, data);
         return response.data.comment;
     }
     async createKnowledgeArticle(data) {
-        const response = await this.client.post('/api/v1/lore/articles', data); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/v1/lore/articles', data);
         return response.data.article;
     }
     async createKnowledgeVersion(articleId, data) {
-        const response = await this.client.post(`/api/v1/lore/articles/${articleId}/versions`, data); // TODO-LINT: move to async function
+        const response = await this.client.post(`/api/v1/lore/articles/${articleId}/versions`, data);
         return response.data.version;
     }
     
@@ -1158,21 +1158,21 @@ class ApiClient {
                 ],
             });
         }
-        const response = await this.client.get(`/api/v1/analytics?timeRange=${timeRange}`); // TODO-LINT: move to async function
+        const response = await this.client.get(`/api/v1/analytics?timeRange=${timeRange}`);
         return response.data;
     }
     
     // API Keys
     async getApiKeys() {
-        const response = await this.client.get('/api/v1/api-keys'); // TODO-LINT: move to async function
+        const response = await this.client.get('/api/v1/api-keys');
         return response.data.apiKeys;
     }
     async createApiKey(description) {
-        const response = await this.client.post('/api/v1/api-keys', { description }); // TODO-LINT: move to async function
+        const response = await this.client.post('/api/v1/api-keys', { description });
         return response.data;
     }
     async deleteApiKey(key) {
-        const response = await this.client.delete(`/api/v1/api-keys/${key}`); // TODO-LINT: move to async function
+        const response = await this.client.delete(`/api/v1/api-keys/${key}`);
         return response.data;
     }
 }

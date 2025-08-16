@@ -55,7 +55,7 @@ const AlertDescription: React.FC<{ children: React.ReactNode }> = ({ children })
 
 // API and toast utilities
 const api = {
-  get: async (url: string, config?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  get: async (url: string, config?: any) => {
     console.log('API GET:', url, config);
     
     // Mock data for demonstration
@@ -139,25 +139,25 @@ const api = {
     
     return { data: mockConfigs };
   },
-  put: async (url: string, data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  put: async (url: string, data: any) => {
     console.log('API PUT:', url, data);
     return { data: { success: true } };
   },
-  post: async (url: string, data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  post: async (url: string, data: any) => {
     console.log('API POST:', url, data);
     return { data: { success: true } };
   }
 };
 
 const useToast = () => ({
-  addToast: (toast: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  addToast: (toast: any) => {
     console.log('Toast:', toast);
     // In a real implementation, this would show a toast notification
   }
 });
 
 interface ConfigValue {
-  value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  value: any;
   source: 'environment' | 'database' | 'default';
   metadata?: {
     description: string;
@@ -166,7 +166,7 @@ interface ConfigValue {
     valueType: string;
     isUIEditable: boolean;
     isRequired: boolean;
-    defaultValue?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    defaultValue?: any;
     helpText?: string;
     isAdvanced: boolean;
     displayOrder?: number;
@@ -203,7 +203,7 @@ const ConfigurationManagement: React.FC = () => {
       setLoading(true);
       const response = await api.get('/config/admin', {
         params: { includeAdvanced: true }
-      }); // TODO-LINT: move to async function
+      });
       setConfigs(response.data);
     } catch (error) {
       console.error('Failed to load configurations:', error);
@@ -218,7 +218,7 @@ const ConfigurationManagement: React.FC = () => {
     }
   };
 
-  const handleValueChange = (key: string, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  const handleValueChange = (key: string, value: any) => {
     setPendingChanges(prev => ({ ...prev, [key]: value }));
     
     // Clear validation error when user starts typing
@@ -231,7 +231,7 @@ const ConfigurationManagement: React.FC = () => {
     }
   };
 
-  const validateValue = (key: string, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, config: ConfigValue): string | null => {
+  const validateValue = (key: string, value: any, config: ConfigValue): string | null => {
     const metadata = config.metadata;
     if (!metadata) return null;
 
@@ -288,7 +288,7 @@ const ConfigurationManagement: React.FC = () => {
 
     try {
       setSaving(true);
-      await api.put(`/config/${key}`, { value }); // TODO-LINT: move to async function
+      await api.put(`/config/${key}`, { value });
       
       // Update local state
       setConfigs(prev => ({
@@ -313,7 +313,7 @@ const ConfigurationManagement: React.FC = () => {
         title: 'Configuration Updated',
         message: `${key} has been updated successfully.`
       });
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       console.error('Failed to save configuration:', error);
       addToast({
         id: Date.now().toString(),
@@ -357,7 +357,7 @@ const ConfigurationManagement: React.FC = () => {
       await api.post('/config/bulk', {
         configs: configArray,
         reason: 'Bulk update from admin UI'
-      }); // TODO-LINT: move to async function
+      });
 
       // Update local state
       setConfigs(prev => {
@@ -380,7 +380,7 @@ const ConfigurationManagement: React.FC = () => {
         title: 'All Changes Saved',
         message: `${configArray.length} configuration(s) updated successfully.`
       });
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       console.error('Failed to save configurations:', error);
       addToast({
         id: Date.now().toString(),

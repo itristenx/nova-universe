@@ -34,7 +34,7 @@ export const KioskActivationPage: React.FC = () => {
 
   useEffect(() => {
     subscribe('kiosks');
-    const handler = (e: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+    const handler = (e: any) => {
       try {
         const msg = typeof e?.detail === 'object' ? e.detail : e;
         const type = msg?.type || msg?.data?.type;
@@ -59,7 +59,7 @@ export const KioskActivationPage: React.FC = () => {
   const loadSystems = async () => {
     try {
       setSystemsLoading(true);
-      const data = await api.getKioskSystems(); // TODO-LINT: move to async function
+      const data = await api.getKioskSystems();
       setSystems(data?.systems || []);
     } catch (error) {
       console.error('Failed to load systems:', error);
@@ -77,7 +77,7 @@ export const KioskActivationPage: React.FC = () => {
   const loadActivations = async () => {
     try {
       setLoading(true);
-      const data = await api.getKioskActivations(); // TODO-LINT: move to async function
+      const data = await api.getKioskActivations();
       setActivations(data);
     } catch (error) {
       console.error('Failed to load activations:', error);
@@ -99,7 +99,7 @@ export const KioskActivationPage: React.FC = () => {
       const input = { kioskId: kioskId || `kiosk-${Math.random().toString(36).slice(2,7)}` } as any;
       const activation = await fetch('/api/v2/beacon/activation-codes', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input)
-      }).then(r=>r.json()); // TODO-LINT: move to async function
+      }).then(r=>r.json());
       setLatestActivation({ code: activation.code, qr: activation.qr, expiresAt: activation.expiresAt });
       setWaiting(true);
       addToast({ type: 'success', title: 'Success', description: 'Activation code generated' });
@@ -122,7 +122,7 @@ export const KioskActivationPage: React.FC = () => {
 
     try {
       setLoading(true);
-      await api.updateKioskStatus(kioskId, { active: true }); // TODO-LINT: move to async function
+      await api.updateKioskStatus(kioskId, { active: true });
       addToast({
         type: 'success',
         title: 'Success',
@@ -162,7 +162,7 @@ export const KioskActivationPage: React.FC = () => {
 
     try {
       const updatedSystems = [...(systems || []), newSystem.trim()];
-      await api.updateKioskSystems(updatedSystems); // TODO-LINT: move to async function
+      await api.updateKioskSystems(updatedSystems);
       setSystems(updatedSystems);
       setNewSystem('');
       addToast({
@@ -183,7 +183,7 @@ export const KioskActivationPage: React.FC = () => {
   const removeSystem = async (systemToRemove: string) => {
     try {
       const updatedSystems = (systems || []).filter(s => s !== systemToRemove);
-      await api.updateKioskSystems(updatedSystems); // TODO-LINT: move to async function
+      await api.updateKioskSystems(updatedSystems);
       setSystems(updatedSystems);
       addToast({
         type: 'success',
@@ -214,9 +214,9 @@ export const KioskActivationPage: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ kioskId: linkKioskId, assetTag: assetTag || undefined, serialNumber: serialNumber || undefined })
-      }); // TODO-LINT: move to async function
+      });
       if (!res.ok) throw new Error('Link failed');
-      const data = await res.json(); // TODO-LINT: move to async function
+      const data = await res.json();
       addToast({ type: 'success', title: 'Linked', description: `Linked to asset ${data?.result?.asset?.tag || ''}` });
       setLinkKioskId(''); setAssetTag(''); setSerialNumber('');
     } catch (e) {

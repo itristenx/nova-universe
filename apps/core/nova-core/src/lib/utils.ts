@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-export function _cn(...inputs: ClassValue[]) {
+export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
@@ -15,7 +15,7 @@ export function formatDate(date: string | Date): string {
   });
 }
 
-export function _formatRelativeTime(date: string | Date): string {
+export function formatRelativeTime(date: string | Date): string {
   const now = new Date();
   const target = new Date(date);
   const diffMs = now.getTime() - target.getTime();
@@ -31,7 +31,7 @@ export function _formatRelativeTime(date: string | Date): string {
   return formatDate(date);
 }
 
-export function _getUrgencyColor(urgency: string): string {
+export function getUrgencyColor(urgency: string): string {
   switch (urgency.toLowerCase()) {
     case 'urgent':
       return 'bg-red-100 text-red-800 border-red-200';
@@ -46,7 +46,7 @@ export function _getUrgencyColor(urgency: string): string {
   }
 }
 
-export function _getStatusColor(status: string): string {
+export function getStatusColor(status: string): string {
   switch (status.toLowerCase()) {
     case 'success':
       return 'bg-green-100 text-green-800 border-green-200';
@@ -64,7 +64,7 @@ export function _getStatusColor(status: string): string {
   }
 }
 
-export function _debounce<T _extends (...args: _unknown[]) => void>(
+export function debounce<T extends (...args: unknown[]) => void>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -75,7 +75,7 @@ export function _debounce<T _extends (...args: _unknown[]) => void>(
   };
 }
 
-export function _downloadFile(data: _Blob, filename: string): void {
+export function downloadFile(data: Blob, filename: string): void {
   const url = window.URL.createObjectURL(data);
   const a = document.createElement('a');
   a.href = url;
@@ -86,7 +86,7 @@ export function _downloadFile(data: _Blob, filename: string): void {
   document.body.removeChild(a);
 }
 
-export function _generateRandomString(length: number): string {
+export function generateRandomString(length: number): string {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -95,11 +95,11 @@ export function _generateRandomString(length: number): string {
   return result;
 }
 
-export function _validateEmail(email: string): boolean {
+export function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-export function _capitalizeFirst(str: string): string {
+export function capitalizeFirst(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }

@@ -7,8 +7,8 @@ test.describe('Performance Testing', () => {
       const startTime = Date.now();
       
       // Navigate and wait for load
-      await page.goto('/'); // TODO-LINT: move to async function
-      await page.waitForLoadState('networkidle'); // TODO-LINT: move to async function
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
       
       const loadTime = Date.now() - startTime;
       
@@ -19,7 +19,7 @@ test.describe('Performance Testing', () => {
       const fcp = await page.evaluate(() => {
         return new Promise((resolve) => {
           new PerformanceObserver((list) => {
-            const entries = list.getEntries(); // TODO-LINT: move to async function
+            const entries = list.getEntries();
             const fcpEntry = entries.find(entry => entry.name === 'first-contentful-paint');
             if (fcpEntry) {
               resolve(fcpEntry.startTime);
@@ -44,8 +44,8 @@ test.describe('Performance Testing', () => {
         }
       });
       
-      await page.goto('/'); // TODO-LINT: move to async function
-      await page.waitForLoadState('networkidle'); // TODO-LINT: move to async function
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
       
       // Check total resource size
       const totalSize = resourceSizes.reduce((sum, size) => sum + size, 0);
@@ -57,44 +57,44 @@ test.describe('Performance Testing', () => {
 
   test.describe('Interaction Performance', () => {
     test('should respond quickly to user interactions', async ({ page }) => {
-      await page.goto('/'); // TODO-LINT: move to async function
+      await page.goto('/');
       
       // Test language switcher performance
       const languageButton = page.getByRole('button', { name: /language/i });
       
       if (await languageButton.isVisible()) {
-        const startTime = Date.now(); // TODO-LINT: move to async function
-        await languageButton.click(); // TODO-LINT: move to async function
+        const startTime = Date.now();
+        await languageButton.click();
         
         // Wait for menu to appear
         const menu = page.getByRole('menu');
         if (await menu.isVisible()) {
-          const responseTime = Date.now() - startTime; // TODO-LINT: move to async function
+          const responseTime = Date.now() - startTime;
           expect(responseTime).toBeLessThan(300); // 300ms max response time
         }
       }
     });
 
     test('should handle rapid interactions without performance degradation', async ({ page }) => {
-      await page.goto('/'); // TODO-LINT: move to async function
+      await page.goto('/');
       
       const languageButton = page.getByRole('button', { name: /language/i });
       
       if (await languageButton.isVisible()) {
-        const responseTimes: number[] = []; // TODO-LINT: move to async function
+        const responseTimes: number[] = [];
         
         // Perform 10 rapid interactions
         for (let i = 0; i < 10; i++) {
           const startTime = Date.now();
-          await languageButton.click(); // TODO-LINT: move to async function
+          await languageButton.click();
           
           const menu = page.getByRole('menu');
           if (await menu.isVisible()) {
-            responseTimes.push(Date.now() - startTime); // TODO-LINT: move to async function
+            responseTimes.push(Date.now() - startTime);
             
             // Close menu
-            await page.keyboard.press('Escape'); // TODO-LINT: move to async function
-            await page.waitForTimeout(50); // TODO-LINT: move to async function
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(50);
           }
         }
         
@@ -111,12 +111,12 @@ test.describe('Performance Testing', () => {
 
   test.describe('Memory Performance', () => {
     test('should not have significant memory leaks', async ({ page }) => {
-      await page.goto('/'); // TODO-LINT: move to async function
+      await page.goto('/');
       
       // Get initial memory usage
       const initialMemory = await page.evaluate(() => {
         if ('memory' in performance) {
-          return (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0; // TODO-LINT: move to async function
+          return (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0;
         }
         return 0;
       });
@@ -127,18 +127,18 @@ test.describe('Performance Testing', () => {
         
         if (await languageButton.isVisible()) {
           // Open and close menu many times
-          for (let i = 0; // TODO-LINT: move to async function i < 50; i++) {
-            await languageButton.click(); // TODO-LINT: move to async function
+          for (let i = 0; i < 50; i++) {
+            await languageButton.click();
             const menu = page.getByRole('menu');
             if (await menu.isVisible()) {
-              await page.keyboard.press('Escape'); // TODO-LINT: move to async function
+              await page.keyboard.press('Escape');
             }
             
             // Trigger garbage collection periodically
             if (i % 10 === 0) {
               await page.evaluate(() => {
                 if ('gc' in window) {
-                  (window as Window & { gc?: () => void }).gc?.(); // TODO-LINT: move to async function
+                  (window as Window & { gc?: () => void }).gc?.();
                 }
               });
             }
@@ -148,14 +148,14 @@ test.describe('Performance Testing', () => {
         // Force garbage collection
         await page.evaluate(() => {
           if ('gc' in window) {
-            (window as Window & { gc?: () => void }).gc?.(); // TODO-LINT: move to async function
+            (window as Window & { gc?: () => void }).gc?.();
           }
         });
         
         // Check final memory usage
         const finalMemory = await page.evaluate(() => {
           if ('memory' in performance) {
-            return (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0; // TODO-LINT: move to async function
+            return (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0;
           }
           return 0;
         });
@@ -170,12 +170,12 @@ test.describe('Performance Testing', () => {
   test.describe('Responsive Performance', () => {
     test('should perform well on mobile devices', async ({ page, isMobile }) => {
       if (!isMobile) {
-        await page.setViewportSize({ width: 375, height: 667 }); // TODO-LINT: move to async function
+        await page.setViewportSize({ width: 375, height: 667 });
       }
       
       const startTime = Date.now();
-      await page.goto('/'); // TODO-LINT: move to async function
-      await page.waitForLoadState('networkidle'); // TODO-LINT: move to async function
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
       const loadTime = Date.now() - startTime;
       
       // Mobile should load within 4 seconds
@@ -184,16 +184,16 @@ test.describe('Performance Testing', () => {
       // Test scroll performance
       const scrollStart = Date.now();
       await page.evaluate(() => {
-        window.scrollTo({ top: 500, behavior: 'smooth' }); // TODO-LINT: move to async function
+        window.scrollTo({ top: 500, behavior: 'smooth' });
       });
-      await page.waitForTimeout(1000); // TODO-LINT: move to async function
+      await page.waitForTimeout(1000);
       const scrollTime = Date.now() - scrollStart;
       
       expect(scrollTime).toBeLessThan(1500);
     });
 
     test('should maintain performance across viewport changes', async ({ page }) => {
-      await page.goto('/'); // TODO-LINT: move to async function
+      await page.goto('/');
       
       const viewports = [
         { width: 1920, height: 1080 }, // Desktop
@@ -203,17 +203,17 @@ test.describe('Performance Testing', () => {
       
       for (const viewport of viewports) {
         const startTime = Date.now();
-        await page.setViewportSize(viewport); // TODO-LINT: move to async function
+        await page.setViewportSize(viewport);
         
         // Wait for layout to stabilize
-        await page.waitForTimeout(500); // TODO-LINT: move to async function
+        await page.waitForTimeout(500);
         
         const resizeTime = Date.now() - startTime;
         expect(resizeTime).toBeLessThan(1000);
         
         // Ensure content is still visible
         const mainContent = page.getByRole('main');
-        await expect(mainContent).toBeVisible(); // TODO-LINT: move to async function
+        await expect(mainContent).toBeVisible();
       }
     });
   });
@@ -226,8 +226,8 @@ test.describe('Performance Testing', () => {
         loadedResources.push(request.url());
       });
       
-      await page.goto('/'); // TODO-LINT: move to async function
-      await page.waitForLoadState('networkidle'); // TODO-LINT: move to async function
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
       
       // Filter for JavaScript bundles
       const jsBundles = loadedResources.filter(url => 

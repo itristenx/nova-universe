@@ -64,12 +64,12 @@ export interface MCPMessage {
   jsonrpc: '2.0';
   id?: string | number | null;
   method?: string;
-  params?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-  result?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  params?: any;
+  result?: any;
   error?: {
     code: number;
     message: string;
-    data?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    data?: any;
   };
 }
 
@@ -302,7 +302,7 @@ export class NovaMCPServer {
       path: '/mcp/ws'
     });
 
-    this.wsServer.on('connection', (ws: WebSocket, req: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+    this.wsServer.on('connection', (ws: WebSocket, req: any) => {
       this.handleWebSocketConnection(ws, req);
     });
   }
@@ -520,19 +520,19 @@ export class NovaMCPServer {
 
       switch (message.method) {
         case 'initialize':
-          response = await this.handleInitialize(message, client); // TODO-LINT: move to async function
+          response = await this.handleInitialize(message, client);
           break;
         case 'tools/list':
-          response = await this.handleToolsList(message, client); // TODO-LINT: move to async function
+          response = await this.handleToolsList(message, client);
           break;
         case 'tools/call':
-          response = await this.handleToolCall(message, client); // TODO-LINT: move to async function
+          response = await this.handleToolCall(message, client);
           break;
         case 'resources/list':
-          response = await this.handleResourcesList(message, client); // TODO-LINT: move to async function
+          response = await this.handleResourcesList(message, client);
           break;
         case 'resources/read':
-          response = await this.handleResourceRead(message, client); // TODO-LINT: move to async function
+          response = await this.handleResourceRead(message, client);
           break;
         default:
           response = {
@@ -628,7 +628,7 @@ export class NovaMCPServer {
         timestamp: new Date()
       };
 
-      const aiResponse = await aiFabric.processRequest(aiRequest); // TODO-LINT: move to async function
+      const aiResponse = await aiFabric.processRequest(aiRequest);
 
       return {
         jsonrpc: '2.0',
@@ -726,7 +726,7 @@ export class NovaMCPServer {
     }
 
     try {
-      const result = await this.executeNovaTool(toolName, req.body, client); // TODO-LINT: move to async function
+      const result = await this.executeNovaTool(toolName, req.body, client);
       res.json({ result });
     } catch (error) {
       res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
@@ -793,14 +793,14 @@ export class NovaMCPServer {
     res.json({ message: 'Session deleted successfully' });
   }
 
-  private async handleWebSocketConnection(ws: WebSocket, req: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async handleWebSocketConnection(ws: WebSocket, req: any): Promise<void> {
     logger.info('WebSocket connection established');
 
     ws.on('message', async (data: string) => {
       try {
         const message: MCPMessage = JSON.parse(data);
         // Handle WebSocket MCP messages
-        const response = await this.processMCPWebSocketMessage(message, ws); // TODO-LINT: move to async function
+        const response = await this.processMCPWebSocketMessage(message, ws);
         ws.send(JSON.stringify(response));
       } catch (error) {
         logger.error('WebSocket message error:', error);
@@ -831,12 +831,12 @@ export class NovaMCPServer {
     return mapping[toolName] || 'custom';
   }
 
-  private async executeNovaTool(toolName: string, args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, client: MCPClient): Promise<any> {
+  private async executeNovaTool(toolName: string, args: any, client: MCPClient): Promise<any> {
     // Route to built-in handlers where applicable
     if (this.tools.has(toolName)) {
       const tool = this.tools.get(toolName)!;
       const validated = tool.inputSchema ? tool.inputSchema.parse(args) : args;
-      const output = await tool.handler(validated, { userId: client?.metadata?.userId }); // TODO-LINT: move to async function
+      const output = await tool.handler(validated, { userId: client?.metadata?.userId });
       return {
         tool: toolName,
         result: output?.content?.[0]?.text || output,
@@ -887,6 +887,6 @@ export class NovaMCPServer {
 }
 
 // Export singleton instance
-export const _novaMCPServer = new NovaMCPServer(
+export const novaMCPServer = new NovaMCPServer(
   parseInt(process.env.MCP_SERVER_PORT || '3001')
 );

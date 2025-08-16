@@ -41,7 +41,7 @@ export const NotificationsPage: React.FC = () => {
   const loadNotifications = async () => {
     try {
       setLoading(true);
-      const data = await api.getNotifications(); // TODO-LINT: move to async function
+      const data = await api.getNotifications();
       setNotifications(data);
     } catch (error) {
       console.error('Failed to load notifications:', error);
@@ -67,7 +67,7 @@ export const NotificationsPage: React.FC = () => {
         type: formData.type,
         level: formData.level,
         read: false
-      }); // TODO-LINT: move to async function
+      });
       
       setNotifications([newNotification, ...notifications]);
       setShowCreateModal(false);
@@ -101,14 +101,14 @@ export const NotificationsPage: React.FC = () => {
   const deleteNotification = async (id: number) => {
     if (confirm('Are you sure you want to delete this notification?')) {
       try {
-        await api.deleteNotification(id); // TODO-LINT: move to async function
+        await api.deleteNotification(id);
         setNotifications(notifications.filter(n => n.id !== id));
         addToast({
           type: 'success',
           title: 'Success',
           description: 'Notification deleted successfully',
         });
-      } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+      } catch (error: any) {
         console.error('Failed to delete notification:', error);
         addToast({
           type: 'error',

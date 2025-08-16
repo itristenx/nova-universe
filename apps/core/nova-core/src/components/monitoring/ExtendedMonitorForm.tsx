@@ -3,8 +3,8 @@ import { X, Plus, Trash2, Eye, EyeOff, HelpCircle } from 'lucide-react';
 
 interface ExtendedMonitorFormProps {
   onClose: () => void;
-  onSubmit: (monitor: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
-  editingMonitor?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  onSubmit: (monitor: any) => void;
+  editingMonitor?: any;
 }
 
 interface Tag {
@@ -13,7 +13,7 @@ interface Tag {
   color: string;
 }
 
-export default function _ExtendedMonitorForm({ onClose, onSubmit, editingMonitor }: ExtendedMonitorFormProps) {
+export default function ExtendedMonitorForm({ onClose, onSubmit, editingMonitor }: ExtendedMonitorFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     type: 'http',
@@ -96,8 +96,8 @@ export default function _ExtendedMonitorForm({ onClose, onSubmit, editingMonitor
 
   const fetchTags = async () => {
     try {
-      const response = await fetch('/api/monitoring/tags'); // TODO-LINT: move to async function
-      const data = await response.json(); // TODO-LINT: move to async function
+      const response = await fetch('/api/monitoring/tags');
+      const data = await response.json();
       setAvailableTags(data.tags || []);
     } catch (error) {
       console.error('Failed to fetch tags:', error);

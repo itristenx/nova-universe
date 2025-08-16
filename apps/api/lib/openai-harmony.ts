@@ -75,7 +75,7 @@ export interface TrainingJob {
     finalLoss: number;
     accuracy: number;
     perplexity: number;
-    evaluationMetrics: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    evaluationMetrics: any;
     modelCheckpoints: string[];
   };
   costs: {
@@ -85,9 +85,9 @@ export interface TrainingJob {
     actualCost: number;
   };
   compliance: {
-    auditTrail: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[];
-    dataLineage: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[];
-    privacyAssessment: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    auditTrail: any[];
+    dataLineage: any[];
+    privacyAssessment: any;
   };
 }
 
@@ -102,8 +102,8 @@ export interface ModelEvaluation {
       id: string;
       name: string;
       type: string;
-      input: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-      expectedOutput: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+      input: any;
+      expectedOutput: any;
       weight: number;
     }>;
   };
@@ -113,7 +113,7 @@ export interface ModelEvaluation {
     passed: number;
     failed: number;
     warnings: number;
-    details: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[];
+    details: any[];
   };
   harmonyCompliance: {
     safetyScore: number;
@@ -188,19 +188,19 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
   private async initialize(): Promise<void> {
     try {
       // Create data directories
-      await fs.mkdir(this.dataPath, { recursive: true }); // TODO-LINT: move to async function
-      await fs.mkdir(path.join(this.dataPath, 'datasets'), { recursive: true }); // TODO-LINT: move to async function
-      await fs.mkdir(path.join(this.dataPath, 'models'), { recursive: true }); // TODO-LINT: move to async function
-      await fs.mkdir(path.join(this.dataPath, 'evaluations'), { recursive: true }); // TODO-LINT: move to async function
+      await fs.mkdir(this.dataPath, { recursive: true });
+      await fs.mkdir(path.join(this.dataPath, 'datasets'), { recursive: true });
+      await fs.mkdir(path.join(this.dataPath, 'models'), { recursive: true });
+      await fs.mkdir(path.join(this.dataPath, 'evaluations'), { recursive: true });
 
       // Load existing data
-      await this.loadExistingData(); // TODO-LINT: move to async function
+      await this.loadExistingData();
 
       // Validate configuration
-      await this.validateConfiguration(); // TODO-LINT: move to async function
+      await this.validateConfiguration();
 
       // Setup automated data collection
-      await this.setupDataCollection(); // TODO-LINT: move to async function
+      await this.setupDataCollection();
 
       this.isInitialized = true;
       console.log('OpenAI Harmony integration initialized successfully');
@@ -213,7 +213,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
           complianceLevel: this.config.complianceLevel 
         },
         riskLevel: 'low'
-      }); // TODO-LINT: move to async function
+      });
 
     } catch (error) {
       console.error('Failed to initialize Harmony integration:', error);
@@ -228,18 +228,18 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
     try {
       // Load datasets
       const datasetsFile = path.join(this.dataPath, 'datasets.json');
-      const datasetsExist = await fs.access(datasetsFile).then(() => true).catch(() => false); // TODO-LINT: move to async function
+      const datasetsExist = await fs.access(datasetsFile).then(() => true).catch(() => false);
       if (datasetsExist) {
-        const datasetsData = await fs.readFile(datasetsFile, 'utf-8'); // TODO-LINT: move to async function
+        const datasetsData = await fs.readFile(datasetsFile, 'utf-8');
         const datasets: TrainingDataset[] = JSON.parse(datasetsData);
         datasets.forEach(dataset => this.datasets.set(dataset.id, dataset));
       }
 
       // Load training jobs
       const jobsFile = path.join(this.dataPath, 'training_jobs.json');
-      const jobsExist = await fs.access(jobsFile).then(() => true).catch(() => false); // TODO-LINT: move to async function
+      const jobsExist = await fs.access(jobsFile).then(() => true).catch(() => false);
       if (jobsExist) {
-        const jobsData = await fs.readFile(jobsFile, 'utf-8'); // TODO-LINT: move to async function
+        const jobsData = await fs.readFile(jobsFile, 'utf-8');
         const jobs: TrainingJob[] = JSON.parse(jobsData);
         jobs.forEach(job => this.trainingJobs.set(job.id, job));
       }
@@ -266,7 +266,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
     try {
       // In production, make actual API call to validate
       console.log('Validating Harmony connection...');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
       console.log('Harmony connection validated');
     } catch (error) {
       throw new Error(`Failed to connect to OpenAI Harmony: ${error.message}`);
@@ -279,17 +279,17 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
   private async setupDataCollection(): Promise<void> {
     // Collect ticket data for training
     setInterval(async () => {
-      await this.collectTicketData(); // TODO-LINT: move to async function
+      await this.collectTicketData();
     }, 24 * 60 * 60 * 1000); // Daily
 
     // Collect user interaction data
     setInterval(async () => {
-      await this.collectInteractionData(); // TODO-LINT: move to async function
+      await this.collectInteractionData();
     }, 12 * 60 * 60 * 1000); // Twice daily
 
     // Collect knowledge base data
     setInterval(async () => {
-      await this.collectKnowledgeData(); // TODO-LINT: move to async function
+      await this.collectKnowledgeData();
     }, 7 * 24 * 60 * 60 * 1000); // Weekly
   }
 
@@ -301,7 +301,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
     description: string,
     type: TrainingDataset['type'],
     source: TrainingDataset['source'],
-    config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {}
+    config: any = {}
   ): Promise<string> {
     const datasetId = createHash('sha256')
       .update(`${name}-${source}-${Date.now()}`)
@@ -343,27 +343,27 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
     // Collect and process data based on source
     switch (source) {
       case 'nova_tickets':
-        await this.processTicketData(dataset, config); // TODO-LINT: move to async function
+        await this.processTicketData(dataset, config);
         break;
       case 'user_interactions':
-        await this.processInteractionData(dataset, config); // TODO-LINT: move to async function
+        await this.processInteractionData(dataset, config);
         break;
       case 'knowledge_base':
-        await this.processKnowledgeData(dataset, config); // TODO-LINT: move to async function
+        await this.processKnowledgeData(dataset, config);
         break;
       case 'custom':
-        await this.processCustomData(dataset, config); // TODO-LINT: move to async function
+        await this.processCustomData(dataset, config);
         break;
     }
 
     // Assess data quality
-    await this.assessDataQuality(dataset); // TODO-LINT: move to async function
+    await this.assessDataQuality(dataset);
 
     // Ensure privacy compliance
-    await this.ensurePrivacyCompliance(dataset); // TODO-LINT: move to async function
+    await this.ensurePrivacyCompliance(dataset);
 
     this.datasets.set(datasetId, dataset);
-    await this.saveDatasets(); // TODO-LINT: move to async function
+    await this.saveDatasets();
 
     await aiMonitoringSystem.recordAuditEvent({
       type: 'harmony_dataset_created',
@@ -375,7 +375,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
         samples: dataset.size.samples 
       },
       riskLevel: 'low'
-    }); // TODO-LINT: move to async function
+    });
 
     this.emit('datasetCreated', dataset);
     return datasetId;
@@ -384,7 +384,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
   /**
    * Process ticket data for training
    */
-  private async processTicketData(dataset: TrainingDataset, config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async processTicketData(dataset: TrainingDataset, config: any): Promise<void> {
     // In production, query actual ticket database
     const mockTickets = Array.from({ length: 1000 }, (_, i) => ({
       id: `ticket_${i}`,
@@ -433,7 +433,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
 
     // Save processed data
     const dataPath = path.join(this.dataPath, 'datasets', `${dataset.id}.jsonl`);
-    await fs.writeFile(dataPath, ''); // TODO-LINT: move to async function // In production, write actual processed data
+    await fs.writeFile(dataPath, ''); // In production, write actual processed data
     
     dataset.size.sizeBytes = 1024 * dataset.size.samples; // Estimate
   }
@@ -441,7 +441,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
   /**
    * Process user interaction data
    */
-  private async processInteractionData(dataset: TrainingDataset, config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async processInteractionData(dataset: TrainingDataset, config: any): Promise<void> {
     // Simulate processing user interactions
     console.log(`Processing user interaction data for dataset ${dataset.id}`);
     
@@ -453,7 +453,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
   /**
    * Process knowledge base data
    */
-  private async processKnowledgeData(dataset: TrainingDataset, config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async processKnowledgeData(dataset: TrainingDataset, config: any): Promise<void> {
     // Simulate processing knowledge base
     console.log(`Processing knowledge base data for dataset ${dataset.id}`);
     
@@ -465,7 +465,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
   /**
    * Process custom data
    */
-  private async processCustomData(dataset: TrainingDataset, config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async processCustomData(dataset: TrainingDataset, config: any): Promise<void> {
     // Handle custom data sources
     console.log(`Processing custom data for dataset ${dataset.id}`);
     
@@ -595,7 +595,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
     };
 
     this.trainingJobs.set(jobId, job);
-    await this.saveTrainingJobs(); // TODO-LINT: move to async function
+    await this.saveTrainingJobs();
 
     // Start the actual training
     this.executeTrainingJob(jobId);
@@ -610,7 +610,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
         estimatedCost: job.costs.estimatedCost 
       },
       riskLevel: 'medium'
-    }); // TODO-LINT: move to async function
+    });
 
     this.emit('trainingStarted', job);
     return jobId;
@@ -649,7 +649,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
             epoch,
             loss: job.progress.loss
           }
-        }); // TODO-LINT: move to async function
+        });
 
         this.emit('trainingProgress', {
           jobId,
@@ -659,7 +659,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
         });
 
         // Simulate epoch duration
-        await new Promise(resolve => setTimeout(resolve, 2000)); // TODO-LINT: move to async function
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
       // Training completed
@@ -677,12 +677,12 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
         baseModel: job.baseModel,
         performance: job.results,
         timestamp: new Date()
-      }, null, 2)); // TODO-LINT: move to async function
+      }, null, 2));
 
       job.results.modelCheckpoints.push(checkpointPath);
 
       // Evaluate the trained model
-      const evaluationId = await this.evaluateModel(jobId); // TODO-LINT: move to async function
+      const evaluationId = await this.evaluateModel(jobId);
       
       await aiMonitoringSystem.recordAuditEvent({
         type: 'harmony_training_completed',
@@ -694,7 +694,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
           evaluationId
         },
         riskLevel: 'low'
-      }); // TODO-LINT: move to async function
+      });
 
       this.emit('trainingCompleted', job);
 
@@ -706,12 +706,12 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
         userId: 'system',
         details: { jobId, error: error.message },
         riskLevel: 'high'
-      }); // TODO-LINT: move to async function
+      });
 
       this.emit('trainingFailed', { jobId, error });
       throw error;
     } finally {
-      await this.saveTrainingJobs(); // TODO-LINT: move to async function
+      await this.saveTrainingJobs();
     }
   }
 
@@ -720,7 +720,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
    */
   private estimateTrainingCost(
     dataset: TrainingDataset, 
-    hyperparameters: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    hyperparameters: any
   ): number {
     const tokensPerEpoch = dataset.size.tokens;
     const epochs = hyperparameters.epochs || 3;
@@ -768,13 +768,13 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
         robustnessScore: 0,
         recommendedActions: []
       }
-    }; // TODO-LINT: move to async function
+    };
 
     // Execute evaluation
-    await this.executeEvaluation(evaluation); // TODO-LINT: move to async function
+    await this.executeEvaluation(evaluation);
 
     this.evaluations.set(evaluationId, evaluation);
-    await this.saveEvaluations(); // TODO-LINT: move to async function
+    await this.saveEvaluations();
 
     await aiMonitoringSystem.recordAuditEvent({
       type: 'harmony_model_evaluated',
@@ -786,7 +786,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
         overallScore: evaluation.results.overallScore 
       },
       riskLevel: 'low'
-    }); // TODO-LINT: move to async function
+    });
 
     this.emit('modelEvaluated', evaluation);
     return evaluationId;
@@ -975,25 +975,25 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
   private async saveDatasets(): Promise<void> {
     const datasetsFile = path.join(this.dataPath, 'datasets.json');
     const datasets = Array.from(this.datasets.values());
-    await fs.writeFile(datasetsFile, JSON.stringify(datasets, null, 2)); // TODO-LINT: move to async function
+    await fs.writeFile(datasetsFile, JSON.stringify(datasets, null, 2));
   }
 
   private async saveTrainingJobs(): Promise<void> {
     const jobsFile = path.join(this.dataPath, 'training_jobs.json');
     const jobs = Array.from(this.trainingJobs.values());
-    await fs.writeFile(jobsFile, JSON.stringify(jobs, null, 2)); // TODO-LINT: move to async function
+    await fs.writeFile(jobsFile, JSON.stringify(jobs, null, 2));
   }
 
   private async saveEvaluations(): Promise<void> {
     const evaluationsFile = path.join(this.dataPath, 'evaluations.json');
     const evaluations = Array.from(this.evaluations.values());
-    await fs.writeFile(evaluationsFile, JSON.stringify(evaluations, null, 2)); // TODO-LINT: move to async function
+    await fs.writeFile(evaluationsFile, JSON.stringify(evaluations, null, 2));
   }
 
   /**
    * Get system status
    */
-  getStatus(): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types {
+  getStatus(): any {
     return {
       isInitialized: this.isInitialized,
       datasets: {
@@ -1079,4 +1079,4 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
 }
 
 // Export singleton instance
-export const _harmonyIntegration = new OpenAIHarmonyIntegration();
+export const harmonyIntegration = new OpenAIHarmonyIntegration();

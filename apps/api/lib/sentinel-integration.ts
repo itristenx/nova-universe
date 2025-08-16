@@ -34,7 +34,7 @@ export interface SentinelMonitor {
   retryAttempts: number;
   config: {
     healthEndpoint?: string;
-    expectedResponse?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    expectedResponse?: any;
     alertThresholds: {
       responseTime: number;
       errorRate: number;
@@ -146,23 +146,23 @@ export class NovaSentinelIntegration extends EventEmitter {
       logger.info('Initializing Nova Sentinel Integration...');
 
       // Test connectivity to existing Nova Sentinel service
-      await this.testSentinelConnectivity(); // TODO-LINT: move to async function
+      await this.testSentinelConnectivity();
 
       // Register AI components as monitors in existing Sentinel
       if (this.config.autoCreateMonitors) {
-        await this.registerAIComponentMonitors(); // TODO-LINT: move to async function
+        await this.registerAIComponentMonitors();
       }
 
       // Register MCP tools for AI access
       if (this.config.enableMCPTools) {
-        await this.registerMCPTools(); // TODO-LINT: move to async function
+        await this.registerMCPTools();
       }
 
       // Set up event listeners for AI monitoring data
       this.setupAIEventListeners();
 
       // Sync with existing Sentinel data
-      await this.syncWithSentinel(); // TODO-LINT: move to async function
+      await this.syncWithSentinel();
 
       this.isInitialized = true;
       this.emit('initialized');
@@ -188,7 +188,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     this.monitors.set(monitorId, fullMonitor);
 
     // Create corresponding monitor in Sentinel
-    await this.createSentinelMonitor(fullMonitor); // TODO-LINT: move to async function
+    await this.createSentinelMonitor(fullMonitor);
 
     logger.info('AI monitor registered', { 
       monitorId, 
@@ -223,11 +223,11 @@ export class NovaSentinelIntegration extends EventEmitter {
 
     // Check for status changes that require incident management
     if (previousStatus !== status) {
-      await this.handleStatusChange(monitor, previousStatus, status); // TODO-LINT: move to async function
+      await this.handleStatusChange(monitor, previousStatus, status);
     }
 
     // Update Sentinel via API
-    await this.updateSentinelMonitor(monitor); // TODO-LINT: move to async function
+    await this.updateSentinelMonitor(monitor);
 
     this.emit('monitorStatusUpdated', { monitor, previousStatus, metrics });
   }
@@ -247,7 +247,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     // Generate AI analysis if enabled
     if (this.config.enableAIAnalysis && aiFabric) {
       try {
-        const analysis = await this.generateAIAnalysis(fullIncident); // TODO-LINT: move to async function
+        const analysis = await this.generateAIAnalysis(fullIncident);
         fullIncident.aiAnalysis = analysis;
       } catch (error) {
         logger.warn('Failed to generate AI analysis for incident', { incidentId, error: error.message });
@@ -255,12 +255,12 @@ export class NovaSentinelIntegration extends EventEmitter {
     }
 
     // Create incident in Sentinel
-    await this.createSentinelIncident(fullIncident); // TODO-LINT: move to async function
+    await this.createSentinelIncident(fullIncident);
 
     // Create ticket if configured
     if (this.config.createTicketsForIncidents) {
       try {
-        const ticketId = await this.createIncidentTicket(fullIncident); // TODO-LINT: move to async function
+        const ticketId = await this.createIncidentTicket(fullIncident);
         fullIncident.ticketId = ticketId;
       } catch (error) {
         logger.warn('Failed to create ticket for incident', { incidentId, error: error.message });
@@ -270,7 +270,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     // Escalate to GoAlert if critical
     if (fullIncident.severity === 'critical' && this.config.autoEscalateToGoAlert) {
       try {
-        await this.escalateToGoAlert(fullIncident); // TODO-LINT: move to async function
+        await this.escalateToGoAlert(fullIncident);
         fullIncident.escalatedToGoAlert = true;
       } catch (error) {
         logger.warn('Failed to escalate incident to GoAlert', { incidentId, error: error.message });
@@ -306,11 +306,11 @@ export class NovaSentinelIntegration extends EventEmitter {
     this.incidents.set(incidentId, incident);
 
     // Update Sentinel
-    await this.updateSentinelIncident(incident); // TODO-LINT: move to async function
+    await this.updateSentinelIncident(incident);
 
     // Update ticket if exists
     if (incident.ticketId) {
-      await this.resolveIncidentTicket(incident.ticketId, resolution); // TODO-LINT: move to async function
+      await this.resolveIncidentTicket(incident.ticketId, resolution);
     }
 
     logger.info('Incident resolved', { incidentId, component: incident.component });
@@ -320,7 +320,7 @@ export class NovaSentinelIntegration extends EventEmitter {
   /**
    * Get monitoring dashboard data
    */
-  getDashboardData(): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types {
+  getDashboardData(): any {
     const monitors = Array.from(this.monitors.values());
     const incidents = Array.from(this.incidents.values());
     const alerts = Array.from(this.alerts.values());
@@ -378,7 +378,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
         timeout: 10000
-      }); // TODO-LINT: move to async function
+      });
 
       if (response.status !== 200) {
         throw new Error(`Nova Sentinel API returned status ${response.status}`);
@@ -437,14 +437,14 @@ export class NovaSentinelIntegration extends EventEmitter {
     for (const component of aiComponents) {
       try {
         // Check if monitor already exists
-        const existing = await this.checkExistingMonitor(component.name); // TODO-LINT: move to async function
+        const existing = await this.checkExistingMonitor(component.name);
         if (existing) {
           logger.info(`AI component monitor already exists: ${component.name}`);
           continue;
         }
 
         // Create monitor in Nova Sentinel
-        await this.createSentinelMonitor(component); // TODO-LINT: move to async function
+        await this.createSentinelMonitor(component);
         logger.info(`Created Nova Sentinel monitor for: ${component.name}`);
       } catch (error) {
         logger.warn(`Failed to create monitor for ${component.name}:`, error.message);
@@ -458,7 +458,7 @@ export class NovaSentinelIntegration extends EventEmitter {
   private async registerMCPTools(): Promise<void> {
     try {
       // Import MCP server dynamically to avoid circular dependencies
-      const { novaMCPServer } = await import('./mcp-server.js'); // TODO-LINT: move to async function
+      const { novaMCPServer } = await import('./mcp-server.js');
       
       if (!novaMCPServer) {
         logger.warn('MCP Server not available - skipping tool registration');
@@ -478,7 +478,7 @@ export class NovaSentinelIntegration extends EventEmitter {
           }
         },
         handler: this.handleGetMonitors.bind(this)
-      }); // TODO-LINT: move to async function
+      });
 
       await novaMCPServer.registerTool({
         name: `${this.config.mcpToolConfig.toolPrefix}.get_incidents`,
@@ -492,7 +492,7 @@ export class NovaSentinelIntegration extends EventEmitter {
           }
         },
         handler: this.handleGetIncidents.bind(this)
-      }); // TODO-LINT: move to async function
+      });
 
       await novaMCPServer.registerTool({
         name: `${this.config.mcpToolConfig.toolPrefix}.create_incident`,
@@ -508,7 +508,7 @@ export class NovaSentinelIntegration extends EventEmitter {
           required: ['monitor_id', 'summary', 'severity']
         },
         handler: this.handleCreateIncident.bind(this)
-      }); // TODO-LINT: move to async function
+      });
 
       await novaMCPServer.registerTool({
         name: `${this.config.mcpToolConfig.toolPrefix}.get_status_page`,
@@ -521,7 +521,7 @@ export class NovaSentinelIntegration extends EventEmitter {
           required: ['tenant_id']
         },
         handler: this.handleGetStatusPage.bind(this)
-      }); // TODO-LINT: move to async function
+      });
 
       await novaMCPServer.registerTool({
         name: `${this.config.mcpToolConfig.toolPrefix}.report_ai_error`,
@@ -537,7 +537,7 @@ export class NovaSentinelIntegration extends EventEmitter {
           required: ['component', 'error_message', 'severity']
         },
         handler: this.handleReportAIError.bind(this)
-      }); // TODO-LINT: move to async function
+      });
 
       logger.info(`Registered ${this.config.mcpToolConfig.enabledTools.length} Nova Sentinel MCP tools`);
     } catch (error) {
@@ -553,7 +553,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       // Send AI metrics to Sentinel
       aiMonitoringSystem.on('metricRecorded', async (metric) => {
         try {
-          await this.sendMetricToSentinel(metric); // TODO-LINT: move to async function
+          await this.sendMetricToSentinel(metric);
         } catch (error) {
           logger.warn('Failed to send metric to Sentinel:', error.message);
         }
@@ -562,7 +562,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       // Create incidents for security alerts
       aiMonitoringSystem.on('securityAlert', async (alert) => {
         try {
-          await this.createSentinelIncidentFromAlert(alert); // TODO-LINT: move to async function
+          await this.createSentinelIncidentFromAlert(alert);
         } catch (error) {
           logger.warn('Failed to create Sentinel incident from security alert:', error.message);
         }
@@ -572,7 +572,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       aiMonitoringSystem.on('auditEventRecorded', async (event) => {
         if (event.severity === 'critical') {
           try {
-            await this.updateMonitorStatusFromEvent(event); // TODO-LINT: move to async function
+            await this.updateMonitorStatusFromEvent(event);
           } catch (error) {
             logger.warn('Failed to update monitor status from audit event:', error.message);
           }
@@ -584,7 +584,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       // Monitor AI provider health
       aiFabric.on('providerHealthChanged', async (event) => {
         try {
-          await this.updateProviderMonitorStatus(event); // TODO-LINT: move to async function
+          await this.updateProviderMonitorStatus(event);
         } catch (error) {
           logger.warn('Failed to update provider monitor status:', error.message);
         }
@@ -593,7 +593,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       // Report AI request failures
       aiFabric.on('requestFailed', async (event) => {
         try {
-          await this.reportAIFailureToSentinel(event); // TODO-LINT: move to async function
+          await this.reportAIFailureToSentinel(event);
         } catch (error) {
           logger.warn('Failed to report AI failure to Sentinel:', error.message);
         }
@@ -610,7 +610,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
         params: { tags: 'ai-fabric' }
-      }); // TODO-LINT: move to async function
+      });
 
       if (response.data && response.data.monitors) {
         for (const monitor of response.data.monitors) {
@@ -723,7 +723,7 @@ export class NovaSentinelIntegration extends EventEmitter {
 
     for (const monitor of defaultMonitors) {
       try {
-        await this.registerAIMonitor(monitor); // TODO-LINT: move to async function
+        await this.registerAIMonitor(monitor);
       } catch (error) {
         logger.warn('Failed to register default monitor', { 
           monitor: monitor.name, 
@@ -735,7 +735,7 @@ export class NovaSentinelIntegration extends EventEmitter {
 
   private startMonitoring(): void {
     this.monitoringInterval = setInterval(async () => {
-      await this.performHealthChecks(); // TODO-LINT: move to async function
+      await this.performHealthChecks();
     }, this.config.checkInterval);
 
     logger.info('Monitoring loop started');
@@ -746,7 +746,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     
     for (const monitor of monitors) {
       try {
-        await this.checkMonitorHealth(monitor); // TODO-LINT: move to async function
+        await this.checkMonitorHealth(monitor);
       } catch (error) {
         logger.warn('Health check failed for monitor', { 
           monitorId: monitor.id, 
@@ -770,7 +770,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         const response = await axios.get(healthUrl, {
           timeout: monitor.timeout,
           headers: this.getAuthHeaders()
-        }); // TODO-LINT: move to async function
+        });
 
         responseTime = Date.now() - startTime;
         
@@ -781,7 +781,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         }
       } else {
         // Component-specific health checks
-        status = await this.checkComponentHealth(monitor.component); // TODO-LINT: move to async function
+        status = await this.checkComponentHealth(monitor.component);
         responseTime = Date.now() - startTime;
       }
     } catch (error) {
@@ -795,7 +795,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       });
     }
 
-    await this.updateMonitorStatus(monitor.id, status, { responseTime }); // TODO-LINT: move to async function
+    await this.updateMonitorStatus(monitor.id, status, { responseTime });
   }
 
   private async checkComponentHealth(component: string): Promise<SentinelMonitor['status']> {
@@ -807,7 +807,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         case 'rag-engine':
           // Check if RAG engine is responsive via health endpoint
           try {
-            const res = await axios.get(`${process.env.RAG_ENGINE_URL || 'http://localhost:4005'}/health`, { timeout: 3000 }); // TODO-LINT: move to async function
+            const res = await axios.get(`${process.env.RAG_ENGINE_URL || 'http://localhost:4005'}/health`, { timeout: 3000 });
             return res.status === 200 ? 'up' : 'down';
           } catch {
             return 'down';
@@ -816,7 +816,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         case 'mcp-server':
           // Check MCP server health by pinging server info route
           try {
-            const res = await axios.get(`${process.env.MCP_SERVER_URL || 'http://localhost:4010'}/api/mcp/info`, { timeout: 3000 }); // TODO-LINT: move to async function
+            const res = await axios.get(`${process.env.MCP_SERVER_URL || 'http://localhost:4010'}/api/mcp/info`, { timeout: 3000 });
             return res.status === 200 ? 'up' : 'down';
           } catch {
             return 'down';
@@ -825,7 +825,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         case 'nova-local-ai':
           // Check Nova Local AI health endpoint
           try {
-            const res = await axios.get(`${process.env.NOVA_LOCAL_AI_URL || 'http://localhost:4015'}/health`, { timeout: 3000 }); // TODO-LINT: move to async function
+            const res = await axios.get(`${process.env.NOVA_LOCAL_AI_URL || 'http://localhost:4015'}/health`, { timeout: 3000 });
             return res.status === 200 ? 'up' : 'down';
           } catch {
             return 'down';
@@ -857,10 +857,10 @@ export class NovaSentinelIntegration extends EventEmitter {
         summary: `${monitor.name} is experiencing issues`,
         description: `Monitor ${monitor.name} (${monitor.component}) has gone down`,
         startedAt: new Date()
-      }); // TODO-LINT: move to async function
+      });
     } else if (previousStatus === 'down' && newStatus === 'up') {
       // Service recovered - resolve incidents
-      await this.resolveComponentIncidents(monitor.component, 'Service has recovered'); // TODO-LINT: move to async function
+      await this.resolveComponentIncidents(monitor.component, 'Service has recovered');
     }
   }
 
@@ -884,7 +884,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       .filter(i => i.component === component && i.status !== 'resolved');
 
     for (const incident of componentIncidents) {
-      await this.resolveIncident(incident.id, resolution); // TODO-LINT: move to async function
+      await this.resolveIncident(incident.id, resolution);
     }
   }
 
@@ -908,7 +908,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         }
       };
 
-      const response = await aiFabric.processRequest(analysisRequest); // TODO-LINT: move to async function
+      const response = await aiFabric.processRequest(analysisRequest);
       
       if (response.success && response.output) {
         return {
@@ -967,17 +967,17 @@ export class NovaSentinelIntegration extends EventEmitter {
     return components;
   }
 
-  private async handleProviderHealthChange(event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async handleProviderHealthChange(event: any): Promise<void> {
     const monitorId = `provider-${event.providerId}`;
     const monitor = Array.from(this.monitors.values())
       .find(m => m.providerId === event.providerId);
 
     if (monitor) {
-      await this.updateMonitorStatus(monitor.id, event.healthy ? 'up' : 'down'); // TODO-LINT: move to async function
+      await this.updateMonitorStatus(monitor.id, event.healthy ? 'up' : 'down');
     }
   }
 
-  private async handleAIRequestFailure(event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async handleAIRequestFailure(event: any): Promise<void> {
     const alert: SentinelAlert = {
       id: crypto.randomUUID(),
       type: 'ai_failure',
@@ -994,7 +994,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     this.emit('alertCreated', alert);
   }
 
-  private async handlePerformanceDegradation(event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async handlePerformanceDegradation(event: any): Promise<void> {
     const alert: SentinelAlert = {
       id: crypto.randomUUID(),
       type: 'performance_degradation',
@@ -1011,7 +1011,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     this.emit('alertCreated', alert);
   }
 
-  private async handleSecurityAlert(event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async handleSecurityAlert(event: any): Promise<void> {
     const alert: SentinelAlert = {
       id: crypto.randomUUID(),
       type: 'security_incident',
@@ -1029,7 +1029,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     // Auto-escalate security incidents
     if (event.severity === 'critical') {
       try {
-        await this.escalateSecurityAlert(alert); // TODO-LINT: move to async function
+        await this.escalateSecurityAlert(alert);
         alert.escalated = true;
       } catch (error) {
         logger.warn('Failed to escalate security alert', { alertId: alert.id, error: error.message });
@@ -1039,7 +1039,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     this.emit('alertCreated', alert);
   }
 
-  private async handleMetricRecorded(event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async handleMetricRecorded(event: any): Promise<void> {
     // Check for threshold violations that require alerts
     if (event.metricType === 'performance' && event.value > 10000) { // 10s response time
       const alert: SentinelAlert = {
@@ -1059,7 +1059,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     }
   }
 
-  private async handleAuditEvent(event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async handleAuditEvent(event: any): Promise<void> {
     if (event.severity === 'critical' || event.eventType === 'policy_violation') {
       const alert: SentinelAlert = {
         id: crypto.randomUUID(),
@@ -1079,12 +1079,12 @@ export class NovaSentinelIntegration extends EventEmitter {
   }
 
   // MCP Tool Handlers
-  private async handleGetMonitors(args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<any> {
+  private async handleGetMonitors(args: any): Promise<any> {
     try {
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
         params: args
-      }); // TODO-LINT: move to async function
+      });
 
       return {
         success: true,
@@ -1102,12 +1102,12 @@ export class NovaSentinelIntegration extends EventEmitter {
     }
   }
 
-  private async handleGetIncidents(args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<any> {
+  private async handleGetIncidents(args: any): Promise<any> {
     try {
       const response = await axios.get(`${this.sentinelApiUrl}/incidents`, {
         headers: this.getAuthHeaders(),
         params: args
-      }); // TODO-LINT: move to async function
+      });
 
       return {
         success: true,
@@ -1125,7 +1125,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     }
   }
 
-  private async handleCreateIncident(args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<any> {
+  private async handleCreateIncident(args: any): Promise<any> {
     try {
       const response = await axios.post(`${this.sentinelApiUrl}/incidents`, {
         monitor_id: args.monitor_id,
@@ -1136,7 +1136,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         started_at: new Date().toISOString()
       }, {
         headers: this.getAuthHeaders()
-      }); // TODO-LINT: move to async function
+      });
 
       return {
         success: true,
@@ -1153,11 +1153,11 @@ export class NovaSentinelIntegration extends EventEmitter {
     }
   }
 
-  private async handleGetStatusPage(args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<any> {
+  private async handleGetStatusPage(args: any): Promise<any> {
     try {
       const response = await axios.get(`${this.sentinelApiUrl}/status/${args.tenant_id}`, {
         headers: this.getAuthHeaders()
-      }); // TODO-LINT: move to async function
+      });
 
       return {
         success: true,
@@ -1171,7 +1171,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     }
   }
 
-  private async handleReportAIError(args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<any> {
+  private async handleReportAIError(args: any): Promise<any> {
     try {
       // Create an incident for the AI error
       const incident = await this.createIncident({
@@ -1182,7 +1182,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         summary: `AI Error: ${args.component}`,
         description: `${args.error_message}\n\nMetadata: ${JSON.stringify(args.metadata || {})}`,
         startedAt: new Date()
-      }); // TODO-LINT: move to async function
+      });
 
       return {
         success: true,
@@ -1200,11 +1200,11 @@ export class NovaSentinelIntegration extends EventEmitter {
   }
 
   // Sentinel API integration methods
-  private async createSentinelMonitor(monitor: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async createSentinelMonitor(monitor: any): Promise<void> {
     try {
       await axios.post(`${this.sentinelApiUrl}/monitors`, monitor, {
         headers: this.getAuthHeaders()
-      }); // TODO-LINT: move to async function
+      });
     } catch (error) {
       logger.warn('Failed to create Nova Sentinel monitor', { 
         monitor: monitor.name, 
@@ -1218,7 +1218,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
         params: { name }
-      }); // TODO-LINT: move to async function
+      });
 
       return response.data.monitors && response.data.monitors.length > 0;
     } catch (error) {
@@ -1227,7 +1227,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     }
   }
 
-  private async sendMetricToSentinel(metric: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async sendMetricToSentinel(metric: any): Promise<void> {
     try {
       // Send AI metrics as heartbeat data to Sentinel
       if (metric.metricType === 'performance') {
@@ -1241,7 +1241,7 @@ export class NovaSentinelIntegration extends EventEmitter {
           await this.updateMonitorStatus(monitor.id, 
             metric.value > this.config.escalationThresholds.aiResponseTime ? 'down' : 'up',
             { responseTime: metric.value }
-          ); // TODO-LINT: move to async function
+          );
         }
       }
     } catch (error) {
@@ -1249,7 +1249,7 @@ export class NovaSentinelIntegration extends EventEmitter {
     }
   }
 
-  private async createSentinelIncidentFromAlert(alert: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async createSentinelIncidentFromAlert(alert: any): Promise<void> {
     try {
       await this.createIncident({
         monitorId: `ai-security`,
@@ -1259,13 +1259,13 @@ export class NovaSentinelIntegration extends EventEmitter {
         summary: `Security Alert: ${alert.alertType}`,
         description: alert.description,
         startedAt: alert.timestamp
-      }); // TODO-LINT: move to async function
+      });
     } catch (error) {
       logger.warn('Failed to create Sentinel incident from alert:', error.message);
     }
   }
 
-  private async updateMonitorStatusFromEvent(event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async updateMonitorStatusFromEvent(event: any): Promise<void> {
     try {
       const monitor = Array.from(this.monitors.values())
         .find(m => m.component === 'ai-security');
@@ -1274,14 +1274,14 @@ export class NovaSentinelIntegration extends EventEmitter {
         await this.updateMonitorStatus(monitor.id, 'down', { 
           lastError: event.eventType,
           severity: event.severity 
-        }); // TODO-LINT: move to async function
+        });
       }
     } catch (error) {
       logger.warn('Failed to update monitor status from event:', error.message);
     }
   }
 
-  private async updateProviderMonitorStatus(event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async updateProviderMonitorStatus(event: any): Promise<void> {
     try {
       const monitor = Array.from(this.monitors.values())
         .find(m => m.component === event.providerId);
@@ -1290,14 +1290,14 @@ export class NovaSentinelIntegration extends EventEmitter {
         await this.updateMonitorStatus(monitor.id, 
           event.healthy ? 'up' : 'down',
           { healthReason: event.reason }
-        ); // TODO-LINT: move to async function
+        );
       }
     } catch (error) {
       logger.warn('Failed to update provider monitor status:', error.message);
     }
   }
 
-  private async reportAIFailureToSentinel(event: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  private async reportAIFailureToSentinel(event: any): Promise<void> {
     try {
       await this.createIncident({
         monitorId: `ai-${event.component}`,
@@ -1307,7 +1307,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         summary: `AI Failure: ${event.component}`,
         description: `AI request failed: ${event.error}\n\nMetadata: ${JSON.stringify(event.metadata || {})}`,
         startedAt: new Date()
-      }); // TODO-LINT: move to async function
+      });
     } catch (error) {
       logger.warn('Failed to report AI failure to Sentinel:', error.message);
     }
@@ -1336,7 +1336,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         status: monitor.status,
         avg_response_time: monitor.avgResponseTime,
         uptime_24h: monitor.uptime24h
-      }, { headers: this.getAuthHeaders() }); // TODO-LINT: move to async function
+      }, { headers: this.getAuthHeaders() });
     } catch (error) {
       logger.warn('Failed to update Sentinel monitor', { id: monitor.id, error: error.message });
     }
@@ -1351,7 +1351,7 @@ export class NovaSentinelIntegration extends EventEmitter {
         summary: incident.summary,
         description: incident.description,
         started_at: incident.startedAt
-      }, { headers: this.getAuthHeaders() }); // TODO-LINT: move to async function
+      }, { headers: this.getAuthHeaders() });
     } catch (error) {
       logger.warn('Failed to create Sentinel incident', { error: error.message });
     }
@@ -1362,7 +1362,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       await axios.patch(`${this.sentinelApiUrl}/incidents/${incident.id}`, {
         status: incident.status,
         resolved_at: incident.resolvedAt || undefined
-      }, { headers: this.getAuthHeaders() }); // TODO-LINT: move to async function
+      }, { headers: this.getAuthHeaders() });
     } catch (error) {
       logger.warn('Failed to update Sentinel incident', { id: incident.id, error: error.message });
     }
@@ -1373,7 +1373,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       const response = await axios.get(`${this.sentinelApiUrl}/monitors`, {
         headers: this.getAuthHeaders(),
         params: { tags: 'ai-fabric' }
-      }); // TODO-LINT: move to async function
+      });
 
       logger.info('Synced monitors from Sentinel', { count: response.data.monitors?.length || 0 });
     } catch (error) {
@@ -1426,4 +1426,4 @@ export class NovaSentinelIntegration extends EventEmitter {
 }
 
 // Export singleton instance
-export const _sentinelIntegration = new NovaSentinelIntegration();
+export const sentinelIntegration = new NovaSentinelIntegration();

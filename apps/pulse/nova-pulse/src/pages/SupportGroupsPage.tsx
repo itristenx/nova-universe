@@ -48,7 +48,7 @@ import {
   Phone
 } from 'lucide-react';
 
-// API _functions
+// API functions
 const api = {
   getSupportGroups: async (filters: Record<string, string | number | undefined> = {}) => {
     const params = new URLSearchParams(
@@ -59,7 +59,7 @@ const api = {
     );
     const response = await fetch(`/api/v1/cmdb/support-groups?${params}`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    }); // TODO-LINT: move to async function
+    });
     if (!response.ok) throw new Error('Failed to fetch support groups');
     return response.json();
   },
@@ -72,7 +72,7 @@ const api = {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
       body: JSON.stringify(data)
-    }); // TODO-LINT: move to async function
+    });
     if (!response.ok) throw new Error('Failed to create support group');
     return response.json();
   },
@@ -85,7 +85,7 @@ const api = {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
       body: JSON.stringify(data)
-    }); // TODO-LINT: move to async function
+    });
     if (!response.ok) throw new Error('Failed to update support group');
     return response.json();
   },
@@ -94,7 +94,7 @@ const api = {
     const response = await fetch(`/api/v1/cmdb/support-groups/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    }); // TODO-LINT: move to async function
+    });
     if (!response.ok) throw new Error('Failed to delete support group');
     return response.json();
   },
@@ -102,7 +102,7 @@ const api = {
   getUsers: async (): Promise<Array<{ id: string; name: string; email: string }>> => {
     const response = await fetch('/api/v1/users', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    }); // TODO-LINT: move to async function
+    });
     if (!response.ok) throw new Error('Failed to fetch users');
     return response.json();
   }
@@ -110,8 +110,8 @@ const api = {
 
 // Support Group Form Component
 const SupportGroupForm = ({ group, onSave, onCancel }: { 
-  group?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; 
-  onSave: (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void; 
+  group?: any; 
+  onSave: (data: any) => void; 
   onCancel: () => void; 
 }) => {
   const [formData, setFormData] = useState({

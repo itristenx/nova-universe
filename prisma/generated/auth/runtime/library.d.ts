@@ -59,12 +59,12 @@ export declare type Args<T, F extends Operation> = T extends {
         types: {
             operations: {
                 [K in F]: {
-                    args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+                    args: any;
                 };
             };
         };
     };
-} ? T[symbol]['types']['operations'][F]['args'] : any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+} ? T[symbol]['types']['operations'][F]['args'] : any;
 
 export declare type Args_3<T, F extends Operation> = Args<T, F>;
 
@@ -158,15 +158,15 @@ export declare type ClientArgs = {
 export declare type ClientBuiltInProp = keyof DynamicClientExtensionThisBuiltin<never, never, never>;
 
 export declare type ClientOptionDef = undefined | {
-    [K in string]: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    [K in string]: any;
 };
 
 export declare type ClientOtherOps = {
-    $queryRaw<T = unknown>(query: TemplateStringsArray | Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): PrismaPromise<T>;
+    $queryRaw<T = unknown>(query: TemplateStringsArray | Sql, ...values: any[]): PrismaPromise<T>;
     $queryRawTyped<T>(query: TypedSql<unknown[], T>): PrismaPromise<T[]>;
-    $queryRawUnsafe<T = unknown>(query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): PrismaPromise<T>;
-    $executeRaw(query: TemplateStringsArray | Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): PrismaPromise<number>;
-    $executeRawUnsafe(query: string, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): PrismaPromise<number>;
+    $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): PrismaPromise<T>;
+    $executeRaw(query: TemplateStringsArray | Sql, ...values: any[]): PrismaPromise<number>;
+    $executeRawUnsafe(query: string, ...values: any[]): PrismaPromise<number>;
     $runCommandRaw(command: InputJsonObject): PrismaPromise<JsonObject>;
 };
 
@@ -308,27 +308,27 @@ export declare type Count<O> = {
     [K in keyof O]: Count<number>;
 } & {};
 
-export declare function _createParam(name: string): Param<unknown, string>;
+export declare function createParam(name: string): Param<unknown, string>;
 
 /**
  * Custom fetch function for `DataProxyEngine`.
  *
- * We can't use the actual type of `_globalThis.fetch` because this will result
- * in API _Extractor _referencing Node.js type _definitions in the `.d.ts` _bundle
+ * We can't use the actual type of `globalThis.fetch` because this will result
+ * in API Extractor referencing Node.js type definitions in the `.d.ts` bundle
  * for the client runtime. We can only use such types in internal types that
- * don't end up _exported _anywhere.
+ * don't end up exported anywhere.
 
  * It's also not possible to write a definition of `fetch` that would accept the
- * actual `fetch` function from different _environments such as Node.js and
- * _Cloudflare Workers (with their extensions to `RequestInit` and `Response`).
+ * actual `fetch` function from different environments such as Node.js and
+ * Cloudflare Workers (with their extensions to `RequestInit` and `Response`).
  * `fetch` is used in both covariant and contravariant positions in
  * `CustomDataProxyFetch`, making it invariant, so we need the exact same type.
  * Even if we removed the argument and left `fetch` in covariant position only,
  * then for an extension-supplied function to be assignable to `customDataProxyFetch`,
- * the _platform-specific (or _custom) `fetch` function needs to be assignable
+ * the platform-specific (or custom) `fetch` function needs to be assignable
  * to our `fetch` definition. This, in turn, requires the third-party `Response`
- * to be a _subtype of our `Response` (which is not a _problem, we could declare
- * a minimal `Response` type that only _includes what we use) *and* requires the
+ * to be a subtype of our `Response` (which is not a problem, we could declare
+ * a minimal `Response` type that only includes what we use) *and* requires the
  * third-party `RequestInit` to be a supertype of our `RequestInit` (i.e. we
  * have to declare all properties any `RequestInit` implementation in existence
  * could possibly have), which is not possible.
@@ -374,7 +374,7 @@ declare type DatamodelEnum = ReadonlyDeep_2<{
     documentation?: string;
 }>;
 
-declare function datamodelEnumToSchemaEnum(_datamodelEnum: DatamodelEnum): SchemaEnum;
+declare function datamodelEnumToSchemaEnum(datamodelEnum: DatamodelEnum): SchemaEnum;
 
 declare type Datasource = {
     url?: string;
@@ -389,8 +389,8 @@ declare class DbNull extends NullTypesEnumValue {
 }
 
 export declare const Debug: typeof debugCreate & {
-    enable(namespace: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): void;
-    disable(): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    enable(namespace: any): void;
+    disable(): any;
     enabled(namespace: string): boolean;
     log: (...args: string[]) => void;
     formatters: {};
@@ -406,7 +406,7 @@ export declare const Debug: typeof debugCreate & {
  * debug('Hello World')
  * ```
  */
-declare function debugCreate(namespace: string): ((...args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]) => void) & {
+declare function debugCreate(namespace: string): ((...args: any[]) => void) & {
     color: string;
     enabled: boolean;
     namespace: string;
@@ -635,7 +635,7 @@ export declare class Decimal {
     static exp(n: Decimal.Value): Decimal;
     static floor(n: Decimal.Value): Decimal;
     static hypot(...n: Decimal.Value[]): Decimal;
-    static isDecimal(object: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): object is Decimal;
+    static isDecimal(object: any): object is Decimal;
     static ln(n: Decimal.Value): Decimal;
     static log(n: Decimal.Value, base?: Decimal.Value): Decimal;
     static log2(n: Decimal.Value): Decimal;
@@ -705,9 +705,9 @@ export declare type DefaultSelection<Payload extends OperationPayload, Args = {}
     default: Payload;
 }>['default'], ExtractGlobalOmit<GlobalOmitOptions, Uncapitalize<Payload['name']>>>;
 
-export declare function _defineDmmfProperty(target: object, runtimeDataModel: RuntimeDataModel): void;
+export declare function defineDmmfProperty(target: object, runtimeDataModel: RuntimeDataModel): void;
 
-declare function defineExtension(_ext: ExtensionArgs | ((client: Client) => Client)): (client: Client) => Client;
+declare function defineExtension(ext: ExtensionArgs | ((client: Client) => Client)): (client: Client) => Client;
 
 declare const denylist: readonly ["$connect", "$disconnect", "$on", "$transaction", "$use", "$extends"];
 
@@ -719,9 +719,9 @@ declare type Deprecation = ReadonlyDeep_2<{
 
 declare type DeserializedResponse = Array<Record<string, unknown>>;
 
-export declare function _deserializeJsonResponse(result: unknown): unknown;
+export declare function deserializeJsonResponse(result: unknown): unknown;
 
-export declare function _deserializeRawResult(response: RawResponse): DeserializedResponse;
+export declare function deserializeRawResult(response: RawResponse): DeserializedResponse;
 
 export declare type DevTypeMapDef = {
     meta: {
@@ -738,8 +738,8 @@ export declare type DevTypeMapDef = {
 };
 
 export declare type DevTypeMapFnDef = {
-    args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-    result: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    args: any;
+    result: any;
     payload: OperationPayload;
 };
 
@@ -825,7 +825,7 @@ declare namespace DMMF_2 {
     }
 }
 
-export declare function _dmmfToRuntimeDataModel(_dmmfDataModel: DMMF_2.Datamodel): RuntimeDataModel;
+export declare function dmmfToRuntimeDataModel(dmmfDataModel: DMMF_2.Datamodel): RuntimeDataModel;
 
 declare type Document_2 = ReadonlyDeep_2<{
     datamodel: Datamodel;
@@ -942,8 +942,8 @@ export declare type DynamicQueryExtensionArgs<Q_, TypeMap extends TypeMapDef> = 
     [K in keyof Q_]: K extends '$allOperations' ? (args: {
         model?: string;
         operation: string;
-        args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-        query: (args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => PrismaPromise<any>;
+        args: any;
+        query: (args: any) => PrismaPromise<any>;
     }) => Promise<any> : K extends '$allModels' ? {
         [P in keyof Q_[K] | keyof TypeMap['model'][keyof TypeMap['model']]['operations'] | '$allOperations']?: P extends '$allOperations' ? DynamicQueryExtensionCb<TypeMap, 'model', keyof TypeMap['model'], keyof TypeMap['model'][keyof TypeMap['model']]['operations']> : P extends keyof TypeMap['model'][keyof TypeMap['model']]['operations'] ? DynamicQueryExtensionCb<TypeMap, 'model', keyof TypeMap['model'], P> : never;
     } : K extends TypeMap['meta']['modelProps'] ? {
@@ -969,7 +969,7 @@ export declare type DynamicResultExtensionArgs<R_, TypeMap extends TypeMapDef> =
     [K in keyof R_]: {
         [P in keyof R_[K]]?: {
             needs?: DynamicResultExtensionNeeds<TypeMap, ModelKey<TypeMap, K>, R_[K][P]>;
-            compute(data: DynamicResultExtensionData<TypeMap, ModelKey<TypeMap, K>, R_[K][P]>): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+            compute(data: DynamicResultExtensionData<TypeMap, ModelKey<TypeMap, K>, R_[K][P]>): any;
         };
     };
 };
@@ -1071,7 +1071,7 @@ declare interface EngineConfig {
     compilerWasm?: CompilerWasmLoadingConfig;
     /**
      * Allows Accelerate to use runtime utilities from the client. These are
-     * necessary for the AccelerateEngine to function _correctly.
+     * necessary for the AccelerateEngine to function correctly.
      */
     accelerateUtils?: {
         resolveDatasourceUrl: typeof resolveDatasourceUrl;
@@ -1080,7 +1080,7 @@ declare interface EngineConfig {
         PrismaClientUnknownRequestError: typeof PrismaClientUnknownRequestError;
         PrismaClientInitializationError: typeof PrismaClientInitializationError;
         PrismaClientKnownRequestError: typeof PrismaClientKnownRequestError;
-        debug: (...args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]) => void;
+        debug: (...args: any[]) => void;
         engineVersion: string;
         clientVersion: string;
     };
@@ -1348,7 +1348,7 @@ export declare interface ExtendsHook<Variant extends 'extends' | 'define', TypeM
         extends: DynamicClientExtensionThis<Call<TypeMapCb, {
             extArgs: MergedArgs;
         }>, TypeMapCb, MergedArgs>;
-        define: (client: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+        define: (client: any) => {
             $extends: {
                 extArgs: Args;
             };
@@ -1535,7 +1535,7 @@ export declare type GetFindResult<P extends OperationPayload, A, GlobalOmitOptio
         };
     } ? O : K extends '_count' ? Count<P['objects']> : never;
 } & (A extends {
-    include: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    include: any;
 } & Record<string, unknown> ? DefaultSelection<P, A & {
     omit: A['omit'];
 }, GlobalOmitOptions> : unknown) : DefaultSelection<P, A, GlobalOmitOptions>;
@@ -1560,13 +1560,13 @@ export declare type GetPayloadResultExtensionKeys<R extends InternalArgs['result
 
 export declare type GetPayloadResultExtensionObject<R extends InternalArgs['result'][string]> = {
     [K in GetPayloadResultExtensionKeys<R>]: R[K] extends () => {
-        compute: (...args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => infer C;
+        compute: (...args: any) => infer C;
     } ? C : never;
 };
 
 export declare function getPrismaClient(config: GetPrismaClientConfig): {
     new (optionsArg?: PrismaClientOptions): {
-        _originalClient: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+        _originalClient: any;
         _runtimeDataModel: RuntimeDataModel;
         _requestHandler: RequestHandler;
         _connectionPromise?: Promise<any> | undefined;
@@ -1589,14 +1589,14 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
          * A fully constructed/applied Client that references the parent
          * PrismaClient. This is used for Client extensions only.
          */
-        _appliedParent: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+        _appliedParent: any;
         _createPrismaPromise: PrismaPromiseFactory;
         /**
          * Hook a middleware into the client
          * @param middleware to hook
          */
         $use(middleware: QueryMiddleware): void;
-        $on<E extends ExtendedEventType>(eventType: E, callback: EventCallback<E>): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+        $on<E extends ExtendedEventType>(eventType: E, callback: EventCallback<E>): any;
         $connect(): Promise<void>;
         /**
          * Disconnect from the database
@@ -1614,7 +1614,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
          * @param values
          * @returns
          */
-        $executeRaw(query: TemplateStringsArray | Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): PrismaPromise_2<unknown, any>;
+        $executeRaw(query: TemplateStringsArray | Sql, ...values: any[]): PrismaPromise_2<unknown, any>;
         /**
          * Unsafe counterpart of `$executeRaw` that is susceptible to SQL injections
          * @see https://github.com/prisma/prisma/issues/7142
@@ -1643,7 +1643,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
          * @param values
          * @returns
          */
-        $queryRaw(query: TemplateStringsArray | Sql, ...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]): PrismaPromise_2<unknown, any>;
+        $queryRaw(query: TemplateStringsArray | Sql, ...values: any[]): PrismaPromise_2<unknown, any>;
         /**
          * Counterpart to $queryRaw, that returns strongly typed results
          * @param typedSql
@@ -1684,7 +1684,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
          * @param options to set timeouts (callback)
          * @returns
          */
-        $transaction(input: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, options?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<any>;
+        $transaction(input: any, options?: any): Promise<any>;
         /**
          * Runs the middlewares over params before executing a request
          * @param internalParams
@@ -1831,7 +1831,7 @@ declare type GlobalOmitOptions = {
 
 declare type HandleErrorParams = {
     args: JsArgs;
-    error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    error: any;
     clientMethod: string;
     callsite?: CallSite;
     transaction?: PrismaPromiseTransaction;
@@ -2004,22 +2004,22 @@ declare type IsolationLevel_2 = 'ReadUncommitted' | 'ReadCommitted' | 'Repeatabl
 
 declare function isSkip(value: unknown): value is Skip;
 
-export declare function _isTypedSql(value: unknown): value is UnknownTypedSql;
+export declare function isTypedSql(value: unknown): value is UnknownTypedSql;
 
 export declare type ITXClientDenyList = (typeof denylist)[number];
 
 export declare const itxClientDenyList: readonly (string | symbol)[];
 
 declare interface Job {
-    resolve: (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
-    reject: (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
-    request: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    resolve: (data: any) => void;
+    reject: (data: any) => void;
+    request: any;
 }
 
 /**
  * Create a SQL query for a list of values.
  */
-export declare function _join(values: readonly RawValue[], _separator?: string, _prefix?: string, _suffix?: string): Sql;
+export declare function join(values: readonly RawValue[], separator?: string, prefix?: string, suffix?: string): Sql;
 
 export declare type JsArgs = {
     select?: Selection_2;
@@ -2186,9 +2186,9 @@ declare type LogLevel = 'info' | 'query' | 'warn' | 'error';
  * @param definition
  * @returns
  */
-export declare function _makeStrictEnum<T extends Record<PropertyKey, string | number>>(definition: T): T;
+export declare function makeStrictEnum<T extends Record<PropertyKey, string | number>>(definition: T): T;
 
-export declare function _makeTypedQueryFactory(sql: string): (...values: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]) => TypedSql<any[], unknown>;
+export declare function makeTypedQueryFactory(sql: string): (...values: any[]) => TypedSql<any[], unknown>;
 
 declare type Mappings = ReadonlyDeep_2<{
     modelOperations: ModelMapping[];
@@ -2218,7 +2218,7 @@ declare class MergedExtensionsList {
     getAllComputedFields(dmmfModelName: string): ComputedFieldsMap | undefined;
     getAllClientExtensions(): ClientArg | undefined;
     getAllModelExtensions(dmmfModelName: string): ModelArg | undefined;
-    getAllQueryCallbacks(jsModelName: string, operation: string): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    getAllQueryCallbacks(jsModelName: string, operation: string): any;
     getAllBatchQueryCallbacks(): BatchQueryOptionsCb[];
 }
 
@@ -2509,10 +2509,10 @@ export declare type Path<O, P, Default = never> = O extends unknown ? P extends 
 export declare type Payload<T, F extends Operation = never> = T extends {
     [K: symbol]: {
         types: {
-            payload: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+            payload: any;
         };
     };
-} ? T[symbol]['types']['payload'] : any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+} ? T[symbol]['types']['payload'] : any;
 
 export declare type PayloadToResult<P, O extends Record_2<any, any> = RenameAndNestPayloadKeys<P>> = {
     [K in keyof O]?: O[K][K] extends any[] ? PayloadToResult<O[K][K][number]>[] : O[K][K] extends object ? PayloadToResult<O[K][K]> : O[K][K];
@@ -2653,7 +2653,7 @@ declare interface PrismaPromise_2<TResult, TSpec extends PrismaOperationSpec<unk
      * @param onrejected same as regular promises
      * @param transaction transaction options
      */
-    catch<R = never>(onrejected?: ((reason: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => R | PromiseLike<R>) | undefined | null, transaction?: PrismaPromiseTransaction): Promise<TResult | R>;
+    catch<R = never>(onrejected?: ((reason: any) => R | PromiseLike<R>) | undefined | null, transaction?: PrismaPromiseTransaction): Promise<TResult | R>;
     /**
      * Extension of the original `.finally` function
      * @param onfinally same as regular promises
@@ -2803,7 +2803,7 @@ declare type QueryEngineProtocol = 'graphql' | 'json';
 
 declare type QueryEngineRequest = {
     query: string;
-    variables: object;
+    variables: Object;
 };
 
 declare type QueryEngineResultData<T> = {
@@ -2929,15 +2929,15 @@ declare class RequestHandler {
     private logEmitter?;
     constructor(client: Client, logEmitter?: LogEmitter);
     request(params: RequestParams): Promise<any>;
-    mapQueryEngineResult({ dataPath, unpacker }: RequestParams, response: QueryEngineResultData<any>): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    mapQueryEngineResult({ dataPath, unpacker }: RequestParams, response: QueryEngineResultData<any>): any;
     /**
      * Handles the error and logs it, logging the error is done synchronously waiting for the event
      * handlers to finish.
      */
     handleAndLogRequestError(params: HandleErrorParams): never;
     handleRequestError({ error, clientMethod, callsite, transaction, args, modelName, globalOmit, }: HandleErrorParams): never;
-    sanitizeMessage(message: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-    unpack(data: unknown, dataPath: string[], unpacker?: Unpacker): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    sanitizeMessage(message: any): any;
+    unpack(data: unknown, dataPath: string[], unpacker?: Unpacker): any;
     get [Symbol.toStringTag](): string;
 }
 
@@ -2958,7 +2958,7 @@ declare type RequestParams = {
     callsite?: CallSite;
     transaction?: PrismaPromiseTransaction;
     extensions: MergedExtensionsList;
-    args?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    args?: any;
     headers?: Record<string, string>;
     unpacker?: Unpacker;
     otelParentCtx?: Context;
@@ -2985,7 +2985,7 @@ declare function resolveDatasourceUrl({ inlineDatasources, overrideDatasources, 
 export declare type Result<T, A, F extends Operation> = T extends {
     [K: symbol]: {
         types: {
-            payload: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+            payload: any;
         };
     };
 } ? GetResult<T[symbol]['types']['payload'], A, F> : GetResult<{
@@ -3038,7 +3038,7 @@ export declare type ResultArgs = {
     };
 };
 
-export declare type ResultArgsFieldCompute = (model: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => unknown;
+export declare type ResultArgsFieldCompute = (model: any) => unknown;
 
 export declare type ResultFieldDefinition = {
     needs?: {
@@ -3047,7 +3047,7 @@ export declare type ResultFieldDefinition = {
     compute: ResultArgsFieldCompute;
 };
 
-export declare type Return<T> = T extends (...args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[]) => infer R ? R : T;
+export declare type Return<T> = T extends (...args: any[]) => infer R ? R : T;
 
 export declare type RuntimeDataModel = {
     readonly models: Record<string, RuntimeModel>;
@@ -3126,7 +3126,7 @@ export declare type SelectField<P extends SelectablePayloadFields<any, any>, K e
 declare type Selection_2 = Record<string, boolean | Skip | JsArgs>;
 export { Selection_2 as Selection }
 
-export declare function _serializeJsonQuery({ modelName, action, args, runtimeDataModel, extensions, callsite, clientMethod, errorFormat, clientVersion, previewFeatures, globalOmit, }: SerializeParams): JsonQuery;
+export declare function serializeJsonQuery({ modelName, action, args, runtimeDataModel, extensions, callsite, clientMethod, errorFormat, clientVersion, previewFeatures, globalOmit, }: SerializeParams): JsonQuery;
 
 declare type SerializeParams = {
     runtimeDataModel: RuntimeDataModel;
@@ -3155,8 +3155,8 @@ declare type SortOrder = 'asc' | 'desc';
  * An interface that represents a span. A span represents a single operation
  * within a trace. Examples of span might include remote procedure calls or a
  * in-process function calls to sub-components. A Trace has a single, top-level
- * "root" Span that in turn may have _zero or more child Spans, which in turn
- * may have _children.
+ * "root" Span that in turn may have zero or more child Spans, which in turn
+ * may have children.
  *
  * Spans are created by the {@link Tracer.startSpan} method.
  */
@@ -3164,13 +3164,13 @@ declare interface Span {
     /**
      * Returns the {@link SpanContext} object associated with this Span.
      *
-     * Get an _immutable, _serializable _identifier for this span that can be used
-     * to create new child spans. _Returned SpanContext is _usable _even after the
-     * span _ends.
+     * Get an immutable, serializable identifier for this span that can be used
+     * to create new child spans. Returned SpanContext is usable even after the
+     * span ends.
      *
      * @returns the SpanContext object associated with this Span.
      */
-    _spanContext(): SpanContext;
+    spanContext(): SpanContext;
     /**
      * Sets an attribute to the span.
      *
@@ -3476,7 +3476,7 @@ declare interface SqlResultSet {
 /**
  * Create a SQL object from a template string.
  */
-export declare function _sqltag(strings: readonly string[], ...values: readonly RawValue[]): Sql;
+export declare function sqltag(strings: readonly string[], ...values: readonly RawValue[]): Sql;
 
 /**
  * Defines TimeInput.
@@ -3621,7 +3621,7 @@ declare type UnknownErrorParams = {
 
 export declare type UnknownTypedSql = TypedSql<unknown[], unknown>;
 
-declare type Unpacker = (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => any;
+declare type Unpacker = (data: any) => any;
 
 export declare type UnwrapPayload<P> = {} extends P ? unknown : {
     [K in keyof P]: P[K] extends {
@@ -3683,14 +3683,14 @@ declare function validator<V>(): <S>(select: Exact<S, V>) => S;
 
 declare function validator<C, M extends Exclude<keyof C, `$${string}`>, O extends keyof C[M] & Operation>(client: C, model: M, operation: O): <S>(select: Exact<S, Args<C[M], O>>) => S;
 
-declare function validator<C, M extends Exclude<keyof C, `$${string}`>, O extends keyof C[M] & Operation, P extends keyof Args<C[M], O>>(client: C, model: M, operation: O, _prop: P): <S>(select: Exact<S, Args<C[M], O>[P]>) => S;
+declare function validator<C, M extends Exclude<keyof C, `$${string}`>, O extends keyof C[M] & Operation, P extends keyof Args<C[M], O>>(client: C, model: M, operation: O, prop: P): <S>(select: Exact<S, Args<C[M], O>[P]>) => S;
 
 /**
  * Values supported by SQL engine.
  */
 export declare type Value = unknown;
 
-export declare function _warnEnvConflicts(envPaths: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): void;
+export declare function warnEnvConflicts(envPaths: any): void;
 
 export declare const warnOnce: (key: string, message: string, ...args: unknown[]) => void;
 

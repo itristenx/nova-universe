@@ -3,8 +3,8 @@ import { CheckCircleIcon, RocketLaunchIcon, CogIcon } from '@heroicons/react/24/
 import { Button } from '../../ui/Button';
 
 interface CompletionStepProps {
-  data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-  onUpdate: (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
+  data: any;
+  onUpdate: (data: any) => void;
   onComplete: () => void;
   errors: Record<string, string>;
   isLoading: boolean;
@@ -36,7 +36,7 @@ export const CompletionStep: React.FC<CompletionStepProps> = ({
         setDeploymentStep(steps[i]);
         
         // Simulate deployment step
-        await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // In real implementation, make actual API calls here
         if (i === 0) {
@@ -44,7 +44,7 @@ export const CompletionStep: React.FC<CompletionStepProps> = ({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
-          }); // TODO-LINT: move to async function
+          });
         }
         
         if (i === 1) {
@@ -52,7 +52,7 @@ export const CompletionStep: React.FC<CompletionStepProps> = ({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
-          }); // TODO-LINT: move to async function
+          });
         }
         
         if (i === 2) {
@@ -60,7 +60,7 @@ export const CompletionStep: React.FC<CompletionStepProps> = ({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data.admin)
-          }); // TODO-LINT: move to async function
+          });
         }
         
         if (i === 3) {
@@ -68,7 +68,7 @@ export const CompletionStep: React.FC<CompletionStepProps> = ({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data.organization)
-          }); // TODO-LINT: move to async function
+          });
         }
       }
       

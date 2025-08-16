@@ -51,7 +51,7 @@ export class PrismaClient<
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
    */
 
-  constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>); // TODO-LINT: move to async function
+  constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>);
   $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): PrismaClient;
 
   /**
@@ -252,24 +252,24 @@ export namespace Prisma {
   export const AnyNull: NullTypes.AnyNull
 
   type SelectAndInclude = {
-    select: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
-    include: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    select: any
+    include: any
   }
 
   type SelectAndOmit = {
-    select: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
-    omit: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    select: any
+    omit: any
   }
 
   /**
    * Get the type of the value, that the Promise holds.
    */
-  export type PromiseType<T extends PromiseLike<any>> = T extends PromiseLike<infer U> ? U : T; // TODO-LINT: move to async function
+  export type PromiseType<T extends PromiseLike<any>> = T extends PromiseLike<infer U> ? U : T;
 
   /**
-   * Get the return type of a function _which returns a Promise.
+   * Get the return type of a function which returns a Promise.
    */
-  export type _PromiseReturnType<T extends (...args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => $Utils.JsPromise<any>> = PromiseType<ReturnType<T>>
+  export type PromiseReturnType<T extends (...args: any) => $Utils.JsPromise<any>> = PromiseType<ReturnType<T>>
 
   /**
    * From T, pick a set of properties whose keys are in the union K
@@ -344,7 +344,7 @@ export namespace Prisma {
   ? False
   : T extends Uint8Array
   ? False
-  : T extends bigint
+  : T extends BigInt
   ? False
   : T extends object
   ? True
@@ -573,7 +573,7 @@ export namespace Prisma {
     model: {}
   } & {
     other: {
-      payload: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+      payload: any
       operations: {
         $runCommandRaw: {
           args: Prisma.InputJsonObject,
@@ -712,7 +712,7 @@ export namespace Prisma {
   export type MiddlewareParams = {
     model?: ModelName
     action: PrismaAction
-    args: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    args: any
     dataPath: string[]
     runInTransaction: boolean
   }

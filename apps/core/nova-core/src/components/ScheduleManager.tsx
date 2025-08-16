@@ -6,8 +6,8 @@ import type { DaySchedule, TimeSlot } from '@/types';
 
 interface ScheduleManagerProps {
   title: string;
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-  onSave: (config: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => Promise<void>;
+  config: any;
+  onSave: (config: any) => Promise<void>;
   showEnabled?: boolean;
   showTitle?: boolean;
   showNextOpen?: boolean;
@@ -53,7 +53,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
   const handleSave = async () => {
     try {
       setLoading(true);
-      await onSave(localConfig); // TODO-LINT: move to async function
+      await onSave(localConfig);
       addToast({
         type: 'success',
         title: 'Success',

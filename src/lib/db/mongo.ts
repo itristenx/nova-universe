@@ -48,11 +48,11 @@ class EnhancedMongoClient {
 
   async getDb(): Promise<Db> {
     if (!this.db) {
-      const client = await clientPromise; // TODO-LINT: move to async function
+      const client = await clientPromise;
       this.db = client.db(dbName);
       
       if (!this.isInitialized) {
-        await this.setupCollections(); // TODO-LINT: move to async function
+        await this.setupCollections();
         this.isInitialized = true;
       }
     }
@@ -66,71 +66,71 @@ class EnhancedMongoClient {
       logger.info('Setting up MongoDB collections and indexes...');
 
       // Audit logs collection with TTL index
-      await this.createCollectionIfNotExists('audit_logs'); // TODO-LINT: move to async function
+      await this.createCollectionIfNotExists('audit_logs');
       await this.db.collection('audit_logs').createIndex(
         { timestamp: 1 }, 
         { expireAfterSeconds: 7776000 } // 90 days
-      ); // TODO-LINT: move to async function
-      await this.db.collection('audit_logs').createIndex({ userId: 1 }); // TODO-LINT: move to async function
-      await this.db.collection('audit_logs').createIndex({ action: 1 }); // TODO-LINT: move to async function
+      );
+      await this.db.collection('audit_logs').createIndex({ userId: 1 });
+      await this.db.collection('audit_logs').createIndex({ action: 1 });
 
       // System logs collection with TTL index
-      await this.createCollectionIfNotExists('system_logs'); // TODO-LINT: move to async function
+      await this.createCollectionIfNotExists('system_logs');
       await this.db.collection('system_logs').createIndex(
         { timestamp: 1 }, 
         { expireAfterSeconds: 2592000 } // 30 days
-      ); // TODO-LINT: move to async function
-      await this.db.collection('system_logs').createIndex({ level: 1 }); // TODO-LINT: move to async function
-      await this.db.collection('system_logs').createIndex({ source: 1 }); // TODO-LINT: move to async function
+      );
+      await this.db.collection('system_logs').createIndex({ level: 1 });
+      await this.db.collection('system_logs').createIndex({ source: 1 });
 
       // User activity logs
-      await this.createCollectionIfNotExists('user_activity'); // TODO-LINT: move to async function
+      await this.createCollectionIfNotExists('user_activity');
       await this.db.collection('user_activity').createIndex(
         { timestamp: 1 }, 
         { expireAfterSeconds: 15552000 } // 180 days
-      ); // TODO-LINT: move to async function
-      await this.db.collection('user_activity').createIndex({ userId: 1 }); // TODO-LINT: move to async function
-      await this.db.collection('user_activity').createIndex({ action: 1 }); // TODO-LINT: move to async function
+      );
+      await this.db.collection('user_activity').createIndex({ userId: 1 });
+      await this.db.collection('user_activity').createIndex({ action: 1 });
 
       // Performance metrics
-      await this.createCollectionIfNotExists('performance_metrics'); // TODO-LINT: move to async function
+      await this.createCollectionIfNotExists('performance_metrics');
       await this.db.collection('performance_metrics').createIndex(
         { timestamp: 1 }, 
         { expireAfterSeconds: 604800 } // 7 days
-      ); // TODO-LINT: move to async function
-      await this.db.collection('performance_metrics').createIndex({ service: 1 }); // TODO-LINT: move to async function
-      await this.db.collection('performance_metrics').createIndex({ endpoint: 1 }); // TODO-LINT: move to async function
+      );
+      await this.db.collection('performance_metrics').createIndex({ service: 1 });
+      await this.db.collection('performance_metrics').createIndex({ endpoint: 1 });
 
       // Error logs
-      await this.createCollectionIfNotExists('error_logs'); // TODO-LINT: move to async function
+      await this.createCollectionIfNotExists('error_logs');
       await this.db.collection('error_logs').createIndex(
         { timestamp: 1 }, 
         { expireAfterSeconds: 7776000 } // 90 days
-      ); // TODO-LINT: move to async function
-      await this.db.collection('error_logs').createIndex({ level: 1 }); // TODO-LINT: move to async function
-      await this.db.collection('error_logs').createIndex({ source: 1 }); // TODO-LINT: move to async function
+      );
+      await this.db.collection('error_logs').createIndex({ level: 1 });
+      await this.db.collection('error_logs').createIndex({ source: 1 });
 
       // API usage telemetry
-      await this.createCollectionIfNotExists('api_usage'); // TODO-LINT: move to async function
+      await this.createCollectionIfNotExists('api_usage');
       await this.db.collection('api_usage').createIndex(
         { timestamp: 1 }, 
         { expireAfterSeconds: 2592000 } // 30 days
-      ); // TODO-LINT: move to async function
-      await this.db.collection('api_usage').createIndex({ endpoint: 1 }); // TODO-LINT: move to async function
-      await this.db.collection('api_usage').createIndex({ userId: 1 }); // TODO-LINT: move to async function
+      );
+      await this.db.collection('api_usage').createIndex({ endpoint: 1 });
+      await this.db.collection('api_usage').createIndex({ userId: 1 });
 
       // User preferences (no TTL)
-      await this.createCollectionIfNotExists('user_preferences'); // TODO-LINT: move to async function
-      await this.db.collection('user_preferences').createIndex({ userId: 1 }, { unique: true }); // TODO-LINT: move to async function
+      await this.createCollectionIfNotExists('user_preferences');
+      await this.db.collection('user_preferences').createIndex({ userId: 1 }, { unique: true });
 
       // Search analytics
-      await this.createCollectionIfNotExists('search_analytics'); // TODO-LINT: move to async function
+      await this.createCollectionIfNotExists('search_analytics');
       await this.db.collection('search_analytics').createIndex(
         { timestamp: 1 }, 
         { expireAfterSeconds: 7776000 } // 90 days
-      ); // TODO-LINT: move to async function
-      await this.db.collection('search_analytics').createIndex({ userId: 1 }); // TODO-LINT: move to async function
-      await this.db.collection('search_analytics').createIndex({ query: 'text' }); // TODO-LINT: move to async function
+      );
+      await this.db.collection('search_analytics').createIndex({ userId: 1 });
+      await this.db.collection('search_analytics').createIndex({ query: 'text' });
 
       logger.info('MongoDB collections and indexes setup completed');
     } catch (error) {
@@ -142,12 +142,12 @@ class EnhancedMongoClient {
     if (!this.db) return;
 
     try {
-      const collections = await this.db.listCollections({ name }).toArray(); // TODO-LINT: move to async function
+      const collections = await this.db.listCollections({ name }).toArray();
       if (collections.length === 0) {
-        await this.db.createCollection(name, options); // TODO-LINT: move to async function
+        await this.db.createCollection(name, options);
         logger.debug(`Created MongoDB collection: ${name}`);
       }
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       if (!error.message.includes('already exists')) {
         throw error;
       }
@@ -155,9 +155,9 @@ class EnhancedMongoClient {
   }
 
   // Audit logging method
-  async logAudit(userId: string, action: string, details: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {}, ip?: string) {
+  async logAudit(userId: string, action: string, details: any = {}, ip?: string) {
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
+      const db = await this.getDb();
       const auditEntry = {
         userId,
         action,
@@ -167,7 +167,7 @@ class EnhancedMongoClient {
         source: 'nova-universe'
       };
 
-      await db.collection('audit_logs').insertOne(auditEntry); // TODO-LINT: move to async function
+      await db.collection('audit_logs').insertOne(auditEntry);
       
       if (process.env.DEBUG_SQL === 'true') {
         logger.debug(`Audit log created: ${action} by ${userId}`);
@@ -179,9 +179,9 @@ class EnhancedMongoClient {
   }
 
   // System logging method
-  async logSystem(level: string, message: string, source: string, details: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {}) {
+  async logSystem(level: string, message: string, source: string, details: any = {}) {
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
+      const db = await this.getDb();
       const logEntry = {
         level,
         message,
@@ -190,16 +190,16 @@ class EnhancedMongoClient {
         timestamp: new Date()
       };
 
-      await db.collection('system_logs').insertOne(logEntry); // TODO-LINT: move to async function
+      await db.collection('system_logs').insertOne(logEntry);
     } catch (error) {
       logger.error('Error creating system log: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
   // User activity logging
-  async logUserActivity(userId: string, action: string, details: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {}) {
+  async logUserActivity(userId: string, action: string, details: any = {}) {
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
+      const db = await this.getDb();
       const activityEntry = {
         userId,
         action,
@@ -208,16 +208,16 @@ class EnhancedMongoClient {
         source: 'nova-universe'
       };
 
-      await db.collection('user_activity').insertOne(activityEntry); // TODO-LINT: move to async function
+      await db.collection('user_activity').insertOne(activityEntry);
     } catch (error) {
       logger.error('Error logging user activity: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
   // Performance metrics logging
-  async logPerformance(service: string, endpoint: string, duration: number, details: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {}) {
+  async logPerformance(service: string, endpoint: string, duration: number, details: any = {}) {
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
+      const db = await this.getDb();
       const metricsEntry = {
         service,
         endpoint,
@@ -226,16 +226,16 @@ class EnhancedMongoClient {
         timestamp: new Date()
       };
 
-      await db.collection('performance_metrics').insertOne(metricsEntry); // TODO-LINT: move to async function
+      await db.collection('performance_metrics').insertOne(metricsEntry);
     } catch (error) {
       logger.error('Error logging performance metrics: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
   // Error logging
-  async logError(level: string, message: string, source: string, error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, details: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {}) {
+  async logError(level: string, message: string, source: string, error: any, details: any = {}) {
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
+      const db = await this.getDb();
       const errorEntry = {
         level,
         message,
@@ -249,16 +249,16 @@ class EnhancedMongoClient {
         timestamp: new Date()
       };
 
-      await db.collection('error_logs').insertOne(errorEntry); // TODO-LINT: move to async function
+      await db.collection('error_logs').insertOne(errorEntry);
     } catch (logError) {
       logger.error('Error logging error: ' + (logError instanceof Error ? logError.message : String(logError)));
     }
   }
 
   // API usage tracking
-  async logApiUsage(endpoint: string, method: string, userId?: string, duration?: number, details: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {}) {
+  async logApiUsage(endpoint: string, method: string, userId?: string, duration?: number, details: any = {}) {
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
+      const db = await this.getDb();
       const usageEntry = {
         endpoint,
         method,
@@ -268,16 +268,16 @@ class EnhancedMongoClient {
         timestamp: new Date()
       };
 
-      await db.collection('api_usage').insertOne(usageEntry); // TODO-LINT: move to async function
+      await db.collection('api_usage').insertOne(usageEntry);
     } catch (error) {
       logger.error('Error logging API usage: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
 
   // Search analytics
-  async logSearch(query: string, userId?: string, results?: number, duration?: number, details: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types = {}) {
+  async logSearch(query: string, userId?: string, results?: number, duration?: number, details: any = {}) {
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
+      const db = await this.getDb();
       const searchEntry = {
         query,
         userId,
@@ -287,7 +287,7 @@ class EnhancedMongoClient {
         timestamp: new Date()
       };
 
-      await db.collection('search_analytics').insertOne(searchEntry); // TODO-LINT: move to async function
+      await db.collection('search_analytics').insertOne(searchEntry);
     } catch (error) {
       logger.error('Error logging search analytics: ' + (error instanceof Error ? error.message : String(error)));
     }
@@ -296,22 +296,22 @@ class EnhancedMongoClient {
   // User preferences management
   async getUserPreferences(userId: string) {
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
-      return await db.collection('user_preferences').findOne({ userId }); // TODO-LINT: move to async function
+      const db = await this.getDb();
+      return await db.collection('user_preferences').findOne({ userId });
     } catch (error) {
       logger.error('Error getting user preferences: ' + (error instanceof Error ? error.message : String(error)));
       return null;
     }
   }
 
-  async setUserPreferences(userId: string, preferences: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+  async setUserPreferences(userId: string, preferences: any) {
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
+      const db = await this.getDb();
       await db.collection('user_preferences').replaceOne(
         { userId },
         { userId, ...preferences, updatedAt: new Date() },
         { upsert: true }
-      ); // TODO-LINT: move to async function
+      );
     } catch (error) {
       logger.error('Error setting user preferences: ' + (error instanceof Error ? error.message : String(error)));
       throw error;
@@ -323,8 +323,8 @@ class EnhancedMongoClient {
     const start = Date.now();
     
     try {
-      const db = await this.getDb(); // TODO-LINT: move to async function
-      await db.admin().ping(); // TODO-LINT: move to async function
+      const db = await this.getDb();
+      await db.admin().ping();
       const responseTime = Date.now() - start;
       
       return {
@@ -333,7 +333,7 @@ class EnhancedMongoClient {
         database: 'mongodb',
         dbName
       };
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       return {
         healthy: false,
         error: error.message,
@@ -346,8 +346,8 @@ class EnhancedMongoClient {
   // Close connection
   async close() {
     try {
-      const client = await clientPromise; // TODO-LINT: move to async function
-      await client.close(); // TODO-LINT: move to async function
+      const client = await clientPromise;
+      await client.close();
       logger.info('MongoDB connection closed');
     } catch (error) {
       logger.error('Error closing MongoDB connection: ' + (error instanceof Error ? error.message : String(error)));
@@ -358,9 +358,9 @@ class EnhancedMongoClient {
 // Export singleton instance
 export const mongoClient = new EnhancedMongoClient();
 
-// Convenience function for getting _the database
-export async function _getMongoDb(): Promise<Db> {
-  return await mongoClient.getDb(); // TODO-LINT: move to async function
+// Convenience function for getting the database
+export async function getMongoDb(): Promise<Db> {
+  return await mongoClient.getDb();
 }
 
 // Export individual logging functions for easy imports

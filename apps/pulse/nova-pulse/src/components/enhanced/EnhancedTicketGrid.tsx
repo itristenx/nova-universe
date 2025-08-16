@@ -43,8 +43,8 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import type { Ticket } from '../../types'
 
-// Mock API function - _replace with _actual API _call
-const getTickets = _async (): Promise<Ticket[]> => {
+// Mock API function - replace with actual API call
+const getTickets = async (): Promise<Ticket[]> => {
   return []
 }
 
@@ -201,7 +201,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
 
     // Sort tickets
     filtered.sort((a, b) => {
-      let aValue: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, bValue: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+      let aValue: any, bValue: any
 
       switch (sortField) {
         case 'priority': {
@@ -246,7 +246,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
     return filtered
   }, [ticketsWithSLA, filters, sortField, sortDirection])
 
-  // Helper _functions
+  // Helper functions
   const getSLAColor = (status: string): "success" | "warning" | "danger" => {
     switch (status) {
       case 'safe': return 'success'
@@ -309,7 +309,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
     }
   }, [sortField, sortDirection])
 
-  const handleFilterChange = useCallback((key: keyof FilterState, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  const handleFilterChange = useCallback((key: keyof FilterState, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
 

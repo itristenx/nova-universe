@@ -144,7 +144,7 @@ export const DeepWorkMode: React.FC<Props> = ({
             
             // Convert AI analysis to suggestions
             if (analysis.suggestions) {
-              analysis.suggestions.forEach((suggestion: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, index: number) => {
+              analysis.suggestions.forEach((suggestion: any, index: number) => {
                 suggestions.push({
                   id: `ai-${index}`,
                   type: 'resolution',
@@ -171,7 +171,7 @@ export const DeepWorkMode: React.FC<Props> = ({
 
             if (kbResponse.ok) {
               const kbResults = await kbResponse.json()
-              kbResults.articles?.forEach((article: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, index: number) => {
+              kbResults.articles?.forEach((article: any, index: number) => {
                 suggestions.push({
                   id: `kb-${index}`,
                   type: 'knowledge_base',
@@ -235,7 +235,7 @@ export const DeepWorkMode: React.FC<Props> = ({
     if (startTime) {
       // Calculate real productivity metrics
       const sessionMinutes = sessionDuration / 60
-      const ticketCompletionRate = ticketsWorked.filter((t: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => t.status === 'completed').length / Math.max(ticketsWorked.length, 1)
+      const ticketCompletionRate = ticketsWorked.filter((t: any) => t.status === 'completed').length / Math.max(ticketsWorked.length, 1)
       const notesRate = quickNotes.length / Math.max(sessionMinutes, 1) * 10 // Notes per 10 minutes
       const focusEfficiency = Math.max(0, 1 - (focusBreaks / Math.max(sessionMinutes / 30, 1))) // Breaks per 30 min
       
@@ -701,4 +701,3 @@ export const DeepWorkMode: React.FC<Props> = ({
     </div>
   )
 }
- // TODO-LINT: move to async function

@@ -26,7 +26,7 @@ export async function initializeMCPServer() {
 
   let McpServerCtor = null;
   try {
-    ({ McpServer: McpServerCtor } = await import('@modelcontextprotocol/sdk/server/mcp.js')); // TODO-LINT: move to async function
+    ({ McpServer: McpServerCtor } = await import('@modelcontextprotocol/sdk/server/mcp.js'));
   } catch (e) {
     logger.warn('MCP SDK not installed; Cosmo features disabled');
     // Provide a minimal no-op server to satisfy callers
@@ -66,7 +66,7 @@ export async function initializeMCPServer() {
   });
 
   // Register Nova-specific MCP tools
-  await registerNovaTools(mcpServer); // TODO-LINT: move to async function
+  await registerNovaTools(mcpServer);
   
   logger.info('MCP Server initialized with Nova tools and AI ticket processor');
   return mcpServer;
@@ -76,7 +76,7 @@ export async function initializeMCPServer() {
  * Register Nova Universe MCP tools
  */
 async function registerNovaTools(server) {
-  const { z } = await import('zod'); // TODO-LINT: move to async function
+  const { z } = await import('zod');
   // Ticket management tools with AI processing
   server.registerTool(
     'nova.tickets.create',
@@ -117,11 +117,11 @@ async function registerNovaTools(server) {
 
         // Apply AI processing if enabled
         if (useAI && ticketProcessor) {
-          processedTicket = await ticketProcessor.processTicket(ticketData); // TODO-LINT: move to async function
+          processedTicket = await ticketProcessor.processTicket(ticketData);
         }
 
         // Create ticket in database with AI-enhanced data
-        const ticketId = await createTicketInDatabase(context.userId, processedTicket); // TODO-LINT: move to async function
+        const ticketId = await createTicketInDatabase(context.userId, processedTicket);
 
         // Prepare response with AI insights
         let responseText = `✅ Ticket ${ticketId} created successfully!\n\n**Title:** ${title}\n**Priority:** ${processedTicket.priority || priority || 'medium'}\n**Category:** ${processedTicket.category || category || 'other'}`;
@@ -187,7 +187,7 @@ async function registerNovaTools(server) {
     },
     async ({ query, category, limit = 5 }) => {
       try {
-        const articles = await searchKnowledgeBase(query, category, limit); // TODO-LINT: move to async function
+        const articles = await searchKnowledgeBase(query, category, limit);
         
         if (articles.length === 0) {
           return {
@@ -248,7 +248,7 @@ async function registerNovaTools(server) {
           timestamp: Date.now()
         };
 
-        const analysis = await ticketProcessor.enrichTicketData(analysisData); // TODO-LINT: move to async function
+        const analysis = await ticketProcessor.enrichTicketData(analysisData);
         
         let responseText = `🤖 **AI Ticket Analysis**\n\n`;
         
@@ -325,7 +325,7 @@ async function registerNovaTools(server) {
           throw new Error('AI ticket processor not initialized');
         }
 
-        const similarTickets = await ticketProcessor.searchSimilarTickets(title, description, limit); // TODO-LINT: move to async function
+        const similarTickets = await ticketProcessor.searchSimilarTickets(title, description, limit);
         
         if (similarTickets.length === 0) {
           return {
@@ -462,7 +462,7 @@ async function registerNovaTools(server) {
           priority,
           location,
           department
-        }); // TODO-LINT: move to async function
+        });
 
         return {
           content: [{
@@ -497,7 +497,7 @@ async function registerNovaTools(server) {
     },
     async ({ userId, amount, reason, category }) => {
       try {
-        await awardUserXP(userId, amount, reason, category); // TODO-LINT: move to async function
+        await awardUserXP(userId, amount, reason, category);
         
         return {
           content: [{
@@ -529,7 +529,7 @@ async function registerNovaTools(server) {
     },
     async ({ component = 'all' }) => {
       try {
-        const status = await getSystemStatus(component); // TODO-LINT: move to async function
+        const status = await getSystemStatus(component);
         
         const statusText = Object.entries(status)
           .map(([comp, info]) => `${comp}: ${info.status} ${info.status === 'healthy' ? '✅' : '❌'}`)
@@ -566,7 +566,7 @@ async function registerNovaTools(server) {
     },
     async ({ workflowId, parameters = {} }, context) => {
       try {
-        const result = await executeWorkflow(workflowId, parameters, context); // TODO-LINT: move to async function
+        const result = await executeWorkflow(workflowId, parameters, context);
         
         return {
           content: [{
@@ -719,7 +719,7 @@ async function registerNovaTools(server) {
 
         if (useAI && ticketProcessor) {
           // Use AI processor if available
-          const processed = await ticketProcessor.processTicket(ticket); // TODO-LINT: move to async function
+          const processed = await ticketProcessor.processTicket(ticket);
           ticket.aiAnalysis = {
             classification: processed.aiClassification,
             customerMatch: processed.customerMatch,
@@ -1205,7 +1205,7 @@ async function registerNovaTools(server) {
     async ({ userId, module, userRole, context, message }) => {
       try {
         // Analyze the situation using Nova's alert intelligence
-        const analysis = await analyzeAlertSituation(context, message, userRole); // TODO-LINT: move to async function
+        const analysis = await analyzeAlertSituation(context, message, userRole);
         
         // Log the analysis request
         logger.info('Alert analysis performed:', {
@@ -1410,7 +1410,7 @@ async function registerNovaTools(server) {
 /**
  * Start a new conversation with Cosmo
  */
-export async function _startConversation(conversationId, userId, tenantId, context, initialMessage) {
+export async function startConversation(conversationId, userId, tenantId, context, initialMessage) {
   try {
     const conversation = {
       id: conversationId,
@@ -1428,14 +1428,14 @@ export async function _startConversation(conversationId, userId, tenantId, conte
 
     // Initialize MCP server if needed
     if (!mcpServer) {
-      await initializeMCPServer(); // TODO-LINT: move to async function
+      await initializeMCPServer();
     }
 
     logger.info(`Started conversation ${conversationId} for user ${userId}`);
 
     // If there's an initial message, process it
     if (initialMessage) {
-      await sendMessage(conversationId, userId, initialMessage, context); // TODO-LINT: move to async function
+      await sendMessage(conversationId, userId, initialMessage, context);
     }
 
     return conversation;
@@ -1469,7 +1469,7 @@ export async function sendMessage(conversationId, userId, message, context = {})
     conversation.messages.push(userMessage);
 
     // Process message with AI and MCP tools
-    const aiResponse = await processMessageWithAI(message, conversation, context); // TODO-LINT: move to async function
+    const aiResponse = await processMessageWithAI(message, conversation, context);
 
     // Add Cosmo response to conversation
     const cosmoMessage = {
@@ -1500,7 +1500,7 @@ export async function sendMessage(conversationId, userId, message, context = {})
 /**
  * End a conversation
  */
-export async function _endConversation(conversationId, userId) {
+export async function endConversation(conversationId, userId) {
   try {
     const conversation = conversations.get(conversationId);
     if (!conversation) {
@@ -1515,7 +1515,7 @@ export async function _endConversation(conversationId, userId) {
     conversation.updatedAt = new Date();
 
     // Store conversation in database for historical purposes
-    await storeConversationInDatabase(conversation); // TODO-LINT: move to async function
+    await storeConversationInDatabase(conversation);
 
     // Remove from memory
     conversations.delete(conversationId);
@@ -1530,12 +1530,12 @@ export async function _endConversation(conversationId, userId) {
 /**
  * Get conversation history
  */
-export async function _getConversationHistory(conversationId, userId) {
+export async function getConversationHistory(conversationId, userId) {
   try {
     const conversation = conversations.get(conversationId);
     if (!conversation) {
       // Try to load from database
-      const dbConversation = await loadConversationFromDatabase(conversationId, userId); // TODO-LINT: move to async function
+      const dbConversation = await loadConversationFromDatabase(conversationId, userId);
       if (!dbConversation) {
         throw new Error(`Conversation ${conversationId} not found`);
       }
@@ -1575,10 +1575,10 @@ export async function createEscalation(conversationId, userId, tenantId, escalat
     escalations.set(escalation.id, escalation);
 
     // Store in database
-    await storeEscalationInDatabase(escalation); // TODO-LINT: move to async function
+    await storeEscalationInDatabase(escalation);
 
     // Notify appropriate teams based on escalation level
-    await notifyEscalationTeams(escalation); // TODO-LINT: move to async function
+    await notifyEscalationTeams(escalation);
 
     logger.info(`Created escalation ${escalation.id} for conversation ${conversationId}`);
 
@@ -1592,10 +1592,10 @@ export async function createEscalation(conversationId, userId, tenantId, escalat
 /**
  * Handle MCP requests
  */
-export async function _handleMCPRequest(userId, tenantId, mcpRequest) {
+export async function handleMCPRequest(userId, tenantId, mcpRequest) {
   try {
     if (!mcpServer) {
-      await initializeMCPServer(); // TODO-LINT: move to async function
+      await initializeMCPServer();
     }
 
     // Add user context to MCP request
@@ -1608,7 +1608,7 @@ export async function _handleMCPRequest(userId, tenantId, mcpRequest) {
     // Process MCP request through the server
     // This is a simplified implementation - in a real system, you'd need
     // proper MCP protocol handling
-    const response = await mcpServer.handleRequest(mcpRequest, context); // TODO-LINT: move to async function
+    const response = await mcpServer.handleRequest(mcpRequest, context);
 
     logger.info(`Processed MCP request for user ${userId}`);
 
@@ -1639,9 +1639,8 @@ async function processMessageWithAI(message, conversation, context) {
         metadata.tools = ['nova.tickets.create'];
         break;
 
-      case 'search_knowledge': {
-        const 
-        searchQuery = extractSearchQuery(message);
+      case 'search_knowledge':
+        const searchQuery = extractSearchQuery(message);
         if (searchQuery) {
           response = `I'll search our knowledge base for "${searchQuery}". One moment...`;
           metadata.tools = ['nova.lore.search'];
@@ -1827,7 +1826,7 @@ function generateEscalationActions(escalationData) {
   return actions;
 }
 
-// Helper _functions for database _operations
+// Helper functions for database operations
 async function createTicketInDatabase(userId, ticketData) {
   return new Promise((resolve, reject) => {
     const ticketId = `TKT-${Date.now()}`;
@@ -1930,11 +1929,11 @@ async function executeWorkflow(workflowId, parameters, context) {
     await db.run(`
       INSERT INTO workflow_executions (id, workflow_id, parameters, status, created_by, created_at)
       VALUES (?, ?, ?, 'running', ?, ?)
-    `, [id, workflowId, JSON.stringify(parameters || {}), context?.userId || 'system', startedAt]); // TODO-LINT: move to async function
+    `, [id, workflowId, JSON.stringify(parameters || {}), context?.userId || 'system', startedAt]);
 
     // Simulate execution; in production this would enqueue a background worker
     setImmediate(async () => {
-      await db.run(`UPDATE workflow_executions SET status = 'completed', finished_at = ? WHERE id = ?`, [new Date().toISOString(), id]); // TODO-LINT: move to async function
+      await db.run(`UPDATE workflow_executions SET status = 'completed', finished_at = ? WHERE id = ?`, [new Date().toISOString(), id]);
     });
 
     return { workflowId, executionId: id, status: 'running', queuedAt: startedAt };
@@ -1988,9 +1987,9 @@ async function notifyEscalationTeams(escalation) {
 }
 
 /**
- * Legacy function for _backward _compatibility
+ * Legacy function for backward compatibility
  */
-export async function _notifyCosmoEscalation(ticketId, reason) {
+export async function notifyCosmoEscalation(ticketId, reason) {
   logger.info(`Legacy escalation notification for ticket ${ticketId}: ${reason}`);
   
   // Create escalation using new system
@@ -2002,7 +2001,7 @@ export async function _notifyCosmoEscalation(ticketId, reason) {
   };
   
   try {
-    await createEscalation(null, 'system', 'default', escalationData); // TODO-LINT: move to async function
+    await createEscalation(null, 'system', 'default', escalationData);
   } catch (error) {
     logger.error('Error in legacy escalation:', error);
   }

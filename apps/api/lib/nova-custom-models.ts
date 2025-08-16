@@ -15,9 +15,9 @@ export interface NovaCustomModel {
   version: string;
   description: string;
   architecture: {
-    inputLayers: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[];
-    hiddenLayers: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[];
-    outputLayer: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    inputLayers: any[];
+    hiddenLayers: any[];
+    outputLayer: any;
     activationFunctions: string[];
     optimizers: string[];
   };
@@ -46,8 +46,8 @@ export interface NovaCustomModel {
   deployment: {
     status: 'development' | 'testing' | 'staging' | 'production';
     endpoint: string;
-    scalingConfig: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-    healthChecks: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[];
+    scalingConfig: any;
+    healthChecks: any[];
   };
   businessImpact: {
     automationRate: number;
@@ -59,7 +59,7 @@ export interface NovaCustomModel {
 
 export interface NovaModelRequest {
   modelId: string;
-  input: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  input: any;
   context: {
     userId?: string;
     sessionId?: string;
@@ -77,7 +77,7 @@ export interface NovaModelRequest {
 }
 
 export interface NovaModelResponse {
-  prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  prediction: any;
   confidence: number;
   explanation?: {
     reasoning: string;
@@ -89,7 +89,7 @@ export interface NovaModelResponse {
     decision_path: string[];
   };
   alternatives?: Array<{
-    prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    prediction: any;
     confidence: number;
     reasoning: string;
   }>;
@@ -150,20 +150,20 @@ export class NovaCustomModels extends EventEmitter {
   private async initialize(): Promise<void> {
     try {
       // Create directories
-      await fs.mkdir(this.modelsPath, { recursive: true }); // TODO-LINT: move to async function
-      await fs.mkdir(path.join(this.modelsPath, 'ticket_classifier'), { recursive: true }); // TODO-LINT: move to async function
-      await fs.mkdir(path.join(this.modelsPath, 'incident_predictor'), { recursive: true }); // TODO-LINT: move to async function
-      await fs.mkdir(path.join(this.modelsPath, 'knowledge_extractor'), { recursive: true }); // TODO-LINT: move to async function
-      await fs.mkdir(path.join(this.modelsPath, 'auto_resolver'), { recursive: true }); // TODO-LINT: move to async function
+      await fs.mkdir(this.modelsPath, { recursive: true });
+      await fs.mkdir(path.join(this.modelsPath, 'ticket_classifier'), { recursive: true });
+      await fs.mkdir(path.join(this.modelsPath, 'incident_predictor'), { recursive: true });
+      await fs.mkdir(path.join(this.modelsPath, 'knowledge_extractor'), { recursive: true });
+      await fs.mkdir(path.join(this.modelsPath, 'auto_resolver'), { recursive: true });
 
       // Load existing models
-      await this.loadExistingModels(); // TODO-LINT: move to async function
+      await this.loadExistingModels();
 
       // Initialize ITSM knowledge base
-      await this.initializeKnowledgeBase(); // TODO-LINT: move to async function
+      await this.initializeKnowledgeBase();
 
       // Create default models
-      await this.createDefaultModels(); // TODO-LINT: move to async function
+      await this.createDefaultModels();
 
       this.isInitialized = true;
       console.log('Nova Custom Models system initialized successfully');
@@ -173,7 +173,7 @@ export class NovaCustomModels extends EventEmitter {
         userId: 'system',
         details: { totalModels: this.models.size },
         riskLevel: 'low'
-      }); // TODO-LINT: move to async function
+      });
 
     } catch (error) {
       console.error('Failed to initialize Nova Custom Models:', error);
@@ -187,16 +187,16 @@ export class NovaCustomModels extends EventEmitter {
   private async loadExistingModels(): Promise<void> {
     try {
       const modelsFile = path.join(this.modelsPath, 'models.json');
-      const exists = await fs.access(modelsFile).then(() => true).catch(() => false); // TODO-LINT: move to async function
+      const exists = await fs.access(modelsFile).then(() => true).catch(() => false);
       
       if (exists) {
-        const modelsData = await fs.readFile(modelsFile, 'utf-8'); // TODO-LINT: move to async function
+        const modelsData = await fs.readFile(modelsFile, 'utf-8');
         const models: NovaCustomModel[] = JSON.parse(modelsData);
         
         for (const model of models) {
           this.models.set(model.id, model);
           if (model.deployment.status === 'production') {
-            await this.loadModelIntoMemory(model.id); // TODO-LINT: move to async function
+            await this.loadModelIntoMemory(model.id);
           }
         }
         
@@ -266,13 +266,13 @@ export class NovaCustomModels extends EventEmitter {
       await this.createAutoResolverModel(),
       await this.createSentimentAnalyzerModel(),
       await this.createPriorityScorerModel()
-    ]; // TODO-LINT: move to async function
+    ];
 
     for (const model of defaultModels) {
       this.models.set(model.id, model);
     }
 
-    await this.saveModels(); // TODO-LINT: move to async function
+    await this.saveModels();
   }
 
   /**
@@ -677,32 +677,32 @@ export class NovaCustomModels extends EventEmitter {
     try {
       // Load model if not in memory
       if (!this.loadedModels.has(request.modelId)) {
-        await this.loadModelIntoMemory(request.modelId); // TODO-LINT: move to async function
+        await this.loadModelIntoMemory(request.modelId);
       }
 
       // Process based on model type
-      let prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+      let prediction: any;
       let confidence: number;
-      let explanation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+      let explanation: any;
 
       switch (model.type) {
         case 'ticket_classifier':
-          ({ prediction, confidence, explanation } = await this.processTicketClassification(request, model)); // TODO-LINT: move to async function
+          ({ prediction, confidence, explanation } = await this.processTicketClassification(request, model));
           break;
         case 'incident_predictor':
-          ({ prediction, confidence, explanation } = await this.processIncidentPrediction(request, model)); // TODO-LINT: move to async function
+          ({ prediction, confidence, explanation } = await this.processIncidentPrediction(request, model));
           break;
         case 'knowledge_extractor':
-          ({ prediction, confidence, explanation } = await this.processKnowledgeExtraction(request, model)); // TODO-LINT: move to async function
+          ({ prediction, confidence, explanation } = await this.processKnowledgeExtraction(request, model));
           break;
         case 'auto_resolver':
-          ({ prediction, confidence, explanation } = await this.processAutoResolution(request, model)); // TODO-LINT: move to async function
+          ({ prediction, confidence, explanation } = await this.processAutoResolution(request, model));
           break;
         case 'sentiment_analyzer':
-          ({ prediction, confidence, explanation } = await this.processSentimentAnalysis(request, model)); // TODO-LINT: move to async function
+          ({ prediction, confidence, explanation } = await this.processSentimentAnalysis(request, model));
           break;
         case 'priority_scorer':
-          ({ prediction, confidence, explanation } = await this.processPriorityScoring(request, model)); // TODO-LINT: move to async function
+          ({ prediction, confidence, explanation } = await this.processPriorityScoring(request, model));
           break;
         default:
           throw new Error(`Unsupported model type: ${model.type}`);
@@ -711,11 +711,11 @@ export class NovaCustomModels extends EventEmitter {
       const processingTime = Date.now() - startTime;
 
       // Generate business context
-      const businessContext = await this.generateBusinessContext(prediction, model, request); // TODO-LINT: move to async function
+      const businessContext = await this.generateBusinessContext(prediction, model, request);
 
       // Generate alternatives if requested
       const alternatives = request.options?.alternative_suggestions ? 
-        await this.generateAlternatives(request, model, prediction) : undefined; // TODO-LINT: move to async function
+        await this.generateAlternatives(request, model, prediction) : undefined;
 
       const response: NovaModelResponse = {
         prediction,
@@ -741,11 +741,11 @@ export class NovaCustomModels extends EventEmitter {
           processingTime,
           userId: request.context.userId
         }
-      }); // TODO-LINT: move to async function
+      });
 
       // Real-time learning if enabled
       if (request.options?.real_time_learning) {
-        await this.recordLearningOpportunity(request, response); // TODO-LINT: move to async function
+        await this.recordLearningOpportunity(request, response);
       }
 
       this.emit('predictionMade', { request, response, model });
@@ -760,7 +760,7 @@ export class NovaCustomModels extends EventEmitter {
           error: error.message 
         },
         riskLevel: 'medium'
-      }); // TODO-LINT: move to async function
+      });
 
       throw error;
     }
@@ -772,7 +772,7 @@ export class NovaCustomModels extends EventEmitter {
   private async processTicketClassification(
     request: NovaModelRequest,
     model: NovaCustomModel
-  ): Promise<{ prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; confidence: number; explanation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }> {
+  ): Promise<{ prediction: any; confidence: number; explanation: any }> {
     // Simulate advanced ticket classification
     const categories = ['Hardware', 'Software', 'Network', 'Access', 'Service Request', 'Incident'];
     const subcategories = {
@@ -811,7 +811,7 @@ export class NovaCustomModels extends EventEmitter {
       suggested_assignment: this.suggestAssignment(bestCategory, subcategory),
       estimated_effort: this.estimateEffort(bestCategory, subcategory),
       related_articles: await this.findRelatedKnowledge(bestCategory, inputText)
-    }; // TODO-LINT: move to async function
+    };
 
     const explanation = {
       reasoning: `Classified as ${bestCategory} based on keyword analysis and pattern matching`,
@@ -837,7 +837,7 @@ export class NovaCustomModels extends EventEmitter {
   private async processIncidentPrediction(
     request: NovaModelRequest,
     model: NovaCustomModel
-  ): Promise<{ prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; confidence: number; explanation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }> {
+  ): Promise<{ prediction: any; confidence: number; explanation: any }> {
     // Simulate incident prediction analysis
     const metrics = request.input.metrics || {};
     const historical = request.input.historical || [];
@@ -893,7 +893,7 @@ export class NovaCustomModels extends EventEmitter {
   private async processKnowledgeExtraction(
     request: NovaModelRequest,
     model: NovaCustomModel
-  ): Promise<{ prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; confidence: number; explanation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }> {
+  ): Promise<{ prediction: any; confidence: number; explanation: any }> {
     const inputText = request.input.text || request.input.content || '';
     
     // Extract entities and relationships
@@ -913,7 +913,7 @@ export class NovaCustomModels extends EventEmitter {
       },
       reusability_score: 0.7 + Math.random() * 0.3,
       similar_cases: await this.findSimilarCases(inputText)
-    }; // TODO-LINT: move to async function
+    };
 
     const explanation = {
       reasoning: 'Knowledge extracted using NER and relationship extraction techniques',
@@ -939,12 +939,12 @@ export class NovaCustomModels extends EventEmitter {
   private async processAutoResolution(
     request: NovaModelRequest,
     model: NovaCustomModel
-  ): Promise<{ prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; confidence: number; explanation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }> {
+  ): Promise<{ prediction: any; confidence: number; explanation: any }> {
     const ticketText = request.input.description || request.input.text || '';
     const category = request.input.category || 'General';
     
     // Find matching solutions
-    const solutions = await this.findMatchingSolutions(ticketText, category); // TODO-LINT: move to async function
+    const solutions = await this.findMatchingSolutions(ticketText, category);
     const automationPossible = this.checkAutomationPossibility(category, ticketText);
     
     const prediction = {
@@ -981,7 +981,7 @@ export class NovaCustomModels extends EventEmitter {
   private async processSentimentAnalysis(
     request: NovaModelRequest,
     model: NovaCustomModel
-  ): Promise<{ prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; confidence: number; explanation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }> {
+  ): Promise<{ prediction: any; confidence: number; explanation: any }> {
     const text = request.input.text || request.input.message || '';
     
     // Simple sentiment analysis (in production, use trained model)
@@ -1040,7 +1040,7 @@ export class NovaCustomModels extends EventEmitter {
   private async processPriorityScoring(
     request: NovaModelRequest,
     model: NovaCustomModel
-  ): Promise<{ prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types; confidence: number; explanation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }> {
+  ): Promise<{ prediction: any; confidence: number; explanation: any }> {
     const ticket = request.input;
     
     // Calculate priority factors
@@ -1142,7 +1142,7 @@ export class NovaCustomModels extends EventEmitter {
     return related;
   }
 
-  private extractEntities(text: string): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[] {
+  private extractEntities(text: string): any[] {
     // Simplified entity extraction
     const entities = [];
     const words = text.split(/\s+/);
@@ -1160,14 +1160,14 @@ export class NovaCustomModels extends EventEmitter {
     return entities;
   }
 
-  private extractRelationships(text: string): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[] {
+  private extractRelationships(text: string): any[] {
     return [
       { source: 'User', relation: 'experiences', target: 'Issue' },
       { source: 'System', relation: 'generates', target: 'Error' }
     ];
   }
 
-  private extractSolutions(text: string): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types[] {
+  private extractSolutions(text: string): any[] {
     return [
       { solution: 'Restart the application', confidence: 0.8 },
       { solution: 'Clear browser cache', confidence: 0.6 }
@@ -1233,7 +1233,7 @@ export class NovaCustomModels extends EventEmitter {
     return steps[category.toLowerCase()] || ['Analyze request', 'Execute solution', 'Verify completion'];
   }
 
-  private calculateBusinessImpact(ticket: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): number {
+  private calculateBusinessImpact(ticket: any): number {
     let impact = 0.5; // Base impact
     
     if (ticket.affected_users > 100) impact += 0.3;
@@ -1243,7 +1243,7 @@ export class NovaCustomModels extends EventEmitter {
     return Math.min(1.0, impact);
   }
 
-  private calculateUrgency(ticket: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): number {
+  private calculateUrgency(ticket: any): number {
     let urgency = 0.3; // Base urgency
     
     if (ticket.outage) urgency += 0.5;
@@ -1253,12 +1253,12 @@ export class NovaCustomModels extends EventEmitter {
     return Math.min(1.0, urgency);
   }
 
-  private calculateUserPriority(ticket: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): number {
+  private calculateUserPriority(ticket: any): number {
     const priorityMap = { 'critical': 1.0, 'high': 0.8, 'medium': 0.5, 'low': 0.2 };
     return priorityMap[ticket.user_priority] || 0.3;
   }
 
-  private calculateTechnicalComplexity(ticket: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): number {
+  private calculateTechnicalComplexity(ticket: any): number {
     let complexity = 0.3;
     
     if (ticket.category === 'Network') complexity += 0.3;
@@ -1293,7 +1293,7 @@ export class NovaCustomModels extends EventEmitter {
   }
 
   private async generateBusinessContext(
-    prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types,
+    prediction: any,
     model: NovaCustomModel,
     request: NovaModelRequest
   ): Promise<any> {
@@ -1305,7 +1305,7 @@ export class NovaCustomModels extends EventEmitter {
     };
   }
 
-  private assessBusinessImpact(prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, modelType: string): string {
+  private assessBusinessImpact(prediction: any, modelType: string): string {
     const impacts = {
       'ticket_classifier': 'Improved ticket routing and faster resolution',
       'incident_predictor': 'Proactive incident prevention and reduced downtime',
@@ -1317,7 +1317,7 @@ export class NovaCustomModels extends EventEmitter {
     return impacts[modelType] || 'General operational improvement';
   }
 
-  private generateRecommendedActions(prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, modelType: string): string[] {
+  private generateRecommendedActions(prediction: any, modelType: string): string[] {
     if (prediction.can_auto_resolve) {
       return ['Execute automated resolution', 'Monitor outcome', 'Update knowledge base'];
     }
@@ -1327,11 +1327,11 @@ export class NovaCustomModels extends EventEmitter {
     return ['Process normally', 'Apply standard procedures', 'Monitor progress'];
   }
 
-  private assessAutomationOpportunity(prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, modelType: string): boolean {
+  private assessAutomationOpportunity(prediction: any, modelType: string): boolean {
     return modelType === 'auto_resolver' && prediction.can_auto_resolve;
   }
 
-  private assessEscalationNeed(prediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types, modelType: string): boolean {
+  private assessEscalationNeed(prediction: any, modelType: string): boolean {
     return prediction.risk_level === 'high' || 
            prediction.priority === 'critical' || 
            prediction.sentiment?.includes('very_negative');
@@ -1340,7 +1340,7 @@ export class NovaCustomModels extends EventEmitter {
   private async generateAlternatives(
     request: NovaModelRequest,
     model: NovaCustomModel,
-    primaryPrediction: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types
+    primaryPrediction: any
   ): Promise<any[]> {
     // Generate alternative predictions with lower confidence
     return [
@@ -1366,7 +1366,7 @@ export class NovaCustomModels extends EventEmitter {
         prediction: response.prediction
       },
       riskLevel: 'low'
-    }); // TODO-LINT: move to async function
+    });
   }
 
   private async loadModelIntoMemory(modelId: string): Promise<void> {
@@ -1378,7 +1378,7 @@ export class NovaCustomModels extends EventEmitter {
       console.log(`Loading Nova model ${modelId} into memory...`);
       
       // Simulate model loading
-      await new Promise(resolve => setTimeout(resolve, 1000)); // TODO-LINT: move to async function
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Create mock TensorFlow model
       const mockModel = {} as tf.LayersModel;
@@ -1395,7 +1395,7 @@ export class NovaCustomModels extends EventEmitter {
     try {
       const modelsFile = path.join(this.modelsPath, 'models.json');
       const modelsArray = Array.from(this.models.values());
-      await fs.writeFile(modelsFile, JSON.stringify(modelsArray, null, 2)); // TODO-LINT: move to async function
+      await fs.writeFile(modelsFile, JSON.stringify(modelsArray, null, 2));
     } catch (error) {
       console.error('Failed to save models:', error);
     }
@@ -1419,7 +1419,7 @@ export class NovaCustomModels extends EventEmitter {
   /**
    * Get system status
    */
-  getStatus(): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types {
+  getStatus(): any {
     return {
       isInitialized: this.isInitialized,
       totalModels: this.models.size,
@@ -1447,7 +1447,7 @@ export class NovaCustomModels extends EventEmitter {
     return byStatus;
   }
 
-  private calculateTotalBusinessImpact(): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types {
+  private calculateTotalBusinessImpact(): any {
     const models = Array.from(this.models.values());
     return {
       totalCostSavings: models.reduce((sum, m) => sum + m.businessImpact.costSavings, 0),
@@ -1459,4 +1459,4 @@ export class NovaCustomModels extends EventEmitter {
 }
 
 // Export singleton instance
-export const _novaCustomModels = new NovaCustomModels();
+export const novaCustomModels = new NovaCustomModels();

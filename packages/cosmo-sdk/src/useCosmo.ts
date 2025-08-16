@@ -13,9 +13,9 @@ export interface UseCosmoOptions {
   autoStart?: boolean;
   initialMessage?: string;
   onMessage?: (message: CosmoMessage) => void;
-  onEscalation?: (escalation: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
-  onXPAwarded?: (xp: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
-  onError?: (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
+  onEscalation?: (escalation: any) => void;
+  onXPAwarded?: (xp: any) => void;
+  onError?: (error: any) => void;
 }
 
 export interface UseCosmoReturn {
@@ -37,7 +37,7 @@ export interface UseCosmoReturn {
   sdk: CosmoSDK | null;
 }
 
-export function _useCosmo(
+export function useCosmo(
   config: CosmoConfig,
   context: CosmoContext,
   options: UseCosmoOptions = {}
@@ -136,7 +136,7 @@ export function _useCosmo(
     setError(null);
     
     try {
-      await sdkInstance.startConversation(initialMessage); // TODO-LINT: move to async function
+      await sdkInstance.startConversation(initialMessage);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to start conversation';
       setError(errorMessage);
@@ -151,7 +151,7 @@ export function _useCosmo(
       return;
     }
     
-    await startConversationInternal(sdk, initialMessage); // TODO-LINT: move to async function
+    await startConversationInternal(sdk, initialMessage);
   }, [sdk]);
 
   const sendMessage = useCallback(async (text: string) => {
@@ -168,7 +168,7 @@ export function _useCosmo(
     setError(null);
     
     try {
-      await sdk.sendMessage(text); // TODO-LINT: move to async function
+      await sdk.sendMessage(text);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
       setError(errorMessage);
@@ -186,7 +186,7 @@ export function _useCosmo(
     setError(null);
     
     try {
-      await sdk.endConversation(); // TODO-LINT: move to async function
+      await sdk.endConversation();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to end conversation';
       setError(errorMessage);
@@ -208,7 +208,7 @@ export function _useCosmo(
     setError(null);
     
     try {
-      await sdk.triggerEscalation(reason, level); // TODO-LINT: move to async function
+      await sdk.triggerEscalation(reason, level);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to trigger escalation';
       setError(errorMessage);

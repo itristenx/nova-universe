@@ -92,7 +92,7 @@ export class AdvancedFeaturesService {
     };
 
     // Save to database
-    await this.saveTag(tag); // TODO-LINT: move to async function
+    await this.saveTag(tag);
     logger.info(`Created tag: ${tag.name}`);
     
     return tag;
@@ -105,7 +105,7 @@ export class AdvancedFeaturesService {
 
   async assignTagsToMonitor(monitorId: string, tagIds: string[]): Promise<void> {
     // Assign tags to monitor in database
-    await this.assignMonitorTags(monitorId, tagIds); // TODO-LINT: move to async function
+    await this.assignMonitorTags(monitorId, tagIds);
     logger.info(`Assigned ${tagIds.length} tags to monitor: ${monitorId}`);
   }
 
@@ -137,10 +137,10 @@ export class AdvancedFeaturesService {
       updated_at: new Date().toISOString()
     };
 
-    await this.saveMaintenanceWindow(window); // TODO-LINT: move to async function
+    await this.saveMaintenanceWindow(window);
     
     // Schedule notifications
-    await this.scheduleMaintenanceNotifications(window); // TODO-LINT: move to async function
+    await this.scheduleMaintenanceNotifications(window);
     
     logger.info(`Created maintenance window: ${window.title}`);
     return window;
@@ -148,7 +148,7 @@ export class AdvancedFeaturesService {
 
   async getActiveMaintenanceWindows(): Promise<MaintenanceWindow[]> {
     const now = new Date();
-    const windows = await this.queryMaintenanceWindows(); // TODO-LINT: move to async function
+    const windows = await this.queryMaintenanceWindows();
     
     return windows.filter(window => {
       const startTime = new Date(window.start_time);
@@ -160,7 +160,7 @@ export class AdvancedFeaturesService {
   async getScheduledMaintenanceWindows(daysAhead: number = 7): Promise<MaintenanceWindow[]> {
     const now = new Date();
     const futureDate = new Date(now.getTime() + (daysAhead * 24 * 60 * 60 * 1000));
-    const windows = await this.queryMaintenanceWindows(); // TODO-LINT: move to async function
+    const windows = await this.queryMaintenanceWindows();
     
     return windows.filter(window => {
       const startTime = new Date(window.start_time);
@@ -169,7 +169,7 @@ export class AdvancedFeaturesService {
   }
 
   async isMonitorInMaintenance(monitorId: string): Promise<boolean> {
-    const activeWindows = await this.getActiveMaintenanceWindows(); // TODO-LINT: move to async function
+    const activeWindows = await this.getActiveMaintenanceWindows();
     
     return activeWindows.some(window => {
       // Check if monitor is directly affected
@@ -200,7 +200,7 @@ export class AdvancedFeaturesService {
       if (notificationTime > now) {
         // Schedule notification (this would use a job queue in production)
         setTimeout(async () => {
-          await this.sendMaintenanceNotification(window, notification.message); // TODO-LINT: move to async function
+          await this.sendMaintenanceNotification(window, notification.message);
         }, notificationTime.getTime() - now.getTime());
       }
     }
@@ -231,7 +231,7 @@ export class AdvancedFeaturesService {
       updated_at: new Date().toISOString()
     };
 
-    await this.saveProxyConfiguration(proxy); // TODO-LINT: move to async function
+    await this.saveProxyConfiguration(proxy);
     logger.info(`Created proxy configuration: ${proxy.name}`);
     
     return proxy;
@@ -244,8 +244,8 @@ export class AdvancedFeaturesService {
   async testProxyConnection(proxy: ProxyConfiguration): Promise<boolean> {
     try {
       // Test proxy connection
-      const axios = await import('axios'); // TODO-LINT: move to async function
-      const HttpsProxyAgent = await import('https-proxy-agent'); // TODO-LINT: move to async function
+      const axios = await import('axios');
+      const HttpsProxyAgent = await import('https-proxy-agent');
       
       const proxyUrl = `${proxy.protocol}://${proxy.username ? `${proxy.username}:${proxy.password}@` : ''}${proxy.hostname}:${proxy.port}`;
       const agent = new HttpsProxyAgent.HttpsProxyAgent(proxyUrl);
@@ -253,10 +253,10 @@ export class AdvancedFeaturesService {
       const response = await axios.default.get('https://httpbin.org/ip', {
         httpsAgent: agent,
         timeout: 10000
-      }); // TODO-LINT: move to async function
+      });
       
       return response.status === 200;
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       logger.error(`Proxy test failed: ${error.message}`);
       return false;
     }
@@ -267,7 +267,7 @@ export class AdvancedFeaturesService {
    */
   async checkCertificate(hostname: string, port: number = 443): Promise<CertificateInfo> {
     try {
-      const tls = await import('tls'); // TODO-LINT: move to async function
+      const tls = await import('tls');
       
       return new Promise((resolve, reject) => {
         const socket = tls.connect(port, hostname, { servername: hostname }, () => {
@@ -310,7 +310,7 @@ export class AdvancedFeaturesService {
           reject(new Error('Certificate check timeout'));
         });
       });
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       throw new Error(`Certificate check failed: ${error.message}`);
     }
   }
@@ -324,14 +324,14 @@ export class AdvancedFeaturesService {
    * 2FA Support
    */
   async generateTotpSecret(): Promise<{ secret: string; qrCode: string; backupCodes: string[] }> {
-    const speakeasy = await import('speakeasy'); // TODO-LINT: move to async function
-    const qrcode = await import('qrcode'); // TODO-LINT: move to async function
+    const speakeasy = await import('speakeasy');
+    const qrcode = await import('qrcode');
     
     const secret = speakeasy.generateSecret({
       name: 'Nova Sentinel'
     });
     
-    const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url!); // TODO-LINT: move to async function
+    const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url!);
     
     // Generate backup codes
     const backupCodes = Array.from({ length: 10 }, () => 
@@ -346,7 +346,7 @@ export class AdvancedFeaturesService {
   }
 
   async verifyTotpToken(secret: string, token: string): Promise<boolean> {
-    const speakeasy = await import('speakeasy'); // TODO-LINT: move to async function
+    const speakeasy = await import('speakeasy');
     
     return speakeasy.totp.verify({
       secret,
@@ -361,7 +361,7 @@ export class AdvancedFeaturesService {
    */
   async generatePingChartData(monitorId: string, hours: number = 24): Promise<any[]> {
     // Query monitor results for the specified time period
-    const results = await this.queryMonitorResults(monitorId, hours); // TODO-LINT: move to async function
+    const results = await this.queryMonitorResults(monitorId, hours);
     
     return results.map(result => ({
       timestamp: result.timestamp,
@@ -387,87 +387,87 @@ export class AdvancedFeaturesService {
 
   // Database-backed methods
   private async saveTag(tag: Tag): Promise<void> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
+    const db = (await import('../db.js')).default;
     await db.query(`
       INSERT INTO tags (id, tenant_id, name, color, created_at, updated_at)
       VALUES ($1, $2, $3, $4, NOW(), NOW())
       ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, color = EXCLUDED.color, updated_at = NOW()
-    `, [tag.id, tag.tenantId || null, tag.name, tag.color || this.getRandomColor()]); // TODO-LINT: move to async function
+    `, [tag.id, tag.tenantId || null, tag.name, tag.color || this.getRandomColor()]);
   }
 
   private async queryTagsByTenant(tenantId?: string): Promise<Tag[]> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
+    const db = (await import('../db.js')).default;
     const res = tenantId
       ? await db.query('SELECT id, name, color FROM tags WHERE tenant_id = $1 ORDER BY name', [tenantId])
-      : await db.query('SELECT id, name, color FROM tags ORDER BY name'); // TODO-LINT: move to async function
-    return (res.rows || []).map((r: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => ({ id: r.id, name: r.name, color: r.color, tenantId }));
+      : await db.query('SELECT id, name, color FROM tags ORDER BY name');
+    return (res.rows || []).map((r: any) => ({ id: r.id, name: r.name, color: r.color, tenantId }));
   }
 
   private async assignMonitorTags(monitorId: string, tagIds: string[]): Promise<void> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
-    await db.query('DELETE FROM monitor_tags WHERE monitor_id = $1', [monitorId]); // TODO-LINT: move to async function
+    const db = (await import('../db.js')).default;
+    await db.query('DELETE FROM monitor_tags WHERE monitor_id = $1', [monitorId]);
     for (const tagId of tagIds) {
-      await db.query('INSERT INTO monitor_tags (monitor_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [monitorId, tagId]); // TODO-LINT: move to async function
+      await db.query('INSERT INTO monitor_tags (monitor_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [monitorId, tagId]);
     }
   }
 
   private async queryMonitorsByTag(tagId: string): Promise<string[]> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
-    const res = await db.query('SELECT monitor_id FROM monitor_tags WHERE tag_id = $1', [tagId]); // TODO-LINT: move to async function
-    return (res.rows || []).map((r: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => r.monitor_id);
+    const db = (await import('../db.js')).default;
+    const res = await db.query('SELECT monitor_id FROM monitor_tags WHERE tag_id = $1', [tagId]);
+    return (res.rows || []).map((r: any) => r.monitor_id);
   }
 
   private async saveMaintenanceWindow(window: MaintenanceWindow): Promise<void> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
+    const db = (await import('../db.js')).default;
     await db.query(`
       INSERT INTO maintenance_windows (id, tenant_id, title, status, scheduled_start, scheduled_end, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, status = EXCLUDED.status, scheduled_start = EXCLUDED.scheduled_start, scheduled_end = EXCLUDED.scheduled_end, updated_at = NOW()
-    `, [window.id, window.tenantId || null, window.title, window.status || 'scheduled', window.startTime, window.endTime]); // TODO-LINT: move to async function
+    `, [window.id, window.tenantId || null, window.title, window.status || 'scheduled', window.startTime, window.endTime]);
   }
 
   private async queryMaintenanceWindows(): Promise<MaintenanceWindow[]> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
-    const res = await db.query('SELECT id, title, status, scheduled_start as "startTime", scheduled_end as "endTime", tenant_id as "tenantId" FROM maintenance_windows ORDER BY scheduled_start DESC'); // TODO-LINT: move to async function
+    const db = (await import('../db.js')).default;
+    const res = await db.query('SELECT id, title, status, scheduled_start as "startTime", scheduled_end as "endTime", tenant_id as "tenantId" FROM maintenance_windows ORDER BY scheduled_start DESC');
     return res.rows || [];
   }
 
   private async saveProxyConfiguration(proxy: ProxyConfiguration): Promise<void> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
+    const db = (await import('../db.js')).default;
     await db.query(`
       INSERT INTO proxy_configurations (id, tenant_id, name, target_url, auth_type, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
       ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, target_url = EXCLUDED.target_url, auth_type = EXCLUDED.auth_type, updated_at = NOW()
-    `, [proxy.id, proxy.tenantId || null, proxy.name, proxy.targetUrl, proxy.authType || 'none']); // TODO-LINT: move to async function
+    `, [proxy.id, proxy.tenantId || null, proxy.name, proxy.targetUrl, proxy.authType || 'none']);
   }
 
   private async queryProxyConfiguration(proxyId: string): Promise<ProxyConfiguration | null> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
-    const res = await db.query('SELECT id, tenant_id as "tenantId", name, target_url as "targetUrl", auth_type as "authType" FROM proxy_configurations WHERE id = $1', [proxyId]); // TODO-LINT: move to async function
+    const db = (await import('../db.js')).default;
+    const res = await db.query('SELECT id, tenant_id as "tenantId", name, target_url as "targetUrl", auth_type as "authType" FROM proxy_configurations WHERE id = $1', [proxyId]);
     return res.rows?.[0] || null;
   }
 
   private async queryCertificatesExpiringSoon(days: number): Promise<CertificateInfo[]> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
+    const db = (await import('../db.js')).default;
     const res = await db.query(`
       SELECT id, monitor_id as "monitorId", days_remaining as "daysRemaining", is_expired as "isExpired", issuer
       FROM certificate_info
       WHERE days_remaining <= $1
       ORDER BY days_remaining ASC
-    `, [days]); // TODO-LINT: move to async function
+    `, [days]);
     return res.rows || [];
   }
 
   private async queryMonitorResults(monitorId: string, hours: number): Promise<any[]> {
-    const db = (await import('../db.js')).default; // TODO-LINT: move to async function
+    const db = (await import('../db.js')).default;
     const res = await db.query(`
       SELECT checked_at as timestamp, response_time_ms as response_time, (status = 'up') as success
       FROM monitor_heartbeats
       WHERE monitor_id = $1 AND checked_at >= NOW() - ($2 || ' hours')::interval
       ORDER BY checked_at ASC
-    `, [monitorId, String(hours)]); // TODO-LINT: move to async function
+    `, [monitorId, String(hours)]);
     return res.rows || [];
   }
 }
 
-export const _advancedFeaturesService = new AdvancedFeaturesService();
+export const advancedFeaturesService = new AdvancedFeaturesService();

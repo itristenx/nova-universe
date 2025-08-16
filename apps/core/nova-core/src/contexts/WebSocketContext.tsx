@@ -6,7 +6,7 @@ interface WebSocketContextType {
   connectionError: string | null;
   subscribe: (dataType: string) => void;
   unsubscribe: (dataType: string) => void;
-  broadcast: (message: string, data?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
+  broadcast: (message: string, data?: any) => void;
   notify: (userId: string, message: string, type?: string) => void;
 }
 
@@ -51,7 +51,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     }
   }, []);
 
-  const broadcast = async (message: string, data?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  const broadcast = async (message: string, data?: any) => {
     try {
       const response = await fetch('/api/websocket/broadcast', {
         method: 'POST',
@@ -60,7 +60,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({ message, data })
-      }); // TODO-LINT: move to async function
+      });
 
       if (!response.ok) {
         throw new Error('Failed to broadcast message');
@@ -81,7 +81,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({ userId, message, type })
-      }); // TODO-LINT: move to async function
+      });
 
       if (!response.ok) {
         throw new Error('Failed to send notification');

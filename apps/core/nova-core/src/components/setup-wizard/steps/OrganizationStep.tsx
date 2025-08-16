@@ -5,8 +5,8 @@ import { Input } from '../../ui/Input';
 import { ColorPicker } from '../../ui/color-picker';
 
 interface OrganizationStepProps {
-  data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
-  onUpdate: (data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
+  data: any;
+  onUpdate: (data: any) => void;
   onComplete: () => void;
   errors: Record<string, string>;
   isLoading: boolean;

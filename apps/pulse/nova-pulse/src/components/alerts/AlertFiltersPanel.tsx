@@ -14,7 +14,7 @@ const AlertFiltersPanel: React.FC<AlertFiltersPanelProps> = ({
   onFiltersChange,
   onClose
 }) => {
-  const updateFilter = (key: keyof AlertFilters, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  const updateFilter = (key: keyof AlertFilters, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
   };
 

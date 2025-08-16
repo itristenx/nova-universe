@@ -118,7 +118,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
   }, [updateSetupData]);
 
   const handleStepComplete = useCallback(async () => {
-    const isValid = await validateStep(currentStep.id); // TODO-LINT: move to async function
+    const isValid = await validateStep(currentStep.id);
     if (!isValid) {
       return;
     }
@@ -127,7 +127,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
     
     try {
       // Save progress after each step
-      await saveProgress(); // TODO-LINT: move to async function
+      await saveProgress();
       
       // Move to next step or complete
       if (currentStepIndex < STEPS.length - 1) {
@@ -151,7 +151,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
     }
   }, [currentStepIndex]);
 
-  const handleStepUpdate = useCallback((data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  const handleStepUpdate = useCallback((data: any) => {
     const updatedData = { [currentStep.id]: data };
     updateSetupData(updatedData);
   }, [currentStep.id, updateSetupData]);

@@ -190,16 +190,16 @@ export class NovaRAGEngine extends EventEmitter {
       logger.info('Initializing Nova RAG Engine...');
 
       // Initialize embedding models
-      await this.initializeEmbeddingModels(); // TODO-LINT: move to async function
+      await this.initializeEmbeddingModels();
 
       // Initialize vector stores
-      await this.initializeVectorStores(); // TODO-LINT: move to async function
+      await this.initializeVectorStores();
 
       // Load existing document chunks
-      await this.loadDocumentChunks(); // TODO-LINT: move to async function
+      await this.loadDocumentChunks();
 
       // Initialize knowledge graph
-      await this.initializeKnowledgeGraph(); // TODO-LINT: move to async function
+      await this.initializeKnowledgeGraph();
 
       // Set up real-time index updates
       if (this.config.realTimeUpdates) {
@@ -233,18 +233,18 @@ export class NovaRAGEngine extends EventEmitter {
 
       // Expand query if enabled
       if (ragQuery.options.expandQuery) {
-        ragQuery.query = await this.expandQuery(ragQuery.query); // TODO-LINT: move to async function
+        ragQuery.query = await this.expandQuery(ragQuery.query);
       }
 
       // Generate query embedding
-      const queryEmbedding = await this.generateEmbedding(ragQuery.query); // TODO-LINT: move to async function
+      const queryEmbedding = await this.generateEmbedding(ragQuery.query);
 
       // Perform retrieval
       let chunks: DocumentChunk[];
       if (ragQuery.options.hybridSearch) {
-        chunks = await this.hybridSearch(ragQuery, queryEmbedding); // TODO-LINT: move to async function
+        chunks = await this.hybridSearch(ragQuery, queryEmbedding);
       } else {
-        chunks = await this.semanticSearch(ragQuery, queryEmbedding); // TODO-LINT: move to async function
+        chunks = await this.semanticSearch(ragQuery, queryEmbedding);
       }
 
       // Apply filters
@@ -252,7 +252,7 @@ export class NovaRAGEngine extends EventEmitter {
 
       // Rerank results if enabled
       if (ragQuery.options.rerank && this.config.rerankingEnabled) {
-        chunks = await this.rerankResults(ragQuery.query, chunks); // TODO-LINT: move to async function
+        chunks = await this.rerankResults(ragQuery.query, chunks);
       }
 
       // Limit results
@@ -265,7 +265,7 @@ export class NovaRAGEngine extends EventEmitter {
       // Generate summary if requested
       let summary: string | undefined;
       if (chunks.length > 0) {
-        summary = await this.generateContextSummary(ragQuery.query, chunks); // TODO-LINT: move to async function
+        summary = await this.generateContextSummary(ragQuery.query, chunks);
       }
 
       const result: RAGResult = {
@@ -300,11 +300,11 @@ export class NovaRAGEngine extends EventEmitter {
   async addDocuments(documents: Array<{
     id: string;
     content: string;
-    metadata: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+    metadata: any;
   }>): Promise<void> {
     try {
       for (const doc of documents) {
-        await this.processDocument(doc); // TODO-LINT: move to async function
+        await this.processDocument(doc);
       }
 
       logger.info(`Added ${documents.length} documents to RAG system`);
@@ -318,13 +318,13 @@ export class NovaRAGEngine extends EventEmitter {
   /**
    * Update document in RAG system
    */
-  async updateDocument(documentId: string, content: string, metadata: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<void> {
+  async updateDocument(documentId: string, content: string, metadata: any): Promise<void> {
     try {
       // Remove existing chunks for this document
-      await this.removeDocument(documentId); // TODO-LINT: move to async function
+      await this.removeDocument(documentId);
 
       // Add updated document
-      await this.processDocument({ id: documentId, content, metadata }); // TODO-LINT: move to async function
+      await this.processDocument({ id: documentId, content, metadata });
 
       logger.info(`Updated document ${documentId} in RAG system`);
       this.emit('documentUpdated', { documentId });
@@ -345,7 +345,7 @@ export class NovaRAGEngine extends EventEmitter {
 
       for (const chunk of chunksToRemove) {
         this.documentChunks.delete(chunk.id);
-        await this.removeFromVectorStore(chunk.id); // TODO-LINT: move to async function
+        await this.removeFromVectorStore(chunk.id);
       }
 
       logger.info(`Removed document ${documentId} and ${chunksToRemove.length} chunks`);
@@ -359,7 +359,7 @@ export class NovaRAGEngine extends EventEmitter {
   /**
    * Get RAG engine statistics
    */
-  getStats(): any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types {
+  getStats(): any {
     return {
       isInitialized: this.isInitialized,
       totalChunks: this.documentChunks.size,
@@ -481,7 +481,7 @@ export class NovaRAGEngine extends EventEmitter {
     for (const store of stores) {
       if (store.isActive) {
         this.vectorStores.set(store.id, store);
-        await this.initializeVectorStore(store); // TODO-LINT: move to async function
+        await this.initializeVectorStore(store);
         logger.info(`Initialized vector store: ${store.name}`);
       }
     }
@@ -490,13 +490,13 @@ export class NovaRAGEngine extends EventEmitter {
   private async initializeVectorStore(store: VectorStore): Promise<void> {
     switch (store.type) {
       case 'chromadb':
-        await this.initializeChromaDB(store); // TODO-LINT: move to async function
+        await this.initializeChromaDB(store);
         break;
       case 'pinecone':
-        await this.initializePinecone(store); // TODO-LINT: move to async function
+        await this.initializePinecone(store);
         break;
       case 'local':
-        await this.initializeLocalStore(store); // TODO-LINT: move to async function
+        await this.initializeLocalStore(store);
         break;
       default:
         logger.warn(`Unknown vector store type: ${store.type}`);
@@ -517,7 +517,7 @@ export class NovaRAGEngine extends EventEmitter {
     // Local FAISS store initialization
     const storagePath = store.config.storagePath;
     try {
-      await fs.mkdir(storagePath, { recursive: true }); // TODO-LINT: move to async function
+      await fs.mkdir(storagePath, { recursive: true });
       logger.info(`Initialized local vector store: ${storagePath}`);
     } catch (error) {
       logger.error(`Failed to initialize local store: ${error}`);
@@ -541,7 +541,7 @@ export class NovaRAGEngine extends EventEmitter {
     logger.info('Initializing knowledge graph...');
     
     // Load entities, relationships, and concepts
-    await this.loadKnowledgeGraphData(); // TODO-LINT: move to async function
+    await this.loadKnowledgeGraphData();
     
     logger.info('Knowledge graph initialized');
   }
@@ -551,9 +551,9 @@ export class NovaRAGEngine extends EventEmitter {
     // This would connect to a graph database or load from files
   }
 
-  private async processDocument(doc: { id: string; content: string; metadata: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }): Promise<void> {
+  private async processDocument(doc: { id: string; content: string; metadata: any }): Promise<void> {
     // Split document into chunks
-    const chunks = await this.chunkDocument(doc.content, doc.metadata); // TODO-LINT: move to async function
+    const chunks = await this.chunkDocument(doc.content, doc.metadata);
 
     // Generate embeddings for each chunk
     for (const chunk of chunks) {
@@ -561,22 +561,22 @@ export class NovaRAGEngine extends EventEmitter {
       chunk.id = crypto.randomUUID();
       
       // Generate embedding
-      chunk.embedding = await this.generateEmbedding(chunk.content); // TODO-LINT: move to async function
+      chunk.embedding = await this.generateEmbedding(chunk.content);
       
       // Store chunk
       this.documentChunks.set(chunk.id, chunk);
       
       // Add to vector store
-      await this.addToVectorStore(chunk); // TODO-LINT: move to async function
+      await this.addToVectorStore(chunk);
     }
 
     // Update knowledge graph if enabled
     if (this.config.knowledgeGraphEnabled) {
-      await this.updateKnowledgeGraph(doc); // TODO-LINT: move to async function
+      await this.updateKnowledgeGraph(doc);
     }
   }
 
-  private async chunkDocument(content: string, metadata: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types): Promise<DocumentChunk[]> {
+  private async chunkDocument(content: string, metadata: any): Promise<DocumentChunk[]> {
     const chunks: DocumentChunk[] = [];
     const chunkSize = this.config.chunkSize;
     const overlap = this.config.chunkOverlap;
@@ -627,11 +627,11 @@ export class NovaRAGEngine extends EventEmitter {
 
     switch (model.provider) {
       case 'openai':
-        return await this.generateOpenAIEmbedding(text, model); // TODO-LINT: move to async function
+        return await this.generateOpenAIEmbedding(text, model);
       case 'huggingface':
-        return await this.generateHuggingFaceEmbedding(text, model); // TODO-LINT: move to async function
+        return await this.generateHuggingFaceEmbedding(text, model);
       case 'local':
-        return await this.generateLocalEmbedding(text, model); // TODO-LINT: move to async function
+        return await this.generateLocalEmbedding(text, model);
       default:
         throw new Error(`Unsupported embedding provider: ${model.provider}`);
     }
@@ -662,13 +662,13 @@ export class NovaRAGEngine extends EventEmitter {
     // Add chunk to vector store based on type
     switch (store.type) {
       case 'chromadb':
-        await this.addToChromaDB(chunk, store); // TODO-LINT: move to async function
+        await this.addToChromaDB(chunk, store);
         break;
       case 'pinecone':
-        await this.addToPinecone(chunk, store); // TODO-LINT: move to async function
+        await this.addToPinecone(chunk, store);
         break;
       case 'local':
-        await this.addToLocalStore(chunk, store); // TODO-LINT: move to async function
+        await this.addToLocalStore(chunk, store);
         break;
     }
   }
@@ -692,13 +692,13 @@ export class NovaRAGEngine extends EventEmitter {
     // Remove from vector store based on type
     switch (store.type) {
       case 'chromadb':
-        await this.removeFromChromaDB(chunkId, store); // TODO-LINT: move to async function
+        await this.removeFromChromaDB(chunkId, store);
         break;
       case 'pinecone':
-        await this.removeFromPinecone(chunkId, store); // TODO-LINT: move to async function
+        await this.removeFromPinecone(chunkId, store);
         break;
       case 'local':
-        await this.removeFromLocalStore(chunkId, store); // TODO-LINT: move to async function
+        await this.removeFromLocalStore(chunkId, store);
         break;
     }
   }
@@ -740,8 +740,8 @@ export class NovaRAGEngine extends EventEmitter {
 
   private async hybridSearch(query: RAGQuery, queryEmbedding: number[]): Promise<DocumentChunk[]> {
     // Combine semantic search with keyword search
-    const semanticResults = await this.semanticSearch(query, queryEmbedding); // TODO-LINT: move to async function
-    const keywordResults = await this.keywordSearch(query.query); // TODO-LINT: move to async function
+    const semanticResults = await this.semanticSearch(query, queryEmbedding);
+    const keywordResults = await this.keywordSearch(query.query);
 
     // Merge and rerank results
     return this.mergeSearchResults(semanticResults, keywordResults);
@@ -913,7 +913,7 @@ export class NovaRAGEngine extends EventEmitter {
     return expandedQuery;
   }
 
-  private async updateKnowledgeGraph(doc: { id: string; content: string; metadata: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types }): Promise<void> {
+  private async updateKnowledgeGraph(doc: { id: string; content: string; metadata: any }): Promise<void> {
     // Extract entities and relationships from document
     // Update knowledge graph
     
@@ -922,7 +922,7 @@ export class NovaRAGEngine extends EventEmitter {
 
   private startIndexUpdateMonitoring(): Promise<void> {
     this.indexUpdateInterval = setInterval(async () => {
-      await this.checkForUpdates(); // TODO-LINT: move to async function
+      await this.checkForUpdates();
     }, 60000); // Check every minute
 
     return Promise.resolve();
@@ -949,4 +949,4 @@ export class NovaRAGEngine extends EventEmitter {
 }
 
 // Export singleton instance
-export const _ragEngine = new NovaRAGEngine();
+export const ragEngine = new NovaRAGEngine();

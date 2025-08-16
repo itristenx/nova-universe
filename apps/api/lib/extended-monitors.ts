@@ -7,8 +7,8 @@ import dns from 'dns';
 import { promisify } from 'util';
 import { logger } from '../logger.js';
 
-const _dnsLookup = promisify(dns.lookup);
-const _dnsResolve = promisify(dns.resolve);
+const dnsLookup = promisify(dns.lookup);
+const dnsResolve = promisify(dns.resolve);
 
 export interface MonitorResult {
   success: boolean;
@@ -46,7 +46,7 @@ export class ExtendedMonitorService {
         data: body,
         timeout: check.timeout * 1000,
         validateStatus: () => true // Accept any status code
-      }); // TODO-LINT: move to async function
+      });
 
       const responseTime = Date.now() - startTime;
       const content = response.data?.toString() || '';
@@ -70,7 +70,7 @@ export class ExtendedMonitorService {
           statusCode: response.status
         }
       };
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
@@ -94,7 +94,7 @@ export class ExtendedMonitorService {
         headers,
         data: body,
         timeout: check.timeout * 1000
-      }); // TODO-LINT: move to async function
+      });
 
       const responseTime = Date.now() - startTime;
       
@@ -127,7 +127,7 @@ export class ExtendedMonitorService {
           statusCode: response.status
         }
       };
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
@@ -195,7 +195,7 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
@@ -221,7 +221,7 @@ export class ExtendedMonitorService {
       const response = await axios.get(dockerUrl, {
         timeout: check.timeout * 1000,
         socketPath: docker_host.startsWith('unix://') ? docker_host.replace('unix://', '') : undefined
-      }); // TODO-LINT: move to async function
+      });
 
       const responseTime = Date.now() - startTime;
       const container = response.data;
@@ -241,7 +241,7 @@ export class ExtendedMonitorService {
           ports: container.NetworkSettings?.Ports
         }
       };
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
@@ -289,7 +289,7 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
@@ -337,7 +337,7 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
@@ -385,7 +385,7 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
@@ -403,7 +403,7 @@ export class ExtendedMonitorService {
     const startTime = Date.now();
 
     try {
-      const tls = await import('tls'); // TODO-LINT: move to async function
+      const tls = await import('tls');
       
       return new Promise((resolve) => {
         const timeout = setTimeout(() => {
@@ -461,7 +461,7 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       return {
         success: false,
         responseTime: Date.now() - startTime,
@@ -478,25 +478,25 @@ export class ExtendedMonitorService {
     try {
       switch (check.type) {
         case 'keyword':
-          return await this.checkKeyword(check); // TODO-LINT: move to async function
+          return await this.checkKeyword(check);
         case 'json-query':
-          return await this.checkJsonQuery(check); // TODO-LINT: move to async function
+          return await this.checkJsonQuery(check);
         case 'steam':
-          return await this.checkSteam(check); // TODO-LINT: move to async function
+          return await this.checkSteam(check);
         case 'docker':
-          return await this.checkDocker(check); // TODO-LINT: move to async function
+          return await this.checkDocker(check);
         case 'grpc':
-          return await this.checkGrpc(check); // TODO-LINT: move to async function
+          return await this.checkGrpc(check);
         case 'mqtt':
-          return await this.checkMqtt(check); // TODO-LINT: move to async function
+          return await this.checkMqtt(check);
         case 'radius':
-          return await this.checkRadius(check); // TODO-LINT: move to async function
+          return await this.checkRadius(check);
         case 'ssl':
-          return await this.checkSslCertificate(check); // TODO-LINT: move to async function
+          return await this.checkSslCertificate(check);
         default:
           throw new Error(`Unsupported monitor type: ${check.type}`);
       }
-    } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+    } catch (error: any) {
       logger.error(`Monitor check failed for type ${check.type}: ${error.message}`);
       return {
         success: false,
@@ -508,4 +508,4 @@ export class ExtendedMonitorService {
   }
 }
 
-export const _extendedMonitorService = new ExtendedMonitorService();
+export const extendedMonitorService = new ExtendedMonitorService();

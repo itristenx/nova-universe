@@ -61,9 +61,8 @@ function validateByType(value, valueType) {
       }
       break;
 
-    case 'number': {
-        const 
-        num = Number(value);
+    case 'number':
+      const num = Number(value);
       if (isNaN(num) || !isFinite(num)) {
         return { valid: false, error: 'Value must be a valid number' };
       }
@@ -193,25 +192,22 @@ function validateByKey(key, value) {
       }
       break;
 
-    case 'security.min_pin_length': {
-        const 
-        minPin = Number(value);
+    case 'security.min_pin_length':
+      const minPin = Number(value);
       if (minPin < 3 || minPin > 12) {
         return { valid: false, error: 'Minimum PIN length must be between 3 and 12' };
       }
       break;
 
-    case 'security.max_pin_length': {
-        const 
-        maxPin = Number(value);
+    case 'security.max_pin_length':
+      const maxPin = Number(value);
       if (maxPin < 4 || maxPin > 20) {
         return { valid: false, error: 'Maximum PIN length must be between 4 and 20' };
       }
       break;
 
-    case 'security.rate_limit_window': {
-        const 
-        window = Number(value);
+    case 'security.rate_limit_window':
+      const window = Number(value);
       if (window < 1000 || window > 86400000) { // 1 second to 24 hours
         return { valid: false, error: 'Rate limit window must be between 1 second (1000ms) and 24 hours (86400000ms)' };
       }
@@ -219,33 +215,29 @@ function validateByKey(key, value) {
 
     case 'security.rate_limit_max':
     case 'security.submit_ticket_limit':
-    case 'security.api_login_limit': {
-        const 
-        limit = Number(value);
+    case 'security.api_login_limit':
+      const limit = Number(value);
       if (limit < 1 || limit > 10000) {
         return { valid: false, error: 'Limit must be between 1 and 10000' };
       }
       break;
 
-    case 'integrations.cosmo_model_provider': {
-        const 
-        validProviders = ['openai', 'anthropic', 'azure', 'google', 'cohere'];
+    case 'integrations.cosmo_model_provider':
+      const validProviders = ['openai', 'anthropic', 'azure', 'google', 'cohere'];
       if (!validProviders.includes(stringValue)) {
         return { valid: false, error: `Provider must be one of: ${validProviders.join(', ')}` };
       }
       break;
 
-    case 'integrations.directory_provider': {
-        const 
-        validDirProviders = ['mock', 'ldap', 'azure_ad', 'okta', 'google'];
+    case 'integrations.directory_provider':
+      const validDirProviders = ['mock', 'ldap', 'azure_ad', 'okta', 'google'];
       if (!validDirProviders.includes(stringValue)) {
         return { valid: false, error: `Directory provider must be one of: ${validDirProviders.join(', ')}` };
       }
       break;
 
-    case 'integrations.cosmo_personality': {
-        const 
-        validPersonalities = ['friendly_professional', 'technical_expert', 'casual_helper', 'formal_assistant'];
+    case 'integrations.cosmo_personality':
+      const validPersonalities = ['friendly_professional', 'technical_expert', 'casual_helper', 'formal_assistant'];
       if (!validPersonalities.includes(stringValue)) {
         return { valid: false, error: `Personality must be one of: ${validPersonalities.join(', ')}` };
       }

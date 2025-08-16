@@ -109,7 +109,7 @@ const GoAlertAdminPanel: React.FC = () => {
         fetch('/api/v2/goalert/alerts?status=active', {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         }).then(r => r.json())
-      ]); // TODO-LINT: move to async function
+      ]);
 
       return {
         services: services.services || [],
@@ -127,9 +127,9 @@ const GoAlertAdminPanel: React.FC = () => {
     queryFn: async (): Promise<GoAlertUser[]> => {
       const response = await fetch('/api/v2/goalert/users', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      }); // TODO-LINT: move to async function
+      });
       if (!response.ok) throw new Error('Failed to fetch users');
-      const data = await response.json(); // TODO-LINT: move to async function
+      const data = await response.json();
       return data.users;
     },
     enabled: activeSection === 'users'
@@ -145,7 +145,7 @@ const GoAlertAdminPanel: React.FC = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(serviceData)
-      }); // TODO-LINT: move to async function
+      });
       if (!response.ok) throw new Error('Failed to create service');
       return response.json();
     },
@@ -157,7 +157,7 @@ const GoAlertAdminPanel: React.FC = () => {
   });
 
   // Create escalation policy mutation
-  const _createPolicyMutation = useMutation({
+  const createPolicyMutation = useMutation({
     mutationFn: async (policyData: CreateEscalationPolicyFormData) => {
       const response = await fetch('/api/v2/goalert/escalation-policies', {
         method: 'POST',
@@ -166,7 +166,7 @@ const GoAlertAdminPanel: React.FC = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(policyData)
-      }); // TODO-LINT: move to async function
+      });
       if (!response.ok) throw new Error('Failed to create escalation policy');
       return response.json();
     },
@@ -183,7 +183,7 @@ const GoAlertAdminPanel: React.FC = () => {
       const response = await fetch(`/api/v2/goalert/services/${serviceId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      }); // TODO-LINT: move to async function
+      });
       if (!response.ok) throw new Error('Failed to delete service');
       return response.json();
     },
@@ -267,7 +267,7 @@ const GoAlertAdminPanel: React.FC = () => {
       <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Active Alerts</h3>
         <div className="space-y-3">
-          {overview?.activeAlerts.slice(0, 5).map((alert: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => (
+          {overview?.activeAlerts.slice(0, 5).map((alert: any) => (
             <div key={alert.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
               <div className="flex items-center space-x-3">
                 <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
@@ -422,7 +422,7 @@ const GoAlertAdminPanel: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Select escalation policy</option>
-                    {overview?.escalationPolicies.map((policy: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => (
+                    {overview?.escalationPolicies.map((policy: any) => (
                       <option key={policy.id} value={policy.id}>
                         {policy.name}
                       </option>

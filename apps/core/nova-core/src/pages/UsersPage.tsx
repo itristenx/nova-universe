@@ -46,7 +46,7 @@ export const UsersPage: React.FC = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const data = await api.getUsers(); // TODO-LINT: move to async function
+      const data = await api.getUsers();
       setUsers(data);
     } catch (error) {
       console.error('Failed to load users:', error);
@@ -62,7 +62,7 @@ export const UsersPage: React.FC = () => {
 
   const loadRoles = async () => {
     try {
-      const data = await api.getRoles(); // TODO-LINT: move to async function
+      const data = await api.getRoles();
       setRoles(data);
     } catch (error) {
       console.error('Failed to load roles:', error);
@@ -86,7 +86,7 @@ export const UsersPage: React.FC = () => {
         email: formData.email,
         roles: formData.roles,
         permissions: formData.permissions,
-      } as Omit<User, 'id'>); // TODO-LINT: move to async function
+      } as Omit<User, 'id'>);
       setUsers([...users, newUser]);
       setShowCreateModal(false);
       resetForm();
@@ -114,7 +114,7 @@ export const UsersPage: React.FC = () => {
         email: formData.email,
         roles: formData.roles,
         ...(formData.password && { password: formData.password }),
-      }); // TODO-LINT: move to async function
+      });
 
       setUsers(users.map(u => u.id === editingUser.id ? { 
         ...u, 
@@ -143,14 +143,14 @@ export const UsersPage: React.FC = () => {
   const deleteUser = async (id: number) => {
     if (confirm('Are you sure you want to delete this user?')) {
       try {
-        await api.deleteUser(id); // TODO-LINT: move to async function
+        await api.deleteUser(id);
         setUsers(users.filter(u => u.id !== id));
         addToast({
           type: 'success',
           title: 'Success',
           description: 'User deleted successfully',
         });
-      } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+      } catch (error: any) {
         console.error('Failed to delete user:', error);
         addToast({
           type: 'error',
@@ -167,14 +167,14 @@ export const UsersPage: React.FC = () => {
       try {
         await api.updateUser(user.id, {
           disabled: !user.disabled
-        }); // TODO-LINT: move to async function
+        });
         setUsers(users.map(u => u.id === user.id ? { ...u, disabled: !user.disabled } : u));
         addToast({
           type: 'success',
           title: 'Success',
           description: `User ${action}d successfully`,
         });
-      } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+      } catch (error: any) {
         console.error(`Failed to ${action} user:`, error);
         addToast({
           type: 'error',

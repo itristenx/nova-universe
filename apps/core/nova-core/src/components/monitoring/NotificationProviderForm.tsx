@@ -3,11 +3,11 @@ import { X, Plus, Trash2, HelpCircle } from 'lucide-react';
 
 interface NotificationProviderFormProps {
   onClose: () => void;
-  onSubmit: (provider: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => void;
-  editingProvider?: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types;
+  onSubmit: (provider: any) => void;
+  editingProvider?: any;
 }
 
-export default function _NotificationProviderForm({ onClose, onSubmit, editingProvider }: NotificationProviderFormProps) {
+export default function NotificationProviderForm({ onClose, onSubmit, editingProvider }: NotificationProviderFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     type: 'telegram',
@@ -129,7 +129,7 @@ export default function _NotificationProviderForm({ onClose, onSubmit, editingPr
     return true;
   };
 
-  const updateConfig = (key: string, value: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) => {
+  const updateConfig = (key: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       config: {

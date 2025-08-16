@@ -37,7 +37,7 @@ export const KiosksPage: React.FC = () => {
 
   const loadGlobalStatus = async () => {
     try {
-      const config = await api.getStatusConfig(); // TODO-LINT: move to async function
+      const config = await api.getStatusConfig();
       setGlobalStatus(config.currentStatus || (config.enabled ? 'open' : 'closed'));
     } catch (error) {
       console.error('Failed to load global status:', error);
@@ -49,7 +49,7 @@ export const KiosksPage: React.FC = () => {
       setStatusLoading(true);
       
       // Get current config first to preserve other settings
-      const currentConfig = await api.getStatusConfig(); // TODO-LINT: move to async function
+      const currentConfig = await api.getStatusConfig();
       
       const updatedConfig = {
         ...currentConfig,
@@ -63,7 +63,7 @@ export const KiosksPage: React.FC = () => {
         unavailableMessage: currentConfig.unavailableMessage || 'Status Unavailable'
       };
       
-      await api.updateStatusConfig(updatedConfig); // TODO-LINT: move to async function
+      await api.updateStatusConfig(updatedConfig);
       setGlobalStatus(status);
       
       addToast({
@@ -91,7 +91,7 @@ export const KiosksPage: React.FC = () => {
   const loadKiosks = async () => {
     try {
       setLoading(true);
-      const data = await api.getKiosks(); // TODO-LINT: move to async function
+      const data = await api.getKiosks();
       setKiosks(data);
     } catch (error) {
       console.error('Failed to load kiosks:', error);
@@ -108,9 +108,9 @@ export const KiosksPage: React.FC = () => {
   const toggleKioskActive = async (id: string, active: boolean) => {
     try {
       if (active) {
-        await api.deactivateKiosk(id); // TODO-LINT: move to async function
+        await api.deactivateKiosk(id);
       } else {
-        await api.activateKiosk(id); // TODO-LINT: move to async function
+        await api.activateKiosk(id);
       }
       setKiosks(kiosks.map(k => k.id === id ? { ...k, active: !active } : k));
       addToast({
@@ -131,14 +131,14 @@ export const KiosksPage: React.FC = () => {
   const deleteKiosk = async (id: string) => {
     if (confirm('Are you sure you want to delete this kiosk?')) {
       try {
-        await api.deleteKiosk(id); // TODO-LINT: move to async function
+        await api.deleteKiosk(id);
         setKiosks(kiosks.filter(k => k.id !== id));
         addToast({
           type: 'success',
           title: 'Success',
           description: 'Kiosk deleted successfully',
         });
-      } catch (error: any // eslint-disable-line @typescript-eslint/no-explicit-any -- TODO-LINT: refine types) {
+      } catch (error: any) {
         console.error('Failed to delete kiosk:', error);
         addToast({
           type: 'error',
@@ -152,7 +152,7 @@ export const KiosksPage: React.FC = () => {
   const generateActivationCode = async () => {
     try {
       setGeneratingCode(true);
-      const activation = await api.generateKioskActivation(); // TODO-LINT: move to async function
+      const activation = await api.generateKioskActivation();
       setActivationData(activation);
       addToast({
         type: 'success',
@@ -173,7 +173,7 @@ export const KiosksPage: React.FC = () => {
 
   const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text); // TODO-LINT: move to async function
+      await navigator.clipboard.writeText(text);
       addToast({
         type: 'success',
         title: 'Copied',
@@ -201,7 +201,7 @@ export const KiosksPage: React.FC = () => {
   const openScheduleModal = async (kiosk: Kiosk) => {
     try {
       setSelectedKiosk(kiosk);
-      const config = await api.getKioskScheduleConfig(kiosk.id); // TODO-LINT: move to async function
+      const config = await api.getKioskScheduleConfig(kiosk.id);
       setKioskScheduleConfig(config);
       setShowScheduleModal(true);
     } catch (error) {
@@ -221,7 +221,7 @@ export const KiosksPage: React.FC = () => {
       await api.updateStatusConfig({
         ...kioskScheduleConfig,
         schedule: scheduleConfig
-      }); // TODO-LINT: move to async function
+      });
       
       setKioskScheduleConfig(prev => ({ ...prev, schedule: scheduleConfig }));
       addToast({
@@ -247,7 +247,7 @@ export const KiosksPage: React.FC = () => {
       await api.updateStatusConfig({
         ...kioskScheduleConfig,
         officeHours: officeHoursConfig
-      }); // TODO-LINT: move to async function
+      });
       
       setKioskScheduleConfig(prev => ({ ...prev, officeHours: officeHoursConfig }));
       addToast({
@@ -289,7 +289,7 @@ export const KiosksPage: React.FC = () => {
 
   const refreshKioskConfig = async (id: string) => {
     try {
-      await api.refreshKioskConfig(id); // TODO-LINT: move to async function
+      await api.refreshKioskConfig(id);
       addToast({
         type: 'success',
         title: 'Success',
@@ -308,7 +308,7 @@ export const KiosksPage: React.FC = () => {
   const resetKiosk = async (id: string) => {
     if (confirm('Are you sure you want to reset this kiosk? This will deactivate it and clear all custom settings.')) {
       try {
-        await api.resetKiosk(id); // TODO-LINT: move to async function
+        await api.resetKiosk(id);
         // Update local state to reflect the reset
         setKiosks(kiosks.map(k => k.id === id ? { ...k, active: false } : k));
         addToast({
