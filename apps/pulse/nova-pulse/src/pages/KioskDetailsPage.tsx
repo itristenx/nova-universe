@@ -1,4 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import kioskStyles from './KioskDetailsPage.module.css';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import listStyles from '../components/TicketGrid.module.css';
 
 interface Kiosk { id: string; name?: string; location?: string; active?: boolean; configuration?: any; effectiveConfig?: any; logoUrl?: string; bgUrl?: string; currentStatus?: string; }
 
@@ -20,7 +24,7 @@ const KioskWebMock: React.FC<{ kioskId: string }> = ({ kioskId }) => {
         <div className="text-xs text-muted-foreground">{lastSeen ? `Last seen ${new Date(lastSeen).toLocaleString()}` : ''}</div>
       </div>
       <div className="px-4 pb-3">
-        <div className="rounded-xl px-4 py-3 text-white" style={{ backgroundColor: primary }}>
+        <div className={`rounded-xl px-4 py-3 text-white ${kioskStyles.primaryTint}`}>
           <div className="flex items-center gap-3">
             <img src={logo} alt="logo" className="w-8 h-8 rounded" />
             <div>
@@ -82,12 +86,17 @@ export const KioskDetailsPage: React.FC = () => {
   const selectedKiosk = kiosks.find(k => k.id === selected);
 
   return (
-    <div className="p-6 space-y-6">
+    <motion.div className={`p-6 space-y-6 ${listStyles.pullContainer}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Kiosk Details</h1>
         <div className="flex items-center gap-3">
-          <label className="text-sm text-muted-foreground">Kiosk</label>
-          <select className="border rounded px-2 py-1 text-sm bg-background" value={selected} onChange={e => setSelected(e.target.value)}>
+          <button onClick={() => history.back()} aria-label="Go back" title="Go back" className="h-10 w-10 rounded-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center justify-center shadow-sm border">
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <h1 className="text-2xl font-bold">Kiosk Details</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <label htmlFor="kiosk-select" className="text-sm text-muted-foreground">Kiosk</label>
+          <select id="kiosk-select" className="border rounded px-2 py-1 text-sm bg-background" value={selected} onChange={e => setSelected(e.target.value)}>
             {kiosks.map(k => (
               <option key={k.id} value={k.id}>{k.name || k.id} {k.location ? `(${k.location})` : ''}</option>
             ))}
@@ -107,7 +116,7 @@ export const KioskDetailsPage: React.FC = () => {
             <div className="rounded border p-4">
               <h2 className="text-lg font-semibold mb-2">Theme</h2>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded" style={{ backgroundColor: selectedKiosk.effectiveConfig?.theme?.primaryColor || '#1D1EFF' }} />
+                  <div className={`w-8 h-8 rounded ${kioskStyles.primaryTint}`}/>
                 <div className="text-sm">Primary</div>
               </div>
             </div>
@@ -125,6 +134,6 @@ export const KioskDetailsPage: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };

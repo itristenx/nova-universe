@@ -71,7 +71,7 @@ export const getNovaIconClassName = (
   variant?: NovaIconVariant,
   className?: string
 ): string => {
-  let classes: string[] = []
+  const classes: string[] = []
   
   // Handle variant styling
   if (variant && iconVariants[variant]) {

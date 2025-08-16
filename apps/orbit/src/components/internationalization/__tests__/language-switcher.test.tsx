@@ -5,7 +5,6 @@ import { useCulturalFormatting } from '../cultural-formatting';
 
 // Mock next-intl hooks
 jest.mock('next-intl', () => ({
-  ...jest.requireActual('next-intl'),
   useLocale: () => 'en',
   useTranslations: () => (key: string) => key,
 }));

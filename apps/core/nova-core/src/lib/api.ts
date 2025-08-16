@@ -675,7 +675,7 @@ class ApiClient {
         id: Date.now(),
         name: file.name,
         type,
-        url: `http://localhost:3000/assets/${file.name}`,
+        url: `${apiUrl}/assets/${file.name}`,
         uploadedAt: new Date().toISOString()
       };
       return this.mockRequest(mockAsset);
@@ -1058,7 +1058,7 @@ class ApiClient {
     if (this.useMockMode) {
       return this.mockRequest({
         challenge: 'mock-challenge',
-        rp: { name: 'Nova Universe Portal', id: 'localhost' },
+        rp: { name: 'Nova Universe Portal', id: window.location.hostname },
         user: { id: 'mock-user-id', name: 'mock@example.com', displayName: 'Mock User' },
         pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
         timeout: 60000
@@ -1083,7 +1083,7 @@ class ApiClient {
       return this.mockRequest({
         challenge: 'mock-auth-challenge',
         timeout: 60000,
-        rpId: 'localhost',
+        rpId: window.location.hostname,
         allowCredentials: [],
         challengeKey: 'mock-challenge-key'
       });

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useRouter } from 'next/router';
 
 const IntakePage = () => {
   const [form, setForm] = useState({

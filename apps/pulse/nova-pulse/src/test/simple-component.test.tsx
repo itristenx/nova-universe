@@ -11,6 +11,8 @@ const TestComponent: React.FC = () => {
   );
 };
 
+/* eslint-env jest */
+
 describe('Simple Component Tests', () => {
   test('renders basic component without providers', () => {
     render(<TestComponent />);

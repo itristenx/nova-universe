@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 import LocalAuthentication
+import CryptoKit
 
 @MainActor
 class AuthenticationManager: ObservableObject {
@@ -164,8 +165,18 @@ class AuthenticationManager: ObservableObject {
     }
     
     private func hashPIN(_ pin: String) -> String {
-        // Simple hash for demo - in production, use proper password hashing
-        return pin.data(using: .utf8)?.base64EncodedString() ?? ""
+        let saltKey = "admin_pin_salt"
+        let salt: String
+        if let existing = keychain.retrieve(key: saltKey) {
+            salt = existing
+        } else {
+            let newSalt = UUID().uuidString
+            _ = keychain.store(key: saltKey, value: newSalt)
+            salt = newSalt
+        }
+        let input = Data((salt + pin).utf8)
+        let digest = SHA256.hash(data: input)
+        return digest.map { String(format: "%02x", $0) }.joined()
     }
 }
 

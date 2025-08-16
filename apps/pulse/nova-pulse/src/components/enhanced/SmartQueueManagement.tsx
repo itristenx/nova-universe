@@ -489,7 +489,7 @@ export const SmartQueueManagement: React.FC<Props> = ({
               Ticket Assignment View
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Drag and drop interface for manual ticket assignment coming soon
+              Drag-and-drop assignment is not enabled. Use automatic routing or switch to Overview.
             </p>
           </div>
         </Tab>
@@ -501,7 +501,7 @@ export const SmartQueueManagement: React.FC<Props> = ({
               Queue Analytics
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Advanced analytics and reporting dashboard coming soon
+              No analytics yet. Add data sources to view queue insights.
             </p>
           </div>
         </Tab>

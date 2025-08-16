@@ -13,8 +13,8 @@ export type BrandingConfig = {
 export const defaultBranding: BrandingConfig = {
   tenantId: 'nova',
   logoUrl: '/nova-logo-light.png',
-  primaryColor: '#3b82f6',
-  secondaryColor: '#6366f1',
+  primaryColor: '#3F57FF',
+  secondaryColor: '#8B5CF6',
   welcomeMessage: 'Welcome to Nova Orbit!',
   helpText: 'Need help? Explore our documentation or contact support.',
   fallbackToNova: true,

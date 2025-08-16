@@ -1,3 +1,4 @@
+import * as React from 'react'
 // Nova Sentinel Enhanced Monitoring Types - Complete Uptime Kuma Parity
 // Supports 13+ monitor types and 90+ notification providers
 

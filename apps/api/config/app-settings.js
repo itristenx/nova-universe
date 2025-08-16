@@ -71,7 +71,8 @@ const DEFAULT_CONFIG = {
     emailNotifications: true,
     pushNotifications: false,
     darkModeSupport: true,
-    multiLanguageSupport: false
+    multiLanguageSupport: false,
+    statusPages: false
   },
 
   // Status messages (UI configurable)

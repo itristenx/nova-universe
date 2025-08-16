@@ -19,6 +19,11 @@ export default [
         ...globals.node,
         NodeJS: "readonly",
         process: "readonly",
+        // Test globals
+        describe: "readonly",
+        test: "readonly",
+        expect: "readonly",
+        jest: "readonly",
       },
       parser: tsParser,
     },

@@ -4,15 +4,13 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, CardHeader, CardBody, CardTitle, CardText, CardActions,
-  Button, PrimaryButton, OutlineButton, GhostButton,
-  Input, Label,
-  Modal, ModalHeader, ModalBody, ModalFooter,
-  Toast,
-  Progress, Spinner,
-  useTheme
-} from '../../packages/design-system';
+// Local design-system is not bundled in Orbit; use simple fallbacks
+const PrimaryButton = (props) => <button {...props} />;
+const OutlineButton = (props) => <button {...props} />;
+const GhostButton = (props) => <button {...props} />;
+const Progress = ({ value }) => <div aria-valuenow={value} />;
+const Spinner = () => <div className="animate-spin" />;
+const useTheme = () => ({ colorMode: 'light' });
 
 const kioskAppStyles = `
 .kiosk-app {

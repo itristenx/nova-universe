@@ -20,8 +20,8 @@ struct ServerSetupView: View {
     
     // Predefined server options
     private let serverPresets = [
-        ServerPreset(name: "Local Development", url: "http://localhost:3000"),
-        ServerPreset(name: "Local Network", url: "http://192.168.1.100:3000"),
+        ServerPreset(name: "Local Development", url: "https://localhost:3000"),
+        ServerPreset(name: "Local Network", url: "https://192.168.1.100:3000"),
         ServerPreset(name: "Nova Universe Cloud", url: "https://nova-universe.example.com")
     ]
     

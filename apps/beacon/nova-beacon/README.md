@@ -22,20 +22,20 @@ A SwiftUI iPad kiosk application for submitting help desk tickets. Part of the o
 ## Quick Start
 
 1. Open `Nova Beacon.xcodeproj` in Xcode 15 or later
-2. Ensure the Nova Platform API is running (default: http://127.0.0.1:3000)
+2. Ensure the Nova Platform API v2 is running (default: https://localhost:3000)
 3. Run the app on an iPad or simulator
 4. Activate the kiosk using the Nova Core admin interface or activation code
 
 ## Configuration
 
-- **KIOSK_TOKEN**: Set in `Info.plist` to match the API's `KIOSK_TOKEN` for secure registration
-- **API_BASE_URL**: Backend API URL (default: http://127.0.0.1:3000)
+- Do not embed secrets in `Info.plist`. Kiosk session/guest tokens are issued at activation.
+- **API_BASE_URL**: Backend API URL (default: https://localhost:3000)
 - **SCIM_URL**: Directory endpoint for user lookup (optional)
 
 ## Architecture
 
 - **Theme**: Visual styling constants in `Theme.swift` matching design tokens
-- **Services**: Core business logic in `KioskService.swift` and `APIConfig.swift`
+- **Services**: Core business logic in `KioskService.swift` and `APIConfig.swift` using API v2 endpoints
 - **Views**: SwiftUI interface components with activation, configuration, and ticket forms
 - **Tests**: Unit tests in `Nova BeaconTests/` covering configuration and service behavior
 
@@ -60,4 +60,4 @@ This project is licensed under the [MIT License](../LICENSE).
 
 ## Privacy
 
-See [docs/privacy-policy.md](../docs/privacy-policy.md) for data collection and retention details.
+See [docs/privacy-policy.md](../docs/privacy-policy.md) for data collection and retention details. Privacy retention window and content are driven by tenant config from Core.

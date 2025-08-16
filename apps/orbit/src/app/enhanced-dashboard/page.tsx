@@ -16,7 +16,6 @@ import {
   ShoppingCart,
   FileText,
   Zap,
-  BarChart3,
   Ticket,
   Brain,
   Heart,
@@ -134,23 +133,7 @@ export default function EnhancedUserDashboard() {
       color: 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 hover:from-purple-200 hover:to-pink-200',
       popular: true
     },
-    {
-      id: 'analytics',
-      title: 'Analytics Dashboard',
-      description: 'Performance metrics & insights',
-      href: '/analytics',
-      icon: <BarChart3 className="w-6 h-6" />,
-      color: 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 hover:from-blue-200 hover:to-cyan-200',
-      popular: true
-    },
-    {
-      id: 'ab-testing',
-      title: 'A/B Testing',
-      description: 'Experiments & feature flags',
-      href: '/ab-testing',
-      icon: <Zap className="w-6 h-6" />,
-      color: 'bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 hover:from-indigo-200 hover:to-purple-200'
-    },
+
     {
       id: 'cosmo-chat',
       title: 'Cosmo Assistant',
@@ -174,16 +157,25 @@ export default function EnhancedUserDashboard() {
     const loadDashboardData = async () => {
       setLoading(true);
       
-      // Simulate API calls with mock data
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock stats
-      setStats({
-        totalTickets: 12,
-        openTickets: 3,
-        completedTickets: 9,
-        avgResolutionTime: '2.5 days'
-      });
+      try {
+        // Try to fetch from API first, fallback to mock data
+        const response = await fetch('/api/dashboard/stats');
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        } else {
+          throw new Error('API not available');
+        }
+      } catch (error) {
+        console.warn('API not available, using mock data:', error);
+        // Fallback to mock stats
+        setStats({
+          totalTickets: 12,
+          openTickets: 3,
+          completedTickets: 9,
+          avgResolutionTime: '2.5 days'
+        });
+      }
 
       // Mock recent activity
       setRecentActivity([

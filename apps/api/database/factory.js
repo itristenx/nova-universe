@@ -11,6 +11,7 @@ import mongoManager, { MongoDBManager } from './mongodb.js';
 class DatabaseFactory {
   constructor() {
     this.initialized = false;
+    this.initializationPromise = null;
     this.primaryDb = null;
     this.coreDb = postgresManager;
     this.authDb = new PostgreSQLManager(databaseConfig.auth_db);
@@ -22,32 +23,39 @@ class DatabaseFactory {
    * Initialize all configured databases
    */
   async initialize() {
-    if (this.initialized) {
-      return;
-    }
+    if (this.initialized) return;
+    if (this.initializationPromise) return this.initializationPromise;
 
-    logger.info('🚀 Initializing database connections...');
-
-    try {
-      await this.initializePostgreSQL();
-      await this.initializeAuthPostgreSQL();
-
-      if (process.env.MONGO_ENABLED === 'true') {
-        await this.initializeMongoDB();
+    this.initializationPromise = (async () => {
+      logger.info('🚀 Initializing database connections...');
+      try {
+        await this.initializePostgreSQL();
+        await this.initializeAuthPostgreSQL();
+        if (process.env.MONGO_ENABLED === 'true') {
+          await this.initializeMongoDB();
+        }
+        if (this.availableDatabases.size === 0) {
+          const allowDegraded = process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development';
+          if (allowDegraded) {
+            logger.warn('⚠️  No databases available. Continuing in degraded mode (ALLOW_START_WITHOUT_DB).');
+          } else {
+            throw new Error('No databases available. At least one database must be configured.');
+          }
+        } else {
+          this.initialized = true;
+          logger.info(`✅ Database initialization complete. Available: ${Array.from(this.availableDatabases).join(', ')}`);
+        }
+      } catch (error) {
+        logger.error('❌ Database initialization failed:', error.message);
+        if (!(process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development')) {
+          throw error;
+        }
+      } finally {
+        this.initializationPromise = null;
       }
+    })();
 
-      // Ensure we have at least one working database
-      if (this.availableDatabases.size === 0) {
-        throw new Error('No databases available. At least one database must be configured.');
-      }
-
-      this.initialized = true;
-      logger.info(`✅ Database initialization complete. Available: ${Array.from(this.availableDatabases).join(', ')}`);
-
-    } catch (error) {
-      logger.error('❌ Database initialization failed:', error.message);
-      throw error;
-    }
+    return this.initializationPromise;
   }
 
   /**

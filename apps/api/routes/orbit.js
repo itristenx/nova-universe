@@ -1,12 +1,14 @@
 // nova-api/routes/orbit.js
 // Nova Orbit - End-User Portal Routes
 import express from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import { body, validationResult } from 'express-validator';
 import db from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 import { calculateVipWeight } from '../utils/utils.js';
+import { generateTypedTicketId, getSlaTargets, computeDueDate } from '../utils/dbUtils.js';
 import { triggerWorkflow } from './workflows.js';
 
 const router = express.Router();
@@ -22,7 +24,7 @@ const router = express.Router();
  *           type: string
  *         ticketId:
  *           type: string
- *           description: Ticket ID in format TKT-00001
+ *           description: Ticket ID in format INC000001 / REQ000001
  *         title:
  *           type: string
  *         description:
@@ -112,11 +114,7 @@ router.get('/tickets',
   async (req, res) => {
     try {
       const userId = req.user.id;
-      const {
-        status,
-        limit = 20,
-        offset = 0
-      } = req.query;
+      const { status, limit = 20, offset = 0 } = req.query;
 
       let query = `
         SELECT t.*, 
@@ -138,9 +136,10 @@ router.get('/tickets',
       query += ` ORDER BY t.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
       params.push(parseInt(limit), parseInt(offset));
 
-      const rows = await db.any(query, params);
+      const result = await db.query(query, params);
+      const rows = result?.rows || [];
 
-      const tickets = (rows || []).map(row => ({
+      const tickets = rows.map(row => ({
         id: row.id,
         ticketId: row.ticket_id,
         title: row.title,
@@ -150,10 +149,7 @@ router.get('/tickets',
         category: row.category,
         subcategory: row.subcategory,
         location: row.location,
-        assignedTo: row.assigned_to_id ? {
-          id: row.assigned_to_id,
-          name: row.assignee_name
-        } : null,
+        assignedTo: row.assigned_to_id ? { id: row.assigned_to_id, name: row.assignee_name } : null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         estimatedResolution: row.due_date
@@ -162,19 +158,10 @@ router.get('/tickets',
       const total = rows.length > 0 ? rows[0].total_count : 0;
       const hasMore = parseInt(offset) + parseInt(limit) < total;
 
-      res.json({
-        success: true,
-        tickets,
-        total,
-        hasMore
-      });
+      res.json({ success: true, tickets, total, hasMore });
     } catch (error) {
       logger.error('Error in user tickets endpoint:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch tickets',
-        errorCode: 'TICKETS_ERROR'
-      });
+      res.status(500).json({ success: false, error: 'Failed to fetch tickets', errorCode: 'TICKETS_ERROR' });
     }
   }
 );
@@ -252,198 +239,168 @@ router.post('/tickets',
     body('location').optional().isString(),
     body('contactMethod').optional().isIn(['email', 'phone', 'in_person']).withMessage('Invalid contact method'),
     body('contactInfo').optional().isString(),
-    body('attachments').optional().isArray().withMessage('Attachments must be an array')
+    body('attachments').optional().isArray().withMessage('Attachments must be an array'),
+    body('type').optional().isString().isIn(['INC','REQ','PRB','CHG','TASK','HR','OPS','ISAC','FB']).withMessage('Invalid type code'),
+    body('urgency').optional().isString(),
+    body('impact').optional().isString()
   ],
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid input',
-          details: errors.array(),
-          errorCode: 'VALIDATION_ERROR'
-        });
+        return res.status(400).json({ success: false, error: 'Invalid input', details: errors.array(), errorCode: 'VALIDATION_ERROR' });
       }
 
-      const {
-        title,
-        description,
-        category,
-        subcategory,
-        priority,
-        location,
-        contactMethod = 'email',
-        contactInfo,
-        attachments = []
-      } = req.body;
-
+      const { title, description, category, subcategory, priority, location, contactMethod = 'email', contactInfo, attachments = [], type: requestedType, urgency, impact } = req.body;
       const userId = req.user.id;
 
-      db.get('SELECT is_vip, vip_level FROM users WHERE id = $1', [userId], (vipErr, vipRow) => {
-        if (vipErr) {
-          logger.error('Error checking VIP status:', vipErr);
-          return res.status(500).json({ success: false, error: 'Failed to create ticket', errorCode: 'VIP_CHECK_ERROR' });
+      const vipRow = await db.get('SELECT is_vip, vip_level FROM users WHERE id = $1', [userId]);
+
+      // Optional AI classification to refine category/priority
+      let refinedCategory = category;
+      let refinedPriority = priority;
+      try {
+        const mod = await import('../services/cosmo-ticket-processor.js');
+        const Processor = mod?.CosmoTicketProcessor || mod?.default;
+        if (Processor) {
+          const tp = new Processor({ enableAI: true, enableTrendAnalysis: false, enableDuplicateDetection: false, autoClassifyPriority: true, autoMatchCustomers: false });
+          const enriched = await tp.enrichTicketData({ title, description, userRole: 'end_user' });
+          if (!refinedCategory && enriched?.aiClassification?.category) refinedCategory = enriched.aiClassification.category;
+          if (!refinedPriority && enriched?.aiClassification?.priority) refinedPriority = enriched.aiClassification.priority;
         }
+      } catch {}
 
-        // Generate ticket ID
-        db.get('SELECT MAX(CAST(SUBSTR(ticket_id, 5) AS INTEGER)) as max_id FROM tickets', [], (err, row) => {
-        if (err) {
-          logger.error('Error generating ticket ID:', err);
-          return res.status(500).json({
-            success: false,
-            error: 'Failed to create ticket',
-            errorCode: 'TICKET_ID_ERROR'
-          });
+      // Determine type (fallback to REQ for request-like categories, else INC)
+      const categoryForType = (refinedCategory || category || '').toLowerCase();
+      const isRequestLike = ['access', 'request', 'catalog'].some(k => categoryForType.includes(k));
+      const typeCode = (requestedType || (isRequestLike ? 'REQ' : 'INC')).toUpperCase();
+
+      // Generate type-based ticket ID
+      const ticketId = await generateTypedTicketId(typeCode);
+
+      const now = new Date();
+      const sla = await getSlaTargets(typeCode, urgency, impact);
+      let dueDate = computeDueDate(now, refinedPriority || priority, sla);
+
+      if (vipRow?.is_vip) {
+        switch (vipRow.vip_level) {
+          case 'exec':
+            dueDate.setHours(now.getHours() + 2);
+            break;
+          case 'gold':
+            dueDate.setHours(now.getHours() + 4);
+            break;
+          default:
+            dueDate.setHours(now.getHours() + 8);
         }
+      }
 
-        const nextId = (row?.max_id || 0) + 1;
-        const ticketId = `TKT-${nextId.toString().padStart(5, '0')}`;
+      const vipWeight = calculateVipWeight(vipRow?.is_vip, vipRow?.vip_level);
 
-        // Calculate due date based on priority
-        const now = new Date();
-        let dueDate = new Date(now);
-        switch (priority) {
-          case 'critical':
-            dueDate.setHours(now.getHours() + 4); // 4 hours
-            break;
-          case 'high':
-            dueDate.setDate(now.getDate() + 1); // 1 day
-            break;
-          case 'medium':
-            dueDate.setDate(now.getDate() + 3); // 3 days
-            break;
-          case 'low':
-            dueDate.setDate(now.getDate() + 7); // 7 days
-            break;
-        }
+      // Insert new ticket
+      const insertQuery = `
+        INSERT INTO tickets (
+          id, ticket_id, type_code, title, description, priority, urgency, impact, status, category, subcategory,
+          location, contact_method, contact_info, requested_by_id, due_date,
+          created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+      `;
 
-        if (vipRow?.is_vip) {
-          switch (vipRow.vip_level) {
-            case 'exec':
-              dueDate.setHours(now.getHours() + 2);
-              break;
-            case 'gold':
-              dueDate.setHours(now.getHours() + 4);
-              break;
-            default:
-              dueDate.setHours(now.getHours() + 8);
-          }
-        }
+      const newTicketId = uuidv4();
+      const now_iso = now.toISOString();
 
-        const vipWeight = calculateVipWeight(vipRow?.is_vip, vipRow?.vip_level);
+      await db.query(insertQuery, [
+        newTicketId,
+        ticketId,
+        typeCode,
+        title,
+        description,
+        refinedPriority || priority,
+        (urgency || null),
+        (impact || null),
+        'open',
+        refinedCategory || category,
+        subcategory || null,
+        location || null,
+        contactMethod,
+        contactInfo || req.user.email,
+        userId,
+        dueDate.toISOString(),
+        now_iso,
+        now_iso
+      ]);
 
-        // Insert new ticket
-        const insertQuery = `
-          INSERT INTO tickets (
-            id, ticket_id, title, description, priority, status, category, subcategory,
-            location, contact_method, contact_info, requested_by_id, due_date,
-            created_at, updated_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-        `;
-
-        const newTicketId = require('uuid').v4();
-        const now_iso = now.toISOString();
-
-        db.none(insertQuery, [
-          newTicketId,
-          ticketId,
+      // Best-effort search indexing
+      try {
+        const elastic = (await import('../database/elastic.js')).default;
+        await elastic.indexDocument(elastic.indices?.tickets || 'nova-tickets', newTicketId, {
+          id: newTicketId,
           title,
           description,
-          priority,
-          'open',
-          category,
-          subcategory || null,
-          location || null,
-          contactMethod,
-          contactInfo || req.user.email,
-          userId,
-          dueDate.toISOString(),
-          now_iso,
-          now_iso
-        ])
-          .then(() => {
-            // Handle attachments if any
-            if (attachments.length > 0) {
-              const attachmentPromises = attachments.map((attachment, index) => {
-                return new Promise((resolve, reject) => {
-                  db.run(
-                    'INSERT INTO ticket_attachments (id, ticket_id, file_path, file_name, uploaded_by_id, uploaded_at) VALUES ($1, $2, $3, $4, $5, $6)',
-                    [
-                      require('uuid').v4(),
-                      ticketId,
-                      attachment,
-                      `attachment_${index + 1}`,
-                      userId,
-                      now_iso
-                    ],
-                    (attachErr) => {
-                      if (attachErr) {
-                        logger.error('Error saving attachment:', attachErr);
-                        reject(attachErr);
-                      } else {
-                        resolve();
-                      }
-                    }
-                  );
-                });
-              });
+          status: 'open',
+          priority: refinedPriority || priority,
+          category: refinedCategory || category,
+          created_at: now_iso,
+          updated_at: now_iso
+        });
+      } catch {}
 
-              Promise.all(attachmentPromises).catch(attachErr => {
-                logger.error('Error processing attachments:', attachErr);
-              });
-            }
-
-            // Log ticket creation
+      // Handle attachments if any
+      if (attachments.length > 0) {
+        const attachmentPromises = attachments.map((attachment, index) => {
+          return new Promise((resolve, reject) => {
             db.run(
-              'INSERT INTO ticket_logs (id, ticket_id, user_id, action, timestamp) VALUES ($1, $2, $3, $4, $5)',
-              [require('uuid').v4(), ticketId, userId, 'Ticket created', now_iso],
-              (logErr) => {
-                if (logErr) {
-                  logger.error('Error logging ticket creation:', logErr);
+              'INSERT INTO ticket_attachments (id, ticket_id, file_path, file_name, uploaded_by_id, uploaded_at) VALUES ($1, $2, $3, $4, $5, $6)',
+              [
+                uuidv4(),
+                ticketId,
+                attachment,
+                `attachment_${index + 1}`,
+                userId,
+                now_iso
+              ],
+              (attachErr) => {
+                if (attachErr) {
+                  logger.error('Error saving attachment:', attachErr);
+                  reject(attachErr);
+                } else {
+                  resolve();
                 }
               }
             );
-
-            const ticket = {
-              id: newTicketId,
-              ticketId: ticketId,
-              title,
-              description,
-              priority,
-              status: 'open',
-              category,
-              subcategory,
-              location,
-              assignedTo: null,
-              createdAt: now_iso,
-              updatedAt: now_iso,
-              estimatedResolution: dueDate.toISOString(),
-              vipWeight
-            };
-
-            res.status(201).json({
-              success: true,
-              ticket
-            });
-          })
-          .catch(error => {
-            logger.error('Error creating ticket:', error);
-            res.status(500).json({
-              success: false,
-              error: 'Failed to create ticket',
-          errorCode: 'TICKET_CREATE_ERROR'
+          });
         });
-      });
-    });
-      });
+        await Promise.allSettled(attachmentPromises);
+      }
+
+      // Log ticket creation
+      db.run(
+        'INSERT INTO ticket_logs (id, ticket_id, user_id, action, timestamp) VALUES ($1, $2, $3, $4, $5)',
+        [uuidv4(), ticketId, userId, `Ticket created (${typeCode})`, now_iso]
+      );
+
+      const ticket = {
+        id: newTicketId,
+        ticketId: ticketId,
+        type: typeCode,
+        title,
+        description,
+        priority,
+        status: 'open',
+        category,
+        subcategory,
+        location,
+        assignedTo: null,
+        createdAt: now_iso,
+        updatedAt: now_iso,
+        estimatedResolution: dueDate.toISOString(),
+        vipWeight
+      };
+
+      res.status(201).json({ success: true, ticket });
     } catch (error) {
       logger.error('Error creating ticket:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to create ticket',
-        errorCode: 'TICKET_CREATE_ERROR'
-      });
+      res.status(500).json({ success: false, error: 'Failed to create ticket', errorCode: 'TICKET_CREATE_ERROR' });
     }
   }
 );

@@ -1,1 +1,1 @@
-export { useToastStore } from '@nova-universe/ui';
+export { useToastStore } from './toast';

@@ -46,7 +46,302 @@ async function initializeDatabase() {
  */
 async function setupSchemas() {
   try {
-    logger.info('Database schemas verified');
+    // Create required extensions (safe if already installed)
+    try {
+      await db.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto"');
+    } catch (e) {
+      logger.warn('Could not ensure pgcrypto extension (ok if not needed): ' + e.message);
+    }
+
+    // Ensure core tables and columns used by API exist
+    // Tickets: add columns if missing and a unique index on ticket_id
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS tickets (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT,
+        legacy_ticket_id TEXT,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'open',
+        priority VARCHAR(50) DEFAULT 'medium',
+        type_code VARCHAR(10),
+        urgency VARCHAR(50),
+        impact VARCHAR(50),
+        category VARCHAR(100),
+        subcategory VARCHAR(100),
+        location VARCHAR(255),
+        contact_method VARCHAR(50),
+        contact_info VARCHAR(255),
+        requested_by_id TEXT,
+        assigned_to_id TEXT,
+        due_date TIMESTAMP NULL,
+        estimated_time_minutes INT,
+        actual_time_minutes INT,
+        resolution TEXT,
+        resolved_at TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP NULL,
+        vip_priority_score INT,
+        vip_trigger_source VARCHAR(50)
+      );
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS ticket_id TEXT;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS legacy_ticket_id TEXT;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS type_code VARCHAR(10);
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS urgency VARCHAR(50);
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS impact VARCHAR(50);
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS category VARCHAR(100);
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS subcategory VARCHAR(100);
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS location VARCHAR(255);
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS contact_method VARCHAR(50);
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS contact_info VARCHAR(255);
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS requested_by_id TEXT;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS assigned_to_id TEXT;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS due_date TIMESTAMP NULL;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS estimated_time_minutes INT;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS actual_time_minutes INT;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS resolution TEXT;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP NULL;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS vip_priority_score INT;
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS vip_trigger_source VARCHAR(50);
+      CREATE UNIQUE INDEX IF NOT EXISTS ux_tickets_ticket_id ON tickets(ticket_id);
+    `);
+
+    // Users and RBAC tables
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        uuid TEXT UNIQUE,
+        name VARCHAR(255),
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash TEXT,
+        disabled BOOLEAN DEFAULT FALSE,
+        last_login TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS user_roles (
+        user_id INTEGER NOT NULL,
+        role_id INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, role_id)
+      );
+    `);
+
+    // Config key-value store
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS config (
+        key TEXT PRIMARY KEY,
+        value TEXT,
+        value_type TEXT DEFAULT 'string',
+        category TEXT DEFAULT 'general',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Kiosks
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS kiosks (
+        id TEXT PRIMARY KEY,
+        last_seen TIMESTAMP,
+        version TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        logoUrl TEXT,
+        bgUrl TEXT,
+        active BOOLEAN DEFAULT FALSE,
+        activated_at TIMESTAMP NULL,
+        room_name TEXT,
+        current_status TEXT,
+        last_status_update TIMESTAMP NULL
+      );
+    `);
+
+    // Notifications
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        message TEXT NOT NULL,
+        level VARCHAR(20) DEFAULT 'info',
+        type VARCHAR(50) DEFAULT 'system',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        active BOOLEAN DEFAULT TRUE
+      );
+      CREATE INDEX IF NOT EXISTS ix_notifications_created_at ON notifications(created_at DESC);
+    `);
+
+    // Feedback
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS feedback (
+        id SERIAL PRIMARY KEY,
+        name TEXT,
+        message TEXT NOT NULL,
+        user_id TEXT,
+        feedback_type TEXT,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Directory integrations
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS directory_integrations (
+        id SERIAL PRIMARY KEY,
+        provider TEXT NOT NULL,
+        enabled BOOLEAN DEFAULT TRUE,
+        settings JSONB DEFAULT '{}'::jsonb,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // SSO and SCIM configurations
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS sso_configurations (
+        id INTEGER PRIMARY KEY,
+        enabled BOOLEAN DEFAULT FALSE,
+        provider TEXT,
+        configuration JSONB
+      );
+      CREATE TABLE IF NOT EXISTS scim_configurations (
+        id INTEGER PRIMARY KEY,
+        enabled BOOLEAN DEFAULT FALSE,
+        bearer_token TEXT,
+        endpoint_url TEXT,
+        auto_provisioning BOOLEAN DEFAULT TRUE,
+        auto_deprovisioning BOOLEAN DEFAULT FALSE,
+        sync_interval INTEGER DEFAULT 3600,
+        last_sync TIMESTAMP NULL
+      );
+    `);
+
+    // System logs for cleanup
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS system_logs (
+        id SERIAL PRIMARY KEY,
+        level TEXT,
+        message TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS ix_system_logs_created_at ON system_logs(created_at);
+    `);
+
+    // Ticket sequences for type-based IDs
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS ticket_sequences (
+        type_code VARCHAR(10) PRIMARY KEY,
+        last_value INT NOT NULL DEFAULT 0
+      );
+    `);
+
+    // SLA policies and breaches
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS sla_policies (
+        id SERIAL PRIMARY KEY,
+        type_code VARCHAR(10) NOT NULL,
+        urgency VARCHAR(50) NOT NULL,
+        impact VARCHAR(50) NOT NULL,
+        response_minutes INT NOT NULL,
+        resolution_minutes INT NOT NULL,
+        UNIQUE (type_code, urgency, impact)
+      );
+      CREATE TABLE IF NOT EXISTS sla_breaches (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT NOT NULL,
+        breach_type VARCHAR(50) NOT NULL,
+        breach_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Logs and attachments used by API
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS ticket_logs (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT NOT NULL,
+        user_id TEXT,
+        action VARCHAR(255) NOT NULL,
+        details TEXT,
+        timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS ticket_attachments (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT NOT NULL,
+        file_path TEXT NOT NULL,
+        file_name TEXT,
+        uploaded_by_id TEXT,
+        uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id TEXT PRIMARY KEY,
+        action VARCHAR(100) NOT NULL,
+        user_id TEXT,
+        ticket_id TEXT,
+        details TEXT,
+        timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Optional tables used by Pulse features (idempotent creation)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS agent_availability (
+        id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL,
+        queue_name TEXT NOT NULL,
+        is_available BOOLEAN DEFAULT TRUE,
+        status TEXT DEFAULT 'active',
+        max_capacity INT DEFAULT 10,
+        current_load INT DEFAULT 0,
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (user_id, queue_name)
+      );
+      CREATE TABLE IF NOT EXISTS queue_metrics (
+        id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+        queue_name TEXT UNIQUE NOT NULL,
+        total_agents INT DEFAULT 0,
+        available_agents INT DEFAULT 0,
+        total_tickets INT DEFAULT 0,
+        open_tickets INT DEFAULT 0,
+        avg_resolution_time FLOAT DEFAULT 0,
+        high_priority_tickets INT DEFAULT 0,
+        capacity_utilization FLOAT DEFAULT 0,
+        threshold_warning BOOLEAN DEFAULT FALSE,
+        threshold_critical BOOLEAN DEFAULT FALSE,
+        last_calculated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS queue_alerts (
+        id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+        queue_name TEXT NOT NULL,
+        alert_type TEXT NOT NULL,
+        message TEXT NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        alerted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        resolved_at TIMESTAMP NULL,
+        notified_users TEXT[] DEFAULT ARRAY[]::TEXT[]
+      );
+    `);
+
+    // Request catalog + RITM tables used by Orbit catalog endpoints
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS request_catalog_items (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        form_schema JSON,
+        workflow_id TEXT
+      );
+      CREATE TABLE IF NOT EXISTS ritms (
+        id SERIAL PRIMARY KEY,
+        req_id TEXT,
+        catalog_item_id INT REFERENCES request_catalog_items(id),
+        status VARCHAR(20) DEFAULT 'open'
+      );
+    `);
+
+    logger.info('Database schemas verified and updated');
   } catch (error) {
     logger.error('Error setting up schemas:', error);
     throw error;
@@ -61,6 +356,14 @@ async function setupInitialData() {
     await setupRolesAndPermissions();
     await setupDefaultConfig();
     await setupDefaultAdmin();
+    await setupDefaultSlaPolicies();
+    // Ensure minimum admin role/user linkage
+    try {
+      await db.query(`INSERT INTO user_roles (user_id, role_id, created_at)
+                      SELECT u.id, 1, CURRENT_TIMESTAMP FROM users u
+                      LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role_id = 1
+                      WHERE u.email = $1 AND ur.user_id IS NULL`, ['admin@novauniverse.com']);
+    } catch (e) {}
     logger.info('Initial data setup completed');
   } catch (error) {
     logger.error('Error setting up initial data:', error);
@@ -146,6 +449,41 @@ async function setupRolesAndPermissions() {
   } catch (error) {
     logger.error('Error setting up roles and permissions:', error);
     throw error;
+  }
+}
+
+/**
+ * Seed default SLA policies for common type/urgency/impact combinations
+ */
+async function setupDefaultSlaPolicies() {
+  try {
+    const combinations = [];
+    const types = ['INC','REQ'];
+    const urgencies = ['low','medium','high','critical'];
+    const impacts = ['low','medium','high'];
+    for (const t of types) {
+      for (const u of urgencies) {
+        for (const i of impacts) {
+          // Simple baseline: response/resolution scale with urgency+impact
+          const uScore = { low: 1, medium: 2, high: 3, critical: 4 }[u];
+          const iScore = { low: 1, medium: 2, high: 3 }[i];
+          const response = Math.max(5, 60 - (uScore * 10) - (iScore * 5)); // minutes
+          const resolution = Math.max(30, 8 * 60 - (uScore * 60) - (iScore * 30)); // minutes
+          combinations.push({ type: t, urgency: u, impact: i, response, resolution });
+        }
+      }
+    }
+    for (const c of combinations) {
+      await db.query(
+        `INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+         VALUES ($1,$2,$3,$4,$5)
+         ON CONFLICT (type_code, urgency, impact) DO NOTHING`,
+        [c.type, c.urgency, c.impact, c.response, c.resolution]
+      );
+    }
+    logger.info('Default SLA policies seeded');
+  } catch (error) {
+    logger.warn('Failed to seed default SLA policies', { error: error.message });
   }
 }
 
@@ -271,10 +609,21 @@ class DatabaseWrapper {
   }
 
   async ensureReady() {
-    if (!this.db) {
-      this.db = await initializeDatabase();
+    try {
+      if (!this.db) {
+        this.db = await initializeDatabase();
+      }
+      return this.db;
+    } catch (e) {
+      // Allow degraded mode if configured
+      if (process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development') {
+        return {
+          query: async () => { throw new Error('DB unavailable'); },
+          transaction: async () => { throw new Error('DB unavailable'); }
+        };
+      }
+      throw e;
     }
-    return this.db;
   }
 
   // Modern async methods

@@ -5,7 +5,9 @@
 
 echo "🔧 Fixing Nova Beacon Info.plist build issue..."
 
-PROJECT_FILE="/Users/tneibarger/Nova/nova-beacon/Nova Beacon/Nova Beacon.xcodeproj/project.pbxproj"
+# Resolve project file relative to repo root
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_FILE="$SCRIPT_DIR/Nova Beacon/Nova Beacon.xcodeproj/project.pbxproj"
 
 # Create backup
 cp "$PROJECT_FILE" "$PROJECT_FILE.backup"

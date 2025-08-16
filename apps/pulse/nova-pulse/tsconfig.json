@@ -1,9 +1,9 @@
 {
-  "extends": "../../../tools/config/tsconfig.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -20,7 +20,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@nova-universe/ui": ["../../packages/ui/dist/index.js"],
-      "@nova-universe/theme": ["../../packages/theme/dist/theme.js"]
+      "@nova-universe/theme": ["../../packages/theme/theme.ts"],
+      "@nova-universe/cosmo-sdk": ["../../packages/cosmo-sdk/dist/index.js"]
     }
   },
   "include": ["src"],

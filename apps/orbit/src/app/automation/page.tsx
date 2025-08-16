@@ -10,7 +10,7 @@ import {
   Edit,
   Plus,
   Clock,
-  AlertTriangle,
+
   CheckCircle,
   Brain,
   TrendingUp,
@@ -115,7 +115,7 @@ export default function IntelligentAutomation() {
               trigger: { type: 'ticket_created', conditions: ['priority=high'] },
               actions: [{ id: 'act-001', type: 'assign_ticket', parameters: { algorithm: 'skills_based' }, order: 1 }],
               conditions: [{ field: 'priority', operator: 'equals', value: 'high' }],
-              metrics: { totalRuns: 1247, successRate: 94.2, avgExecutionTime: 1.8, lastRun: new Date().toISOString(), impactScore: 8.5 },
+              metrics: { totalRuns: 1247, successRate: 94.2, avgExecutionTime: 1.8, lastRun: new Date(), impactScore: 8.5 },
               nextRun: new Date(),
               createdBy: 'system',
               lastModified: new Date()

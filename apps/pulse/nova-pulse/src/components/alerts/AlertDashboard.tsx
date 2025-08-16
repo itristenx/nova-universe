@@ -18,7 +18,7 @@ import { Alert, Schedule, AlertStats, AlertFilters, AlertDashboardState } from '
 import AlertCard from './AlertCard';
 import ScheduleCard from './ScheduleCard';
 import AlertStatsWidget from './AlertStatsWidget';
-import OnCallIndicator from './OnCallIndicator';
+// import OnCallIndicator from './OnCallIndicator'; // Currently unused
 import CreateAlertModal from './CreateAlertModal';
 import AlertFiltersPanel from './AlertFiltersPanel';
 
@@ -223,6 +223,12 @@ const AlertDashboard: React.FC<AlertDashboardProps> = ({ className = '' }) => {
     queryClient.invalidateQueries({ queryKey: ['active-schedules'] });
     setDashboardState(prev => ({ ...prev, lastRefresh: new Date().toISOString() }));
   };
+
+  useEffect(() => {
+    const handler = () => refreshData()
+    window.addEventListener('alerts:refresh', handler)
+    return () => window.removeEventListener('alerts:refresh', handler)
+  }, [])
 
   const isLoading = statsLoading || alertsLoading || schedulesLoading;
 

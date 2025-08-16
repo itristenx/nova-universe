@@ -947,8 +947,27 @@ export class NovaGoAlertIntegration extends EventEmitter {
   }
 
   private async syncSchedules(): Promise<void> {
-    // Sync schedule information from GoAlert
-    // This is a placeholder for now
+    try {
+      const resp = await axios.get(`${this.goAlertProxyUrl}/schedules`, {
+        headers: this.getAuthHeaders()
+      });
+      const schedules = resp.data?.schedules || [];
+      for (const s of schedules) {
+        const schedule: GoAlertSchedule = {
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          timeZone: s.time_zone || s.timeZone || 'UTC',
+          targets: s.targets || [],
+          rules: s.rules || [],
+          isActive: s.enabled ?? true
+        };
+        this.schedules.set(schedule.id, schedule);
+      }
+      logger.info('Synced schedules from GoAlert', { count: schedules.length });
+    } catch (error) {
+      logger.warn('Failed to sync schedules from GoAlert', { error: (error as Error)?.message });
+    }
   }
 
   private async checkAutoAcknowledgmentTimeouts(): Promise<void> {
@@ -983,7 +1002,14 @@ export class NovaGoAlertIntegration extends EventEmitter {
 
     // Check dependency failures
     if (this.config.alertSuppression.dependencyFailures) {
-      // Placeholder for dependency checking logic
+      try {
+        // Basic dependency suppression: if related component is already down, suppress follow-on alerts
+        const related = Array.from(this.alerts.values()).find(a => 
+          a.component !== alert.component && a.status !== 'closed' && a.severity === 'critical');
+        if (related) {
+          return true;
+        }
+      } catch {}
     }
 
     return false;
@@ -1558,36 +1584,44 @@ export class NovaGoAlertIntegration extends EventEmitter {
   }
 
   private async createService(name: string, description: string, escalationPolicyId: string, labels: Record<string, string>): Promise<string> {
-    // Placeholder for service creation
-    const serviceId = crypto.randomUUID();
-    
-    const service: GoAlertService = {
-      id: serviceId,
-      name,
-      description,
-      escalationPolicyId,
-      isActive: true,
-      labels
-    };
-
-    this.services.set(serviceId, service);
-    return serviceId;
+    try {
+      await this.createGoAlertService({ name, description, escalationPolicy: escalationPolicyId });
+      // After creating via proxy, refresh services and return the matching ID
+      await this.syncWithGoAlert();
+      const found = Array.from(this.services.values()).find(s => s.name === name);
+      return found?.id || crypto.randomUUID();
+    } catch (error) {
+      logger.warn('Service creation fallback (proxy unavailable)', { error: (error as Error)?.message, name });
+      const serviceId = crypto.randomUUID();
+      const service: GoAlertService = { id: serviceId, name, description, escalationPolicyId, isActive: true, labels };
+      this.services.set(serviceId, service);
+      return serviceId;
+    }
   }
 
   private async createSchedule(id: string, name: string, timezone: string): Promise<string> {
-    // Placeholder for schedule creation
-    const schedule: GoAlertSchedule = {
-      id,
-      name,
-      description: `AI team schedule: ${name}`,
-      timeZone: timezone,
-      targets: [],
-      rules: [],
-      isActive: true
-    };
-
-    this.schedules.set(id, schedule);
-    return id;
+    try {
+      await axios.post(`${this.goAlertProxyUrl}/schedules`, {
+        name,
+        timeZone: timezone
+      }, { headers: this.getAuthHeaders() });
+      await this.syncWithGoAlert();
+      const found = Array.from(this.schedules.values()).find(s => s.name === name);
+      return found?.id || id;
+    } catch (error) {
+      logger.warn('Schedule creation fallback (proxy unavailable)', { error: (error as Error)?.message, name });
+      const schedule: GoAlertSchedule = {
+        id,
+        name,
+        description: `AI team schedule: ${name}`,
+        timeZone: timezone,
+        targets: [],
+        rules: [],
+        isActive: true
+      };
+      this.schedules.set(id, schedule);
+      return id;
+    }
   }
 
   private async createAlertRule(rule: Omit<AlertRule, 'id'>): Promise<string> {
@@ -1642,23 +1676,61 @@ export class NovaGoAlertIntegration extends EventEmitter {
   }
 
   private async createAlertTicket(alert: NovaAlert): Promise<string> {
-    // Placeholder for ticket creation
-    return crypto.randomUUID();
+    try {
+      const { default: db } = await import('../db.js');
+      const id = crypto.randomUUID();
+      const now = new Date().toISOString();
+      const title = `[Alert] ${alert.summary}`.slice(0, 255);
+      const description = `${alert.details || ''}\n\nComponent: ${alert.component}\nSeverity: ${alert.severity}`;
+      await db.query?.(
+        'INSERT INTO tickets (id, ticket_id, title, description, priority, status, requested_by_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+        [id, `ALRT-${Date.now()}`, title, description, alert.severity, 'open', null, now, now]
+      );
+      return id;
+    } catch (error) {
+      logger.warn('Ticket creation fallback (db unavailable)', { error: (error as Error)?.message });
+      return crypto.randomUUID();
+    }
   }
 
   private async updateAlertTicket(ticketId: string, status: string, message?: string): Promise<void> {
-    // Placeholder for ticket update
-    logger.debug('Would update ticket', { ticketId, status, message });
+    try {
+      const { default: db } = await import('../db.js');
+      await db.query?.('UPDATE tickets SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [status, ticketId]);
+      if (message) {
+        await db.query?.(
+          'INSERT INTO ticket_comments (id, ticket_id, content, type, created_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)',
+          [crypto.randomUUID(), ticketId, message, 'internal']
+        );
+      }
+    } catch (error) {
+      logger.debug('Ticket update fallback (db unavailable)', { error: (error as Error)?.message, ticketId });
+    }
   }
 
   private async resolveAlertTicket(ticketId: string, reason?: string): Promise<void> {
-    // Placeholder for ticket resolution
-    logger.debug('Would resolve ticket', { ticketId, reason });
+    try {
+      const { default: db } = await import('../db.js');
+      await db.query?.('UPDATE tickets SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', ['resolved', ticketId]);
+      if (reason) {
+        await db.query?.(
+          'INSERT INTO ticket_comments (id, ticket_id, content, type, created_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)',
+          [crypto.randomUUID(), ticketId, `Resolution: ${reason}`, 'internal']
+        );
+      }
+    } catch (error) {
+      logger.debug('Ticket resolution fallback (db unavailable)', { error: (error as Error)?.message, ticketId });
+    }
   }
 
   private async linkToSentinelIncident(alert: NovaAlert, incidentId: string): Promise<void> {
-    // Placeholder for linking to Sentinel incident
-    logger.debug('Would link to Sentinel incident', { alertId: alert.id, incidentId });
+    try {
+      await axios.post(`${this.goAlertProxyUrl}/alerts/${alert.goAlertId || alert.id}/metadata`, {
+        sentinelIncidentId: incidentId
+      }, { headers: this.getAuthHeaders() });
+    } catch (error) {
+      logger.debug('Sentinel link fallback (proxy unavailable)', { error: (error as Error)?.message, incidentId });
+    }
   }
 
   async shutdown(): Promise<void> {

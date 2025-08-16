@@ -142,7 +142,7 @@ class EnhancedConfigService: ObservableObject {
     @MainActor
     func loadRemoteConfig() async {
         do {
-            guard let url = URL(string: "\(APIConfig.baseURL)/api/v1/kiosks/\(kioskId)/remote-config") else {
+            guard let url = URL(string: "\(APIConfig.baseURL)/api/v2/beacon/config?kiosk_id=\(kioskId)") else {
                 throw ConfigError.invalidURL
             }
             
@@ -191,10 +191,7 @@ class EnhancedConfigService: ObservableObject {
                 config.welcomeMessage = value as? String ?? config.welcomeMessage
             case "helpMessage":
                 config.helpMessage = value as? String ?? config.helpMessage
-            case "primaryColor":
-                config.theme.primaryColor = value as? String ?? config.theme.primaryColor
-            case "secondaryColor":
-                config.theme.secondaryColor = value as? String ?? config.theme.secondaryColor
+            // Theme updates are not supported in this simplified KioskConfig; handle via core config
             default:
                 break
             }

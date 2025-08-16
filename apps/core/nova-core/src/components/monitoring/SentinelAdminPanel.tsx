@@ -90,7 +90,7 @@ const SentinelAdminPanel: React.FC = () => {
   const { data: systemStats } = useQuery({
     queryKey: ['sentinel-admin-overview'],
     queryFn: async () => {
-      const response = await fetch('http://localhost:3002/api/v1/analytics/system', {
+      const response = await fetch('/api/v2/monitoring/analytics/system', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch system stats');
@@ -104,7 +104,7 @@ const SentinelAdminPanel: React.FC = () => {
   const { data: monitors = [] } = useQuery({
     queryKey: ['sentinel-admin-monitors'],
     queryFn: async (): Promise<Monitor[]> => {
-      const response = await fetch('http://localhost:3002/api/v1/monitors?admin=true', {
+      const response = await fetch('/api/v2/monitoring/monitors?admin=true', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch monitors');
@@ -118,7 +118,7 @@ const SentinelAdminPanel: React.FC = () => {
   const { data: statusPages = [] } = useQuery({
     queryKey: ['sentinel-admin-status-pages'],
     queryFn: async (): Promise<StatusPage[]> => {
-      const response = await fetch('http://localhost:3002/api/v1/status-pages?admin=true', {
+      const response = await fetch('/api/v2/monitoring/status-pages?admin=true', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch status pages');
@@ -132,7 +132,7 @@ const SentinelAdminPanel: React.FC = () => {
   const { data: notifications = [] } = useQuery({
     queryKey: ['sentinel-admin-notifications'],
     queryFn: async (): Promise<NotificationProvider[]> => {
-      const response = await fetch('http://localhost:3002/api/v1/notifications?admin=true', {
+      const response = await fetch('/api/v2/monitoring/notifications?admin=true', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch notifications');
@@ -146,7 +146,7 @@ const SentinelAdminPanel: React.FC = () => {
   const { data: settings = {} } = useQuery({
     queryKey: ['sentinel-admin-settings'],
     queryFn: async (): Promise<SystemSettings> => {
-      const response = await fetch('http://localhost:3002/api/v1/settings', {
+      const response = await fetch('/api/v2/monitoring/settings', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch settings');
@@ -173,7 +173,7 @@ const SentinelAdminPanel: React.FC = () => {
   // Delete monitor mutation
   const deleteMonitorMutation = useMutation({
     mutationFn: async (monitorId: string) => {
-      const response = await fetch(`http://localhost:3002/api/v1/monitors/${monitorId}`, {
+      const response = await fetch(`/api/v2/monitoring/monitors/${monitorId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -189,7 +189,7 @@ const SentinelAdminPanel: React.FC = () => {
   // Update settings mutation
   const updateSettingsMutation = useMutation({
     mutationFn: async (newSettings: SystemSettings) => {
-      const response = await fetch('http://localhost:3002/api/v1/settings', {
+      const response = await fetch('/api/v2/monitoring/settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -825,6 +825,8 @@ const SentinelAdminPanel: React.FC = () => {
                                 // Update local state here
                               }}
                               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              aria-label={`${key} numeric value`}
+                              placeholder={`${key}`}
                             />
                           ) : (
                             <input
@@ -838,6 +840,8 @@ const SentinelAdminPanel: React.FC = () => {
                                 // Update local state here
                               }}
                               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              aria-label={`${key} text value`}
+                              placeholder={`${key}`}
                             />
                           )}
                         </div>

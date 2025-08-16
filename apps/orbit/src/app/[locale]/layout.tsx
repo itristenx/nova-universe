@@ -2,18 +2,14 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { setRequestLocale, getMessages } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
+import { MainNavigation } from '@/components/layout/navigation';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export default async function LocaleLayout({
-  children,
-  params
-}: {
-  children: React.ReactNode;
-  params: { locale: string };
-}) {
+export default async function LocaleLayout(props: any) {
+  const { children, params } = props as { children: React.ReactNode; params: { locale: string } };
   // Ensure that the incoming `locale` is valid
   const { locale } = params;
   if (!hasLocale(routing.locales, locale)) {
@@ -30,6 +26,7 @@ export default async function LocaleLayout({
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <body>
         <NextIntlClientProvider messages={messages} locale={locale} timeZone="UTC">
+          <MainNavigation />
           {children}
         </NextIntlClientProvider>
       </body>

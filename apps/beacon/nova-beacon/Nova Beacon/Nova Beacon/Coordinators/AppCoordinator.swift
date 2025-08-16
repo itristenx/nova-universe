@@ -178,7 +178,7 @@ class AppCoordinator: ObservableObject {
     }
     
     private func testServerConnection() async throws {
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/v1/health") else {
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v2/status") else {
             throw ConnectionError.invalidURL
         }
         

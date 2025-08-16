@@ -15,7 +15,7 @@ export function MainNavigation() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
-    <nav className="bg-background border-b border-border sticky top-0 z-50">
+    <nav id="main-navigation" role="navigation" aria-label={t('primaryNav', { default: 'Primary' })} className="bg-background border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -35,40 +35,35 @@ export function MainNavigation() {
             <div className="ml-10 flex items-baseline space-x-4">
               <Link
                 href="/"
-                className="text-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="text-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-11 inline-flex items-center"
               >
                 {t('home')}
               </Link>
               <Link
                 href="/dashboard"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-11 inline-flex items-center"
               >
                 {t('dashboard')}
               </Link>
               <Link
                 href="/settings"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-11 inline-flex items-center"
               >
                 {t('settings')}
               </Link>
               <Link
                 href="/security"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-11 inline-flex items-center"
               >
                 {t('security')}
               </Link>
               <Link
                 href="/accessibility-audit"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-11 inline-flex items-center"
               >
                 {t('accessibility')}
               </Link>
-              <Link
-                href="/kiosk-preview"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Preview Kiosk
-              </Link>
+
             </div>
           </div>
 
@@ -100,46 +95,40 @@ export function MainNavigation() {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-border">
               <Link
                 href="/"
-                className="text-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                className="text-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors min-h-11"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('home')}
               </Link>
               <Link
                 href="/dashboard"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors min-h-11"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('dashboard')}
               </Link>
               <Link
                 href="/settings"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors min-h-11"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('settings')}
               </Link>
               <Link
                 href="/security"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors min-h-11"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('security')}
               </Link>
               <Link
                 href="/accessibility-audit"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors min-h-11"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('accessibility')}
               </Link>
-              <Link
-                href="/kiosk-preview"
-                className="text-muted-foreground hover:bg-accent hover:text-accent-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Preview Kiosk
-              </Link>
+
               
               {/* Mobile Language Switcher */}
               <div className="px-3 py-2">

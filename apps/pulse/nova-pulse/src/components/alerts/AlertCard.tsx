@@ -8,9 +8,8 @@ import {
   TagIcon,
   ArrowUpIcon,
   EyeIcon,
-  PlayIcon
 } from '@heroicons/react/24/outline';
-import { Alert, AlertCardProps } from '../../types/alerts';
+import { AlertCardProps } from '../../types/alerts';
 
 const AlertCard: React.FC<AlertCardProps> = ({
   alert,

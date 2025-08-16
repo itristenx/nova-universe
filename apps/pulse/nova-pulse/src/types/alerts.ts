@@ -1,3 +1,4 @@
+import * as React from 'react'
 // Nova Alert System Type Definitions
 // Complete 1:1 feature parity with GoAlert backend
 

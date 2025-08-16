@@ -80,14 +80,39 @@ export const validateInput = {
     if (password) {
       // Add type check first
       if (typeof password !== 'string') {
-        return res.status(400).json({ error: 'Password must be a string' });
+        return res.status(400).json({ 
+          error: 'Password must be a string',
+          errorCode: 'INVALID_PASSWORD_TYPE'
+        });
       }
       if (password.length < 8) {
-        return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+        return res.status(400).json({ 
+          error: 'Password must be at least 8 characters long',
+          errorCode: 'PASSWORD_TOO_SHORT'
+        });
+      }
+      if (password.length > 128) {
+        return res.status(400).json({ 
+          error: 'Password must be less than 128 characters long',
+          errorCode: 'PASSWORD_TOO_LONG'
+        });
       }
       if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
         return res.status(400).json({ 
-          error: 'Password must contain at least one uppercase letter, one lowercase letter, and one number' 
+          error: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+          errorCode: 'PASSWORD_COMPLEXITY_INSUFFICIENT'
+        });
+      }
+      
+      // Check for common weak passwords
+      const commonPasswords = [
+        'password', 'password123', '123456', 'admin', 'qwerty', 
+        'letmein', 'welcome', 'monkey', 'dragon', 'password1'
+      ];
+      if (commonPasswords.includes(password.toLowerCase())) {
+        return res.status(400).json({ 
+          error: 'Password is too common. Please choose a more secure password.',
+          errorCode: 'PASSWORD_TOO_COMMON'
         });
       }
     }

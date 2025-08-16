@@ -57,7 +57,7 @@ class KioskService: ObservableObject {
     
     private func checkInitialState() {
         // Check if server URL is configured (not using default)
-        let defaultURL = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String ?? "http://127.0.0.1:3000"
+        let defaultURL = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String ?? "https://localhost:3000"
         if APIConfig.baseURL == defaultURL && UserDefaults.standard.string(forKey: "serverURL") == nil {
             state = .needsServerConfig
             statusMessage = "Server configuration required"
@@ -77,7 +77,7 @@ class KioskService: ObservableObject {
 
     func register(version: String) async {
         statusMessage = "Registering kiosk..."
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/register-kiosk") else { return }
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v2/beacon/register") else { return }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -91,7 +91,7 @@ class KioskService: ObservableObject {
 
     func checkActive() async {
         statusMessage = "Checking activation status..."
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(id)") else { 
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v2/beacon/kiosks/\(id)") else { 
             state = .error
             activationError = true
             statusMessage = "Invalid server URL"
@@ -197,11 +197,11 @@ class KioskService: ObservableObject {
 
     func activate() async -> Bool {
         statusMessage = "Activating kiosk..."
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/\(id)/active") else { return false }
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v2/beacon/kiosks/\(id)/status") else { return false }
         var req = URLRequest(url: url)
         req.httpMethod = "PUT"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.httpBody = try? JSONEncoder().encode(["active": true])
+        req.httpBody = try? JSONEncoder().encode(["status": "active"]) 
         do {
             _ = try await URLSession.shared.data(for: req)
             state = .active
@@ -226,7 +226,7 @@ class KioskService: ObservableObject {
         }
         
         statusMessage = "Processing activation code..."
-        guard let url = URL(string: "\(APIConfig.baseURL)/api/kiosks/activate") else { 
+        guard let url = URL(string: "\(APIConfig.baseURL)/api/v2/beacon/activate") else { 
             statusMessage = "Invalid server URL"
             activationError = true
             return false 

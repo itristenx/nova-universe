@@ -8,6 +8,7 @@ import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 import { checkQueueAccess } from '../middleware/queueAccess.js';
 import { calculateVipWeight } from '../utils/utils.js';
+import { generateTypedTicketId, getSlaTargets, computeDueDate } from '../utils/dbUtils.js';
 import { notifyCosmoEscalation } from '../utils/cosmo.js';
 import pulseInventoryRouter from './pulse-inventory.js';
 
@@ -27,7 +28,7 @@ const router = express.Router();
  *           type: string
  *         ticketId:
  *           type: string
- *           description: Ticket ID in format TKT-00001
+ *           description: Ticket ID in format INC000001 / REQ000001
  *         title:
  *           type: string
  *         description:
@@ -299,7 +300,10 @@ router.post('/tickets',
     body('title').isLength({ min: 1, max: 255 }).withMessage('Title required'),
     body('description').isLength({ min: 1 }).withMessage('Description required'),
     body('priority').isIn(['low','medium','high','critical']).withMessage('Invalid priority'),
-    body('requestedById').isString().withMessage('requestedById required')
+    body('requestedById').isString().withMessage('requestedById required'),
+    body('type').optional().isString().isIn(['INC','REQ','PRB','CHG','TASK','HR','OPS','ISAC','FB']).withMessage('Invalid type code'),
+    body('urgency').optional().isString(),
+    body('impact').optional().isString()
   ],
   async (req, res) => {
     try {
@@ -308,7 +312,7 @@ router.post('/tickets',
         return res.status(400).json({ success:false, error:'Invalid input', details: errors.array(), errorCode:'VALIDATION_ERROR' });
       }
 
-      const { title, description, priority, requestedById } = req.body;
+      const { title, description, priority, requestedById, type: requestedType, urgency, impact } = req.body;
       const now = new Date();
 
       const vipRow = await db.oneOrNone('SELECT is_vip, vip_level, vip_sla_override FROM users WHERE id = $1', [requestedById]);
@@ -344,11 +348,14 @@ router.post('/tickets',
       const vipWeight = calculateVipWeight(vipRow?.is_vip, vipRow?.vip_level);
 
       const newId = require('uuid').v4();
-      const ticketId = `TKT-${Date.now().toString().slice(-5)}`;
+      const typeCode = (requestedType || 'INC').toUpperCase();
+      const sla = await getSlaTargets(typeCode, urgency, impact);
+      const computedDue = computeDueDate(now, priority, sla);
+      const ticketId = await generateTypedTicketId(typeCode);
 
       await db.none(
-        'INSERT INTO tickets (id, ticket_id, title, description, priority, status, requested_by_id, assigned_to_id, due_date, created_at, updated_at, vip_priority_score, vip_trigger_source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
-        [newId, ticketId, title, description, priority, 'open', requestedById, req.user.id, dueDate.toISOString(), now.toISOString(), now.toISOString(), vipWeight, 'api']
+        'INSERT INTO tickets (id, ticket_id, type_code, title, description, priority, urgency, impact, status, requested_by_id, assigned_to_id, due_date, created_at, updated_at, vip_priority_score, vip_trigger_source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)',
+        [newId, ticketId, typeCode, title, description, priority, (urgency || null), (impact || null), 'open', requestedById, req.user.id, computedDue.toISOString(), now.toISOString(), now.toISOString(), vipWeight, 'api']
       );
 
       // Add audit logging for VIP ticket creation
@@ -373,7 +380,7 @@ router.post('/tickets',
       }
 
       const failoverWindow = vipRow?.vip_sla_override?.failoverMinutes || 60;
-      if (vipRow?.is_vip && dueDate.getTime() - now.getTime() < failoverWindow*60000) {
+      if (vipRow?.is_vip && computedDue.getTime() - now.getTime() < failoverWindow*60000) {
         await notifyCosmoEscalation(ticketId, 'failover_escalation');
         
         // Add audit logging for Cosmo escalation
@@ -387,14 +394,29 @@ router.post('/tickets',
             JSON.stringify({
               reason: 'failover_escalation',
               failover_window_minutes: failoverWindow,
-              time_to_due: Math.round((dueDate.getTime() - now.getTime()) / 60000)
+              time_to_due: Math.round((computedDue.getTime() - now.getTime()) / 60000)
             }),
             now.toISOString()
           ]
         );
       }
 
-      res.status(201).json({ success:true, ticketId, vipWeight });
+      // Best-effort search indexing
+      try {
+        const elastic = (await import('../database/elastic.js')).default;
+        await elastic.indexDocument(elastic.indices?.tickets || 'nova-tickets', newId, {
+          id: newId,
+          title,
+          description,
+          status: 'open',
+          priority,
+          category: null,
+          created_at: now.toISOString(),
+          updated_at: now.toISOString()
+        });
+      } catch {}
+
+      res.status(201).json({ success:true, ticketId, type: typeCode, vipWeight });
     } catch (error) {
       logger.error('Error creating ticket:', error);
       res.status(500).json({ success:false, error:'Failed to create ticket', errorCode:'TICKET_CREATE_ERROR' });
@@ -477,6 +499,13 @@ router.get('/tickets',
         offset = 0
       } = req.query;
 
+      // RBAC type scoping
+      const roles = Array.isArray(req.user.roles) ? req.user.roles : [];
+      const isAdmin = roles.includes('admin') || roles.includes('superadmin');
+      const allowedTypes = new Set(['INC','REQ','PRB','CHG','TASK','OPS','FB']);
+      if (roles.includes('hr_tech') || roles.includes('hr_lead')) allowedTypes.add('HR');
+      if (roles.includes('cyber_tech') || roles.includes('cyber_lead')) allowedTypes.add('ISAC');
+
       let query = `
         SELECT t.*, u.is_vip, u.vip_level,
                u.name as requester_name, u.email as requester_email,
@@ -502,6 +531,11 @@ router.get('/tickets',
       if (category) {
         query += ` AND t.category = $4`;
         params.push(category);
+      }
+
+      if (!isAdmin) {
+        query += ` AND t.type_code = ANY($${params.length + 1})`;
+        params.push(Array.from(allowedTypes));
       }
 
       query += ` ORDER BY 
@@ -731,6 +765,19 @@ router.put('/tickets/:ticketId/update',
                 }
               }
             );
+
+            // Simple SLA breach check: if due_date has passed and not resolved
+            try {
+              const refreshed = await db.get('SELECT due_date, status FROM tickets WHERE id = $1', [ticket.id]);
+              if (refreshed?.due_date && new Date(refreshed.due_date).getTime() < Date.now() && refreshed.status !== 'resolved' && refreshed.status !== 'closed') {
+                await db.run(
+                  'INSERT INTO sla_breaches (id, ticket_id, breach_type, breach_time) VALUES ($1, $2, $3, $4)',
+                  [require('uuid').v4(), ticket.id, 'resolution_breach', new Date().toISOString()]
+                );
+              }
+            } catch (slaErr) {
+              logger.warn('SLA breach check failed', { error: slaErr.message });
+            }
 
             // Add VIP-specific audit logging
             if (ticket.is_vip) {

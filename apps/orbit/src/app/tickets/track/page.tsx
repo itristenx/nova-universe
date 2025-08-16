@@ -221,7 +221,7 @@ export default function EnhancedTicketTracking() {
   const generateMockTickets = (): Ticket[] => {
     return [
       {
-        id: 'TKT-001',
+        id: 'INC000001',
         title: 'Unable to access company portal',
         description: 'Getting authentication errors when trying to log into the employee portal.',
         category: 'IT Support',
@@ -283,7 +283,7 @@ export default function EnhancedTicketTracking() {
         ]
       },
       {
-        id: 'TKT-002',
+        id: 'REQ000002',
         title: 'Request new software license for Adobe Creative Suite',
         description: 'Need Adobe Creative Suite license for graphic design work on the marketing team.',
         category: 'Procurement',
@@ -320,7 +320,7 @@ export default function EnhancedTicketTracking() {
         ]
       },
       {
-        id: 'TKT-003',
+        id: 'INC000003',
         title: 'Laptop running very slowly',
         description: 'My work laptop has become extremely slow over the past week. Takes 5+ minutes to boot and applications freeze frequently.',
         category: 'Hardware',

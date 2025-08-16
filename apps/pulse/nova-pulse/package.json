@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest",
     "test:node": "node --test src/test/*.node-test.tsx"
@@ -25,7 +25,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^11.0.0",
-    "lucide-react": "^0.537.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.7.0",

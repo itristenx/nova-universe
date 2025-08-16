@@ -4,15 +4,9 @@ import { Button } from "../../components/ui/button";
 import { getSession, updateProfile } from "../../lib/api";
 
 export default function ProfilePage() {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
-  if (!token) {
-    return (
-      <main className="p-8 max-w-lg mx-auto">
-        <p>You must be logged in to view this page.</p>
-      </main>
-    );
-  }
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const isAuthed = Boolean(token);
+
   const [userId, setUserId] = useState<string>("");
   const [profile, setProfile] = useState({
     name: "",
@@ -24,7 +18,7 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) return;
+    if (!isAuthed) return;
     getSession(token)
       .then(res => {
         if (res.success) {
@@ -39,7 +33,7 @@ export default function ProfilePage() {
         }
       })
       .catch(() => {});
-  }, [token]);
+  }, [isAuthed, token]);
 
   function handleEdit() {
     setEditing(true);
@@ -61,6 +55,10 @@ export default function ProfilePage() {
 
   return (
     <main className="p-8 max-w-lg mx-auto">
+      {!isAuthed ? (
+        <p>You must be logged in to view this page.</p>
+      ) : (
+        <>
       <h1 className="text-2xl font-bold mb-4">Profile</h1>
       <div className="space-y-4">
         <div>
@@ -126,6 +124,8 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+        </>
+      )}
     </main>
   );
 }

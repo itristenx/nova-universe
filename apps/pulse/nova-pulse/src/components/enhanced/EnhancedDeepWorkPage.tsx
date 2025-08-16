@@ -1,5 +1,7 @@
 import React from 'react'
-import { useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { useParams, useNavigate } from 'react-router-dom'
+import { ChevronLeftIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
 import { DeepWorkMode } from './DeepWorkMode'
 import { EnhancedTicketLifecycle } from './EnhancedTicketLifecycle'
@@ -60,6 +62,7 @@ interface DeepWorkSession {
 
 export const EnhancedDeepWorkPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>()
+  const navigate = useNavigate()
 
   const { data: ticket, isLoading, error } = useQuery({
     queryKey: ['ticket', ticketId],
@@ -141,8 +144,14 @@ export const EnhancedDeepWorkPage: React.FC = () => {
 
   // If ticketId provided, show tabbed interface with Deep Work + Lifecycle Management
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Tabs className="w-full p-6">
+    <motion.div className="min-h-screen bg-gray-50" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 360, damping: 30 }}>
+      <div className="px-6 pt-4 pb-2 flex items-center gap-3">
+        <button onClick={() => navigate(-1)} aria-label="Go back" title="Go back" className="h-10 w-10 rounded-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur flex items-center justify-center shadow-sm border">
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+        <h1 className="text-2xl font-semibold tracking-tight">{ticket?.ticketId || 'Deep Work'}</h1>
+      </div>
+      <Tabs className="w-full p-6 pt-0">
         <Tab key="focus" title="Deep Work">
           <DeepWorkMode
             ticket={ticket}
@@ -159,6 +168,6 @@ export const EnhancedDeepWorkPage: React.FC = () => {
           </div>
         </Tab>
       </Tabs>
-    </div>
+    </motion.div>
   )
 }

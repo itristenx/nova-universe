@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 // import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 // import { z } from 'zod'; // Lazy-loaded in registerNovaTools
 import db from '../db.js';
+import { generateTypedTicketId } from './dbUtils.js';
+import { normalizeTicketType } from './utils.js';
 import { CosmoTicketProcessor } from '../services/cosmo-ticket-processor.js';
 
 // In-memory conversation storage (in production, use Redis or database)
@@ -705,7 +707,7 @@ async function registerNovaTools(server) {
         const title = sentences[0].trim().substring(0, 100) || 'Auto-generated ticket';
         
         const ticket = {
-          id: `TKT-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+          id: `INC${Date.now().toString().slice(-6)}`,
           title,
           description: input,
           category: classification.category || 'general',
@@ -1828,30 +1830,34 @@ function generateEscalationActions(escalationData) {
 
 // Helper functions for database operations
 async function createTicketInDatabase(userId, ticketData) {
-  return new Promise((resolve, reject) => {
-    const ticketId = `TKT-${Date.now()}`;
-    const sql = `
-      INSERT INTO tickets (ticket_id, title, description, category, priority, status, requested_by, location, assigned_to, created_at)
-      VALUES (?, ?, ?, ?, ?, 'open', ?, ?, ?, ?)
-    `;
-    
-    db.run(sql, [
-      ticketId,
-      ticketData.title,
-      ticketData.description,
-      ticketData.category,
-      ticketData.priority,
-      userId,
-      ticketData.location,
-      ticketData.assignedTo,
-      new Date().toISOString()
-    ], function(err) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(ticketId);
-      }
-    });
+  return new Promise(async (resolve, reject) => {
+    try {
+      const typeCode = normalizeTicketType(ticketData.type || 'INC');
+      const ticketId = await generateTypedTicketId(typeCode);
+      const sql = `
+        INSERT INTO tickets (id, ticket_id, type_code, title, description, category, priority, status, requested_by_id, location, assigned_to_id, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', $8, $9, $10, $11, $12)
+      `;
+      const id = uuidv4();
+      const now = new Date().toISOString();
+      await db.run(sql, [
+        id,
+        ticketId,
+        typeCode,
+        ticketData.title,
+        ticketData.description,
+        ticketData.category,
+        ticketData.priority,
+        userId,
+        ticketData.location,
+        ticketData.assignedTo,
+        now,
+        now
+      ]);
+      resolve(ticketId);
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 

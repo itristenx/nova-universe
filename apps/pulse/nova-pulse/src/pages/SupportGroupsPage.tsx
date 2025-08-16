@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import styles from '../components/TicketGrid.module.css';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Card,
@@ -34,19 +36,7 @@ import {
 } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
 import { toast } from 'sonner';
-import {
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  Users,
-  Settings,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Mail,
-  Phone
-} from 'lucide-react';
+import { PlusIcon as Plus, MagnifyingGlassIcon as Search, PencilSquareIcon as Edit, TrashIcon as Trash2, UsersIcon as Users, Cog6ToothIcon as Settings, ExclamationCircleIcon as AlertCircle, CheckCircleIcon as CheckCircle, ClockIcon as Clock, EnvelopeIcon as Mail, PhoneIcon as Phone } from '@heroicons/react/24/outline';
 
 // API functions
 const api = {
@@ -247,7 +237,7 @@ const SupportGroupForm = ({ group, onSave, onCancel }: {
             <SelectValue placeholder="Select escalation group" />
           </SelectTrigger>
           <SelectContent>
-            {supportGroups?.supportGroups?.filter((sg: SupportGroup) => sg.id !== group?.id).map((sg: SupportGroup) => (
+             {supportGroups?.supportGroups?.filter((sg: any) => sg.id !== group?.id).map((sg: any) => (
               <SelectItem key={sg.id} value={sg.id}>
                 {sg.name}
               </SelectItem>
@@ -370,8 +360,14 @@ const SupportGroupsPage = () => {
     );
   }
 
+  React.useEffect(() => {
+    const handler = () => queryClient.invalidateQueries({ queryKey: ['supportGroups'] })
+    window.addEventListener('pulse:pull_to_refresh', handler)
+    return () => window.removeEventListener('pulse:pull_to_refresh', handler)
+  }, [queryClient])
+
   return (
-    <div className="p-6 space-y-6">
+    <motion.div className={`p-6 space-y-6 ${styles.pullContainer}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -465,7 +461,7 @@ const SupportGroupsPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {supportGroupsData.supportGroups.map((group: SupportGroup) => (
+                {supportGroupsData.supportGroups.map((group: any) => (
                   <TableRow key={group.id}>
                     <TableCell>
                       <div>
@@ -582,7 +578,7 @@ const SupportGroupsPage = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 };
 

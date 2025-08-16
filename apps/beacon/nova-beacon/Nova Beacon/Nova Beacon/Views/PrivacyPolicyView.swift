@@ -14,7 +14,7 @@ struct PrivacyPolicyView: View {
                     Text("\u{2022} Manager")
                     Text("\u{2022} System affected")
                     Text("\u{2022} Urgency level")
-                    Text("\nThis data is sent to the Nova Universe backend to create and track help desk requests. Nothing is stored on the kiosk. Ticket details are kept for 30 days then removed from the database.")
+                    Text("\nThis data is sent to the Nova Universe backend to create and track help desk requests. Nothing is stored on the kiosk. Retention and deletion policies are defined by your organization and shown here based on tenant configuration.")
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)

@@ -101,20 +101,26 @@ class TicketQueue: ObservableObject {
   }
 
   private func send(_ ticket: QueuedTicket, completion: @escaping (Bool) -> Void) {
-    guard let url = URL(string: "\(APIConfig.baseURL)/submit-ticket") else {
+    guard let url = URL(string: "\(APIConfig.baseURL)/api/v2/beacon/ticket") else {
       completion(false)
       return
     }
     var req = URLRequest(url: url)
     req.httpMethod = "POST"
     req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    let body: [String: String] = [
-      "name": ticket.name,
-      "email": ticket.email,
-      "title": ticket.title,
-      "manager": ticket.manager,
-      "system": ticket.system,
-      "urgency": ticket.urgency
+    let body: [String: Any] = [
+      "kioskId": KeychainService.string(for: "kioskId") ?? "unknown",
+      "submitted_by": "anon_beacon",
+      "details": [
+        "name": ticket.name,
+        "email": ticket.email,
+        "title": ticket.title,
+        "manager": ticket.manager,
+        "system": ticket.system,
+        "urgency": ticket.urgency
+      ],
+      "offline": true,
+      "timestamp": ISO8601DateFormatter().string(from: Date())
     ]
     req.httpBody = try? JSONSerialization.data(withJSONObject: body)
     URLSession.shared.dataTask(with: req) { _, _, err in

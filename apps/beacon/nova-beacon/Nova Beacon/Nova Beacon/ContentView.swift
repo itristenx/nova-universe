@@ -29,7 +29,9 @@ struct ContentView: View {
                     }
             } else {
                 // Main kiosk interface
-                switch kioskController.currentState {
+                VStack(spacing: 0) {
+                    // Top status bar hidden for kiosk; bottom status only to match Zoom tablet style
+                    switch kioskController.currentState {
                 case .initializing:
                     InitializationView()
                 case .setup:
@@ -51,6 +53,9 @@ struct ContentView: View {
                         estimatedDuration: "15 minutes",
                         contactInfo: "Please contact IT support for assistance"
                     )
+                    }
+                    // Bottom status bar resembling Zoom conference tablets
+                    BottomBar()
                 }
                 
                 // Global overlays

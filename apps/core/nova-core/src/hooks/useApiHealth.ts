@@ -16,7 +16,7 @@ export const useApiHealth = () => {
       // Try to make a simple API call to check connectivity
       const serverUrl = localStorage.getItem('api_server_url') || 
                        import.meta.env.VITE_API_URL || 
-                       'http://localhost:3000';
+                       (import.meta.env.DEV ? 'http://localhost:3000' : '');
       
       // Use fetch for health check to avoid interceptors that might interfere
       // Use /api/health for status, /api/version for version info

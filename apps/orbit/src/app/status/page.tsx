@@ -11,17 +11,11 @@ interface StatusData {
 export default function StatusPage() {
   const [status, setStatus] = useState<StatusData[]>([]);
   const [loading, setLoading] = useState(false);
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
-  if (!token) {
-    return (
-      <main className="p-8 max-w-2xl mx-auto">
-        <p>Please log in to view service status.</p>
-      </main>
-    );
-  }
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const isAuthed = Boolean(token);
 
   useEffect(() => {
+    if (!isAuthed) return;
     setLoading(true);
     getServiceStatus(token)
       .then(res => {
@@ -31,10 +25,14 @@ export default function StatusPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [isAuthed, token]);
 
   return (
     <main className="p-8 max-w-2xl mx-auto">
+      {!isAuthed ? (
+        <p>Please log in to view service status.</p>
+      ) : (
+        <>
       <h1 className="text-2xl font-bold mb-4">Service Status</h1>
       {loading ? (
         <div className="py-8 text-center text-muted-foreground">Loading status...</div>
@@ -56,6 +54,8 @@ export default function StatusPage() {
             </li>
           ))}
         </ul>
+      )}
+        </>
       )}
     </main>
   );

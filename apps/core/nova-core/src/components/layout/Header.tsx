@@ -163,6 +163,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               disabled={loading}
               className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-600 transition-colors duration-200 disabled:opacity-50"
+              aria-haspopup="menu"
+              aria-controls="indicator-status-menu"
             >
               <div className={`h-2 w-2 rounded-full ${getStatusColor(currentStatus)}`} />
               <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
@@ -173,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-600 z-50">
+              <div id="indicator-status-menu" role="menu" aria-label="Indicator status" className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-600 z-50">
                 <div className="py-1">
                   <button
                     onClick={() => handleStatusChange('open')}
@@ -181,6 +183,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                     className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 ${
                       currentStatus === 'open' ? 'bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300' : 'text-gray-700 dark:text-gray-300'
                     }`}
+                    role="menuitem"
                   >
                     <div className="h-2 w-2 rounded-full bg-green-500" />
                     <span>Open</span>
@@ -191,6 +194,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                     className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 ${
                       currentStatus === 'closed' ? 'bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-300'
                     }`}
+                    role="menuitem"
                   >
                     <div className="h-2 w-2 rounded-full bg-red-500" />
                     <span>Closed</span>
@@ -201,6 +205,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                     className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 ${
                       currentStatus === 'meeting' ? 'bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'
                     }`}
+                    role="menuitem"
                   >
                     <div className="h-2 w-2 rounded-full bg-purple-500" />
                     <span>In a Meeting</span>
@@ -211,6 +216,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                     className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 ${
                       currentStatus === 'brb' ? 'bg-yellow-50 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' : 'text-gray-700 dark:text-gray-300'
                     }`}
+                    role="menuitem"
                   >
                     <div className="h-2 w-2 rounded-full bg-yellow-500" />
                     <span>Be Right Back</span>
@@ -221,6 +227,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                     className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 ${
                       currentStatus === 'lunch' ? 'bg-orange-50 dark:bg-orange-900 text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'
                     }`}
+                    role="menuitem"
                   >
                     <div className="h-2 w-2 rounded-full bg-orange-500" />
                     <span>Out to Lunch</span>
@@ -231,6 +238,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                     className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 ${
                       currentStatus === 'unavailable' ? 'bg-orange-50 dark:bg-orange-900 text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'
                     }`}
+                    role="menuitem"
                   >
                     <div className="h-2 w-2 rounded-full bg-orange-500" />
                     <span>Status Unavailable</span>
@@ -240,6 +248,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                     onClick={handleManageKiosks}
                     disabled={loading}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                    role="menuitem"
                   >
                     Manage Individual Kiosks
                   </button>

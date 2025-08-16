@@ -101,7 +101,8 @@ const NovaSentinelDashboard: React.FC = () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:3002`);
+    const base = window.location.origin.replace(/^http/, 'ws');
+    const ws = new WebSocket(`${base}/ws/monitoring`);
     
     ws.onopen = () => {
       ws.send(JSON.stringify({ type: 'authenticate', token }));
@@ -136,7 +137,7 @@ const NovaSentinelDashboard: React.FC = () => {
   const { data: systemStats } = useQuery({
     queryKey: ['sentinel-stats'],
     queryFn: async (): Promise<SystemStats> => {
-      const response = await fetch('http://localhost:3002/api/v1/analytics/system', {
+      const response = await fetch('/api/v2/monitoring/analytics/system', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch system stats');
@@ -155,7 +156,7 @@ const NovaSentinelDashboard: React.FC = () => {
       if (filterType !== 'all') params.append('type', filterType);
       if (searchTerm) params.append('search', searchTerm);
 
-      const response = await fetch(`http://localhost:3002/api/v1/monitors?${params}`, {
+      const response = await fetch(`/api/v2/monitoring/monitors?${params}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch monitors');
@@ -169,7 +170,7 @@ const NovaSentinelDashboard: React.FC = () => {
   const { data: statusPages = [] } = useQuery({
     queryKey: ['sentinel-status-pages'],
     queryFn: async (): Promise<StatusPage[]> => {
-      const response = await fetch('http://localhost:3002/api/v1/status-pages', {
+      const response = await fetch('/api/v2/monitoring/status-pages', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch status pages');
@@ -183,7 +184,7 @@ const NovaSentinelDashboard: React.FC = () => {
   const { data: maintenance = [] } = useQuery({
     queryKey: ['sentinel-maintenance'],
     queryFn: async (): Promise<Maintenance[]> => {
-      const response = await fetch('http://localhost:3002/api/v1/maintenance', {
+      const response = await fetch('/api/v2/monitoring/maintenance', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch maintenance');
@@ -196,7 +197,7 @@ const NovaSentinelDashboard: React.FC = () => {
   // Toggle monitor pause/resume
   const toggleMonitorMutation = useMutation({
     mutationFn: async ({ monitorId, action }: { monitorId: string; action: 'pause' | 'resume' }) => {
-      const response = await fetch(`http://localhost:3002/api/v1/monitors/${monitorId}/${action}`, {
+      const response = await fetch(`/api/v2/monitoring/monitors/${monitorId}/${action}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -212,7 +213,7 @@ const NovaSentinelDashboard: React.FC = () => {
   const toggleFavoriteMutation = useMutation({
     mutationFn: async ({ monitorId, favorite }: { monitorId: string; favorite: boolean }) => {
       const endpoint = favorite ? 'favorite' : 'unfavorite';
-      const response = await fetch(`http://localhost:3002/api/v1/monitors/${monitorId}/${endpoint}`, {
+      const response = await fetch(`/api/v2/monitoring/monitors/${monitorId}/${endpoint}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -430,6 +431,7 @@ const NovaSentinelDashboard: React.FC = () => {
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
                     className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-label="Filter by status"
                   >
                     <option value="all">All Status</option>
                     <option value="up">Up</option>
@@ -440,6 +442,7 @@ const NovaSentinelDashboard: React.FC = () => {
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
                     className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-label="Filter by monitor type"
                   >
                     <option value="all">All Types</option>
                     <option value="http">HTTP</option>
@@ -762,7 +765,7 @@ const NovaSentinelDashboard: React.FC = () => {
               <h2 className="text-xl font-semibold text-gray-900 mb-6">System Analytics</h2>
               <div className="text-center py-12">
                 <ChartBarIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">Analytics dashboard coming soon</p>
+                <p className="text-gray-500">No analytics available yet. Connect data sources or view Monitors.</p>
               </div>
             </motion.div>
           )}

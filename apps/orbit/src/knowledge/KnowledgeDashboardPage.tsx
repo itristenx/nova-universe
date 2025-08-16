@@ -8,7 +8,7 @@ const KnowledgeDashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+  const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || '') : '';
   const userRoles = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('roles') || '[]') : [];
   const isEditor = userRoles.includes('admin') || userRoles.includes('superadmin') || userRoles.includes('kb_editor');
 

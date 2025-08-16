@@ -6,8 +6,8 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to enhanced dashboard
-    router.push('/enhanced-dashboard');
+    // Redirect to locale-specific dashboard
+    router.push('/en/dashboard');
   }, [router]);
 
   return (

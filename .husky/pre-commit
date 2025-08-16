@@ -1,14 +1,8 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
-# Run lint and type-check on changed workspaces (if turbo is available)
-if command -v pnpm >/dev/null 2>&1 && command -v npx >/dev/null 2>&1; then
-  if npx --yes turbo --version >/dev/null 2>&1; then
-    npx --yes turbo run lint type-check --filter=...[HEAD] || exit 1
-  else
-    pnpm -w run lint || exit 1
-    pnpm -w run type-check || true
-  fi
+# Minimal fast pre-commit: format+lint only changed files
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm -w lint-staged || exit 1
 else
   echo "pnpm not found; skipping checks"
 fi

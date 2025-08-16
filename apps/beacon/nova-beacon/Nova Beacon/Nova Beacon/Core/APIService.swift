@@ -25,7 +25,7 @@ class APIService {
     
     // MARK: - Connection Testing
     func testConnection(serverURL: String) async -> Bool {
-        guard let url = URL(string: "\(serverURL)/api/v1/health") else { return false }
+        guard let url = URL(string: "\(serverURL)/api/v2/status") else { return false }
         
         do {
             let (data, response) = try await session.data(from: url)
@@ -46,9 +46,9 @@ class APIService {
         return false
     }
     
-    // MARK: - Kiosk Registration & Status
+    // MARK: - Kiosk Registration & Status (API v2)
     func registerKiosk(id: String, version: String, serverURL: String) async -> Bool {
-        guard let url = URL(string: "\(serverURL)/api/register-kiosk") else { return false }
+        guard let url = URL(string: "\(serverURL)/api/v2/beacon/register") else { return false }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -81,7 +81,7 @@ class APIService {
     }
     
     func checkKioskStatus(id: String, serverURL: String) async -> [String: Any]? {
-        guard let url = URL(string: "\(serverURL)/api/kiosks/\(id)") else { return nil }
+        guard let url = URL(string: "\(serverURL)/api/v2/beacon/kiosks/\(id)") else { return nil }
         
         var request = URLRequest(url: url)
         request.setValue("Bearer \(getKioskToken())", forHTTPHeaderField: "Authorization")
@@ -103,7 +103,7 @@ class APIService {
     
     // MARK: - Kiosk Activation
     func activateKiosk(id: String, activationCode: String, serverURL: String) async -> Bool {
-        guard let url = URL(string: "\(serverURL)/api/kiosks/activate") else { return false }
+        guard let url = URL(string: "\(serverURL)/api/v2/beacon/activate") else { return false }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -137,7 +137,7 @@ class APIService {
     
     // MARK: - Kiosk Configuration
     func getKioskConfiguration(id: String, serverURL: String) async -> [String: Any]? {
-        guard let url = URL(string: "\(serverURL)/api/kiosks/\(id)/remote-config") else { return nil }
+        guard let url = URL(string: "\(serverURL)/api/v2/beacon/config?kiosk_id=\(id)") else { return nil }
         
         var request = URLRequest(url: url)
         request.setValue("Bearer \(getKioskToken())", forHTTPHeaderField: "Authorization")
@@ -162,7 +162,7 @@ class APIService {
 
     // MARK: - Status Configuration
     func getStatusConfiguration(kioskId: String, serverURL: String) async -> StatusConfiguration? {
-        guard let url = URL(string: "\(serverURL)/api/kiosks/\(kioskId)/remote-config") else { return nil }
+        guard let url = URL(string: "\(serverURL)/api/v2/beacon/config?kiosk_id=\(kioskId)") else { return nil }
         
         var request = URLRequest(url: url)
         request.setValue("Bearer \(getKioskToken())", forHTTPHeaderField: "Authorization")
@@ -212,32 +212,7 @@ class APIService {
         return false
     }
     
-    // MARK: - Activation
-    func activateKiosk(id: String, activationCode: String, serverURL: String) async -> Bool {
-        guard let url = URL(string: "\(serverURL)/api/kiosks/activate") else { return false }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let payload = [
-            "kioskId": id,
-            "activationCode": activationCode.uppercased()
-        ]
-        
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-            let (_, response) = try await session.data(for: request)
-            
-            if let httpResponse = response as? HTTPURLResponse {
-                return httpResponse.statusCode == 200
-            }
-        } catch {
-            print("Kiosk activation failed: \(error)")
-        }
-        
-        return false
-    }
+    // Duplicate activation removed; use the API v2 function above
     
     // MARK: - Configuration
     func getKioskConfiguration(id: String, serverURL: String) async -> [String: Any]? {
@@ -266,7 +241,7 @@ class APIService {
     
     // MARK: - Ticket Submission
     func submitTicket(kioskId: String, category: String, description: String, serverURL: String) async -> Bool {
-        guard let url = URL(string: "\(serverURL)/api/submit-ticket") else { return false }
+        guard let url = URL(string: "\(serverURL)/api/v2/beacon/ticket") else { return false }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -277,7 +252,8 @@ class APIService {
             "category": category,
             "description": description,
             "priority": "medium",
-            "timestamp": ISO8601DateFormatter().string(from: Date())
+            "timestamp": ISO8601DateFormatter().string(from: Date()),
+            "offline": false
         ]
         
         do {

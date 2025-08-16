@@ -41,7 +41,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
     // Load current server URL from environment or localStorage
     const currentUrl = localStorage.getItem('api_server_url') || 
                        import.meta.env.VITE_API_URL || 
-                       'http://localhost:3000';
+                       (import.meta.env.DEV ? 'http://localhost:3000' : '');
     setServerUrl(currentUrl);
     setSavedUrl(currentUrl);
     
@@ -118,7 +118,7 @@ export const ServerConnectionModal: React.FC<ServerConnectionModalProps> = ({
   };
 
   const resetToDefault = () => {
-    const defaultUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const defaultUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '');
     setServerUrl(defaultUrl);
     localStorage.removeItem('api_server_url');
     testConnection(defaultUrl);

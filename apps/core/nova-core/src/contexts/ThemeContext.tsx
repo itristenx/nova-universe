@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { colors, fonts, spacing } from '@nova-universe/theme';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+// @ts-ignore - design-tokens provides JS build without types
+import { colors, themeCSS, themeUtils } from '@nova-universe/design-tokens';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -26,44 +27,50 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [mode, setMode] = useState<ThemeMode>(() => {
-    const stored = localStorage.getItem('theme-mode');
-    return (stored as ThemeMode) || 'system';
+    try {
+      const stored = localStorage.getItem('theme-mode');
+      return (stored as ThemeMode) || 'system';
+    } catch {
+      return 'system';
+    }
   });
 
   const [isDark, setIsDark] = useState(false);
+  const styleTagRef = useRef<HTMLStyleElement | null>(null);
 
   useEffect(() => {
-    const updateTheme = () => {
-      let shouldBeDark = false;
-      if (mode === 'dark') {
-        shouldBeDark = true;
-      } else if (mode === 'light') {
-        shouldBeDark = false;
-      } else {
-        shouldBeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      }
+    // Inject theme CSS once
+    if (!styleTagRef.current) {
+      const styleTag = document.createElement('style');
+      styleTag.setAttribute('id', 'nova-theme-css');
+      styleTag.textContent = themeCSS;
+      document.head.appendChild(styleTag);
+      styleTagRef.current = styleTag;
+    }
+
+    const applyMode = () => {
+      // Set data-theme and manage dark class via utilities
+      const mapped = mode === 'system' ? 'auto' : (mode as 'light' | 'dark');
+      themeUtils.setTheme(mapped);
+
+      const effective = themeUtils.getEffectiveTheme();
+      const shouldBeDark = effective === 'dark';
       setIsDark(shouldBeDark);
-      if (shouldBeDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
+
+      // Update meta theme-color for iOS/Safari chrome coherence
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) {
+        metaTheme.setAttribute('content', shouldBeDark ? colors.neutral[900] : colors.neutral[50]);
       }
-      // Inject design tokens as CSS variables at root
-      Object.entries(colors).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(`--color-${key}`, value);
-      });
-      Object.entries(fonts).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(`--font-${key}`, Array.isArray(value) ? value.join(', ') : value);
-      });
-      Object.entries(spacing).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(`--spacing-${key}`, value);
-      });
     };
-    updateTheme();
+
+    applyMode();
+
     if (mode === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      mediaQuery.addEventListener('change', updateTheme);
-      return () => mediaQuery.removeEventListener('change', updateTheme);
+      const listener = () => applyMode();
+      mediaQuery.addEventListener('change', listener);
+      return () => mediaQuery.removeEventListener('change', listener);
     }
   }, [mode]);
 

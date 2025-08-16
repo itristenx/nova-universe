@@ -71,7 +71,7 @@ export default function PublicStatusPage({ tenant, embedded = false }: StatusPag
 
   const fetchStatusPage = useCallback(async () => {
     try {
-      const url = tenant ? `/api/monitoring/status/${tenant}` : '/api/monitoring/status';
+      const url = tenant ? `/api/v2/monitoring/status/${tenant}` : '/api/v2/monitoring/status';
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -92,8 +92,8 @@ export default function PublicStatusPage({ tenant, embedded = false }: StatusPag
   const fetchIncidentHistory = useCallback(async () => {
     try {
       const url = tenant 
-        ? `/api/monitoring/incidents/history/${tenant}?limit=20` 
-        : '/api/monitoring/incidents/history?limit=20';
+        ? `/api/v2/monitoring/incidents/history/${tenant}?limit=20` 
+        : '/api/v2/monitoring/incidents/history?limit=20';
       const response = await fetch(url);
       
       if (response.ok) {

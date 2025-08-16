@@ -13,8 +13,9 @@ export const useConnectionNotifications = () => {
       });
     };
 
-    const handleDisconnected = (event: CustomEvent) => {
-      const error = event.detail?.error || 'Server connection lost';
+    const handleDisconnected = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const error = customEvent.detail?.error || 'Server connection lost';
       addToast({
         type: 'error',
         title: 'Connection Lost',
@@ -23,12 +24,12 @@ export const useConnectionNotifications = () => {
     };
 
     // Listen for custom connection events
-    window.addEventListener('api-reconnected', handleReconnected as EventListener);
-    window.addEventListener('api-disconnected', handleDisconnected as EventListener);
+    window.addEventListener('api-reconnected', handleReconnected);
+    window.addEventListener('api-disconnected', handleDisconnected);
 
     return () => {
-      window.removeEventListener('api-reconnected', handleReconnected as EventListener);
-      window.removeEventListener('api-disconnected', handleDisconnected as EventListener);
+      window.removeEventListener('api-reconnected', handleReconnected);
+      window.removeEventListener('api-disconnected', handleDisconnected);
     };
   }, [addToast]);
 };

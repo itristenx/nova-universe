@@ -209,7 +209,7 @@ app.view('ticket_submit', async ({ ack, body, view, client }) => {
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const ticket = res.data?.ticket;
-    const ticketId = ticket?.ticketId || ticket?.id || 'TKT-NEW';
+    const ticketId = ticket?.ticketId || ticket?.id || 'INC-NEW';
     const aUrl = adminUrl;
     const blocks = [
       {
@@ -298,12 +298,12 @@ app.command('/nova-feedback', async ({ ack, body, client, command }) => {
   }
 });
 
-// /nova-assign TKT-XXXXX @user → leverage Synth v2 optimize or direct assign (placeholder)
+// /nova-assign <TICKET_ID> @user → leverage Synth v2 optimize or direct assign (placeholder)
 app.command('/nova-assign', async ({ ack, body, client, command }) => {
   await ack();
   const text = (command.text || '').trim();
   if (!text) {
-    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: 'Usage: /nova-assign TKT-00001' });
+    await client.chat.postEphemeral({ channel: body.channel_id, user: body.user_id, text: 'Usage: /nova-assign INC000001' });
     return;
   }
   try {

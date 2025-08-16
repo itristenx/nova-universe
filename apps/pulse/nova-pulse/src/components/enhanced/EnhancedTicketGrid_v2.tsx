@@ -161,7 +161,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
 
   // Enhanced ticket filtering and sorting
   const filteredAndSortedTickets = useMemo(() => {
-    let filtered = ticketsWithSLA.filter(ticket => {
+    const filtered = ticketsWithSLA.filter(ticket => {
       // Search filter
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase()

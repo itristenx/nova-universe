@@ -114,7 +114,7 @@ export const mockKiosks: Kiosk[] = [
 export const mockLogs: Log[] = [
   {
     id: 1,
-    ticketId: 'TKT-001',
+    ticketId: 'INC000001',
     name: 'John Doe',
     email: 'john.doe@company.com',
     title: 'Computer not turning on',
@@ -125,7 +125,7 @@ export const mockLogs: Log[] = [
   },
   {
     id: 2,
-    ticketId: 'TKT-002',
+    ticketId: 'REQ000002',
     name: 'Jane Smith',
     email: 'jane.smith@company.com',
     title: 'Application crashing repeatedly',

@@ -13,6 +13,7 @@ import { UserManagementPage } from '@/pages/UserManagementPage';
 import { VIPManagementPage } from '@/pages/VIPManagementPage';
 import { useAuthStore } from '@/stores/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HeroUIProvider } from '@heroui/react';
 import React, { useEffect } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Showcase } from '@/components/ui/Showcase';
@@ -267,16 +268,18 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <WebSocketProvider>
-            <Router>
-              <AppRoutes />
-              <ConnectedToastContainer />
-            </Router>
-          </WebSocketProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
+      <HeroUIProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <WebSocketProvider>
+              <Router>
+                <AppRoutes />
+                <ConnectedToastContainer />
+              </Router>
+            </WebSocketProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </HeroUIProvider>
     </ErrorBoundary>
   );
 };

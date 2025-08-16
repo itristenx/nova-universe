@@ -18,6 +18,7 @@
     "formatExamples": "Format Examples"
   },
   "Navigation": {
+    "primaryNav": "Primary navigation",
     "home": "Home",
     "about": "About",
     "dashboard": "Dashboard",

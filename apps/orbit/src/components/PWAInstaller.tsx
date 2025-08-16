@@ -99,7 +99,7 @@ export function PWAInstaller() {
       const installBtn = document.getElementById('pwa-install-btn');
       if (installBtn) {
         installBtn.addEventListener('click', async () => {
-          if (deferredPrompt && 'prompt' in deferredPrompt) {
+          if (deferredPrompt && (deferredPrompt as any).prompt) {
             (deferredPrompt as any).prompt();
             await (deferredPrompt as any).userChoice;
             deferredPrompt = null;

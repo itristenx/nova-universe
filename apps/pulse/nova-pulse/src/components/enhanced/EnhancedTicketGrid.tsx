@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react'
+import { motion } from 'framer-motion'
+import { listContainer, listItem } from '../system/Motion'
 import { useQuery } from '@tanstack/react-query'
 import {
   Card,
@@ -161,7 +163,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
 
   // Enhanced ticket filtering and sorting
   const filteredAndSortedTickets = useMemo(() => {
-    let filtered = ticketsWithSLA.filter(ticket => {
+    const filtered = ticketsWithSLA.filter(ticket => {
       // Search filter
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase()
@@ -487,7 +489,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
           {/* Search */}
           <Input
             placeholder="Search tickets..."
@@ -523,7 +525,7 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
           </Dropdown>
 
           {/* Filters */}
-          <Button
+            <Button
             variant={showFilters ? "solid" : "flat"}
             size="sm"
             startContent={<FunnelIcon className="w-4 h-4" />}
@@ -675,9 +677,11 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
 
       {/* Tickets Display */}
       {viewMode === 'card' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredAndSortedTickets.map(renderTicketCard)}
-        </div>
+        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" variants={listContainer} initial="hidden" animate="show">
+          {filteredAndSortedTickets.map((t) => (
+            <motion.div key={t.ticketId} variants={listItem}>{renderTicketCard(t)}</motion.div>
+          ))}
+        </motion.div>
       )}
 
       {viewMode === 'list' && (
@@ -739,9 +743,13 @@ export const EnhancedTicketGrid: React.FC<Props> = ({
                   </div>
                 </TableColumn>
               </TableHeader>
-              <TableBody>
-                {filteredAndSortedTickets.map(renderTicketRow)}
-              </TableBody>
+            <TableBody>
+              {filteredAndSortedTickets.map((t) => (
+                <motion.tr key={t.ticketId} variants={listItem} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+                  {renderTicketRow(t)}
+                </motion.tr>
+              ))}
+            </TableBody>
             </Table>
           </CardBody>
         </Card>

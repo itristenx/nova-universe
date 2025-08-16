@@ -1,6 +1,7 @@
 // nova-core/src/pages/NovaDashboard.tsx
 // Nova Universe Enhanced Dashboard
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import {
@@ -206,20 +207,20 @@ export const NovaDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2">Nova Universe Control Center</h1>
-            <p className="text-purple-100">Enterprise ITSM Platform - Phase 4 Enhanced Administration</p>
+            <p className="text-gray-500 dark:text-gray-400">Enterprise ITSM Platform - Phase 4 Enhanced Administration</p>
           </div>
           <div className="text-right">
-            <div className="flex items-center space-x-2 text-purple-100">
+            <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
               <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
               <span className="text-sm">
                 {isConnected ? 'Live Updates' : 'Offline'}
               </span>
             </div>
-            <p className="text-xs text-purple-200 mt-1">
+                <p className="text-xs text-gray-400 mt-1">
               Last updated: {lastUpdate.toLocaleTimeString()}
             </p>
           </div>
@@ -336,7 +337,7 @@ export const NovaDashboard: React.FC = () => {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     ref={progressBarRef}
-                    className="bg-purple-600 h-2 rounded-full transition-all duration-500"
+                    className="bg-primary-600 h-2 rounded-full transition-all duration-500"
                   ></div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
@@ -353,21 +354,21 @@ export const NovaDashboard: React.FC = () => {
             Quick Actions
           </h2>
           <div className="space-y-3">
-            <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors">
+            <a className="w-full inline-flex justify-center items-center bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors" href="/users">
               Manage Users & Roles
-            </button>
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+            </a>
+            <a className="w-full inline-flex justify-center items-center bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors" href="/saml-configuration">
               Configure SAML SSO
-            </button>
-            <button className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors">
+            </a>
+            <a className="w-full inline-flex justify-center items-center bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors" href="/scim-provisioning">
               SCIM Provisioning
-            </button>
-            <button className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 transition-colors">
+            </a>
+            <a className="w-full inline-flex justify-center items-center bg-secondary-600 text-white py-2 px-4 rounded-md hover:bg-secondary-700 transition-colors" href="/api-docs">
               View API Documentation
-            </button>
-            <button className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors">
+            </a>
+            <a className="w-full inline-flex justify-center items-center bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors" href="/settings">
               System Configuration
-            </button>
+            </a>
           </div>
         </Card>
       </div>
@@ -410,10 +411,10 @@ export const NovaDashboard: React.FC = () => {
         </div>
         <div className="mt-4">
           <a 
-            href="http://localhost:3000/api-docs" 
+            href={`${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '')}/api-docs`} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-secondary-600 text-white rounded-md hover:bg-secondary-700 transition-colors"
           >
             Open Interactive API Documentation
           </a>

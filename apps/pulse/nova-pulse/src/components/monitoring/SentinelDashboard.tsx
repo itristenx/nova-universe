@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ServerIcon,
@@ -10,11 +10,10 @@ import {
   Cog6ToothIcon,
   ChartBarIcon,
   EyeIcon,
-  PlayIcon,
-  PauseIcon,
+
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
-import AlertCard from '../alerts/AlertCard';
+// import AlertCard from '../alerts/AlertCard'; // Currently unused
 import SmartAlertButton from '../alerts/SmartAlertButton';
 import { useAlertCosmo } from '../../hooks/useAlertCosmo';
 

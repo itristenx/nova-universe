@@ -557,7 +557,7 @@ export default function AdminMonitoringDashboard(): ReactElement {
           <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">{selectedView.charAt(0).toUpperCase() + selectedView.slice(1)} View</h3>
           <p className="text-gray-500">
-            Enhanced {selectedView} management interface coming soon
+            No content to display yet. Configure data sources or select another tab.
           </p>
         </div>
       )}

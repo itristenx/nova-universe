@@ -75,7 +75,7 @@ class SynthV2Client {
       return {
         success: true,
         ticket: {
-          id: `TKT-${Date.now()}`,
+          id: `INC${Date.now().toString().slice(-6)}`,
           title: 'Auto-generated ticket',
           description: body?.input || 'Auto-created from user input',
           category: 'general',

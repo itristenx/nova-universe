@@ -3,6 +3,7 @@ import axios from 'axios';
 import { getHelpScoutConfig } from '../utils/serviceHelpers.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import db from '../db.js';
+import { generateTypedTicketId } from '../utils/dbUtils.js';
 import { logger } from '../logger.js';
 
 const router = express.Router();
@@ -80,18 +81,22 @@ router.post('/import', authenticateJWT, async (req, res) => {
           imported_by: req.user?.id || null
         };
 
+        const ticketId = await generateTypedTicketId('INC');
+        const internalId = (await import('uuid')).v4();
         await db.none(`
           INSERT INTO tickets (
-            title, description, status, priority, external_id, external_source, 
+            id, ticket_id, type_code, title, description, status, priority, external_id, external_source, 
             external_url, customer_email, customer_name, created_at, updated_at, imported_by
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+            $1, $2, 'INC', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
           )
         `, [
+          internalId,
+          ticketId,
           ticketData.title, ticketData.description, ticketData.status, ticketData.priority,
           ticketData.external_id, ticketData.external_source, ticketData.external_url,
           ticketData.customer_email, ticketData.customer_name, ticketData.created_at,
-          ticketData.updated_at, ticketData.imported_by
+          ticketData.updated_at, req.user?.id || null
         ]);
 
         importedCount++;

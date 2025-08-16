@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
+import TabBar from './TabBar';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
+  console.log('🏗️ Layout component rendering...')
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [banner, setBanner] = useState<{ title: string; message: string } | null>(null);
 
@@ -43,13 +45,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         )}
         
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
+        <main id="main-content" className="flex-1 relative overflow-y-auto focus:outline-none pb-[calc(3.5rem+var(--safe-bottom))] md:pb-0">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {children}
             </div>
           </div>
         </main>
+        <TabBar />
       </div>
     </div>
   );

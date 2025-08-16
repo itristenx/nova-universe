@@ -198,24 +198,17 @@ class StatusManager: ObservableObject {
         do {
             let statusPayload = [
                 "status": currentStatus.rawValue,
-                "timestamp": ISO8601DateFormatter().string(from: Date()),
-                "deviceId": configManager.deviceId,
-                "location": configManager.location ?? "Unknown"
+                "timestamp": ISO8601DateFormatter().string(from: Date())
             ]
-            
-            guard let url = URL(string: "\(serverConfig.serverURL)/api/kiosks/\(configManager.deviceId)/status") else {
+            guard let url = URL(string: "\(serverConfig.baseURL)/api/v2/beacon/kiosks/\(configManager.getKioskId())/status") else {
                 print("Invalid status sync URL")
                 return
             }
-            
             var request = URLRequest(url: url)
-            request.httpMethod = "POST"
+            request.httpMethod = "PUT"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue("Bearer \(serverConfig.token)", forHTTPHeaderField: "Authorization")
             request.httpBody = try JSONSerialization.data(withJSONObject: statusPayload)
-            
             let (_, response) = try await URLSession.shared.data(for: request)
-            
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                 print("Status synced successfully to backend: \(currentStatus.rawValue)")
             } else {
@@ -229,23 +222,26 @@ class StatusManager: ObservableObject {
     private func fetchStatusConfiguration(serverURL: String) async {
         // Fetch status configuration from Nova Universe backend
         do {
-            guard let url = URL(string: "\(serverURL)/api/kiosks/\(configManager.deviceId)/config") else {
+            guard let url = URL(string: "\(serverURL)/api/v2/beacon/config?kiosk_id=\(configManager.getKioskId())") else {
                 print("Invalid configuration URL")
                 return
             }
-            
-            var request = URLRequest(url: url)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
+            let (data, response) = try await URLSession.shared.data(from: url)
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                 let config = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-                print("Fetched status configuration: \(config ?? [:])")
-                
-                // Apply configuration settings
-                if let updateInterval = config?["statusUpdateInterval"] as? Double {
-                    self.statusUpdateInterval = updateInterval
+                if let cfg = config?["config"] as? [String: Any],
+                   let messages = cfg["statusMessages"] as? [String: Any] {
+                    var newConfig = StatusConfiguration()
+                    newConfig.availableMessage = messages["available"] as? String ?? newConfig.availableMessage
+                    newConfig.inUseMessage = messages["inUse"] as? String ?? newConfig.inUseMessage
+                    newConfig.meetingMessage = messages["meeting"] as? String ?? newConfig.meetingMessage
+                    newConfig.brbMessage = messages["brb"] as? String ?? newConfig.brbMessage
+                    newConfig.lunchMessage = messages["lunch"] as? String ?? newConfig.lunchMessage
+                    newConfig.unavailableMessage = messages["unavailable"] as? String ?? newConfig.unavailableMessage
+                    await MainActor.run {
+                        self.statusConfiguration = newConfig
+                        self.saveStatusConfiguration()
+                    }
                 }
             } else {
                 print("Failed to fetch status configuration")
@@ -258,27 +254,18 @@ class StatusManager: ObservableObject {
     private func fetchCurrentStatus(serverURL: String) async {
         // Fetch current kiosk status from Nova Universe backend
         do {
-            guard let url = URL(string: "\(serverURL)/api/kiosks/\(configManager.deviceId)/status") else {
+            guard let url = URL(string: "\(serverURL)/api/v2/beacon/kiosks/\(configManager.getKioskId())") else {
                 print("Invalid status URL")
                 return
             }
-            
-            var request = URLRequest(url: url)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
+            let (data, response) = try await URLSession.shared.data(from: url)
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                 let statusResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-                
                 if let statusString = statusResponse?["status"] as? String,
                    let serverStatus = KioskStatus(rawValue: statusString) {
                     await MainActor.run {
                         self.currentStatus = serverStatus
                     }
-                    print("Updated status from server: \(serverStatus.rawValue)")
-                } else {
-                    print("Invalid status response from server")
                 }
             } else {
                 print("Failed to fetch current status from server")

@@ -1102,8 +1102,8 @@ async function performTicketAnalysis(ticket) {
     suggestedPriority,
     estimatedResolutionTime: suggestedPriority === 'high' ? 240 : 480, // minutes
     similarTickets: [
-      { ticketId: 'TKT-00123', similarity: 0.85, resolution: 'Password reset via admin portal' },
-      { ticketId: 'TKT-00098', similarity: 0.72, resolution: 'Account unlocked after security verification' }
+      { ticketId: 'INC001234', similarity: 0.85, resolution: 'Password reset via admin portal' },
+      { ticketId: 'INC000098', similarity: 0.72, resolution: 'Account unlocked after security verification' }
     ],
     recommendedActions: [
       'Check user account status',
@@ -1128,7 +1128,7 @@ async function generateAIInsights(type, limit) {
       title: 'Recurring Network Issues on Fridays',
       description: 'Pattern detected: Network connectivity issues spike by 40% on Friday afternoons',
       confidence: 0.89,
-      relevantTickets: ['TKT-00234', 'TKT-00256', 'TKT-00278'],
+      relevantTickets: ['INC000234', 'REQ000256', 'INC000278'],
       actionable: true,
       metadata: {
         frequency: 'weekly',
@@ -1157,7 +1157,7 @@ async function generateAIInsights(type, limit) {
       title: 'Knowledge Base Gap Identified',
       description: 'Frequent tickets about VPN setup suggest missing KB article',
       confidence: 0.76,
-      relevantTickets: ['TKT-00301', 'TKT-00315', 'TKT-00332'],
+      relevantTickets: ['INC000301', 'INC000315', 'REQ000332'],
       actionable: true,
       metadata: {
         topic: 'VPN Setup',
@@ -1282,7 +1282,7 @@ async function detectPatterns(tickets, timeframe) {
       frequency: 'daily',
       impact: 'medium',
       recommendation: 'Consider staffing adjustments during peak hours',
-      relatedTickets: tickets.filter(t => t.hour === peakHour).slice(0, 5).map(t => t.id || `TKT-${Math.random().toString(36).substr(2, 8).toUpperCase()}`)
+        relatedTickets: tickets.filter(t => t.hour === peakHour).slice(0, 5).map(t => t.id || `INC${Math.random().toString().slice(2,8).padStart(6,'0')}`)
     });
   }
 
@@ -1296,7 +1296,7 @@ async function detectPatterns(tickets, timeframe) {
         frequency: `${count} times in ${timeframe}`,
         impact: count > 10 ? 'high' : count > 5 ? 'medium' : 'low',
         recommendation: `Investigate infrastructure or training needs for ${category} in ${location}`,
-        relatedTickets: tickets.filter(t => t.category === category && t.location === location).slice(0, 5).map(t => t.id || `TKT-${Math.random().toString(36).substr(2, 8).toUpperCase()}`)
+        relatedTickets: tickets.filter(t => t.category === category && t.location === location).slice(0, 5).map(t => t.id || `INC${Math.random().toString().slice(2,8).padStart(6,'0')}`)
       });
     }
   });

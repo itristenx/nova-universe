@@ -17,7 +17,7 @@ A Slack bot that integrates with the Nova Universe ticketing system, allowing us
 - `/nova-status` summarizes current status and monitor health
 - `/nova-queue` shows Pulse queue summary
 - `/nova-feedback` submits product feedback
-- `/nova-assign TKT-xxxxx` suggests an assignee using Cosmo
+- `/nova-assign <TICKET_ID>` suggests an assignee using Cosmo (e.g., `INC000123`)
 - Mentions: `@Cosmo` starts an AI conversation in thread
 - Interactive modal forms with dynamic system and urgency options
 - Automatic ticket confirmation with clickable links
@@ -122,8 +122,8 @@ Shows a snapshot of Pulse queues and open counts.
 ### `/nova-feedback`
 Sends general feedback to the platform.
 
-### `/nova-assign TKT-xxxxx`
-Asks Cosmo to suggest an assignee for a ticket.
+### `/nova-assign <TICKET_ID>`
+Asks Cosmo to suggest an assignee for a ticket (e.g., `INC000123`, `REQ000045`).
 
 ## Local Testing
 

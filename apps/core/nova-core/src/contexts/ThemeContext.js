@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { colors, fonts, spacing } from '@nova-universe/theme';
+import { colors } from '@nova-universe/design-tokens';
 const ThemeContext = createContext(undefined);
 export const useTheme = () => {
     const context = useContext(ThemeContext);
@@ -33,16 +33,7 @@ export const ThemeProvider = ({ children }) => {
             else {
                 document.documentElement.classList.remove('dark');
             }
-            // Inject design tokens as CSS variables at root
-            Object.entries(colors).forEach(([key, value]) => {
-                document.documentElement.style.setProperty(`--color-${key}`, value);
-            });
-            Object.entries(fonts).forEach(([key, value]) => {
-                document.documentElement.style.setProperty(`--font-${key}`, Array.isArray(value) ? value.join(', ') : value);
-            });
-            Object.entries(spacing).forEach(([key, value]) => {
-                document.documentElement.style.setProperty(`--spacing-${key}`, value);
-            });
+            // Minimal CSS var updates now handled in TS ThemeContext.tsx
         };
         updateTheme();
         if (mode === 'system') {

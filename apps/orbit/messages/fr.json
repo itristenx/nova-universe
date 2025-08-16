@@ -18,6 +18,7 @@
     "formatExamples": "Exemples de formatage"
   },
   "Navigation": {
+    "primaryNav": "Navigation principale",
     "home": "Accueil",
     "about": "À Propos",
     "dashboard": "Tableau de Bord",

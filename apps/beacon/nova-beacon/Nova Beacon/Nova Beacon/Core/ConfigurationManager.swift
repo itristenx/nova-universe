@@ -234,14 +234,13 @@ class ConfigurationManager: ObservableObject {
         guard let serverConfig = serverConfiguration else { return }
         
         do {
-            guard let url = URL(string: "\(serverConfig.serverURL)/api/kiosks/\(deviceId)") else {
+            guard let url = URL(string: "\(serverConfig.baseURL)/api/v2/beacon/kiosks/\(getKioskId())") else {
                 print("Invalid kiosk status URL")
                 return
             }
             
             var request = URLRequest(url: url)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue("Bearer \(serverConfig.token)", forHTTPHeaderField: "Authorization")
             
             let (data, response) = try await URLSession.shared.data(for: request)
             
@@ -278,13 +277,12 @@ class ConfigurationManager: ObservableObject {
         guard let serverConfig = serverConfiguration else { return }
         
         do {
-            guard let url = URL(string: "\(serverConfig.serverURL)/api/kiosks/\(deviceId)/config") else {
+            guard let url = URL(string: "\(serverConfig.baseURL)/api/v2/beacon/config?kiosk_id=\(getKioskId())") else {
                 return
             }
             
             var request = URLRequest(url: url)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue("Bearer \(serverConfig.token)", forHTTPHeaderField: "Authorization")
             
             let (data, response) = try await URLSession.shared.data(for: request)
             
@@ -294,8 +292,8 @@ class ConfigurationManager: ObservableObject {
                 // Update configuration if changed
                 if let newLocation = configData?["location"] as? String {
                     await MainActor.run {
-                        self.location = newLocation
-                        self.userDefaults.set(newLocation, forKey: UserDefaultsKeys.location)
+                        self.currentRoomName = newLocation
+                        self.userDefaults.set(newLocation, forKey: UserDefaultsKeys.kioskRoomName)
                     }
                 }
                 

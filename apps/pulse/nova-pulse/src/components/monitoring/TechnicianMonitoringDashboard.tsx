@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import type { ReactElement } from 'react';
 import { 
-  Monitor as MonitorIcon,
-  AlertTriangle, 
-  CheckCircle2, 
-  XCircle, 
-  Clock,
-  Activity,
-  Users,
-  RefreshCw,
-  Bell,
-  Settings,
-  Eye,
-  Plus,
-  Zap,
-  Tag,
-  Calendar,
-  Shield,
-  Bot,
-  Brain,
-  LogOut
-} from 'lucide-react';
+  ComputerDesktopIcon as MonitorIcon,
+  ExclamationTriangleIcon as AlertTriangle,
+  CheckCircleIcon as CheckCircle2,
+  XCircleIcon as XCircle,
+  ClockIcon as Clock,
+  BoltIcon as Activity,
+  UsersIcon as Users,
+  ArrowPathIcon as RefreshCw,
+  BellIcon as Bell,
+  Cog6ToothIcon as Settings,
+  EyeIcon as Eye,
+  PlusIcon as Plus,
+  BoltIcon as Zap,
+  TagIcon as Tag,
+  CalendarIcon as Calendar,
+  ShieldCheckIcon as Shield,
+  SparklesIcon as Brain,
+  ArrowRightOnRectangleIcon as LogOut
+} from '@heroicons/react/24/outline';
 import { 
   Monitor, 
   MonitorIncident, 

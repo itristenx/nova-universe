@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import { MainNavigation, Footer } from '@/components/layout/navigation';
+import { Footer } from '@/components/layout/navigation';
 import { DateTimeDisplay, NumberDisplay, CulturalPreferences } from '@/components/internationalization/cultural-formatting';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,8 +21,6 @@ export default async function HomePage({ params }: HomePageProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <MainNavigation />
-      
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-16">

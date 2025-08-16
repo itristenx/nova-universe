@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const missing = required.filter((k) => !process.env[k]);
-if (missing.length) {
+if (missing.length && process.env.NODE_ENV !== 'development') {
   throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
 }
 

@@ -27,10 +27,13 @@ import announcementsRouter from './routes/announcements.js';
 import cosmoRouter from './routes/cosmo.js';
 import beaconRouter from './routes/beacon.js';
 import goalertProxyRouter from './routes/goalert-proxy.js';
+import alertsRouter from './routes/alerts.js';
 import cmdbRouter from './routes/cmdb.js';
 import cmdbExtendedRouter from './routes/cmdbExtended.js';
 import notificationsRouter from './routes/notifications.js'; // Universal Notification Platform
 import user360Router from './routes/user360.js'; // User 360 API
+import authRouter from './routes/auth.js';
+import ticketsRouter from './routes/tickets.js';
 // Nova module routes
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import {
@@ -42,15 +45,13 @@ import {
 import axios from 'axios';
 import base64url from 'base64url';
 import bcrypt from 'bcryptjs';
-import cors from 'cors';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import express from 'express';
-import { rateLimit } from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
 import session from 'express-session';
 import { body, validationResult } from 'express-validator';
 import fs from 'fs';
-import helmet from 'helmet';
 import http from 'http';
 import nodemailer from 'nodemailer';
 import passport from 'passport';
@@ -60,12 +61,13 @@ import { Server as SocketIOServer } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import ConfigurationManager from './config/app-settings.js';
-import db from './db.js';
+import db, { closeDatabase } from './db.js';
 import events from './events.js';
 import { sign, verify } from './jwt.js';
 import { authenticateJWT } from './middleware/auth.js';
 import { authRateLimit } from './middleware/rateLimiter.js';
 import { requestLogger, securityHeaders } from './middleware/security.js';
+import { configureCORS, sanitizeInput } from './middleware/security.js';
 import { validateActivationCode, validateEmail, validateKioskRegistration } from './middleware/validation.js';
 import helixRouter from './routes/helix.js';
 import helixUniversalLoginRouter from './routes/helix-universal-login.js';
@@ -87,8 +89,16 @@ const __dirname = path.dirname(__filename);
 // Configure environment
 dotenv.config();
 
+// Authentication/feature flags must be defined before any middleware uses them
+const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
+const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
+const KIOSK_TOKEN = process.env.KIOSK_TOKEN || '';
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET;
+
 // Initialize Express app
 const app = express();
+// Trust reverse proxy headers in UAT/Production for correct protocol and IP
+app.set('trust proxy', 1);
 
 // Create HTTP server and WebSocket server
 const server = http.createServer(app);
@@ -255,6 +265,15 @@ const swaggerDefinition = {
     { url: '/api/v2', description: 'Nova Platform API server (v2)' },
     { url: '/api/v1', description: 'Nova Platform API server (v1, legacy)' },
   ],
+  components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT'
+      }
+    }
+  }
 };
 
 const swaggerOptions = {
@@ -272,7 +291,8 @@ const swaggerOptions = {
     path.join(__dirname, 'routes', 'lore.js'),
     path.join(__dirname, 'routes', 'pulse.js'),
     path.join(__dirname, 'routes', 'orbit.js'),
-    path.join(__dirname, 'routes', 'synth.js')
+    path.join(__dirname, 'routes', 'synth.js'),
+    path.join(__dirname, 'openapi_spec.yaml')
   ]
 };
 
@@ -346,21 +366,10 @@ if (process.env.DEBUG_CORS === 'true') {
 }
 
 // Apply security middleware
-app.use(securityHeaders);
+app.use(securityHeaders());
 app.use(requestLogger);
-
-// Regular CSP for other routes  
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      fontSrc: ["'self'", "https:", "data:"]
-    }
-  }
-}));
+app.use(configureCORS());
+app.use(sanitizeInput);
 
 // Disable CSP entirely for Swagger UI routes (must be after helmet)
 app.use('/api-docs', (req, res, next) => {
@@ -368,32 +377,22 @@ app.use('/api-docs', (req, res, next) => {
   next();
 });
 
-// Add custom CORS debugging middleware
-app.use((req, res, next) => {
-  console.log('🔍 Request received:', {
-    method: req.method,
-    url: req.url,
-    origin: req.headers.origin,
-    userAgent: req.headers['user-agent']?.substring(0, 50)
-  });
-  next();
-});
-
-// Temporarily allow all origins for debugging
+// Add custom CORS debugging middleware (only when DEBUG_CORS is true)
 if (process.env.DEBUG_CORS === 'true') {
-  console.log('🔧 CORS Debug - Setting up CORS with origin: true');
-  app.use(cors({ 
-    origin: true,
-    credentials: true,
-    optionsSuccessStatus: 200
-  }));
-} else {
-  console.log('🔒 CORS Production - Setting up CORS with restricted origins:', originList);
-  app.use(cors({ 
-    origin: originList || false,
-    credentials: true,
-    optionsSuccessStatus: 200
-  }));
+  app.use((req, res, next) => {
+    console.log('🔍 Request received:', {
+      method: req.method,
+      url: req.url,
+      origin: req.headers.origin,
+      userAgent: req.headers['user-agent']?.substring(0, 50)
+    });
+    next();
+  });
+}
+
+// Optional CORS debug toggle
+if (process.env.DEBUG_CORS === 'true') {
+  console.log('🔧 CORS Debug enabled');
 }
 
 // Add post-CORS middleware to log headers (only in debug mode)
@@ -449,11 +448,7 @@ if (process.env.DISABLE_AUTH === 'true' && process.env.NODE_ENV === 'production'
   process.exit(1);
 }
 
-const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' ||
-  process.env.NODE_ENV === 'test';
-const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
-const KIOSK_TOKEN = process.env.KIOSK_TOKEN || '';
-const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET;
+// (moved above to avoid temporal dead zone issues when referenced earlier)
 
 if (!DISABLE_AUTH && !process.env.SESSION_SECRET && process.env.NODE_ENV !== 'test') {
   logger.error('SESSION_SECRET environment variable is required');
@@ -1141,11 +1136,6 @@ v1Router.post('/api/login', apiLoginLimiter, authRateLimit, [
   });
 });
 
-// Root health for external checks
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
-
 // Health check endpoint for debugging frontend connectivity
 app.get('/api/health', (req, res) => {
   if (!db || !db.query) {
@@ -1167,9 +1157,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Add root health endpoint expected by tests
+// Root health endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+// Readiness probe for UAT/Prod deployments
+app.get('/ready', async (req, res) => {
+  try {
+    await db.query('SELECT 1');
+    res.json({ status: 'ready' });
+  } catch {
+    res.status(503).json({ status: 'degraded', error: 'db_unavailable' });
+  }
 });
 
 // Auth status endpoint for admin UI
@@ -1644,7 +1644,9 @@ app.use('/api/kiosks', kiosksRouter);
 app.use('/api/v1/kiosks', kiosksRouter);
 
 // Setup API routes
-app.get('/api-docs/swagger.json', (req, res) => {
+const docsRequireAuth = process.env.NODE_ENV === 'production' && process.env.ENABLE_PUBLIC_DOCS !== 'true';
+const docsAuth = docsRequireAuth ? ensureAuth : (req, res, next) => next();
+app.get('/api-docs/swagger.json', docsAuth, (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
@@ -1696,7 +1698,7 @@ app.get('/api-docs/test', (req, res) => {
   `);
 });
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(null, {
+app.use('/api-docs', docsAuth, swaggerUi.serve, swaggerUi.setup(null, {
   swaggerOptions: {
     url: '/api-docs/swagger.json'
   },
@@ -1738,9 +1740,15 @@ app.use('/api/v1/websocket', websocketRouter);
 app.use('/api/helpscout', helpscoutRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/monitoring', monitoringRouter);
+// Back-compat alias for components expecting v2 namespace for Sentinel
+app.use('/api/v2/monitoring', monitoringRouter);
 app.use('/api/v2/sentinel', monitoringRouter);
 app.use('/api/v2/goalert', goalertProxyRouter);
+// Unified Alerts facade (Nova Alert) wrapping GoAlert operations
+app.use('/api/v2/alerts', alertsRouter);
 app.use('/api/v2/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
+app.use('/api/auth', authRouter);
+app.use('/api/tickets', ticketsRouter);
 app.use('/api/ai-fabric', aiFabricRouter);
 app.use('/api/setup', setupRouter);
 
@@ -1756,8 +1764,19 @@ app.use('/scim/v2', scimRouter);          // SCIM 2.0 Provisioning API
 app.use('/api/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
 app.use('/api/v1/core', coreRouter);
 app.use('/core', coreRouter);
-app.use('/api/v1/status', statusSummaryRouter);
-app.use('/status', statusSummaryRouter);
+// Gate status pages behind feature flag (env or config)
+const featureStatusPagesEnv = process.env.FEATURE_STATUS_PAGES === 'true';
+let featureStatusPagesConfig = false;
+try {
+  featureStatusPagesConfig = await ConfigurationManager.get('features.statusPages', false);
+} catch {}
+if (featureStatusPagesEnv || featureStatusPagesConfig) {
+  app.use('/api/v1/status', statusSummaryRouter);
+  app.use('/status', statusSummaryRouter);
+} else {
+  // Still expose summary for legacy clients without pages
+  app.use('/api/v1/status', statusSummaryRouter);
+}
 app.use('/api/v1/announcements', announcementsRouter);
 app.use('/announcements', announcementsRouter);
 app.use('/api/v1/cosmo', cosmoRouter);
@@ -1787,28 +1806,28 @@ if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true' || pr
 
 export default createApp;
 
-// Enhanced error handling
-app.use((err, req, res, next) => {
-  logger.error(`Error: ${err.message}`);
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error',
-  });
-});
+// Centralized not-found and error handling (must be after all routes)
+import { notFoundHandler, errorHandler } from './middleware/error-handler.js';
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-// Global error handler
-app.use((err, req, res, next) => {
-  // Always log the error stack for server logs
-  console.error(err.stack);
-  if (res.headersSent) {
-    return next(err);
-  }
-  const isProd = process.env.NODE_ENV === 'production';
-  // Only show detailed error in non-production
-  const errorResponse = isProd
-    ? { error: 'Internal Server Error' }
-    : { error: err.message || 'Internal Server Error', stack: err.stack };
-  res.status(err.status || 500).json(errorResponse);
-});
+// Graceful shutdown for production/UAT
+const shutdownSignals = ['SIGINT', 'SIGTERM'];
+for (const sig of shutdownSignals) {
+  process.on(sig, async () => {
+    try {
+      console.log(`\n🛑 Received ${sig}. Shutting down gracefully...`);
+      server.close(() => {
+        console.log('HTTP server closed');
+      });
+      await closeDatabase();
+    } catch (e) {
+      console.error('Error during shutdown:', e);
+    } finally {
+      process.exit(0);
+    }
+  });
+}
 
 // --- Kiosks Router ---
 // Router declaration moved to top of file

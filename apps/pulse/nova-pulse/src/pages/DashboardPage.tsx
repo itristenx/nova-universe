@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { motion } from 'framer-motion'
+import styles from '../components/TicketGrid.module.css'
 import { useQuery } from '@tanstack/react-query'
 import { DashboardWidget } from '../components/dashboard/DashboardWidget'
 import { MetricCard } from '../components/dashboard/MetricCard'
@@ -107,8 +109,14 @@ export const DashboardPage: React.FC = () => {
     )
   }
 
+  React.useEffect(() => {
+    const handler = () => window.dispatchEvent(new CustomEvent('dashboard:refresh'))
+    window.addEventListener('pulse:pull_to_refresh', handler)
+    return () => window.removeEventListener('pulse:pull_to_refresh', handler)
+  }, [])
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <motion.div className={`min-h-screen bg-gray-50 dark:bg-gray-900 p-6 ${styles.pullContainer}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -288,6 +296,6 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

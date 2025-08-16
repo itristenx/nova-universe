@@ -56,6 +56,7 @@ enum Theme {
         static let background = Color(.systemBackground)
         static let secondaryBackground = Color(.secondarySystemBackground)
         static let tertiaryBackground = Color(.tertiarySystemBackground)
+        static let translucentBackground = Color(.systemBackground).opacity(0.95)
         static let groupedBackground = Color(.systemGroupedBackground)
         
         // Surface Colors
@@ -82,6 +83,7 @@ enum Theme {
         // Border Colors
         static let separator = Color(.separator)
         static let opaqueSeparator = Color(.opaqueSeparator)
+        static let subtleSeparator = Color(UIColor.systemGray4)
         
         // Legacy compatibility
         static let base = Color(.systemBackground)

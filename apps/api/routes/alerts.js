@@ -220,6 +220,165 @@ router.post('/create',
 );
 
 /**
+ * Acknowledge an alert by ID
+ * Aligns with Pulse UI calling `/api/v2/alerts/:alertId/acknowledge`
+ */
+router.post('/:alertId/acknowledge',
+  authenticateJWT,
+  checkPermissions(['alerts:acknowledge']),
+  [
+    param('alertId').isString().withMessage('Alert ID required')
+  ],
+  audit('alert.acknowledge'),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
+      }
+      const { alertId } = req.params;
+      const response = await makeGoAlertRequest(`/api/v2/alerts/${alertId}/acknowledge`, { method: 'POST' });
+      await logAlertOperation(req.user.id, 'acknowledge', { id: alertId }, { userRole: req.user.role });
+      res.json({ success: true, result: response, timestamp: new Date().toISOString() });
+    } catch (error) {
+      logger.error('Alert acknowledge failed:', error);
+      res.status(500).json({ success: false, error: 'Alert acknowledge failed', details: error.message });
+    }
+  }
+);
+
+/**
+ * Resolve/close an alert by ID
+ * Aligns with Pulse UI calling `/api/v2/alerts/:alertId/resolve`
+ */
+router.post('/:alertId/resolve',
+  authenticateJWT,
+  checkPermissions(['alerts:resolve']),
+  [
+    param('alertId').isString().withMessage('Alert ID required')
+  ],
+  audit('alert.resolve'),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
+      }
+      const { alertId } = req.params;
+      const response = await makeGoAlertRequest(`/api/v2/alerts/${alertId}/close`, { method: 'POST' });
+      await logAlertOperation(req.user.id, 'resolve', { id: alertId }, { userRole: req.user.role });
+      res.json({ success: true, result: response, timestamp: new Date().toISOString() });
+    } catch (error) {
+      logger.error('Alert resolve failed:', error);
+      res.status(500).json({ success: false, error: 'Alert resolve failed', details: error.message });
+    }
+  }
+);
+
+/**
+ * Escalate an alert by ID (best-effort)
+ * Creates an escalation action via GoAlert if supported, else triggers a follow-up alert via generic incoming
+ */
+router.post('/:alertId/escalate',
+  authenticateJWT,
+  checkPermissions(['alerts:escalate']),
+  [
+    param('alertId').isString().withMessage('Alert ID required'),
+    body('reason').optional().isString().isLength({ max: 2000 })
+  ],
+  audit('alert.escalate'),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
+      }
+      const { alertId } = req.params;
+      const { reason = 'Manual escalation from Nova' } = req.body;
+
+      // Attempt native GoAlert escalate endpoint if available
+      let escalated = false;
+      try {
+        // Not all GoAlert versions support a dedicated escalate endpoint
+        const resp = await makeGoAlertRequest(`/api/v2/alerts/${alertId}/escalate`, { method: 'POST' });
+        escalated = true;
+        await logAlertOperation(req.user.id, 'escalate', { id: alertId }, { reason, userRole: req.user.role, mode: 'native' });
+        return res.json({ success: true, result: resp, timestamp: new Date().toISOString() });
+      } catch (_) {
+        // Fallback path below
+      }
+
+      // Fallback: fetch alert details and trigger a follow-up escalation via integration key if available
+      const alertData = await makeGoAlertRequest(`/api/v2/alerts/${alertId}`);
+      const serviceToken = alertData?.service?.integration_keys?.[0]?.key || alertData?.service?.integration_keys?.[0]?.token;
+      if (!serviceToken) {
+        return res.status(501).json({ success: false, error: 'Escalation not supported without service integration key' });
+      }
+      const payload = {
+        summary: `🚨 ESCALATION: ${alertData.summary || 'Alert ' + alertId}`,
+        details: `${reason}\nOriginal Alert: ${alertId}`,
+        source: { type: 'generic', value: `${GOALERT_CONFIG.source}-escalation` },
+        dedup: `nova-escalation-${alertId}`,
+        action: 'trigger'
+      };
+      const goAlertResponse = await makeGoAlertRequest(`/api/v2/generic/incoming?token=${serviceToken}`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      await logAlertOperation(req.user.id, 'escalate', { id: goAlertResponse.id || goAlertResponse.alertId }, { reason, userRole: req.user.role, mode: 'followup' });
+      res.json({ success: true, result: goAlertResponse, timestamp: new Date().toISOString() });
+    } catch (error) {
+      logger.error('Alert escalation failed:', error);
+      res.status(500).json({ success: false, error: 'Alert escalation failed', details: error.message });
+    }
+  }
+);
+
+/**
+ * Alert statistics for dashboard
+ * Exposes `/api/v2/alerts/stats` expected by Pulse UI
+ */
+router.get('/stats',
+  authenticateJWT,
+  checkPermissions(['alerts:read']),
+  [
+    query('startDate').optional().isISO8601(),
+    query('endDate').optional().isISO8601(),
+    query('serviceIds').optional().isString()
+  ],
+  async (req, res) => {
+    try {
+      const { startDate, endDate, serviceIds } = req.query;
+      const params = new URLSearchParams();
+      if (startDate) params.append('start', String(startDate));
+      if (endDate) params.append('end', String(endDate));
+      if (serviceIds) params.append('service_id', String(serviceIds));
+      params.append('limit', '200');
+
+      const data = await makeGoAlertRequest(`/api/v2/alerts?${params.toString()}`);
+      const alerts = data.alerts || data || [];
+
+      const stats = {
+        totalAlerts: alerts.length,
+        alertsByStatus: alerts.reduce((acc, a) => { acc[a.status] = (acc[a.status] || 0) + 1; return acc; }, {}),
+        alertsByPriority: alerts.reduce((acc, a) => { acc[a.severity || a.priority || 'unknown'] = (acc[a.severity || a.priority || 'unknown'] || 0) + 1; return acc; }, {}),
+        alertsByService: alerts.reduce((acc, a) => { const sid = a.service_id || a.serviceId || 'unknown'; acc[sid] = (acc[sid] || 0) + 1; return acc; }, {}),
+        averageResponseTime: 0,
+        averageResolutionTime: 0,
+        escalationRate: 0,
+        period: {
+          start: startDate || null,
+          end: endDate || null
+        }
+      };
+      res.json({ success: true, stats, timestamp: new Date().toISOString() });
+    } catch (error) {
+      logger.error('Alert stats fetch failed:', error);
+      res.status(500).json({ success: false, error: 'Alert stats fetch failed', details: error.message });
+    }
+  }
+);
+/**
  * @swagger
  * /api/v2/alerts/escalate/{ticketId}:
  *   post:
@@ -516,7 +675,7 @@ router.post('/rotate/:scheduleId',
       const overridePayload = {
         start: new Date().toISOString(),
         end: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-        user_id: req.user.goalert_user_id, // Assumes user has GoAlert ID mapped
+        user_id: req.user.goalert_user_id || process.env.GOALERT_DEFAULT_USER_ID || undefined,
         reason: reason || 'Manual rotation triggered from Nova'
       };
 
@@ -638,6 +797,65 @@ router.get('/escalation-policies',
         error: 'Escalation policies fetch failed',
         details: error.message
       });
+    }
+  }
+);
+
+// Create/update/delete escalation policies for Core UI parity
+router.post('/escalation-policies',
+  authenticateJWT,
+  checkPermissions(['alerts:manage']),
+  [
+    body('name').isString().isLength({ min: 1, max: 255 }),
+    body('description').optional().isString(),
+    body('repeat').optional().isInt({ min: 0 }),
+    body('steps').optional().isArray()
+  ],
+  async (req, res) => {
+    try {
+      const policy = await makeGoAlertRequest('/api/v2/escalation-policies', {
+        method: 'POST',
+        body: JSON.stringify(req.body)
+      });
+      res.status(201).json({ success: true, policy, timestamp: new Date().toISOString() });
+    } catch (error) {
+      logger.error('Escalation policy create failed:', error);
+      res.status(500).json({ success: false, error: 'Create failed', details: error.message });
+    }
+  }
+);
+
+router.put('/escalation-policies/:id',
+  authenticateJWT,
+  checkPermissions(['alerts:manage']),
+  [ param('id').isString() ],
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const policy = await makeGoAlertRequest(`/api/v2/escalation-policies/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(req.body)
+      });
+      res.json({ success: true, policy, timestamp: new Date().toISOString() });
+    } catch (error) {
+      logger.error('Escalation policy update failed:', error);
+      res.status(500).json({ success: false, error: 'Update failed', details: error.message });
+    }
+  }
+);
+
+router.delete('/escalation-policies/:id',
+  authenticateJWT,
+  checkPermissions(['alerts:manage']),
+  [ param('id').isString() ],
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      await makeGoAlertRequest(`/api/v2/escalation-policies/${id}`, { method: 'DELETE' });
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Escalation policy delete failed:', error);
+      res.status(500).json({ success: false, error: 'Delete failed', details: error.message });
     }
   }
 );

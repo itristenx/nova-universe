@@ -1392,13 +1392,40 @@ export class NovaSentinelIntegration extends EventEmitter {
   }
 
   private async createIncidentTicket(incident: SentinelIncident): Promise<string> {
-    // Placeholder for ticket creation
-    return crypto.randomUUID();
+    try {
+      // Best-effort: create a basic ticket record via local database if available
+      const { default: db } = await import('../db.js');
+      const id = crypto.randomUUID();
+      const now = new Date().toISOString();
+      const title = `[Sentinel] ${incident.summary}`.slice(0, 255);
+      const description = `${incident.description}\n\nComponent: ${incident.component}\nSeverity: ${incident.severity}`;
+      await db.query?.(
+        'INSERT INTO tickets (id, ticket_id, title, description, priority, status, requested_by_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+        [id, `INC-${Date.now()}`, title, description, incident.severity, 'open', null, now, now]
+      );
+      return id;
+    } catch (error) {
+      logger.warn('Ticket creation fallback (db unavailable)', { error: (error as Error)?.message });
+      return crypto.randomUUID();
+    }
   }
 
   private async resolveIncidentTicket(ticketId: string, resolution?: string): Promise<void> {
-    // Placeholder for ticket resolution
-    logger.info('Would resolve ticket', { ticketId, resolution });
+    try {
+      const { default: db } = await import('../db.js');
+      await db.query?.(
+        'UPDATE tickets SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+        ['resolved', ticketId]
+      );
+      if (resolution) {
+        await db.query?.(
+          'INSERT INTO ticket_comments (id, ticket_id, content, type, created_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)',
+          [crypto.randomUUID(), ticketId, `Resolution: ${resolution}`, 'internal']
+        );
+      }
+    } catch (error) {
+      logger.warn('Ticket resolution fallback (db unavailable)', { error: (error as Error)?.message, ticketId });
+    }
   }
 
   private getAuthHeaders(): Record<string, string> {

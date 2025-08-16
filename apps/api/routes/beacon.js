@@ -7,6 +7,8 @@ import { logger } from '../logger.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 import { validateKioskAuth } from '../middleware/validation.js';
 import crypto from 'crypto';
+import { generateTypedTicketId } from '../utils/dbUtils.js';
+import { normalizeTicketType } from '../utils/utils.js';
 import QRCode from 'qrcode';
 import HelixKioskIntegration from '../services/helixKioskIntegration.js';
 import { authenticateJWT } from '../middleware/auth.js';
@@ -277,27 +279,30 @@ router.post('/ticket',
 
       const kioskId = req.kiosk.id;
 
-      // Generate ticket ID
-      const ticketId = `TKT-${Date.now().toString().slice(-8).padStart(8, '0')}`;
+      // Generate type-based ticket ID; kiosks default to INC
+      const typeCode = normalizeTicketType('INC');
+      const ticketId = await generateTypedTicketId(typeCode);
 
       // Create ticket
       try {
         const result = await new Promise((resolve, reject) => {
           db.run(
             `INSERT INTO tickets (
-              ticketId, title, description, requesterName, requesterEmail,
-              category, priority, location, source, sourceId, status, createdAt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'kiosk', ?, 'open', datetime('now'))`,
+              id, ticket_id, type_code, title, description, category, priority, status, location, contact_method, contact_info, created_at, updated_at
+            ) VALUES ($1,$2,$3,$4,$5,$6,$7,'open',$8,$9,$10,$11,$12)`,
             [
+              crypto.randomUUID(),
               ticketId,
+              typeCode,
               title,
               description,
-              requesterName,
-              requesterEmail || null,
               category,
               priority,
               location || req.kiosk.location,
-              kioskId
+              'kiosk',
+              requesterEmail || null,
+              new Date().toISOString(),
+              new Date().toISOString()
             ],
             function(err) {
               if (err) {
@@ -336,6 +341,7 @@ router.post('/ticket',
           ticket: {
             id: ticketDbId,
             ticketId,
+            type: typeCode,
             title,
             status: 'open',
             createdAt: new Date().toISOString()

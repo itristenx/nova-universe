@@ -140,7 +140,7 @@ struct ActivationWizard: View {
         .onAppear {
             // Set a default server URL for development
             if serverURL.isEmpty {
-                serverURL = "http://localhost:3000"
+                serverURL = "https://localhost:3000"
             }
         }
     }
@@ -384,7 +384,7 @@ struct ActivationWizard: View {
     }
     
     private func fetchServerInfo() async throws {
-        guard let url = URL(string: "\(serverURL)/api/v1/server-info") else {
+        guard let url = URL(string: "\(serverURL)/api/v2/status") else {
             throw NSError(domain: "ActivationWizard", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid server URL format"])
         }
         
@@ -403,18 +403,14 @@ struct ActivationWizard: View {
             
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 await MainActor.run {
+                    // Map generic status endpoint to defaults; real server-info should be fetched later
                     serverInfo = ServerInfo(
                         organizationName: json["organizationName"] as? String ?? "Your Organization",
-                        minPinLength: json["minPinLength"] as? Int ?? 4,
-                        maxPinLength: json["maxPinLength"] as? Int ?? 8,
-                        logoUrl: json["logoUrl"] as? String,
-                        serverVersion: json["serverVersion"] as? String
+                        minPinLength: 4,
+                        maxPinLength: 8,
+                        logoUrl: nil,
+                        serverVersion: nil
                     )
-                    
-                    // Store organization name for future use (e.g., deactivation screen)
-                    if let orgName = json["organizationName"] as? String {
-                        UserDefaults.standard.set(orgName, forKey: "organizationName")
-                    }
                     
                     // Save server URL to configuration
                     configManager.setServerConfiguration(ServerConfiguration(baseURL: serverURL))

@@ -235,8 +235,14 @@ export function validateApiKey(req, res, next) {
       if (!isMatch) {
         logger.warn('Invalid API key attempt', {
           providedKey: apiKey.substring(0, 8) + '...',
-          ip: req.ip
+          ip: req.ip,
+          userAgent: req.get('User-Agent'),
+          url: req.originalUrl
         });
+        
+        // Add slight delay to slow down brute force attempts
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         return res.status(401).json({
           error: 'Invalid API key',
           errorCode: 'INVALID_API_KEY'

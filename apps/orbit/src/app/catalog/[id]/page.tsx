@@ -4,7 +4,10 @@ import { getCatalogItems, submitCatalogItem } from "../../../lib/api";
 import { Button } from "../../../components/ui/button";
 import { useRouter } from "next/navigation";
 
-export default function CatalogItemPage({ params }: { params: { id: string } }) {
+type FormField = { name: string; label?: string };
+
+export default function CatalogItemPage(props: any) {
+  const { params } = props as { params: { id: string } };
   const router = useRouter();
   const [schema, setSchema] = useState<any>(null);
   const [values, setValues] = useState<Record<string,string>>({});

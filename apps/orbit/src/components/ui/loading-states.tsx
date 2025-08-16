@@ -202,7 +202,7 @@ export function TableSkeleton({ rows = 5, columns = 4, className = '' }: TableSk
   return (
     <div className={cn('space-y-4', className)}>
       {/* Header */}
-      <div className={`grid gap-4 grid-cols-${columns}`}>
+      <div className="grid gap-4" style={{ gridTemplateColumns: gridCols }}>
         {Array.from({ length: columns }).map((_, i) => (
           <LoadingSkeleton key={`header-${i}`} variant="text" className="h-5 w-full" />
         ))}
@@ -210,7 +210,7 @@ export function TableSkeleton({ rows = 5, columns = 4, className = '' }: TableSk
       
       {/* Rows */}
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <div key={`row-${rowIndex}`} className={`grid gap-4 grid-cols-${columns}`}>
+        <div key={`row-${rowIndex}`} className="grid gap-4" style={{ gridTemplateColumns: gridCols }}>
           {Array.from({ length: columns }).map((_, colIndex) => (
             <LoadingSkeleton key={`cell-${rowIndex}-${colIndex}`} variant="text" className="h-4 w-full" />
           ))}

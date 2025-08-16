@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
-import { Card, Button, Tabs, Table, TableHead as TableHeader, TableBody, TableCell, TableRow, Chip, Modal, Input, Select, Switch, Textarea } from '@/components/ui';
+import { Card, Button, Table, TableHead as TableHeader, TableBody, TableCell, TableRow, Chip, Modal, Input, Select, Switch, Textarea } from '@/components/ui';
 import { 
   UserIcon, 
   UserGroupIcon, 
@@ -14,6 +14,7 @@ import {
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { useToastStore } from '@/stores/toast';
+import { Tabs as LocalTabs } from '@/components/ui/Tabs';
 
 interface SCIMUser {
   id: string;
@@ -85,7 +86,9 @@ export default function SCIMProvisioningMonitor() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { addToast } = useToastStore();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
+  const onOpen = () => setIsOpen(true);
+  const onClose = () => setIsOpen(false);
   
   // SCIM Data State
   const [scimConfig, setSCIMConfig] = useState<SCIMConfig>({
@@ -355,7 +358,7 @@ export default function SCIMProvisioningMonitor() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Spinner size="lg" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
         <span className="ml-4 text-lg">Loading SCIM provisioning data...</span>
       </div>
     );
@@ -455,17 +458,17 @@ export default function SCIMProvisioningMonitor() {
 
       {/* Main Content Tabs */}
       <Card className="p-6">
-        <Tabs aria-label="SCIM provisioning tabs" defaultSelectedKey="users">
-          <Tab key="users" title="Users">
+        <LocalTabs>
+          <div key="users" title="Users">
             <div className="mt-4">
               <Table aria-label="SCIM Users">
                 <TableHeader>
-                  <TableColumn>USERNAME</TableColumn>
-                  <TableColumn>NAME</TableColumn>
-                  <TableColumn>EMAIL</TableColumn>
-                  <TableColumn>STATUS</TableColumn>
-                  <TableColumn>GROUPS</TableColumn>
-                  <TableColumn>LAST MODIFIED</TableColumn>
+                  <th scope="col">USERNAME</th>
+                  <th scope="col">NAME</th>
+                  <th scope="col">EMAIL</th>
+                  <th scope="col">STATUS</th>
+                  <th scope="col">GROUPS</th>
+                  <th scope="col">LAST MODIFIED</th>
                 </TableHeader>
                 <TableBody>
                   {scimUsers.map((user) => (
@@ -499,17 +502,17 @@ export default function SCIMProvisioningMonitor() {
                 </TableBody>
               </Table>
             </div>
-          </Tab>
+          </div>
 
-          <Tab key="groups" title="Groups">
+          <div key="groups" title="Groups">
             <div className="mt-4">
               <Table aria-label="SCIM Groups">
                 <TableHeader>
-                  <TableColumn>GROUP NAME</TableColumn>
-                  <TableColumn>MEMBERS</TableColumn>
-                  <TableColumn>EXTERNAL ID</TableColumn>
-                  <TableColumn>CREATED</TableColumn>
-                  <TableColumn>LAST MODIFIED</TableColumn>
+                  <th scope="col">GROUP NAME</th>
+                  <th scope="col">MEMBERS</th>
+                  <th scope="col">EXTERNAL ID</th>
+                  <th scope="col">CREATED</th>
+                  <th scope="col">LAST MODIFIED</th>
                 </TableHeader>
                 <TableBody>
                   {scimGroups.map((group) => (
@@ -533,9 +536,9 @@ export default function SCIMProvisioningMonitor() {
                 </TableBody>
               </Table>
             </div>
-          </Tab>
+          </div>
 
-          <Tab key="activity" title="Activity Log">
+          <div key="activity" title="Activity Log">
             <div className="mt-4 space-y-4">
               {provisioningEvents.map((event) => (
                 <div key={event.id} className="flex items-start space-x-3 p-4 border rounded-lg">
@@ -562,9 +565,9 @@ export default function SCIMProvisioningMonitor() {
                 </div>
               ))}
             </div>
-          </Tab>
+          </div>
 
-          <Tab key="analytics" title="Analytics">
+          <div key="analytics" title="Analytics">
             <div className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="p-4">
@@ -616,33 +619,29 @@ export default function SCIMProvisioningMonitor() {
                       <span className="text-sm text-gray-600">Inactive Users</span>
                       <span className="text-sm font-medium text-red-600">{syncMetrics.inactiveUsers}</span>
                     </div>
-                    <Progress 
-                      value={(syncMetrics.activeUsers / syncMetrics.totalUsers) * 100}
-                      color="success"
-                      className="mt-2"
-                    />
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div className="bg-green-600 h-2 rounded-full" style={{ width: `${(syncMetrics.activeUsers / Math.max(syncMetrics.totalUsers, 1)) * 100}%` }} />
+                    </div>
                   </div>
                 </Card>
               </div>
             </div>
-          </Tab>
-        </Tabs>
+          </div>
+        </LocalTabs>
       </Card>
 
       {/* Configuration Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-        <ModalContent>
-          <ModalHeader>SCIM Configuration</ModalHeader>
-          <ModalBody>
-            <div className="space-y-4">
+      <Modal isOpen={isOpen} onClose={onClose} size="xl" title="SCIM Configuration">
+        <div className="p-2">
+          <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Enable SCIM Provisioning</p>
                   <p className="text-sm text-gray-600">Allow automatic user and group provisioning</p>
                 </div>
                 <Switch
-                  isSelected={scimConfig.enabled}
-                  onValueChange={(enabled) => setSCIMConfig(prev => ({ ...prev, enabled }))}
+                  checked={scimConfig.enabled}
+                  onChange={(enabled) => setSCIMConfig(prev => ({ ...prev, enabled }))}
                 />
               </div>
 
@@ -668,8 +667,8 @@ export default function SCIMProvisioningMonitor() {
                     <p className="text-sm text-gray-600">Sync user accounts</p>
                   </div>
                   <Switch
-                    isSelected={scimConfig.userSyncEnabled}
-                    onValueChange={(userSyncEnabled) => setSCIMConfig(prev => ({ ...prev, userSyncEnabled }))}
+                    checked={scimConfig.userSyncEnabled}
+                    onChange={(userSyncEnabled) => setSCIMConfig(prev => ({ ...prev, userSyncEnabled }))}
                   />
                 </div>
 
@@ -699,17 +698,16 @@ export default function SCIMProvisioningMonitor() {
                   { value: '86400', label: '24 hours' },
                 ]}
               />
-            </div>
-          </ModalBody>
-          <ModalFooter>
+          </div>
+          <div className="mt-6 flex justify-end gap-2">
             <Button variant="light" onPress={onClose}>
               Cancel
             </Button>
             <Button variant="primary" onPress={handleConfigSave}>
               Save Configuration
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </div>
+        </div>
       </Modal>
     </div>
   );

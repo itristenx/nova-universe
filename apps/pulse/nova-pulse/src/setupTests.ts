@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom';
 import { TextEncoder, TextDecoder } from 'util';
 import React from 'react';
+ 
 
 // Polyfill for TextEncoder/TextDecoder in Node.js environment
 (global as any).TextEncoder = TextEncoder;
@@ -12,34 +13,34 @@ import React from 'react';
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: (global as any).jest?.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+    addListener: (global as any).jest?.fn(), // deprecated
+    removeListener: (global as any).jest?.fn(), // deprecated
+    addEventListener: (global as any).jest?.fn(),
+    removeEventListener: (global as any).jest?.fn(),
+    dispatchEvent: (global as any).jest?.fn(),
   })),
 });
 
 // Mock HTMLCanvasElement.getContext to prevent test errors
-HTMLCanvasElement.prototype.getContext = jest.fn();
+HTMLCanvasElement.prototype.getContext = (global as any).jest?.fn() as any;
 
 // Mock fetch for API calls
-(global as any).fetch = jest.fn(() =>
+(global as any).fetch = ((global as any).jest?.fn(() =>
   Promise.resolve({
     ok: true,
     json: () => Promise.resolve({}),
   })
-);
+)) as any;
 
 // Mock localStorage
 const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  getItem: (global as any).jest?.fn(),
+  setItem: (global as any).jest?.fn(),
+  removeItem: (global as any).jest?.fn(),
+  clear: (global as any).jest?.fn(),
 };
 (global as any).localStorage = localStorageMock;

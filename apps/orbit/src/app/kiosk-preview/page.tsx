@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 
 interface Announcement { id: number|string; title: string; body: string; level: string; createdAt: string; }
 interface StatusSummary { success: boolean; status: string; components: {id:string; name:string; status:string;}[]; updatedAt: string; }
-interface Kiosk { id: string; name?: string; location?: string; active?: boolean; configuration?: any; logoUrl?: string; bgUrl?: string; currentStatus?: string; }
+interface Kiosk { id: string; name?: string; location?: string; active?: boolean; configuration?: Record<string, unknown>; logoUrl?: string; bgUrl?: string; currentStatus?: string; }
 
 export default function KioskPreviewPage() {
   const [ann, setAnn] = useState<Announcement[]>([]);
@@ -18,13 +19,13 @@ export default function KioskPreviewPage() {
     fetch("/announcements").then(r=>r.json()).then(d=> setAnn(d.announcements || [])).catch(()=>{});
     fetch("/status/summary").then(r=>r.json()).then(setStatus).catch(()=>{});
     if (token) {
-      fetch("/api/kiosks", authedHeaders as any).then(r=>r.json()).then((data)=> {
+      fetch("/api/kiosks", authedHeaders as RequestInit).then(r=>r.json()).then((data)=> {
         const list = Array.isArray(data) ? data : (data.kiosks || []);
         setKiosks(list);
         if (list.length && !selected) setSelected(list[0].id);
       }).catch(()=>{});
     }
-  }, [token]);
+  }, [token, authedHeaders, selected]);
 
   if (!token) {
     return (
@@ -104,7 +105,7 @@ export default function KioskPreviewPage() {
           <div className="rounded border bg-muted p-2">
             <div className="flex items-center justify-between px-2 py-1 text-xs text-muted-foreground">
               <div>Previewing: {selectedKiosk.name || selectedKiosk.id} {selectedKiosk.location ? `— ${selectedKiosk.location}` : ''}</div>
-              <div>Active: {String(selectedKiosk.active ?? selectedKiosk["isActive"])}</div>
+              <div>Active: {String(selectedKiosk.active ?? false)}</div>
             </div>
             <KioskWebMock kioskId={selectedKiosk.id} />
           </div>
@@ -136,7 +137,7 @@ function KioskWebMock({ kioskId }: { kioskId: string }) {
       <div className="px-4 pb-3">
         <div className="rounded-xl px-4 py-3 text-white" style={{ backgroundColor: primary }}>
           <div className="flex items-center gap-3">
-            <img src={logo} alt="logo" className="w-8 h-8 rounded" />
+            <Image src={logo} alt="logo" width={32} height={32} className="w-8 h-8 rounded" unoptimized={true} />
             <div>
               <div className="font-semibold">{room}</div>
               <div className="text-xs opacity-80">Kiosk Ready</div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Button } from '@heroui/react'
 import { useCosmo, CosmoConfig, CosmoContext, CosmoMessage } from '@nova-universe/cosmo-sdk'
 
@@ -73,7 +73,6 @@ export const CosmoAssistant: React.FC<CosmoAssistantProps> = ({
     isConnected,
     error,
     sendMessage,
-    startConversation,
     triggerEscalation,
     clearError
   } = useCosmo(config, context!, {

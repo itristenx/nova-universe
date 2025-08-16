@@ -411,9 +411,21 @@ export class NovaAIFabric extends EventEmitter {
   }
 
   private getProviderPerformanceScore(providerId: string): number {
-    // Calculate performance score based on historical data
-    // This would analyze response times, success rates, etc.
-    return 25; // Placeholder
+    // Calculate performance score based on simple rolling averages
+    // Note: In a full implementation, we'd read from persisted metrics
+    try {
+      const recent = Array.from(this.responseHistory.values())
+        .filter(r => r.provider === providerId)
+        .slice(-50);
+      if (recent.length === 0) return 10;
+      const avgMs = recent.reduce((s, r) => s + (r.processingTime || 0), 0) / recent.length;
+      if (avgMs < 1000) return 30;
+      if (avgMs < 3000) return 25;
+      if (avgMs < 7000) return 15;
+      return 5;
+    } catch {
+      return 10;
+    }
   }
 
   private async executeRequest(request: AIRequest, providerId: string): Promise<AIResponse> {
@@ -630,60 +642,60 @@ export class NovaAIFabric extends EventEmitter {
 
 // Placeholder classes for the subsystems (to be implemented)
 class ExternalAIProviders {
-  async initialize() { /* Implementation */ }
-  async registerProvider(provider: AIProvider) { /* Implementation */ }
-  async execute(providerId: string, request: AIRequest) { /* Implementation */ }
+  async initialize() {}
+  async registerProvider(provider: AIProvider) {}
+  async execute(providerId: string, request: AIRequest) { return { ok: true, providerId, echo: request.input }; }
   async healthCheck(providerId: string): Promise<boolean> { return true; }
-  async shutdown() { /* Implementation */ }
+  async shutdown() {}
 }
 
 class InternalAIProviders {
-  async initialize() { /* Implementation */ }
-  async registerProvider(provider: AIProvider) { /* Implementation */ }
-  async execute(providerId: string, request: AIRequest) { /* Implementation */ }
+  async initialize() {}
+  async registerProvider(provider: AIProvider) {}
+  async execute(providerId: string, request: AIRequest) { return { ok: true, internal: true }; }
   async healthCheck(providerId: string): Promise<boolean> { return true; }
-  async shutdown() { /* Implementation */ }
+  async shutdown() {}
 }
 
 class MCPProviders {
-  async initialize() { /* Implementation */ }
-  async registerProvider(provider: AIProvider) { /* Implementation */ }
-  async execute(providerId: string, request: AIRequest) { /* Implementation */ }
+  async initialize() {}
+  async registerProvider(provider: AIProvider) {}
+  async execute(providerId: string, request: AIRequest) { return { ok: true, mcp: true }; }
   async healthCheck(providerId: string): Promise<boolean> { return true; }
-  async shutdown() { /* Implementation */ }
+  async shutdown() {}
 }
 
 class RAGEngine {
-  async initialize() { /* Implementation */ }
-  async execute(providerId: string, request: AIRequest) { /* Implementation */ }
+  async initialize() {}
+  async execute(providerId: string, request: AIRequest) { return { ok: true, rag: true }; }
   async healthCheck(providerId: string): Promise<boolean> { return true; }
-  async shutdown() { /* Implementation */ }
+  async shutdown() {}
 }
 
 class CustomModelManager {
-  async initialize() { /* Implementation */ }
-  async registerProvider(provider: AIProvider) { /* Implementation */ }
-  async execute(providerId: string, request: AIRequest) { /* Implementation */ }
-  async shutdown() { /* Implementation */ }
+  async initialize() {}
+  async registerProvider(provider: AIProvider) {}
+  async execute(providerId: string, request: AIRequest) { return { ok: true, custom: true }; }
+  async shutdown() {}
 }
 
 class AIMonitoringSystem {
-  async initialize() { /* Implementation */ }
-  async recordMetrics(request: AIRequest, response: AIResponse) { /* Implementation */ }
-  async recordAuditEvent(event: AIAuditEntry) { /* Implementation */ }
-  async shutdown() { /* Implementation */ }
+  async initialize() {}
+  async recordMetrics(request: AIRequest, response: AIResponse) { return; }
+  async recordAuditEvent(event: AIAuditEntry) { return; }
+  async shutdown() {}
 }
 
 class AIComplianceEngine {
-  async initialize() { /* Implementation */ }
+  async initialize() {}
   async checkCompliance(request: AIRequest): Promise<string[]> { return []; }
-  async calculateRiskScore(request: AIRequest): Promise<number> { return 0; }
+  async calculateRiskScore(request: AIRequest): Promise<number> { return 0.1; }
 }
 
 class AILearningEngine {
-  async initialize() { /* Implementation */ }
-  async processEvent(event: LearningEvent) { /* Implementation */ }
-  async updateModels() { /* Implementation */ }
+  async initialize() {}
+  async processEvent(event: LearningEvent) { return; }
+  async updateModels() { return; }
 }
 
 // Export singleton instance

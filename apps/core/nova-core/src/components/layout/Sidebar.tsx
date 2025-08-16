@@ -28,6 +28,8 @@ const navigation = [
   { name: 'Integrations', href: '/integrations', icon: Cog6ToothIcon },
   { name: 'Email Accounts', href: '/email-accounts', icon: Cog6ToothIcon },
   { name: 'Modules', href: '/modules', icon: Cog6ToothIcon },
+  { name: 'Catalog Items', href: '/catalog-items', icon: DocumentTextIcon },
+  { name: 'API Docs', href: '/api-docs', icon: BookOpenIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
 ];
 
@@ -127,6 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 onClick={handleLogout}
                 className="ml-3 flex-shrink-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 title="Logout"
+                aria-label="Logout"
               >
                 <ArrowRightOnRectangleIcon className="h-5 w-5" />
               </button>

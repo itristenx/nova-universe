@@ -10,7 +10,7 @@ import express from 'express';
 import { logger } from '../logger.js';
 // import { novaIntegrationLayer } from '../../lib/integration/nova-integration-layer.js';
 import { authenticateJWT } from '../middleware/auth.js';
-import rateLimit from 'express-rate-limit';
+import { createRateLimit } from '../middleware/rateLimiter.js';
 
 let nilPromise;
 async function getIntegrationLayer() {
@@ -28,11 +28,7 @@ async function getIntegrationLayer() {
 const router = express.Router();
 
 // Rate limiting for User 360 API
-const user360RateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many User 360 requests from this IP'
-});
+const user360RateLimit = createRateLimit(15 * 60 * 1000, 100);
 
 router.use(user360RateLimit);
 

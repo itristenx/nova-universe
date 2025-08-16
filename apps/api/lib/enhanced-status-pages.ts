@@ -628,13 +628,39 @@ export class StatusPageService {
 
   // Helper methods for status page generation
   private async queryStatusPageBySlugOrDomain(slugOrDomain: string): Promise<StatusPage | null> {
-    // This would query the database - placeholder implementation
-    return null;
+    try {
+      const { default: db } = await import('../db.js');
+      const res = await db.query?.(
+        `SELECT * FROM nova_status_pages WHERE slug = $1 OR domain_name = $1 LIMIT 1`,
+        [slugOrDomain]
+      );
+      if (res?.rows && res.rows.length > 0) {
+        return res.rows[0] as unknown as StatusPage;
+      }
+      return null;
+    } catch (error: any) {
+      logger.warn('Status page lookup fallback (db unavailable)', { error: error.message });
+      return null;
+    }
   }
 
   private async calculateUptime(statusPageId: string, days: number): Promise<number> {
-    // Calculate uptime percentage for the specified period
-    return 99.95; // Placeholder
+    try {
+      const { default: db } = await import('../db.js');
+      const res = await db.query?.(
+        `SELECT AVG(CASE WHEN is_up THEN 100.0 ELSE 0.0 END) AS uptime
+         FROM nova_monitor_summary sms
+         JOIN nova_status_page_monitors spm ON spm.monitor_id = sms.id
+         WHERE spm.status_page_id = $1
+           AND sms.last_check_time >= NOW() - ($2 || ' days')::INTERVAL`,
+        [statusPageId, days]
+      );
+      const value = parseFloat(res?.rows?.[0]?.uptime ?? '0');
+      return isFinite(value) ? value : 0;
+    } catch (error: any) {
+      logger.warn('Uptime calculation fallback (db unavailable)', { error: error.message });
+      return 0;
+    }
   }
 
   private calculateOverallStatus(monitors: any[]): any {
@@ -742,7 +768,7 @@ export class StatusPageService {
     const color = monitorStatus === 'up' ? colors.up : 
                   monitorStatus === 'down' ? colors.down : colors.pending;
 
-    let label = badge.label || 'status';
+    const label = badge.label || 'status';
     let message = '';
 
     switch (badge.style) {

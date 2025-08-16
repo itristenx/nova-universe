@@ -1,26 +1,9 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import styles from '../components/TicketGrid.module.css';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { 
-  Search, 
-  Plus, 
-  Network, 
-  Server, 
-  Monitor, 
-  Database, 
-  Cloud, 
-  Box,
-  Globe,
-  Building,
-  FileText,
-  Eye,
-  Edit,
-  Trash2,
-  Activity,
-  AlertTriangle,
-  CheckCircle,
-  Users
-} from 'lucide-react';
+import { MagnifyingGlassIcon as Search, PlusIcon as Plus, ServerIcon as Server, ComputerDesktopIcon as Monitor, CircleStackIcon as Database, CloudIcon as Cloud, CubeIcon as Box, GlobeAltIcon as Globe, BuildingOffice2Icon as Building, DocumentTextIcon as FileText, EyeIcon as Eye, PencilSquareIcon as Edit, TrashIcon as Trash2, BoltIcon as Activity, ExclamationTriangleIcon as AlertTriangle, CheckCircleIcon as CheckCircle, UsersIcon as Users, ShareIcon as Network } from '@heroicons/react/24/outline';
 import { Button } from '../components/ui/button';
 import { getCmdbItems, getCiTypes, getCmdbHealth } from '../lib/api';
 
@@ -181,8 +164,17 @@ export const CmdbPage: React.FC = () => {
     );
   }
 
+  React.useEffect(() => {
+    const handler = () => {
+      // no pagination reset; refetch through useQuery by invalidating key via state change
+      setCurrentPage((p) => p) // noop to satisfy linter; useQuery refetches on same key by filter changes
+    }
+    window.addEventListener('pulse:pull_to_refresh', handler)
+    return () => window.removeEventListener('pulse:pull_to_refresh', handler)
+  }, [])
+
   return (
-    <div className="space-y-6">
+    <motion.div className={`space-y-6 ${styles.pullContainer}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -435,7 +427,7 @@ export const CmdbPage: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

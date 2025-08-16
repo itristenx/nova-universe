@@ -73,8 +73,9 @@ export const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
     }
   };
 
-  return (
-    <div className={`rounded-lg border p-4 shadow-sm ${getBgColor()}`}>
+  const isAssertive = toast.type === 'error' || toast.type === 'warning';
+  return isAssertive ? (
+    <div className={`rounded-lg border p-4 shadow-sm ${getBgColor()}`} role="alert" aria-live="assertive">
       <div className="flex">
         <div className="flex-shrink-0">{getIcon()}</div>
         <div className="ml-3 flex-1">
@@ -87,8 +88,29 @@ export const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
           <button
             className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
             onClick={() => onRemove(toast.id)}
+            aria-label={`Dismiss ${toast.type} notification`}
           >
-            <span className="sr-only">Close</span>
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div className={`rounded-lg border p-4 shadow-sm ${getBgColor()}`} role="status" aria-live="polite">
+      <div className="flex">
+        <div className="flex-shrink-0">{getIcon()}</div>
+        <div className="ml-3 flex-1">
+          <p className="text-sm font-medium text-gray-900">{toast.title}</p>
+          {toast.description && (
+            <p className="mt-1 text-sm text-gray-600">{toast.description}</p>
+          )}
+        </div>
+        <div className="ml-4 flex-shrink-0">
+          <button
+            className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            onClick={() => onRemove(toast.id)}
+            aria-label={`Dismiss ${toast.type} notification`}
+          >
             <XMarkIcon className="h-5 w-5" />
           </button>
         </div>

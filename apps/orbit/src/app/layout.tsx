@@ -1,20 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import "../styles/design-tokens.css";
+import "../styles/accessibility.css";
 import { KioskRedirect } from "../components/KioskRedirect";
 import { PWAInstaller } from "../components/PWAInstaller";
 import { defaultBranding } from "../lib/branding";
 import { OutageBanner } from "../components/OutageBanner";
 import { ClientInit } from "../components/ClientInit";
+import { SkipLinks } from "../components/accessibility/skip-links";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const interSans = Inter({
+  variable: "--font-inter-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -52,16 +57,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased branding-theme`}
+        className={`${interSans.variable} ${jetbrainsMono.variable} antialiased branding-theme shadcn-theme`}
         data-color-primary={defaultBranding.primaryColor}
         data-color-secondary={defaultBranding.secondaryColor}
       >
+        <SkipLinks />
         {/* Client-only initializers */}
         <ClientInit />
         <OutageBanner />
         <PWAInstaller />
         <KioskRedirect />
-        {children}
+        <main id="main-content" role="main">
+          {children}
+        </main>
       </body>
     </html>
   );

@@ -79,7 +79,7 @@ export async function getCatalogItems(token: string) {
   return res.json();
 }
 
-export async function submitCatalogItem(token: string, id: number, data: any) {
+export async function submitCatalogItem(token: string, id: number, data: Record<string, unknown>) {
   const res = await fetch(`${ORBIT_BASE}/catalog/${id}`, {
     method: 'POST',
     headers: {

@@ -11,42 +11,37 @@ import UIKit
 struct BottomBar: View {
     @StateObject private var authManager = AuthenticationManager.shared
     @StateObject private var kioskController = KioskController.shared
+    @ObservedObject private var connectionStatus = AppCoordinator.shared.connectionStatus
+    @StateObject private var configManager = ConfigurationManager.shared
     @State private var showAdminLogin = false
     @State private var settingsButtonPressed = false
-    @State private var adminButtonPressed = false
-    
+    @State private var currentTime = Date()
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
     var body: some View {
-        HStack {
-            // Left side - Help and info
-            HStack(spacing: 20) {
-                Button(action: showHelp) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "questionmark.circle")
-                            .font(.system(size: 16, weight: .medium))
-                        Text("Help")
-                            .font(.system(size: 14, weight: .medium))
-                    }
-                    .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
-                
-                Button(action: showInfo) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "info.circle")
-                            .font(.system(size: 16, weight: .medium))
-                        Text("Info")
-                            .font(.system(size: 14, weight: .medium))
-                    }
-                    .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
-            }
-            
+        HStack(alignment: .center) {
+            // Left: Compact status indicator
+            CompactStatusIndicator(connectionStatus: connectionStatus)
+
             Spacer()
-            
-            // Right side - Admin access
+
+            // Center: Room name and current time (Zoom-style)
             HStack(spacing: 16) {
-                // Settings button (general access)
+                if !configManager.currentRoomName.isEmpty {
+                    Text(configManager.currentRoomName)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.primary)
+                }
+                Divider().frame(height: 16)
+                Text(currentTime.formatted(.dateTime.hour().minute()))
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(.primary)
+            }
+
+            Spacer()
+
+            // Right: Settings and Admin access
+            HStack(spacing: 12) {
                 Button(action: showSettings) {
                     Image(systemName: "gearshape")
                         .font(.system(size: 20, weight: .medium))
@@ -55,8 +50,7 @@ struct BottomBar: View {
                 }
                 .buttonStyle(.plain)
                 .scaleEffect(settingsButtonPressed ? 0.9 : 1.0)
-                .onLongPressGesture(minimumDuration: 0.1) {
-                    // Haptic feedback for long press
+                .onLongPressGesture(minimumDuration: 0.15) {
                     let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                     impactFeedback.impactOccurred()
                     showAdminLogin = true
@@ -65,23 +59,20 @@ struct BottomBar: View {
                         settingsButtonPressed = pressing
                     }
                 }
-                
-                // Admin indicator (if logged in)
+
                 if authManager.isAdminAuthenticated {
                     Button(action: showAdminPanel) {
                         HStack(spacing: 6) {
                             Image(systemName: "person.badge.key")
                                 .font(.system(size: 16, weight: .medium))
-                            
                             Text("Admin")
                                 .font(.system(size: 12, weight: .semibold))
                         }
                         .foregroundColor(.blue)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.blue.opacity(0.1))
+                            Capsule().fill(Color.blue.opacity(0.12))
                         )
                     }
                     .buttonStyle(.plain)
@@ -89,7 +80,7 @@ struct BottomBar: View {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 16)
+        .padding(.vertical, 12)
         .background(
             Rectangle()
                 .fill(Color(UIColor.systemBackground).opacity(0.95))
@@ -100,27 +91,20 @@ struct BottomBar: View {
                     alignment: .top
                 )
         )
+        .onReceive(timer) { _ in
+            currentTime = Date()
+        }
         .sheet(isPresented: $showAdminLogin) {
             EnhancedAdminLoginView(configService: EnhancedConfigService.shared)
         }
     }
-    
+
     private func showSettings() {
         kioskController.openSettings()
     }
-    
+
     private func showAdminPanel() {
-        // Show admin panel if already authenticated
         kioskController.openSettings()
-    }
-    
-    private func showHelp() {
-        kioskController.showNotification(message: "For assistance, contact your IT administrator")
-    }
-    
-    private func showInfo() {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-        kioskController.showNotification(message: "Nova Beacon v\(version)")
     }
 }
 

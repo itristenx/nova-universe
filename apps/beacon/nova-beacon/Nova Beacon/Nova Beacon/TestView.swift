@@ -122,7 +122,7 @@ struct TestView: View {
         )
         .onAppear {
             // Set initial connection status
-            connectionStatus.setServerInfo(url: "http://localhost:3000/api/v1", kioskId: "test-kiosk")
+            connectionStatus.setServerInfo(url: "https://localhost:3000/api/v2", kioskId: "test-kiosk")
             connectionStatus.updateStatus(.connected)
         }
     }

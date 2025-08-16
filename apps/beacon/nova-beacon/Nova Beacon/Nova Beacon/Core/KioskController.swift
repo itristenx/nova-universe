@@ -73,7 +73,7 @@ class KioskController: ObservableObject {
     func handleAppActivation() async {
         // Handle app coming to foreground
         _ = await connectionManager.testConnection()
-        await configManager.refreshConfiguration()
+            await configManager.refreshConfiguration()
         
         // Check if we need to re-authenticate
         if authManager.isAdminAuthenticated {

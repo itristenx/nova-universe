@@ -173,7 +173,7 @@ type SelectedView = 'status' | 'incidents' | 'maintenance' | 'subscribe';
 
 export default function UserStatusDashboard({ statusPageSlug = 'default' }: UserStatusDashboardProps): React.ReactElement {
   // Optional Helix authentication for enhanced features
-  const { user, loading: authLoading, logout } = useHelixAuth();
+  const { user, logout } = useHelixAuth();
   
   const [statusPage, setStatusPage] = useState<EnhancedStatusPage | null>(null);
   const [incidents, setIncidents] = useState<EnhancedIncident[]>([]);

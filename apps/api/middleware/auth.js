@@ -1,8 +1,8 @@
 // middleware/auth.js
 // Centralized authentication and authorization middleware for Nova Universe API
-import db from '../db.js';
 import jwt from 'jsonwebtoken';
-import config from '../config/environment.js';
+import db from '../db.js';
+import { verify as verifyJwtToken } from '../jwt.js';
 import { logger } from '../logger.js';
 
 /**
@@ -27,41 +27,27 @@ export function authenticateJWT(req, res, next) {
     });
   }
   
-  jwt.verify(token, config.jwtSecret, {
-    issuer: 'nova-universe-api',
-    audience: 'nova-universe'
-  }, (err, user) => {
-    if (err) {
-      logger.warn('JWT verification failed', { 
-        error: err.message, 
-        ip: req.ip,
-        userAgent: req.get('User-Agent')
-      });
-      
-      let errorMessage = 'Invalid or expired token';
-      if (err.name === 'TokenExpiredError') {
-        errorMessage = 'Token has expired';
-      } else if (err.name === 'JsonWebTokenError') {
-        errorMessage = 'Invalid token';
-      }
-      
-      return res.status(403).json({ 
-        error: errorMessage, 
-        errorCode: 'INVALID_TOKEN' 
-      });
-    }
-    
-    // Validate user object structure
+  try {
+    const user = verifyJwtToken(token);
     if (!user || !user.id || !user.email) {
       return res.status(403).json({ 
         error: 'Invalid token payload', 
         errorCode: 'INVALID_TOKEN_PAYLOAD' 
       });
     }
-    
     req.user = user;
     next();
-  });
+  } catch (err) {
+    logger.warn('JWT verification failed', { 
+      error: err.message, 
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+    return res.status(403).json({ 
+      error: 'Invalid or expired token', 
+      errorCode: 'INVALID_TOKEN' 
+    });
+  }
 }
 
 /**
@@ -148,6 +134,12 @@ export function issueJWT(user) {
     throw new Error('Invalid user object for JWT generation');
   }
   
+  // Get JWT secret from environment
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  
   // You may want to include roles, permissions, etc. in the payload
   const payload = {
     id: user.id,
@@ -156,7 +148,7 @@ export function issueJWT(user) {
     iat: Math.floor(Date.now() / 1000) // issued at time
   };
   
-  return jwt.sign(payload, config.jwtSecret, { 
+  return jwt.sign(payload, jwtSecret, { 
     expiresIn: '12h',
     issuer: 'nova-universe-api',
     audience: 'nova-universe'

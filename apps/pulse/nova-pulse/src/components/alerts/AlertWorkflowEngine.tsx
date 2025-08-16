@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  CogIcon,
+
   PlayIcon,
   PauseIcon,
   ExclamationTriangleIcon,
@@ -56,7 +56,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
   const [activeExecutions, setActiveExecutions] = useState<WorkflowExecution[]>([]);
   const [isEngineEnabled, setIsEngineEnabled] = useState(true);
 
-  const { analyzeTicket } = useAlertCosmo({
+  useAlertCosmo({
     onAlertCreated: (alert) => {
       console.log('Workflow created alert:', alert);
     },
@@ -66,7 +66,7 @@ const AlertWorkflowEngine: React.FC<WorkflowEngineProps> = ({
   });
 
   // Fetch workflow rules
-  const { data: workflowRules = [], isLoading } = useQuery({
+  const { data: workflowRules = [] } = useQuery({
     queryKey: ['workflow-rules'],
     queryFn: async (): Promise<AlertWorkflowRule[]> => {
       const response = await fetch('/api/v2/alerts/workflow-rules', {

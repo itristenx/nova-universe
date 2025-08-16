@@ -16,6 +16,7 @@ import {
   ServerIcon,
   BellIcon,
   CircleStackIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -32,6 +33,7 @@ const navigation = [
   { name: 'GoAlert', href: '/goalert', icon: BellIcon },
   { name: 'Inventory', href: '/inventory', icon: CubeIcon },
   { name: 'CMDB', href: '/cmdb', icon: CircleStackIcon },
+  { name: 'Support Groups', href: '/support-groups', icon: UserGroupIcon },
   { name: 'Leaderboard', href: '/leaderboard', icon: TrophyIcon },
   { name: 'Gamification', href: '/gamification', icon: PlayIcon },
 ];
@@ -49,14 +51,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/80 dark:bg-gray-800/70 backdrop-blur transform transition-transform duration-250 ease-out lg:translate-x-0 lg:static lg:inset-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -80,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               {/* Close button for mobile */}
               <button
                 type="button"
-                className="lg:hidden ml-1 flex items-center justify-center h-10 w-10 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+                className="lg:hidden ml-1 flex items-center justify-center h-11 w-11 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
                 onClick={onClose}
               >
                 <span className="sr-only">Close sidebar</span>

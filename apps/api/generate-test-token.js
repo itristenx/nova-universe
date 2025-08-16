@@ -4,7 +4,10 @@
 
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = 'dev_jwt_secret_change_in_production';
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.error('WARNING: JWT_SECRET not set in environment. Using insecure fallback for testing only.');
+  return 'dev_jwt_secret_change_in_production_INSECURE_FOR_TESTING_ONLY';
+})();
 
 // Create a test token for our admin user
 const payload = {

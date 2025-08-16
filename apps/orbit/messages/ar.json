@@ -18,6 +18,7 @@
     "formatExamples": "أمثلة على التنسيق"
   },
   "Navigation": {
+    "primaryNav": "التنقل الرئيسي",
     "home": "الرئيسية",
     "about": "حول",
     "dashboard": "لوحة التحكم",

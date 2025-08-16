@@ -11,8 +11,10 @@ import { createRateLimit } from '../middleware/rateLimiter.js';
 import { checkPermissions } from '../middleware/rbac.js';
 import { audit } from '../middleware/audit.js';
 import fetch from 'node-fetch';
+import { SupportGroupService } from '../services/cmdb/SupportGroupService.js';
 
 const router = express.Router();
+const supportGroupService = new SupportGroupService();
 
 // ========================================================================
 // GOALERT CONFIGURATION
@@ -56,6 +58,53 @@ async function makeGoAlertRequest(endpoint, options = {}) {
   }
 
   return response.json();
+}
+
+async function setConfigKey(key, value) {
+  try {
+    await db.query(
+      `INSERT INTO config (key, value, value_type, category, created_at, updated_at)
+       VALUES ($1, $2, 'string', 'goalert', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
+      [key, typeof value === 'string' ? value : JSON.stringify(value)]
+    );
+  } catch (e) {
+    logger.warn('Failed to persist config key', { key, error: e.message });
+  }
+}
+
+async function resolveGoAlertUserIdByEmail(email) {
+  try {
+    const result = await makeGoAlertRequest(`/api/v2/users?limit=50&search=${encodeURIComponent(email)}`);
+    const users = result?.users || result || [];
+    const match = users.find(u => u.email?.toLowerCase() === String(email).toLowerCase()) || users[0];
+    return match?.id || null;
+  } catch (e) {
+    logger.warn('Failed to resolve GoAlert user by email', { email, error: e.message });
+    return null;
+  }
+}
+
+async function buildScheduleRulesFromSupportGroup(supportGroupId) {
+  try {
+    const group = await supportGroupService.getSupportGroup(supportGroupId);
+    const members = group?.members || [];
+    const targets = [];
+    for (const m of members) {
+      const email = m.user?.email;
+      if (!email) continue;
+      const goId = await resolveGoAlertUserIdByEmail(email);
+      if (goId) {
+        targets.push({ type: 'user', id: goId });
+      }
+    }
+    if (targets.length === 0) return [];
+    // Single step with collected targets, 0 delay
+    return [{ delayMinutes: 0, targets }];
+  } catch (e) {
+    logger.warn('Failed to build schedule rules from support group', { supportGroupId, error: e.message });
+    return [];
+  }
 }
 
 /**
@@ -170,7 +219,8 @@ router.post('/services',
     body('name').isString().isLength({ min: 1, max: 255 }).withMessage('Service name required'),
     body('description').optional().isString().isLength({ max: 1000 }),
     body('escalationPolicyID').isString().withMessage('Escalation policy ID required'),
-    body('favorite').optional().isBoolean()
+    body('favorite').optional().isBoolean(),
+    body('supportGroupId').optional().isString()
   ],
   audit('goalert.service.create'),
   async (req, res) => {
@@ -184,7 +234,7 @@ router.post('/services',
         });
       }
 
-      const { name, description, escalationPolicyID, favorite = false } = req.body;
+      const { name, description, escalationPolicyID, favorite = false, supportGroupId } = req.body;
 
       const service = await makeGoAlertRequest('/api/v2/services', {
         method: 'POST',
@@ -211,11 +261,17 @@ router.post('/services',
         new Date().toISOString()
       );
 
+      // Persist mapping to support group if provided
+      if (supportGroupId) {
+        await setConfigKey(`goalert.service.${service.id}.support_group_id`, supportGroupId);
+      }
+
       res.status(201).json({
         success: true,
         service: {
           ...service,
-          userFavorite: favorite
+          userFavorite: favorite,
+          supportGroupId: supportGroupId || null
         },
         timestamp: new Date().toISOString()
       });
@@ -297,13 +353,14 @@ router.put('/services/:id',
     body('name').isString().isLength({ min: 1, max: 255 }),
     body('description').optional().isString().isLength({ max: 1000 }),
     body('escalationPolicyID').isString(),
-    body('favorite').optional().isBoolean()
+    body('favorite').optional().isBoolean(),
+    body('supportGroupId').optional().isString()
   ],
   audit('goalert.service.update'),
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { favorite, ...serviceData } = req.body;
+      const { favorite, supportGroupId, ...serviceData } = req.body;
 
       const service = await makeGoAlertRequest(`/api/v2/services/${id}`, {
         method: 'PUT',
@@ -311,6 +368,9 @@ router.put('/services/:id',
       });
 
       // Update user preference for favorite
+      if (typeof supportGroupId === 'string') {
+        await setConfigKey(`goalert.service.${id}.support_group_id`, supportGroupId);
+      }
       if (typeof favorite === 'boolean') {
         await storeHelixUserPreference(
           req.user.id, 
@@ -327,7 +387,8 @@ router.put('/services/:id',
             req.user.id, 
             `goalert.service.${id}.favorite`, 
             false
-          )
+          ),
+          supportGroupId: supportGroupId || null
         },
         timestamp: new Date().toISOString()
       });
@@ -575,12 +636,14 @@ router.post('/schedules',
     body('name').isString().isLength({ min: 1, max: 255 }),
     body('description').optional().isString().isLength({ max: 1000 }),
     body('timeZone').isString().withMessage('Time zone required'),
-    body('favorite').optional().isBoolean()
+    body('favorite').optional().isBoolean(),
+    body('supportGroupId').optional().isString(),
+    body('rules').optional().isArray()
   ],
   audit('goalert.schedule.create'),
   async (req, res) => {
     try {
-      const { name, description, timeZone, favorite = false } = req.body;
+      const { name, description, timeZone, favorite = false, supportGroupId, rules } = req.body;
 
       const schedule = await makeGoAlertRequest('/api/v2/schedules', {
         method: 'POST',
@@ -590,6 +653,31 @@ router.post('/schedules',
           timeZone
         })
       });
+
+      // If rules provided or supportGroupId provided, create schedule rules
+      try {
+        const finalRules = Array.isArray(rules) && rules.length > 0
+          ? rules
+          : (supportGroupId ? await buildScheduleRulesFromSupportGroup(supportGroupId) : []);
+        if (finalRules.length > 0) {
+          for (const step of finalRules) {
+            // GoAlert rules endpoint varies; use generic create rule per step/targets
+            await makeGoAlertRequest(`/api/v2/schedules/${schedule.id}/rules`, {
+              method: 'POST',
+              body: JSON.stringify({
+                delayMinutes: step.delayMinutes || step.delay || 0,
+                targets: step.targets || []
+              })
+            });
+          }
+        }
+      } catch (e) {
+        logger.warn('Failed to configure schedule rules', { scheduleId: schedule.id, error: e.message });
+      }
+
+      if (supportGroupId) {
+        await setConfigKey(`goalert.schedule.${schedule.id}.support_group_id`, supportGroupId);
+      }
 
       // Store user preference for favorite
       if (favorite) {
@@ -604,7 +692,8 @@ router.post('/schedules',
         success: true,
         schedule: {
           ...schedule,
-          userFavorite: favorite
+          userFavorite: favorite,
+          supportGroupId: supportGroupId || null
         },
         timestamp: new Date().toISOString()
       });

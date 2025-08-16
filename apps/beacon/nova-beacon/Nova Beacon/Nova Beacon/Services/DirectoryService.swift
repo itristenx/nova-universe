@@ -19,7 +19,7 @@ class DirectoryService: ObservableObject {
         if let url = Bundle.main.object(forInfoDictionaryKey: "SCIM_URL") as? String {
             baseURL = url
         } else {
-            baseURL = "\(APIConfig.baseURL)/scim/v2"
+            baseURL = "\(APIConfig.baseURL)/api/v2/helix/scim/v2"
         }
     }
 

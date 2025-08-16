@@ -200,6 +200,122 @@ const GoAlertAdminPanel: React.FC = () => {
     { id: 'users', name: 'Users', icon: UserGroupIcon }
   ];
 
+  // Escalation policies
+  const { data: policies = [] } = useQuery({
+    queryKey: ['goalert-escalation-policies'],
+    queryFn: async () => {
+      const r = await fetch('/api/v2/alerts/escalation-policies', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      if (!r.ok) throw new Error('Failed to fetch policies');
+      const d = await r.json();
+      return d.escalationPolicies || [];
+    },
+    enabled: activeSection === 'policies'
+  });
+
+  const createEscalationPolicyMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const r = await fetch('/api/v2/alerts/escalation-policies', {
+        method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      });
+      if (!r.ok) throw new Error('Failed to create policy');
+      return r.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-escalation-policies'] })
+  });
+
+  const updateEscalationPolicyMutation = useMutation({
+    mutationFn: async ({ id, ...payload }: any) => {
+      const r = await fetch(`/api/v2/alerts/escalation-policies/${id}`, {
+        method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      });
+      if (!r.ok) throw new Error('Failed to update policy');
+      return r.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-escalation-policies'] })
+  });
+
+  const deleteEscalationPolicyMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const r = await fetch(`/api/v2/alerts/escalation-policies/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      if (!r.ok) throw new Error('Failed to delete policy');
+      return r.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-escalation-policies'] })
+  });
+
+  // Schedules
+  const { data: schedules = [] } = useQuery({
+    queryKey: ['goalert-schedules-admin'],
+    queryFn: async () => {
+      const r = await fetch('/api/v2/alerts/schedules', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      if (!r.ok) throw new Error('Failed to fetch schedules');
+      const d = await r.json();
+      return d.schedules || [];
+    },
+    enabled: activeSection === 'schedules'
+  });
+
+  const createScheduleMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const r = await fetch('/api/v2/goalert/schedules', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!r.ok) throw new Error('Failed to create schedule');
+      return r.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goalert-schedules-admin'] })
+  });
+
+  const renderPolicies = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Escalation Policies</h2>
+        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowCreatePolicy(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <PlusIcon className="w-4 h-4 inline mr-2" /> Create Policy
+        </motion.button>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {policies.map((p: any) => (
+          <motion.div key={p.id} className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h3 className="font-semibold text-gray-900">{p.name}</h3>
+                <p className="text-sm text-gray-600">{p.description}</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => updateEscalationPolicyMutation.mutate({ id: p.id, name: p.name })} className="p-1 text-gray-400 hover:text-blue-600"><PencilIcon className="w-4 h-4" /></motion.button>
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => deleteEscalationPolicyMutation.mutate(p.id)} className="p-1 text-gray-400 hover:text-red-600"><TrashIcon className="w-4 h-4" /></motion.button>
+              </div>
+            </div>
+            <div className="mt-2 text-sm text-gray-600">Steps: {p.stepCount}</div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderSchedules = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Schedules</h2>
+        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => createScheduleMutation.mutate({ name: `Schedule ${Date.now()}`, timeZone: 'UTC' })} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <PlusIcon className="w-4 h-4 inline mr-2" /> Create Schedule
+        </motion.button>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {schedules.map((s: any) => (
+          <motion.div key={s.id} className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl p-6">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h3 className="font-semibold text-gray-900">{s.name}</h3>
+                <p className="text-sm text-gray-600">{s.description}</p>
+              </div>
+            </div>
+            <div className="text-sm text-gray-600">Time Zone: {s.timeZone || 'UTC'}</div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+
   const renderOverview = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">GoAlert System Overview</h2>
@@ -416,7 +532,7 @@ const GoAlertAdminPanel: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Escalation Policy
                   </label>
-                  <select
+                  <select aria-label="Escalation policy"
                     value={serviceForm.escalationPolicyID}
                     onChange={(e) => setServiceForm({ ...serviceForm, escalationPolicyID: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -608,19 +724,11 @@ const GoAlertAdminPanel: React.FC = () => {
           </motion.div>
         )}
 
-        {(activeSection === 'policies' || activeSection === 'schedules') && (
-          <motion.div
-            key={activeSection}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="text-center py-12"
-          >
-            <CogIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">
-              {activeSection === 'policies' ? 'Escalation Policies' : 'Schedules'} management coming soon
-            </p>
-          </motion.div>
+        {activeSection === 'policies' && (
+          <motion.div key="policies" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>{renderPolicies()}</motion.div>
+        )}
+        {activeSection === 'schedules' && (
+          <motion.div key="schedules" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>{renderSchedules()}</motion.div>
         )}
       </AnimatePresence>
     </div>

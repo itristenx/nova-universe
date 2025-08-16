@@ -51,8 +51,9 @@ struct KioskHomeView: View {
                     .padding(.horizontal, 40)
                     .padding(.bottom, 60)
                     
-                    // Persistent bottom status indicator bar
+                    // Persistent bottom status indicator bar (Zoom-style bottom placement)
                     StatusIndicatorBar(connectionStatus: AppCoordinator.shared.connectionStatus)
+                        .background(Theme.Colors.translucentBackground)
                 }
             }
         }

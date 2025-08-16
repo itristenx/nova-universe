@@ -96,8 +96,8 @@ interface PerformanceImpact {
   significance: string;
 }
 
-// Feature Flag Hook
-export function useFeatureFlag(flagName: string): boolean {
+// Feature Flag Hook (example implementation)
+function useFeatureFlag(flagName: string): boolean {
   const [isEnabled, setIsEnabled] = useState(false);
 
   useEffect(() => {
@@ -112,8 +112,8 @@ export function useFeatureFlag(flagName: string): boolean {
   return isEnabled;
 }
 
-// A/B Test Hook
-export function useABTest(experimentId: string): string {
+// A/B Test Hook (example implementation)  
+function useABTest(experimentId: string): string {
   const [variant, setVariant] = useState('control');
 
   useEffect(() => {

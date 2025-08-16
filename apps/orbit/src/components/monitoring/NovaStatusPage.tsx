@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MotionTokens } from '@/lib/motion';
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   XCircleIcon,
-  ClockIcon,
   ServerIcon,
   BellIcon,
-  WrenchScrewdriverIcon,
-  GlobeAltIcon
+  WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline';
 
 interface Monitor {
@@ -94,7 +94,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
     };
   }, [statusPageSlug]);
 
-  const fetchStatusPage = async () => {
+  const fetchStatusPage = useCallback(async () => {
     try {
       const response = await fetch(`/api/v1/status-pages/public/${statusPageSlug}?format=json`);
       
@@ -110,7 +110,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusPageSlug]);
 
   const handleSubscription = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,7 +134,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
       } else {
         setSubscriptionStatus('error');
       }
-    } catch (error) {
+    } catch {
       setSubscriptionStatus('error');
     }
 
@@ -262,11 +262,19 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
           className={`text-center mb-8 p-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
         >
           {statusData.icon && (
             <div className="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden">
-              <img src={statusData.icon} alt="Service Icon" className="w-full h-full object-cover" />
+              <Image 
+                src={statusData.icon} 
+                alt="Service Icon" 
+                width={64} 
+                height={64} 
+                className="w-full h-full object-cover"
+                unoptimized={true}
+              />
             </div>
           )}
           
@@ -280,6 +288,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
           className={`mb-8 p-6 rounded-2xl text-center ${getStatusColor(statusData.overallStatus)} text-white shadow-lg`}
         >
           <div className="flex items-center justify-center space-x-3 mb-2">
@@ -296,6 +305,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
               className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg overflow-hidden`}
             >
               <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -340,6 +350,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
               className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg overflow-hidden`}
             >
               <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -380,6 +391,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
           className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg overflow-hidden`}
         >
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -432,6 +444,7 @@ const NovaStatusPage: React.FC<NovaStatusPageProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: MotionTokens.duration.base, ease: MotionTokens.ease.easeOut }}
           className={`mb-8 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg overflow-hidden`}
         >
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">

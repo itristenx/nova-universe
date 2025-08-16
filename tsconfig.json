@@ -1,0 +1,16 @@
+{
+  "files": [],
+  "references": [
+    { "path": "apps/api" },
+    { "path": "apps/core/nova-core" },
+    { "path": "apps/pulse/nova-pulse" },
+    { "path": "apps/orbit" },
+    { "path": "packages/ui" },
+    { "path": "packages/theme" },
+    { "path": "packages/design-tokens" },
+    { "path": "packages/cosmo-sdk" },
+    { "path": "tools/config" }
+  ]
+}
+
+

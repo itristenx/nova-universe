@@ -1,0 +1,1248 @@
+[dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+[dotenv@17.2.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[2025-08-14T04:49:34.058Z] ℹ️ Initializing AI Fabric...
+[2025-08-14T04:49:34.059Z] ℹ️ AI Fabric initialized successfully
+[2025-08-14T04:49:34.059Z] ℹ️ Initializing RAG Engine...
+[2025-08-14T04:49:34.059Z] ℹ️ RAG Engine initialized successfully
+[2025-08-14T04:49:34.059Z] ℹ️ Initializing AI Monitoring System...
+[2025-08-14T04:49:34.059Z] ℹ️ AI Monitoring System initialized successfully
+[2025-08-14T04:49:34.059Z] ℹ️ Initializing Nova MCP Server...
+[2025-08-14T04:49:34.059Z] ℹ️ Nova MCP Server initialized successfully
+[dotenv@17.2.1] injecting env (0) from ../.env -- tip: ⚙️  enable debug logging with { debug: true }
+[dotenv@17.2.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[2025-08-14T04:49:34.297Z] ℹ️ WebSocket event listeners initialized
+[2025-08-14T04:49:34.407Z] ⚠️ Prisma unavailable in HelixKioskIntegrationService {
+  error: 'Invalid value undefined for datasource "core_db" provided to PrismaClient constructor.\n' +
+    'It should have this form: { url: "CONNECTION_STRING" }\n' +
+    'Read more at https://pris.ly/d/client-constructor'
+}
+[2025-08-14T04:49:34.408Z] ⚠️ Prisma unavailable in pulse-inventory routes {
+  error: 'Invalid value undefined for datasource "core_db" provided to PrismaClient constructor.\n' +
+    'It should have this form: { url: "CONNECTION_STRING" }\n' +
+    'Read more at https://pris.ly/d/client-constructor'
+}
+📋 Swagger spec generated with paths: [
+  '/api/ai-fabric/status',
+  '/api/ai-fabric/process',
+  '/api/ai-fabric/rag/query',
+  '/api/ai-fabric/rag/documents',
+  '/api/ai-fabric/monitoring/metrics',
+  '/api/ai-fabric/monitoring/bias',
+  '/api/ai-fabric/monitoring/compliance',
+  '/api/ai-fabric/monitoring/explain',
+  '/api/ai-fabric/providers',
+  '/api/ai-fabric/providers/{providerId}/health',
+  '/api/ai-fabric/learning/feedback',
+  '/api/ai-fabric/initialize',
+  '/api/v2/alerts/create',
+  '/api/v2/alerts/escalate/{ticketId}',
+  '/api/v2/alerts/status/{alertId}',
+  '/api/v2/alerts/schedules',
+  '/api/v2/alerts/schedules/{scheduleId}',
+  '/api/v2/alerts/rotate/{scheduleId}',
+  '/api/v2/alerts/services',
+  '/api/v2/alerts/escalation-policies',
+  '/api/v2/alerts/history',
+  '/api/v2/alerts/health',
+  '/api/analytics/dashboard',
+  '/api/analytics/real-time',
+  '/api/analytics/executive',
+  '/api/v1/assets',
+  '/api/v2/beacon/config',
+  '/api/v2/beacon/ticket',
+  '/api/v2/beacon/assets',
+  '/api/v2/beacon/activate',
+  '/api/v1/cmdb/cis',
+  '/api/v1/cmdb/cis/{id}',
+  '/api/v1/cmdb/ci-types',
+  '/api/v1/cmdb/cis/{id}/relationships',
+  '/api/v1/cmdb/relationships',
+  '/api/v1/cmdb/discovery/run',
+  '/api/v1/cmdb/discovery/runs',
+  '/api/v1/cmdb/business-services',
+  '/api/v1/cmdb/health',
+  '/api/v1/cmdb/reports/impact-analysis',
+  '/api/v1/configuration',
+  '/api/v1/configuration/public',
+  '/api/v1/configuration/{key}',
+  '/api/v1/configuration/bulk',
+  '/api/v1/configuration/export',
+  '/api/v1/configuration/import',
+  '/api/v1/directory/config',
+  '/api/v1/directory/search',
+  '/api/v1/directory/user',
+  '/api/enhanced-monitoring/monitors',
+  '/api/enhanced-monitoring/monitors/{id}/check',
+  '/api/enhanced-monitoring/notification-providers',
+  '/api/enhanced-monitoring/tags',
+  '/api/enhanced-monitoring/maintenance-windows',
+  '/api/enhanced-monitoring/status-pages',
+  '/api/v2/files/upload',
+  '/api/v2/files/{id}',
+  '/api/v2/files/{id}/metadata',
+  '/api/v2/goalert/services',
+  '/api/v2/goalert/services/{id}',
+  '/api/v2/goalert/escalation-policies',
+  '/api/v2/goalert/schedules',
+  '/api/v2/goalert/schedules/{id}/on-call',
+  '/api/v2/goalert/schedules/{id}/assignments',
+  '/api/v2/goalert/schedules/{id}/overrides',
+  '/api/v2/goalert/users',
+  '/api/v2/goalert/users/{id}/contact-methods',
+  '/api/v2/goalert/users/{id}/notification-rules',
+  '/api/v2/goalert/alerts',
+  '/api/v2/goalert/alerts/{id}/acknowledge',
+  '/api/v2/goalert/alerts/{id}/close',
+  '/api/v2/goalert/heartbeat-monitors',
+  '/api/v2/goalert/services/{serviceID}/integration-keys',
+  '/api/v2/goalert/user/preferences',
+  '/api/v1/helix/login/tenant/discover',
+  '/api/v1/helix/login/authenticate',
+  '/api/v1/helix/login/mfa/challenge',
+  '/api/v1/helix/login/mfa/verify',
+  '/api/v1/helix/login/token/refresh',
+  '/api/v1/helix/login/logout',
+  '/api/v1/helix/login/sso/initiate/{provider}',
+  '/api/v1/helix/login/sso/callback/{provider}',
+  '/api/v1/helix/login/audit',
+  '/api/v1/helix/session',
+  '/api/v1/helix/login',
+  '/api/v1/helix/me/roles',
+  '/api/v1/helix/audit/logs',
+  '/api/v1/helix/sso/configuration',
+  '/api/v1/helix/2fa/setup',
+  '/api/v1/helix/2fa/verify',
+  '/api/v1/helix/2fa/status',
+  '/api/v1/helix/2fa/disable',
+  '/api/v1/helix/2fa/backup-codes',
+  '/api/v1/helix/sso/saml/login',
+  '/api/v1/helix/sso/saml/callback',
+  '/api/v1/helix/sso/saml/metadata',
+  '/api/v1/integrations',
+  '/api/v1/integrations/{id}',
+  '/api/integrations/{id}',
+  '/api/integrations/{id}/test',
+  ... 116 more items
+]
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: SAML_ENTRY_POINT
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: SAML_ISSUER
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: SAML_CALLBACK_URL
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: SAML_CERT
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: SLACK_WEBHOOK_URL
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: TLS_CERT_PATH
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: TLS_KEY_PATH
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: LOG_RETENTION_DAYS
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: RATE_LIMIT_WINDOW
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: SUBMIT_TICKET_LIMIT
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: API_LOGIN_LIMIT
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: AUTH_LIMIT
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: DISABLE_CLEANUP
+[2025-08-14T04:49:34.541Z] ⚠️ Optional environment variable not set: DEBUG_CORS
+[2025-08-14T04:49:34.543Z] ℹ️ Initializing database factory...
+[2025-08-14T04:49:34.543Z] ℹ️ 🚀 Initializing database connections...
+[2025-08-14T04:49:34.549Z] ℹ️ Initializing database factory...
+[2025-08-14T04:49:34.553Z] ℹ️ Initializing database factory...
+[2025-08-14T04:49:34.580Z] 🐛 🔗 New PostgreSQL client connected
+[2025-08-14T04:49:34.580Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.595Z] 🐛 🏥 PostgreSQL health check passed: { current_time: 2025-08-14T04:49:34.579Z, version: 'PostgreSQL' }
+[2025-08-14T04:49:34.595Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.595Z] ℹ️ ✅ PostgreSQL connection pool initialized successfully
+[2025-08-14T04:49:34.595Z] ℹ️ 📊 Pool configuration: min=2, max=20
+[2025-08-14T04:49:34.595Z] ℹ️ ✅ Core PostgreSQL initialized
+[2025-08-14T04:49:34.604Z] 🐛 🔗 New PostgreSQL client connected
+[2025-08-14T04:49:34.604Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.605Z] 🐛 🏥 PostgreSQL health check passed: { current_time: 2025-08-14T04:49:34.603Z, version: 'PostgreSQL' }
+[2025-08-14T04:49:34.605Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.605Z] ℹ️ ✅ PostgreSQL connection pool initialized successfully
+[2025-08-14T04:49:34.605Z] ℹ️ 📊 Pool configuration: min=2, max=20
+[2025-08-14T04:49:34.605Z] ℹ️ ✅ Auth PostgreSQL initialized
+[2025-08-14T04:49:34.605Z] ℹ️ ✅ Database initialization complete. Available: core_db, auth_db
+[2025-08-14T04:49:34.605Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.605Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.605Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.606Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.606Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.606Z] 🐛 Executing query: CREATE EXTENSION IF NOT EXISTS "pgcrypto"
+[2025-08-14T04:49:34.609Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.609Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.609Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.609Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.609Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.609Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.609Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS tickets (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT,
+   
+[2025-08-14T04:49:34.615Z] 🐛 🔗 New PostgreSQL client connected
+[2025-08-14T04:49:34.615Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.616Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.616Z] 🐛 Executing query: CREATE EXTENSION IF NOT EXISTS "pgcrypto"
+[2025-08-14T04:49:34.616Z] 🐛 🔗 New PostgreSQL client connected
+[2025-08-14T04:49:34.616Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.616Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.616Z] 🐛 Executing query: CREATE EXTENSION IF NOT EXISTS "pgcrypto"
+[2025-08-14T04:49:34.616Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.616Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.616Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.616Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.616Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.616Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.616Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS tickets (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT,
+   
+[2025-08-14T04:49:34.617Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.617Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.617Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.617Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.617Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.617Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.617Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS tickets (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT,
+   
+[2025-08-14T04:49:34.641Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.641Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.641Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.641Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.641Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.641Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.641Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        uuid TEXT UNIQUE,
+ 
+[2025-08-14T04:49:34.642Z] ❌ ❌ PostgreSQL query error: {
+  error: 'duplicate key value violates unique constraint "pg_type_typname_nsp_index"',
+  query: '\n' +
+    '      CREATE TABLE IF NOT EXISTS tickets (\n' +
+    '        id TEXT PRIMARY KEY,\n' +
+    '        ticket_id TEXT,\n' +
+    '   ',
+  duration: '26ms',
+  params: 'none'
+}
+[2025-08-14T04:49:34.643Z] ❌ ❌ Primary database query failed: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+[2025-08-14T04:49:34.643Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.643Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.643Z] ❌ Error setting up schemas: error: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+    at /Users/tneibarger/nova-universe/apps/api/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async PostgreSQLManager.query (file:///Users/tneibarger/nova-universe/apps/api/database/postgresql.js:175:22)
+    at async DatabaseFactory.query (file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:191:16)
+    at async setupSchemas (file:///Users/tneibarger/nova-universe/apps/api/db.js:58:5)
+    at async initializeDatabase (file:///Users/tneibarger/nova-universe/apps/api/db.js:33:5)
+    at async DatabaseWrapper.ensureReady (file:///Users/tneibarger/nova-universe/apps/api/db.js:614:19)
+    at async DatabaseWrapper.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:631:22) {
+  length: 247,
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Key (typname, typnamespace)=(tickets, 2200) already exists.',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'pg_catalog',
+  table: 'pg_type',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'pg_type_typname_nsp_index',
+  file: 'nbtinsert.c',
+  line: '664',
+  routine: '_bt_check_unique'
+}
+[2025-08-14T04:49:34.643Z] ❌ Failed to initialize database factory: error: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+    at /Users/tneibarger/nova-universe/apps/api/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async PostgreSQLManager.query (file:///Users/tneibarger/nova-universe/apps/api/database/postgresql.js:175:22)
+    at async DatabaseFactory.query (file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:191:16)
+    at async setupSchemas (file:///Users/tneibarger/nova-universe/apps/api/db.js:58:5)
+    at async initializeDatabase (file:///Users/tneibarger/nova-universe/apps/api/db.js:33:5)
+    at async DatabaseWrapper.ensureReady (file:///Users/tneibarger/nova-universe/apps/api/db.js:614:19)
+    at async DatabaseWrapper.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:631:22) {
+  length: 247,
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Key (typname, typnamespace)=(tickets, 2200) already exists.',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'pg_catalog',
+  table: 'pg_type',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'pg_type_typname_nsp_index',
+  file: 'nbtinsert.c',
+  line: '664',
+  routine: '_bt_check_unique'
+}
+[2025-08-14T04:49:34.643Z] ❌ Failed to initialize configuration system: Error: DB unavailable
+    at Object.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:621:38)
+    at DatabaseWrapper.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:632:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-08-14T04:49:34.644Z] ❌ ❌ PostgreSQL query error: {
+  error: 'duplicate key value violates unique constraint "pg_type_typname_nsp_index"',
+  query: '\n' +
+    '      CREATE TABLE IF NOT EXISTS tickets (\n' +
+    '        id TEXT PRIMARY KEY,\n' +
+    '        ticket_id TEXT,\n' +
+    '   ',
+  duration: '27ms',
+  params: 'none'
+}
+[2025-08-14T04:49:34.644Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.644Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.644Z] ❌ ❌ Primary database query failed: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+[2025-08-14T04:49:34.644Z] ❌ Error setting up schemas: error: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+    at /Users/tneibarger/nova-universe/apps/api/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async PostgreSQLManager.query (file:///Users/tneibarger/nova-universe/apps/api/database/postgresql.js:175:22)
+    at async DatabaseFactory.query (file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:191:16)
+    at async setupSchemas (file:///Users/tneibarger/nova-universe/apps/api/db.js:58:5)
+    at async initializeDatabase (file:///Users/tneibarger/nova-universe/apps/api/db.js:33:5)
+    at async DatabaseWrapper.ensureReady (file:///Users/tneibarger/nova-universe/apps/api/db.js:614:19)
+    at async ConfigurationManager.loadFromDatabase (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:193:7)
+    at async ConfigurationManager.getFullConfig (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:168:24)
+    at async ConfigurationManager.get (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:114:22) {
+  length: 247,
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Key (typname, typnamespace)=(tickets, 2200) already exists.',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'pg_catalog',
+  table: 'pg_type',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'pg_type_typname_nsp_index',
+  file: 'nbtinsert.c',
+  line: '664',
+  routine: '_bt_check_unique'
+}
+[2025-08-14T04:49:34.644Z] ❌ Failed to initialize database factory: error: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+    at /Users/tneibarger/nova-universe/apps/api/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-08-14T04:49:34.644Z] ℹ️ Initializing database factory...
+[2025-08-14T04:49:34.644Z] 🐛 Attempting to acquire client from pool...
+    at async PostgreSQLManager.query (file:///Users/tneibarger/nova-universe/apps/api/database/postgresql.js:175:22)
+    at async DatabaseFactory.query (file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:191:16)
+    at async setupSchemas (file:///Users/tneibarger/nova-universe/apps/api/db.js:58:5)
+    at async initializeDatabase (file:///Users/tneibarger/nova-universe/apps/api/db.js:33:5)
+    at async DatabaseWrapper.ensureReady (file:///Users/tneibarger/nova-universe/apps/api/db.js:614:19)
+    at async ConfigurationManager.loadFromDatabase (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:193:7)
+    at async ConfigurationManager.getFullConfig (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:168:24)
+    at async ConfigurationManager.get (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:114:22) {
+  length: 247,
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Key (typname, typnamespace)=(tickets, 2200) already exists.',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'pg_catalog',
+  table: 'pg_type',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'pg_type_typname_nsp_index',
+  file: 'nbtinsert.c',
+  line: '664',
+  routine: '_bt_check_unique'
+}
+[2025-08-14T04:49:34.644Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.644Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.644Z] 🐛 Executing query: CREATE EXTENSION IF NOT EXISTS "pgcrypto"
+[2025-08-14T04:49:34.644Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.644Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.644Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.644Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.644Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.644Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.644Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS config (
+        key TEXT PRIMARY KEY,
+        value TEXT,
+       
+[2025-08-14T04:49:34.645Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.645Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.645Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.645Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.645Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.645Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.645Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS kiosks (
+        id TEXT PRIMARY KEY,
+        last_seen TIMESTAMP,
+[2025-08-14T04:49:34.646Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.646Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.646Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.646Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.646Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.646Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.646Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS tickets (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT,
+   
+[2025-08-14T04:49:34.646Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.646Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.646Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.646Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.646Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.646Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.646Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        message TEX
+[2025-08-14T04:49:34.649Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.649Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.649Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.649Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.649Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.649Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.649Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        uuid TEXT UNIQUE,
+ 
+[2025-08-14T04:49:34.650Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.650Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.650Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.650Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.650Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.650Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.650Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS config (
+        key TEXT PRIMARY KEY,
+        value TEXT,
+       
+[2025-08-14T04:49:34.650Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.650Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.650Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.650Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.650Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.650Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.651Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS kiosks (
+        id TEXT PRIMARY KEY,
+        last_seen TIMESTAMP,
+[2025-08-14T04:49:34.651Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.651Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.651Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.651Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.651Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.651Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.651Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        message TEX
+[2025-08-14T04:49:34.653Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.653Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.653Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.653Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.653Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.653Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.653Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS feedback (
+        id SERIAL PRIMARY KEY,
+        name TEXT,
+     
+[2025-08-14T04:49:34.654Z] ❌ ❌ PostgreSQL query error: {
+  error: 'duplicate key value violates unique constraint "pg_class_relname_nsp_index"',
+  query: '\n' +
+    '      CREATE TABLE IF NOT EXISTS notifications (\n' +
+    '        id SERIAL PRIMARY KEY,\n' +
+    '        message TEX',
+  duration: '3ms',
+  params: 'none'
+}
+[2025-08-14T04:49:34.654Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.654Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.654Z] ❌ ❌ Primary database query failed: duplicate key value violates unique constraint "pg_class_relname_nsp_index"
+[2025-08-14T04:49:34.654Z] ❌ Error setting up schemas: error: duplicate key value violates unique constraint "pg_class_relname_nsp_index"
+    at /Users/tneibarger/nova-universe/apps/api/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async PostgreSQLManager.query (file:///Users/tneibarger/nova-universe/apps/api/database/postgresql.js:175:22)
+    at async DatabaseFactory.query (file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:191:16)
+    at async setupSchemas (file:///Users/tneibarger/nova-universe/apps/api/db.js:165:5)
+    at async initializeDatabase (file:///Users/tneibarger/nova-universe/apps/api/db.js:33:5)
+    at async DatabaseWrapper.ensureReady (file:///Users/tneibarger/nova-universe/apps/api/db.js:614:19)
+    at async DatabaseWrapper.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:631:22)
+    at async ConfigurationManager.loadFromDatabase (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:196:22)
+    at async ConfigurationManager.getFullConfig (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:168:24) {
+  length: 270,
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Key (relname, relnamespace)=(ix_notifications_created_at, 2200) already exists.',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'pg_catalog',
+  table: 'pg_class',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'pg_class_relname_nsp_index',
+  file: 'nbtinsert.c',
+  line: '664',
+  routine: '_bt_check_unique'
+}
+[2025-08-14T04:49:34.654Z] ❌ Failed to initialize database factory: error: duplicate key value violates unique constraint "pg_class_relname_nsp_index"
+    at /Users/tneibarger/nova-universe/apps/api/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async PostgreSQLManager.query (file:///Users/tneibarger/nova-universe/apps/api/database/postgresql.js:175:22)
+    at async DatabaseFactory.query (file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:191:16)
+    at async setupSchemas (file:///Users/tneibarger/nova-universe/apps/api/db.js:165:5)
+    at async initializeDatabase (file:///Users/tneibarger/nova-universe/apps/api/db.js:33:5)
+    at async DatabaseWrapper.ensureReady (file:///Users/tneibarger/nova-universe/apps/api/db.js:614:19)
+    at async DatabaseWrapper.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:631:22)
+    at async ConfigurationManager.loadFromDatabase (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:196:22)
+    at async ConfigurationManager.getFullConfig (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:168:24) {
+  length: 270,
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Key (relname, relnamespace)=(ix_notifications_created_at, 2200) already exists.',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'pg_catalog',
+  table: 'pg_class',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'pg_class_relname_nsp_index',
+  file: 'nbtinsert.c',
+  line: '664',
+  routine: '_bt_check_unique'
+}
+[2025-08-14T04:49:34.654Z] ❌ Error loading configuration from database: Error: DB unavailable
+    at Object.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:621:38)
+    at DatabaseWrapper.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:632:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async ConfigurationManager.loadFromDatabase (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:196:22)
+    at async ConfigurationManager.getFullConfig (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:168:24)
+    at async ConfigurationManager.get (file:///Users/tneibarger/nova-universe/apps/api/config/app-settings.js:114:22)
+    at async file:///Users/tneibarger/nova-universe/apps/api/index.js:1771:30
+[2025-08-14T04:49:34.662Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.662Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.662Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.662Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.662Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.662Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.662Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS directory_integrations (
+        id SERIAL PRIMARY KEY,
+        pr
+[2025-08-14T04:49:34.663Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.663Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.663Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.664Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.664Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.664Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.664Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS sso_configurations (
+        id INTEGER PRIMARY KEY,
+        enabl
+[2025-08-14T04:49:34.668Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.669Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.669Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.669Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.669Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.669Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.669Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS system_logs (
+        id SERIAL PRIMARY KEY,
+        level TEXT,
+ 
+[2025-08-14T04:49:34.680Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.680Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.680Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.680Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.680Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.680Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.680Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS ticket_sequences (
+        type_code VARCHAR(10) PRIMARY KEY,
+    
+🚀 Nova Universe API Server running on port 3000
+📊 Admin interface: http://localhost:3000/admin
+🔧 Server info endpoint: http://localhost:3000/api/server-info
+⚡ WebSocket server ready for real-time updates
+[2025-08-14T04:49:34.684Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.684Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.684Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.684Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.684Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.684Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.684Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS sla_policies (
+        id SERIAL PRIMARY KEY,
+        type_code VA
+[2025-08-14T04:49:34.694Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.695Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.695Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.695Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.695Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.695Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.695Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS ticket_logs (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT 
+[2025-08-14T04:49:34.701Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.701Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.701Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.701Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.701Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.701Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.701Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS agent_availability (
+        id TEXT PRIMARY KEY DEFAULT gen_rando
+[2025-08-14T04:49:34.714Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.714Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.714Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.714Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.714Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.714Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.714Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS request_catalog_items (
+        id SERIAL PRIMARY KEY,
+        nam
+[2025-08-14T04:49:34.723Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.723Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.723Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.723Z] ℹ️ Database schemas verified and updated
+[2025-08-14T04:49:34.723Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.723Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.724Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.724Z] 🐛 Executing query: 
+      CREATE TABLE IF NOT EXISTS roles (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) U
+[2025-08-14T04:49:34.724Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.724Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.724Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.724Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.724Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.724Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.724Z] 🐛 Executing query: INSERT INTO roles (id, name, description, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMEST
+[2025-08-14T04:49:34.728Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.728Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.728Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.728Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.728Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.728Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.728Z] 🐛 Executing query: INSERT INTO roles (id, name, description, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMEST
+[2025-08-14T04:49:34.729Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.729Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.729Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.729Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.729Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.729Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.729Z] 🐛 Executing query: INSERT INTO roles (id, name, description, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMEST
+[2025-08-14T04:49:34.730Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.730Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.730Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.730Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.730Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.730Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.730Z] 🐛 Executing query: INSERT INTO permissions (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING
+[2025-08-14T04:49:34.731Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.731Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.731Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.731Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.732Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.732Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.732Z] 🐛 Executing query: INSERT INTO permissions (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING
+[2025-08-14T04:49:34.732Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.732Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.732Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.732Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.732Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.732Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.732Z] 🐛 Executing query: INSERT INTO permissions (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING
+[2025-08-14T04:49:34.733Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.733Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.733Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.733Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.733Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.733Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.733Z] 🐛 Executing query: INSERT INTO permissions (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING
+[2025-08-14T04:49:34.733Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.733Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.733Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.733Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.733Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.733Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.733Z] 🐛 Executing query: INSERT INTO permissions (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING
+[2025-08-14T04:49:34.734Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.734Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.734Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.734Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.734Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.734Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.734Z] 🐛 Executing query: INSERT INTO permissions (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING
+[2025-08-14T04:49:34.734Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.734Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.734Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.735Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.735Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.735Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.735Z] 🐛 Executing query: INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+[2025-08-14T04:49:34.736Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.736Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.736Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.736Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.736Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.736Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.736Z] 🐛 Executing query: INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+[2025-08-14T04:49:34.736Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.736Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.736Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.736Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.736Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.736Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.736Z] 🐛 Executing query: INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+[2025-08-14T04:49:34.737Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.737Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.737Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.737Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.737Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.737Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.737Z] 🐛 Executing query: INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+[2025-08-14T04:49:34.737Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.737Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.737Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.737Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.737Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.737Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.737Z] 🐛 Executing query: INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+[2025-08-14T04:49:34.738Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.738Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.738Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.738Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.738Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.738Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.738Z] 🐛 Executing query: INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+[2025-08-14T04:49:34.738Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.738Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.738Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.738Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.738Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.738Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.738Z] 🐛 Executing query: INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+[2025-08-14T04:49:34.739Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.739Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.739Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.739Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.739Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.739Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.739Z] 🐛 Executing query: INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+[2025-08-14T04:49:34.740Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.740Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.740Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.740Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.740Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.740Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.740Z] 🐛 Executing query: INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+[2025-08-14T04:49:34.740Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.740Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.740Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.740Z] ℹ️ Roles and permissions setup completed
+[2025-08-14T04:49:34.741Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.741Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.741Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.741Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.744Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.744Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.744Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.744Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.744Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.744Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.744Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.746Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.746Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.746Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.746Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.746Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.746Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.746Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.747Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.747Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.747Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.747Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.747Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.747Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.747Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.748Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.748Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.749Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.749Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.749Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.749Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.749Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.749Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.749Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.749Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.749Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.749Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.749Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.749Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.750Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.750Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.750Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.750Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.750Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.750Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.750Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.750Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.750Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.750Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.750Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.750Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.750Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.750Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.751Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.751Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.751Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.751Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.751Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.751Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.751Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.751Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.751Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.751Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.751Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.751Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.751Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.751Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.752Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.752Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.752Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.752Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.752Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.752Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.752Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.752Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.752Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.752Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.752Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.752Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.752Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.752Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.753Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.753Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.753Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.753Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.753Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.753Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.753Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.753Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.753Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.753Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.753Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.753Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.753Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.753Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.754Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.754Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.754Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.754Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.754Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.754Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.754Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.755Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.755Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.755Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.755Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.755Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.755Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.755Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.755Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.755Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.755Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.755Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.755Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.755Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.756Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.756Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.756Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.756Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.756Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.756Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.756Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.756Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.756Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.757Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.757Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.757Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.757Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.757Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.757Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.757Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.757Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.757Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.757Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.757Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.757Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.757Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.758Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.758Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.758Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.758Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.758Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.758Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.758Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.758Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.758Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.758Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.758Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.758Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.758Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.758Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.759Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.759Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.759Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.759Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.759Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.759Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.759Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.759Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.759Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.759Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.759Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.759Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.759Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.759Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.760Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.760Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.760Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.760Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.760Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.760Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.760Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.760Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.760Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.760Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.760Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.760Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.760Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.760Z] 🐛 Executing query: INSERT INTO config (key, value, value_type, category, created_at, updated_at) VALUES ($1, $2, $3, $4
+[2025-08-14T04:49:34.761Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.761Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.761Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.761Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.761Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.761Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.761Z] 🐛 Executing query: INSERT INTO directory_integrations (provider, enabled, settings, created_at, updated_at) VALUES ($1,
+[2025-08-14T04:49:34.764Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.764Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.764Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.764Z] ℹ️ Default configuration setup completed
+[2025-08-14T04:49:34.764Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.771Z] ℹ️ Default admin user already exists
+[2025-08-14T04:49:34.771Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.771Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.771Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.771Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.771Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.773Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.773Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.773Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.773Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.773Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.773Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.773Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.774Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.774Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.774Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.774Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.774Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.774Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.774Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.775Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.775Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.775Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.775Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.775Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.775Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.775Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.775Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.775Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.775Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.775Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.775Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.775Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.775Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.776Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.776Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.776Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.776Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.776Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.776Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.776Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.777Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.777Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.777Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.777Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.777Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.777Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.777Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.777Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.777Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.777Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.777Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.777Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.777Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.777Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.778Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.778Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.778Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.778Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.778Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.778Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.778Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.779Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.779Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.779Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.779Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.779Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.779Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.779Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.780Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.780Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.780Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.780Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.780Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.780Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.780Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.781Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.781Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.781Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.781Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.781Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.781Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.781Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.782Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.782Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.782Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.782Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.782Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.782Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.782Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.782Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.782Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.782Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.782Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.782Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.782Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.782Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.783Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.783Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.783Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.783Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.783Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.783Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.783Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.784Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.784Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.784Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.784Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.784Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.784Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.784Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.784Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.784Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.784Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.784Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.784Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.784Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.784Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.785Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.785Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.785Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.785Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.785Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.785Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.785Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.786Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.786Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.786Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.786Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.786Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.786Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.786Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.787Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.787Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.787Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.787Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.787Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.787Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.787Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.787Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.787Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.787Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.787Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.787Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.787Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.787Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.788Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.788Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.788Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.788Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.788Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.788Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.788Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.789Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.789Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.789Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.789Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.789Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.789Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.789Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.790Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.790Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.790Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.790Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.790Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.790Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.790Z] 🐛 Executing query: INSERT INTO sla_policies (type_code, urgency, impact, response_minutes, resolution_minutes)
+        
+[2025-08-14T04:49:34.791Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.791Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.791Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.791Z] ℹ️ Default SLA policies seeded
+[2025-08-14T04:49:34.791Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.791Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.791Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.791Z] 🐛 Executing query: INSERT INTO user_roles (user_id, role_id, created_at)
+                      SELECT u.id, 1, CURRENT_
+[2025-08-14T04:49:34.791Z] ❌ ❌ PostgreSQL query error: {
+  error: 'column "created_at" of relation "user_roles" does not exist',
+  query: 'INSERT INTO user_roles (user_id, role_id, created_at)\n' +
+    '                      SELECT u.id, 1, CURRENT_',
+  duration: '0ms',
+  params: '[PARAMS_REDACTED]'
+}
+[2025-08-14T04:49:34.791Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.791Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.791Z] ❌ ❌ Primary database query failed: column "created_at" of relation "user_roles" does not exist
+[2025-08-14T04:49:34.792Z] ℹ️ Initial data setup completed
+[2025-08-14T04:49:34.792Z] ℹ️ Database factory initialized successfully
+[2025-08-14T04:49:34.792Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.792Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.792Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.792Z] 🐛 Executing query: SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'pub
+[2025-08-14T04:49:34.798Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.799Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.799Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:34.799Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:34.799Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:34.799Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:34.799Z] 🐛 Executing query: DELETE FROM system_logs WHERE created_at < $1
+[2025-08-14T04:49:34.800Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:34.800Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:34.800Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:41.736Z] ❌ ❌ Elasticsearch connection failed: 
+[2025-08-14T04:49:44.001Z] ℹ️ HTTP Request {
+  method: 'GET',
+  url: '/ready',
+  userAgent: 'curl/8.7.1',
+  ip: '::1',
+  requestId: undefined
+}
+[2025-08-14T04:49:44.002Z] 🐛 Attempting to acquire client from pool...
+[2025-08-14T04:49:44.002Z] 🐛 🎯 PostgreSQL client acquired from pool
+[2025-08-14T04:49:44.002Z] 🐛 Client acquired from pool.
+[2025-08-14T04:49:44.002Z] 🐛 Executing query: SELECT 1
+[2025-08-14T04:49:44.004Z] 🐛 Query executed successfully.
+[2025-08-14T04:49:44.004Z] 🐛 Releasing client back to pool.
+[2025-08-14T04:49:44.004Z] 🐛 ↩️  PostgreSQL client released back to pool
+[2025-08-14T04:49:44.006Z] ℹ️ HTTP Response {
+  method: 'GET',
+  url: '/ready',
+  statusCode: 200,
+  duration: '5ms',
+  requestId: undefined
+}
+[2025-08-14T04:50:04.649Z] 🐛 🗑️  PostgreSQL client removed from pool
+[2025-08-14T04:50:04.660Z] 🐛 🗑️  PostgreSQL client removed from pool
+[2025-08-14T04:50:14.014Z] 🐛 🗑️  PostgreSQL client removed from pool
+[2025-08-14T13:20:55.818Z] ℹ️ HTTP Request {
+  method: 'GET',
+  url: '/api/v1/pulse/dashboard',
+  userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
+  ip: '::1',
+  requestId: undefined
+}
+[2025-08-14T13:20:55.841Z] ℹ️ HTTP Response {
+  method: 'GET',
+  url: '/dashboard',
+  statusCode: 401,
+  duration: '23ms',
+  requestId: undefined
+}
+[2025-08-14T13:20:55.843Z] ℹ️ HTTP Request {
+  method: 'GET',
+  url: '/api/v1/pulse/timesheet',
+  userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
+  ip: '::1',
+  requestId: undefined
+}
+[2025-08-14T13:20:55.847Z] ℹ️ HTTP Response {
+  method: 'GET',
+  url: '/timesheet',
+  statusCode: 401,
+  duration: '4ms',
+  requestId: undefined
+}
+[2025-08-14T13:20:55.852Z] ℹ️ HTTP Request {
+  method: 'GET',
+  url: '/api/v1/pulse/tickets',
+  userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
+  ip: '::1',
+  requestId: undefined
+}
+[2025-08-14T13:20:55.853Z] ℹ️ HTTP Response {
+  method: 'GET',
+  url: '/tickets',
+  statusCode: 401,
+  duration: '1ms',
+  requestId: undefined
+}

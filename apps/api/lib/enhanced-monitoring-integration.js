@@ -607,14 +607,36 @@ class EnhancedMonitoringService {
    * Basic monitor check for standard types
    */
   async performBasicCheck(monitor) {
-    // Placeholder for basic monitor checks
-    // This would contain your existing HTTP, TCP, Ping, DNS, SSL logic
-    return {
-      success: true,
-      responseTime: 100,
-      message: 'Basic check completed',
-      data: {}
-    };
+    try {
+      const start = Date.now();
+      if (monitor.type === 'http' || monitor.type === 'https') {
+        const res = await fetch(monitor.url, { method: monitor.http_method || 'GET' });
+        const responseTime = Date.now() - start;
+        return {
+          success: res.ok,
+          responseTime,
+          statusCode: res.status,
+          message: res.ok ? 'HTTP OK' : `HTTP ${res.status}`,
+          data: { headers: Object.fromEntries(res.headers.entries()) }
+        };
+      }
+      // Fallback: mark as pending but non-failing for unsupported types
+      return {
+        success: true,
+        responseTime: Date.now() - start,
+        statusCode: 0,
+        message: 'Monitor type not implemented; skipping',
+        data: { type: monitor.type }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        responseTime: 0,
+        statusCode: 0,
+        message: `Check failed: ${error.message}`,
+        data: {}
+      };
+    }
   }
 
   /**

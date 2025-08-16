@@ -166,7 +166,12 @@ class ConnectionManager: ObservableObject {
                 guard let url = URL(string: urlString) else { return }
                 var req = URLRequest(url: url)
                 req.httpMethod = "POST"
-                // In production, include kiosk token auth header if required by server
+                // Include kiosk identity for auth/context
+                let kioskId = ConfigurationManager.shared.getKioskId()
+                req.setValue(kioskId, forHTTPHeaderField: "X-Kiosk-ID")
+                if let token = Bundle.main.object(forInfoDictionaryKey: "KIOSK_TOKEN") as? String, !token.isEmpty {
+                    req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                }
                 URLSession.shared.dataTask(with: req).resume()
             }
         }

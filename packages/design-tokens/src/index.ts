@@ -67,3 +67,5 @@ export const createThemeCSS = (isDark = false) => {
 
 // Export default design token set
 export default tokens
+// Convenience re-exports for theme utilities
+export { themeCSS, themeUtils } from './theme'
