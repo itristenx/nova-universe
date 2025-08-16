@@ -229,6 +229,17 @@
   - Presence tracking and occupancy analytics with hybrid work support
   - Space planning with dynamic floor plans and scenario modeling
   - Workplace analytics with predictive insights and optimization
+- **Zoom Ecosystem Integration**: Deep connector integration with existing Zoom infrastructure
+  - Zoom Rooms API integration for scheduling, device control, and real-time analytics
+  - Zoom Visitor Management bi-directional sync with unified visitor workflows
+  - M365 Calendar room resources integration with Exchange Server connectivity
+  - Real-time synchronization and data flow across Zoom, M365, and Nova systems
+- **Interactive Floor Plan Management**: Advanced floor plan upload and visualization system
+  - Multi-format support for CAD, PDF, SVG, PNG, and JPEG floor plan uploads
+  - Zoom-style interactive UI with smooth zooming, panning, and navigation controls
+  - Automatic calibration and scaling of uploaded floor plans with version control
+  - Click-to-book functionality directly from floor plan views with real-time updates
+  - Visual room availability highlighting and occupancy heat map visualization
 - **Advanced Wayfinding**: Cutting-edge indoor navigation and wayfinding system
   - BLE beacon and QR code-based positioning and routing
   - Turn-by-turn navigation with voice guidance and accessibility support

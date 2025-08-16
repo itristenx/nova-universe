@@ -50,6 +50,67 @@ Based on comprehensive market research, here are the core Maptician features to 
 
 ### Enhanced Enterprise Features
 
+#### Zoom Ecosystem Integration
+```typescript
+interface ZoomIntegrationCapabilities {
+  zoomRooms: {
+    scheduling: 'Direct integration with Zoom Rooms scheduling and management';
+    deviceControl: 'Remote control and monitoring of Zoom Room devices';
+    analytics: 'Usage analytics and performance metrics from Zoom Rooms';
+    troubleshooting: 'Remote diagnostics and support for Zoom Room issues';
+    capacity: 'Real-time room capacity and availability synchronization';
+  };
+  zoomVisitorManagement: {
+    dataSync: 'Bi-directional sync with Zoom Visitor Management system';
+    workflows: 'Unified visitor workflows across Zoom and Nova systems';
+    badging: 'Integrated badge printing and access credential management';
+    analytics: 'Combined visitor analytics and reporting across platforms';
+    notifications: 'Unified notification system for visitor arrivals and departures';
+  };
+  m365Integration: {
+    calendarResources: 'Deep integration with M365 Calendar room resources';
+    outlookSync: 'Real-time synchronization with Outlook room bookings';
+    teamsIntegration: 'Microsoft Teams meeting room integration and control';
+    exchangeConnector: 'Exchange Server room resource management';
+    azureAD: 'Azure Active Directory authentication and user management';
+  };
+}
+```
+
+#### Interactive Floor Plan Management
+```typescript
+interface FloorPlanCapabilities {
+  mapUpload: {
+    formatSupport: 'Support for CAD, PDF, SVG, PNG, and JPEG floor plan formats';
+    autoCalibration: 'Automatic scaling and calibration of uploaded floor plans';
+    layerManagement: 'Multi-layer floor plan support with selective visibility';
+    versionControl: 'Floor plan versioning and change management';
+    bulkImport: 'Batch upload and processing of multiple floor plans';
+  };
+  interactiveUI: {
+    zoomStyle: 'Zoom-like interactive floor plan interface with smooth zooming';
+    roomHighlighting: 'Real-time room availability highlighting and status';
+    clickToBook: 'One-click room booking directly from floor plan view';
+    dragAndDrop: 'Drag-and-drop desk and equipment positioning';
+    realTimeUpdates: 'Live occupancy and availability updates on floor plans';
+  };
+  visualFeatures: {
+    responsiveDesign: 'Responsive floor plan viewing across all device sizes';
+    touchOptimized: 'Touch-optimized interactions for tablet and mobile devices';
+    accessibilityPaths: 'Visual accessibility route highlighting and navigation';
+    heatMaps: 'Occupancy heat maps and usage pattern visualization';
+    legend: 'Interactive legend and floor plan navigation controls';
+  };
+  roomVisualization: {
+    capacityDisplay: 'Visual room capacity and current occupancy indicators';
+    equipmentIcons: 'Equipment and amenity icons with status indicators';
+    bookingStatus: 'Color-coded booking status and availability indicators';
+    zoomIntegration: 'Zoom Room device status and control integration';
+    realTimeSync: 'Real-time synchronization with M365 and Zoom systems';
+  };
+}
+```
+
 #### Advanced Space Planning
 ```typescript
 interface SpacePlanningCapabilities {
@@ -166,10 +227,11 @@ interface AnalyticsEngine {
 // Enterprise Integration Ecosystem
 const EnterpriseIntegrations = {
   workplace_systems: {
-    Microsoft_365: 'Deep Outlook, Teams, and SharePoint integration',
+    Microsoft_365: 'Deep Outlook, Teams, and SharePoint integration with M365 Calendar resources',
     Google_Workspace: 'Calendar, Meet, and Drive integration',
     Slack: 'Workspace booking and notification integration',
-    Zoom: 'Meeting room and video conferencing integration'
+    Zoom_Rooms: 'Complete Zoom Rooms integration with scheduling and management',
+    Zoom_Visitor_Management: 'Zoom Visitor Management system connectivity and data sync'
   },
   facility_systems: {
     Archibus: 'Legacy IWMS data migration and integration',
@@ -333,11 +395,21 @@ interface AccessibilityFeatures {
 - **Real-time Engine**: Socket.io, Redis for real-time updates and caching
 - **IoT Integration**: MQTT broker, BLE gateway, sensor data processing
 - **Search Engine**: Elasticsearch for space search and discovery
+- **Integration Layer**: 
+  - Zoom Rooms API connector with OAuth 2.0 authentication
+  - Microsoft Graph API for M365 Calendar and Exchange integration
+  - Zoom Visitor Management API connector with webhook support
+  - Real-time sync engines for bi-directional data flow
 
 #### Frontend Technologies
 - **Web Application**: React 18, TypeScript, Tailwind CSS with spatial data visualization
 - **Mobile Applications**: React Native with native modules for BLE and location services
 - **Mapping Engine**: Mapbox GL JS for interactive floor plans and navigation
+- **Floor Plan Processing**: 
+  - PDF.js for PDF floor plan rendering and processing
+  - Canvas API for CAD and image file processing
+  - SVG manipulation libraries for vector floor plan editing
+  - Zoom-style pan and zoom controls with smooth animations
 - **Real-time Updates**: WebSocket with GraphQL subscriptions for live data
 - **State Management**: Zustand with persistence and offline synchronization
 - **Data Visualization**: D3.js, Deck.gl for spatial analytics and heat maps
@@ -358,17 +430,22 @@ interface AccessibilityFeatures {
 
 #### Week 1-2: Foundation & Space Modeling
 - **Space Data Model**: Comprehensive space hierarchy and relationship modeling
-- **Floor Plan Management**: Interactive floor plan creation and editing system
+- **Floor Plan Upload System**: Support for CAD, PDF, SVG, PNG, and JPEG format uploads
+- **Interactive Floor Plan UI**: Zoom-style interface with smooth zooming and pan capabilities
+- **Auto-Calibration Engine**: Automatic scaling and calibration of uploaded floor plans
 - **Basic Booking Engine**: Core reservation system with conflict detection
 - **User Management**: RBAC integration with Nova Helix authentication
 - **Mobile Foundation**: React Native app structure with navigation framework
 
-#### Week 3-4: Booking & Reservation System
+#### Week 3-4: Booking & Reservation System + Zoom Integration
 - **Advanced Booking**: Intelligent scheduling with resource optimization
-- **Calendar Integration**: Deep integration with Outlook, Google Calendar, and Teams
+- **M365 Calendar Integration**: Deep integration with M365 Calendar room resources and Exchange
+- **Zoom Rooms Connector**: Complete Zoom Rooms API integration for scheduling and device control
+- **Zoom Visitor Management**: Bi-directional sync with Zoom Visitor Management system
+- **Interactive Floor Plans**: Zoom-style floor plan interface with click-to-book functionality
 - **Resource Management**: Meeting room equipment and service request integration
 - **Approval Workflows**: Multi-level approval processes for space reservations
-- **Real-time Updates**: Live booking status and availability notifications
+- **Real-time Updates**: Live booking status and availability notifications across all systems
 
 #### Week 5-6: Visitor Management
 - **Visitor Registration**: Pre-registration and approval workflow system
@@ -488,10 +565,12 @@ interface AccessibilityFeatures {
 
 #### Nova-Exclusive Features
 1. **Unified Nova Ecosystem**: Only space management system with native ITSM integration
-2. **Apple Design Philosophy**: Superior user experience with accessibility-first design
-3. **Advanced AR Wayfinding**: Cutting-edge augmented reality indoor navigation
-4. **AI-First Architecture**: Advanced machine learning throughout the platform
-5. **Voice Interface**: Comprehensive hands-free space management and navigation
+2. **Complete Zoom Integration**: Deep integration with Zoom Rooms and Visitor Management
+3. **Advanced Floor Plan UI**: Zoom-style interactive floor plans with any format upload
+4. **Apple Design Philosophy**: Superior user experience with accessibility-first design
+5. **Advanced AR Wayfinding**: Cutting-edge augmented reality indoor navigation
+6. **AI-First Architecture**: Advanced machine learning throughout the platform
+7. **Voice Interface**: Comprehensive hands-free space management and navigation
 
 #### Competitive Advantages
 ```typescript
@@ -510,6 +589,8 @@ interface CompetitiveAdvantages {
   };
   integration: {
     novaEcosystem: 'Deep integration with Nova Universe modules';
+    zoomEcosystem: 'Complete Zoom Rooms and Visitor Management integration';
+    m365Integration: 'Deep M365 Calendar and Exchange connectivity';
     enterpriseSystems: 'Comprehensive IWMS and facility system connectivity';
     buildingAutomation: 'Smart building integration and control';
     securityIntegration: 'Advanced security and access control integration';
