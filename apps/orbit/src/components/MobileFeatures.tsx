@@ -456,7 +456,6 @@ export function _MobileFeatures() {
             <div className="grid grid-cols-3 gap-2">
               {photos.map((photo) => (
                 <div key={photo.id} className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.dataUrl}
                     alt="Captured"

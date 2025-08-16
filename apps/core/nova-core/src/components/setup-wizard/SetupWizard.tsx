@@ -214,7 +214,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
               <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                 <div 
                   className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }} // eslint-disable-line no-inline-styles
+                  style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }}
                 />
               </div>
             </div>

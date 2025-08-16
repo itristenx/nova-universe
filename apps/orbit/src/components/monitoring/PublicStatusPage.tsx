@@ -157,7 +157,6 @@ export default function _PublicStatusPage({ tenant, embedded = false }: StatusPa
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   {data.config.logo_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img 
                       src={data.config.logo_url} 
                       alt="Logo" 
