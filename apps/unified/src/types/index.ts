@@ -75,6 +75,7 @@ export interface Ticket {
   category?: string
   subcategory?: string
   requester: User
+  requesterId: string
   assignee?: User
   assignedGroup?: Group
   tags: string[]
@@ -159,8 +160,9 @@ export interface Asset {
   type: AssetType
   status: AssetStatus
   condition: AssetCondition
-  location?: Location
+  location?: AssetLocation
   assignedTo?: User
+  assignedUser?: User
   owner?: User
   manufacturer?: string
   model?: string
@@ -185,7 +187,20 @@ export interface AssetCategory {
   customFields: CustomField[]
 }
 
-export type AssetType = 'hardware' | 'software' | 'consumable' | 'accessory'
+export interface AssetType {
+  id: string
+  name: string
+  description?: string
+}
+
+export interface AssetLocation {
+  id: string
+  name: string
+  description?: string
+  building?: string
+  floor?: string
+  room?: string
+}
 
 export type AssetStatus =
   | 'available'

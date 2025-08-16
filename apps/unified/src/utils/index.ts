@@ -393,6 +393,21 @@ export function getTicketStatusColor(status: TicketStatus): string {
 }
 
 /**
+ * Utility function to get asset status color
+ */
+export function getAssetStatusColor(status: string): string {
+  const colors: Record<string, string> = {
+    active: 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300',
+    inactive: 'text-gray-600 bg-gray-100 dark:bg-gray-800 dark:text-gray-300',
+    maintenance: 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300',
+    retired: 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300',
+    lost: 'text-orange-600 bg-orange-100 dark:bg-orange-900 dark:text-orange-300',
+    stolen: 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300',
+  }
+  return colors[status] || colors.active
+}
+
+/**
  * Utility function to get ticket type icon
  */
 export function getTicketTypeIcon(type: TicketType): string {
@@ -488,9 +503,12 @@ export function calculatePercentage(value: number, total: number): number {
 /**
  * Utility function to format percentage
  */
-export function formatPercentage(value: number, total: number): string {
-  const percentage = calculatePercentage(value, total)
-  return `${percentage}%`
+export function formatPercentage(value: number, total?: number): string {
+  if (total !== undefined) {
+    const percentage = calculatePercentage(value, total)
+    return `${percentage}%`
+  }
+  return `${value}%`
 }
 
 /**
