@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   UserIcon,
   Cog6ToothIcon,
@@ -15,6 +16,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ children }: UserMenuProps) {
+  const { t } = useTranslation(['navigation', 'common'])
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { user, logout } = useAuthStore()
@@ -110,7 +112,7 @@ export function UserMenu({ children }: UserMenuProps) {
               className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <UserIcon className="h-4 w-4" />
-              Profile Settings
+              {t('navigation.profile')}
             </Link>
             
             <Link
@@ -119,7 +121,7 @@ export function UserMenu({ children }: UserMenuProps) {
               className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <Cog6ToothIcon className="h-4 w-4" />
-              Account Settings
+              {t('navigation.settings')}
             </Link>
           </div>
 
@@ -130,7 +132,7 @@ export function UserMenu({ children }: UserMenuProps) {
               className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <ArrowRightOnRectangleIcon className="h-4 w-4" />
-              Sign Out
+              {t('auth.logout')}
             </button>
           </div>
         </div>

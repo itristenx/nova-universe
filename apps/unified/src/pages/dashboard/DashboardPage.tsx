@@ -7,6 +7,7 @@ import { AssetOverview } from '@components/dashboard/AssetOverview'
 import { SpaceOverview } from '@components/dashboard/SpaceOverview'
 import { getUserDisplayName } from '@utils/index'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { 
   CheckCircleIcon,
   ServerIcon,
@@ -17,6 +18,7 @@ import {
 
 export default function DashboardPage() {
   const { user } = useAuthStore()
+  const { t } = useTranslation('dashboard')
   const [systemMetrics, setSystemMetrics] = useState({
     apiStatus: 'healthy',
     dbConnections: 45,
@@ -27,9 +29,9 @@ export default function DashboardPage() {
 
   const getGreeting = () => {
     const hour = new Date().getHours()
-    if (hour < 12) return 'Good morning'
-    if (hour < 18) return 'Good afternoon'
-    return 'Good evening'
+    if (hour < 12) return t('greeting.morning')
+    if (hour < 18) return t('greeting.afternoon')
+    return t('greeting.evening')
   }
 
   const getUserRole = () => {
@@ -70,13 +72,13 @@ export default function DashboardPage() {
               {getGreeting()}, {user ? getUserDisplayName(user) : 'User'}!
             </h1>
             <p className="mt-2 text-nova-100">
-              {isAdmin && "Welcome to your Nova Universe admin dashboard. Monitor system health and manage your organization."}
-              {isAgent && "Welcome to your Nova Pulse agent dashboard. Manage tickets and support your organization."}
-              {isUser && "Welcome to your Nova Orbit portal. Submit requests and track your tickets."}
+              {isAdmin && t('welcomeMessage.admin')}
+              {isAgent && t('welcomeMessage.agent')}
+              {isUser && t('welcomeMessage.user')}
             </p>
           </div>
           <div className="text-right">
-            <div className="text-sm text-nova-200">Role</div>
+            <div className="text-sm text-nova-200">{t('role')}</div>
             <div className="text-lg font-semibold capitalize">{userRole}</div>
           </div>
         </div>
@@ -103,7 +105,7 @@ export default function DashboardPage() {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                        API Status
+                        {t('systemMetrics.apiStatus')}
                       </dt>
                       <dd className="flex items-baseline">
                         <div className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -111,7 +113,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
                           <CheckCircleIcon className="h-4 w-4" />
-                          <span className="ml-1">Healthy</span>
+                          <span className="ml-1">{t('systemMetrics.healthy')}</span>
                         </div>
                       </dd>
                     </dl>
@@ -127,7 +129,7 @@ export default function DashboardPage() {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                        Active Users
+                        {t('systemMetrics.activeUsers')}
                       </dt>
                       <dd className="text-2xl font-semibold text-gray-900 dark:text-white">
                         {systemMetrics.activeUsers}
@@ -145,7 +147,7 @@ export default function DashboardPage() {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                        System Load
+                        {t('systemMetrics.systemLoad')}
                       </dt>
                       <dd className="text-2xl font-semibold text-gray-900 dark:text-white">
                         {systemMetrics.systemLoad}%
@@ -163,7 +165,7 @@ export default function DashboardPage() {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                        DB Connections
+                        {t('systemMetrics.dbConnections')}
                       </dt>
                       <dd className="text-2xl font-semibold text-gray-900 dark:text-white">
                         {systemMetrics.dbConnections}
@@ -203,19 +205,19 @@ export default function DashboardPage() {
               <RecentActivity />
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  My Queue Performance
+                  {t('agentPerformance.title')}
                 </h3>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Resolved Today</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('agentPerformance.resolvedToday')}</span>
                     <span className="text-lg font-semibold text-green-600">12</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Avg Response Time</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('agentPerformance.avgResponseTime')}</span>
                     <span className="text-lg font-semibold text-blue-600">2.3h</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Customer Rating</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('agentPerformance.customerRating')}</span>
                     <span className="text-lg font-semibold text-yellow-600">4.8/5</span>
                   </div>
                 </div>
@@ -230,17 +232,17 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  My Recent Tickets
+                  {t('userSections.myRecentTickets')}
                 </h3>
                 <div className="space-y-3">
                   {[1, 2, 3].map((ticket) => (
                     <div key={ticket} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <div>
                         <div className="font-medium text-gray-900 dark:text-white">REQ{String(ticket).padStart(6, '0')}</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Request for new laptop</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">{t('userSections.sampleTicketTitle')}</div>
                       </div>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                        In Progress
+                        {t('status.inProgress')}
                       </span>
                     </div>
                   ))}
@@ -249,20 +251,20 @@ export default function DashboardPage() {
 
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Quick Submit
+                  {t('userSections.quickSubmit')}
                 </h3>
                 <div className="space-y-3">
                   <button className="w-full text-left p-3 bg-nova-50 dark:bg-nova-900 rounded-lg hover:bg-nova-100 dark:hover:bg-nova-800 transition-colors">
-                    <div className="font-medium text-nova-900 dark:text-nova-100">Hardware Request</div>
-                    <div className="text-sm text-nova-700 dark:text-nova-300">Request new equipment</div>
+                    <div className="font-medium text-nova-900 dark:text-nova-100">{t('userSections.hardwareRequest')}</div>
+                    <div className="text-sm text-nova-700 dark:text-nova-300">{t('userSections.hardwareRequestDesc')}</div>
                   </button>
                   <button className="w-full text-left p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition-colors">
-                    <div className="font-medium text-green-900 dark:text-green-100">Software Access</div>
-                    <div className="text-sm text-green-700 dark:text-green-300">Request software license</div>
+                    <div className="font-medium text-green-900 dark:text-green-100">{t('userSections.softwareAccess')}</div>
+                    <div className="text-sm text-green-700 dark:text-green-300">{t('userSections.softwareAccessDesc')}</div>
                   </button>
                   <button className="w-full text-left p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition-colors">
-                    <div className="font-medium text-yellow-900 dark:text-yellow-100">Report Issue</div>
-                    <div className="text-sm text-yellow-700 dark:text-yellow-300">Report a problem</div>
+                    <div className="font-medium text-yellow-900 dark:text-yellow-100">{t('userSections.reportIssue')}</div>
+                    <div className="text-sm text-yellow-700 dark:text-yellow-300">{t('userSections.reportIssueDesc')}</div>
                   </button>
                 </div>
               </div>

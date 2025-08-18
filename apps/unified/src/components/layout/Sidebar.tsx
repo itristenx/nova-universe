@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@stores/auth'
 import {
   HomeIcon,
@@ -41,157 +42,158 @@ interface NavigationItem {
   children?: NavigationItem[]
 }
 
-const getAllNavigation = (): NavigationItem[] => [
+const getAllNavigation = (t: any): NavigationItem[] => [
   { 
-    name: 'Dashboard', 
+    name: t('navigation.dashboard'), 
     href: '/dashboard', 
     icon: HomeIcon 
   },
   
   // Core ITSM Functionality
   { 
-    name: 'Service Desk', 
+    name: t('sidebar.serviceDesk'), 
     href: '/tickets', 
     icon: TicketIcon,
     children: [
-      { name: 'My Tickets', href: '/tickets/my', icon: TicketIcon },
-      { name: 'All Tickets', href: '/tickets', icon: TicketIcon, roles: ['admin', 'agent'] },
-      { name: 'Create Ticket', href: '/tickets/new', icon: TicketIcon },
-      { name: 'Queue Management', href: '/tickets/queues', icon: TicketIcon, roles: ['admin', 'agent'] },
-      { name: 'SLA Management', href: '/tickets/sla', icon: TicketIcon, roles: ['admin'] }
+      { name: t('sidebar.myTickets'), href: '/tickets/my', icon: TicketIcon },
+      { name: t('sidebar.allTickets'), href: '/tickets', icon: TicketIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.createTicket'), href: '/tickets/new', icon: TicketIcon },
+      { name: t('sidebar.queueManagement'), href: '/tickets/queues', icon: TicketIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.slaManagement'), href: '/tickets/sla', icon: TicketIcon, roles: ['admin'] }
     ]
   },
   
   // Asset Management (Nova Core)
   { 
-    name: 'Asset Management', 
+    name: t('sidebar.assetManagement'), 
     href: '/assets', 
     icon: CubeIcon,
     children: [
-      { name: 'My Assets', href: '/assets/my', icon: CubeIcon },
-      { name: 'All Assets', href: '/assets', icon: CubeIcon, roles: ['admin', 'agent'] },
-      { name: 'Asset Check-in/out', href: '/assets/checkout', icon: CubeIcon, roles: ['admin', 'agent'] },
-      { name: 'Inventory Management', href: '/assets/inventory', icon: CubeIcon, roles: ['admin'] },
-      { name: 'Asset Categories', href: '/assets/categories', icon: CubeIcon, roles: ['admin'] },
-      { name: 'Maintenance Tracking', href: '/assets/maintenance', icon: WrenchScrewdriverIcon, roles: ['admin', 'agent'] }
+      { name: t('sidebar.myAssets'), href: '/assets/my', icon: CubeIcon },
+      { name: t('sidebar.allAssets'), href: '/assets', icon: CubeIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.assetCheckInOut'), href: '/assets/checkout', icon: CubeIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.inventoryManagement'), href: '/assets/inventory', icon: CubeIcon, roles: ['admin'] },
+      { name: t('sidebar.assetCategories'), href: '/assets/categories', icon: CubeIcon, roles: ['admin'] },
+      { name: t('sidebar.maintenanceTracking'), href: '/assets/maintenance', icon: WrenchScrewdriverIcon, roles: ['admin', 'agent'] }
     ]
   },
   
   // Space Management (Nova Atlas)
   { 
-    name: 'Space Management', 
+    name: t('sidebar.spaceManagement'), 
     href: '/spaces', 
     icon: MapIcon,
     children: [
-      { name: 'Book Space', href: '/spaces/booking', icon: CalendarIcon },
-      { name: 'My Bookings', href: '/spaces/my', icon: MapIcon },
-      { name: 'All Spaces', href: '/spaces', icon: BuildingOfficeIcon, roles: ['admin', 'agent'] },
-      { name: 'Space Analytics', href: '/spaces/analytics', icon: ChartBarIcon, roles: ['admin'] },
-      { name: 'Floor Plans', href: '/spaces/floorplans', icon: MapIcon, roles: ['admin'] }
+      { name: t('sidebar.bookSpace'), href: '/spaces/booking', icon: CalendarIcon },
+      { name: t('sidebar.myBookings'), href: '/spaces/my', icon: MapIcon },
+      { name: t('sidebar.allSpaces'), href: '/spaces', icon: BuildingOfficeIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.spaceAnalytics'), href: '/spaces/analytics', icon: ChartBarIcon, roles: ['admin'] },
+      { name: t('sidebar.floorPlans'), href: '/spaces/floorplans', icon: MapIcon, roles: ['admin'] }
     ]
   },
   
   // Knowledge Management
   { 
-    name: 'Knowledge Base', 
+    name: t('sidebar.knowledgeBase'), 
     href: '/knowledge', 
     icon: DocumentTextIcon,
     children: [
-      { name: 'Browse Articles', href: '/knowledge', icon: DocumentTextIcon },
-      { name: 'Search Solutions', href: '/knowledge/search', icon: DocumentTextIcon },
-      { name: 'Create Article', href: '/knowledge/create', icon: DocumentTextIcon, roles: ['admin', 'agent'] },
-      { name: 'Manage Categories', href: '/knowledge/categories', icon: DocumentTextIcon, roles: ['admin'] }
+      { name: t('sidebar.browseArticles'), href: '/knowledge', icon: DocumentTextIcon },
+      { name: t('sidebar.searchSolutions'), href: '/knowledge/search', icon: DocumentTextIcon },
+      { name: t('sidebar.createArticle'), href: '/knowledge/create', icon: DocumentTextIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.manageCategories'), href: '/knowledge/categories', icon: DocumentTextIcon, roles: ['admin'] }
     ]
   },
   
   // Communication & Collaboration
   { 
-    name: 'Communications', 
+    name: t('sidebar.communications'), 
     href: '/communications', 
     icon: ChatBubbleLeftIcon,
     children: [
-      { name: 'Announcements', href: '/communications/announcements', icon: BellIcon },
-      { name: 'Team Chat', href: '/communications/chat', icon: ChatBubbleLeftIcon, roles: ['admin', 'agent'] },
-      { name: 'Broadcast Messages', href: '/communications/broadcast', icon: BellIcon, roles: ['admin'] }
+      { name: t('sidebar.announcements'), href: '/communications/announcements', icon: BellIcon },
+      { name: t('sidebar.teamChat'), href: '/communications/chat', icon: ChatBubbleLeftIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.broadcastMessages'), href: '/communications/broadcast', icon: BellIcon, roles: ['admin'] }
     ]
   },
   
   // Training & Development
   { 
-    name: 'Learning', 
+    name: t('sidebar.learning'), 
     href: '/learning', 
     icon: AcademicCapIcon,
     children: [
-      { name: 'Training Courses', href: '/learning/courses', icon: AcademicCapIcon },
-      { name: 'Certifications', href: '/learning/certifications', icon: AcademicCapIcon },
-      { name: 'My Progress', href: '/learning/progress', icon: AcademicCapIcon },
-      { name: 'Course Management', href: '/learning/manage', icon: AcademicCapIcon, roles: ['admin'] }
+      { name: t('sidebar.trainingCourses'), href: '/learning/courses', icon: AcademicCapIcon },
+      { name: t('sidebar.certifications'), href: '/learning/certifications', icon: AcademicCapIcon },
+      { name: t('sidebar.myProgress'), href: '/learning/progress', icon: AcademicCapIcon },
+      { name: t('sidebar.courseManagement'), href: '/learning/manage', icon: AcademicCapIcon, roles: ['admin'] }
     ]
   },
   
   // Monitoring & Operations (Nova Sentinel)
   { 
-    name: 'Monitoring', 
+    name: t('sidebar.monitoring'), 
     href: '/monitoring', 
     icon: ShieldCheckIcon,
     roles: ['admin', 'agent'],
     children: [
-      { name: 'System Health', href: '/monitoring/health', icon: ShieldCheckIcon, roles: ['admin', 'agent'] },
-      { name: 'Alert Management', href: '/monitoring/alerts', icon: BellIcon, roles: ['admin', 'agent'] },
-      { name: 'Service Status', href: '/monitoring/status', icon: CloudIcon, roles: ['admin', 'agent'] },
-      { name: 'Performance Metrics', href: '/monitoring/metrics', icon: ChartBarIcon, roles: ['admin'] }
+      { name: t('sidebar.systemHealth'), href: '/monitoring/health', icon: ShieldCheckIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.alertManagement'), href: '/monitoring/alerts', icon: BellIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.serviceStatus'), href: '/monitoring/status', icon: CloudIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.performanceMetrics'), href: '/monitoring/metrics', icon: ChartBarIcon, roles: ['admin'] }
     ]
   },
   
   // AI Integration (Cosmo)
   { 
-    name: 'AI Assistant', 
+    name: t('sidebar.aiAssistant'), 
     href: '/ai', 
     icon: CpuChipIcon,
     children: [
-      { name: 'Cosmo Chat', href: '/ai/chat', icon: ChatBubbleLeftIcon },
-      { name: 'Smart Suggestions', href: '/ai/suggestions', icon: CpuChipIcon },
-      { name: 'AI Analytics', href: '/ai/analytics', icon: ChartBarIcon, roles: ['admin'] },
-      { name: 'Model Configuration', href: '/ai/config', icon: Cog6ToothIcon, roles: ['admin'] }
+      { name: t('sidebar.cosmoChat'), href: '/ai/chat', icon: ChatBubbleLeftIcon },
+      { name: t('sidebar.smartSuggestions'), href: '/ai/suggestions', icon: CpuChipIcon },
+      { name: t('sidebar.aiAnalytics'), href: '/ai/analytics', icon: ChartBarIcon, roles: ['admin'] },
+      { name: t('sidebar.modelConfiguration'), href: '/ai/config', icon: Cog6ToothIcon, roles: ['admin'] }
     ]
   },
   
   // Administration (Nova Core)
   { 
-    name: 'Administration', 
+    name: t('sidebar.administration'), 
     href: '/admin', 
     icon: Cog6ToothIcon,
     roles: ['admin'],
     children: [
-      { name: 'User Management', href: '/admin/users', icon: UserGroupIcon, roles: ['admin'] },
-      { name: 'Role & Permissions', href: '/admin/roles', icon: ShieldCheckIcon, roles: ['admin'] },
-      { name: 'Organization Settings', href: '/admin/organization', icon: BuildingOfficeIcon, roles: ['admin'] },
-      { name: 'System Configuration', href: '/admin/system', icon: Cog6ToothIcon, roles: ['admin'] },
-      { name: 'Email Accounts', href: '/admin/email-accounts', icon: EnvelopeIcon, roles: ['admin'] },
-      { name: 'Notifications', href: '/admin/notifications', icon: BellIcon, roles: ['admin'] },
-      { name: 'Site Asset Management', href: '/admin/assets', icon: CubeIcon, roles: ['admin'] },
-      { name: 'Integration Management', href: '/admin/integrations', icon: CloudIcon, roles: ['admin'] },
-      { name: 'Audit Logs', href: '/admin/audit', icon: DocumentTextIcon, roles: ['admin'] }
+      { name: t('sidebar.userManagement'), href: '/admin/users', icon: UserGroupIcon, roles: ['admin'] },
+      { name: t('sidebar.rolePermissions'), href: '/admin/roles', icon: ShieldCheckIcon, roles: ['admin'] },
+      { name: t('sidebar.organizationSettings'), href: '/admin/organization', icon: BuildingOfficeIcon, roles: ['admin'] },
+      { name: t('sidebar.systemConfiguration'), href: '/admin/system', icon: Cog6ToothIcon, roles: ['admin'] },
+      { name: t('sidebar.emailAccounts'), href: '/admin/email-accounts', icon: EnvelopeIcon, roles: ['admin'] },
+      { name: t('sidebar.notifications'), href: '/admin/notifications', icon: BellIcon, roles: ['admin'] },
+      { name: t('sidebar.siteAssetManagement'), href: '/admin/assets', icon: CubeIcon, roles: ['admin'] },
+      { name: t('sidebar.integrationManagement'), href: '/admin/integrations', icon: CloudIcon, roles: ['admin'] },
+      { name: t('sidebar.auditLogs'), href: '/admin/audit', icon: DocumentTextIcon, roles: ['admin'] }
     ]
   },
   
   // Analytics & Reporting
   { 
-    name: 'Analytics', 
+    name: t('sidebar.analytics'), 
     href: '/analytics', 
     icon: ChartBarIcon,
     roles: ['admin', 'agent'],
     children: [
-      { name: 'Performance Dashboard', href: '/analytics/performance', icon: ChartBarIcon, roles: ['admin', 'agent'] },
-      { name: 'Service Reports', href: '/analytics/service', icon: ChartBarIcon, roles: ['admin', 'agent'] },
-      { name: 'Asset Reports', href: '/analytics/assets', icon: ChartBarIcon, roles: ['admin'] },
-      { name: 'Space Utilization', href: '/analytics/spaces', icon: ChartBarIcon, roles: ['admin'] },
-      { name: 'Custom Reports', href: '/analytics/custom', icon: ChartBarIcon, roles: ['admin'] }
+      { name: t('sidebar.performanceDashboard'), href: '/analytics/performance', icon: ChartBarIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.serviceReports'), href: '/analytics/service', icon: ChartBarIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.assetReports'), href: '/analytics/assets', icon: ChartBarIcon, roles: ['admin'] },
+      { name: t('sidebar.spaceUtilization'), href: '/analytics/spaces', icon: ChartBarIcon, roles: ['admin'] },
+      { name: t('sidebar.customReports'), href: '/analytics/custom', icon: ChartBarIcon, roles: ['admin'] }
     ]
   }
 ]
 
 export function Sidebar({ isOpen, isCollapsed, onClose }: SidebarProps) {
+  const { t } = useTranslation(['navigation', 'sidebar'])
   const location = useLocation()
   const { user } = useAuthStore()
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
@@ -220,7 +222,7 @@ export function Sidebar({ isOpen, isCollapsed, onClose }: SidebarProps) {
     }).filter(item => !item.children || item.children.length > 0)
   }
 
-  const navigation = filterNavigationByRole(getAllNavigation())
+  const navigation = filterNavigationByRole(getAllNavigation(t))
 
   const toggleSection = (sectionName: string) => {
     const newExpanded = new Set(expandedSections)

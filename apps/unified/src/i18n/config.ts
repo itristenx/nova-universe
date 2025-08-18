@@ -1,7 +1,6 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
-import Backend from 'i18next-http-backend'
 
 // Import translation files
 import enTranslations from './locales/en.json'
@@ -46,15 +45,14 @@ export const LANGUAGE_INFO = {
 } as const
 
 i18n
-  .use(Backend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     fallbackLng,
-    lng: fallbackLng,
+    lng: fallbackLng, // Explicitly set to English by default
     debug: import.meta.env.DEV,
     
-    ns: [defaultNS],
+    ns: ['app', 'apps', 'auth', 'navigation', 'sidebar', 'common', 'dashboard', 'tickets', 'assets', 'forms'],
     defaultNS,
     
     supportedLngs,
@@ -63,16 +61,12 @@ i18n
       escapeValue: false, // React already escapes by default
     },
     
-    // Resources for fallback when backend fails
+    // Use embedded resources instead of HTTP backend
     resources: {
-      en: { common: enTranslations },
-      es: { common: esTranslations },
-      fr: { common: frTranslations },
-      ar: { common: arTranslations },
-    },
-    
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
+      en: enTranslations,
+      es: esTranslations,
+      fr: frTranslations,
+      ar: arTranslations,
     },
     
     detection: {

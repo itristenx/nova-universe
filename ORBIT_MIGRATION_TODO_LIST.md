@@ -26,8 +26,9 @@
   - [x] Number formatting per locale  
   - [x] Currency formatting per locale
 - [x] Create comprehensive i18n test page with working examples
-- [ ] Migrate all hard-coded text to translation keys across:
-  - [ ] Authentication pages
+- [🔄] Migrate all hard-coded text to translation keys across:
+  - [x] Admin Dashboard (metrics, titles, timestamps with cultural formatting)
+  - [🔄] Authentication pages (login flow, validation, buttons, messages)
   - [ ] Dashboard components
   - [ ] Ticket management
   - [ ] Asset management

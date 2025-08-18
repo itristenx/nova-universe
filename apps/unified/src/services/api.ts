@@ -3,7 +3,7 @@ import { env } from '@utils/index'
 import type { ApiResponse, PaginatedResponse } from '@/types'
 
 // API configuration
-const API_BASE_URL = env.apiUrl || 'http://localhost:8080/api'
+const API_BASE_URL = '/api' // Use relative URL to go through Vite proxy
 const API_TIMEOUT = 30000
 
 // Create axios instance with enhanced configuration

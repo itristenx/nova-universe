@@ -338,8 +338,8 @@ router.post(
 
       // Get user and tenant
       const userResult = await db.query(
-        `SELECT u.id as user_id, u.name as user_name, u.email, u.password_hash, 
-              u.disabled, u.two_factor_enabled, u.tenant_id,
+        `SELECT u.id as user_id, u.uuid as user_uuid, u.name as user_name, u.email, u.password_hash, 
+              u.disabled, u.tenant_id,
               t.id as tenant_id, t.name as tenant_name, t.domain, t.subdomain,
               t.logo_url, t.theme_color, t.background_image_url, t.login_message,
               t.sso_enabled, t.mfa_required
@@ -373,12 +373,12 @@ router.post(
 
       const row = userResult.rows[0];
       const user = {
-        id: row.user_id,
+        id: row.user_uuid, // Use UUID for JWT and external operations
+        db_id: row.user_id, // Use integer ID for database operations
         name: row.user_name,
         email: row.email,
         password_hash: row.password_hash,
         disabled: row.disabled,
-        two_factor_enabled: row.two_factor_enabled,
         tenant_id: row.tenant_id,
       };
       const tenantId = row.tenant_id;
@@ -507,10 +507,11 @@ router.post(
       }
 
       // Check if MFA is required
+      const tenantMfaRequired = await checkTenantMfaRequirement(tenantId);
       const mfaRequired =
         user.two_factor_enabled ||
-        (await checkTenantMfaRequirement(tenantId)) ||
-        (await checkRiskBasedMfaRequirement(user.id, req));
+        tenantMfaRequired ||
+        (tenantMfaRequired && (await checkRiskBasedMfaRequirement(user.db_id, req)));
 
       if (mfaRequired) {
         // Generate temporary session for MFA
@@ -519,12 +520,12 @@ router.post(
         await db.query(
           `INSERT INTO mfa_challenges (user_id, session_temp_id, challenge_type, expires_at)
          VALUES ($1, $2, $3, $4)`,
-          [user.id, tempSessionId, 'login_pending', new Date(Date.now() + 10 * 60 * 1000)],
+          [user.db_id, tempSessionId, 'login_pending', new Date(Date.now() + 10 * 60 * 1000)],
         );
 
         await logAuthEvent(
           tenantId,
-          user.id,
+          user.db_id,
           'mfa_challenge',
           'authentication',
           'MFA challenge initiated',
@@ -538,7 +539,7 @@ router.post(
           success: true,
           requiresMFA: true,
           tempSessionId,
-          availableMfaMethods: await getAvailableMfaMethods(user.id),
+          availableMfaMethods: await getAvailableMfaMethods(user.db_id),
         });
       }
 
@@ -547,7 +548,7 @@ router.post(
 
       await logAuthEvent(
         tenantId,
-        user.id,
+        user.db_id,
         'login_success',
         'authentication',
         'Successful login',
@@ -558,7 +559,7 @@ router.post(
       );
 
       // Update user last login
-      await db.query('UPDATE users SET "lastLoginAt" = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+      await db.query('UPDATE users SET "lastLoginAt" = CURRENT_TIMESTAMP WHERE id = $1', [user.db_id]);
 
       res.json({
         success: true,

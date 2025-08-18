@@ -41,8 +41,13 @@ export interface AuthenticationRequest {
 
 export interface AuthenticationResponse {
   success: boolean
-  requiresMfa?: boolean
-  mfaToken?: string
+  requiresMFA?: boolean
+  tempSessionId?: string
+  availableMfaMethods?: Array<{
+    type: string
+    name: string
+    primary: boolean
+  }>
   user?: {
     id: string
     email: string
@@ -59,7 +64,8 @@ export interface AuthenticationResponse {
 }
 
 export interface MfaVerificationRequest {
-  mfaToken: string
+  tempSessionId: string
+  mfaMethod: 'totp' | 'sms' | 'email' | 'backup_code'
   code: string
   rememberDevice?: boolean
 }
@@ -74,7 +80,7 @@ export interface RefreshTokenRequest {
  * multi-factor authentication, and SSO login flows
  */
 class HelixAuthService {
-  private readonly baseUrl = '/api/v1/helix/login'
+  private readonly baseUrl = '/v1/helix/login'
 
   /**
    * Discover tenant and available authentication methods by email
@@ -131,8 +137,8 @@ class HelixAuthService {
     const authData = response.data
 
     // Store tokens if authentication is complete
-    if (authData.accessToken && authData.refreshToken) {
-      localStorage.setItem('nova_access_token', authData.accessToken)
+    if (authData.token && authData.refreshToken) {
+      localStorage.setItem('nova_access_token', authData.token)
       localStorage.setItem('nova_refresh_token', authData.refreshToken)
       
       if (authData.expiresIn) {

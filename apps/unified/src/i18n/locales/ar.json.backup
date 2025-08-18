@@ -70,7 +70,6 @@
     },
     "validation": {
       "emailRequired": "Please enter a valid email address",
-      "emailInvalid": "Please enter a valid email address",
       "passwordRequired": "Password is required",
       "mfaRequired": "Please enter the verification code"
     },
@@ -92,39 +91,7 @@
       "welcome": "Welcome to Nova Universe",
       "welcomeBack": "Welcome back!",
       "title": "Sign In",
-      "signInTo": "Sign in to {{tenantName}}",
-      "enterEmailToContinue": "Enter your email to continue",
-      "enterVerificationCode": "Enter verification code",
-      "workEmail": "Work Email",
-      "emailPlaceholder": "Enter your work email address",
-      "discovering": "Discovering organization...",
-      "findOrganizationHelp": "Enter your work email to find your organization",
-      "organizationFound": "Organization found: {{organization}}",
-      "discoveryFailed": "Failed to discover organization",
-      "tenantDiscoveryRequired": "Please enter your email to find your organization",
-      "loginFailed": "Login failed. Please check your credentials.",
-      "ssoInitiateFailed": "Failed to initiate SSO login",
-      "rememberMe": "Remember me",
-      "forgotPassword": "Forgot password?",
-      "signIn": "Sign In",
-      "signInWith": "Sign in with {{provider}}",
-      "mfaRequired": "Two-factor authentication is required for this account",
-      "poweredBy": "Powered by",
-      "helixBrand": "Nova Helix",
-      "needHelp": "Need help?",
-      "contactSupport": "Contact support"
-    },
-    "mfa": {
-      "enterCodeRequired": "Please enter the verification code",
-      "invalidCode": "Invalid verification code. Please try again.",
-      "title": "Enter verification code",
-      "placeholder": "Enter the 6-digit code",
-      "verificationRequired": "Two-Factor Authentication Required",
-      "enterCode": "Please enter the verification code from your authenticator app",
-      "verificationCode": "Verification Code",
-      "codePlaceholder": "000000",
-      "startOver": "Start Over",
-      "verify": "Verify"
+      "signInTo": "Sign in to {{tenantName}}"
     },
     "logout": "Sign Out",
     "username": "Username",
@@ -237,45 +204,7 @@
     "totalTickets": "Total Tickets",
     "openTickets": "Open Tickets",
     "resolvedTickets": "Resolved Tickets",
-    "pendingTickets": "Pending Tickets",
-    "role": "Role",
-    "greeting": {
-      "morning": "Good morning",
-      "afternoon": "Good afternoon",
-      "evening": "Good evening"
-    },
-    "welcomeMessage": {
-      "admin": "Welcome to your Nova Universe admin dashboard. Monitor system health and manage your organization.",
-      "agent": "Welcome to your Nova Pulse agent dashboard. Manage tickets and support your organization.",
-      "user": "Welcome to your Nova Orbit portal. Submit requests and track your tickets."
-    },
-    "systemMetrics": {
-      "apiStatus": "API Status",
-      "activeUsers": "Active Users",
-      "systemLoad": "System Load",
-      "dbConnections": "DB Connections",
-      "healthy": "Healthy"
-    },
-    "agentPerformance": {
-      "title": "My Queue Performance",
-      "resolvedToday": "Resolved Today",
-      "avgResponseTime": "Avg Response Time",
-      "customerRating": "Customer Rating"
-    },
-    "userSections": {
-      "myRecentTickets": "My Recent Tickets",
-      "quickSubmit": "Quick Submit",
-      "sampleTicketTitle": "Request for new laptop",
-      "hardwareRequest": "Hardware Request",
-      "hardwareRequestDesc": "Request new equipment",
-      "softwareAccess": "Software Access",
-      "softwareAccessDesc": "Request software license",
-      "reportIssue": "Report Issue",
-      "reportIssueDesc": "Report a problem"
-    },
-    "status": {
-      "inProgress": "In Progress"
-    }
+    "pendingTickets": "Pending Tickets"
   },
   "tickets": {
     "title": "Tickets",
@@ -459,7 +388,6 @@
     "add": "Add",
     "create": "Create",
     "new": "New",
-    "change": "Change",
     "copy": "Copy",
     "paste": "Paste",
     "cut": "Cut",
@@ -478,13 +406,6 @@
     "switchToLight": "Switch to light mode",
     "minimize": "Minimize",
     "maximize": "Maximize",
-    "errorBoundary": {
-      "title": "Something went wrong",
-      "description": "We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.",
-      "tryAgain": "Try Again",
-      "refreshPage": "Refresh Page",
-      "errorDetails": "Error Details (Development)"
-    },
     "actions": "Actions",
     "options": "Options",
     "preferences": "Preferences",
@@ -609,25 +530,5 @@
     "nextPage": "Next page",
     "firstPage": "First page",
     "lastPage": "Last page"
-  },
-  "notifications": {
-    "title": "Notifications",
-    "markAsRead": "Mark as read",
-    "markAllRead": "Mark all read",
-    "markAsReadError": "Failed to mark notification as read",
-    "markAllAsReadSuccess": "All notifications marked as read",
-    "markAllAsReadError": "Failed to mark all notifications as read",
-    "deleteNotification": "Delete notification",
-    "deleteError": "Failed to delete notification",
-    "settings": "Notification settings",
-    "all": "All",
-    "unread": "Unread",
-    "important": "Important",
-    "noNotifications": "No notifications",
-    "viewAll": "View all notifications",
-    "justNow": "Just now",
-    "minutesAgo": "{{count}}m ago",
-    "hoursAgo": "{{count}}h ago",
-    "daysAgo": "{{count}}d ago"
   }
 }

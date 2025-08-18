@@ -1,9 +1,17 @@
 import { Component, ErrorInfo, ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AlertTriangleIcon, RefreshCwIcon } from 'lucide-react'
 
 interface Props {
   children: ReactNode
   fallback?: ReactNode
+  translations?: {
+    title: string
+    description: string
+    tryAgain: string
+    refreshPage: string
+    errorDetails: string
+  }
 }
 
 interface State {
@@ -59,6 +67,14 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback
       }
 
+      const {
+        title = 'Something went wrong',
+        description = 'We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.',
+        tryAgain = 'Try Again',
+        refreshPage = 'Refresh Page',
+        errorDetails = 'Error Details (Development)'
+      } = this.props.translations || {}
+
       // Default error UI
       return (
         <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -69,11 +85,11 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
               
               <h1 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Something went wrong
+                {title}
               </h1>
               
               <p className="mb-6 text-gray-600 dark:text-gray-400">
-                We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.
+                {description}
               </p>
 
               <div className="flex gap-3">
@@ -82,21 +98,21 @@ export class ErrorBoundary extends Component<Props, State> {
                   className="btn btn-primary flex items-center gap-2"
                 >
                   <RefreshCwIcon className="h-4 w-4" />
-                  Try Again
+                  {tryAgain}
                 </button>
                 
                 <button
                   onClick={() => window.location.reload()}
                   className="btn btn-secondary"
                 >
-                  Refresh Page
+                  {refreshPage}
                 </button>
               </div>
 
               {import.meta.env.DEV && this.state.error && (
                 <details className="mt-6 w-full">
                   <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
-                    Error Details (Development)
+                    {errorDetails}
                   </summary>
                   <div className="mt-2 rounded-lg bg-gray-100 p-3 text-left dark:bg-gray-700">
                     <pre className="whitespace-pre-wrap text-xs text-gray-800 dark:text-gray-200">
@@ -115,3 +131,25 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children
   }
 }
+
+// Wrapper component that provides translations
+export function ErrorBoundaryWithTranslation({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
+  const { t } = useTranslation('common')
+  
+  const translations = {
+    title: t('errorBoundary.title'),
+    description: t('errorBoundary.description'),
+    tryAgain: t('errorBoundary.tryAgain'),
+    refreshPage: t('errorBoundary.refreshPage'),
+    errorDetails: t('errorBoundary.errorDetails')
+  }
+
+  return (
+    <ErrorBoundary translations={translations} fallback={fallback}>
+      {children}
+    </ErrorBoundary>
+  )
+}
+
+// Default export is the wrapper with translations
+export default ErrorBoundaryWithTranslation

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Squares2X2Icon,
   ChevronDownIcon,
@@ -33,11 +34,11 @@ interface App {
   available: boolean
 }
 
-const apps: App[] = [
+const getApps = (t: any): App[] => [
   {
     id: 'unified',
-    name: 'Nova Unified',
-    description: 'Unified ITSM Platform',
+    name: t('apps.novaUnified'),
+    description: t('apps.novaUnifiedDesc'),
     href: '/dashboard',
     icon: Squares2X2Icon,
     color: 'bg-nova-600',
@@ -45,8 +46,8 @@ const apps: App[] = [
   },
   {
     id: 'core',
-    name: 'Nova Core',
-    description: 'Admin Portal',
+    name: t('apps.novaCore'),
+    description: t('apps.novaCoreDesc'),
     href: '/admin',
     icon: ShieldCheckIcon,
     color: 'bg-blue-600',
@@ -54,8 +55,8 @@ const apps: App[] = [
   },
   {
     id: 'atlas',
-    name: 'Nova Atlas',
-    description: 'Space Management',
+    name: t('apps.novaAtlas'),
+    description: t('apps.novaAtlasDesc'),
     href: '/spaces',
     icon: MapIcon,
     color: 'bg-green-600',
@@ -63,8 +64,8 @@ const apps: App[] = [
   },
   {
     id: 'inventory',
-    name: 'Nova Inventory',
-    description: 'Asset Management',
+    name: t('apps.novaInventory'),
+    description: t('apps.novaInventoryDesc'),
     href: '/assets',
     icon: CubeIcon,
     color: 'bg-purple-600',
@@ -72,8 +73,8 @@ const apps: App[] = [
   },
   {
     id: 'pulse',
-    name: 'Nova Pulse',
-    description: 'Agent Portal',
+    name: t('apps.novaPulse'),
+    description: t('apps.novaPulseDesc'),
     href: '/tickets',
     icon: ChartBarIcon,
     color: 'bg-orange-600',
@@ -81,8 +82,8 @@ const apps: App[] = [
   },
   {
     id: 'orbit',
-    name: 'Nova Orbit',
-    description: 'End User Portal',
+    name: t('apps.novaOrbit'),
+    description: t('apps.novaOrbitDesc'),
     href: '/portal',
     icon: CloudIcon,
     color: 'bg-indigo-600',
@@ -90,8 +91,8 @@ const apps: App[] = [
   },
   {
     id: 'lore',
-    name: 'Nova Lore',
-    description: 'Knowledge Base',
+    name: t('apps.novaLore'),
+    description: t('apps.novaLoreDesc'),
     href: '/knowledge',
     icon: BookOpenIcon,
     color: 'bg-amber-600',
@@ -99,8 +100,8 @@ const apps: App[] = [
   },
   {
     id: 'sentinel',
-    name: 'Nova Sentinel',
-    description: 'Uptime Monitoring',
+    name: t('apps.novaSentinel'),
+    description: t('apps.novaSentinelDesc'),
     href: '/monitoring',
     icon: ClockIcon,
     color: 'bg-red-600',
@@ -108,8 +109,8 @@ const apps: App[] = [
   },
   {
     id: 'alert',
-    name: 'Nova Alert',
-    description: 'GoAlert',
+    name: t('apps.novaAlert'),
+    description: t('apps.novaAlertDesc'),
     href: '/alerts',
     icon: BellIcon,
     color: 'bg-yellow-600',
@@ -117,8 +118,8 @@ const apps: App[] = [
   },
   {
     id: 'synth',
-    name: 'Nova Synth',
-    description: 'AI / ML / Workflows',
+    name: t('apps.novaSynth'),
+    description: t('apps.novaSynthDesc'),
     href: '/workflows',
     icon: CpuChipIcon,
     color: 'bg-cyan-600',
@@ -126,8 +127,8 @@ const apps: App[] = [
   },
   {
     id: 'helix',
-    name: 'Nova Helix',
-    description: 'User Management',
+    name: t('apps.novaHelix'),
+    description: t('apps.novaHelixDesc'),
     href: '/users',
     icon: UserGroupIcon,
     color: 'bg-pink-600',
@@ -135,8 +136,8 @@ const apps: App[] = [
   },
   {
     id: 'cmdb',
-    name: 'Nova CMDB',
-    description: 'Configuration Management Database',
+    name: t('apps.novaCMDB'),
+    description: t('apps.novaCMDBDesc'),
     href: '/cmdb',
     icon: CircleStackIcon,
     color: 'bg-teal-600',
@@ -144,8 +145,8 @@ const apps: App[] = [
   },
   {
     id: 'user360',
-    name: 'Nova User360',
-    description: 'Unified User Profiles',
+    name: t('apps.novaUser360'),
+    description: t('apps.novaUser360Desc'),
     href: '/profiles',
     icon: UserIcon,
     color: 'bg-slate-600',
@@ -153,8 +154,8 @@ const apps: App[] = [
   },
   {
     id: 'accend',
-    name: 'Nova Accend',
-    description: 'Gamification',
+    name: t('apps.novaAccend'),
+    description: t('apps.novaAccendDesc'),
     href: '/gamification',
     icon: TrophyIcon,
     color: 'bg-emerald-600',
@@ -162,8 +163,8 @@ const apps: App[] = [
   },
   {
     id: 'courier',
-    name: 'Nova Courier',
-    description: 'Package & Mailroom Management',
+    name: t('apps.novaCourier'),
+    description: t('apps.novaCourierDesc'),
     href: '/packages',
     icon: TruckIcon,
     color: 'bg-violet-600',
@@ -172,8 +173,10 @@ const apps: App[] = [
 ]
 
 export function AppSwitcher({ currentApp = 'unified' }: AppSwitcherProps) {
+  const { t } = useTranslation(['apps'])
   const [isOpen, setIsOpen] = useState(false)
   
+  const apps = getApps(t)
   const currentAppData = apps.find(app => app.id === currentApp) ?? apps[0]
 
   return (

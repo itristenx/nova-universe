@@ -9,13 +9,55 @@
     "info": "معلومات"
   },
   "auth": {
-    "login": "تسجيل الدخول",
+    "login": {
+      "welcome": "مرحباً بك في Nova Universe",
+      "welcomeBack": "مرحباً بعودتك!",
+      "title": "تسجيل الدخول",
+      "signInTo": "تسجيل الدخول إلى {{tenantName}}",
+      "enterEmailToContinue": "أدخل بريدك الإلكتروني للمتابعة",
+      "enterVerificationCode": "أدخل رمز التحقق",
+      "workEmail": "البريد الإلكتروني للعمل",
+      "emailPlaceholder": "أدخل عنوان بريدك الإلكتروني للعمل",
+      "discovering": "اكتشاف المؤسسة...",
+      "findOrganizationHelp": "أدخل بريدك الإلكتروني للعمل للعثور على مؤسستك",
+      "organizationFound": "تم العثور على المؤسسة: {{organization}}",
+      "discoveryFailed": "فشل في اكتشاف المؤسسة",
+      "tenantDiscoveryRequired": "يرجى إدخال بريدك الإلكتروني للعثور على مؤسستك",
+      "loginFailed": "فشل تسجيل الدخول. يرجى التحقق من بياناتك.",
+      "ssoInitiateFailed": "فشل في بدء تسجيل الدخول الموحد",
+      "rememberMe": "تذكرني",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "signIn": "تسجيل الدخول",
+      "signInWith": "تسجيل الدخول باستخدام {{provider}}",
+      "mfaRequired": "مطلوب المصادقة الثنائية لهذا الحساب",
+      "poweredBy": "مدعوم من",
+      "helixBrand": "Nova Helix",
+      "needHelp": "تحتاج مساعدة؟",
+      "contactSupport": "اتصل بالدعم"
+    },
+    "validation": {
+      "emailRequired": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+      "emailInvalid": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "mfaRequired": "يرجى إدخال رمز التحقق"
+    },
+    "mfa": {
+      "enterCodeRequired": "يرجى إدخال رمز التحقق",
+      "invalidCode": "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.",
+      "title": "أدخل رمز التحقق",
+      "placeholder": "أدخل الرمز المكون من 6 أرقام",
+      "verificationRequired": "مطلوب المصادقة الثنائية",
+      "enterCode": "يرجى إدخال رمز التحقق من تطبيق المصادقة الخاص بك",
+      "verificationCode": "رمز التحقق",
+      "codePlaceholder": "000000",
+      "startOver": "البدء من جديد",
+      "verify": "تحقق"
+    },
     "logout": "تسجيل الخروج",
     "username": "اسم المستخدم",
     "password": "كلمة المرور",
     "email": "البريد الإلكتروني",
     "forgotPassword": "نسيت كلمة المرور؟",
-    "rememberMe": "تذكرني",
     "loginError": "بيانات اعتماد غير صحيحة",
     "loginSuccess": "تم تسجيل الدخول بنجاح",
     "loginRequired": "يرجى تسجيل الدخول للمتابعة",
@@ -38,7 +80,15 @@
     "menu": "القائمة",
     "close": "إغلاق",
     "back": "رجوع",
-    "home": "الرئيسية"
+    "home": "الرئيسية",
+    "breadcrumb": "مسار التنقل",
+    "goToDashboard": "الذهاب إلى لوحة التحكم",
+    "spaces": "المساحات",
+    "createTicket": "إنشاء تذكرة",
+    "createAsset": "إنشاء أصل",
+    "floorPlan": "مخطط الطابق",
+    "administration": "الإدارة",
+    "siteAssets": "أصول الموقع"
   },
   "dashboard": {
     "welcome": "مرحباً بك في Nova Universe",
@@ -54,7 +104,45 @@
     "totalTickets": "إجمالي التذاكر",
     "openTickets": "التذاكر المفتوحة",
     "resolvedTickets": "التذاكر المحلولة",
-    "pendingTickets": "التذاكر المعلقة"
+    "pendingTickets": "التذاكر المعلقة",
+    "role": "الدور",
+    "greeting": {
+      "morning": "صباح الخير",
+      "afternoon": "مساء الخير",
+      "evening": "مساء الخير"
+    },
+    "welcomeMessage": {
+      "admin": "مرحباً بك في لوحة تحكم مدير Nova Universe. راقب صحة النظام وأدر منظمتك.",
+      "agent": "مرحباً بك في لوحة تحكم وكيل Nova Pulse. أدر التذاكر وادعم منظمتك.",
+      "user": "مرحباً بك في بوابة Nova Orbit. أرسل الطلبات وتتبع تذاكرك."
+    },
+    "systemMetrics": {
+      "apiStatus": "حالة واجهة البرمجة",
+      "activeUsers": "المستخدمون النشطون",
+      "systemLoad": "حمولة النظام",
+      "dbConnections": "اتصالات قاعدة البيانات",
+      "healthy": "سليم"
+    },
+    "agentPerformance": {
+      "title": "أداء طابوري",
+      "resolvedToday": "محلولة اليوم",
+      "avgResponseTime": "متوسط وقت الاستجابة",
+      "customerRating": "تقييم العميل"
+    },
+    "userSections": {
+      "myRecentTickets": "تذاكري الأخيرة",
+      "quickSubmit": "إرسال سريع",
+      "sampleTicketTitle": "طلب حاسوب محمول جديد",
+      "hardwareRequest": "طلب أجهزة",
+      "hardwareRequestDesc": "طلب معدات جديدة",
+      "softwareAccess": "الوصول للبرامج",
+      "softwareAccessDesc": "طلب ترخيص برنامج",
+      "reportIssue": "الإبلاغ عن مشكلة",
+      "reportIssueDesc": "الإبلاغ عن مشكلة"
+    },
+    "status": {
+      "inProgress": "قيد التنفيذ"
+    }
   },
   "tickets": {
     "title": "التذاكر",
@@ -238,6 +326,7 @@
     "add": "إضافة",
     "create": "إنشاء",
     "new": "جديد",
+    "change": "تغيير",
     "copy": "نسخ",
     "paste": "لصق",
     "cut": "قص",
@@ -251,6 +340,13 @@
     "close": "إغلاق",
     "minimize": "تصغير",
     "maximize": "تكبير",
+    "errorBoundary": {
+      "title": "حدث خطأ ما",
+      "description": "واجهنا خطأ غير متوقع. يرجى تحديث الصفحة أو الاتصال بالدعم إذا استمرت المشكلة.",
+      "tryAgain": "المحاولة مرة أخرى",
+      "refreshPage": "تحديث الصفحة",
+      "errorDetails": "تفاصيل الخطأ (التطوير)"
+    },
     "actions": "الإجراءات",
     "options": "الخيارات",
     "preferences": "التفضيلات",
@@ -375,5 +471,25 @@
     "nextPage": "الصفحة التالية",
     "firstPage": "الصفحة الأولى",
     "lastPage": "الصفحة الأخيرة"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAsRead": "وضع علامة كمقروء",
+    "markAllRead": "وضع علامة على الكل كمقروء",
+    "markAsReadError": "فشل في وضع علامة على الإشعار كمقروء",
+    "markAllAsReadSuccess": "تم وضع علامة على جميع الإشعارات كمقروءة",
+    "markAllAsReadError": "فشل في وضع علامة على جميع الإشعارات كمقروءة",
+    "deleteNotification": "حذف الإشعار",
+    "deleteError": "فشل في حذف الإشعار",
+    "settings": "إعدادات الإشعارات",
+    "all": "الكل",
+    "unread": "غير مقروء",
+    "important": "مهم",
+    "noNotifications": "لا توجد إشعارات",
+    "viewAll": "عرض جميع الإشعارات",
+    "justNow": "الآن",
+    "minutesAgo": "منذ {{count}} دقيقة",
+    "hoursAgo": "منذ {{count}} ساعة",
+    "daysAgo": "منذ {{count}} يوم"
   }
 }

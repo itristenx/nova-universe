@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 
 interface BreadcrumbItem {
   label: string
@@ -12,51 +13,51 @@ interface BreadcrumbProps {
   separator?: React.ReactNode
 }
 
-// Route to breadcrumb mapping
-const routeBreadcrumbs: Record<string, BreadcrumbItem[]> = {
+// Route to breadcrumb mapping - returns function that takes translation function
+const getRouteBreadcrumbs = (t: (key: string) => string): Record<string, BreadcrumbItem[]> => ({
   '/dashboard': [
-    { label: 'Dashboard', current: true }
+    { label: t('navigation.dashboard'), current: true }
   ],
   '/tickets': [
-    { label: 'Tickets', current: true }
+    { label: t('navigation.tickets'), current: true }
   ],
   '/tickets/new': [
-    { label: 'Tickets', href: '/tickets' },
-    { label: 'Create Ticket', current: true }
+    { label: t('navigation.tickets'), href: '/tickets' },
+    { label: t('navigation.createTicket'), current: true }
   ],
   '/assets': [
-    { label: 'Assets', current: true }
+    { label: t('navigation.assets'), current: true }
   ],
   '/assets/new': [
-    { label: 'Assets', href: '/assets' },
-    { label: 'Create Asset', current: true }
+    { label: t('navigation.assets'), href: '/assets' },
+    { label: t('navigation.createAsset'), current: true }
   ],
   '/spaces': [
-    { label: 'Spaces', current: true }
+    { label: t('navigation.spaces'), current: true }
   ],
   '/spaces/floor-plan': [
-    { label: 'Spaces', href: '/spaces' },
-    { label: 'Floor Plan', current: true }
+    { label: t('navigation.spaces'), href: '/spaces' },
+    { label: t('navigation.floorPlan'), current: true }
   ],
   '/admin/users': [
-    { label: 'Administration', href: '/admin' },
-    { label: 'Users', current: true }
+    { label: t('navigation.administration'), href: '/admin' },
+    { label: t('navigation.users'), current: true }
   ],
   '/admin/reports': [
-    { label: 'Administration', href: '/admin' },
-    { label: 'Reports', current: true }
+    { label: t('navigation.administration'), href: '/admin' },
+    { label: t('navigation.reports'), current: true }
   ],
   '/admin/site-assets': [
-    { label: 'Administration', href: '/admin' },
-    { label: 'Site Assets', current: true }
+    { label: t('navigation.administration'), href: '/admin' },
+    { label: t('navigation.siteAssets'), current: true }
   ],
   '/profile': [
-    { label: 'Profile', current: true }
+    { label: t('navigation.profile'), current: true }
   ],
   '/settings': [
-    { label: 'Settings', current: true }
+    { label: t('navigation.settings'), current: true }
   ]
-}
+})
 
 // Generate breadcrumbs from dynamic routes
 const generateBreadcrumbsFromPath = (pathname: string): BreadcrumbItem[] => {
@@ -92,6 +93,10 @@ const generateBreadcrumbsFromPath = (pathname: string): BreadcrumbItem[] => {
 
 export function Breadcrumb({ items, separator }: BreadcrumbProps) {
   const location = useLocation()
+  const { t } = useTranslation('navigation')
+  
+  // Get route breadcrumbs with translation function
+  const routeBreadcrumbs = getRouteBreadcrumbs(t)
   
   // Use provided items or generate from current route
   const breadcrumbItems = items || 
@@ -106,15 +111,15 @@ export function Breadcrumb({ items, separator }: BreadcrumbProps) {
   const defaultSeparator = <ChevronRightIcon className="h-4 w-4 text-gray-400" />
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-4" aria-label="Breadcrumb">
+    <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-4" aria-label={t('breadcrumb')}>
       {/* Home link */}
       <Link
         to="/dashboard"
         className="flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
-        title="Go to Dashboard"
+        title={t('goToDashboard')}
       >
         <HomeIcon className="h-4 w-4" />
-        <span className="sr-only">Dashboard</span>
+        <span className="sr-only">{t('dashboard')}</span>
       </Link>
       
       {breadcrumbItems.length > 0 && (
@@ -122,7 +127,7 @@ export function Breadcrumb({ items, separator }: BreadcrumbProps) {
       )}
 
       {/* Breadcrumb items */}
-      {breadcrumbItems.map((item, index) => (
+      {breadcrumbItems.map((item: BreadcrumbItem, index: number) => (
         <div key={index} className="flex items-center space-x-2">
           {item.current ? (
             <span className="font-medium text-gray-900 dark:text-white" aria-current="page">
@@ -150,6 +155,7 @@ export function Breadcrumb({ items, separator }: BreadcrumbProps) {
 // Hook for custom breadcrumb management
 export function useBreadcrumb() {
   const location = useLocation()
+  const { t } = useTranslation('navigation')
   
   const setBreadcrumb = (items: BreadcrumbItem[]) => {
     // In a real implementation, this would update a global state
@@ -158,6 +164,7 @@ export function useBreadcrumb() {
   }
   
   const getCurrentBreadcrumb = (): BreadcrumbItem[] => {
+    const routeBreadcrumbs = getRouteBreadcrumbs(t)
     return routeBreadcrumbs[location.pathname] || 
            generateBreadcrumbsFromPath(location.pathname)
   }

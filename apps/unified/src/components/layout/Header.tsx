@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   BellIcon,
   MagnifyingGlassIcon,
@@ -22,6 +23,7 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: HeaderProps) {
+  const { t } = useTranslation(['navigation', 'common'])
   const [searchOpen, setSearchOpen] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
@@ -39,7 +41,7 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
           {/* Mobile menu button */}
           <button
             onClick={onMenuClick}
-            title="Open mobile menu"
+            title={t('common.openMenu')}
             className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 lg:hidden"
           >
             <Bars3Icon className="h-5 w-5" />
@@ -48,6 +50,7 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
           {/* Desktop sidebar toggle */}
           <button
             onClick={onToggleSidebar}
+            title={sidebarCollapsed ? t('common.expandSidebar') : t('common.collapseSidebar')}
             className="hidden rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 lg:block"
           >
             {sidebarCollapsed ? (
@@ -78,8 +81,8 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
             className="flex w-full items-center gap-3 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-left text-gray-500 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
           >
             <MagnifyingGlassIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Search tickets, assets, spaces...</span>
-            <span className="sm:hidden">Search...</span>
+            <span className="hidden sm:inline">{t('navigation.searchPlaceholder')}</span>
+            <span className="sm:hidden">{t('navigation.search')}</span>
             <div className="ml-auto flex items-center gap-1">
               <kbd className="hidden rounded border border-gray-300 px-1.5 py-0.5 text-xs text-gray-600 dark:border-gray-600 dark:text-gray-400 sm:inline">
                 ⌘
@@ -104,6 +107,7 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
+            title={theme === 'light' ? t('common.switchToDark') : t('common.switchToLight')}
             className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
           >
             {theme === 'light' ? (

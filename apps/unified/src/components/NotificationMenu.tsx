@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { 
   BellIcon, 
   CheckIcon, 
@@ -29,6 +30,7 @@ const priorityColors = {
 }
 
 const NotificationMenu: React.FC = () => {
+  const { t } = useTranslation(['common', 'notifications'])
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
   const queryClient = useQueryClient()
@@ -85,7 +87,7 @@ const NotificationMenu: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
     onError: () => {
-      toast.error('Failed to mark notification as read')
+      toast.error(t('notifications:markAsReadError'))
     }
   })
 
@@ -94,10 +96,10 @@ const NotificationMenu: React.FC = () => {
     mutationFn: () => notificationService.markAllAsRead(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
-      toast.success('All notifications marked as read')
+      toast.success(t('notifications:markAllAsReadSuccess'))
     },
     onError: () => {
-      toast.error('Failed to mark all notifications as read')
+      toast.error(t('notifications:markAllAsReadError'))
     }
   })
 
@@ -108,7 +110,7 @@ const NotificationMenu: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
     onError: () => {
-      toast.error('Failed to delete notification')
+      toast.error(t('notifications:deleteError'))
     }
   })
 
@@ -138,14 +140,14 @@ const NotificationMenu: React.FC = () => {
     const now = new Date()
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
     
-    if (diffInMinutes < 1) return 'Just now'
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+    if (diffInMinutes < 1) return t('notifications:justNow')
+    if (diffInMinutes < 60) return t('notifications:minutesAgo', { count: diffInMinutes })
     
     const diffInHours = Math.floor(diffInMinutes / 60)
-    if (diffInHours < 24) return `${diffInHours}h ago`
+    if (diffInHours < 24) return t('notifications:hoursAgo', { count: diffInHours })
     
     const diffInDays = Math.floor(diffInHours / 24)
-    if (diffInDays < 7) return `${diffInDays}d ago`
+    if (diffInDays < 7) return t('notifications:daysAgo', { count: diffInDays })
     
     return date.toLocaleDateString()
   }
@@ -174,7 +176,7 @@ const NotificationMenu: React.FC = () => {
                   <button
                     onClick={(e) => handleMarkAsRead(notification.id, e)}
                     className="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-blue-600"
-                    title="Mark as read"
+                    title={t('notifications:markAsRead')}
                   >
                     <CheckIcon className="w-4 h-4" />
                   </button>
@@ -182,7 +184,7 @@ const NotificationMenu: React.FC = () => {
                 <button
                   onClick={(e) => handleDelete(notification.id, e)}
                   className="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-red-600"
-                  title="Delete notification"
+                  title={t('notifications:deleteNotification')}
                 >
                   <TrashIcon className="w-4 h-4" />
                 </button>
@@ -223,7 +225,7 @@ const NotificationMenu: React.FC = () => {
         <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
           <div className="p-4 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Notifications</h3>
+              <h3 className="font-semibold">{t('notifications:title')}</h3>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
@@ -232,12 +234,12 @@ const NotificationMenu: React.FC = () => {
                     className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
                   >
                     <CheckCircleIcon className="w-4 h-4" />
-                    Mark all read
+                    {t('notifications:markAllRead')}
                   </button>
                 )}
                 <button 
                   className="p-1 text-gray-400 hover:text-gray-600"
-                  title="Notification settings"
+                  title={t('notifications:settings')}
                 >
                   <Cog6ToothIcon className="w-4 h-4" />
                 </button>
@@ -255,7 +257,7 @@ const NotificationMenu: React.FC = () => {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                All ({notifications.length})
+                {t('notifications:all')} ({notifications.length})
               </button>
               <button
                 onClick={() => setActiveTab('unread')}
@@ -265,7 +267,7 @@ const NotificationMenu: React.FC = () => {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Unread ({unreadCount})
+                {t('notifications:unread')} ({unreadCount})
               </button>
               <button
                 onClick={() => setActiveTab('important')}
@@ -275,7 +277,7 @@ const NotificationMenu: React.FC = () => {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Important
+                {t('notifications:important')}
               </button>
             </div>
           </div>
@@ -288,7 +290,7 @@ const NotificationMenu: React.FC = () => {
             ) : filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-gray-500">
                 <BellIcon className="w-8 h-8 mb-2 opacity-50" />
-                <p className="text-sm">No notifications</p>
+                <p className="text-sm">{t('notifications:noNotifications')}</p>
               </div>
             ) : (
               <div>
@@ -300,7 +302,7 @@ const NotificationMenu: React.FC = () => {
           {notifications.length > 0 && (
             <div className="p-2 border-t border-gray-100">
               <button className="w-full py-2 text-sm text-center text-gray-600 hover:text-gray-900">
-                View all notifications
+                {t('notifications:viewAll')}
               </button>
             </div>
           )}

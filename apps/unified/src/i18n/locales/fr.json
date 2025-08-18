@@ -9,13 +9,55 @@
     "info": "Information"
   },
   "auth": {
-    "login": "Se Connecter",
-    "logout": "Se Déconnecter",
+    "login": {
+      "welcome": "Bienvenue dans Nova Universe",
+      "welcomeBack": "Bon retour !",
+      "title": "Se Connecter",
+      "signInTo": "Se connecter à {{tenantName}}",
+      "enterEmailToContinue": "Entrez votre email pour continuer",
+      "enterVerificationCode": "Entrez le code de vérification",
+      "workEmail": "Email Professionnel",
+      "emailPlaceholder": "Entrez votre adresse email professionnelle",
+      "discovering": "Découverte de l'organisation...",
+      "findOrganizationHelp": "Entrez votre email professionnel pour trouver votre organisation",
+      "organizationFound": "Organisation trouvée : {{organization}}",
+      "discoveryFailed": "Échec de la découverte de l'organisation",
+      "tenantDiscoveryRequired": "Veuillez entrer votre email pour trouver votre organisation",
+      "loginFailed": "Échec de la connexion. Vérifiez vos identifiants.",
+      "ssoInitiateFailed": "Échec de l'initiation SSO",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié ?",
+      "signIn": "Se Connecter",
+      "signInWith": "Se connecter avec {{provider}}",
+      "mfaRequired": "L'authentification à deux facteurs est requise pour ce compte",
+      "poweredBy": "Propulsé par",
+      "helixBrand": "Nova Helix",
+      "needHelp": "Besoin d'aide ?",
+      "contactSupport": "Contacter le support"
+    },
+    "validation": {
+      "emailRequired": "Veuillez entrer une adresse email valide",
+      "emailInvalid": "Veuillez entrer une adresse email valide",
+      "passwordRequired": "Le mot de passe est requis",
+      "mfaRequired": "Veuillez entrer le code de vérification"
+    },
+    "mfa": {
+      "enterCodeRequired": "Veuillez entrer le code de vérification",
+      "invalidCode": "Code de vérification invalide. Veuillez réessayer.",
+      "title": "Entrez le code de vérification",
+      "placeholder": "Entrez le code à 6 chiffres",
+      "verificationRequired": "Authentification à Deux Facteurs Requise",
+      "enterCode": "Veuillez entrer le code de vérification de votre application d'authentification",
+      "verificationCode": "Code de Vérification",
+      "codePlaceholder": "000000",
+      "startOver": "Recommencer",
+      "verify": "Vérifier"
+    },
+    "logout": "Déconnexion",
     "username": "Nom d'utilisateur",
     "password": "Mot de passe",
     "email": "Email",
     "forgotPassword": "Mot de passe oublié ?",
-    "rememberMe": "Se souvenir de moi",
     "loginError": "Identifiants invalides",
     "loginSuccess": "Connexion réussie",
     "loginRequired": "Veuillez vous connecter pour continuer",
@@ -54,7 +96,45 @@
     "totalTickets": "Total des Tickets",
     "openTickets": "Tickets Ouverts",
     "resolvedTickets": "Tickets Résolus",
-    "pendingTickets": "Tickets en Attente"
+    "pendingTickets": "Tickets en Attente",
+    "role": "Rôle",
+    "greeting": {
+      "morning": "Bonjour",
+      "afternoon": "Bon après-midi",
+      "evening": "Bonsoir"
+    },
+    "welcomeMessage": {
+      "admin": "Bienvenue dans votre tableau de bord administrateur Nova Universe. Surveillez la santé du système et gérez votre organisation.",
+      "agent": "Bienvenue dans votre tableau de bord agent Nova Pulse. Gérez les tickets et soutenez votre organisation.",
+      "user": "Bienvenue dans votre portail Nova Orbit. Soumettez des demandes et suivez vos tickets."
+    },
+    "systemMetrics": {
+      "apiStatus": "Statut de l'API",
+      "activeUsers": "Utilisateurs Actifs",
+      "systemLoad": "Charge Système",
+      "dbConnections": "Connexions BD",
+      "healthy": "En Bonne Santé"
+    },
+    "agentPerformance": {
+      "title": "Performance de Ma File",
+      "resolvedToday": "Résolus Aujourd'hui",
+      "avgResponseTime": "Temps Moy. de Réponse",
+      "customerRating": "Note Client"
+    },
+    "userSections": {
+      "myRecentTickets": "Mes Tickets Récents",
+      "quickSubmit": "Soumission Rapide",
+      "sampleTicketTitle": "Demande de nouvel ordinateur portable",
+      "hardwareRequest": "Demande de Matériel",
+      "hardwareRequestDesc": "Demander un nouvel équipement",
+      "softwareAccess": "Accès Logiciel",
+      "softwareAccessDesc": "Demander une licence logicielle",
+      "reportIssue": "Signaler un Problème",
+      "reportIssueDesc": "Signaler un problème"
+    },
+    "status": {
+      "inProgress": "En Cours"
+    }
   },
   "tickets": {
     "title": "Tickets",
@@ -238,6 +318,7 @@
     "add": "Ajouter",
     "create": "Créer",
     "new": "Nouveau",
+    "change": "Changer",
     "copy": "Copier",
     "paste": "Coller",
     "cut": "Couper",
@@ -251,6 +332,13 @@
     "close": "Fermer",
     "minimize": "Réduire",
     "maximize": "Agrandir",
+    "errorBoundary": {
+      "title": "Une erreur s'est produite",
+      "description": "Nous avons rencontré une erreur inattendue. Veuillez actualiser la page ou contacter le support si le problème persiste.",
+      "tryAgain": "Réessayer",
+      "refreshPage": "Actualiser la page",
+      "errorDetails": "Détails de l'erreur (Développement)"
+    },
     "actions": "Actions",
     "options": "Options",
     "preferences": "Préférences",
@@ -375,5 +463,25 @@
     "nextPage": "Page suivante",
     "firstPage": "Première page",
     "lastPage": "Dernière page"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAsRead": "Marquer comme lu",
+    "markAllRead": "Tout marquer comme lu",
+    "markAsReadError": "Échec de marquer la notification comme lue",
+    "markAllAsReadSuccess": "Toutes les notifications marquées comme lues",
+    "markAllAsReadError": "Échec de marquer toutes les notifications comme lues",
+    "deleteNotification": "Supprimer la notification",
+    "deleteError": "Échec de la suppression de la notification",
+    "settings": "Paramètres de notification",
+    "all": "Toutes",
+    "unread": "Non lues",
+    "important": "Importantes",
+    "noNotifications": "Aucune notification",
+    "viewAll": "Voir toutes les notifications",
+    "justNow": "À l'instant",
+    "minutesAgo": "il y a {{count}}m",
+    "hoursAgo": "il y a {{count}}h",
+    "daysAgo": "il y a {{count}}j"
   }
 }
