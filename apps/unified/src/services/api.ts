@@ -3,22 +3,25 @@ import { env } from '@utils/index'
 import type { ApiResponse, PaginatedResponse } from '@/types'
 
 // API configuration
-const API_BASE_URL = env.apiUrl
+const API_BASE_URL = env.apiUrl || 'http://localhost:8080/api'
 const API_TIMEOUT = 30000
 
-// Create axios instance
+// Create axios instance with enhanced configuration
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  withCredentials: true, // Enable cookies for session management
 })
 
-// Token management
+// Enhanced token management
 class TokenManager {
   private static readonly ACCESS_TOKEN_KEY = 'nova_access_token'
   private static readonly REFRESH_TOKEN_KEY = 'nova_refresh_token'
+  private static readonly TOKEN_EXPIRY_KEY = 'nova_token_expiry'
 
   static getAccessToken(): string | null {
     return localStorage.getItem(this.ACCESS_TOKEN_KEY)
@@ -36,18 +39,47 @@ class TokenManager {
     localStorage.setItem(this.REFRESH_TOKEN_KEY, token)
   }
 
+  static getTokenExpiry(): number | null {
+    const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY)
+    return expiry ? parseInt(expiry, 10) : null
+  }
+
+  static setTokenExpiry(expiry: number): void {
+    localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiry.toString())
+  }
+
   static clearTokens(): void {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY)
     localStorage.removeItem(this.REFRESH_TOKEN_KEY)
+    localStorage.removeItem(this.TOKEN_EXPIRY_KEY)
   }
 
-  static setTokens(accessToken: string, refreshToken: string): void {
+  static setTokens(accessToken: string, refreshToken?: string, expiresIn?: number): void {
     this.setAccessToken(accessToken)
-    this.setRefreshToken(refreshToken)
+    if (refreshToken) {
+      this.setRefreshToken(refreshToken)
+    }
+    if (expiresIn) {
+      const expiry = Date.now() + (expiresIn * 1000)
+      this.setTokenExpiry(expiry)
+    }
+  }
+
+  static isTokenExpired(): boolean {
+    const expiry = this.getTokenExpiry()
+    if (!expiry) return false
+    return Date.now() >= expiry
+  }
+
+  static isTokenExpiringSoon(): boolean {
+    const expiry = this.getTokenExpiry()
+    if (!expiry) return false
+    // Return true if token expires within 5 minutes
+    return Date.now() >= (expiry - 5 * 60 * 1000)
   }
 }
 
-// Request interceptor for adding auth token
+// Request interceptor for adding auth token and request ID
 api.interceptors.request.use(
   (config) => {
     const token = TokenManager.getAccessToken()

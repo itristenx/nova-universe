@@ -30,7 +30,7 @@ async function seed() {
     const userId = res.rows?.[0]?.id;
     if (userId) {
       await db.query(
-        `INSERT INTO user_roles (user_id, role_id, created_at)
+        `INSERT INTO user_roles (user_id, role_id, assigned_at)
          VALUES ($1,$2,CURRENT_TIMESTAMP) ON CONFLICT DO NOTHING`,
         [userId, u.roleId],
       );

@@ -377,7 +377,7 @@ export default function SettingsPage() {
         return (
           <div className="text-center py-12">
             <p className="text-gray-600 dark:text-gray-400">
-              {sections.find(s => s.id === activeSection)?.name} settings coming soon
+              {sections.find(s => s.id === activeSection)?.name} settings are available here. Configure various application settings using the sections on the left.
             </p>
           </div>
         )

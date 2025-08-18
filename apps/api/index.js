@@ -27,6 +27,8 @@ import announcementsRouter from './routes/announcements.js';
 import cosmoRouter from './routes/cosmo.js';
 import beaconRouter from './routes/beacon.js';
 import goalertProxyRouter from './routes/goalert-proxy.js';
+import uptimeKumaProxyRouter from './routes/uptime-kuma-proxy.js';
+import uptimeKumaWebSocketRouter from './routes/uptime-kuma-websocket.js';
 import alertsRouter from './routes/alerts.js';
 import cmdbRouter from './routes/cmdb.js';
 import cmdbExtendedRouter from './routes/cmdbExtended.js';
@@ -34,7 +36,9 @@ import notificationsRouter from './routes/notifications.js'; // Universal Notifi
 import user360Router from './routes/user360.js'; // User 360 API
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
+import spacesRouter from './routes/spaces.js';
 // Nova module routes
+import { createUploadsMiddleware } from './middleware/uploads.js';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import axios from 'axios';
 import bcrypt from 'bcryptjs';
@@ -182,6 +186,7 @@ io.on('connection', (socket) => {
       'notifications',
       'system_status',
       'modules',
+      'uptime-kuma',
     ];
 
     if (allowedSubscriptions.includes(dataType)) {
@@ -208,6 +213,25 @@ app.io = io;
 import WebSocketManager from './websocket/events.js';
 const wsManager = new WebSocketManager(io);
 app.wsManager = wsManager;
+
+// Initialize Uptime Kuma WebSocket handler
+import { initializeUptimeKumaWebSocket, shutdownUptimeKumaWebSocket } from './websocket/uptime-kuma-handler.js';
+initializeUptimeKumaWebSocket().catch(error => {
+  logger.error('Failed to initialize Uptime Kuma WebSocket handler', { error: error.message });
+});
+
+// Graceful shutdown handler
+process.on('SIGTERM', () => {
+  logger.info('Received SIGTERM, shutting down gracefully');
+  shutdownUptimeKumaWebSocket();
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  logger.info('Received SIGINT, shutting down gracefully');
+  shutdownUptimeKumaWebSocket();
+  process.exit(0);
+});
 // --- Version helpers ---
 function getApiVersion() {
   try {
@@ -338,9 +362,12 @@ function validateEnv() {
       hasError = true;
     }
   }
-  for (const key of optionalVars) {
-    if (!process.env[key]) {
-      logger.warn(`Optional environment variable not set: ${key}`);
+  // Only log missing optional variables if in debug mode
+  if (process.env.DEBUG_ENV_VARS === 'true') {
+    for (const key of optionalVars) {
+      if (!process.env[key]) {
+        logger.warn(`Optional environment variable not set: ${key}`);
+      }
     }
   }
   if (hasError) {
@@ -406,6 +433,9 @@ if (process.env.DEBUG_CORS === 'true') {
 // Ensure JSON body parsing before routers
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Add uploads middleware for serving local files
+app.use('/uploads', createUploadsMiddleware());
 
 // ---
 // NOTE: Periodically review these rate limiting settings to ensure they are effective for your current usage and threat model.
@@ -1671,6 +1701,9 @@ app.use('/api/v1/kiosks', kiosksRouter);
 app.use('/api/kiosks', kiosksRouter);
 app.use('/api/v1/kiosks', kiosksRouter);
 
+// Register v1 router for legacy API endpoints
+app.use('/api/v1', v1Router);
+
 // Setup API routes
 const docsRequireAuth =
   process.env.NODE_ENV === 'production' && process.env.ENABLE_PUBLIC_DOCS !== 'true';
@@ -1762,31 +1795,52 @@ app.use('/api/v1/cmdb', cmdbRouter);
 app.use('/api/v1/cmdb', cmdbExtendedRouter);
 app.use('/api/v1/integrations', integrationsRouter);
 app.use('/api/v2/user360', user360Router); // User 360 API
-app.use('/api/catalog-items', catalogItemsRouter);
+app.use('/api/v1/catalog-items', catalogItemsRouter); // Updated to v1
 app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/configuration', configurationRouter);
 app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
 app.use('/api/v1/logs', logsRouter); // Register logsRouter
-app.use('/api/reports', reportsRouter);
+app.use('/api/v1/reports', reportsRouter); // Updated to v1
 app.use('/api/v1/vip', vipRouter);
-app.use('/api/workflows', workflowsRouter);
+app.use('/api/v1/workflows', workflowsRouter); // Updated to v1
 app.use('/api/v1/modules', modulesRouter);
 app.use('/api/v1/api-keys', apiKeysRouter);
 app.use('/api/v1/websocket', websocketRouter);
-app.use('/api/helpscout', helpscoutRouter);
-app.use('/api/analytics', analyticsRouter);
-app.use('/api/monitoring', monitoringRouter);
+app.use('/api/v1/helpscout', helpscoutRouter); // Updated to v1
+app.use('/api/v1/analytics', analyticsRouter); // Updated to v1
+app.use('/api/v1/monitoring', monitoringRouter); // Updated to v1
 // Back-compat alias for components expecting v2 namespace for Sentinel
 app.use('/api/v2/monitoring', monitoringRouter);
 app.use('/api/v2/sentinel', monitoringRouter);
 app.use('/api/v2/goalert', goalertProxyRouter);
+// Nova Embedded Uptime Kuma Integration
+app.use('/api/v1/uptime-kuma', uptimeKumaProxyRouter);
+app.use('/api/v1/websocket/uptime-kuma', uptimeKumaWebSocketRouter);
 // Unified Alerts facade (Nova Alert) wrapping GoAlert operations
 app.use('/api/v2/alerts', alertsRouter);
 app.use('/api/v2/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
-app.use('/api/auth', authRouter);
-app.use('/api/tickets', ticketsRouter);
-app.use('/api/ai-fabric', aiFabricRouter);
-app.use('/api/setup', setupRouter);
+app.use('/api/v1/auth', authRouter); // Updated to v1
+app.use('/api/v1/tickets', ticketsRouter); // Updated to v1
+app.use('/api/v1/spaces', spacesRouter); // Updated to v1 - Space Management API
+app.use('/api/v1/ai-fabric', aiFabricRouter); // Updated to v1
+app.use('/api/v1/setup', setupRouter); // Updated to v1
+
+// === BACKWARD COMPATIBILITY ROUTES ===
+// Keep legacy unversioned routes for backward compatibility
+app.use('/api/catalog-items', catalogItemsRouter); // Legacy route
+app.use('/api/reports', reportsRouter); // Legacy route
+app.use('/api/workflows', workflowsRouter); // Legacy route
+app.use('/api/helpscout', helpscoutRouter); // Legacy route
+app.use('/api/analytics', analyticsRouter); // Legacy route
+app.use('/api/monitoring', monitoringRouter); // Legacy route
+app.use('/api/auth', authRouter); // Legacy route
+app.use('/api/tickets', ticketsRouter); // Legacy route
+app.use('/api/spaces', spacesRouter); // Legacy route - Space Management API
+app.use('/api/ai-fabric', aiFabricRouter); // Legacy route
+app.use('/api/setup', setupRouter); // Legacy route
+
+// Legacy SCIM monitoring route
+app.use('/api/scim/monitor', scimMonitorRouter); // Legacy route
 
 // Nova module routes
 app.use('/api/v1/helix', helixRouter); // Nova Helix - Identity Engine
@@ -1797,7 +1851,7 @@ app.use('/api/v1/orbit', orbitRouter); // Nova Orbit - End-User Portal
 app.use('/api/v1/synth', synthRouter); // Nova Synth - AI Engine (Legacy)
 app.use('/api/v2/synth', synthV2Router); // Nova Synth - AI Engine (v2 - Full Spec)
 app.use('/scim/v2', scimRouter); // SCIM 2.0 Provisioning API
-app.use('/api/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
+app.use('/api/v1/scim/monitor', scimMonitorRouter); // Updated to v1 - SCIM Monitoring and Logging
 app.use('/api/v1/core', coreRouter);
 app.use('/core', coreRouter);
 // Gate status pages behind feature flag (env or config)

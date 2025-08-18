@@ -1,8 +1,0 @@
-.select {
-  background-color: var(--select-bg, #ffffff);
-  color: var(--select-color, #1f2937);
-  font-family: var(--select-font, 'Inter, system-ui, sans-serif');
-  padding: var(--select-padding, 0.5rem);
-  border-radius: var(--select-radius, 0.25rem);
-  border: 1px solid var(--select-border, #888);
-}

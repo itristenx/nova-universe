@@ -1,6 +1,7 @@
 import { ReactNode, useState } from 'react'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
+import { Breadcrumb } from '../navigation/Breadcrumb'
 import { cn } from '@utils/index'
 
 interface AppLayoutProps {
@@ -46,6 +47,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Page content */}
         <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
           <div className="container mx-auto px-4 py-6 lg:px-6">
+            <Breadcrumb />
             {children}
           </div>
         </main>

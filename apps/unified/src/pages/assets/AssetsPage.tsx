@@ -7,7 +7,6 @@ import {
   MagnifyingGlassIcon,
   DocumentArrowDownIcon,
   XMarkIcon,
-  QrCodeIcon,
   WrenchScrewdriverIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
@@ -123,22 +122,31 @@ export default function AssetsPage() {
     }
   }
 
-  const handleBulkStatusChange = async (status: 'active' | 'inactive' | 'maintenance' | 'retired') => {
+  const handleBulkStatusChange = async (status: 'maintenance' | 'retired' | 'active' | 'inactive') => {
     if (selectedAssets.length === 0) {
       toast.error('Please select assets to update')
       return
     }
 
+    // Map UI status to API actions
+    const actionMap: Record<string, string> = {
+      'active': 'activate',
+      'retired': 'retire',
+      'maintenance': 'maintenance'
+    }
+
+    const action = actionMap[status] || status
+
     try {
       await bulkUpdateAssets({
         assetIds: selectedAssets,
-        action: status === 'active' ? 'activate' : status,
+        action: action as 'assign' | 'unassign' | 'relocate' | 'retire' | 'activate' | 'maintenance',
         data: {}
       })
-      toast.success(`Updated ${selectedAssets.length} assets to ${status}`)
+      toast.success(`Updated ${selectedAssets.length} assets`)
       clearSelectedAssets()
     } catch (error) {
-      toast.error(`Failed to update assets to ${status}`)
+      toast.error(`Failed to update assets`)
     }
   }
 

@@ -164,7 +164,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null
+  let timeout: ReturnType<typeof setTimeout> | null = null
   
   return (...args: Parameters<T>) => {
     if (timeout) {
@@ -404,7 +404,7 @@ export function getAssetStatusColor(status: string): string {
     lost: 'text-orange-600 bg-orange-100 dark:bg-orange-900 dark:text-orange-300',
     stolen: 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300',
   }
-  return colors[status] || colors.active
+  return colors[status] || colors.active || 'text-gray-600 bg-gray-100'
 }
 
 /**
@@ -620,13 +620,41 @@ export function formatNumber(value: number, locale = 'en-US'): string {
 }
 
 /**
- * Environment utilities
+ * Environment and configuration utilities
  */
 export const env = {
-  isDev: import.meta.env.DEV,
-  isProd: import.meta.env.PROD,
-  isTest: import.meta.env.MODE === 'test',
   apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080',
   wsUrl: import.meta.env.VITE_WS_URL || 'ws://localhost:8080',
-  version: import.meta.env.VITE_APP_VERSION || '1.0.0',
-} as const
+  devTools: import.meta.env.VITE_DEV_TOOLS === 'true',
+  useMockData: import.meta.env.VITE_USE_MOCK_DATA === 'true',
+  profileUpdatesEnabled: import.meta.env.VITE_PROFILE_UPDATES_ENABLED === 'true',
+  enabledFeatures: import.meta.env.VITE_ENABLED_FEATURES?.split(',') || [],
+}
+
+/**
+ * Check if a specific feature is enabled
+ */
+export const isFeatureEnabled = (feature: string): boolean => {
+  return env.enabledFeatures.includes(feature)
+}
+
+/**
+ * Handle API operations with graceful fallback to mock data
+ */
+export const withMockFallback = async <T>(
+  apiCall: () => Promise<T>,
+  mockData: T,
+  fallbackMessage?: string
+): Promise<T> => {
+  if (env.useMockData) {
+    console.info(fallbackMessage || 'Using mock data (development mode)')
+    return Promise.resolve(mockData)
+  }
+  
+  try {
+    return await apiCall()
+  } catch (error) {
+    console.warn('API call failed, falling back to mock data:', error)
+    return mockData
+  }
+}

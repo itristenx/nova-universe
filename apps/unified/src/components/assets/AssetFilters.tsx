@@ -120,7 +120,7 @@ export function AssetFilters({ filters, onFiltersChange, onClearFilters }: Asset
           <select 
             className="input mt-1"
             value={filters.maintenanceDue ? 'due' : ''}
-            onChange={(e) => handleFilterChange('maintenanceDue', e.target.value === 'due')}
+            onChange={(e) => handleFilterChange('maintenanceDue', e.target.value)}
           >
             <option value="">All Assets</option>
             <option value="due">Maintenance Due</option>
@@ -132,7 +132,7 @@ export function AssetFilters({ filters, onFiltersChange, onClearFilters }: Asset
           <select 
             className="input mt-1"
             value={filters.warrantyExpiring ? 'expiring' : ''}
-            onChange={(e) => handleFilterChange('warrantyExpiring', e.target.value === 'expiring')}
+            onChange={(e) => handleFilterChange('warrantyExpiring', e.target.value)}
           >
             <option value="">All Assets</option>
             <option value="expiring">Warranty Expiring</option>

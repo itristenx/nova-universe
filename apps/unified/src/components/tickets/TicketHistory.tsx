@@ -2,7 +2,7 @@ interface TicketHistoryProps {
   ticketId: string
 }
 
-export function TicketHistory({ ticketId }: TicketHistoryProps) {
+export function TicketHistory({ }: TicketHistoryProps) {
   return (
     <div className="space-y-4">
       <div className="border-b border-gray-200 pb-4 dark:border-gray-700">

@@ -11,7 +11,8 @@ import {
 import { useTicketStore } from '@stores/tickets'
 import { LoadingSpinner } from '@components/common/LoadingSpinner'
 import { RichTextEditor } from '@components/forms/RichTextEditor'
-import { FileUpload } from '@components/forms/FileUpload'
+import { EnhancedFileUpload } from '@components/files'
+import type { UploadedFile } from '@services/fileStorage'
 import { UserSelect } from '@components/forms/UserSelect'
 import { TagInput } from '@components/forms/TagInput'
 import { cn } from '@utils/index'
@@ -112,8 +113,10 @@ export default function CreateTicketPage() {
     toast('Template loaded')
   }
 
-  const handleFileAdd = (files: File[]) => {
-    setAttachments(prev => [...prev, ...files])
+  const handleFilesUploaded = (files: UploadedFile[]) => {
+    // Convert to File objects for form submission compatibility if needed
+    const fileObjects = files.map(f => new File([], f.originalName, { type: f.contentType }))
+    setAttachments(prev => [...prev, ...fileObjects])
   }
 
   const handleFileRemove = (index: number) => {
@@ -142,6 +145,7 @@ export default function CreateTicketPage() {
             value={selectedTemplate}
             onChange={(e) => handleTemplateSelect(e.target.value)}
             className="btn btn-secondary"
+            aria-label="Choose ticket template"
           >
             <option value="">Choose Template</option>
             <option value="password-reset">Password Reset</option>
@@ -364,11 +368,19 @@ export default function CreateTicketPage() {
             Attachments
           </h3>
           
-          <FileUpload
-            onFilesAdded={handleFileAdd}
+          <EnhancedFileUpload
+            onFilesUploaded={handleFilesUploaded}
+            context="ticketAttachments"
             maxFiles={10}
-            maxSize={10 * 1024 * 1024} // 10MB
-            accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+            maxFileSize={10 * 1024 * 1024} // 10MB
+            acceptedFileTypes={{
+              'image/*': [],
+              'application/pdf': [],
+              'application/msword': [],
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [],
+              'text/plain': [],
+              'application/zip': []
+            }}
           />
 
           {attachments.length > 0 && (
@@ -394,6 +406,7 @@ export default function CreateTicketPage() {
                     type="button"
                     onClick={() => handleFileRemove(index)}
                     className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    title="Remove attachment"
                   >
                     <XMarkIcon className="h-4 w-4" />
                   </button>

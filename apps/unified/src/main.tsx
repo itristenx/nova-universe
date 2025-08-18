@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import App from './App'
 import '@styles/globals.css'
+import './i18n/config' // Initialize i18n
 
 // Create a client for React Query
 const queryClient = new QueryClient({

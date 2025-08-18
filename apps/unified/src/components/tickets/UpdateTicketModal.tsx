@@ -6,7 +6,7 @@ interface UpdateTicketModalProps {
   onUpdate: () => void
 }
 
-export function UpdateTicketModal({ ticket, onClose, onUpdate }: UpdateTicketModalProps) {
+export function UpdateTicketModal({ onClose, onUpdate }: UpdateTicketModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-2xl rounded-xl bg-white p-6 dark:bg-gray-800">

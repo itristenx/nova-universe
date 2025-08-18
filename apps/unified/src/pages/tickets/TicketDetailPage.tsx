@@ -9,10 +9,7 @@ import {
   ClockIcon,
   UserIcon,
   TagIcon,
-  FlagIcon,
-  ExclamationTriangleIcon,
-  CheckIcon,
-  XMarkIcon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useTicketStore } from '@stores/tickets'
 import { useAuthStore } from '@stores/auth'

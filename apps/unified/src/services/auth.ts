@@ -57,7 +57,7 @@ class AuthService {
    * Login with email and password
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/login', credentials)
+    const response = await apiClient.post<AuthResponse>('/v1/auth/login', credentials)
     
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data
@@ -71,7 +71,7 @@ class AuthService {
    * Register new user
    */
   async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/register', data)
+    const response = await apiClient.post<AuthResponse>('/v1/auth/register', data)
     
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data
@@ -86,7 +86,7 @@ class AuthService {
    */
   async logout(): Promise<void> {
     try {
-      await apiClient.post('/auth/logout')
+      await apiClient.post('/v1/auth/logout')
     } catch (error) {
       // Continue with logout even if API call fails
       console.warn('Logout API call failed:', error)
@@ -99,14 +99,14 @@ class AuthService {
    * Request password reset
    */
   async requestPasswordReset(data: ResetPasswordData): Promise<void> {
-    await apiClient.post('/auth/password/reset', data)
+    await apiClient.post('/v1/auth/password/reset', data)
   }
 
   /**
    * Reset password with token
    */
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    await apiClient.post('/auth/password/reset/confirm', {
+    await apiClient.post('/v1/auth/password/reset/confirm', {
       token,
       newPassword,
     })
@@ -116,14 +116,14 @@ class AuthService {
    * Change password for authenticated user
    */
   async changePassword(data: ChangePasswordData): Promise<void> {
-    await apiClient.post('/auth/password/change', data)
+    await apiClient.post('/v1/auth/password/change', data)
   }
 
   /**
    * Get current user profile
    */
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<User>('/auth/me')
+    const response = await apiClient.get<User>('/v1/auth/me')
     return response.data!
   }
 
@@ -131,7 +131,7 @@ class AuthService {
    * Update user profile
    */
   async updateProfile(data: Partial<User>): Promise<User> {
-    const response = await apiClient.patch<User>('/auth/me', data)
+    const response = await apiClient.patch<User>('/v1/auth/me', data)
     return response.data!
   }
 
@@ -139,14 +139,14 @@ class AuthService {
    * Request magic link login
    */
   async requestMagicLink(data: MagicLinkRequest): Promise<void> {
-    await apiClient.post('/auth/magic-link', data)
+    await apiClient.post('/v1/auth/magic-link', data)
   }
 
   /**
    * Verify magic link token
    */
   async verifyMagicLink(data: VerifyMagicLinkData): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/magic-link/verify', data)
+    const response = await apiClient.post<AuthResponse>('/v1/auth/magic-link/verify', data)
     
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data
@@ -160,7 +160,7 @@ class AuthService {
    * Setup MFA for user
    */
   async setupMfa(): Promise<MfaSetupResponse> {
-    const response = await apiClient.post<MfaSetupResponse>('/auth/mfa/setup')
+    const response = await apiClient.post<MfaSetupResponse>('/v1/auth/mfa/setup')
     return response.data!
   }
 
@@ -168,14 +168,14 @@ class AuthService {
    * Verify MFA setup
    */
   async verifyMfaSetup(code: string): Promise<void> {
-    await apiClient.post('/auth/mfa/setup/verify', { code })
+    await apiClient.post('/v1/auth/mfa/setup/verify', { code })
   }
 
   /**
    * Verify MFA during login
    */
   async verifyMfa(data: MfaVerificationData): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/mfa/verify', data)
+    const response = await apiClient.post<AuthResponse>('/v1/auth/mfa/verify', data)
     
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data
@@ -189,14 +189,14 @@ class AuthService {
    * Disable MFA
    */
   async disableMfa(password: string): Promise<void> {
-    await apiClient.post('/auth/mfa/disable', { password })
+    await apiClient.post('/v1/auth/mfa/disable', { password })
   }
 
   /**
    * Generate new backup codes
    */
   async generateBackupCodes(): Promise<string[]> {
-    const response = await apiClient.post<string[]>('/auth/mfa/backup-codes')
+    const response = await apiClient.post<string[]>('/v1/auth/mfa/backup-codes')
     return response.data!
   }
 
@@ -209,7 +209,7 @@ class AuthService {
       throw new Error('No refresh token available')
     }
 
-    const response = await apiClient.post<AuthResponse>('/auth/refresh', {
+    const response = await apiClient.post<AuthResponse>('/v1/auth/refresh', {
       refreshToken,
     })
     
@@ -239,14 +239,14 @@ class AuthService {
    * Verify email address
    */
   async verifyEmail(token: string): Promise<void> {
-    await apiClient.post('/auth/email/verify', { token })
+    await apiClient.post('/v1/auth/email/verify', { token })
   }
 
   /**
    * Resend email verification
    */
   async resendEmailVerification(): Promise<void> {
-    await apiClient.post('/auth/email/resend')
+    await apiClient.post('/v1/auth/email/resend')
   }
 
   /**
@@ -265,7 +265,7 @@ class AuthService {
       location: string
       lastActive: string
       current: boolean
-    }>>('/auth/sessions')
+    }>>('/v1/auth/sessions')
     return response.data!
   }
 
@@ -273,14 +273,14 @@ class AuthService {
    * Revoke session
    */
   async revokeSession(sessionId: string): Promise<void> {
-    await apiClient.delete(`/auth/sessions/${sessionId}`)
+    await apiClient.delete(`/v1/auth/sessions/${sessionId}`)
   }
 
   /**
    * Revoke all other sessions
    */
   async revokeAllOtherSessions(): Promise<void> {
-    await apiClient.post('/auth/sessions/revoke-others')
+    await apiClient.post('/v1/auth/sessions/revoke-others')
   }
 }
 

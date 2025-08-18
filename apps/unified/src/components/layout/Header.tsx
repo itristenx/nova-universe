@@ -9,11 +9,11 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline'
-import { useAuthStore } from '@stores/auth'
 import { UserMenu } from './UserMenu'
 import { NotificationMenu } from './NotificationMenu'
 import { SearchCommand } from './SearchCommand'
-import { getUserDisplayName, getInitials } from '@utils/index'
+import { AppSwitcher } from '../navigation/AppSwitcher'
+import LanguageSwitcher from '../LanguageSwitcher'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -22,7 +22,6 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: HeaderProps) {
-  const { user } = useAuthStore()
   const [searchOpen, setSearchOpen] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
@@ -40,6 +39,7 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
           {/* Mobile menu button */}
           <button
             onClick={onMenuClick}
+            title="Open mobile menu"
             className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 lg:hidden"
           >
             <Bars3Icon className="h-5 w-5" />
@@ -66,6 +66,9 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
               Nova Universe
             </span>
           </Link>
+
+          {/* App Switcher */}
+          <AppSwitcher currentApp="unified" />
         </div>
 
         {/* Center section - Search */}
@@ -90,6 +93,14 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
 
         {/* Right section */}
         <div className="flex items-center gap-2">
+          {/* Language Switcher */}
+          <LanguageSwitcher 
+            variant="minimal" 
+            size="sm" 
+            showIcon={false}
+            className="hidden sm:block"
+          />
+
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
@@ -114,24 +125,7 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
           </NotificationMenu>
 
           {/* User menu */}
-          <UserMenu>
-            <button className="flex items-center gap-2 rounded-lg p-1 hover:bg-gray-100 dark:hover:bg-gray-700">
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={getUserDisplayName(user)}
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-nova-600 text-sm font-medium text-white">
-                  {user ? getInitials(getUserDisplayName(user)) : 'U'}
-                </div>
-              )}
-              <span className="hidden text-sm font-medium text-gray-700 dark:text-gray-300 sm:block">
-                {user ? getUserDisplayName(user) : 'User'}
-              </span>
-            </button>
-          </UserMenu>
+          <UserMenu />
         </div>
       </header>
 

@@ -1,7 +1,6 @@
-import { Link } from 'react-router-dom'
 import { useAssetStore } from '@stores/assets'
 import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { cn, formatCurrency, formatRelativeTime, getAssetStatusColor } from '@utils/index'
+import { cn, formatCurrency, getAssetStatusColor } from '@utils/index'
 import type { Asset } from '@/types'
 
 interface AssetTableProps {
@@ -107,12 +106,9 @@ export function AssetTable({
                 
                 <td className="px-4 py-4">
                   <div className="flex flex-col">
-                    <Link
-                      to={`/assets/${asset.id}`}
-                      className="font-medium text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-gray-300"
-                    >
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
                       {asset.name}
-                    </Link>
+                    </span>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {asset.assetTag}
                     </p>
@@ -133,7 +129,7 @@ export function AssetTable({
                 
                 <td className="px-4 py-4">
                   <span className="text-sm text-gray-900 dark:text-gray-100">
-                    {asset.assignedUser?.name || 'Unassigned'}
+                    {asset.assignedUser?.displayName || 'Unassigned'}
                   </span>
                 </td>
                 

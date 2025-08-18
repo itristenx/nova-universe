@@ -2,7 +2,7 @@ interface TicketAttachmentsProps {
   ticketId: string
 }
 
-export function TicketAttachments({ ticketId }: TicketAttachmentsProps) {
+export function TicketAttachments({ }: TicketAttachmentsProps) {
   return (
     <div className="space-y-4">
       <div className="border-b border-gray-200 pb-4 dark:border-gray-700">

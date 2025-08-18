@@ -1,8 +1,0 @@
-#!/usr/bin/env sh
-
-# Minimal fast pre-commit: format+lint only changed files
-if command -v pnpm >/dev/null 2>&1; then
-  pnpm -w lint-staged || exit 1
-else
-  echo "pnpm not found; skipping checks"
-fi

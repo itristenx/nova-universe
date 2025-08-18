@@ -26,18 +26,18 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 3002,
     host: true,
     open: true,
     cors: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8079',
         changeOrigin: true,
         secure: false,
       },
       '/ws': {
-        target: 'ws://localhost:8080',
+        target: 'ws://localhost:8079',
         ws: true,
         changeOrigin: true,
       },

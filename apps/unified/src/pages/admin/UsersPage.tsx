@@ -1,136 +1,189 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { 
   PlusIcon, 
   FunnelIcon, 
   MagnifyingGlassIcon,
-  EllipsisHorizontalIcon,
   UserPlusIcon,
   LockClosedIcon,
   LockOpenIcon,
-  TrashIcon,
-  PencilIcon
+  TrashIcon
 } from '@heroicons/react/24/outline'
 import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { UserTable } from '@components/admin/UserTable'
-import { UserFilters } from '@components/admin/UserFilters'
-import { CreateUserModal } from '@components/admin/CreateUserModal'
-import { EditUserModal } from '@components/admin/EditUserModal'
-import { cn, formatNumber, getUserDisplayName, getInitials } from '@utils/index'
+import { UserCreateModal } from '@components/admin/UserCreateModal'
+import { UserEditModal } from '@components/admin/UserEditModal'
+import { cn, formatNumber } from '@utils/index'
+import { useUserStore } from '@stores/users'
 import toast from 'react-hot-toast'
-import type { User } from '@/types'
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [editingUser, setEditingUser] = useState<User | null>(null)
-  const [filters, setFilters] = useState<Record<string, any>>({})
+  const [editingUser, setEditingUser] = useState<any>(null)
+  const [localFilters, setLocalFilters] = useState<Record<string, any>>({})
 
-  // Mock data for demo
+  const {
+    users,
+    selectedUsers,
+    stats,
+    isLoading,
+    error,
+    currentPage,
+    pageSize,
+    totalUsers,
+    totalPages,
+    getUsers,
+    getUserStats,
+    activateUser,
+    deactivateUser,
+    deleteUser,
+    resetUserPassword,
+    selectAllUsers,
+    clearSelection,
+    toggleUserSelection,
+    setFilters,
+    setPage,
+    refreshUsers
+  } = useUserStore()
+
+  // Load initial data
   useEffect(() => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setUsers([
-        {
-          id: '1',
-          email: 'john.doe@company.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          isActive: true,
-          roles: [{ id: '1', name: 'admin', description: 'Administrator', permissions: [] }],
-          lastLoginAt: new Date().toISOString(),
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          email: 'jane.smith@company.com',
-          firstName: 'Jane',
-          lastName: 'Smith',
-          isActive: true,
-          roles: [{ id: '2', name: 'agent', description: 'Support Agent', permissions: [] }],
-          lastLoginAt: new Date(Date.now() - 3600000).toISOString(),
-          createdAt: new Date(Date.now() - 172800000).toISOString(),
-          updatedAt: new Date(Date.now() - 3600000).toISOString(),
-        },
-        {
-          id: '3',
-          email: 'bob.johnson@company.com',
-          firstName: 'Bob',
-          lastName: 'Johnson',
-          isActive: false,
-          roles: [{ id: '3', name: 'user', description: 'End User', permissions: [] }],
-          lastLoginAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-          createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
-          updatedAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-        },
+    const loadData = async () => {
+      await Promise.all([
+        getUsers(),
+        getUserStats()
       ])
-      setIsLoading(false)
-    }, 1000)
-  }, [])
-
-  const handleSearch = async (query: string) => {
-    // Mock search functionality
-    if (!query.trim()) {
-      return // Reset to full list
     }
-    toast.success(`Searching for: ${query}`)
-  }
+    loadData()
+  }, [getUsers, getUserStats])
 
+  // Handle search with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      handleSearch(searchQuery)
+      const filters: any = { ...localFilters }
+      
+      if (searchQuery.trim()) {
+        filters.search = searchQuery.trim()
+      }
+      
+      setFilters(filters)
     }, 300)
+
     return () => clearTimeout(timeoutId)
-  }, [searchQuery])
+  }, [searchQuery, localFilters, setFilters])
 
   const handleBulkAction = async (action: string) => {
-    if (selectedUsers.length === 0) {
+    const userIds = Array.from(selectedUsers)
+    if (userIds.length === 0) {
       toast.error('Please select users first')
       return
     }
 
-    switch (action) {
-      case 'activate':
-        toast.success(`Activated ${selectedUsers.length} users`)
-        break
-      case 'deactivate':
-        toast.success(`Deactivated ${selectedUsers.length} users`)
-        break
-      case 'delete':
-        if (confirm(`Delete ${selectedUsers.length} users? This cannot be undone.`)) {
-          toast.success(`Deleted ${selectedUsers.length} users`)
-        }
-        break
+    try {
+      switch (action) {
+        case 'activate':
+          for (const userId of userIds) {
+            await activateUser(userId)
+          }
+          break
+        case 'deactivate':
+          for (const userId of userIds) {
+            await deactivateUser(userId)
+          }
+          break
+        case 'delete':
+          if (confirm(`Delete ${userIds.length} users? This cannot be undone.`)) {
+            for (const userId of userIds) {
+              await deleteUser(userId)
+            }
+          }
+          break
+      }
+      clearSelection()
+    } catch (error) {
+      console.error('Bulk action failed:', error)
     }
-    setSelectedUsers([])
   }
 
-  const handleUserUpdate = (updatedUser: User) => {
-    setUsers(prev => prev.map(user => 
-      user.id === updatedUser.id ? updatedUser : user
-    ))
+  const handleUserAction = async (action: string, userId: string) => {
+    try {
+      switch (action) {
+        case 'activate':
+          await activateUser(userId)
+          break
+        case 'deactivate':
+          await deactivateUser(userId)
+          break
+        case 'delete':
+          if (confirm('Delete this user? This cannot be undone.')) {
+            await deleteUser(userId)
+          }
+          break
+        case 'reset-password':
+          const tempPassword = await resetUserPassword(userId)
+          if (tempPassword) {
+            toast.success(`Temporary password: ${tempPassword}`)
+          }
+          break
+        case 'edit':
+          const user = users.find(u => u.id === userId)
+          if (user) {
+            setEditingUser(user)
+          }
+          break
+      }
+    } catch (error) {
+      console.error('User action failed:', error)
+    }
+  }
+
+  const handleUserUpdate = async () => {
     setEditingUser(null)
-    toast.success('User updated successfully')
+    await refreshUsers()
   }
 
-  const handleUserCreate = (newUser: User) => {
-    setUsers(prev => [newUser, ...prev])
+  const handleUserCreate = async () => {
     setShowCreateModal(false)
-    toast.success('User created successfully')
+    await refreshUsers()
   }
 
-  const stats = {
-    total: users.length,
-    active: users.filter(u => u.isActive).length,
-    inactive: users.filter(u => !u.isActive).length,
-    admins: users.filter(u => u.roles?.some(r => r.name === 'admin')).length,
-    agents: users.filter(u => u.roles?.some(r => r.name === 'agent')).length,
-    endUsers: users.filter(u => u.roles?.some(r => r.name === 'user')).length,
+  const handleFiltersChange = (newFilters: Record<string, any>) => {
+    setLocalFilters(newFilters)
+  }
+
+  const handleClearFilters = () => {
+    setLocalFilters({})
+    setSearchQuery('')
+  }
+
+  // Show error if there's an issue loading data
+  if (error && users.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              User Management
+            </h1>
+            <p className="mt-1 text-red-600 dark:text-red-400">
+              Error loading users: {error}
+            </p>
+          </div>
+        </div>
+        
+        <div className="card p-12 text-center">
+          <div className="text-red-600 dark:text-red-400">
+            Failed to load user data. Please try again.
+          </div>
+          <button
+            onClick={() => refreshUsers()}
+            className="btn btn-primary mt-4"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -167,32 +220,32 @@ export default function UsersPage() {
       {/* Stats cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-nova-600">{formatNumber(stats.total)}</div>
+          <div className="text-2xl font-bold text-nova-600">{formatNumber(stats?.total || 0)}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Total Users</div>
         </div>
         
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">{formatNumber(stats.active)}</div>
+          <div className="text-2xl font-bold text-green-600">{formatNumber(stats?.active || 0)}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Active</div>
         </div>
         
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-red-600">{formatNumber(stats.inactive)}</div>
+          <div className="text-2xl font-bold text-red-600">{formatNumber(stats?.inactive || 0)}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Inactive</div>
         </div>
         
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600">{formatNumber(stats.admins)}</div>
+          <div className="text-2xl font-bold text-purple-600">{formatNumber(stats?.byRole?.admin || 0)}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Admins</div>
         </div>
         
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">{formatNumber(stats.agents)}</div>
+          <div className="text-2xl font-bold text-blue-600">{formatNumber(stats?.byRole?.agent || 0)}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Agents</div>
         </div>
         
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-gray-600">{formatNumber(stats.endUsers)}</div>
+          <div className="text-2xl font-bold text-gray-600">{formatNumber(stats?.byRole?.user || 0)}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">End Users</div>
         </div>
       </div>
@@ -223,10 +276,22 @@ export default function UsersPage() {
             >
               <FunnelIcon className="h-4 w-4" />
               Filters
-              {Object.keys(filters).length > 0 && (
+              {Object.keys(localFilters).length > 0 && (
                 <span className="ml-1 rounded-full bg-nova-600 px-2 py-0.5 text-xs text-white">
-                  {Object.keys(filters).length}
+                  {Object.keys(localFilters).length}
                 </span>
+              )}
+            </button>
+            
+            <button
+              onClick={() => refreshUsers()}
+              className="btn btn-secondary"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <LoadingSpinner size="sm" />
+              ) : (
+                'Refresh'
               )}
             </button>
           </div>
@@ -234,22 +299,66 @@ export default function UsersPage() {
 
         {showFilters && (
           <div className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
-            <UserFilters
-              filters={filters}
-              onFiltersChange={setFilters}
-              onClearFilters={() => setFilters({})}
-            />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Role
+                </label>
+                <select
+                  value={localFilters.role || ''}
+                  onChange={(e) => handleFiltersChange({...localFilters, role: e.target.value || undefined})}
+                  className="input"
+                  aria-label="Filter by role"
+                >
+                  <option value="">All Roles</option>
+                  <option value="admin">Admin</option>
+                  <option value="agent">Agent</option>
+                  <option value="user">User</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Status
+                </label>
+                <select
+                  value={localFilters.isActive !== undefined ? (localFilters.isActive ? 'active' : 'inactive') : ''}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    handleFiltersChange({
+                      ...localFilters, 
+                      isActive: value === '' ? undefined : value === 'active'
+                    })
+                  }}
+                  className="input"
+                  aria-label="Filter by status"
+                >
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+              
+              <div className="flex items-end">
+                <button
+                  onClick={handleClearFilters}
+                  className="btn btn-secondary w-full"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
       {/* Bulk actions */}
-      {selectedUsers.length > 0 && (
+      {selectedUsers.size > 0 && (
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {formatNumber(selectedUsers.length)} user{selectedUsers.length !== 1 ? 's' : ''} selected
+                {formatNumber(selectedUsers.size)} user{selectedUsers.size !== 1 ? 's' : ''} selected
               </span>
               
               <div className="flex items-center gap-2">
@@ -280,7 +389,7 @@ export default function UsersPage() {
             </div>
 
             <button
-              onClick={() => setSelectedUsers([])}
+              onClick={() => clearSelection()}
               className="btn btn-ghost btn-sm"
             >
               Clear Selection
@@ -291,7 +400,7 @@ export default function UsersPage() {
 
       {/* Users table */}
       <div className="card overflow-hidden">
-        {isLoading ? (
+        {isLoading && users.length === 0 ? (
           <div className="flex items-center justify-center p-12">
             <LoadingSpinner size="lg" text="Loading users..." />
           </div>
@@ -313,31 +422,227 @@ export default function UsersPage() {
             </button>
           </div>
         ) : (
-          <UserTable 
-            users={users}
-            selectedUsers={selectedUsers}
-            onSelectionChange={setSelectedUsers}
-            onEditUser={setEditingUser}
-            onUserUpdate={handleUserUpdate}
-          />
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th className="w-8 px-6 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.size > 0 && selectedUsers.size === users.length}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          selectAllUsers()
+                        } else {
+                          clearSelection()
+                        }
+                      }}
+                      className="checkbox"
+                      aria-label="Select all users"
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Last Login
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.has(user.id)}
+                        onChange={() => toggleUserSelection(user.id)}
+                        className="checkbox"
+                        aria-label={`Select user ${user.firstName} ${user.lastName}`}
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-nova-100 dark:bg-nova-900 flex items-center justify-center">
+                            <span className="text-sm font-medium text-nova-700 dark:text-nova-300">
+                              {user.firstName?.[0]}{user.lastName?.[0]}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {user.firstName} {user.lastName}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {user.email}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles?.map((role) => (
+                          <span
+                            key={role.id}
+                            className={cn(
+                              'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                              role.name === 'admin' && 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                              role.name === 'agent' && 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                              role.name === 'user' && 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                            )}
+                          >
+                            {role.name}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={cn(
+                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                          user.isActive 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        )}
+                      >
+                        {user.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never'}
+                    </td>
+                    <td className="px-6 py-4 text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleUserAction('edit', user.id)}
+                          className="text-nova-600 hover:text-nova-700 dark:text-nova-400 dark:hover:text-nova-300"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleUserAction(user.isActive ? 'deactivate' : 'activate', user.id)}
+                          className={cn(
+                            user.isActive 
+                              ? 'text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300'
+                              : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300'
+                          )}
+                        >
+                          {user.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button
+                          onClick={() => handleUserAction('reset-password', user.id)}
+                          className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          Reset Password
+                        </button>
+                        <button
+                          onClick={() => handleUserAction('delete', user.id)}
+                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="bg-white dark:bg-gray-900 px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => setPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage <= 1}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage >= totalPages}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Next
+                  </button>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      Showing{' '}
+                      <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, totalUsers)}</span>{' '}
+                      to{' '}
+                      <span className="font-medium">{Math.min(currentPage * pageSize, totalUsers)}</span>{' '}
+                      of{' '}
+                      <span className="font-medium">{totalUsers}</span>{' '}
+                      results
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                      <button
+                        onClick={() => setPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage <= 1}
+                        className="btn btn-secondary btn-sm rounded-r-none"
+                      >
+                        Previous
+                      </button>
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = i + 1
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => setPage(page)}
+                            className={cn(
+                              'btn btn-sm rounded-none',
+                              page === currentPage ? 'btn-primary' : 'btn-secondary'
+                            )}
+                          >
+                            {page}
+                          </button>
+                        )
+                      })}
+                      <button
+                        onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage >= totalPages}
+                        className="btn btn-secondary btn-sm rounded-l-none"
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Modals */}
-      {showCreateModal && (
-        <CreateUserModal
-          onClose={() => setShowCreateModal(false)}
-          onUserCreate={handleUserCreate}
-        />
-      )}
+      {/* Create User Modal */}
+      <UserCreateModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleUserCreate}
+      />
 
-      {editingUser && (
-        <EditUserModal
-          user={editingUser}
-          onClose={() => setEditingUser(null)}
-          onUserUpdate={handleUserUpdate}
-        />
-      )}
+      {/* Edit User Modal */}
+      <UserEditModal
+        isOpen={!!editingUser}
+        user={editingUser}
+        onClose={() => setEditingUser(null)}
+        onSuccess={handleUserUpdate}
+      />
     </div>
   )
 }
