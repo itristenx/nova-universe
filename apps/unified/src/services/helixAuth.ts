@@ -73,6 +73,14 @@ export interface RefreshTokenRequest {
   refreshToken: string
 }
 
+export interface ProfileUpdateRequest {
+  firstName?: string
+  lastName?: string
+  displayName?: string
+  email?: string
+  avatar?: string
+}
+
 /**
  * Nova Helix Universal Login Service
  * Integrates with the Nova Helix authentication system for tenant discovery,
@@ -269,7 +277,7 @@ class HelixAuthService {
     return response.data
   }
 
-  async updateProfile(updates: Partial<any>) {
+  async updateProfile(updates: ProfileUpdateRequest) {
     const { data } = await apiClient.patch(`${this.baseUrl}/me`, updates)
     return data
   }

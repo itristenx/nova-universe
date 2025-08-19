@@ -17,6 +17,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 PRISMA_DIR="$PROJECT_ROOT/prisma"
 API_DIR="$PROJECT_ROOT/apps/api"
+# shellcheck disable=SC1091
+source "$PROJECT_ROOT/scripts/prisma-schemas.sh"
 
 # Environment variables with defaults
 DATABASE_URL="${DATABASE_URL:-}"
@@ -125,7 +127,7 @@ run_migrations() {
     fi
 
     # Generate Prisma clients for each schema
-    for schema in core auth cmdb integration notification user360 audit; do
+    for schema in "${PRISMA_ALL_SCHEMAS[@]}"; do
         if [ -f "$PRISMA_DIR/$schema/schema.prisma" ]; then
             if npx prisma generate --schema="$PRISMA_DIR/$schema/schema.prisma"; then
                 log_info "Generated Prisma client for $schema"

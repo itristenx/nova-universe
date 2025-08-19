@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
   )
 }
 
-function Metric({ label, value }: { label: string; value: any }) {
+function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="p-4 rounded bg-gray-50 dark:bg-gray-800">
       <p className="text-sm text-gray-500">{label}</p>

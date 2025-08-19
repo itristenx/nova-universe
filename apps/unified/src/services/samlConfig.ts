@@ -29,7 +29,7 @@ export interface SAMLConfig {
 export interface SAMLTestResult {
   success: boolean
   message: string
-  details?: any
+  details?: Record<string, unknown>
 }
 
 class SAMLConfigService {

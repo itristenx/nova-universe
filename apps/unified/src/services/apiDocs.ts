@@ -1,4 +1,5 @@
 import { apiClient } from './api'
+import type { OpenAPIV3 } from 'openapi-types'
 
 export interface ApiKey {
   id: string
@@ -9,7 +10,7 @@ export interface ApiKey {
   permissions: string[]
 }
 
-export type OpenAPISpec = any
+export type OpenAPISpec = OpenAPIV3.Document
 
 class ApiDocsService {
   private static baseUrl = '/api/v1/admin'
