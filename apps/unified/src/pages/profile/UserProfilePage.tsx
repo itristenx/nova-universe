@@ -5,6 +5,7 @@ import {
   CheckIcon,
   XMarkIcon 
 } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@stores/auth'
 import { authService } from '@services/auth'
 import { getInitials } from '@utils/index'
@@ -28,6 +29,7 @@ interface UserProfile {
 }
 
 export default function UserProfilePage() {
+  const { t } = useTranslation(['profile', 'forms', 'common'])
   const { user } = useAuthStore()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -274,7 +276,7 @@ export default function UserProfilePage() {
                     <input
                       type="text"
                       id="firstName"
-                      aria-label="First Name"
+                      aria-label={t('profile.firstName', 'First Name')}
                       value={profile.firstName || ''}
                       onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
@@ -295,7 +297,7 @@ export default function UserProfilePage() {
                     <input
                       type="text"
                       id="lastName"
-                      aria-label="Last Name"
+                      aria-label={t('profile.lastName', 'Last Name')}
                       value={profile.lastName || ''}
                       onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
@@ -329,7 +331,7 @@ export default function UserProfilePage() {
                     <input
                       type="tel"
                       id="phone"
-                      aria-label="Phone Number"
+                      aria-label={t('profile.phoneNumber', 'Phone Number')}
                       value={profile.phone || ''}
                       onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
@@ -350,7 +352,7 @@ export default function UserProfilePage() {
                     <input
                       type="text"
                       id="title"
-                      aria-label="Job Title"
+                      aria-label={t('profile.jobTitle', 'Job Title')}
                       value={profile.title || ''}
                       onChange={(e) => setProfile({ ...profile, title: e.target.value })}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
@@ -371,7 +373,7 @@ export default function UserProfilePage() {
                     <input
                       type="text"
                       id="department"
-                      aria-label="Department"
+                      aria-label={t('profile.department', 'Department')}
                       value={profile.department || ''}
                       onChange={(e) => setProfile({ ...profile, department: e.target.value })}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
@@ -391,7 +393,7 @@ export default function UserProfilePage() {
                   {editMode ? (
                     <select
                       id="timezone"
-                      aria-label="Timezone"
+                      aria-label={t('profile.timezone', 'Timezone')}
                       value={profile.timezone || 'UTC'}
                       onChange={(e) => setProfile({ ...profile, timezone: e.target.value })}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
@@ -422,7 +424,7 @@ export default function UserProfilePage() {
                       rows={3}
                       value={profile.bio || ''}
                       onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                      placeholder="Tell us a bit about yourself..."
+                      placeholder={t('profile.bioPlaceholder', 'Tell us a bit about yourself...')}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
                     />
                   ) : (

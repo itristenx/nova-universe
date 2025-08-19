@@ -4,27 +4,29 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@stores/auth'
 import { LoadingSpinner } from '@components/common/LoadingSpinner'
 import { cn } from '@utils/index'
 import toast from 'react-hot-toast'
 
-// Validation schema
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(1, 'Password is required'),
-  rememberMe: z.boolean().default(false),
-})
-
-type LoginFormData = z.infer<typeof loginSchema>
-
 export default function LoginPage() {
+  const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const { login, isLoading, error, clearError } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
 
   const from = location.state?.from?.pathname || '/dashboard'
+
+  // Validation schema with translations
+  const loginSchema = z.object({
+    email: z.string().email(t('forms.email', 'Please enter a valid email address')),
+    password: z.string().min(1, t('forms.required', 'This field is required')),
+    rememberMe: z.boolean().default(false),
+  })
+
+  type LoginFormData = z.infer<typeof loginSchema>
 
   const {
     register,
@@ -72,7 +74,7 @@ export default function LoginPage() {
             {/* Email field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email
+                {t('auth.email', 'Email')}
               </label>
               <div className="mt-1">
                 <input
@@ -83,7 +85,7 @@ export default function LoginPage() {
                     'input',
                     errors.email && 'input-error'
                   )}
-                  placeholder="Enter your email"
+                  placeholder={t('auth.emailPlaceholder', 'Enter your email')}
                 />
                 {errors.email && (
                   <p className="mt-2 text-sm text-red-600 dark:text-red-400">
@@ -96,7 +98,7 @@ export default function LoginPage() {
             {/* Password field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Password
+                {t('auth.password', 'Password')}
               </label>
               <div className="relative mt-1">
                 <input
@@ -107,7 +109,7 @@ export default function LoginPage() {
                     'input pr-10',
                     errors.password && 'input-error'
                   )}
-                  placeholder="Enter your password"
+                  placeholder={t('auth.login.passwordPlaceholder', 'Enter your password')}
                 />
                 <button
                   type="button"
@@ -138,7 +140,7 @@ export default function LoginPage() {
                   className="h-4 w-4 rounded border-gray-300 text-nova-600 focus:ring-nova-500"
                 />
                 <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                  Remember me
+                  {t('auth.login.rememberMe', 'Remember me')}
                 </label>
               </div>
 
@@ -147,7 +149,7 @@ export default function LoginPage() {
                   to="/auth/forgot-password"
                   className="font-medium text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300"
                 >
-                  Forgot your password?
+                  {t('auth.login.forgotPassword', 'Forgot your password?')}
                 </Link>
               </div>
             </div>
@@ -170,7 +172,7 @@ export default function LoginPage() {
               {isLoading ? (
                 <LoadingSpinner size="sm" />
               ) : (
-                'Sign in'
+                t('auth.login.signIn', 'Sign In')
               )}
             </button>
 

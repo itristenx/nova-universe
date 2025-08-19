@@ -172,6 +172,8 @@ const getAllNavigation = (t: any): NavigationItem[] => [
       { name: t('sidebar.notifications'), href: '/admin/notifications', icon: BellIcon, roles: ['admin'] },
       { name: t('sidebar.siteAssetManagement'), href: '/admin/assets', icon: CubeIcon, roles: ['admin'] },
       { name: t('sidebar.integrationManagement'), href: '/admin/integrations', icon: CloudIcon, roles: ['admin'] },
+      { name: t('sidebar.accessibilityAudit'), href: '/accessibility-audit', icon: ShieldCheckIcon, roles: ['admin'] },
+      { name: t('sidebar.offlineManagement'), href: '/offline', icon: CloudIcon, roles: ['admin'] },
       { name: t('sidebar.auditLogs'), href: '/admin/audit', icon: DocumentTextIcon, roles: ['admin'] }
     ]
   },
@@ -354,7 +356,7 @@ export function Sidebar({ isOpen, isCollapsed, onClose }: SidebarProps) {
           <button
             onClick={onClose}
             className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
-            aria-label="Close sidebar"
+            aria-label={t('navigation.close', 'Close sidebar')}
           >
             <XMarkIcon className="h-5 w-5" />
           </button>

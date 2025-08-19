@@ -41,6 +41,8 @@
     "novaCourierDesc": "Gestión de Paquetes y Correo"
   },
   "auth": {
+    "emailPlaceholder": "Ingresa tu email",
+    "passwordPlaceholder": "Ingresa tu contraseña",
     "login": {
       "welcome": "Bienvenido a Nova Universe",
       "welcomeBack": "¡Bienvenido de vuelta!",
@@ -50,6 +52,7 @@
       "enterVerificationCode": "Ingresa el código de verificación",
       "workEmail": "Email de Trabajo",
       "emailPlaceholder": "Ingresa tu dirección de email de trabajo",
+      "passwordPlaceholder": "Ingresa tu contraseña",
       "discovering": "Descubriendo organización...",
       "findOrganizationHelp": "Ingresa tu email de trabajo para encontrar tu organización",
       "organizationFound": "Organización encontrada: {{organization}}",
@@ -177,6 +180,8 @@
     "notifications": "Notificaciones",
     "siteAssetManagement": "Gestión de Activos del Sitio",
     "integrationManagement": "Gestión de Integraciones",
+    "accessibilityAudit": "Auditoría de Accesibilidad",
+    "offlineManagement": "Gestión sin Conexión",
     "auditLogs": "Registros de Auditoría",
     "analytics": "Analíticas",
     "performanceDashboard": "Panel de Rendimiento",
@@ -369,6 +374,19 @@
         "viewLogs": "Ver Registros"
       }
     }
+  },
+  "profile": {
+    "title": "Perfil",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "phoneNumber": "Número de Teléfono",
+    "jobTitle": "Cargo",
+    "department": "Departamento",
+    "timezone": "Zona Horaria",
+    "bioPlaceholder": "Cuéntanos un poco sobre ti...",
+    "editProfile": "Editar Perfil",
+    "saveProfile": "Guardar Perfil",
+    "cancelEdit": "Cancelar"
   },
   "forms": {
     "required": "Este campo es obligatorio",

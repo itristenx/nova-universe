@@ -6,6 +6,9 @@ import { AppLayout } from '@components/layout/AppLayout'
 import { AuthLayout } from '@components/layout/AuthLayout'
 import { LoadingSpinner } from '@components/common/LoadingSpinner'
 import { ErrorBoundary } from '@components/common/ErrorBoundary'
+import PWAInstaller from '@components/PWAInstaller'
+import SkipLinks from '@components/accessibility/SkipLinks'
+import KioskRedirect from '@components/KioskRedirect'
 
 // Lazy load pages for better performance
 import { lazy, Suspense } from 'react'
@@ -69,6 +72,9 @@ const AIAssistantPage = lazy(() => import('@pages/ai/AIAssistantPage'))
 // i18n Test page
 const I18nTestPage = lazy(() => import('@pages/I18nTestPage'))
 
+// Demo pages
+const MobileFeaturesDemo = lazy(() => import('@pages/demo/MobileFeaturesDemo'))
+
 // System monitoring pages
 const MonitoringPage = lazy(() => import('@pages/monitoring/MonitoringPage'))
 
@@ -80,6 +86,10 @@ const CourierDashboard = lazy(() => import('@pages/courier/CourierDashboard'))
 
 // Error pages
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage'))
+
+// Accessibility and offline pages
+const AccessibilityAuditPage = lazy(() => import('@pages/AccessibilityAuditPage'))
+const OfflinePage = lazy(() => import('@pages/OfflinePage'))
 
 function App() {
   const { refreshUser, isAuthenticated, isLoading } = useAuthStore()
@@ -100,6 +110,8 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <SkipLinks />
+      <KioskRedirect />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Routes>
           {/* Public authentication routes */}
@@ -159,6 +171,9 @@ function App() {
                       {/* Knowledge Base routes */}
                       <Route path="/knowledge" element={<KnowledgeBasePage />} />
 
+                      {/* Demo routes */}
+                      <Route path="/demo/mobile" element={<MobileFeaturesDemo />} />
+
                       {/* Profile routes */}
                       <Route path="/profile" element={<UserProfilePage />} />
 
@@ -167,6 +182,10 @@ function App() {
 
                       {/* i18n Test route */}
                       <Route path="/i18n-test" element={<I18nTestPage />} />
+
+                      {/* Accessibility and offline routes */}
+                      <Route path="/accessibility-audit" element={<AccessibilityAuditPage />} />
+                      <Route path="/offline" element={<OfflinePage />} />
 
                       {/* System monitoring routes */}
                       <Route path="/monitoring" element={<MonitoringPage />} />
@@ -206,6 +225,7 @@ function App() {
           />
         </Routes>
       </div>
+      <PWAInstaller />
     </ErrorBoundary>
   )
 }
