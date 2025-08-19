@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@utils/index'
 import toast from 'react-hot-toast'
+import { samlConfigService, type SAMLConfig, type SAMLTestResult } from '@services/samlConfig'
 
 // Simple icon components to avoid React 19 compatibility issues
 const ShieldIcon = ({ className }: { className?: string }) => (
@@ -76,37 +77,7 @@ const XIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-interface SAMLConfig {
-  enabled: boolean
-  entryPoint: string
-  issuer: string
-  callbackUrl: string
-  cert: string
-  signatureAlgorithm: string
-  digestAlgorithm: string
-  authnContextClassRef: string
-  attributeMapping: {
-    email: string
-    displayName: string
-    firstName: string
-    lastName: string
-    groups: string
-  }
-  idpMetadata?: string
-  spEntityId?: string
-  allowedClockDrift: number
-  forceAuthn: boolean
-  bypassLoginPage: boolean
-  groupMirroringEnabled: boolean
-  autoProvisionUsers: boolean
-  defaultUserRole: string
-}
-
-interface TestResult {
-  success: boolean
-  message: string
-  details?: any
-}
+type TestResult = SAMLTestResult
 
 export default function SAMLConfigurationPage() {
   const [activeTab, setActiveTab] = useState<'configuration' | 'testing' | 'metadata'>('configuration')
@@ -148,12 +119,9 @@ export default function SAMLConfigurationPage() {
   const loadConfig = async () => {
     setIsLoading(true)
     try {
-      // TODO: Replace with actual API call
-      // const response = await authService.getSAMLConfig()
-      // setConfig(response.data)
-      console.log('Loading SAML config...')
-    } catch (error) {
-      console.error('Failed to load SAML configuration:', error)
+      const data = await samlConfigService.getConfig()
+      setConfig(data)
+    } catch {
       toast.error('Failed to load SAML configuration')
     } finally {
       setIsLoading(false)
@@ -163,12 +131,9 @@ export default function SAMLConfigurationPage() {
   const saveConfig = async () => {
     setIsSaving(true)
     try {
-      // TODO: Replace with actual API call
-      // await authService.updateSAMLConfig(config)
-      console.log('Saving SAML config:', config)
+      await samlConfigService.update(config)
       toast.success('SAML configuration saved successfully')
-    } catch (error) {
-      console.error('Failed to save SAML configuration:', error)
+    } catch {
       toast.error('Failed to save SAML configuration')
     } finally {
       setIsSaving(false)
@@ -179,21 +144,14 @@ export default function SAMLConfigurationPage() {
     setIsTesting(true)
     setTestResult(null)
     try {
-      // TODO: Replace with actual API call
-      // const response = await authService.testSAMLConfig()
-      const mockResult = {
-        success: true,
-        message: 'SAML configuration test successful',
-        details: {
-          certificates: 'Valid',
-          connectivity: 'Connected',
-          attributeMapping: 'Configured'
-        }
+      const result = await samlConfigService.test()
+      setTestResult(result)
+      if (result.success) {
+        toast.success(result.message)
+      } else {
+        toast.error(result.message)
       }
-      setTestResult(mockResult)
-      toast.success('SAML test completed')
     } catch (error) {
-      console.error('SAML test failed:', error)
       setTestResult({
         success: false,
         message: 'SAML configuration test failed',
@@ -207,21 +165,10 @@ export default function SAMLConfigurationPage() {
 
   const loadMetadata = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await authService.getSAMLMetadata()
-      const mockMetadata = `<?xml version="1.0"?>
-<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
-                     entityID="${window.location.origin}/saml/metadata">
-  <md:SPSSODescriptor AuthnRequestsSigned="false" WantAssertionsSigned="true"
-                       protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-    <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                                 Location="${config.callbackUrl}"
-                                 index="1"/>
-  </md:SPSSODescriptor>
-</md:EntityDescriptor>`
-      setMetadata(mockMetadata)
-    } catch (error) {
-      console.error('Failed to load metadata:', error)
+      const data = await samlConfigService.getMetadata()
+      setMetadata(data)
+    } catch {
+      toast.error('Failed to load SAML metadata')
     }
   }
 

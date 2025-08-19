@@ -240,36 +240,18 @@ export const useAuthStore = create<AuthState>()(
       // Update profile
       updateProfile: async (updates?: Partial<User>) => {
         set({ isLoading: true, error: null })
-        
+
         try {
-          // TODO: Connect to actual API when backend is available
-          if (import.meta.env.VITE_PROFILE_UPDATES_ENABLED === 'true') {
-            // Simulate API call for demo purposes
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            
-            // Update local state if we have updates
-            if (updates) {
-              set(state => ({
-                user: state.user ? { ...state.user, ...updates } : null,
-                isLoading: false
-              }))
-            }
-          } else {
-            // Graceful fallback - just update local state
-            console.warn('Profile updates not yet connected to backend API')
-            if (updates) {
-              set(state => ({
-                user: state.user ? { ...state.user, ...updates } : null,
-                isLoading: false
-              }))
-            } else {
-              set({ isLoading: false })
-            }
-          }
+          const updated = await helixAuthService.updateProfile(updates || {})
+          set(state => ({
+            user: state.user ? { ...state.user, ...updated } : updated,
+            isLoading: false,
+            error: null
+          }))
         } catch (error) {
           set({
             isLoading: false,
-            error: error instanceof Error ? error.message : 'Profile update failed',
+            error: error instanceof Error ? error.message : 'Failed to update profile'
           })
           throw error
         }

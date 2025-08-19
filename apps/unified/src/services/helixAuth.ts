@@ -1,4 +1,4 @@
-import { apiClient } from './api'
+import { api, apiClient } from './api'
 
 export interface TenantDiscoveryRequest {
   email: string
@@ -40,7 +40,6 @@ export interface AuthenticationRequest {
 }
 
 export interface AuthenticationResponse {
-  success: boolean
   requiresMFA?: boolean
   tempSessionId?: string
   availableMfaMethods?: Array<{
@@ -86,37 +85,48 @@ class HelixAuthService {
    * Discover tenant and available authentication methods by email
    */
   async discoverTenant(email: string, redirectUrl?: string): Promise<TenantDiscoveryResponse> {
-    const response = await apiClient.post<TenantDiscoveryResponse>(`${this.baseUrl}/tenant/discover`, {
+    interface TenantDiscoveryApiResponse extends TenantDiscoveryResponse {
+      success: boolean
+      error?: string
+    }
+
+    const { data } = await api.post<TenantDiscoveryApiResponse>(`${this.baseUrl}/tenant/discover`, {
       email,
       redirectUrl,
     })
 
-    if (!response.success || !response.data) {
-      throw new Error('Failed to discover tenant')
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to discover tenant')
     }
 
-    return response.data
+    const { success, error, ...tenantData } = data
+    return tenantData
   }
 
   /**
    * Authenticate user with discovered tenant and method
    */
   async authenticate(request: AuthenticationRequest): Promise<AuthenticationResponse> {
-    const response = await apiClient.post<AuthenticationResponse>(`${this.baseUrl}/authenticate`, request)
-
-    if (!response.success || !response.data) {
-      throw new Error('Authentication failed')
+    interface AuthenticationApiResponse extends AuthenticationResponse {
+      success: boolean
+      error?: string
     }
 
-    const authData = response.data
+    const { data } = await api.post<AuthenticationApiResponse>(`${this.baseUrl}/authenticate`, request)
+
+    if (!data.success) {
+      throw new Error(data.error || 'Authentication failed')
+    }
+
+    const { success, error, ...authData } = data
 
     // If we received tokens, store them
     if (authData.accessToken && authData.refreshToken) {
       localStorage.setItem('nova_access_token', authData.accessToken)
       localStorage.setItem('nova_refresh_token', authData.refreshToken)
-      
+
       if (authData.expiresIn) {
-        const expiry = Date.now() + (authData.expiresIn * 1000)
+        const expiry = Date.now() + authData.expiresIn * 1000
         localStorage.setItem('nova_token_expiry', expiry.toString())
       }
     }
@@ -128,26 +138,33 @@ class HelixAuthService {
    * Verify MFA code during login
    */
   async verifyMfa(request: MfaVerificationRequest): Promise<AuthenticationResponse> {
-    const response = await apiClient.post<AuthenticationResponse>(`${this.baseUrl}/mfa/verify`, request)
-
-    if (!response.success || !response.data) {
-      throw new Error('MFA verification failed')
+    interface MfaVerificationApiResponse extends AuthenticationResponse {
+      success: boolean
+      error?: string
+      token?: string
     }
 
-    const authData = response.data
+    const { data } = await api.post<MfaVerificationApiResponse>(`${this.baseUrl}/mfa/verify`, request)
+
+    if (!data.success) {
+      throw new Error(data.error || 'MFA verification failed')
+    }
+
+    const { success, error, token, ...authData } = data
 
     // Store tokens if authentication is complete
-    if (authData.token && authData.refreshToken) {
-      localStorage.setItem('nova_access_token', authData.token)
+    const accessToken = authData.accessToken ?? token
+    if (accessToken && authData.refreshToken) {
+      localStorage.setItem('nova_access_token', accessToken)
       localStorage.setItem('nova_refresh_token', authData.refreshToken)
-      
+
       if (authData.expiresIn) {
-        const expiry = Date.now() + (authData.expiresIn * 1000)
+        const expiry = Date.now() + authData.expiresIn * 1000
         localStorage.setItem('nova_token_expiry', expiry.toString())
       }
     }
 
-    return authData
+    return { ...authData, accessToken }
   }
 
   /**
@@ -159,28 +176,45 @@ class HelixAuthService {
       throw new Error('No refresh token available')
     }
 
-    const response = await apiClient.post<AuthenticationResponse>(`${this.baseUrl}/token/refresh`, {
+    interface TokenRefreshApiResponse {
+      success: boolean
+      token: string
+      expiresIn?: string | number
+      error?: string
+    }
+
+    const { data } = await api.post<TokenRefreshApiResponse>(`${this.baseUrl}/token/refresh`, {
       refreshToken,
     })
 
-    if (!response.success || !response.data) {
-      throw new Error('Token refresh failed')
+    if (!data.success) {
+      throw new Error(data.error || 'Token refresh failed')
     }
 
-    const authData = response.data
+    const accessToken = data.token
+    localStorage.setItem('nova_access_token', accessToken)
 
-    // Update stored tokens
-    if (authData.accessToken && authData.refreshToken) {
-      localStorage.setItem('nova_access_token', authData.accessToken)
-      localStorage.setItem('nova_refresh_token', authData.refreshToken)
-      
-      if (authData.expiresIn) {
-        const expiry = Date.now() + (authData.expiresIn * 1000)
+    if (data.expiresIn) {
+      let expiresInSeconds: number | undefined
+      if (typeof data.expiresIn === 'string') {
+        const match = data.expiresIn.match(/^(\d+)([smhd])$/)
+        if (match) {
+          const value = parseInt(match[1], 10)
+          const unit = match[2]
+          const multipliers: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400 }
+          expiresInSeconds = value * (multipliers[unit] || 1)
+        }
+      } else {
+        expiresInSeconds = data.expiresIn
+      }
+
+      if (expiresInSeconds) {
+        const expiry = Date.now() + expiresInSeconds * 1000
         localStorage.setItem('nova_token_expiry', expiry.toString())
       }
     }
 
-    return authData
+    return { accessToken }
   }
 
   /**
@@ -188,7 +222,7 @@ class HelixAuthService {
    */
   async logout(): Promise<void> {
     try {
-      await apiClient.post(`${this.baseUrl}/logout`)
+      await api.post(`${this.baseUrl}/logout`)
     } catch (error) {
       // Continue with logout even if API call fails
       console.warn('Logout API call failed:', error)
@@ -233,6 +267,11 @@ class HelixAuthService {
   async getCurrentUser() {
     const response = await apiClient.get(`${this.baseUrl}/me`)
     return response.data
+  }
+
+  async updateProfile(updates: Partial<any>) {
+    const { data } = await apiClient.patch(`${this.baseUrl}/me`, updates)
+    return data
   }
 
   /**
