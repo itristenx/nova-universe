@@ -17,6 +17,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 PRISMA_DIR="$PROJECT_ROOT/prisma"
 API_DIR="$PROJECT_ROOT/apps/api"
+# shellcheck disable=SC1091
+source "$PROJECT_ROOT/scripts/prisma-schemas.sh"
 
 # Environment variables with defaults
 DATABASE_URL="${DATABASE_URL:-}"
@@ -108,29 +110,33 @@ backup_database() {
 
 run_migrations() {
     log_info "Running database migrations..."
-    
+
     cd "$PROJECT_ROOT"
-    
+
     # Set DATABASE_URL if not provided
     if [ -z "$DATABASE_URL" ]; then
         export DATABASE_URL="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
     fi
-    
-    # Run Prisma migrations
-    if npx prisma migrate deploy; then
+
+    # Run migrations across all Prisma schemas
+    if "$PROJECT_ROOT/scripts/run-prisma-migrations.sh"; then
         log_success "Database migrations completed"
     else
         log_error "Database migrations failed"
         exit 1
     fi
-    
-    # Generate Prisma client
-    if npx prisma generate; then
-        log_success "Prisma client generated"
-    else
-        log_error "Prisma client generation failed"
-        exit 1
-    fi
+
+    # Generate Prisma clients for each schema
+    for schema in "${PRISMA_ALL_SCHEMAS[@]}"; do
+        if [ -f "$PRISMA_DIR/$schema/schema.prisma" ]; then
+            if npx prisma generate --schema="$PRISMA_DIR/$schema/schema.prisma"; then
+                log_info "Generated Prisma client for $schema"
+            else
+                log_error "Prisma client generation failed for $schema"
+                exit 1
+            fi
+        fi
+    done
 }
 
 seed_database() {

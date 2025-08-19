@@ -3,7 +3,7 @@
  * Handles all system configuration related API operations
  */
 
-import { api } from './api'
+import { apiClient } from './api'
 
 export interface SystemConfig {
   general: {
@@ -54,8 +54,10 @@ export interface SystemConfig {
 }
 
 export class SystemConfigService {
+  private static baseUrl = '/api/v1/admin/system/configuration'
+
   static async getConfiguration(): Promise<SystemConfig> {
-    const response = await api.get<SystemConfig>('/admin/system/configuration')
+    const response = await apiClient.get<SystemConfig>(this.baseUrl)
     if (!response.data) {
       throw new Error('Failed to load system configuration')
     }
@@ -63,15 +65,15 @@ export class SystemConfigService {
   }
 
   static async updateConfiguration(config: SystemConfig): Promise<SystemConfig> {
-    const response = await api.put<SystemConfig>('/admin/system/configuration', config)
+    const response = await apiClient.put<SystemConfig>(this.baseUrl, config)
     if (!response.data) {
       throw new Error('Failed to update system configuration')
     }
     return response.data
   }
 
-  static async updateSection(section: keyof SystemConfig, data: any): Promise<SystemConfig> {
-    const response = await api.patch<SystemConfig>(`/admin/system/configuration/${section}`, data)
+  static async updateSection(section: keyof SystemConfig, data: unknown): Promise<SystemConfig> {
+    const response = await apiClient.patch<SystemConfig>(`${this.baseUrl}/${section}`, data)
     if (!response.data) {
       throw new Error(`Failed to update ${section} configuration`)
     }
@@ -79,7 +81,7 @@ export class SystemConfigService {
   }
 
   static async testEmailConfiguration(): Promise<{ success: boolean; message: string }> {
-    const response = await api.post<{ success: boolean; message: string }>('/admin/system/test-email')
+    const response = await apiClient.post<{ success: boolean; message: string }>('/api/v1/admin/system/test-email')
     if (!response.data) {
       throw new Error('Failed to test email configuration')
     }
@@ -87,7 +89,7 @@ export class SystemConfigService {
   }
 
   static async testWebhook(type: 'slack' | 'discord' | 'teams', webhook: string): Promise<{ success: boolean; message: string }> {
-    const response = await api.post<{ success: boolean; message: string }>(`/admin/system/test-webhook/${type}`, { webhook })
+    const response = await apiClient.post<{ success: boolean; message: string }>(`/api/v1/admin/system/test-webhook/${type}`, { webhook })
     if (!response.data) {
       throw new Error(`Failed to test ${type} webhook`)
     }
@@ -95,7 +97,7 @@ export class SystemConfigService {
   }
 
   static async resetToDefaults(): Promise<SystemConfig> {
-    const response = await api.post<SystemConfig>('/admin/system/configuration/reset')
+    const response = await apiClient.post<SystemConfig>(`${this.baseUrl}/reset`)
     if (!response.data) {
       throw new Error('Failed to reset configuration to defaults')
     }
@@ -103,18 +105,21 @@ export class SystemConfigService {
   }
 
   static async exportConfiguration(): Promise<Blob> {
-    const response = await api.get('/admin/system/configuration/export', { responseType: 'blob' })
-    return response.data as Blob
+    const response = await apiClient.get<Blob>(`${this.baseUrl}/export`, { responseType: 'blob' })
+    if (!response.data) {
+      throw new Error('Failed to export configuration')
+    }
+    return response.data
   }
 
   static async importConfiguration(file: File): Promise<SystemConfig> {
     const formData = new FormData()
     formData.append('file', file)
-    
-    const response = await api.post<SystemConfig>('/admin/system/configuration/import', formData, {
+
+    const response = await apiClient.post<SystemConfig>(`${this.baseUrl}/import`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
-    
+
     if (!response.data) {
       throw new Error('Failed to import configuration')
     }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { cn, withMockFallback } from '@utils/index'
+import { cn } from '@utils/index'
 import toast from 'react-hot-toast'
+import { SystemConfigService, type SystemConfig } from '@services/systemConfig'
 
 // Custom icon components for React 19 compatibility
 const CogIcon = ({ className }: { className?: string }) => (
@@ -41,55 +42,6 @@ const DocumentIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-// Configuration interfaces
-interface SystemConfig {
-  general: {
-    systemName: string
-    systemDescription: string
-    timezone: string
-    defaultLanguage: string
-    maintenanceMode: boolean
-    debugMode: boolean
-    logLevel: 'error' | 'warn' | 'info' | 'debug'
-  }
-  security: {
-    sessionTimeout: number
-    maxLoginAttempts: number
-    passwordPolicy: {
-      minLength: number
-      requireUppercase: boolean
-      requireLowercase: boolean
-      requireNumbers: boolean
-      requireSpecialChars: boolean
-    }
-    twoFactorEnabled: boolean
-    ipWhitelist: string[]
-  }
-  email: {
-    smtpHost: string
-    smtpPort: number
-    smtpUsername: string
-    smtpPassword: string
-    smtpSecure: boolean
-    fromEmail: string
-    fromName: string
-  }
-  notifications: {
-    emailNotifications: boolean
-    slackWebhook: string
-    discordWebhook: string
-    teamsWebhook: string
-    criticalAlerts: boolean
-    systemUpdates: boolean
-  }
-  storage: {
-    maxFileSize: number
-    allowedFileTypes: string[]
-    storageQuota: number
-    backupRetention: number
-  }
-}
-
 export default function SystemConfigurationPage() {
   const [config, setConfig] = useState<SystemConfig | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -104,71 +56,12 @@ export default function SystemConfigurationPage() {
   const loadSystemConfig = async () => {
     try {
       setIsLoading(true)
-      
-      // Mock data for development/demo
-      const mockConfig: SystemConfig = {
-        general: {
-          systemName: 'Nova Universe',
-          systemDescription: 'Enterprise ITSM Platform',
-          timezone: 'UTC',
-          defaultLanguage: 'en',
-          maintenanceMode: false,
-          debugMode: false,
-          logLevel: 'info',
-        },
-        security: {
-          sessionTimeout: 3600,
-          maxLoginAttempts: 3,
-          passwordPolicy: {
-            minLength: 8,
-            requireUppercase: true,
-            requireLowercase: true,
-            requireNumbers: true,
-            requireSpecialChars: true,
-          },
-          twoFactorEnabled: false,
-          ipWhitelist: [],
-        },
-        email: {
-          smtpHost: 'smtp.example.com',
-          smtpPort: 587,
-          smtpUsername: 'noreply@example.com',
-          smtpPassword: '••••••••',
-          smtpSecure: true,
-          fromEmail: 'noreply@example.com',
-          fromName: 'Nova Universe',
-        },
-        notifications: {
-          emailNotifications: true,
-          slackWebhook: '',
-          discordWebhook: '',
-          teamsWebhook: '',
-          criticalAlerts: true,
-          systemUpdates: true,
-        },
-        storage: {
-          maxFileSize: 10,
-          allowedFileTypes: ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png'],
-          storageQuota: 1000,
-          backupRetention: 30,
-        },
-      }
-
-      // Use utility function to handle API vs mock data
-      const config = await withMockFallback(
-        () => {
-          // TODO: Replace with actual API call when backend is available
-          throw new Error('API not implemented yet')
-          // return api.getSystemConfiguration()
-        },
-        mockConfig,
-        'Using mock system configuration for demo'
-      )
-
+      const config = await SystemConfigService.getConfiguration()
       setConfig(config)
     } catch (error) {
       console.error('Error loading system configuration:', error)
-      toast.error('Failed to load system configuration')
+      const message = error instanceof Error ? error.message : 'Failed to load system configuration'
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -180,28 +73,19 @@ export default function SystemConfigurationPage() {
     try {
       setIsSaving(true)
       
-      // Use utility function to handle API vs mock operation
-      await withMockFallback(
-        () => {
-          // TODO: Replace with actual API call when backend is available
-          throw new Error('Save API not implemented yet')
-          // return api.saveSystemConfiguration(config)
-        },
-        undefined, // Mock operation - just succeed silently
-        'Simulating save of system configuration'
-      )
-      
+      await SystemConfigService.updateConfiguration(config)
       setHasChanges(false)
       toast.success('Configuration saved successfully')
     } catch (error) {
       console.error('Error saving configuration:', error)
-      toast.error('Failed to save configuration')
+      const message = error instanceof Error ? error.message : 'Failed to save configuration'
+      toast.error(message)
     } finally {
       setIsSaving(false)
     }
   }
 
-  const updateConfig = (section: keyof SystemConfig, field: string, value: any) => {
+  const updateConfig = (section: keyof SystemConfig, field: string, value: unknown) => {
     if (!config) return
 
     const newConfig = {
@@ -216,7 +100,7 @@ export default function SystemConfigurationPage() {
     setHasChanges(true)
   }
 
-  const updateNestedConfig = (section: keyof SystemConfig, parent: string, field: string, value: any) => {
+  const updateNestedConfig = (section: keyof SystemConfig, parent: string, field: string, value: unknown) => {
     if (!config) return
 
     const newConfig = {
@@ -224,7 +108,7 @@ export default function SystemConfigurationPage() {
       [section]: {
         ...config[section],
         [parent]: {
-          ...(config[section] as any)[parent],
+          ...(config[section] as Record<string, unknown>)[parent] as Record<string, unknown>,
           [field]: value
         }
       }
