@@ -475,7 +475,6 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
                 })}
               </CardContent>
             </Card>
-          </div>
 
           {/* Step Content */}
           <div className="lg:col-span-3">
@@ -589,37 +588,6 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Skip Confirmation Modal */}
-      {showSkipConfirmation && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="max-w-md mx-4">
-            <CardHeader>
-              <CardTitle>Skip Step?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Are you sure you want to skip the {currentStep.title} step? 
-                You can always configure this later in the admin panel.
-              </p>
-              <div className="flex items-center justify-end space-x-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowSkipConfirmation(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={confirmSkip}
-                >
-                  Skip Step
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 };

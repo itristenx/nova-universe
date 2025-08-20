@@ -244,7 +244,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const updated = await helixAuthService.updateProfile(updates || {})
           set(state => ({
-            user: state.user ? { ...state.user, ...updated } : updated,
+            user: state.user ? { ...state.user, ...(updated as any) } : updated,
             isLoading: false,
             error: null
           }))

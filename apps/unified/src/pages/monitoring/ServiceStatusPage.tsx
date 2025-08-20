@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -58,6 +59,7 @@ interface MaintenanceWindow {
 }
 
 export default function ServiceStatusPage() {
+  const { t } = useTranslation('serviceStatus')
   const [services, setServices] = useState<ServiceStatus[]>([])
   const [metrics, setMetrics] = useState<SystemMetric[]>([])
   const [incidents, setIncidents] = useState<Incident[]>([])

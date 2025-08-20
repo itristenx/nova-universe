@@ -53,7 +53,7 @@ export default function MonitoringPage() {
     }, 30000)
 
     return () => {
-      unsubscribe()
+      unsubscribe.then(cleanup => cleanup && cleanup())
       clearInterval(interval)
     }
   }, [])

@@ -88,7 +88,7 @@ export default function KioskRedirect({ className = '' }: KioskRedirectProps) {
   return (
     <>
       {/* Kiosk-specific styles */}
-      <style jsx global>{`
+      <style>{`
         .kiosk-mode {
           --touch-target-min: 44px;
           user-select: none;

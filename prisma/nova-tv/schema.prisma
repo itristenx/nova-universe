@@ -1,0 +1,192 @@
+// Nova TV Database Schema Extensions for Prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/nova-tv-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model NovaTVDashboard {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  department    String
+  createdBy     String
+  templateId    String?
+  configuration Json
+  isActive      Boolean  @default(true)
+  isPublic      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  creator       User               @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  template      NovaTVTemplate?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  devices       NovaTVDevice[]
+  content       NovaTVContent[]
+  analytics     NovaTVAnalytics[]
+  sharedWith    NovaTVDashboardShare[]
+
+  @@map("nova_tv_dashboards")
+  @@index([department])
+  @@index([createdBy])
+  @@index([isActive])
+}
+
+model NovaTVDevice {
+  id                String   @id @default(cuid())
+  name              String
+  location          String?
+  department        String?
+  ipAddress         String?
+  browserInfo       String?
+  deviceFingerprint String   @unique
+  dashboardId       String?
+  lastActiveAt      DateTime?
+  connectionStatus  String   @default("disconnected")
+  settings          Json     @default("{}")
+  metadata          Json     @default("{}")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  dashboard         NovaTVDashboard? @relation(fields: [dashboardId], references: [id], onDelete: SetNull)
+  analytics         NovaTVAnalytics[]
+  authSessions      NovaTVAuthSession[]
+
+  @@map("nova_tv_devices")
+  @@index([department])
+  @@index([connectionStatus])
+  @@index([dashboardId])
+}
+
+model NovaTVTemplate {
+  id               String   @id @default(cuid())
+  name             String
+  description      String?
+  category         String
+  departmentType   String?
+  templateConfig   Json
+  isSystemTemplate Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  createdBy        String?
+  previewImageUrl  String?
+  tags             String[] @default([])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  creator          User?             @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  dashboards       NovaTVDashboard[]
+
+  @@map("nova_tv_templates")
+  @@index([category])
+  @@index([departmentType])
+  @@index([isSystemTemplate])
+}
+
+model NovaTVContent {
+  id           String   @id @default(cuid())
+  dashboardId  String
+  contentType  String
+  title        String?
+  contentData  Json
+  displayOrder Int?
+  isActive     Boolean  @default(true)
+  expiresAt    DateTime?
+  scheduledAt  DateTime?
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  dashboard    NovaTVDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@map("nova_tv_content")
+  @@index([dashboardId])
+  @@index([contentType])
+  @@index([isActive])
+  @@index([expiresAt])
+}
+
+model NovaTVAnalytics {
+  id          String   @id @default(cuid())
+  dashboardId String?
+  deviceId    String?
+  sessionId   String?
+  eventType   String
+  eventData   Json?
+  userAgent   String?
+  ipAddress   String?
+  timestamp   DateTime @default(now())
+
+  // Relations
+  dashboard   NovaTVDashboard? @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  device      NovaTVDevice?    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@map("nova_tv_analytics")
+  @@index([dashboardId])
+  @@index([deviceId])
+  @@index([eventType])
+  @@index([timestamp])
+}
+
+model NovaTVAuthSession {
+  id           String   @id @default(cuid())
+  sessionId    String   @unique
+  sixDigitCode String
+  deviceId     String?
+  userId       String?
+  isUsed       Boolean  @default(false)
+  expiresAt    DateTime
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+
+  // Relations
+  device       NovaTVDevice? @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("nova_tv_auth_sessions")
+  @@index([sessionId])
+  @@index([sixDigitCode])
+  @@index([expiresAt])
+}
+
+model NovaTVDashboardShare {
+  id          String   @id @default(cuid())
+  dashboardId String
+  userId      String
+  permission  String   @default("view") // view, edit, admin
+  createdAt   DateTime @default(now())
+
+  // Relations
+  dashboard   NovaTVDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dashboardId, userId])
+  @@map("nova_tv_dashboard_shares")
+}
+
+// User model extension for Nova TV relationships
+model User {
+  id                   String                    @id @default(cuid())
+  email                String                    @unique
+  name                 String?
+  role                 String                    @default("user")
+  department           String?
+  isActive             Boolean                   @default(true)
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+
+  // Nova TV Relations
+  createdDashboards    NovaTVDashboard[]
+  createdTemplates     NovaTVTemplate[]
+  authSessions         NovaTVAuthSession[]
+  dashboardShares      NovaTVDashboardShare[]
+
+  @@map("users")
+}

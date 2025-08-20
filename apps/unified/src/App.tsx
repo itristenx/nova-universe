@@ -76,6 +76,8 @@ const IntegrationsPage = lazy(() => import('@pages/admin/IntegrationsPage'))
 const SystemConfigurationPage = lazy(() => import('@pages/admin/SystemConfigurationPage'))
 const EmailAccountsPage = lazy(() => import('@pages/admin/EmailAccountsPage'))
 const NotificationsPage = lazy(() => import('@pages/admin/NotificationsPage'))
+const AdminTVActivation = lazy(() => import('@pages/admin/AdminTVActivation'))
+const DeviceManagementPage = lazy(() => import('@pages/admin/DeviceManagementPage'))
 
 // Knowledge Base pages
 const KnowledgeBasePage = lazy(() => import('@pages/knowledge/KnowledgeBasePage'))
@@ -109,6 +111,16 @@ const LearningPage = lazy(() => import('@pages/learning/LearningPage'))
 
 // Courier pages
 const CourierDashboard = lazy(() => import('@pages/courier/CourierDashboard'))
+
+// Nova TV pages
+const NovaTVDashboard = lazy(() => import('@pages/nova-tv/index'))
+const NovaTVDevices = lazy(() => import('@pages/nova-tv/devices'))
+const NovaTVAuth = lazy(() => import('@pages/nova-tv/auth'))
+const NovaTVBuilder = lazy(() => import('@pages/nova-tv/builder'))
+
+// TV Display pages (no auth required)
+const TVDisplay = lazy(() => import('@pages/tv/TVDisplay'))
+const TVActivation = lazy(() => import('@pages/tv/TVActivation'))
 
 // Error pages
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage'))
@@ -161,6 +173,19 @@ function App() {
               )
             }
           />
+
+          {/* TV Display routes (no authentication required) */}
+          <Route path="/tv" element={<Navigate to="/tv/activate" replace />} />
+          <Route path="/tv/activate" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <TVActivation />
+            </Suspense>
+          } />
+          <Route path="/tv/display" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <TVDisplay />
+            </Suspense>
+          } />
 
           {/* Protected application routes */}
           <Route
@@ -267,6 +292,14 @@ function App() {
                       <Route path="/admin/system-config" element={<SystemConfigurationPage />} />
                       <Route path="/admin/email-accounts" element={<EmailAccountsPage />} />
                       <Route path="/admin/notifications" element={<NotificationsPage />} />
+                      <Route path="/admin/tv-activate" element={<AdminTVActivation />} />
+                      <Route path="/admin/devices" element={<DeviceManagementPage />} />
+
+                      {/* Nova TV routes */}
+                      <Route path="/nova-tv" element={<NovaTVDashboard />} />
+                      <Route path="/nova-tv/devices" element={<NovaTVDevices />} />
+                      <Route path="/nova-tv/auth" element={<NovaTVAuth />} />
+                      <Route path="/nova-tv/builder" element={<NovaTVBuilder />} />
 
                       {/* Catch-all route for 404 */}
                       <Route path="*" element={<NotFoundPage />} />

@@ -306,7 +306,7 @@ export default function TouchGestureDetector({
   const { ref } = useTouchGestures(handlers, options)
 
   return (
-    <div ref={ref} className={className}>
+    <div ref={ref as any} className={className}>
       {children}
     </div>
   )
@@ -427,7 +427,7 @@ export function SwipeActions({
 
       {/* Main content */}
       <div
-        ref={ref}
+        ref={ref as any}
         className="relative bg-white dark:bg-gray-800 transition-transform duration-200"
         style={{
           transform: `translateX(${swipeOffset}px)`

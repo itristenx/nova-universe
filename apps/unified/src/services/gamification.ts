@@ -87,7 +87,7 @@ class GamificationService {
    */
   async getLeaderboard(): Promise<XPLeaderboardResponse> {
     const response = await apiClient.get<ApiResponse<XPLeaderboardResponse>>(`${this.baseUrl}/xp`)
-    return response.data.data || response.data
+    return (response.data.data || response.data) as XPLeaderboardResponse
   }
 
   /**

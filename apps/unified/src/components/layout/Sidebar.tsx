@@ -22,7 +22,8 @@ import {
   BuildingOfficeIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  TvIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '@utils/index'
 import { useState } from 'react'
@@ -89,6 +90,20 @@ const getAllNavigation = (t: any): NavigationItem[] => [
       { name: t('sidebar.allSpaces'), href: '/spaces', icon: BuildingOfficeIcon, roles: ['admin', 'agent'] },
       { name: t('sidebar.spaceAnalytics'), href: '/spaces/analytics', icon: ChartBarIcon, roles: ['admin'] },
       { name: t('sidebar.floorPlans'), href: '/spaces/floorplans', icon: MapIcon, roles: ['admin'] }
+    ]
+  },
+  
+  // Digital Signage (Nova TV)
+  { 
+    name: t('sidebar.novaTV'), 
+    href: '/nova-tv', 
+    icon: TvIcon,
+    roles: ['admin', 'agent'],
+    children: [
+      { name: t('sidebar.tvDashboard'), href: '/nova-tv', icon: TvIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.deviceManagement'), href: '/nova-tv/devices', icon: TvIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.dashboardBuilder'), href: '/nova-tv/builder', icon: WrenchScrewdriverIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.qrAuthentication'), href: '/nova-tv/auth', icon: ShieldCheckIcon, roles: ['admin', 'agent'] }
     ]
   },
   

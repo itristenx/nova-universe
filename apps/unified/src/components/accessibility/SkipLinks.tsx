@@ -67,86 +67,26 @@ export default function SkipLinks({ links = defaultLinks, className = '' }: Skip
         </a>
       ))}
       
-      <style jsx>{`
+            <style>{`
         .skip-links {
-          position: relative;
+          position: absolute;
+          top: -40px;
+          left: 6px;
+          background: #000;
+          color: #fff;
+          padding: 8px;
+          text-decoration: none;
+          border-radius: 4px;
           z-index: 9999;
         }
-        
-        .skip-link {
-          position: absolute;
-          top: -100vh;
-          left: 1rem;
-          background: #1f2937;
-          color: white;
-          padding: 0.75rem 1rem;
-          border-radius: 0.375rem;
-          text-decoration: none;
-          font-weight: 500;
-          font-size: 0.875rem;
-          line-height: 1.25rem;
-          border: 2px solid transparent;
-          transition: all 0.2s ease;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          white-space: nowrap;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        .skip-links:focus {
+          top: 6px;
         }
-        
-        .skip-link:focus {
-          top: 1rem;
-          background: #3b82f6;
-          border-color: #60a5fa;
-          outline: none;
-          transform: translateY(0);
+        .skip-links:hover {
+          background: #333;
         }
-        
-        .skip-link:hover:focus {
-          background: #2563eb;
-          border-color: #93c5fd;
-        }
-        
-        .skip-link-shortcut {
-          background: rgba(255, 255, 255, 0.2);
-          padding: 0.125rem 0.375rem;
-          border-radius: 0.25rem;
-          font-size: 0.75rem;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        }
-        
-        @media (prefers-reduced-motion: reduce) {
-          .skip-link {
-            transition: none;
-          }
-        }
-        
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-          .skip-link {
-            background: #374151;
-            color: #f9fafb;
-          }
-          
-          .skip-link:focus {
-            background: #3b82f6;
-            border-color: #60a5fa;
-          }
-        }
-        
-        /* High contrast mode support */
-        @media (prefers-contrast: high) {
-          .skip-link {
-            background: #000;
-            color: #fff;
-            border: 2px solid #fff;
-          }
-          
-          .skip-link:focus {
-            background: #fff;
-            color: #000;
-            border-color: #000;
-          }
+        .skip-links:focus-visible {
+          outline: 2px solid #4f46e5;
         }
       `}</style>
     </div>

@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import enhancedMonitoringRoutes from './routes/enhanced-monitoring';
-import synthAiRoutes from './routes/synth-ai';
+import enhancedMonitoringRoutes from './routes/enhanced-monitoring.js';
+import synthAiRoutes from './routes/synth-ai.js';
+import novaTvRoutes from './routes/nova-tv.js';
 
 const app = express();
 
@@ -49,6 +50,9 @@ app.use('/api/enhanced-monitoring', enhancedMonitoringRoutes);
 // Synth AI integration routes
 app.use('/api/synth', synthAiRoutes);
 
+// Nova TV digital signage routes
+app.use('/api/nova-tv', novaTvRoutes);
+
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('API Error:', err);
@@ -74,6 +78,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Nova Enhanced Monitoring API running on port ${PORT}`);
   console.log(`📊 Enhanced monitoring endpoints available at /api/enhanced-monitoring`);
   console.log(`🧠 Synth AI endpoints available at /api/synth`);
+  console.log(`📺 Nova TV digital signage endpoints available at /api/nova-tv`);
 });
 
 export default app;

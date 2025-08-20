@@ -63,7 +63,7 @@ export default function CameraIntegration({
           hasCamera: videoDevices.length > 0,
           hasMultipleCameras: videoDevices.length > 1,
           canTakePhotos: true,
-          canRecordVideo: supportedConstraints.video || false,
+          canRecordVideo: (supportedConstraints as any).video || false,
           supportedConstraints
         })
       } catch (err) {
@@ -398,7 +398,7 @@ export function useCameraCapabilities() {
           hasCamera: videoDevices.length > 0,
           hasMultipleCameras: videoDevices.length > 1,
           canTakePhotos: true,
-          canRecordVideo: supportedConstraints.video || false,
+          canRecordVideo: (supportedConstraints as any).video || false,
           supportedConstraints
         })
       } catch (err) {
