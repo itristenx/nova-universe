@@ -24,6 +24,7 @@
     "@elastic/elasticsearch": "^8.19.0",
     "@node-saml/passport-saml": "^5.1.0",
     "@simplewebauthn/server": "^13.1.2",
+    "@slack/bolt": "^4.4.0",
     "@types/nodemailer": "^6.4.17",
     "axios": "^1.11.0",
     "base64url": "^3.0.1",

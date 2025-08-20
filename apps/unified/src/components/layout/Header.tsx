@@ -14,7 +14,7 @@ import { UserMenu } from './UserMenu'
 import { NotificationMenu } from './NotificationMenu'
 import { SearchCommand } from './SearchCommand'
 import { AppSwitcher } from '../navigation/AppSwitcher'
-import LanguageSwitcher from '../LanguageSwitcher'
+import LanguageSwitcher from '../common/LanguageSwitcher'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -97,12 +97,7 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
         {/* Right section */}
         <div className="flex items-center gap-2">
           {/* Language Switcher */}
-          <LanguageSwitcher 
-            variant="minimal" 
-            size="sm" 
-            showIcon={false}
-            className="hidden sm:block"
-          />
+          <LanguageSwitcher className="hidden sm:block" />
 
           {/* Theme toggle */}
           <button

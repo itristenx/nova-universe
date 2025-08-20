@@ -293,10 +293,10 @@ export const uptimeKumaService = {
         lastChecked: monitor.updatedAt || new Date().toISOString()
       })),
       performance: {
-        cpu: 45, // Mock data - replace with actual system metrics
-        memory: 72,
-        disk: 60,
-        network: 80
+        cpu: 0, // Get from API response
+        memory: 0,
+        disk: 0,
+        network: 0
       }
     }
   },

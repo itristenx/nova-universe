@@ -25,11 +25,28 @@ const DashboardPage = lazy(() => import('@pages/dashboard/DashboardPage'))
 const AdminDashboard = lazy(() => import('@pages/dashboard/AdminDashboard'))
 const AgentDashboard = lazy(() => import('@pages/dashboard/AgentDashboard'))
 const UserDashboard = lazy(() => import('@pages/dashboard/UserDashboard'))
+const EnhancedUserDashboard = lazy(() => import('@pages/dashboard/EnhancedUserDashboard'))
 
 // Ticket pages
 const TicketsPage = lazy(() => import('@pages/tickets/TicketsPage'))
 const TicketDetailPage = lazy(() => import('@pages/tickets/TicketDetailPage'))
 const CreateTicketPage = lazy(() => import('@pages/tickets/CreateTicketPage'))
+const EnhancedTicketGrid = lazy(() => import('@pages/tickets/EnhancedTicketGrid'))
+
+// Deep Work pages
+const EnhancedDeepWorkMode = lazy(() => import('@pages/deepwork/EnhancedDeepWorkMode'))
+
+// Queue Management pages
+const EnhancedQueueManagement = lazy(() => import('@pages/queue/EnhancedQueueManagement'))
+
+// Communication pages
+const EnhancedCommunicationHub = lazy(() => import('@pages/communication/EnhancedCommunicationHub'))
+
+// Analytics pages
+const EnhancedPerformanceAnalytics = lazy(() => import('@pages/analytics/EnhancedPerformanceAnalytics'))
+
+// Gamification pages
+const EnhancedGamificationSystem = lazy(() => import('@pages/gamification/EnhancedGamificationSystem'))
 
 // Asset pages
 const AssetsPage = lazy(() => import('@pages/assets/AssetsPage'))
@@ -62,21 +79,30 @@ const NotificationsPage = lazy(() => import('@pages/admin/NotificationsPage'))
 
 // Knowledge Base pages
 const KnowledgeBasePage = lazy(() => import('@pages/knowledge/KnowledgeBasePage'))
+const KnowledgeCommunityPage = lazy(() => import('@pages/knowledge/KnowledgeCommunityPage'))
 
 // Profile pages
 const UserProfilePage = lazy(() => import('@pages/profile/UserProfilePage'))
 
+// Service Catalog pages
+const ServiceCatalogPage = lazy(() => import('@pages/services/ServiceCatalogPage'))
+
 // AI Assistant pages
 const AIAssistantPage = lazy(() => import('@pages/ai/AIAssistantPage'))
+const CosmoAIPage = lazy(() => import('@pages/ai/CosmoAIPage'))
+
+// Automation pages
+const AutomationHubPage = lazy(() => import('@pages/automation/AutomationHubPage'))
+const MailroomIntegrationPage = lazy(() => import('@pages/automation/MailroomIntegrationPage'))
+const MobileCompanionPage = lazy(() => import('@pages/mobile/MobileCompanionPage'))
+const AccessibilityAuditPage = lazy(() => import('@pages/accessibility/AccessibilityAuditPage'))
 
 // i18n Test page
 const I18nTestPage = lazy(() => import('@pages/I18nTestPage'))
 
-// Demo pages
-const MobileFeaturesDemo = lazy(() => import('@pages/demo/MobileFeaturesDemo'))
-
 // System monitoring pages
 const MonitoringPage = lazy(() => import('@pages/monitoring/MonitoringPage'))
+const ServiceStatusPage = lazy(() => import('@pages/monitoring/ServiceStatusPage'))
 
 // Learning and development pages
 const LearningPage = lazy(() => import('@pages/learning/LearningPage'))
@@ -87,8 +113,7 @@ const CourierDashboard = lazy(() => import('@pages/courier/CourierDashboard'))
 // Error pages
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage'))
 
-// Accessibility and offline pages
-const AccessibilityAuditPage = lazy(() => import('@pages/AccessibilityAuditPage'))
+// Offline pages
 const OfflinePage = lazy(() => import('@pages/OfflinePage'))
 
 function App() {
@@ -151,11 +176,29 @@ function App() {
                       <Route path="/dashboard/admin" element={<AdminDashboard />} />
                       <Route path="/dashboard/agent" element={<AgentDashboard />} />
                       <Route path="/dashboard/user" element={<UserDashboard />} />
+                      <Route path="/dashboard/enhanced" element={<EnhancedUserDashboard />} />
 
                       {/* Ticket management routes */}
                       <Route path="/tickets" element={<TicketsPage />} />
                       <Route path="/tickets/new" element={<CreateTicketPage />} />
                       <Route path="/tickets/:id" element={<TicketDetailPage />} />
+                      <Route path="/tickets/grid" element={<EnhancedTicketGrid />} />
+
+                      {/* Deep Work routes */}
+                      <Route path="/deepwork" element={<EnhancedDeepWorkMode />} />
+                      <Route path="/deepwork/:ticketId" element={<EnhancedDeepWorkMode />} />
+
+                      {/* Queue Management routes */}
+                      <Route path="/queues" element={<EnhancedQueueManagement />} />
+
+                      {/* Communication routes */}
+                      <Route path="/communication" element={<EnhancedCommunicationHub />} />
+
+                      {/* Analytics routes */}
+                      <Route path="/analytics/performance" element={<EnhancedPerformanceAnalytics />} />
+
+                      {/* Gamification routes */}
+                      <Route path="/gamification" element={<EnhancedGamificationSystem />} />
 
                       {/* Asset management routes */}
                       <Route path="/assets" element={<AssetsPage />} />
@@ -170,25 +213,35 @@ function App() {
 
                       {/* Knowledge Base routes */}
                       <Route path="/knowledge" element={<KnowledgeBasePage />} />
+                      <Route path="/knowledge/community" element={<KnowledgeCommunityPage />} />
 
-                      {/* Demo routes */}
-                      <Route path="/demo/mobile" element={<MobileFeaturesDemo />} />
+                      {/* Service Catalog routes */}
+                      <Route path="/services" element={<ServiceCatalogPage />} />
+                      <Route path="/catalog" element={<ServiceCatalogPage />} />
 
                       {/* Profile routes */}
                       <Route path="/profile" element={<UserProfilePage />} />
 
                       {/* AI Assistant routes */}
                       <Route path="/ai" element={<AIAssistantPage />} />
+                      <Route path="/cosmo" element={<CosmoAIPage />} />
+
+                      {/* Automation routes */}
+                      <Route path="/automation" element={<AutomationHubPage />} />
+                      <Route path="/automation/hub" element={<AutomationHubPage />} />
+                      <Route path="/automation/mailroom" element={<MailroomIntegrationPage />} />
+                      <Route path="/mobile/companion" element={<MobileCompanionPage />} />
+                      <Route path="/accessibility/audit" element={<AccessibilityAuditPage />} />
 
                       {/* i18n Test route */}
                       <Route path="/i18n-test" element={<I18nTestPage />} />
 
                       {/* Accessibility and offline routes */}
-                      <Route path="/accessibility-audit" element={<AccessibilityAuditPage />} />
                       <Route path="/offline" element={<OfflinePage />} />
 
                       {/* System monitoring routes */}
                       <Route path="/monitoring" element={<MonitoringPage />} />
+                      <Route path="/status" element={<ServiceStatusPage />} />
 
                       {/* Learning and development routes */}
                       <Route path="/learning" element={<LearningPage />} />

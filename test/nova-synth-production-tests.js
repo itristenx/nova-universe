@@ -3,8 +3,8 @@
  * Comprehensive testing for production-ready Nova Synth data intelligence integration
  */
 
-import { NovaSynthConnector } from '../apps/lib/integration/connectors/nova-synth-connector.js';
-import { NovaSynthProductionConfig } from '../apps/lib/integration/connectors/nova-synth-production-config.js';
+import { NovaSynthConnector } from '../packages/integrations/integration/connectors/nova-synth-connector.js';
+import { NovaSynthProductionConfig } from '../packages/integrations/integration/connectors/nova-synth-production-config.js';
 
 class NovaSynthProductionTests {
   constructor() {

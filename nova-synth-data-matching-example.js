@@ -4,7 +4,7 @@
  * Demonstrates how Nova Synth should be used for data matching in the Nova Integration Layer
  */
 
-import { NovaIntegrationLayer } from './apps/lib/integration/nova-integration-layer.js';
+import { NovaIntegrationLayer } from './packages/integrations/integration/nova-integration-layer.js';
 
 console.log('🧠 Nova Synth Data Matching Integration Demo');
 console.log('==============================================\n');

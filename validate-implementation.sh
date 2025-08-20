@@ -62,7 +62,7 @@ test_ui_components() {
     local components=(
         "apps/core/nova-core/src/components/monitoring/MonitoringDashboard.tsx"
         "apps/core/nova-core/src/components/monitoring/NotificationSettings.tsx"
-        "apps/pulse/nova-pulse/src/components/monitoring/TechnicianMonitoringDashboard.tsx"
+        "apps/unified/src/pages/analytics/EnhancedPerformanceAnalytics.tsx"
         "apps/orbit/src/components/monitoring/PublicStatusPage.tsx"
     )
     

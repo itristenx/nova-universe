@@ -112,8 +112,8 @@ export NOVA_SYNTH_ORG_ID=your_organization_id
 ### 2. Initialize Nova Synth Connector
 
 ```javascript
-import { NovaSynthConnector } from './apps/lib/integration/connectors/nova-synth-connector.js';
-import { NovaSynthProductionConfig } from './apps/lib/integration/connectors/nova-synth-production-config.js';
+import { NovaSynthConnector } from './packages/integrations/integration/connectors/nova-synth-connector.js';
+import { NovaSynthProductionConfig } from './packages/integrations/integration/connectors/nova-synth-production-config.js';
 
 const config = new NovaSynthProductionConfig();
 const connector = new NovaSynthConnector(config.getConfig());

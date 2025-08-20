@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": [
+    "integration/**/*",
+    "notification/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

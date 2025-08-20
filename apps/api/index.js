@@ -37,6 +37,7 @@ import user360Router from './routes/user360.js'; // User 360 API
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
 import spacesRouter from './routes/spaces.js';
+import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 // Nova module routes
 import { createUploadsMiddleware } from './middleware/uploads.js';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
@@ -76,6 +77,7 @@ import scimMonitorRouter from './routes/scimMonitor.js';
 import synthRouter from './routes/synth.js';
 import synthV2Router from './routes/synth-v2.js';
 import { setupGraphQL } from './graphql.js';
+import { initializeSlackApp, startSlackApp } from './services/nova-comms.js';
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -1824,6 +1826,7 @@ app.use('/api/v1/tickets', ticketsRouter); // Updated to v1
 app.use('/api/v1/spaces', spacesRouter); // Updated to v1 - Space Management API
 app.use('/api/v1/ai-fabric', aiFabricRouter); // Updated to v1
 app.use('/api/v1/setup', setupRouter); // Updated to v1
+app.use('/api/v1/comms', commsRouter); // Nova Comms - Slack integration
 
 // === BACKWARD COMPATIBILITY ROUTES ===
 // Keep legacy unversioned routes for backward compatibility
@@ -1878,6 +1881,20 @@ export async function createApp() {
   // (from dotenv.config() through all middleware, routers, etc.)
   // Setup Apollo GraphQL server
   await setupGraphQL(app);
+  
+  // Initialize Nova Comms Slack integration (if configured)
+  try {
+    if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_SIGNING_SECRET) {
+      logger.info('Initializing Nova Comms Slack integration...');
+      initializeSlackApp();
+      logger.info('Nova Comms Slack integration initialized successfully');
+    } else {
+      logger.info('Slack credentials not found - Slack integration disabled');
+    }
+  } catch (slackError) {
+    logger.warn('Failed to initialize Slack integration:', slackError.message);
+  }
+  
   // Do not call server.listen here
   return { app, server, io };
 }
@@ -1888,12 +1905,22 @@ if (
   process.env.FORCE_LISTEN === 'true' ||
   process.env.API_PORT
 ) {
-  createApp().then(({ app, server, io }) => {
-    server.listen(PORT, () => {
+  createApp().then(async ({ app, server, io }) => {
+    server.listen(PORT, async () => {
       console.log(`🚀 Nova Universe API Server running on port ${PORT}`);
       console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
       console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
       console.log(`⚡ WebSocket server ready for real-time updates`);
+      
+      // Start Slack app if configured
+      try {
+        if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_SIGNING_SECRET) {
+          const slackPort = parseInt(process.env.SLACK_PORT) || 3001;
+          await startSlackApp(slackPort);
+        }
+      } catch (slackError) {
+        logger.warn('Failed to start Slack app:', slackError.message);
+      }
     });
   });
 }

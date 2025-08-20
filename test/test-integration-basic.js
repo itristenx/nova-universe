@@ -17,14 +17,14 @@ async function testBasicConnectorStructure() {
   try {
     // Test importing connector classes individually
     const connectorTests = [
-      { name: 'OktaConnector', path: './apps/lib/integration/connectors/okta-connector.js' },
-      { name: 'JamfConnector', path: './apps/lib/integration/connectors/jamf-connector.js' },
+      { name: 'OktaConnector', path: './packages/integrations/integration/connectors/okta-connector.js' },
+      { name: 'JamfConnector', path: './packages/integrations/integration/connectors/jamf-connector.js' },
       {
         name: 'CrowdStrikeConnector',
-        path: './apps/lib/integration/connectors/crowdstrike-connector.js',
+        path: './packages/integrations/integration/connectors/crowdstrike-connector.js',
       },
-      { name: 'IntuneConnector', path: './apps/lib/integration/connectors/intune-connector.js' },
-      { name: 'SlackConnector', path: './apps/lib/integration/connectors/slack-connector.js' },
+      { name: 'IntuneConnector', path: './packages/integrations/integration/connectors/intune-connector.js' },
+      { name: 'SlackConnector', path: './packages/integrations/integration/connectors/slack-connector.js' },
     ];
 
     for (const test of connectorTests) {
@@ -77,7 +77,7 @@ async function testIntegrationLayerBasics() {
     const { execSync } = await import('child_process');
 
     console.log('  📝 Testing integration layer syntax...');
-    execSync('node -c apps/lib/integration/nova-integration-layer.js', { stdio: 'pipe' });
+    execSync('node -c packages/integrations/integration/nova-integration-layer.js', { stdio: 'pipe' });
     console.log('    ✅ Syntax check: PASS');
 
     console.log('  📝 Testing API routes syntax...');
@@ -99,13 +99,13 @@ async function testImplementationCompleteness() {
 
     // Check file existence
     const requiredFiles = [
-      'apps/lib/integration/nova-integration-layer.js',
-      'apps/lib/integration/connectors/okta-connector.js',
-      'apps/lib/integration/connectors/jamf-connector.js',
-      'apps/lib/integration/connectors/crowdstrike-connector.js',
-      'apps/lib/integration/connectors/intune-connector.js',
-      'apps/lib/integration/connectors/slack-connector.js',
-      'apps/lib/integration/connectors/zoom-connector.js',
+      'packages/integrations/integration/nova-integration-layer.js',
+      'packages/integrations/integration/connectors/okta-connector.js',
+      'packages/integrations/integration/connectors/jamf-connector.js',
+      'packages/integrations/integration/connectors/crowdstrike-connector.js',
+      'packages/integrations/integration/connectors/intune-connector.js',
+      'packages/integrations/integration/connectors/slack-connector.js',
+      'packages/integrations/integration/connectors/zoom-connector.js',
       'apps/api/routes/user360.js',
       'NOVA_INTEGRATION_LAYER_COMPLETE.md',
     ];
@@ -130,7 +130,7 @@ async function testIndustryStandardCompliance() {
 
     // Check for industry standard implementations in the integration layer
     const integrationLayerContent = fs.default.readFileSync(
-      'apps/lib/integration/nova-integration-layer.js',
+      'packages/integrations/integration/nova-integration-layer.js',
       'utf8',
     );
 
@@ -152,7 +152,7 @@ async function testIndustryStandardCompliance() {
     }
 
     // Check connector implementations
-    const connectorDir = 'apps/lib/integration/connectors/';
+    const connectorDir = 'packages/integrations/integration/connectors/';
     const connectorFiles = fs.default.readdirSync(connectorDir).filter((f) => f.endsWith('.js'));
     console.log(`  ✅ Connector Count: ${connectorFiles.length} connectors implemented`);
   } catch (error) {

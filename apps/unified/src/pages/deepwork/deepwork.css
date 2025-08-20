@@ -1,0 +1,23 @@
+/* Deep Work Mode Styles */
+
+.progress-bar {
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.progress-bar-success {
+  background-color: #10b981;
+}
+
+.progress-bar-primary {
+  background-color: #3b82f6;
+}
+
+/* Progress bar container */
+.progress-container {
+  width: 5rem;
+  background-color: #e5e7eb;
+  border-radius: 0.25rem;
+  height: 0.5rem;
+}

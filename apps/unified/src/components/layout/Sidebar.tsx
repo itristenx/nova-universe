@@ -144,7 +144,7 @@ const getAllNavigation = (t: any): NavigationItem[] => [
     ]
   },
   
-  // AI Integration (Cosmo)
+  // AI Integration & Automation (Cosmo)
   { 
     name: t('sidebar.aiAssistant'), 
     href: '/ai', 
@@ -152,6 +152,10 @@ const getAllNavigation = (t: any): NavigationItem[] => [
     children: [
       { name: t('sidebar.cosmoChat'), href: '/ai/chat', icon: ChatBubbleLeftIcon },
       { name: t('sidebar.smartSuggestions'), href: '/ai/suggestions', icon: CpuChipIcon },
+      { name: t('sidebar.automationHub'), href: '/automation', icon: WrenchScrewdriverIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.mailroomIntegration'), href: '/automation/mailroom', icon: EnvelopeIcon, roles: ['admin', 'agent'] },
+      { name: t('sidebar.mobileCompanion'), href: '/mobile/companion', icon: CpuChipIcon },
+      { name: t('sidebar.accessibilityAudit'), href: '/accessibility/audit', icon: ShieldCheckIcon, roles: ['admin'] },
       { name: t('sidebar.aiAnalytics'), href: '/ai/analytics', icon: ChartBarIcon, roles: ['admin'] },
       { name: t('sidebar.modelConfiguration'), href: '/ai/config', icon: Cog6ToothIcon, roles: ['admin'] }
     ]
@@ -172,7 +176,6 @@ const getAllNavigation = (t: any): NavigationItem[] => [
       { name: t('sidebar.notifications'), href: '/admin/notifications', icon: BellIcon, roles: ['admin'] },
       { name: t('sidebar.siteAssetManagement'), href: '/admin/assets', icon: CubeIcon, roles: ['admin'] },
       { name: t('sidebar.integrationManagement'), href: '/admin/integrations', icon: CloudIcon, roles: ['admin'] },
-      { name: t('sidebar.accessibilityAudit'), href: '/accessibility-audit', icon: ShieldCheckIcon, roles: ['admin'] },
       { name: t('sidebar.offlineManagement'), href: '/offline', icon: CloudIcon, roles: ['admin'] },
       { name: t('sidebar.auditLogs'), href: '/admin/audit', icon: DocumentTextIcon, roles: ['admin'] }
     ]

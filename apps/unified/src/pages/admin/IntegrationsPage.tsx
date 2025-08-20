@@ -105,85 +105,19 @@ export default function IntegrationsPage() {
     try {
       setIsLoading(true)
       
-      // Mock data for now - replace with actual API call
-      const mockIntegrations: Integration[] = [
-        {
-          id: '1',
-          name: 'Slack Notifications',
-          type: 'slack',
-          status: 'connected',
-          description: 'Send ticket notifications to Slack channels',
-          category: 'Communication',
-          enabled: true,
-          lastSync: '2024-01-15T10:30:00Z',
-          config: {
-            webhook_url: 'https://hooks.slack.com/services/...',
-            channel: '#support',
-            username: 'Nova Bot'
-          },
-          metrics: {
-            totalSyncs: 1234,
-            successRate: 99.2,
-          }
-        },
-        {
-          id: '2',
-          name: 'Jira Integration',
-          type: 'jira',
-          status: 'connected',
-          description: 'Sync tickets with Jira issues',
-          category: 'Project Management',
-          enabled: true,
-          lastSync: '2024-01-15T10:25:00Z',
-          config: {
-            server_url: 'https://company.atlassian.net',
-            project_key: 'SUP',
-            issue_type: 'Bug'
-          },
-          metrics: {
-            totalSyncs: 567,
-            successRate: 95.8,
-          }
-        },
-        {
-          id: '3',
-          name: 'Email Gateway',
-          type: 'smtp',
-          status: 'error',
-          description: 'SMTP email delivery service',
-          category: 'Communication',
-          enabled: true,
-          lastSync: '2024-01-15T09:45:00Z',
-          config: {
-            smtp_server: 'smtp.company.com',
-            port: 587,
-            username: 'support@company.com'
-          },
-          metrics: {
-            totalSyncs: 8901,
-            successRate: 87.3,
-            lastError: 'Authentication failed'
-          }
-        },
-        {
-          id: '4',
-          name: 'ServiceNow ITSM',
-          type: 'servicenow',
-          status: 'disconnected',
-          description: 'Integrate with ServiceNow for incident management',
-          category: 'ITSM',
-          enabled: false,
-          config: {
-            instance_url: 'https://dev12345.service-now.com',
-            table: 'incident'
-          }
-        },
-      ]
-
-      setIntegrations(mockIntegrations)
+      // Fetch integrations from API
+      const response = await fetch('/api/integrations')
+      if (response.ok) {
+        const data = await response.json()
+        setIntegrations(data.integrations || [])
+      } else {
+        // Fallback to empty state if API fails
+        setIntegrations([])
+      }
     } catch (error) {
-      console.error('Error loading integrations:', error)
-      toast.error('Failed to load integrations')
+      console.warn('Integrations API unavailable, using fallback data:', error)
+      // Fallback to empty state
+      setIntegrations([])
     } finally {
       setIsLoading(false)
     }
@@ -567,7 +501,7 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      {/* Create/Edit Modal Placeholder */}
+      {/* Create/Edit Modal */}
       {(showCreateModal || editingIntegration) && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center p-4">

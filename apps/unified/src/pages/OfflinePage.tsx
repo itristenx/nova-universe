@@ -54,79 +54,20 @@ export default function OfflinePage() {
 
   const loadCachedData = async () => {
     try {
-      // Simulate loading cached data from IndexedDB
-      const mockCachedData: CachedItem[] = [
-        {
-          type: 'ticket',
-          id: 'TK-001',
-          title: 'Password Reset Request',
-          status: 'In Progress',
-          time: '2025-01-19T10:30:00Z',
-          priority: 'medium'
-        },
-        {
-          type: 'ticket',
-          id: 'TK-002',
-          title: 'Hardware Request - Monitor',
-          status: 'Pending',
-          time: '2025-01-19T09:15:00Z',
-          priority: 'low'
-        },
-        {
-          type: 'notification',
-          id: 'N-001',
-          message: 'Your ticket TK-001 has been updated',
-          time: '2025-01-19T11:00:00Z'
-        },
-        {
-          type: 'notification',
-          id: 'N-002',
-          message: 'System maintenance scheduled for tonight',
-          time: '2025-01-19T08:45:00Z'
-        },
-        {
-          type: 'asset',
-          id: 'A-001',
-          title: 'MacBook Pro - Checked Out',
-          status: 'Active',
-          time: '2025-01-18T14:20:00Z'
-        },
-        {
-          type: 'user',
-          id: 'U-001',
-          title: 'Profile Information',
-          status: 'Cached',
-          time: '2025-01-19T12:00:00Z'
-        }
-      ]
-      
-      setCachedData(mockCachedData)
+      // Load cached data from localStorage as fallback
+      const cached = localStorage.getItem('nova_cached_data')
+      setCachedData(cached ? JSON.parse(cached) : [])
     } catch (error) {
       console.error('Failed to load cached data:', error)
+      setCachedData([])
     }
   }
 
   const loadPendingActions = async () => {
     try {
-      // Simulate loading pending actions from IndexedDB
-      const mockPendingActions: PendingAction[] = [
-        {
-          id: 'PA-001',
-          type: 'create_ticket',
-          description: 'Submit new IT support request',
-          timestamp: '2025-01-19T12:30:00Z',
-          data: { title: 'Laptop issue', category: 'hardware' }
-        },
-        {
-          id: 'PA-002',
-          type: 'update_profile',
-          description: 'Update contact information',
-          timestamp: '2025-01-19T11:45:00Z',
-          data: { phone: '+1234567890' }
-        }
-      ]
-      
-      setPendingActions(mockPendingActions)
+      // Load pending actions from localStorage as fallback
+      const pending = localStorage.getItem('nova_pending_actions')
+      setPendingActions(pending ? JSON.parse(pending) : [])
     } catch (error) {
       console.error('Failed to load pending actions:', error)
     }
