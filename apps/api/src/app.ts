@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { logger } from '../logger.js';
 import enhancedMonitoringRoutes from './routes/enhanced-monitoring.js';
 import synthAiRoutes from './routes/synth-ai.js';
 import novaTvRoutes from './routes/nova-tv.js';
@@ -54,10 +55,10 @@ app.use('/api/synth', synthAiRoutes);
 app.use('/api/nova-tv', novaTvRoutes);
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('API Error:', err);
+app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  logger.error(`API Error: ${err.message}`);
 
-  if (err.type === 'entity.parse.failed') {
+  if (err.message?.includes('entity.parse.failed')) {
     return res.status(400).json({ error: 'Invalid JSON payload' });
   }
 
@@ -75,10 +76,10 @@ app.use('*', (req, res) => {
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Nova Enhanced Monitoring API running on port ${PORT}`);
-  console.log(`📊 Enhanced monitoring endpoints available at /api/enhanced-monitoring`);
-  console.log(`🧠 Synth AI endpoints available at /api/synth`);
-  console.log(`📺 Nova TV digital signage endpoints available at /api/nova-tv`);
+  logger.info(`🚀 Nova Enhanced Monitoring API running on port ${PORT}`);
+  logger.info(`📊 Enhanced monitoring endpoints available at /api/enhanced-monitoring`);
+  logger.info(`🧠 Synth AI endpoints available at /api/synth`);
+  logger.info(`📺 Nova TV digital signage endpoints available at /api/nova-tv`);
 });
 
 export default app;

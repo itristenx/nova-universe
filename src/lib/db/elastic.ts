@@ -9,7 +9,17 @@ const validateElasticConfig = () => {
     node: process.env.ELASTIC_URL || 'http://localhost:9200',
     auth: {
       username: process.env.ELASTIC_USERNAME || 'elastic',
-      password: process.env.ELASTIC_PASSWORD || 'changeme',
+      password: (() => {
+        const password = process.env.ELASTIC_PASSWORD;
+        if (!password) {
+          if (process.env.NODE_ENV === 'production') {
+            throw new Error('ELASTIC_PASSWORD is required in production environment');
+          }
+          console.warn('⚠️  ELASTIC_PASSWORD not set - using default (insecure for production)');
+          return 'changeme';
+        }
+        return password;
+      })(),
     },
     requestTimeout: parseInt(process.env.ELASTIC_REQUEST_TIMEOUT || '30000'),
     pingTimeout: parseInt(process.env.ELASTIC_PING_TIMEOUT || '3000'),

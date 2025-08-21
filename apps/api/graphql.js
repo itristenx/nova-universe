@@ -3,6 +3,7 @@ import { expressMiddleware } from '@as-integrations/express4';
 import gql from 'graphql-tag';
 import db from './db.js';
 import { verify } from './jwt.js';
+import { logger } from './logger.js';
 
 const typeDefs = gql`
   type Ticket {
@@ -51,7 +52,7 @@ export async function setupGraphQL(app) {
     try {
       payload = token ? verify(token) : null;
     } catch (error) {
-      console.error('JWT verification error:', error);
+      logger.error('JWT verification error:', error);
       return res.status(401).json({ error: 'Invalid token' });
     }
     if (!payload) {
@@ -82,7 +83,7 @@ export async function setupGraphQL(app) {
       req.user = user;
       next();
     } catch (error) {
-      console.error('Database error:', error);
+      logger.error('Database error:', error);
       return res.status(500).json({ error: 'Database error' });
     }
   };

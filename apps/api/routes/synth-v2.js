@@ -8,6 +8,7 @@ import db from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
+import { aiFabric } from '../lib/ai-fabric.js';
 import {
   startConversation,
   sendMessage,

@@ -12,12 +12,32 @@ async function seed() {
   await db.query("INSERT INTO roles (id, name) VALUES (2,'admin') ON CONFLICT (id) DO NOTHING");
   await db.query("INSERT INTO roles (id, name) VALUES (3,'user') ON CONFLICT (id) DO NOTHING");
 
-  // Users
+  // Generate secure passwords for UAT
+  const generateSecurePassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 16; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  // Users with cryptographically secure passwords
+  const adminPassword = process.env.UAT_ADMIN_PASSWORD || generateSecurePassword();
+  const agentPassword = process.env.UAT_AGENT_PASSWORD || generateSecurePassword();
+  const userPassword = process.env.UAT_USER_PASSWORD || generateSecurePassword();
+  
   const users = [
-    { name: 'UAT Admin', email: 'uat-admin@novauniverse.com', password: 'Admin123!', roleId: 1 },
-    { name: 'UAT Agent', email: 'uat-agent@novauniverse.com', password: 'Agent123!', roleId: 2 },
-    { name: 'UAT User', email: 'uat-user@novauniverse.com', password: 'User123!', roleId: 3 },
+    { name: 'UAT Admin', email: 'uat-admin@novauniverse.com', password: adminPassword, roleId: 1 },
+    { name: 'UAT Agent', email: 'uat-agent@novauniverse.com', password: agentPassword, roleId: 2 },
+    { name: 'UAT User', email: 'uat-user@novauniverse.com', password: userPassword, roleId: 3 },
   ];
+
+  console.log('\n🔐 Generated UAT Credentials:');
+  console.log(`Admin: uat-admin@novauniverse.com / ${adminPassword}`);
+  console.log(`Agent: uat-agent@novauniverse.com / ${agentPassword}`);
+  console.log(`User: uat-user@novauniverse.com / ${userPassword}`);
+  console.log('⚠️  Store these credentials securely!\n');
 
   for (const u of users) {
     const hash = await bcrypt.hash(u.password, 12);

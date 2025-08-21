@@ -81,9 +81,8 @@ validate_structure() {
     
     check "Main directories exist" "[ -d apps ] && [ -d scripts ] && [ -d docs ]" true
     check "API app exists" "[ -d apps/api ]" true
-    check "Core app exists" "[ -d apps/core/nova-core ]" true
-    check "Comms app exists" "[ -d apps/comms/nova-comms ]" true
-    check "Beacon app exists" "[ -d apps/beacon/nova-beacon ]" true
+    check "Beacon app exists" "[ -d apps/beacon ]" true
+    check "Unified app exists" "[ -d apps/unified ]" true
     
     # Scripts
     check "Setup script exists" "[ -f setup.sh ]" true
@@ -175,6 +174,46 @@ validate_api() {
         check "GoAlert test endpoint" "grep -q 'test-goalert' apps/api/routes/setup.js" true
         check "Setup complete endpoint" "grep -q '/complete' apps/api/routes/setup.js" true
     fi
+    
+    echo ""
+}
+
+# Security configuration
+validate_security() {
+    log_header "🔒 Security Configuration"
+    echo "==========================="
+    
+    # Load environment variables if they exist
+    if [ -f .env ]; then
+        export $(grep -v '^#' .env | xargs) 2>/dev/null || true
+    fi
+    
+    check "JWT_SECRET configured" "[ -n \"${JWT_SECRET:-}\" ]" true
+    check "SESSION_SECRET configured" "[ -n \"${SESSION_SECRET:-}\" ]" true
+    check "Database passwords configured" "[ -n \"${POSTGRES_PASSWORD:-}\" ]" true
+    check "SSL certificate configuration" "[ -n \"${TLS_CERT_PATH:-}\" ] && [ -n \"${TLS_KEY_PATH:-}\" ]" false
+    
+    # Check JWT secret strength
+    if [ -n "${JWT_SECRET:-}" ] && [ ${#JWT_SECRET} -ge 32 ]; then
+        echo -n "JWT secret strength... "
+        echo -e "${GREEN}✅${NC}"
+        ((CHECKS_PASSED++))
+    else
+        echo -n "JWT secret strength... "
+        echo -e "${RED}❌${NC}"
+        ((CHECKS_FAILED++))
+    fi
+    
+    # Check for weak passwords in config files
+    check "No default passwords in configs" "! find . -name '*.js' -o -name '*.ts' | xargs grep -l 'nova_password\\|changeme\\|admin123' 2>/dev/null | grep -v node_modules | wc -l | grep -q '^0'" false
+    check "CORS properly configured" "[ \"${CORS_ORIGINS:-}\" != \"*\" ] || [ \"${NODE_ENV:-}\" != \"production\" ]" true
+    check "Auth not disabled in production" "[ \"${DISABLE_AUTH:-}\" != \"true\" ] || [ \"${NODE_ENV:-}\" != \"production\" ]" true
+    
+    # Check security infrastructure
+    check "Production validation exists" "[ -f apps/api/config/production-validation.js ]" true
+    check "Security hardening guide exists" "[ -f docs/SECURITY_HARDENING_GUIDE.md ]" true
+    check "Performance monitoring exists" "[ -f apps/api/middleware/performance-monitor.js ]" true
+    check "SSL setup script exists" "[ -f scripts/setup-ssl-certificates.sh ]" true
     
     echo ""
 }
@@ -360,6 +399,7 @@ main() {
     
     validate_system
     validate_structure
+    validate_security
     validate_cli
     validate_configuration
     validate_dependencies

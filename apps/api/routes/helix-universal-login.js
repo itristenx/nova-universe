@@ -6,7 +6,6 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
-import qrcode from 'qrcode';
 import { body, validationResult } from 'express-validator';
 import { rateLimit } from 'express-rate-limit';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,8 +13,9 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
-import { encrypt, decrypt } from '../utils/encryption.js';
-import { configureSAML } from '../middleware/saml.js';
+import { decrypt } from '../utils/encryption.js';
+import twilio from 'twilio';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
@@ -333,8 +333,8 @@ router.post(
 
       const discoveryMetadata = auditResult.rows[0].metadata;
 
-      console.log('DEBUG: Starting authentication for email:', email);
-      console.log('DEBUG: Discovery metadata:', JSON.stringify(discoveryMetadata, null, 2));
+      logger.debug('Starting authentication for email:', email);
+      logger.debug('Discovery metadata:', discoveryMetadata);
 
       // Get user and tenant
       const userResult = await db.query(
@@ -349,10 +349,10 @@ router.post(
         [email],
       );
 
-      console.log('DEBUG: User query result:', JSON.stringify(userResult.rows, null, 2));
+      logger.debug('User query result:', userResult.rows);
 
       if (userResult.rows.length === 0) {
-        console.log('DEBUG: User not found for email:', email);
+        logger.debug('User not found for email:', email);
         await logAuthEvent(
           null,
           null,
@@ -383,8 +383,8 @@ router.post(
       };
       const tenantId = row.tenant_id;
 
-      console.log('DEBUG: Parsed user object:', JSON.stringify(user, null, 2));
-      console.log('DEBUG: Tenant ID:', tenantId);
+      logger.debug('Parsed user object for authentication');
+      logger.debug('Tenant ID:', tenantId);
 
       // Check if user is disabled
       if (user.disabled) {
@@ -431,20 +431,17 @@ router.post(
         if (!user.password_hash) {
           authError = 'Password authentication not available for this user';
         } else {
-          console.log('DEBUG: Attempting bcrypt comparison');
-          console.log('DEBUG: Password received:', password);
-          console.log('DEBUG: Password hash from DB:', user.password_hash);
-          console.log('DEBUG: User object:', JSON.stringify(user, null, 2));
+          logger.debug('Attempting bcrypt password comparison');
 
           authSuccess = await bcrypt.compare(password, user.password_hash);
 
-          console.log('DEBUG: bcrypt comparison result:', authSuccess);
+          logger.debug('bcrypt comparison result:', authSuccess);
 
           if (!authSuccess) {
             authError = 'Invalid password';
-            console.log('DEBUG: Authentication failed - bcrypt returned false');
+            logger.debug('Authentication failed - invalid password');
           } else {
-            console.log('DEBUG: Authentication successful - bcrypt returned true');
+            logger.debug('Authentication successful');
           }
         }
       } else if (authMethod === 'sso') {
@@ -662,12 +659,12 @@ router.post(
 
             // Send SMS using configured provider (Twilio, AWS SNS, etc.)
             if (process.env.SMS_PROVIDER === 'twilio' && process.env.TWILIO_ACCOUNT_SID) {
-              const twilio = require('twilio')(
+              const twilioClient = twilio(
                 process.env.TWILIO_ACCOUNT_SID,
                 process.env.TWILIO_AUTH_TOKEN,
               );
 
-              await twilio.messages.create({
+              await twilioClient.messages.create({
                 body: `Your Nova Universe verification code is: ${challengeCode}. This code expires in 5 minutes.`,
                 from: process.env.TWILIO_PHONE_NUMBER,
                 to: decrypt(config.phone_number_encrypted),
@@ -695,7 +692,6 @@ router.post(
             const userEmail = decrypt(config.email_address_encrypted);
 
             // Send email using nodemailer or configured provider
-            const nodemailer = require('nodemailer');
 
             // Use configured SMTP settings
             const transporter = nodemailer.createTransporter({
@@ -1600,7 +1596,23 @@ async function checkRiskBasedMfaRequirement(userId, req) {
   }
 }
 
-async function initiateSAMLLogin(config, state, redirectUrl) {
+// Generate SSO URL based on provider type
+async function generateSSOUrl(config, state, redirectUrl) {
+  try {
+    if (config.provider === 'saml') {
+      return await initiateSAMLLogin(config, state, redirectUrl);
+    } else if (config.provider === 'oidc' || config.provider === 'azure_ad') {
+      return await initiateOIDCLogin(config, state, redirectUrl);
+    } else {
+      throw new Error(`Unsupported SSO provider: ${config.provider}`);
+    }
+  } catch (error) {
+    logger.error('Failed to generate SSO URL:', error);
+    throw error;
+  }
+}
+
+async function initiateSAMLLogin(config, state, _redirectUrl) {
   try {
     const { SamlStrategy } = await import('@node-saml/passport-saml');
 
@@ -1650,7 +1662,7 @@ async function initiateSAMLLogin(config, state, redirectUrl) {
   }
 }
 
-async function initiateOIDCLogin(config, state, redirectUrl) {
+async function initiateOIDCLogin(config, state, _redirectUrl) {
   try {
     const params = new URLSearchParams({
       response_type: 'code',
@@ -1698,7 +1710,7 @@ async function initiateOIDCLogin(config, state, redirectUrl) {
 
 async function processSAMLResponse(requestBody) {
   try {
-    const { SamlStrategy } = await import('@node-saml/passport-saml');
+    // Import SamlStrategy and process SAML response
 
     // This would typically be configured based on the specific SAML provider
     // For now, we'll extract user information from the SAML response

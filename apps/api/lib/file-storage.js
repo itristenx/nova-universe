@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
 import { promisify } from 'util'
+import { logger } from '../logger.js'
 
 const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
@@ -232,7 +233,7 @@ class S3StorageProvider extends StorageProvider {
       })
       
       this.s3ClientInitialized = true
-      console.log('✅ S3 storage provider initialized')
+      logger.info('S3 storage provider initialized')
     } catch (error) {
       // Only log AWS SDK unavailability in debug mode to reduce startup noise
       if (process.env.DEBUG_S3 === 'true') {
@@ -474,14 +475,14 @@ class FileStorageManager {
           this.s3Functional = false
         })
         
-        console.log('📁 Hybrid storage initialized: local + S3')
+        logger.info('Hybrid storage initialized: local + S3')
       } catch (error) {
-        console.warn('⚠️  S3 storage failed to initialize, using local fallback:', error.message)
+        logger.warn('S3 storage failed to initialize, using local fallback:', error.message)
         this.s3Functional = false
-        console.log('📁 File storage initialized: local (S3 fallback)')
+        logger.info('File storage initialized: local (S3 fallback)')
       }
     } else {
-      console.log('📁 File storage initialized: local')
+      logger.info('File storage initialized: local')
     }
   }
 

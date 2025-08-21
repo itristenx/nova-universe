@@ -1068,14 +1068,7 @@ async function cleanupTestData(testTenantId) {
 }
 
 async function getTestAuthToken(testUserId) {
-  // Mock authentication token generation
+  // Mock authentication token generation  
   // In real implementation, this would call the auth service
   return 'test_auth_token_' + testUserId;
 }
-
-// Export test utilities for use in other test files
-export {
-  setupTestData,
-  cleanupTestData,
-  getTestAuthToken
-};

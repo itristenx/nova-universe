@@ -20,6 +20,7 @@ import helpscoutRouter from './routes/helpscout.js';
 import analyticsRouter from './routes/analytics.js';
 import monitoringRouter from './routes/monitoring.js';
 import aiFabricRouter from './routes/ai-fabric.js';
+import mcpServerRouter from './routes/mcp-server.js';
 import setupRouter from './routes/setup.js';
 import coreRouter from './routes/core.js';
 import statusSummaryRouter from './routes/status.js';
@@ -38,6 +39,7 @@ import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
+import novaTVRouter from './src/routes/nova-tv.js'; // Nova TV - Channel Management
 // Nova module routes
 import { createUploadsMiddleware } from './middleware/uploads.js';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
@@ -78,6 +80,8 @@ import synthRouter from './routes/synth.js';
 import synthV2Router from './routes/synth-v2.js';
 import { setupGraphQL } from './graphql.js';
 import { initializeSlackApp, startSlackApp } from './services/nova-comms.js';
+import { validateProductionEnvironment } from './config/production-validation.js';
+import PerformanceMonitor from './middleware/performance-monitor.js';
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -85,6 +89,12 @@ const __dirname = path.dirname(__filename);
 
 // Configure environment
 dotenv.config();
+
+// Validate production environment early in startup
+validateProductionEnvironment();
+
+// Initialize performance monitoring
+const performanceMonitor = new PerformanceMonitor();
 
 // Authentication/feature flags must be defined before any middleware uses them
 const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
@@ -321,7 +331,7 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 // Debug: Log the swagger spec to see if it's being generated
 if (process.env.NODE_ENV === 'development') {
-  console.log('📋 Swagger spec generated with paths:', Object.keys(swaggerSpec.paths || {}));
+  logger.debug('📋 Swagger spec generated with paths:', Object.keys(swaggerSpec.paths || {}));
 }
 
 // Environment variable validation helper
@@ -383,7 +393,7 @@ validateEnv();
 // Configure CORS origins
 const originList = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : null;
 if (process.env.DEBUG_CORS === 'true') {
-  console.log('🔧 CORS Debug - originList:', originList);
+  logger.debug('🔧 CORS Debug - originList:', originList);
 }
 
 // Apply security middleware
@@ -391,6 +401,9 @@ app.use(securityHeaders());
 app.use(requestLogger);
 app.use(configureCORS());
 app.use(sanitizeInput);
+
+// Add performance monitoring middleware
+app.use(performanceMonitor.requestTracking());
 
 // Disable CSP entirely for Swagger UI routes (must be after helmet)
 app.use('/api-docs', (req, res, next) => {
@@ -401,7 +414,7 @@ app.use('/api-docs', (req, res, next) => {
 // Add custom CORS debugging middleware (only when DEBUG_CORS is true)
 if (process.env.DEBUG_CORS === 'true') {
   app.use((req, res, next) => {
-    console.log('🔍 Request received:', {
+    logger.debug('🔍 Request received:', {
       method: req.method,
       url: req.url,
       origin: req.headers.origin,
@@ -413,7 +426,7 @@ if (process.env.DEBUG_CORS === 'true') {
 
 // Optional CORS debug toggle
 if (process.env.DEBUG_CORS === 'true') {
-  console.log('🔧 CORS Debug enabled');
+  logger.debug('🔧 CORS Debug enabled');
 }
 
 // Add post-CORS middleware to log headers (only in debug mode)
@@ -421,7 +434,7 @@ if (process.env.DEBUG_CORS === 'true') {
   app.use((req, res, next) => {
     const originalSend = res.send;
     res.send = function (data) {
-      console.log('📤 Response headers:', {
+      logger.debug('📤 Response headers:', {
         'access-control-allow-origin': res.getHeader('access-control-allow-origin'),
         'access-control-allow-credentials': res.getHeader('access-control-allow-credentials'),
         vary: res.getHeader('vary'),
@@ -1216,9 +1229,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root health endpoint
+// Root health endpoint with performance monitoring
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+  const health = performanceMonitor.getHealthStatus();
+  res.status(health.status === 'healthy' ? 200 : health.status === 'warning' ? 200 : 503).json(health);
+});
+
+// Metrics endpoint (admin only)
+app.get('/metrics', ensureAuth, (req, res) => {
+  const userRoles = req.user?.roles || [];
+  if (!userRoles.includes('admin') && !userRoles.includes('superadmin')) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const metrics = performanceMonitor.getMetrics();
+  res.json(metrics);
 });
 
 // Readiness probe for UAT/Prod deployments
@@ -1825,8 +1850,10 @@ app.use('/api/v1/auth', authRouter); // Updated to v1
 app.use('/api/v1/tickets', ticketsRouter); // Updated to v1
 app.use('/api/v1/spaces', spacesRouter); // Updated to v1 - Space Management API
 app.use('/api/v1/ai-fabric', aiFabricRouter); // Updated to v1
+app.use('/api/v2/mcp', mcpServerRouter); // MCP Server Control Tower API
 app.use('/api/v1/setup', setupRouter); // Updated to v1
 app.use('/api/v1/comms', commsRouter); // Nova Comms - Slack integration
+app.use('/api/v1/nova-tv', novaTVRouter); // Nova TV - Channel Management
 
 // === BACKWARD COMPATIBILITY ROUTES ===
 // Keep legacy unversioned routes for backward compatibility
@@ -1841,6 +1868,7 @@ app.use('/api/tickets', ticketsRouter); // Legacy route
 app.use('/api/spaces', spacesRouter); // Legacy route - Space Management API
 app.use('/api/ai-fabric', aiFabricRouter); // Legacy route
 app.use('/api/setup', setupRouter); // Legacy route
+app.use('/api/nova-tv', novaTVRouter); // Legacy route - Nova TV Channel Management
 
 // Legacy SCIM monitoring route
 app.use('/api/scim/monitor', scimMonitorRouter); // Legacy route
@@ -1907,10 +1935,10 @@ if (
 ) {
   createApp().then(async ({ app, server, io }) => {
     server.listen(PORT, async () => {
-      console.log(`🚀 Nova Universe API Server running on port ${PORT}`);
-      console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
-      console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
-      console.log(`⚡ WebSocket server ready for real-time updates`);
+      logger.info(`🚀 Nova Universe API Server running on port ${PORT}`);
+      logger.info(`📊 Admin interface: http://localhost:${PORT}/admin`);
+      logger.info(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
+      logger.info(`⚡ WebSocket server ready for real-time updates`);
       
       // Start Slack app if configured
       try {
@@ -1937,9 +1965,9 @@ const shutdownSignals = ['SIGINT', 'SIGTERM'];
 for (const sig of shutdownSignals) {
   process.on(sig, async () => {
     try {
-      console.log(`\n🛑 Received ${sig}. Shutting down gracefully...`);
+      logger.info(`\n🛑 Received ${sig}. Shutting down gracefully...`);
       server.close(() => {
-        console.log('HTTP server closed');
+        logger.info('HTTP server closed');
       });
       await closeDatabase();
     } catch (e) {

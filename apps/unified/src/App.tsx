@@ -89,9 +89,10 @@ const UserProfilePage = lazy(() => import('@pages/profile/UserProfilePage'))
 // Service Catalog pages
 const ServiceCatalogPage = lazy(() => import('@pages/services/ServiceCatalogPage'))
 
-// AI Assistant pages
+// AI pages
 const AIAssistantPage = lazy(() => import('@pages/ai/AIAssistantPage'))
 const CosmoAIPage = lazy(() => import('@pages/ai/CosmoAIPage'))
+const AIControlTower = lazy(() => import('@pages/ai/AIControlTower'))
 
 // Automation pages
 const AutomationHubPage = lazy(() => import('@pages/automation/AutomationHubPage'))
@@ -248,8 +249,10 @@ function App() {
                       <Route path="/profile" element={<UserProfilePage />} />
 
                       {/* AI Assistant routes */}
+                      {/* AI routes */}
                       <Route path="/ai" element={<AIAssistantPage />} />
                       <Route path="/cosmo" element={<CosmoAIPage />} />
+                      <Route path="/ai/control-tower" element={<AIControlTower />} />
 
                       {/* Automation routes */}
                       <Route path="/automation" element={<AutomationHubPage />} />

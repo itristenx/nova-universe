@@ -201,8 +201,8 @@ router.post(
           }
 
           // Debug logging
-          console.log('User object keys:', Object.keys(user));
-          console.log('User password_hash:', user.password_hash);
+          logger.debug(`User object keys: ${Object.keys(user).join(', ')}`);
+          logger.debug(`User password_hash exists: ${!!user.password_hash}`);
 
           // Check password
           const isValidPassword = await bcrypt.compare(password, user.password_hash);

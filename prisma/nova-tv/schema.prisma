@@ -30,6 +30,10 @@ model NovaTVDashboard {
   content       NovaTVContent[]
   analytics     NovaTVAnalytics[]
   sharedWith    NovaTVDashboardShare[]
+  
+  // Digital Signage Relations
+  mediaFiles    NovaTVMediaFile[]
+  playlists     NovaTVPlaylist[]
 
   @@map("nova_tv_dashboards")
   @@index([department])
@@ -48,20 +52,42 @@ model NovaTVDevice {
   dashboardId       String?
   lastActiveAt      DateTime?
   connectionStatus  String   @default("disconnected")
+  
+  // Enhanced settings similar to kiosks
   settings          Json     @default("{}")
   metadata          Json     @default("{}")
+  
+  // Branding and configuration (similar to kiosk model)
+  logoUrl           String?
+  bgUrl             String?
+  brandingConfig    Json     @default("{}")
+  displayConfig     Json     @default("{}")
+  
+  // Activation tracking  
+  isActivated       Boolean  @default(false)
+  activatedBy       String?
+  activatedAt       DateTime?
+  
+  // Device status and health
+  lastPingAt        DateTime?
+  version           String?
+  
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   // Relations
   dashboard         NovaTVDashboard? @relation(fields: [dashboardId], references: [id], onDelete: SetNull)
+  activatedByUser   User?            @relation("TVActivatedBy", fields: [activatedBy], references: [id], onDelete: SetNull)
   analytics         NovaTVAnalytics[]
   authSessions      NovaTVAuthSession[]
+  activations       NovaTVActivation[]
 
   @@map("nova_tv_devices")
   @@index([department])
   @@index([connectionStatus])
   @@index([dashboardId])
+  @@index([isActivated])
+  @@index([deviceFingerprint])
 }
 
 model NovaTVTemplate {
@@ -92,7 +118,7 @@ model NovaTVTemplate {
 model NovaTVContent {
   id           String   @id @default(cuid())
   dashboardId  String
-  contentType  String
+  contentType  String   // 'widget', 'digital_signage', 'media', 'template'
   title        String?
   contentData  Json
   displayOrder Int?
@@ -103,6 +129,10 @@ model NovaTVContent {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Digital signage content references
+  mediaFiles   NovaTVMediaFile[]
+  playlistItems NovaTVPlaylistItem[]
+
   // Relations
   dashboard    NovaTVDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
 
@@ -111,6 +141,116 @@ model NovaTVContent {
   @@index([contentType])
   @@index([isActive])
   @@index([expiresAt])
+}
+
+// Digital Signage Media Management
+model NovaTVMediaFile {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  mimetype     String
+  size         Int
+  fileType     String   // 'video', 'image', 'audio', 'document'
+  fileFormat   String   // 'mp4', 'png', 'jpg', 'gif', 'mp3', 'wav', 'html'
+  filePath     String
+  url          String?
+  uploadedBy   String
+  contentId    String?
+  dashboardId  String?
+  
+  // File validation and metadata
+  isValidated  Boolean  @default(false)
+  validatedAt  DateTime?
+  validatedBy  String?
+  
+  // Media-specific metadata
+  duration     Int?     // for videos/audio in seconds
+  dimensions   Json?    // {width: number, height: number} for images/videos
+  thumbnailUrl String?  // generated thumbnail for videos
+  
+  // Content management
+  tags         String[] @default([])
+  description  String?
+  isActive     Boolean  @default(true)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  uploader     User              @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  content      NovaTVContent?    @relation(fields: [contentId], references: [id], onDelete: SetNull)
+  dashboard    NovaTVDashboard?  @relation(fields: [dashboardId], references: [id], onDelete: SetNull)
+  validator    User?             @relation("MediaValidator", fields: [validatedBy], references: [id], onDelete: SetNull)
+  playlistItems NovaTVPlaylistItem[]
+  
+  @@map("nova_tv_media_files")
+  @@index([uploadedBy])
+  @@index([fileType])
+  @@index([fileFormat])
+  @@index([contentId])
+  @@index([dashboardId])
+  @@index([isValidated])
+}
+
+// Digital Signage Playlists for scheduled content
+model NovaTVPlaylist {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  dashboardId  String
+  isActive     Boolean  @default(true)
+  
+  // Scheduling settings
+  startTime    DateTime?
+  endTime      DateTime?
+  repeatType   String?  // 'none', 'daily', 'weekly', 'monthly'
+  repeatConfig Json     @default("{}")
+  
+  // Playlist settings
+  shuffleMode  Boolean  @default(false)
+  loopMode     Boolean  @default(true)
+  duration     Int?     // total duration in seconds
+  
+  createdBy    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  dashboard    NovaTVDashboard    @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  creator      User               @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  items        NovaTVPlaylistItem[]
+
+  @@map("nova_tv_playlists")
+  @@index([dashboardId])
+  @@index([createdBy])
+  @@index([isActive])
+}
+
+model NovaTVPlaylistItem {
+  id           String   @id @default(cuid())
+  playlistId   String
+  mediaFileId  String?
+  contentId    String?
+  displayOrder Int
+  duration     Int?     // override duration in seconds
+  
+  // Item-specific settings
+  startTime    String?  // time within media file to start (HH:MM:SS)
+  endTime      String?  // time within media file to end (HH:MM:SS)
+  isActive     Boolean  @default(true)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  playlist     NovaTVPlaylist   @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  mediaFile    NovaTVMediaFile? @relation(fields: [mediaFileId], references: [id], onDelete: SetNull)
+  content      NovaTVContent?   @relation(fields: [contentId], references: [id], onDelete: SetNull)
+
+  @@map("nova_tv_playlist_items")
+  @@index([playlistId])
+  @@index([mediaFileId])
+  @@index([displayOrder])
 }
 
 model NovaTVAnalytics {
@@ -156,6 +296,25 @@ model NovaTVAuthSession {
   @@index([expiresAt])
 }
 
+model NovaTVActivation {
+  id        String    @id @default(cuid())
+  code      String
+  qrCode    String
+  expiresAt DateTime
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  deviceId  String?
+
+  // Relations
+  device    NovaTVDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@map("nova_tv_activations")
+  @@index([code])
+  @@index([used])
+  @@index([expiresAt])
+}
+
 model NovaTVDashboardShare {
   id          String   @id @default(cuid())
   dashboardId String
@@ -187,6 +346,12 @@ model User {
   createdTemplates     NovaTVTemplate[]
   authSessions         NovaTVAuthSession[]
   dashboardShares      NovaTVDashboardShare[]
+  activatedTVs         NovaTVDevice[]            @relation("TVActivatedBy")
+  
+  // Digital Signage Relations
+  uploadedMediaFiles   NovaTVMediaFile[]
+  validatedMediaFiles  NovaTVMediaFile[]         @relation("MediaValidator")
+  createdPlaylists     NovaTVPlaylist[]
 
   @@map("users")
 }
