@@ -57,7 +57,7 @@ jobs:
         run: docker --version && docker compose version || echo "Docker Compose plugin will be installed by default on ubuntu-latest"
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10.13.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -99,7 +99,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10.13.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -121,7 +121,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10.13.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -138,7 +138,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10.13.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
