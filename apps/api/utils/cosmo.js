@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 // import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 // import { z } from 'zod'; // Lazy-loaded in registerNovaTools
 import db from '../db.js';
-import aiFabric from '../lib/ai-fabric.js';
+import { aiFabric } from '../lib/ai-fabric.js';
 import { generateTypedTicketId } from './dbUtils.js';
 import { normalizeTicketType } from './utils.js';
 import { CosmoTicketProcessor } from '../services/cosmo-ticket-processor.js';

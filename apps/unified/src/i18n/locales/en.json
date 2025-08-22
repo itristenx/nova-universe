@@ -218,6 +218,97 @@
     "breadcrumb": "Breadcrumb",
     "goToDashboard": "Go to Dashboard",
     "spaces": "Spaces",
+    "commandCenter": {
+      "title": "Command Center",
+      "closeLabel": "Close command center",
+      "scopes": {
+        "all": {
+          "name": "All",
+          "placeholder": "Search everything..."
+        },
+        "tickets": {
+          "name": "Tickets",
+          "placeholder": "Search tickets by ID, title, or description..."
+        },
+        "assets": {
+          "name": "Assets", 
+          "placeholder": "Search assets by name, serial, or tag..."
+        },
+        "knowledge": {
+          "name": "Knowledge",
+          "placeholder": "Search articles, guides, and solutions..."
+        },
+        "users": {
+          "name": "Users",
+          "placeholder": "Search users by name or email..."
+        },
+        "spaces": {
+          "name": "Spaces",
+          "placeholder": "Search rooms and locations..."
+        },
+        "ai": {
+          "name": "AI",
+          "placeholder": "Search AI features and capabilities..."
+        }
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "createTicket": "Create Ticket",
+        "dashboard": "Dashboard",
+        "knowledgeBase": "Knowledge Base",
+        "assetCheckout": "Asset Checkout",
+        "bookSpace": "Book Space",
+        "aiControlCenter": "AI Control Center",
+        "aiAnalytics": "Predictive Analytics",
+        "aiChatbot": "AI Assistant",
+        "smartKnowledge": "Smart Knowledge",
+        "workflowAutomation": "Workflow Automation"
+      },
+      "recentSearches": {
+        "title": "Recent Searches"
+      },
+      "noResults": "No results found for \"{{query}}\"",
+      "shortcuts": {
+        "navigate": "Navigate",
+        "select": "Select",
+        "close": "Close"
+      },
+      "poweredBy": "Powered by Nova AI",
+      "searchResults": {
+        "aiAnalytics": {
+          "title": "Predictive Analytics Dashboard",
+          "description": "AI-powered insights and predictions for proactive IT service management"
+        },
+        "aiChatbot": {
+          "title": "AI Assistant", 
+          "description": "Conversational AI support with natural language processing"
+        },
+        "aiClassification": {
+          "title": "Intelligent Ticket Classification",
+          "description": "Automated ticket categorization and routing using machine learning"
+        },
+        "aiKnowledge": {
+          "title": "Smart Knowledge Base",
+          "description": "AI-enhanced knowledge search with contextual recommendations"
+        },
+        "aiAutomation": {
+          "title": "Workflow Automation Engine",
+          "description": "Intelligent workflow creation and management with AI optimization"
+        },
+        "aiControlCenter": {
+          "title": "AI Control Center",
+          "description": "Central hub for all AI-powered ITSM capabilities"
+        },
+        "status": {
+          "active": "Active",
+          "available": "Available",
+          "available247": "Available 24/7",
+          "learning": "Learning",
+          "enhanced": "Enhanced",
+          "optimizing": "Optimizing"
+        }
+      }
+    },
     "createTicket": "Create Ticket",
     "createAsset": "Create Asset",
     "floorPlan": "Floor Plan",
@@ -561,6 +652,9 @@
     "openMenu": "Open menu",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
+    "openSidebar": "Open sidebar",
+    "closeSidebar": "Close sidebar",
+    "swipeToCloseSidebar": "Swipe left to close sidebar",
     "switchToDark": "Switch to dark mode",
     "switchToLight": "Switch to light mode",
     "minimize": "Minimize",
@@ -968,45 +1062,56 @@
     }
   },
   "automation": {
-    "title": "Automation Hub",
-    "subtitle": "Streamline your IT operations with intelligent automation",
+    "title": "Workflow Automation",
+    "subtitle": "Create, manage, and optimize intelligent workflows",
     "tabs": {
-      "rules": "Automation Rules",
-      "executions": "Execution History",
-      "templates": "Templates"
+      "workflows": "Active Workflows",
+      "templates": "Templates",
+      "analytics": "Analytics"
     },
-    "automationRules": "Automation Rules",
-    "createRule": "Create Rule",
-    "executionHistory": "Execution History",
-    "automationTemplates": "Automation Templates",
-    "browseMarketplace": "Browse Marketplace",
     "status": {
       "active": "Active",
-      "inactive": "Inactive",
-      "error": "Error",
-      "running": "Running",
-      "completed": "Completed",
-      "failed": "Failed"
+      "inactive": "Inactive", 
+      "draft": "Draft"
     },
-    "lastExecuted": "Last executed",
-    "executions": "Executions",
-    "created": "Created",
-    "executeNow": "Execute now",
-    "pause": "Pause",
-    "activate": "Activate",
-    "started": "Started",
-    "duration": "Duration",
-    "executionLogs": "Execution Logs",
     "difficulty": {
       "beginner": "Beginner",
       "intermediate": "Intermediate",
       "advanced": "Advanced"
     },
-    "trigger": "Trigger",
-    "setupTime": "Setup Time",
-    "actions": "Actions",
-    "moreActions": "more actions",
-    "useTemplate": "Use Template"
+    "workflow": {
+      "trigger": "Trigger",
+      "lastModified": "Last modified"
+    },
+    "stats": {
+      "executions": "Executions",
+      "successRate": "Success Rate",
+      "avgTime": "Avg Time",
+      "timeSaved": "Time Saved"
+    },
+    "aiSuggestions": {
+      "title": "AI Suggestions"
+    },
+    "template": {
+      "setupTime": "Setup time",
+      "benefits": "Benefits",
+      "requiredIntegrations": "Required integrations"
+    },
+    "analytics": {
+      "activeWorkflows": "Active Workflows",
+      "totalExecutions": "Total Executions",
+      "timeSavedWeek": "Time Saved/Week",
+      "overallSuccessRate": "Success Rate",
+      "topPerformingWorkflows": "Top Performing Workflows",
+      "executions": "executions"
+    },
+    "actions": {
+      "createWorkflow": "Create Workflow",
+      "pause": "Pause workflow",
+      "start": "Start workflow",
+      "configure": "Configure workflow",
+      "useTemplate": "Use Template"
+    }
   },
   "mailroom": {
     "title": "Mailroom Integration",
@@ -1066,6 +1171,412 @@
       "change": "Change",
       "inquiry": "Inquiry",
       "spam": "Spam"
+    }
+  },
+  "analytics": {
+    "dashboard": {
+      "title": "AI-Powered Analytics",
+      "subtitle": "Predictive insights and intelligent automation for your ITSM operations",
+      "timeframe": "Timeframe"
+    },
+    "timeframes": {
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days"
+    },
+    "metrics": {
+      "avgResolutionTime": {
+        "title": "Avg Resolution Time",
+        "prediction": "Predicted to improve by 15% next week"
+      },
+      "ticketVolume": {
+        "title": "Ticket Volume",
+        "prediction": "Expected increase during maintenance window"
+      },
+      "agentUtilization": {
+        "title": "Agent Utilization",
+        "prediction": "Approaching optimal capacity threshold"
+      },
+      "systemHealth": {
+        "title": "System Health",
+        "prediction": "Stable performance expected"
+      }
+    },
+    "insights": {
+      "title": "AI-Powered Insights",
+      "confidence": "Confidence",
+      "capacityPrediction": {
+        "title": "Resource Capacity Alert",
+        "description": "Our AI models predict your team will reach 95% capacity within the next 48 hours based on current ticket trends.",
+        "timeline": "Next 48 hours",
+        "action": "Scale Resources"
+      },
+      "ticketSurge": {
+        "title": "Unusual Ticket Pattern Detected",
+        "description": "There's been a 35% increase in network-related tickets in the past 6 hours. This may indicate a broader infrastructure issue.",
+        "timeline": "Last 6 hours"
+      },
+      "automationOpportunity": {
+        "title": "Automation Opportunity",
+        "description": "78% of password reset tickets follow identical patterns. Consider implementing automated workflows.",
+        "timeline": "Historical analysis",
+        "action": "Create Automation"
+      },
+      "performanceTrend": {
+        "title": "Performance Improvement Trend",
+        "description": "Agent response times have improved by 22% over the past month, exceeding your SLA targets.",
+        "timeline": "Last 30 days"
+      }
+    },
+    "impacts": {
+      "low": "Low Impact",
+      "medium": "Medium Impact", 
+      "high": "High Impact",
+      "critical": "Critical Impact"
+    },
+    "actions": {
+      "viewFullReport": "View Full Report",
+      "setupAutomation": "Setup Automation",
+      "customizeMetrics": "Customize Metrics"
+    }
+  },
+  "classification": {
+    "analyzing": {
+      "title": "AI is analyzing your ticket...",
+      "steps": {
+        "content": "Analyzing ticket content and context",
+        "patterns": "Matching patterns with historical data",
+        "routing": "Determining optimal routing and assignment"
+      },
+      "progress": "Analysis in progress..."
+    },
+    "waiting": {
+      "title": "Ready for AI Classification", 
+      "description": "Let our AI analyze this ticket to suggest optimal categorization, priority, and routing."
+    },
+    "results": {
+      "title": "Classification Complete",
+      "confidence": "{{confidence}}% confidence"
+    },
+    "fields": {
+      "category": "Category",
+      "priority": "Priority",
+      "urgency": "Urgency", 
+      "assignment": "Suggested Assignment",
+      "tags": "Smart Tags"
+    },
+    "priorities": {
+      "low": "Low Priority",
+      "medium": "Medium Priority", 
+      "high": "High Priority",
+      "critical": "Critical Priority"
+    },
+    "urgency": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High", 
+      "critical": "Critical"
+    },
+    "stats": {
+      "estimatedTime": "Est. Resolution Time",
+      "similarTickets": "Similar Tickets",
+      "confidence": "AI Confidence",
+      "found": "found"
+    },
+    "automation": {
+      "title": "Automation Suggestions",
+      "apply": "Apply"
+    },
+    "actions": {
+      "classify": "Classify with AI",
+      "accept": "Accept Classification",
+      "modify": "Modify",
+      "reclassify": "Re-classify"
+    }
+  },
+  "knowledge": {
+    "search": {
+      "title": "Smart Knowledge Base",
+      "subtitle": "AI-powered search with intelligent content recommendations",
+      "placeholder": "Ask a question or describe your issue..."
+    },
+    "suggestions": {
+      "title": "Popular searches"
+    },
+    "categories": {
+      "all": "All Categories"
+    },
+    "sort": {
+      "label": "Sort by",
+      "relevance": "Most Relevant",
+      "recent": "Most Recent", 
+      "popular": "Most Popular"
+    },
+    "insights": {
+      "title": "AI Insights"
+    },
+    "article": {
+      "relevant": "relevant",
+      "aiSummary": "AI Summary",
+      "views": "views"
+    },
+    "noResults": {
+      "title": "No articles found",
+      "description": "Try adjusting your search terms or browse by category.",
+      "createArticle": "Create New Article"
+    }
+  },
+  "ai": {
+    "controlCenter": {
+      "title": "AI Control Center",
+      "subtitle": "Harness the power of artificial intelligence to transform your ITSM operations with predictive insights, intelligent automation, and enhanced productivity.",
+      "explore": "Explore Feature",
+      "stats": {
+        "title": "AI-Powered Excellence",
+        "features": "AI Features",
+        "availability": "AI Availability",
+        "accuracy": "Prediction Accuracy"
+      }
+    },
+    "features": {
+      "analytics": {
+        "title": "Predictive Analytics",
+        "description": "AI-powered insights and predictions to optimize your IT operations and prevent issues before they occur."
+      },
+      "classification": {
+        "title": "Intelligent Classification",
+        "description": "Automated ticket categorization and routing using advanced machine learning algorithms."
+      },
+      "knowledge": {
+        "title": "Smart Knowledge Base",
+        "description": "AI-enhanced knowledge search with contextual recommendations and intelligent content discovery."
+      },
+      "automation": {
+        "title": "Workflow Automation",
+        "description": "Intelligent workflow creation and management with AI-powered optimization and templates."
+      },
+      "chatbot": {
+        "title": "AI Assistant",
+        "description": "Conversational AI support with natural language processing and contextual assistance."
+      }
+    },
+    "analytics": {
+      "dashboard": {
+        "title": "Predictive Analytics Dashboard",
+        "subtitle": "AI-powered insights for proactive IT service management",
+        "lastUpdated": "Last updated: {{timestamp}}"
+      },
+      "predictions": {
+        "title": "Predictions",
+        "incidentVolume": "Incident Volume",
+        "systemHealth": "System Health",
+        "userSatisfaction": "User Satisfaction",
+        "resourceUtilization": "Resource Utilization",
+        "confidence": "Confidence: {{confidence}}%"
+      },
+      "trends": {
+        "title": "Trend Analysis",
+        "weekOverWeek": "Week over week",
+        "monthOverMonth": "Month over month",
+        "yearOverYear": "Year over year"
+      },
+      "insights": {
+        "title": "AI Insights",
+        "recommendations": "Recommendations",
+        "anomalies": "Anomalies Detected",
+        "patterns": "Pattern Analysis"
+      }
+    },
+    "classification": {
+      "title": "Intelligent Ticket Classification",
+      "subtitle": "AI-powered automated categorization and routing",
+      "confidence": {
+        "high": "High Confidence",
+        "medium": "Medium Confidence", 
+        "low": "Low Confidence",
+        "score": "{{score}}% confidence"
+      },
+      "categories": {
+        "incident": "Incident",
+        "request": "Service Request",
+        "problem": "Problem",
+        "change": "Change Request"
+      },
+      "priority": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "routing": {
+        "title": "Suggested Routing",
+        "assignee": "Recommended Assignee",
+        "team": "Suggested Team"
+      },
+      "automation": {
+        "title": "Automation Opportunities",
+        "autoResolve": "Auto-resolve Candidate",
+        "escalation": "Escalation Pattern",
+        "template": "Template Match"
+      }
+    },
+    "knowledge": {
+      "title": "Smart Knowledge Base",
+      "subtitle": "AI-enhanced knowledge search and recommendations",
+      "search": {
+        "placeholder": "Search with AI assistance...",
+        "noResults": "No articles found",
+        "suggestions": "AI Suggestions",
+        "related": "Related Articles"
+      },
+      "relevance": {
+        "high": "Highly Relevant",
+        "medium": "Moderately Relevant",
+        "low": "Low Relevance",
+        "score": "{{score}}% relevant"
+      },
+      "insights": {
+        "title": "AI Insights",
+        "summary": "Article Summary",
+        "keyPoints": "Key Points",
+        "relatedTopics": "Related Topics"
+      },
+      "feedback": {
+        "helpful": "Was this helpful?",
+        "yes": "Yes",
+        "no": "No",
+        "improve": "How can we improve this article?"
+      }
+    },
+    "automation": {
+      "title": "Workflow Automation Engine",
+      "subtitle": "Intelligent workflow creation and management",
+      "workflows": {
+        "active": "Active Workflows",
+        "draft": "Draft",
+        "paused": "Paused",
+        "completed": "Completed"
+      },
+      "templates": {
+        "title": "AI-Recommended Templates",
+        "incidentResponse": "Incident Response",
+        "changeManagement": "Change Management",
+        "userOnboarding": "User Onboarding",
+        "accessRequest": "Access Request"
+      },
+      "analytics": {
+        "title": "Workflow Analytics",
+        "efficiency": "Efficiency Gain",
+        "timesSaved": "Time Saved",
+        "successRate": "Success Rate",
+        "usage": "Usage Statistics"
+      },
+      "builder": {
+        "title": "Workflow Builder",
+        "dragDrop": "Drag and drop to build workflows",
+        "addStep": "Add Step",
+        "configure": "Configure",
+        "test": "Test Workflow",
+        "deploy": "Deploy"
+      }
+    },
+    "chatbot": {
+      "title": "AI Assistant",
+      "subtitle": "Your intelligent ITSM companion",
+      "inputPlaceholder": "Ask me anything about your IT services...",
+      "voiceInput": "Voice Input",
+      "sendMessage": "Send Message",
+      "suggestedResponses": "Suggested responses",
+      "quickStart": "Quick start",
+      "status": {
+        "online": "Online"
+      },
+      "suggestions": {
+        "passwordReset": "How do I reset my password?",
+        "softwareInstall": "Install software",
+        "networkIssue": "Network connectivity issue",
+        "createTicket": "Create a new ticket",
+        "checkStatus": "Check ticket status",
+        "viewKnowledge": "Browse knowledge base"
+      },
+      "welcome": {
+        "message": "Hello! I'm your AI assistant. How can I help you with your IT services today?",
+        "suggestions": {
+          "help": "How can I help you today?",
+          "ticket": "Create a new service request",
+          "status": "Check the status of my tickets"
+        }
+      },
+      "responses": {
+        "passwordReset": {
+          "content": "I can help you reset your password. I'll guide you through the self-service options or escalate to IT support if needed.",
+          "actions": {
+            "resetNow": "Reset Password Now",
+            "viewGuide": "View Password Guide"
+          },
+          "suggestions": {
+            "mfa": "Set up multi-factor authentication",
+            "account": "Check account security settings"
+          }
+        },
+        "software": {
+          "content": "I can help you with software installation and requests. Let me show you the available options.",
+          "actions": {
+            "browseCatalog": "Browse Software Catalog",
+            "requestSoftware": "Request New Software"
+          }
+        },
+        "network": {
+          "content": "I can help diagnose network connectivity issues. Let's start with some basic troubleshooting steps.",
+          "actions": {
+            "runDiagnostics": "Run Network Diagnostics",
+            "contactSupport": "Contact Network Support"
+          }
+        },
+        "ticket": {
+          "content": "I can help you create a new ticket or check existing ones. What would you like to do?",
+          "actions": {
+            "createTicket": "Create New Ticket",
+            "viewTickets": "View My Tickets"
+          }
+        },
+        "status": {
+          "content": "I can check the status of your tickets and provide updates on any service requests.",
+          "actions": {
+            "checkStatus": "Check Ticket Status"
+          }
+        },
+        "general": {
+          "content": "I'd be happy to help! Could you be more specific about what you need assistance with?",
+          "suggestions": {
+            "specific": "Try asking about a specific issue",
+            "knowledge": "Browse our knowledge base",
+            "agent": "Connect with a live agent"
+          }
+        }
+      },
+      "feedback": {
+        "helpful": "Mark as helpful",
+        "notHelpful": "Mark as not helpful"
+      },
+      "errors": {
+        "responseError": "I'm sorry, I encountered an error. Please try again or contact support if the issue persists."
+      },
+      "examples": {
+        "title": "Try asking:",
+        "status": "What's the status of incident INC-001?",
+        "create": "Create a new service request",
+        "knowledge": "How do I reset my password?",
+        "reports": "Show me this month's incident trends"
+      },
+      "capabilities": {
+        "title": "I can help you with:",
+        "tickets": "Ticket management and status updates",
+        "knowledge": "Knowledge base search and recommendations", 
+        "reports": "Generate reports and analytics",
+        "automation": "Workflow automation and suggestions"
+      }
     }
   }
 }

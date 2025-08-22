@@ -3,6 +3,7 @@ import db from '../db.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { encrypt, decrypt } from '../utils/encryption.js';
 import { parse as parseCsv } from 'csv-parse/sync';
+import { logger } from '../logger.js';
 
 const router = express.Router();
 
@@ -284,7 +285,7 @@ router.post('/import', authenticateJWT, async (req, res) => {
 
     res.json({ success: true, imported: records.length });
   } catch (err) {
-    console.error('Error during asset import:', err); // Log the full error for debugging
+    logger.error('Error during asset import:', err); // Log the full error for debugging
     res.status(500).json({
       success: false,
       error: 'Import failed due to a server error. Please check the data and try again.',

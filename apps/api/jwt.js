@@ -20,6 +20,8 @@ export function sign(payload) {
     'development_secret',
     'dev_jwt_secret',
     'test_secret',
+    'replace_with_64_char_secure_random_string',
+    'strong_password_here'
   ];
 
   if (weakSecrets.some((weak) => secret.toLowerCase().includes(weak))) {

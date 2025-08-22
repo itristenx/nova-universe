@@ -30,18 +30,8 @@ const DashboardBuilder: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadTemplates();
     initializeDashboard();
   }, []);
-
-  const loadTemplates = async () => {
-    try {
-      const data = await novaTVService.getTemplates();
-      console.log('Templates loaded:', data);
-    } catch (error) {
-      console.error('Error loading templates:', error);
-    }
-  };
 
   const initializeDashboard = () => {
     // Initialize with a new dashboard

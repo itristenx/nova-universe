@@ -61,12 +61,15 @@ const mockPrismaClient = {
 describe('Inventory Enhancement Implementation', () => {
   let inventoryService;
   let mockHelixService;
+  let helixKioskService;
 
   beforeAll(() => {
     // Initialize services with mock Prisma client
     inventoryService = new InventoryService();
     inventoryService.db = mockPrismaClient;
     mockHelixService = require('../apps/api/services/helixKioskIntegration.js');
+    helixKioskService = new HelixKioskIntegrationService();
+    helixKioskService.prisma = mockPrismaClient;
   });
 
   beforeEach(() => {
@@ -482,8 +485,6 @@ TEST002,SN987654321,HP ProDesk 400,Finance,active`;
       expect(result.validRecords).toBeGreaterThan(0);
       expect(mockPrismaClient.inventoryAsset.create).toHaveBeenCalled();
     });
-  });
-});
 
     it('should detect validation errors', async () => {
       const testData = [
@@ -756,18 +757,6 @@ TEST-002,Another Device,SN789012,2025-06-15`;
     });
   });
 
-      const result = await helixKioskService.registerAssetWithKiosk(
-        registrationData.kioskId,
-        registrationData.assetId,
-        registrationData.metadata,
-        'test-user'
-      );
-
-      expect(mockPrismaClient.kioskAssetRegistry.create).toHaveBeenCalled();
-      expect(result.kioskId).toBe(registrationData.kioskId);
-      expect(result.assetId).toBe(registrationData.assetId);
-    });
-
     it('should sync with Helix API', async () => {
       const registryEntry = {
         id: 1,
@@ -856,9 +845,8 @@ TEST-002,Another Device,SN789012,2025-06-15`;
       expect(migrationContent).toContain('encrypted');
     });
   });
-});
 
-describe('Integration Requirements Validation', () => {
+  describe('Integration Requirements Validation', () => {
   it('should validate all implementation requirements', () => {
     const requirements = [
       'Migration scripts under prisma/migrations/',

@@ -9,10 +9,11 @@ import {
   MoonIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  CommandLineIcon,
 } from '@heroicons/react/24/outline'
 import { UserMenu } from './UserMenu'
 import { NotificationMenu } from './NotificationMenu'
-import { SearchCommand } from './SearchCommand'
+import { UnifiedCommandCenter } from './UnifiedCommandCenter'
 import { AppSwitcher } from '../navigation/AppSwitcher'
 import LanguageSwitcher from '../common/LanguageSwitcher'
 
@@ -66,7 +67,7 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
               <span className="text-sm font-bold">N</span>
             </div>
             <span className="hidden text-lg font-semibold text-gray-900 dark:text-gray-100 sm:block">
-              Nova Universe
+              {t('app.name')}
             </span>
           </Link>
 
@@ -74,15 +75,15 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
           <AppSwitcher currentApp="unified" />
         </div>
 
-        {/* Center section - Search */}
+        {/* Center section - Command Center */}
         <div className="flex-1 max-w-xl mx-4">
           <button
             onClick={() => setSearchOpen(true)}
             className="flex w-full items-center gap-3 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-left text-gray-500 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
           >
-            <MagnifyingGlassIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('navigation.searchPlaceholder')}</span>
-            <span className="sm:hidden">{t('navigation.search')}</span>
+            <CommandLineIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('navigation:searchPlaceholder')}</span>
+            <span className="sm:hidden">{t('navigation:commandCenter.title')}</span>
             <div className="ml-auto flex items-center gap-1">
               <kbd className="hidden rounded border border-gray-300 px-1.5 py-0.5 text-xs text-gray-600 dark:border-gray-600 dark:text-gray-400 sm:inline">
                 ⌘
@@ -128,8 +129,8 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
         </div>
       </header>
 
-      {/* Search command palette */}
-      <SearchCommand
+      {/* Unified Command Center */}
+      <UnifiedCommandCenter
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
       />

@@ -6,7 +6,7 @@ import { logger } from '../../../apps/api/logger.js';
 // Configuration from environment with robust defaults and validation
 const validateElasticConfig = () => {
   const config = {
-    node: process.env.ELASTIC_URL || 'http://localhost:9200',
+    node: process.env.ELASTIC_URL || process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
     auth: {
       username: process.env.ELASTIC_USERNAME || 'elastic',
       password: (() => {

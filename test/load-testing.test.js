@@ -7,6 +7,10 @@ import { performance } from 'perf_hooks';
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
 import { EventEmitter } from 'events';
 import fetch from 'node-fetch';
+import { registerCleanupHandlers, performCleanup, registerResource } from './test-cleanup.js';
+
+// Register cleanup handlers immediately
+registerCleanupHandlers();
 
 // Load Test Configuration
 const LOAD_CONFIG = {
@@ -34,6 +38,7 @@ class LoadTestEngine extends EventEmitter {
   constructor() {
     super();
     this.workers = [];
+    this.isShuttingDown = false;
     this.results = {
       requests: [],
       errors: [],
@@ -47,6 +52,20 @@ class LoadTestEngine extends EventEmitter {
         concurrentUsers: 0,
       },
     };
+    
+    // Handle graceful shutdown
+    this.cleanup = this.cleanup.bind(this);
+    process.on('SIGINT', this.cleanup);
+    process.on('SIGTERM', this.cleanup);
+    process.on('exit', this.cleanup);
+  }
+
+  async cleanup() {
+    if (this.isShuttingDown) return;
+    this.isShuttingDown = true;
+    
+    console.log('🧹 Cleaning up load test workers...');
+    await this.stopLoadTest();
   }
 
   async runLoadTest(scenario, testName) {
@@ -73,6 +92,9 @@ class LoadTestEngine extends EventEmitter {
           apiUrl: LOAD_CONFIG.apiUrl,
         },
       });
+
+      // Register worker for cleanup
+      registerResource('workers', worker);
 
       worker.on('message', (data) => {
         this.handleWorkerMessage(data);
@@ -117,15 +139,33 @@ class LoadTestEngine extends EventEmitter {
     }
   }
 
-  stopLoadTest() {
+  async stopLoadTest() {
+    if (this.isShuttingDown) return;
+    
     this.results.metrics.endTime = performance.now();
 
-    // Terminate all workers
-    this.workers.forEach((worker) => {
-      worker.terminate();
+    // Gracefully terminate all workers
+    const terminationPromises = this.workers.map(worker => {
+      return new Promise((resolve) => {
+        // Set a timeout for graceful termination
+        const timeout = setTimeout(() => {
+          worker.terminate();
+          resolve();
+        }, 5000);
+
+        worker.once('exit', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        // Try graceful shutdown first
+        worker.postMessage({ type: 'shutdown' });
+      });
     });
 
+    await Promise.all(terminationPromises);
     this.workers = [];
+    console.log('✅ All load test workers terminated gracefully');
   }
 
   generateReport(testName) {
@@ -198,6 +238,15 @@ if (!isMainThread) {
       this.apiUrl = apiUrl;
       this.activeUsers = 0;
       this.isRunning = false;
+      this.timeouts = new Set();
+      this.intervals = new Set();
+      
+      // Handle shutdown messages from parent
+      parentPort.on('message', (message) => {
+        if (message.type === 'shutdown') {
+          this.stop();
+        }
+      });
     }
 
     async start() {
@@ -206,17 +255,43 @@ if (!isMainThread) {
 
       // Start users gradually during ramp-up period
       for (let i = 0; i < this.usersPerWorker && this.isRunning; i++) {
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           if (this.isRunning) {
             this.simulateUser();
           }
         }, i * userDelayMs);
+        this.timeouts.add(timeoutId);
       }
 
       // Stop after test duration
-      setTimeout(() => {
+      const stopTimeoutId = setTimeout(() => {
         this.stop();
       }, this.duration + this.rampUp);
+      this.timeouts.add(stopTimeoutId);
+    }
+
+    stop() {
+      this.isRunning = false;
+      
+      // Clear all timeouts and intervals
+      for (const timeoutId of this.timeouts) {
+        clearTimeout(timeoutId);
+      }
+      for (const intervalId of this.intervals) {
+        clearInterval(intervalId);
+      }
+      
+      this.timeouts.clear();
+      this.intervals.clear();
+      
+      // Send final message and exit
+      parentPort.postMessage({
+        type: 'worker-stopped',
+        payload: { workerId: this.workerId, activeUsers: this.activeUsers }
+      });
+      
+      // Graceful exit
+      process.exit(0);
     }
 
     async simulateUser() {
@@ -312,12 +387,16 @@ if (!isMainThread) {
     }
 
     sleep(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
+      return new Promise((resolve) => {
+        const timeoutId = setTimeout(resolve, ms);
+        this.timeouts.add(timeoutId);
+      });
     }
 
-    stop() {
-      this.isRunning = false;
-    }
+    // This method is replaced by the enhanced stop() method above
+    // stop() {
+    //   this.isRunning = false;
+    // }
   }
 
   // Start worker
@@ -653,3 +732,10 @@ test('Capacity Planning Analysis', async (t) => {
 
 console.log('✅ Load Testing Suite Completed');
 console.log('🎯 System performance under various load conditions analyzed');
+
+// Final cleanup and exit
+process.nextTick(async () => {
+  await performCleanup();
+  console.log('🎯 Load tests finished - exiting gracefully');
+  process.exit(0);
+});

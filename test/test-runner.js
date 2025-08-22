@@ -4,6 +4,10 @@
 import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { registerResource, unregisterResource, performCleanup, registerCleanupHandlers } from './test-cleanup.js';
+
+// Register cleanup handlers immediately
+registerCleanupHandlers();
 
 // Test Configuration
 const TEST_CONFIG = {
@@ -181,6 +185,33 @@ class TestSuiteRunner {
   constructor() {
     this.tracker = new TestResultTracker();
     this.setupPromise = this.setup();
+    this.activeProcesses = new Set();
+  }
+
+  async cleanup() {
+    console.log('\n🧹 Cleaning up test processes...');
+    
+    // Terminate all active child processes
+    for (const process of this.activeProcesses) {
+      try {
+        if (process && !process.killed) {
+          process.kill('SIGTERM');
+          // Give process time to terminate gracefully
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          if (!process.killed) {
+            process.kill('SIGKILL');
+          }
+        }
+      } catch (error) {
+        console.error('Error terminating process:', error.message);
+      }
+    }
+    
+    this.activeProcesses.clear();
+    
+    // Use the centralized cleanup utility
+    await performCleanup();
+    console.log('✅ Test cleanup completed');
   }
 
   async setup() {
@@ -305,6 +336,10 @@ class TestSuiteRunner {
 
       const cmd = useJest ? 'jest' : 'node';
       const child = spawn(cmd, args, { env, cwd: process.cwd(), stdio: ['pipe', 'pipe', 'pipe'] });
+      
+      // Track active process for cleanup
+      this.activeProcesses.add(child);
+      registerResource('processes', child);
 
       child.stdout.on('data', (d) => {
         const t = d.toString();
@@ -318,6 +353,10 @@ class TestSuiteRunner {
       });
 
       child.on('close', (code) => {
+        // Remove from active processes when completed
+        this.activeProcesses.delete(child);
+        unregisterResource('processes', child);
+        
         const duration = Date.now() - startTime;
         const success = code === 0;
         const warnings = [];
@@ -336,8 +375,19 @@ class TestSuiteRunner {
         });
       });
 
-      setTimeout(() => {
-        child.kill();
+      const timeoutId = setTimeout(() => {
+        if (!child.killed) {
+          console.log(`⏱️  Test timeout reached, terminating ${suite.name}...`);
+          child.kill('SIGTERM');
+          // Forceful kill if process doesn't terminate gracefully
+          setTimeout(() => {
+            if (!child.killed) {
+              child.kill('SIGKILL');
+            }
+          }, 5000);
+        }
+        this.activeProcesses.delete(child);
+        unregisterResource('processes', child);
         resolve({
           success: false,
           error: `Test timed out after ${TEST_CONFIG.timeout / 1000}s`,
@@ -345,6 +395,11 @@ class TestSuiteRunner {
           duration: TEST_CONFIG.timeout,
         });
       }, TEST_CONFIG.timeout);
+
+      // Clear timeout if process completes normally
+      child.on('close', () => {
+        clearTimeout(timeoutId);
+      });
     });
   }
 
@@ -492,11 +547,19 @@ async function main() {
     } else {
       finalReport = await runner.runAllSuites();
     }
+    
+    // Ensure cleanup before exit
+    await runner.cleanup();
+    
     const exitCode = finalReport.summary.failed > 0 ? 1 : 0;
+    console.log(`\n🏁 Test runner exiting with code ${exitCode}`);
     process.exit(exitCode);
   } catch (error) {
     console.error('❌ Test runner failed:', error.message);
     if (TEST_CONFIG.verbose) console.error(error.stack);
+    
+    // Ensure cleanup on error
+    await runner.cleanup();
     process.exit(1);
   }
 }

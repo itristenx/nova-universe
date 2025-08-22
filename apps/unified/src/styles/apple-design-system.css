@@ -1,0 +1,503 @@
+/**
+ * Apple-Inspired CSS Variables and Utilities - Phase 1 Implementation
+ * Comprehensive styling system based on Apple Human Interface Guidelines
+ */
+
+/* CSS Custom Properties for Apple Design System */
+:root {
+  /* Typography - Apple San Francisco fallbacks */
+  --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Inter, system-ui, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', 'Courier New', monospace;
+
+  /* Apple Typography Scale */
+  --text-large-title: 34px;
+  --text-title-1: 28px;
+  --text-title-2: 22px;
+  --text-title-3: 20px;
+  --text-headline: 17px;
+  --text-subheadline: 15px;
+  --text-body: 17px;
+  --text-callout: 16px;
+  --text-footnote: 13px;
+  --text-caption-1: 12px;
+  --text-caption-2: 11px;
+
+  /* Apple Line Heights */
+  --line-height-large-title: 1.21;
+  --line-height-title-1: 1.18;
+  --line-height-title-2: 1.27;
+  --line-height-title-3: 1.25;
+  --line-height-headline: 1.29;
+  --line-height-subheadline: 1.27;
+  --line-height-body: 1.29;
+  --line-height-callout: 1.25;
+  --line-height-footnote: 1.23;
+  --line-height-caption-1: 1.33;
+  --line-height-caption-2: 1.27;
+
+  /* Apple System Colors */
+  --color-system-blue: #007AFF;
+  --color-system-green: #34C759;
+  --color-system-indigo: #5856D6;
+  --color-system-orange: #FF9500;
+  --color-system-pink: #FF2D92;
+  --color-system-purple: #AF52DE;
+  --color-system-red: #FF3B30;
+  --color-system-teal: #5AC8FA;
+  --color-system-yellow: #FFCC00;
+
+  /* Apple Gray Scale */
+  --color-system-gray: #8E8E93;
+  --color-system-gray-2: #AEAEB2;
+  --color-system-gray-3: #C7C7CC;
+  --color-system-gray-4: #D1D1D6;
+  --color-system-gray-5: #E5E5EA;
+  --color-system-gray-6: #F2F2F7;
+
+  /* Apple Semantic Colors - Light Mode */
+  --color-label-primary: #000000;
+  --color-label-secondary: #3C3C43;
+  --color-label-tertiary: rgba(60, 60, 67, 0.6);
+  --color-label-quaternary: rgba(60, 60, 67, 0.18);
+
+  --color-fill-primary: rgba(120, 120, 128, 0.2);
+  --color-fill-secondary: rgba(120, 120, 128, 0.16);
+  --color-fill-tertiary: rgba(118, 118, 128, 0.12);
+  --color-fill-quaternary: rgba(116, 116, 128, 0.08);
+
+  --color-background-primary: #FFFFFF;
+  --color-background-secondary: #F2F2F7;
+  --color-background-tertiary: #FFFFFF;
+
+  --color-grouped-background-primary: #F2F2F7;
+  --color-grouped-background-secondary: #FFFFFF;
+  --color-grouped-background-tertiary: #F2F2F7;
+
+  --color-separator-opaque: #C6C6C8;
+  --color-separator-non-opaque: rgba(60, 60, 67, 0.29);
+
+  /* Apple Spacing System (4px base grid) */
+  --spacing-0-5: 2px;
+  --spacing-1: 4px;
+  --spacing-1-5: 6px;
+  --spacing-2: 8px;
+  --spacing-2-5: 10px;
+  --spacing-3: 12px;
+  --spacing-3-5: 14px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-7: 28px;
+  --spacing-8: 32px;
+  --spacing-9: 36px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-14: 56px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+  --spacing-32: 128px;
+
+  /* Apple Border Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+
+  /* Apple Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* Apple Motion */
+  --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --ease-decelerated: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --ease-accelerated: cubic-bezier(0.4, 0.0, 1, 1);
+  --ease-sharp: cubic-bezier(0.4, 0.0, 0.6, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+  --duration-slower: 500ms;
+
+  /* Z-Index Scale */
+  --z-hide: -1;
+  --z-base: 0;
+  --z-docked: 10;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-banner: 1030;
+  --z-overlay: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-skip-link: 1070;
+  --z-toast: 1080;
+  --z-tooltip: 1090;
+}
+
+/* Dark Mode Color Overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-label-primary: #FFFFFF;
+    --color-label-secondary: #EBEBF5;
+    --color-label-tertiary: rgba(235, 235, 245, 0.6);
+    --color-label-quaternary: rgba(235, 235, 245, 0.18);
+
+    --color-fill-primary: rgba(120, 120, 128, 0.32);
+    --color-fill-secondary: rgba(120, 120, 128, 0.28);
+    --color-fill-tertiary: rgba(118, 118, 128, 0.24);
+    --color-fill-quaternary: rgba(116, 116, 128, 0.2);
+
+    --color-background-primary: #000000;
+    --color-background-secondary: #1C1C1E;
+    --color-background-tertiary: #2C2C2E;
+
+    --color-grouped-background-primary: #000000;
+    --color-grouped-background-secondary: #1C1C1E;
+    --color-grouped-background-tertiary: #2C2C2E;
+
+    --color-separator-opaque: #38383A;
+    --color-separator-non-opaque: rgba(84, 84, 88, 0.6);
+  }
+}
+
+/* Explicit Dark Mode Class Support */
+.dark {
+  --color-label-primary: #FFFFFF;
+  --color-label-secondary: #EBEBF5;
+  --color-label-tertiary: rgba(235, 235, 245, 0.6);
+  --color-label-quaternary: rgba(235, 235, 245, 0.18);
+
+  --color-fill-primary: rgba(120, 120, 128, 0.32);
+  --color-fill-secondary: rgba(120, 120, 128, 0.28);
+  --color-fill-tertiary: rgba(118, 118, 128, 0.24);
+  --color-fill-quaternary: rgba(116, 116, 128, 0.2);
+
+  --color-background-primary: #000000;
+  --color-background-secondary: #1C1C1E;
+  --color-background-tertiary: #2C2C2E;
+
+  --color-grouped-background-primary: #000000;
+  --color-grouped-background-secondary: #1C1C1E;
+  --color-grouped-background-tertiary: #2C2C2E;
+
+  --color-separator-opaque: #38383A;
+  --color-separator-non-opaque: rgba(84, 84, 88, 0.6);
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-label-primary: #000000;
+    --color-label-secondary: #000000;
+    --color-background-primary: #FFFFFF;
+    --color-background-secondary: #FFFFFF;
+    --color-separator-opaque: #000000;
+  }
+
+  .dark {
+    --color-label-primary: #FFFFFF;
+    --color-label-secondary: #FFFFFF;
+    --color-background-primary: #000000;
+    --color-background-secondary: #000000;
+    --color-separator-opaque: #FFFFFF;
+  }
+}
+
+.high-contrast {
+  --color-label-primary: #000000;
+  --color-label-secondary: #000000;
+  --color-background-primary: #FFFFFF;
+  --color-background-secondary: #FFFFFF;
+  --color-separator-opaque: #000000;
+}
+
+.high-contrast.dark {
+  --color-label-primary: #FFFFFF;
+  --color-label-secondary: #FFFFFF;
+  --color-background-primary: #000000;
+  --color-background-secondary: #000000;
+  --color-separator-opaque: #FFFFFF;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.reduced-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Large Text Support */
+@media (prefers-reduced-data: reduce) {
+  :root {
+    --text-body: 19px;
+    --text-callout: 18px;
+    --text-footnote: 15px;
+    --text-caption-1: 14px;
+    --text-caption-2: 13px;
+  }
+}
+
+.large-text {
+  --text-body: 19px;
+  --text-callout: 18px;
+  --text-footnote: 15px;
+  --text-caption-1: 14px;
+  --text-caption-2: 13px;
+}
+
+/* Apple Typography Utility Classes */
+.font-system {
+  font-family: var(--font-system);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.text-large-title {
+  font-size: var(--text-large-title);
+  line-height: var(--line-height-large-title);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+.text-title-1 {
+  font-size: var(--text-title-1);
+  line-height: var(--line-height-title-1);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+.text-title-2 {
+  font-size: var(--text-title-2);
+  line-height: var(--line-height-title-2);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+.text-title-3 {
+  font-size: var(--text-title-3);
+  line-height: var(--line-height-title-3);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+}
+
+.text-headline {
+  font-size: var(--text-headline);
+  line-height: var(--line-height-headline);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+}
+
+.text-subheadline {
+  font-size: var(--text-subheadline);
+  line-height: var(--line-height-subheadline);
+  font-weight: 400;
+  letter-spacing: -0.016em;
+}
+
+.text-body {
+  font-size: var(--text-body);
+  line-height: var(--line-height-body);
+  font-weight: 400;
+  letter-spacing: -0.022em;
+}
+
+.text-callout {
+  font-size: var(--text-callout);
+  line-height: var(--line-height-callout);
+  font-weight: 400;
+  letter-spacing: -0.016em;
+}
+
+.text-footnote {
+  font-size: var(--text-footnote);
+  line-height: var(--line-height-footnote);
+  font-weight: 400;
+  letter-spacing: -0.016em;
+}
+
+.text-caption-1 {
+  font-size: var(--text-caption-1);
+  line-height: var(--line-height-caption-1);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.text-caption-2 {
+  font-size: var(--text-caption-2);
+  line-height: var(--line-height-caption-2);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+}
+
+/* Apple Color Utility Classes */
+.text-system-blue { color: var(--color-system-blue); }
+.text-system-green { color: var(--color-system-green); }
+.text-system-red { color: var(--color-system-red); }
+.text-system-orange { color: var(--color-system-orange); }
+.text-system-yellow { color: var(--color-system-yellow); }
+.text-system-purple { color: var(--color-system-purple); }
+.text-system-pink { color: var(--color-system-pink); }
+.text-system-teal { color: var(--color-system-teal); }
+.text-system-indigo { color: var(--color-system-indigo); }
+
+.text-label-primary { color: var(--color-label-primary); }
+.text-label-secondary { color: var(--color-label-secondary); }
+.text-label-tertiary { color: var(--color-label-tertiary); }
+.text-label-quaternary { color: var(--color-label-quaternary); }
+
+.bg-background-primary { background-color: var(--color-background-primary); }
+.bg-background-secondary { background-color: var(--color-background-secondary); }
+.bg-background-tertiary { background-color: var(--color-background-tertiary); }
+
+.bg-grouped-primary { background-color: var(--color-grouped-background-primary); }
+.bg-grouped-secondary { background-color: var(--color-grouped-background-secondary); }
+.bg-grouped-tertiary { background-color: var(--color-grouped-background-tertiary); }
+
+.bg-fill-primary { background-color: var(--color-fill-primary); }
+.bg-fill-secondary { background-color: var(--color-fill-secondary); }
+.bg-fill-tertiary { background-color: var(--color-fill-tertiary); }
+.bg-fill-quaternary { background-color: var(--color-fill-quaternary); }
+
+/* Apple Border and Separator Classes */
+.border-separator { border-color: var(--color-separator-opaque); }
+.border-separator-non-opaque { border-color: var(--color-separator-non-opaque); }
+
+.divide-separator > * + * { border-color: var(--color-separator-opaque); }
+
+/* Apple Shadow Classes */
+.shadow-apple-sm { box-shadow: var(--shadow-sm); }
+.shadow-apple-md { box-shadow: var(--shadow-md); }
+.shadow-apple-lg { box-shadow: var(--shadow-lg); }
+.shadow-apple-xl { box-shadow: var(--shadow-xl); }
+.shadow-apple-2xl { box-shadow: var(--shadow-2xl); }
+.shadow-apple-inner { box-shadow: var(--shadow-inner); }
+
+/* Apple Motion Classes */
+.ease-standard { transition-timing-function: var(--ease-standard); }
+.ease-decelerated { transition-timing-function: var(--ease-decelerated); }
+.ease-accelerated { transition-timing-function: var(--ease-accelerated); }
+.ease-sharp { transition-timing-function: var(--ease-sharp); }
+.ease-bounce { transition-timing-function: var(--ease-bounce); }
+
+.duration-fast { transition-duration: var(--duration-fast); }
+.duration-normal { transition-duration: var(--duration-normal); }
+.duration-slow { transition-duration: var(--duration-slow); }
+.duration-slower { transition-duration: var(--duration-slower); }
+
+/* Apple Focus Styles */
+.focus-apple:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-background-primary), 0 0 0 4px var(--color-system-blue);
+  border-radius: var(--radius-sm);
+}
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Apple Glass Effect */
+.glass-effect {
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+  background-color: rgba(28, 28, 30, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Apple Vibrancy Effects */
+.vibrancy-light {
+  -webkit-backdrop-filter: blur(20px) brightness(1.1);
+  backdrop-filter: blur(20px) brightness(1.1);
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.vibrancy-dark {
+  -webkit-backdrop-filter: blur(20px) brightness(0.8);
+  backdrop-filter: blur(20px) brightness(0.8);
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Skip Link Styles */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--color-system-blue);
+  color: white;
+  padding: 8px;
+  z-index: var(--z-skip-link);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: top 0.3s var(--ease-standard);
+  font-weight: 500;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Touch Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch targets on mobile */
+  button, [role="button"], input[type="submit"], input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve touch feedback */
+  .touch-feedback:active {
+    transform: scale(0.98);
+    transition: transform 0.1s var(--ease-sharp);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}

@@ -1,4 +1,5 @@
-import { ReactNode, useState } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { Breadcrumb } from '../navigation/Breadcrumb'
@@ -9,8 +10,35 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Handle AI-related shortcuts
+      if (e.metaKey || e.ctrlKey) {
+        switch (e.key) {
+          case 'a':
+            e.preventDefault()
+            navigate('/ai')
+            break
+          case 'c':
+            if (e.shiftKey) {
+              e.preventDefault()
+              navigate('/ai/chatbot')
+            }
+            break
+          default:
+            break
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [navigate])
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">

@@ -5,6 +5,7 @@
 
 import express from 'express';
 import db from '../db.js';
+import { logger } from '../logger.js';
 
 const router = express.Router();
 
@@ -121,7 +122,7 @@ router.get('/metrics', async (req, res) => {
       data: mockSpaceMetrics
     });
   } catch (error) {
-    console.error('Error fetching space metrics:', error);
+    logger.error('Error fetching space metrics:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch space metrics'
@@ -154,7 +155,7 @@ router.get('/', async (req, res) => {
       total: filteredSpaces.length
     });
   } catch (error) {
-    console.error('Error fetching spaces:', error);
+    logger.error('Error fetching spaces:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch spaces'
@@ -178,7 +179,7 @@ router.get('/:id', async (req, res) => {
       data: space
     });
   } catch (error) {
-    console.error('Error fetching space:', error);
+    logger.error('Error fetching space:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch space'
@@ -217,7 +218,7 @@ router.post('/', async (req, res) => {
       data: newSpace
     });
   } catch (error) {
-    console.error('Error creating space:', error);
+    logger.error('Error creating space:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to create space'
@@ -249,7 +250,7 @@ router.put('/:id', async (req, res) => {
       data: updatedSpace
     });
   } catch (error) {
-    console.error('Error updating space:', error);
+    logger.error('Error updating space:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update space'
@@ -275,7 +276,7 @@ router.delete('/:id', async (req, res) => {
       message: 'Space deleted successfully'
     });
   } catch (error) {
-    console.error('Error deleting space:', error);
+    logger.error('Error deleting space:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to delete space'
@@ -293,7 +294,7 @@ router.get('/:id/bookings', async (req, res) => {
       data: spaceBookings
     });
   } catch (error) {
-    console.error('Error fetching space bookings:', error);
+    logger.error('Error fetching space bookings:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch space bookings'
@@ -341,7 +342,7 @@ router.post('/:id/bookings', async (req, res) => {
       data: newBooking
     });
   } catch (error) {
-    console.error('Error creating booking:', error);
+    logger.error('Error creating booking:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to create booking'
@@ -375,7 +376,7 @@ router.get('/bookings/all', async (req, res) => {
       total: filteredBookings.length
     });
   } catch (error) {
-    console.error('Error fetching bookings:', error);
+    logger.error('Error fetching bookings:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch bookings'
@@ -401,7 +402,7 @@ router.delete('/bookings/:bookingId', async (req, res) => {
       message: 'Booking cancelled successfully'
     });
   } catch (error) {
-    console.error('Error cancelling booking:', error);
+    logger.error('Error cancelling booking:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to cancel booking'
@@ -450,7 +451,7 @@ router.get('/occupancy/current', async (req, res) => {
       data: occupancyData
     });
   } catch (error) {
-    console.error('Error fetching occupancy data:', error);
+    logger.error('Error fetching occupancy data:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch occupancy data'
@@ -483,7 +484,7 @@ router.get('/floorplan/:floor', async (req, res) => {
       data: floorPlan
     });
   } catch (error) {
-    console.error('Error fetching floor plan:', error);
+    logger.error('Error fetching floor plan:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch floor plan'

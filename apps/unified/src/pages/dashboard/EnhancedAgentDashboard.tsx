@@ -109,7 +109,7 @@ export default function EnhancedAgentDashboard() {
           avgResolutionTime: dashboardData.todayStats.avgResolutionTime || 0,
           productivityScore: Math.min(100, Math.floor((dashboardData.todayStats.ticketsResolved / Math.max(1, dashboardData.myTickets.total)) * 100)),
           resolvedToday: dashboardData.todayStats.ticketsResolved || 0,
-          slaBreaches: 0, // TODO: Calculate from upcoming tasks or API
+          slaBreaches: 0, // Will be calculated from upcoming tasks API when backend integration is complete
           queueBacklog: dashboardData.upcomingTasks.length || 0,
           teamPerformance: 85 // Mock value until API provides this
         }

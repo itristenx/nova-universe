@@ -4,6 +4,7 @@ import path from 'path'
 import fs from 'fs'
 import fileStorage from '../lib/file-storage.js'
 import db from '../db.js'
+import { logger } from '../logger.js'
 
 const router = express.Router()
 
@@ -155,7 +156,7 @@ router.post('/', upload.single('file'), async (req, res) => {
       ],
       function (err) {
         if (err) {
-          console.error('Database error:', err)
+          logger.error('Database error:', err)
           return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' })
         }
 
@@ -174,7 +175,7 @@ router.post('/', upload.single('file'), async (req, res) => {
       },
     )
   } catch (error) {
-    console.error('Upload error:', error)
+    logger.error('Upload error:', error)
     res.status(500).json({ 
       error: 'Upload failed', 
       errorCode: 'UPLOAD_FAILED',
@@ -191,7 +192,7 @@ router.delete('/:id', async (req, res) => {
     // Get asset info first
     db.get('SELECT * FROM assets WHERE id = $1', [id], async (err, row) => {
       if (err) {
-        console.error('Database error:', err)
+        logger.error('Database error:', err)
         return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' })
       }
       
@@ -216,17 +217,17 @@ router.delete('/:id', async (req, res) => {
         // Delete from database
         db.run('DELETE FROM assets WHERE id = $1', [id], (deleteErr) => {
           if (deleteErr) {
-            console.error('Database delete error:', deleteErr)
+            logger.error('Database delete error:', deleteErr)
             return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' })
           }
           res.json({ message: 'Asset deleted successfully' })
         })
       } catch (storageError) {
-        console.error('Storage delete error:', storageError)
+        logger.error('Storage delete error:', storageError)
         // Still try to delete from database even if storage deletion fails
         db.run('DELETE FROM assets WHERE id = $1', [id], (deleteErr) => {
           if (deleteErr) {
-            console.error('Database delete error:', deleteErr)
+            logger.error('Database delete error:', deleteErr)
             return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' })
           }
           res.json({ 
@@ -237,7 +238,7 @@ router.delete('/:id', async (req, res) => {
       }
     })
   } catch (error) {
-    console.error('Delete error:', error)
+    logger.error('Delete error:', error)
     res.status(500).json({ 
       error: 'Delete failed', 
       errorCode: 'DELETE_FAILED',
@@ -254,7 +255,7 @@ router.get('/:id/download', async (req, res) => {
     // Get asset info
     db.get('SELECT * FROM assets WHERE id = $1', [id], async (err, row) => {
       if (err) {
-        console.error('Database error:', err)
+        logger.error('Database error:', err)
         return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' })
       }
       
@@ -299,7 +300,7 @@ router.get('/:id/download', async (req, res) => {
 
         res.send(fileData.buffer)
       } catch (storageError) {
-        console.error('File retrieval error:', storageError)
+        logger.error('File retrieval error:', storageError)
         res.status(500).json({ 
           error: 'File retrieval failed', 
           errorCode: 'FILE_RETRIEVAL_FAILED',
@@ -308,7 +309,7 @@ router.get('/:id/download', async (req, res) => {
       }
     })
   } catch (error) {
-    console.error('Download error:', error)
+    logger.error('Download error:', error)
     res.status(500).json({ 
       error: 'Download failed', 
       errorCode: 'DOWNLOAD_FAILED',
@@ -326,7 +327,7 @@ router.get('/:id/url', async (req, res) => {
     // Get asset info
     db.get('SELECT * FROM assets WHERE id = $1', [id], async (err, row) => {
       if (err) {
-        console.error('Database error:', err)
+        logger.error('Database error:', err)
         return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' })
       }
       
@@ -351,7 +352,7 @@ router.get('/:id/url', async (req, res) => {
           expiresAt: new Date(Date.now() + parseInt(expiresIn) * 1000).toISOString()
         })
       } catch (storageError) {
-        console.error('URL generation error:', storageError)
+        logger.error('URL generation error:', storageError)
         res.status(500).json({ 
           error: 'URL generation failed', 
           errorCode: 'URL_GENERATION_FAILED',
@@ -360,7 +361,7 @@ router.get('/:id/url', async (req, res) => {
       }
     })
   } catch (error) {
-    console.error('URL generation error:', error)
+    logger.error('URL generation error:', error)
     res.status(500).json({ 
       error: 'URL generation failed', 
       errorCode: 'URL_GENERATION_FAILED',

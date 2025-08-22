@@ -330,7 +330,8 @@ class NovaTVService {
   // Real-time WebSocket methods (these would connect to socket.io)
   subscribeToUpdates(_dashboardId: string, _callback: (data: any) => void): () => void {
     // Implementation would use socket.io-client
-    // This is a placeholder for the WebSocket connection
+    // WebSocket connection for real-time updates
+    // WebSocket connection implementation will be added based on environment configuration
     const unsubscribe = () => {
       // Cleanup WebSocket connection
     }

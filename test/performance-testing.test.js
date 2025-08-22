@@ -6,6 +6,10 @@ import assert from 'node:assert';
 import { performance } from 'perf_hooks';
 import { spawn } from 'child_process';
 import fetch from 'node-fetch';
+import { registerCleanupHandlers, performCleanup } from './test-cleanup.js';
+
+// Register cleanup handlers immediately
+registerCleanupHandlers();
 
 // Performance Test Configuration
 const PERF_CONFIG = {
@@ -16,6 +20,34 @@ const PERF_CONFIG = {
   maxMemoryUsage: 1024 * 1024 * 1024, // 1GB
   targetThroughput: 100, // requests per second
 };
+
+// Global cleanup tracking
+const activeIntervals = new Set();
+const activeTimeouts = new Set();
+
+// Graceful cleanup handler
+function gracefulCleanup() {
+  console.log('🧹 Cleaning up performance test resources...');
+  
+  // Clear all intervals
+  for (const intervalId of activeIntervals) {
+    clearInterval(intervalId);
+  }
+  activeIntervals.clear();
+  
+  // Clear all timeouts
+  for (const timeoutId of activeTimeouts) {
+    clearTimeout(timeoutId);
+  }
+  activeTimeouts.clear();
+  
+  console.log('✅ Performance test cleanup completed');
+}
+
+// Register cleanup handlers
+process.on('SIGINT', gracefulCleanup);
+process.on('SIGTERM', gracefulCleanup);
+process.on('exit', gracefulCleanup);
 
 // Performance Monitoring Utilities
 class PerformanceMonitor {
@@ -393,3 +425,10 @@ test('Performance Testing Suite', async (t) => {
 });
 
 console.log('✅ Performance Testing Suite Completed');
+
+// Final cleanup and exit
+process.nextTick(async () => {
+  await performCleanup();
+  console.log('🎯 Performance tests finished - exiting gracefully');
+  process.exit(0);
+});

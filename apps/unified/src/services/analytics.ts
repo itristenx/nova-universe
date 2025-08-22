@@ -223,6 +223,27 @@ class AnalyticsService {
     }
   }
 
+  // AI-powered predictive analytics methods
+  async getPredictiveInsights(timeframe: string = '7d'): Promise<any[]> {
+    const response = await api.get(`/analytics/ai/insights?timeframe=${timeframe}`);
+    return response.data;
+  }
+
+  async getPredictiveMetrics(timeframe: string = '7d'): Promise<any[]> {
+    const response = await api.get(`/analytics/ai/metrics?timeframe=${timeframe}`);
+    return response.data;
+  }
+
+  async getWorkflowAutomationData(): Promise<any> {
+    const response = await api.get('/analytics/ai/workflows');
+    return response.data;
+  }
+
+  async getKnowledgeBaseAnalytics(): Promise<any> {
+    const response = await api.get('/analytics/ai/knowledge');
+    return response.data;
+  }
+
   private formatTimestamp(timestamp: string): string {
     const date = new Date(timestamp);
     const now = new Date();

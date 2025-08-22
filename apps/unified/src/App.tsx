@@ -93,6 +93,12 @@ const ServiceCatalogPage = lazy(() => import('@pages/services/ServiceCatalogPage
 const AIAssistantPage = lazy(() => import('@pages/ai/AIAssistantPage'))
 const CosmoAIPage = lazy(() => import('@pages/ai/CosmoAIPage'))
 const AIControlTower = lazy(() => import('@pages/ai/AIControlTower'))
+const AIControlCenter = lazy(() => import('@pages/AIControlCenter'))
+const PredictiveAnalyticsPage = lazy(() => import('@pages/ai/PredictiveAnalyticsPage'))
+const IntelligentClassificationPage = lazy(() => import('@pages/ai/IntelligentClassificationPage'))
+const SmartKnowledgePage = lazy(() => import('@pages/ai/SmartKnowledgePage'))
+const WorkflowAutomationPage = lazy(() => import('@pages/ai/WorkflowAutomationPage'))
+const AIChatbotPage = lazy(() => import('@pages/ai/AIChatbotPage'))
 
 // Automation pages
 const AutomationHubPage = lazy(() => import('@pages/automation/AutomationHubPage'))
@@ -250,7 +256,13 @@ function App() {
 
                       {/* AI Assistant routes */}
                       {/* AI routes */}
-                      <Route path="/ai" element={<AIAssistantPage />} />
+                      <Route path="/ai" element={<AIControlCenter />} />
+                      <Route path="/ai/analytics" element={<PredictiveAnalyticsPage />} />
+                      <Route path="/ai/classification" element={<IntelligentClassificationPage />} />
+                      <Route path="/ai/knowledge" element={<SmartKnowledgePage />} />
+                      <Route path="/ai/automation" element={<WorkflowAutomationPage />} />
+                      <Route path="/ai/chatbot" element={<AIChatbotPage />} />
+                      <Route path="/ai/assistant" element={<AIAssistantPage />} />
                       <Route path="/cosmo" element={<CosmoAIPage />} />
                       <Route path="/ai/control-tower" element={<AIControlTower />} />
 

@@ -98,16 +98,31 @@ class GamificationService {
   }
 
   /**
+   * Get user activity streak data
+   */
+  async getUserStreak(userId: string): Promise<{ streakDays: number }> {
+    const response = await apiClient.get<ApiResponse<{ streakDays: number }>>(`${this.baseUrl}/users/${userId}/streak`)
+    return (response.data.data || response.data) as { streakDays: number }
+  }
+
+  /**
+   * Get user weekly progress data
+   */
+  async getWeeklyProgress(userId: string): Promise<{ current: number; target: number }> {
+    const response = await apiClient.get<ApiResponse<{ current: number; target: number }>>(`${this.baseUrl}/users/${userId}/weekly-progress`)
+    return (response.data.data || response.data) as { current: number; target: number }
+  }
+
+  /**
    * Get user profile with XP, level, achievements etc.
-   * This combines data from multiple sources since some gamification features
-   * may not be fully implemented in the backend yet
    */
   async getUserProfile(userId?: string): Promise<UserProfile> {
     try {
       // Get XP data from pulse API
       const xpResponse = await this.getLeaderboard()
       const currentUser = xpResponse.me
-      const leaderboardEntry = xpResponse.leaderboard.find(entry => entry.userId === userId)
+      const targetUserId = userId || 'current'
+      const leaderboardEntry = xpResponse.leaderboard.find(entry => entry.userId === targetUserId)
       
       // Calculate level based on XP (simple formula: level = floor(xp / 1000) + 1)
       const totalXP = currentUser.xp
@@ -116,33 +131,19 @@ class GamificationService {
       const nextLevelXP = 1000
       
       // Find rank in leaderboard
-      const rank = xpResponse.leaderboard.findIndex(entry => entry.userId === userId) + 1 || 1
-      
-      // TODO: These would come from additional API endpoints when fully implemented
-      const mockAchievements: Achievement[] = [
-        {
-          id: '1',
-          name: 'First Ticket',
-          description: 'Resolved your first ticket',
-          icon: '🎯',
-          category: 'milestone',
-          points: 50,
-          unlockedAt: new Date().toISOString()
-        },
-        {
-          id: '2', 
-          name: 'Speed Demon',
-          description: 'Resolve 5 tickets in one day',
-          icon: '⚡',
-          category: 'performance',
-          points: 100,
-          progress: 3,
-          maxProgress: 5
-        }
-      ]
+      const rank = xpResponse.leaderboard.findIndex(entry => entry.userId === targetUserId) + 1 || 1
+
+      // Get achievements from dedicated API
+      const achievements = await this.getAchievements()
+
+      // Get user activity data for streak calculation
+      const streakData = await this.getUserStreak(targetUserId)
+
+      // Get weekly progress from API
+      const weeklyProgress = await this.getWeeklyProgress(targetUserId)
 
       return {
-        id: userId || 'current',
+        id: targetUserId,
         name: leaderboardEntry?.name || 'Current User',
         department: leaderboardEntry?.department || 'Unknown',
         totalXP,
@@ -150,145 +151,37 @@ class GamificationService {
         currentLevelXP,
         nextLevelXP,
         rank,
-        streakDays: 5, // TODO: Calculate from API
-        achievements: mockAchievements,
-        weeklyProgress: {
-          current: totalXP % 500, // Mock weekly progress
-          target: 500
-        }
+        streakDays: streakData.streakDays,
+        achievements,
+        weeklyProgress
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
-      // Return fallback data
-      return {
-        id: userId || 'current',
-        name: 'Current User',
-        department: 'Unknown',
-        totalXP: 0,
-        level: 1,
-        currentLevelXP: 0,
-        nextLevelXP: 1000,
-        rank: 1,
-        streakDays: 0,
-        achievements: [],
-        weeklyProgress: {
-          current: 0,
-          target: 500
-        }
-      }
+      throw new Error('Failed to fetch user profile data')
     }
   }
 
   /**
    * Get today's daily challenges
-   * This is a mock implementation until the backend supports this feature
    */
   async getDailyChallenge(): Promise<DailyChallenge> {
-    // TODO: Replace with real API call when backend supports daily challenges
-    return {
-      id: 'daily-' + new Date().toISOString().split('T')[0],
-      date: new Date().toISOString().split('T')[0],
-      tasks: [
-        {
-          id: '1',
-          title: 'Resolve 3 tickets',
-          description: 'Complete 3 support tickets today',
-          xpReward: 150,
-          category: 'productivity',
-          progress: 1,
-          maxProgress: 3,
-          completed: false,
-          dueDate: new Date().toISOString()
-        },
-        {
-          id: '2',
-          title: 'Update knowledge base',
-          description: 'Add or update a knowledge base article',
-          xpReward: 100,
-          category: 'knowledge',
-          progress: 0,
-          maxProgress: 1,
-          completed: false,
-          dueDate: new Date().toISOString()
-        },
-        {
-          id: '3',
-          title: 'Help a colleague',
-          description: 'Collaborate on a ticket with another agent',
-          xpReward: 75,
-          category: 'teamwork',
-          progress: 0,
-          maxProgress: 1,
-          completed: false,
-          dueDate: new Date().toISOString()
-        }
-      ],
-      totalXPAvailable: 325,
-      completedXP: 0,
-      streakDay: 5
-    }
+    const response = await apiClient.get<ApiResponse<DailyChallenge>>(`${this.baseUrl}/daily-challenges`)
+    return (response.data.data || response.data) as DailyChallenge
   }
 
   /**
    * Complete a daily challenge task
    */
   async completeChallengeTask(taskId: string): Promise<void> {
-    // TODO: Implement real API call when backend supports this
-    console.log('Completing challenge task:', taskId)
-    
-    // For now, just award some XP
-    await this.awardXP({
-      amount: 50,
-      reason: `Daily challenge: ${taskId}`
-    })
+    await apiClient.post<ApiResponse<void>>(`${this.baseUrl}/daily-challenges/${taskId}/complete`)
   }
 
   /**
    * Get achievement progress and unlocked achievements
    */
   async getAchievements(): Promise<Achievement[]> {
-    // TODO: Replace with real API call when backend supports achievements
-    return [
-      {
-        id: '1',
-        name: 'First Ticket',
-        description: 'Resolved your first ticket',
-        icon: '🎯',
-        category: 'milestone',
-        points: 50,
-        unlockedAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        name: 'Speed Demon', 
-        description: 'Resolve 5 tickets in one day',
-        icon: '⚡',
-        category: 'performance',
-        points: 100,
-        progress: 3,
-        maxProgress: 5
-      },
-      {
-        id: '3',
-        name: 'Team Player',
-        description: 'Collaborate on 10 tickets',
-        icon: '🤝',
-        category: 'teamwork',
-        points: 200,
-        progress: 7,
-        maxProgress: 10
-      },
-      {
-        id: '4',
-        name: 'Knowledge Keeper',
-        description: 'Create 5 knowledge base articles',
-        icon: '📚',
-        category: 'knowledge',
-        points: 150,
-        progress: 2,
-        maxProgress: 5
-      }
-    ]
+    const response = await apiClient.get<ApiResponse<Achievement[]>>(`${this.baseUrl}/achievements`)
+    return (response.data.data || response.data) as Achievement[]
   }
 }
 

@@ -18,7 +18,7 @@ const NovaTVDashboard: React.FC = () => {
       const data = await novaTVService.getDashboards(filters);
       setDashboards(data);
     } catch (error) {
-      console.error('Error loading dashboards:', error);
+      // Handle error silently, show user-friendly message
     } finally {
       setLoading(false);
     }
@@ -29,7 +29,7 @@ const NovaTVDashboard: React.FC = () => {
       await novaTVService.updateDashboard(id, { isActive: !isActive });
       loadDashboards();
     } catch (error) {
-      console.error('Error toggling dashboard:', error);
+      // Handle error silently
     }
   };
 

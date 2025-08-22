@@ -1,10 +1,16 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import { env } from '@utils/index'
 import type { ApiResponse, PaginatedResponse } from '@/types'
+import { getApiBaseUrl, logDeprecationWarning, validateApiUsage, type ApiService } from './api-config'
 
-// API configuration
+// API configuration with versioning support
 const API_BASE_URL = '/api' // Use relative URL to go through Vite proxy
 const API_TIMEOUT = 30000
+
+// Validate API usage in development
+if (process.env.NODE_ENV === 'development') {
+  validateApiUsage()
+}
 
 // Create axios instance with enhanced configuration
 const api: AxiosInstance = axios.create({
@@ -13,6 +19,8 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'X-Client': 'Nova-Universe-UI',
+    'X-Client-Version': '2.0.0', // UI version
   },
   withCredentials: true, // Enable cookies for session management
 })
@@ -270,11 +278,75 @@ export class ApiError extends Error {
   }
 }
 
-// Create API client instance
+// Create singleton instance
 export const apiClient = new ApiClient(api)
 
-// Export token manager for use in other parts of the app
-export { TokenManager }
+// === VERSIONED API CLIENT METHODS ===
 
-// Export axios instance for direct use if needed
-export { api }
+/**
+ * Create a service-specific API client with automatic version handling
+ */
+export function createServiceClient(service: ApiService) {
+  const baseUrl = getApiBaseUrl(service)
+  
+  // Log deprecation warning in development
+  if (process.env.NODE_ENV === 'development') {
+    logDeprecationWarning(service)
+  }
+  
+  return {
+    get: <T = unknown>(endpoint: string, config?: AxiosRequestConfig) => 
+      apiClient.get<T>(`${baseUrl}${endpoint}`, config),
+    
+    post: <T = unknown>(endpoint: string, data?: unknown, config?: AxiosRequestConfig) => 
+      apiClient.post<T>(`${baseUrl}${endpoint}`, data, config),
+    
+    put: <T = unknown>(endpoint: string, data?: unknown, config?: AxiosRequestConfig) => 
+      apiClient.put<T>(`${baseUrl}${endpoint}`, data, config),
+    
+    patch: <T = unknown>(endpoint: string, data?: unknown, config?: AxiosRequestConfig) => 
+      apiClient.patch<T>(`${baseUrl}${endpoint}`, data, config),
+    
+    delete: <T = unknown>(endpoint: string, config?: AxiosRequestConfig) => 
+      apiClient.delete<T>(`${baseUrl}${endpoint}`, config),
+    
+    getPaginated: <T = unknown>(endpoint: string, params?: Record<string, unknown>) => 
+      apiClient.getPaginated<T>(`${baseUrl}${endpoint}`, params),
+    
+    uploadFile: <T = unknown>(endpoint: string, file: File, onProgress?: (progress: number) => void) => 
+      apiClient.uploadFile<T>(`${baseUrl}${endpoint}`, file, onProgress),
+    
+    downloadFile: (endpoint: string, filename?: string) => 
+      apiClient.downloadFile(`${baseUrl}${endpoint}`, filename),
+  }
+}
+
+/**
+ * Legacy method for backward compatibility
+ * @deprecated Use createServiceClient instead
+ */
+export function getVersionedClient(version: 'v1' | 'v2' = 'v1') {
+  console.warn(`getVersionedClient is deprecated. Use createServiceClient with specific service name instead.`)
+  
+  const baseUrl = `/api/${version}`
+  
+  return {
+    get: <T = unknown>(endpoint: string, config?: AxiosRequestConfig) => 
+      apiClient.get<T>(`${baseUrl}${endpoint}`, config),
+    
+    post: <T = unknown>(endpoint: string, data?: unknown, config?: AxiosRequestConfig) => 
+      apiClient.post<T>(`${baseUrl}${endpoint}`, data, config),
+    
+    put: <T = unknown>(endpoint: string, data?: unknown, config?: AxiosRequestConfig) => 
+      apiClient.put<T>(`${baseUrl}${endpoint}`, data, config),
+    
+    patch: <T = unknown>(endpoint: string, data?: unknown, config?: AxiosRequestConfig) => 
+      apiClient.patch<T>(`${baseUrl}${endpoint}`, data, config),
+    
+    delete: <T = unknown>(endpoint: string, config?: AxiosRequestConfig) => 
+      apiClient.delete<T>(`${baseUrl}${endpoint}`, config),
+  }
+}
+
+// Export default instance for backward compatibility
+export default apiClient
