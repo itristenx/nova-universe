@@ -107,7 +107,7 @@ export async function performCleanup() {
         const timeout = setTimeout(() => {
           try {
             worker.terminate();
-          } catch (_error) {
+          } catch (error) {
             console.warn('Warning: Error terminating worker:', error.message);
           }
           resolve();
@@ -120,7 +120,7 @@ export async function performCleanup() {
 
         try {
           worker.postMessage({ type: 'shutdown' });
-        } catch (_error) {
+        } catch (error) {
           worker.terminate();
           clearTimeout(timeout);
           resolve();
@@ -147,7 +147,7 @@ export async function performCleanup() {
           }
         }
         cleanupTasks++;
-      } catch (_error) {
+      } catch (error) {
         console.warn('Warning: Error terminating process:', error.message);
       }
     }
@@ -165,7 +165,7 @@ export async function performCleanup() {
           await connection.end();
         }
         cleanupTasks++;
-      } catch (_error) {
+      } catch (error) {
         console.warn('Warning: Error closing connection:', error.message);
       }
     }
@@ -181,7 +181,7 @@ export async function performCleanup() {
           await handle.close();
         }
         cleanupTasks++;
-      } catch (_error) {
+      } catch (error) {
         console.warn('Warning: Error closing file handle:', error.message);
       }
     }
@@ -199,7 +199,7 @@ export async function performCleanup() {
           await resource.cleanup();
         }
         cleanupTasks++;
-      } catch (_error) {
+      } catch (error) {
         console.warn('Warning: Error disposing resource:', error.message);
       }
     }
@@ -214,7 +214,7 @@ export async function performCleanup() {
         try {
           target.removeListener(event, listener);
           cleanupTasks++;
-        } catch (_error) {
+        } catch (error) {
           console.warn('Warning: Error removing event listener:', error.message);
         }
       }

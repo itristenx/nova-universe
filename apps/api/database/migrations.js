@@ -53,14 +53,14 @@ class MigrationManager {
   async ensureMigrationsDirectory() {
     try {
       await fs.access(this.migrationsPath);
-    } catch (_error) {
+    } catch (error) {
       await fs.mkdir(this.migrationsPath, { recursive: true });
       logger.info(`📁 Created migrations directory: ${this.migrationsPath}`);
     }
 
     try {
       await fs.access(this.seedsPath);
-    } catch (_error) {
+    } catch (error) {
       await fs.mkdir(this.seedsPath, { recursive: true });
       logger.info(`📁 Created seeds directory: ${this.seedsPath}`);
     }
@@ -84,7 +84,7 @@ class MigrationManager {
             path: path.join(this.migrationsPath, file),
           };
         });
-    } catch (_error) {
+    } catch (error) {
       if (error.code === 'ENOENT') {
         return [];
       }
@@ -113,7 +113,7 @@ class MigrationManager {
         'SELECT version FROM schema_migrations ORDER BY version',
       );
       return result.rows.map((row) => row.version);
-    } catch (_error) {
+    } catch (error) {
       logger.error('❌ Error getting executed migrations:', error.message);
       return [];
     }
@@ -185,7 +185,7 @@ class MigrationManager {
 
       const executionTime = Date.now() - startTime;
       logger.info(`✅ Migration completed: ${migration.version} (${executionTime}ms)`);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`❌ Migration failed: ${migration.version}`, error.message);
       throw new Error(`Migration ${migration.version} failed: ${error.message}`);
     }
@@ -223,7 +223,7 @@ class MigrationManager {
       });
 
       logger.info(`✅ Rollback completed: ${migration.version}`);
-    } catch (_error) {
+    } catch (error) {
       if (error.code === 'ENOENT') {
         logger.error(`❌ Rollback file not found: ${rollbackFile}`);
         logger.error('Manual rollback required');
@@ -285,7 +285,7 @@ class MigrationManager {
       }
 
       logger.info('✅ Database seeds completed');
-    } catch (_error) {
+    } catch (error) {
       logger.error('❌ Seed execution failed:', error.message);
       throw error;
     }

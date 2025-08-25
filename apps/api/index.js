@@ -160,7 +160,7 @@ io.use(async (socket, next) => {
       // Auth disabled - allow connection
       next();
     }
-  } catch (_error) {
+  } catch (error) {
     next(new Error('Authentication failed'));
   }
 });
@@ -310,7 +310,7 @@ try {
     comprehensiveSpec = yaml.load(specContent);
     logger.info('📋 Loaded comprehensive OpenAPI v3 specification');
   }
-} catch (_error) {
+} catch (error) {
   logger.warn('Failed to load comprehensive OpenAPI spec:', error.message);
 }
 
@@ -1385,7 +1385,7 @@ v1Router.post('/api/test-smtp', ensureAuth, async (req, res) => {
       success: true,
       message: 'Test email sent successfully',
     });
-  } catch (_error) {
+  } catch (error) {
     logger.error('SMTP test failed:', error);
     res.status(500).json({
       success: false,

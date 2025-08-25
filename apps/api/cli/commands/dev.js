@@ -30,7 +30,7 @@ devCommand
   .action(async (options) => {
     try {
       await startDevelopment(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to start development: ${error.message}`);
       process.exit(1);
     }
@@ -49,7 +49,7 @@ devCommand
   .action(async (options) => {
     try {
       await runTests(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Tests failed: ${error.message}`);
       process.exit(1);
     }
@@ -64,7 +64,7 @@ devCommand
   .action(async (options) => {
     try {
       await runLinting(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Linting failed: ${error.message}`);
       process.exit(1);
     }
@@ -80,7 +80,7 @@ devCommand
   .action(async (options) => {
     try {
       await buildApplication(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Build failed: ${error.message}`);
       process.exit(1);
     }
@@ -97,7 +97,7 @@ devCommand
   .action(async (options) => {
     try {
       await manageDependencies(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Dependency management failed: ${error.message}`);
       process.exit(1);
     }
@@ -114,7 +114,7 @@ devCommand
   .action(async (options) => {
     try {
       await databaseTools(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Database operation failed: ${error.message}`);
       process.exit(1);
     }
@@ -130,7 +130,7 @@ devCommand
   .action(async (type, options) => {
     try {
       await generateCode(type, options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Code generation failed: ${error.message}`);
       process.exit(1);
     }
@@ -146,7 +146,7 @@ devCommand
   .action(async (options) => {
     try {
       await manageDocs(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Documentation command failed: ${error.message}`);
       process.exit(1);
     }
@@ -302,7 +302,7 @@ async function runTests(options) {
         cwd: projectRoot,
         stdio: 'inherit',
       });
-    } catch (_error) {
+    } catch (error) {
       if (!options.watch) {
         throw error;
       }
@@ -357,7 +357,7 @@ async function runLinting(options) {
     try {
       await runCommand(command, args, { cwd: projectRoot });
       spinner.succeed(`${command} completed`);
-    } catch (_error) {
+    } catch (error) {
       spinner.fail(`${command} failed`);
       if (!options.staged) {
         throw error;
@@ -402,7 +402,7 @@ async function buildApplication(options) {
       });
 
       spinner.succeed(`${service} built successfully`);
-    } catch (_error) {
+    } catch (error) {
       spinner.fail(`${service} build failed`);
       throw error;
     }
@@ -417,7 +417,7 @@ async function buildApplication(options) {
       await runCommand('npm', ['run', 'analyze'], {
         cwd: path.join(projectRoot, 'nova-core'),
       });
-    } catch (_error) {
+    } catch (error) {
       logger.warning('Bundle analysis not available');
     }
   }
@@ -440,7 +440,7 @@ async function manageDependencies(options) {
         console.log(chalk.blue(`\n📦 ${service}:`));
         try {
           await runCommand('npm', ['outdated'], { cwd: servicePath });
-        } catch (_error) {
+        } catch (error) {
           // npm outdated returns exit code 1 when outdated packages are found
           console.log(chalk.gray('All packages are up to date'));
         }
@@ -459,7 +459,7 @@ async function manageDependencies(options) {
         console.log(chalk.blue(`\n🔍 Auditing ${service}:`));
         try {
           await runCommand('npm', ['audit'], { cwd: servicePath });
-        } catch (_error) {
+        } catch (error) {
           console.log(chalk.yellow('Security vulnerabilities found'));
         }
       }
@@ -490,7 +490,7 @@ async function manageDependencies(options) {
           try {
             await runCommand('npm', ['update'], { cwd: servicePath });
             spinner.succeed(`${service} packages updated`);
-          } catch (_error) {
+          } catch (error) {
             spinner.fail(`${service} update failed`);
           }
         }
@@ -523,7 +523,7 @@ async function manageDependencies(options) {
             await runCommand('rm', ['-rf', 'node_modules'], { cwd: servicePath });
             await runCommand('npm', ['install'], { cwd: servicePath });
             spinner.succeed(`${service} dependencies reinstalled`);
-          } catch (_error) {
+          } catch (error) {
             spinner.fail(`${service} clean failed`);
           }
         }
@@ -542,7 +542,7 @@ async function databaseTools(options) {
     try {
       await runCommand('npm', ['run', 'migrate'], { cwd: projectRoot });
       logger.success('✅ Migrations completed');
-    } catch (_error) {
+    } catch (error) {
       logger.error('Migration failed');
       throw error;
     }
@@ -554,7 +554,7 @@ async function databaseTools(options) {
     try {
       await runCommand('npm', ['run', 'seed'], { cwd: projectRoot });
       logger.success('✅ Database seeded');
-    } catch (_error) {
+    } catch (error) {
       logger.error('Seeding failed');
       throw error;
     }
@@ -576,7 +576,7 @@ async function databaseTools(options) {
       try {
         await runCommand('npm', ['run', 'db:reset'], { cwd: projectRoot });
         logger.success('✅ Database reset');
-      } catch (_error) {
+      } catch (error) {
         logger.error('Reset failed');
         throw error;
       }
@@ -591,7 +591,7 @@ async function databaseTools(options) {
         cwd: projectRoot,
         stdio: 'inherit',
       });
-    } catch (_error) {
+    } catch (error) {
       logger.error('Failed to open database studio');
     }
   }
@@ -697,7 +697,7 @@ router.get('/', authenticate, async (req, res) => {
   try {
     // Implementation here
     res.json({ message: '${routeName} endpoint' });
-  } catch (_error) {
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
@@ -707,7 +707,7 @@ router.post('/', authenticate, async (req, res) => {
   try {
     // Implementation here
     res.json({ message: '${routeName} created' });
-  } catch (_error) {
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
@@ -789,7 +789,7 @@ export class ${controllerName}Controller {
     try {
       // List all items
       res.json({ data: [] });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
@@ -799,7 +799,7 @@ export class ${controllerName}Controller {
       // Show single item
       const { id } = req.params;
       res.json({ data: { id } });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
@@ -809,7 +809,7 @@ export class ${controllerName}Controller {
       // Create new item
       const data = req.body;
       res.status(201).json({ data });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
@@ -820,7 +820,7 @@ export class ${controllerName}Controller {
       const { id } = req.params;
       const data = req.body;
       res.json({ data: { id, ...data } });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
@@ -830,7 +830,7 @@ export class ${controllerName}Controller {
       // Delete item
       const { id } = req.params;
       res.json({ message: 'Deleted successfully' });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
@@ -858,7 +858,7 @@ async function manageDocs(options) {
       spinner.succeed('Documentation generated');
 
       logger.success('✅ Documentation generated in ./docs');
-    } catch (_error) {
+    } catch (error) {
       spinner.fail('Documentation generation failed');
       throw error;
     }

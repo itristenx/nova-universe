@@ -160,7 +160,7 @@ router.get(
       const hasMore = parseInt(offset) + parseInt(limit) < total;
 
       res.json({ success: true, tickets, total, hasMore });
-    } catch (_error) {
+    } catch (error) {
       logger.error('Error in user tickets endpoint:', error);
       res
         .status(500)
@@ -434,7 +434,7 @@ router.post(
       };
 
       res.status(201).json({ success: true, ticket });
-    } catch (_error) {
+    } catch (error) {
       logger.error('Error creating ticket:', error);
       res.status(500).json({
         success: false,
@@ -586,7 +586,7 @@ router.get(
           );
         },
       );
-    } catch (_error) {
+    } catch (error) {
       logger.error('Error in ticket detail endpoint:', error);
       res.status(500).json({
         success: false,
@@ -712,7 +712,7 @@ router.get(
         success: true,
         categories,
       });
-    } catch (_error) {
+    } catch (error) {
       logger.error('Error in categories endpoint:', error);
       res.status(500).json({
         success: false,
@@ -732,7 +732,7 @@ router.get('/catalog', authenticateJWT, async (req, res) => {
       'SELECT id, name, form_schema, workflow_id FROM request_catalog_items',
     );
     res.json({ success: true, items: result.rows });
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error fetching catalog items:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch catalog items' });
   }
@@ -765,7 +765,7 @@ router.post('/catalog/:id', authenticateJWT, async (req, res) => {
       triggerWorkflow(String(workflowId));
     }
     res.status(201).json({ success: true, ritmId });
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error submitting catalog item:', error);
     res.status(500).json({ success: false, error: 'Failed to submit request item' });
   }
@@ -858,7 +858,7 @@ router.post(
           });
         },
       );
-    } catch (_error) {
+    } catch (error) {
       logger.error('Error in feedback endpoint:', error);
       res.status(500).json({
         success: false,
@@ -899,7 +899,7 @@ router.get('/forms/:id', async (req, res) => {
     };
 
     res.json({ success: true, form });
-  } catch (_error) {
+  } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch form' });
   }
 });

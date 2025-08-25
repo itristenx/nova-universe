@@ -34,7 +34,7 @@ logsCommand
   .action(async (service, options) => {
     try {
       await viewLogs(service, options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to view logs: ${error.message}`);
       process.exit(1);
     }
@@ -51,7 +51,7 @@ logsCommand
   .action(async (options) => {
     try {
       await listLogFiles(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to list logs: ${error.message}`);
       process.exit(1);
     }
@@ -71,7 +71,7 @@ logsCommand
   .action(async (pattern, options) => {
     try {
       await searchLogs(pattern, options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to search logs: ${error.message}`);
       process.exit(1);
     }
@@ -89,7 +89,7 @@ logsCommand
   .action(async (options) => {
     try {
       await cleanLogs(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to clean logs: ${error.message}`);
       process.exit(1);
     }
@@ -105,7 +105,7 @@ logsCommand
   .action(async (options) => {
     try {
       await archiveLogs(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to archive logs: ${error.message}`);
       process.exit(1);
     }
@@ -121,7 +121,7 @@ logsCommand
   .action(async (options) => {
     try {
       await showLogStats(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to get log stats: ${error.message}`);
       process.exit(1);
     }
@@ -139,7 +139,7 @@ logsCommand
   .action(async (options) => {
     try {
       await exportLogs(options);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to export logs: ${error.message}`);
       process.exit(1);
     }
@@ -232,7 +232,7 @@ async function findLogFiles(projectRoot, service = null) {
             }
           }
         }
-      } catch (_error) {
+      } catch (error) {
         // Directory not readable, skip
       }
     }
@@ -298,7 +298,7 @@ async function displaySingleLog(logFile, options) {
       }
 
       console.log(stdout);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to read log file: ${error.message}`);
     }
   }
@@ -332,7 +332,7 @@ async function displayMultipleLogs(logFiles, options) {
       } else {
         console.log(chalk.gray('No matching log entries'));
       }
-    } catch (_error) {
+    } catch (error) {
       console.log(chalk.red(`Error reading log: ${error.message}`));
     }
   }
@@ -468,7 +468,7 @@ async function searchLogs(pattern, options) {
           console.log(highlighted);
         }
       }
-    } catch (_error) {
+    } catch (error) {
       // grep returns exit code 1 when no matches found, which is normal
       if (!error.message.includes('exit code 1')) {
         console.log(chalk.red(`Error searching ${logFile.relativePath}: ${error.message}`));
@@ -569,7 +569,7 @@ async function cleanLogs(options) {
 
     spinner.succeed(`Cleaned ${toDelete.length} log file(s)`);
     console.log(chalk.green(`   Space freed: ${formatFileSize(deletedSize)}`));
-  } catch (_error) {
+  } catch (error) {
     spinner.fail('Cleanup failed');
     throw error;
   }
@@ -632,7 +632,7 @@ async function archiveLogs(options) {
     }
 
     console.log(chalk.gray(`   Size: ${formatFileSize(archivedSize)}`));
-  } catch (_error) {
+  } catch (error) {
     spinner.fail('Archive failed');
     throw error;
   }
@@ -690,7 +690,7 @@ async function showLogStats(options) {
           else if (line.includes('INFO') || line.includes('info')) stats.levels.info++;
           else if (line.includes('DEBUG') || line.includes('debug')) stats.levels.debug++;
         }
-      } catch (_error) {
+      } catch (error) {
         // Skip if can't read file
       }
     }
@@ -702,7 +702,7 @@ async function showLogStats(options) {
     } else {
       displayLogStats(stats);
     }
-  } catch (_error) {
+  } catch (error) {
     spinner.fail('Analysis failed');
     throw error;
   }
@@ -728,7 +728,7 @@ async function exportLogs(options) {
       const content = readFileSync(file.path, 'utf8');
 
       switch (options.format) {
-        case 'json':
+        case 'json': {
           // Convert each line to JSON object
           const lines = content.split('\n').filter((line) => line.trim());
           for (const line of lines) {
@@ -740,8 +740,9 @@ async function exportLogs(options) {
             exportData += JSON.stringify(logEntry) + '\n';
           }
           break;
+        }
 
-        case 'csv':
+        case 'csv': {
           // CSV format
           if (!exportData) {
             exportData = 'timestamp,service,level,message\n';
@@ -752,12 +753,15 @@ async function exportLogs(options) {
             exportData += `"${new Date().toISOString()}","${file.service}","${level}","${line.replace(/"/g, '""')}"\n`;
           }
           break;
+        }
 
         case 'txt':
-        default:
+        default: {
           // Plain text with service headers
           exportData += `\n=== ${file.service.toUpperCase()} ===\n`;
           exportData += content + '\n';
+          break;
+        }
           break;
       }
     }
@@ -769,7 +773,7 @@ async function exportLogs(options) {
       spinner.succeed('Logs exported');
       console.log(exportData);
     }
-  } catch (_error) {
+  } catch (error) {
     spinner.fail('Export failed');
     throw error;
   }
@@ -800,7 +804,7 @@ function formatJsonLogs(output) {
     try {
       const parsed = JSON.parse(line);
       formatted += JSON.stringify(parsed, null, 2) + '\n';
-    } catch (_error) {
+    } catch (error) {
       formatted += line + '\n';
     }
   }

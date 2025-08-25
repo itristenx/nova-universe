@@ -32,7 +32,7 @@ try {
   });
 
   console.log('   📈 AI Fabric file size:', Math.round(aiFabricContent.length / 1024), 'KB');
-} catch (_error) {
+} catch (error) {
   console.log('   ❌ AI Fabric validation failed:', error.message);
 }
 
@@ -63,7 +63,7 @@ try {
     Math.round(controlTowerContent.length / 1024),
     'KB',
   );
-} catch (_error) {
+} catch (error) {
   console.log('   ❌ Control Tower UI validation failed:', error.message);
 }
 
@@ -89,7 +89,7 @@ try {
   });
 
   console.log('   📈 MCP Server file size:', Math.round(mcpServerContent.length / 1024), 'KB');
-} catch (_error) {
+} catch (error) {
   console.log('   ❌ MCP Server validation failed:', error.message);
 }
 
@@ -129,7 +129,7 @@ try {
     const found = check.pattern.test(check.content);
     console.log(`   ${found ? '✅' : '❌'} ${check.name}: ${found ? 'Found' : 'Missing'}`);
   });
-} catch (_error) {
+} catch (error) {
   console.log('   ❌ API Routes validation failed:', error.message);
 }
 
@@ -150,7 +150,7 @@ try {
     const found = check.pattern.test(indexContent);
     console.log(`   ${found ? '✅' : '❌'} ${check.name}: ${found ? 'Found' : 'Missing'}`);
   });
-} catch (_error) {
+} catch (error) {
   console.log('   ❌ Route Registration validation failed:', error.message);
 }
 
@@ -174,7 +174,7 @@ try {
       `   ${installed ? '✅' : '❌'} ${check.name}: ${installed ? `v${check.version}` : 'Not installed'}`,
     );
   });
-} catch (_error) {
+} catch (error) {
   console.log('   ❌ SDK Installation validation failed:', error.message);
 }
 

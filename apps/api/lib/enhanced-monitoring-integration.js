@@ -49,7 +49,7 @@ class EnhancedMonitoringService {
 
       // Log feature summary
       await this.logFeatureSummary();
-    } catch (_error) {
+    } catch (error) {
       logger.error('Failed to initialize Enhanced Monitoring System:', error);
       throw error;
     }
@@ -85,7 +85,7 @@ class EnhancedMonitoringService {
       try {
         await database.query(`SELECT 1 FROM ${table} LIMIT 1`);
         logger.debug(`✓ Table ${table} exists`);
-      } catch (_error) {
+      } catch (error) {
         logger.error(`✗ Table ${table} missing or inaccessible:`, error.message);
         throw new Error(`Required table ${table} is missing. Please run the database migration.`);
       }
@@ -99,7 +99,7 @@ class EnhancedMonitoringService {
     try {
       await database.query(`SELECT 1 FROM ${partitionTable} LIMIT 1`);
       logger.debug(`✓ Partition table ${partitionTable} exists`);
-    } catch (_error) {
+    } catch (error) {
       logger.warn(`Partition table ${partitionTable} not found, creating...`);
       await this.createMonthlyPartition(currentYear, currentMonth);
     }
@@ -148,7 +148,7 @@ class EnhancedMonitoringService {
     try {
       await notificationProviderService.healthCheck();
       logger.info('✓ Notification provider service is healthy');
-    } catch (_error) {
+    } catch (error) {
       logger.warn('⚠ Notification provider service health check failed:', error.message);
     }
   }
@@ -187,7 +187,7 @@ class EnhancedMonitoringService {
     const interval = setInterval(async () => {
       try {
         await this.performMonitorCheck(monitor.id);
-      } catch (_error) {
+      } catch (error) {
         logger.error(`Failed to check monitor ${monitor.name}:`, error);
       }
     }, monitor.interval_seconds * 1000);
@@ -264,7 +264,7 @@ class EnhancedMonitoringService {
 
       // Handle status changes and notifications
       await this.handleMonitorStatusChange(monitor, result);
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Monitor check failed for ${monitorId}:`, error);
     }
   }
@@ -365,11 +365,11 @@ class EnhancedMonitoringService {
           );
 
           logger.debug(`Sent ${status} notification for ${monitor.name} via ${channel.type}`);
-        } catch (_error) {
+        } catch (error) {
           logger.error(`Failed to send notification via ${channel.type}:`, error);
         }
       }
-    } catch (_error) {
+    } catch (error) {
       logger.error('Failed to send monitor notifications:', error);
     }
   }
@@ -410,7 +410,7 @@ class EnhancedMonitoringService {
     this.maintenanceScheduler = setInterval(async () => {
       try {
         await advancedFeaturesService.processMaintenanceWindows();
-      } catch (_error) {
+      } catch (error) {
         logger.error('Failed to process maintenance windows:', error);
       }
     }, 60000); // 1 minute
@@ -427,7 +427,7 @@ class EnhancedMonitoringService {
     try {
       await statusPageService.healthCheck();
       logger.info('✓ Status page service is healthy');
-    } catch (_error) {
+    } catch (error) {
       logger.warn('⚠ Status page service health check failed:', error.message);
     }
   }
@@ -443,7 +443,7 @@ class EnhancedMonitoringService {
       async () => {
         try {
           await this.checkCertificateExpiry();
-        } catch (_error) {
+        } catch (error) {
           logger.error('Certificate expiry check failed:', error);
         }
       },
@@ -455,7 +455,7 @@ class EnhancedMonitoringService {
       async () => {
         try {
           await this.cleanupOldData();
-        } catch (_error) {
+        } catch (error) {
           logger.error('Data cleanup failed:', error);
         }
       },
@@ -467,7 +467,7 @@ class EnhancedMonitoringService {
       async () => {
         try {
           await this.updateAllMonitorSummaries();
-        } catch (_error) {
+        } catch (error) {
           logger.error('Monitor summary update failed:', error);
         }
       },
@@ -521,7 +521,7 @@ class EnhancedMonitoringService {
             },
             message,
           );
-        } catch (_error) {
+        } catch (error) {
           logger.error(`Failed to send certificate expiry notification:`, error);
         }
       }
@@ -662,7 +662,7 @@ class EnhancedMonitoringService {
         message: 'Monitor type not implemented; skipping',
         data: { type: monitor.type },
       };
-    } catch (_error) {
+    } catch (error) {
       return {
         success: false,
         responseTime: 0,

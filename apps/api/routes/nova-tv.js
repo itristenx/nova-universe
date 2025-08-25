@@ -85,7 +85,7 @@ router.get('/dashboards', requireAuth, async (req, res) => {
     }
 
     res.json(dashboards);
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error fetching dashboards:', error);
     res.status(500).json({ error: 'Failed to fetch dashboards' });
   }
@@ -102,7 +102,7 @@ router.get('/dashboards/:id', requireAuth, async (req, res) => {
     }
 
     res.json(dashboard);
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error fetching dashboard:', error);
     res.status(500).json({ error: 'Failed to fetch dashboard' });
   }
@@ -126,7 +126,7 @@ router.post('/dashboards', requireAuth, async (req, res) => {
       name: dashboardData.name,
     });
     res.status(201).json(dashboardData);
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error creating dashboard:', error);
     res.status(500).json({ error: 'Failed to create dashboard' });
   }
@@ -152,7 +152,7 @@ router.put('/dashboards/:id', requireAuth, async (req, res) => {
 
     logger.info('Updated Nova TV dashboard:', { dashboardId: id });
     res.json(updatedDashboard);
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error updating dashboard:', error);
     res.status(500).json({ error: 'Failed to update dashboard' });
   }
@@ -170,7 +170,7 @@ router.delete('/dashboards/:id', requireAuth, async (req, res) => {
 
     logger.info('Deleted Nova TV dashboard:', { dashboardId: id });
     res.status(204).send();
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error deleting dashboard:', error);
     res.status(500).json({ error: 'Failed to delete dashboard' });
   }
@@ -201,7 +201,7 @@ router.post('/dashboards/:id/duplicate', requireAuth, async (req, res) => {
 
     logger.info('Duplicated Nova TV dashboard:', { originalId: id, newId: newDashboard.id });
     res.status(201).json(newDashboard);
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error duplicating dashboard:', error);
     res.status(500).json({ error: 'Failed to duplicate dashboard' });
   }
@@ -268,7 +268,7 @@ router.get('/devices', requireAuth, async (req, res) => {
 
       return res.json(devices);
     }
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error fetching devices:', error);
     res.status(500).json({ error: 'Failed to fetch devices' });
   }
@@ -312,7 +312,7 @@ router.get('/devices/:id', requireAuth, async (req, res) => {
 
       return res.json(device);
     }
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error fetching device:', error);
     res.status(500).json({ error: 'Failed to fetch device' });
   }
@@ -447,7 +447,7 @@ router.post('/devices/register', async (req, res) => {
         return res.status(201).json(deviceData);
       }
     }
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error registering device:', error);
     res.status(500).json({ error: 'Failed to register device' });
   }
@@ -541,7 +541,7 @@ router.put('/devices/:id', requireAuth, async (req, res) => {
       mockData.devices.set(id, updatedDevice);
       return res.json(updatedDevice);
     }
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error updating device:', error);
     res.status(500).json({ error: 'Failed to update device' });
   }
@@ -638,7 +638,7 @@ router.post('/devices/:deviceId/assign', requireAuth, async (req, res) => {
       logger.info('Assigned dashboard to Nova TV device (mock):', { deviceId, dashboardId });
       return res.json(updatedDevice);
     }
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error assigning dashboard:', error);
     res.status(500).json({ error: 'Failed to assign dashboard' });
   }
@@ -673,7 +673,7 @@ router.post('/devices/:deviceId/heartbeat', async (req, res) => {
       ]);
 
       return res.json({ success: true, device: result.rows?.[0] });
-    } catch (_error) {
+    } catch (error) {
       // Fallback to mock data when DB unavailable
       const device = mockData.devices.get(deviceId);
       if (device) {
@@ -689,7 +689,7 @@ router.post('/devices/:deviceId/heartbeat', async (req, res) => {
 
       return res.json({ success: true, device });
     }
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error updating device heartbeat:', error);
     res.status(500).json({ error: 'Failed to update device heartbeat' });
   }
@@ -733,7 +733,7 @@ router.post('/activations/generate', requireAuth, async (req, res) => {
       activationUrl,
       expiresAt: activation.expiresAt,
     });
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error generating activation code:', error);
     res.status(500).json({ error: 'Failed to generate activation code' });
   }
@@ -789,7 +789,7 @@ router.post('/activations/verify', async (req, res) => {
       device,
       message: 'Device activation verified. Admin can now assign a channel.',
     });
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error verifying activation code:', error);
     res.status(500).json({ error: 'Failed to verify activation code' });
   }
@@ -817,7 +817,7 @@ router.post('/auth/generate-code', async (req, res) => {
     mockData.authSessions.set(sessionId, authSession);
 
     res.json(authSession);
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error generating auth code:', error);
     res.status(500).json({ error: 'Failed to generate auth code' });
   }
@@ -851,7 +851,7 @@ router.post('/auth/verify-code', async (req, res) => {
       availableDashboards,
       sessionToken: 'mock-session-token',
     });
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error verifying code:', error);
     res.status(500).json({ error: 'Failed to verify code' });
   }
@@ -882,7 +882,7 @@ router.get('/auth/status/:sessionId', async (req, res) => {
       isVerified: session.isVerified || false,
       isExpired: false,
     });
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error checking auth status:', error);
     res.status(500).json({ error: 'Failed to check auth status' });
   }
@@ -895,7 +895,7 @@ router.post('/auth/refresh', async (req, res) => {
       accessToken: 'new-access-token',
       refreshToken: 'new-refresh-token',
     });
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error refreshing token:', error);
     res.status(500).json({ error: 'Failed to refresh token' });
   }
@@ -928,7 +928,7 @@ router.get('/live-data/tickets', requireAuth, async (req, res) => {
     };
 
     res.json(metrics);
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error fetching ticket metrics:', error);
     res.status(500).json({ error: 'Failed to fetch ticket metrics' });
   }
@@ -959,7 +959,7 @@ router.get('/live-data/assets', requireAuth, async (req, res) => {
     };
 
     res.json(metrics);
-  } catch (_error) {
+  } catch (error) {
     logger.error('Error fetching asset metrics:', error);
     res.status(500).json({ error: 'Failed to fetch asset metrics' });
   }
